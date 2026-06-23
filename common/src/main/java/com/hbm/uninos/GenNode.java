@@ -1,0 +1,42 @@
+package com.hbm.uninos;
+
+import com.hbm.lib.DirPos;
+import net.minecraft.core.BlockPos;
+
+public class GenNode<N extends NodeNet<?, ?, ? extends GenNode<N>, N>> {
+
+    public BlockPos[] positions;
+    public DirPos[] connections;
+    public N net;
+    public boolean expired = false;
+    public boolean recentlyChanged = true;
+
+    public INetworkProvider<N> networkProvider;
+
+    public GenNode(INetworkProvider<N> provider, BlockPos... positions) {
+        this.networkProvider = provider;
+        this.positions = positions;
+    }
+
+    public GenNode<N> setConnections(DirPos... connections) {
+        this.connections = connections;
+        return this;
+    }
+
+    public GenNode<N> addConnection(DirPos connection) {
+        DirPos[] newCons = new DirPos[this.connections.length + 1];
+        System.arraycopy(this.connections, 0, newCons, 0, this.connections.length);
+        newCons[newCons.length - 1] = connection;
+        this.connections = newCons;
+        return this;
+    }
+
+    public boolean hasValidNet() {
+        return this.net != null && this.net.isValid();
+    }
+
+    public void setNet(N net) {
+        this.net = net;
+        this.recentlyChanged = true;
+    }
+}

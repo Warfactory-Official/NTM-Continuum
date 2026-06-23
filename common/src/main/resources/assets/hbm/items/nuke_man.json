@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/bombs/fatman.obj",
+      "texture": "hbm:textures/models/bombs/fatman.png",
+      "scale": 0.5,
+      "yaw": 180,
+      "ty": 0.0
+    }
+  }
+}

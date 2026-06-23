@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/press_body.obj",
+      "texture": "hbm:textures/models/machines/press_body.png",
+      "scale": 0.40,
+      "yaw": 180,
+      "ty": 0.0
+    }
+  }
+}

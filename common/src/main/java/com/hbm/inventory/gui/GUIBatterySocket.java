@@ -1,0 +1,102 @@
+package com.hbm.inventory.gui;
+
+import com.hbm.inventory.container.ContainerBatterySocket;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Inventory;
+
+import java.util.List;
+import java.util.Optional;
+
+public class GUIBatterySocket extends AbstractContainerScreen<ContainerBatterySocket> {
+
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/storage/gui_battery_socket.png");
+    private static final String[] MODE_NAMES = {"Input only", "Buffer (both)", "Output only", "Disabled"};
+    private static final String[] PRIORITY_NAMES = {"Lowest", "Low", "Normal", "High", "Highest"};
+
+    private static final int BAR_X = 62, BAR_W = 34, BAR_H = 52, BAR_BOTTOM = 69, BAR_TOP = BAR_BOTTOM - BAR_H;
+
+    private static final int REDLOW_X = 106, REDLOW_Y = 16, REDHIGH_X = 106, REDHIGH_Y = 52, RED_W = 18;
+    private static final int PRIO_X = 125, PRIO_Y = 35, PRIO_W = 16;
+
+    public GUIBatterySocket(ContainerBatterySocket menu, Inventory playerInventory, Component title) {
+        super(menu, playerInventory, title, 176, 181);
+    }
+
+    @Override
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(graphics, mouseX, mouseY, partialTick);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+
+        if (!this.menu.getBattery().isEmpty()) {
+            long power = this.menu.getPower();
+            long max = this.menu.getMaxPower();
+
+            if (power > Long.MAX_VALUE / 100) { power /= 100; max /= 100; }
+            if (max <= 1) max = 1;
+            int p = (int) (power * BAR_H / max);
+            if (p > 0) {
+                graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + BAR_X, this.topPos + BAR_BOTTOM - p,
+                        176.0F, (float) (BAR_H - p), BAR_W, p, 256, 256);
+            }
+        }
+
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + REDLOW_X, this.topPos + REDLOW_Y,
+                176.0F, (float) (52 + this.menu.getRedLow() * 18), RED_W, RED_W, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + REDHIGH_X, this.topPos + REDHIGH_Y,
+                176.0F, (float) (52 + this.menu.getRedHigh() * 18), RED_W, RED_W, 256, 256);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + PRIO_X, this.topPos + PRIO_Y,
+                194.0F, (float) (52 + (this.menu.getPriorityOrdinal() - 1) * 16), PRIO_W, PRIO_W, 256, 256);
+    }
+
+    @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+
+        graphics.text(this.font, this.title, (this.imageWidth - this.font.width(this.title)) / 2, this.titleLabelY, -12566464, false);
+        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
+    }
+
+    @Override
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        super.extractTooltip(graphics, mouseX, mouseY);
+        if (!this.menu.getBattery().isEmpty() && this.isHovering(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
+            graphics.setTooltipForNextFrame(this.font,
+                    GuiUtil.energyTooltip(this.menu.getPower(), this.menu.getMaxPower(), this.menu.getDelta()),
+                    Optional.empty(), mouseX, mouseY);
+        } else if (this.isHovering(REDLOW_X, REDLOW_Y, RED_W, RED_W, mouseX, mouseY)) {
+            graphics.setTooltipForNextFrame(this.font, List.of(
+                    Component.literal("No redstone: " + mode(this.menu.getRedLow()))), Optional.empty(), mouseX, mouseY);
+        } else if (this.isHovering(REDHIGH_X, REDHIGH_Y, RED_W, RED_W, mouseX, mouseY)) {
+            graphics.setTooltipForNextFrame(this.font, List.of(
+                    Component.literal("Redstone on: " + mode(this.menu.getRedHigh()))), Optional.empty(), mouseX, mouseY);
+        } else if (this.isHovering(PRIO_X, PRIO_Y, PRIO_W, PRIO_W, mouseX, mouseY)) {
+            graphics.setTooltipForNextFrame(this.font, List.of(
+                    Component.literal("Priority: " + priority(this.menu.getPriorityOrdinal()))), Optional.empty(), mouseX, mouseY);
+        }
+    }
+
+    private static String mode(int m) { return m >= 0 && m < MODE_NAMES.length ? MODE_NAMES[m] : "?"; }
+    private static String priority(int o) { return o >= 0 && o < PRIORITY_NAMES.length ? PRIORITY_NAMES[o] : "?"; }
+
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        int button = -1;
+        if (this.isHovering(REDLOW_X, REDLOW_Y, RED_W, RED_W, event.x(), event.y())) button = 0;
+        else if (this.isHovering(REDHIGH_X, REDHIGH_Y, RED_W, RED_W, event.x(), event.y())) button = 1;
+        else if (this.isHovering(PRIO_X, PRIO_Y, PRIO_W, PRIO_W, event.x(), event.y())) button = 2;
+
+        if (button >= 0) {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.gameMode != null) {
+                mc.gameMode.handleInventoryButtonClick(this.menu.containerId, button);
+                return true;
+            }
+        }
+        return super.mouseClicked(event, doubleClick);
+    }
+}

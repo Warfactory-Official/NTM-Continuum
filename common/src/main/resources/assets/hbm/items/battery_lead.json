@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/battery_socket.obj",
+      "texture": "hbm:textures/models/machines/battery_lead.png",
+      "scale": 0.45,
+      "yaw": 180,
+      "ty": 0.0,
+      "exclude": ["Socket", "Capacitor"]
+    }
+  }
+}

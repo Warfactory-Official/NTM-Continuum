@@ -1,0 +1,8 @@
+{
+  "block.motor": {"category": "block", "sounds": [{"name": "hbm:block/motor", "stream": false}]},
+  "block.assembler_strike": {"category": "block", "sounds": ["hbm:block/assemblerstrike1", "hbm:block/assemblerstrike2"]},
+  "block.assembler_start": {"category": "block", "sounds": [{"name": "hbm:block/assemblerstart", "stream": false}]},
+  "block.assembler_stop": {"category": "block", "sounds": [{"name": "hbm:block/assemblerstop", "stream": false}]},
+  "block.chemical_plant": {"category": "block", "sounds": [{"name": "hbm:block/chemicalplant", "stream": false}]},
+  "block.pressoperate": {"category": "block", "sounds": [{"name": "hbm:block/pressoperate", "stream": false}]}
+}

@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/chemical_plant.obj",
+      "texture": "hbm:textures/models/machines/chemical_plant.png",
+      "scale": 0.35,
+      "yaw": 180,
+      "ty": 0.0,
+      "exclude": [
+        "Fluid"
+      ]
+    }
+  }
+}

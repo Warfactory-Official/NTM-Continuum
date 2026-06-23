@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/fluidtank.obj",
+      "texture": "hbm:textures/models/machines/tank.png",
+      "scale": 0.30,
+      "yaw": 180,
+      "ty": 0.0,
+      "exclude": ["Tank"],
+      "overlayTexture": "hbm:textures/models/tank/tank_none.png",
+      "overlayParts": ["Tank"]
+    }
+  }
+}

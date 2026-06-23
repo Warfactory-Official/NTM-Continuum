@@ -1,0 +1,145 @@
+package com.hbm.blocks.network;
+
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.api.energymk2.IEnergyConnectorMK2;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.network.TileEntityCableBaseNT;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Map;
+
+public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedBlock {
+
+    public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
+    public static final BooleanProperty UP = BlockStateProperties.UP;
+    public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
+    public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
+    public static final BooleanProperty WEST = BlockStateProperties.WEST;
+    public static final BooleanProperty EAST = BlockStateProperties.EAST;
+    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
+
+    public static final Map<Direction, BooleanProperty> PROPERTY_BY_DIRECTION = Map.of(
+            Direction.DOWN, DOWN, Direction.UP, UP, Direction.NORTH, NORTH,
+            Direction.SOUTH, SOUTH, Direction.WEST, WEST, Direction.EAST, EAST);
+
+    private static final VoxelShape CORE = Block.box(5, 5, 5, 11, 11, 11);
+    private static final Map<Direction, VoxelShape> ARM = Map.of(
+            Direction.DOWN, Block.box(5, 0, 5, 11, 5, 11),
+            Direction.UP, Block.box(5, 11, 5, 11, 16, 11),
+            Direction.NORTH, Block.box(5, 5, 0, 11, 11, 5),
+            Direction.SOUTH, Block.box(5, 5, 11, 11, 11, 16),
+            Direction.WEST, Block.box(0, 5, 5, 5, 11, 11),
+            Direction.EAST, Block.box(11, 5, 5, 16, 11, 11));
+
+    public BlockCable(Properties properties) {
+        super(properties);
+        BlockState def = this.stateDefinition.any();
+        for (BooleanProperty p : PROPERTY_BY_DIRECTION.values()) def = def.setValue(p, false);
+        this.registerDefaultState(def.setValue(WATERLOGGED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(DOWN, UP, NORTH, SOUTH, WEST, EAST, WATERLOGGED);
+    }
+
+    @Override
+    protected RenderShape getRenderShape(BlockState state) {
+
+        return RenderShape.INVISIBLE;
+    }
+
+    @Override
+    protected FluidState getFluidState(BlockState state) {
+        return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
+    }
+
+    private static boolean canConnectTo(LevelReader level, BlockPos pos, Direction dir) {
+        BlockPos neighbour = pos.relative(dir);
+        ForgeDirection neighbourSide = ForgeDirection.getOrientation(dir.getOpposite());
+
+        if (level.getBlockState(neighbour).getBlock() instanceof IEnergyConnectorBlock connectorBlock
+                && connectorBlock.canConnect(level, neighbour, neighbourSide)) {
+            return true;
+        }
+        BlockEntity be = level.getBlockEntity(neighbour);
+        return be instanceof IEnergyConnectorMK2 connector && connector.canConnect(neighbourSide);
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
+        LevelReader level = context.getLevel();
+        BlockPos pos = context.getClickedPos();
+        BlockState state = this.defaultBlockState()
+                .setValue(WATERLOGGED, level.getFluidState(pos).getType() == Fluids.WATER);
+        for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
+            state = state.setValue(e.getValue(), canConnectTo(level, pos, e.getKey()));
+        }
+        return state;
+    }
+
+    @Override
+    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
+                                     Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
+                                     RandomSource random) {
+        if (state.getValue(WATERLOGGED)) {
+            ticks.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+        }
+        return state.setValue(PROPERTY_BY_DIRECTION.get(directionToNeighbour),
+                canConnectTo(level, pos, directionToNeighbour));
+    }
+
+    @Override
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        VoxelShape shape = CORE;
+        for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
+            if (state.getValue(e.getValue())) shape = Shapes.or(shape, ARM.get(e.getKey()));
+        }
+        return shape;
+    }
+
+    @Override
+    @Nullable
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new TileEntityCableBaseNT(pos, state);
+    }
+
+    @Override
+    @Nullable
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide()) return null;
+        return createTickerHelper(type, ModBlockEntities.RED_CABLE.get(), TileEntityCableBaseNT::serverTick);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nullable
+    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
+            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
+        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    }
+}

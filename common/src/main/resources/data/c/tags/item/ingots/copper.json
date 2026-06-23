@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:ingot_copper",
+    "minecraft:copper_ingot"
+  ]
+}

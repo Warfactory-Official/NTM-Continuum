@@ -1,0 +1,21 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/blocks/cable_neo.obj",
+      "texture": "hbm:textures/models/blocks/cable_neo.png",
+      "scale": 1.1,
+      "yaw": 0,
+      "ty": 0.0,
+      "exclude": [
+        "posY",
+        "negY",
+        "CX",
+        "CY",
+        "CZ"
+      ]
+    }
+  }
+}
