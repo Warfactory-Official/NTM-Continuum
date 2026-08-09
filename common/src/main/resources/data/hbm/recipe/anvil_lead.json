@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/lead",
+    "B": "#c:storage_blocks/lead"
+  },
+  "pattern": [
+    "III",
+    " B ",
+    "III"
+  ],
+  "result": {
+    "id": "hbm:anvil_lead"
+  }
+}

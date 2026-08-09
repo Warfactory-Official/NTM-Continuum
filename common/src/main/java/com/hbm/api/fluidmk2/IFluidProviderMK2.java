@@ -3,6 +3,7 @@ package com.hbm.api.fluidmk2;
 import com.hbm.inventory.fluid.FluidType;
 import org.jetbrains.annotations.Contract;
 
+/** A tile that supplies fluid into a network. */
 public interface IFluidProviderMK2 extends IFluidUserMK2 {
 
     @Contract(mutates = "this")

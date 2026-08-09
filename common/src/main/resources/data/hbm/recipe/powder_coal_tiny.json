@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:powder_coal"
+  ],
+  "result": {
+    "id": "hbm:powder_coal_tiny",
+    "count": 9
+  }
+}

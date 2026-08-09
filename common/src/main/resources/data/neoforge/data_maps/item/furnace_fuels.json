@@ -1,0 +1,55 @@
+{
+  "values": {
+    "hbm:ingot_graphite": {
+      "burn_time": 1600
+    },
+    "hbm:powder_lignite": {
+      "burn_time": 1200
+    },
+    "hbm:powder_coal": {
+      "burn_time": 1600
+    },
+    "hbm:powder_coal_tiny": {
+      "burn_time": 160
+    },
+    "hbm:powder_fire": {
+      "burn_time": 6400
+    },
+    "hbm:ingot_c4": {
+      "burn_time": 1600
+    },
+    "hbm:pellet_coal": {
+      "burn_time": 320
+    },
+    "hbm:biomass": {
+      "burn_time": 20
+    },
+    "hbm:biomass_compressed": {
+      "burn_time": 800
+    },
+    "hbm:ball_resin": {
+      "burn_time": 80
+    },
+    "hbm:coal_infernal": {
+      "burn_time": 4800
+    },
+    "hbm:solid_fuel": {
+      "burn_time": 3200
+    },
+    "hbm:solid_fuel_presto": {
+      "burn_time": 6400
+    },
+    "hbm:solid_fuel_presto_triplet": {
+      "burn_time": 19200
+    },
+    "hbm:rocket_fuel": {
+      "burn_time": 6400
+    },
+    "hbm:lignite": {
+      "burn_time": 1200
+    },
+    "hbm:crystal_coal": {
+      "burn_time": 6400
+    }
+  }
+}

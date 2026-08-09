@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "hbm:centrifuge_element",
+    "H": "minecraft:hopper",
+    "U": "hbm:upgrade_shredder",
+    "D": "#c:ingots/any_plastic",
+    "T": "hbm:machine_transformer"
+  },
+  "pattern": [
+    "PHP",
+    "PUP",
+    "DTD"
+  ],
+  "result": {
+    "id": "hbm:upgrade_centrifuge"
+  }
+}

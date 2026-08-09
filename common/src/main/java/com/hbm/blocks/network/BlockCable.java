@@ -33,6 +33,16 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 
+/**
+ * HBM's red power cable: a connecting conductor. Six {@link BooleanProperty} connection flags drive a
+ * multipart model (a central core + an arm per connected side), like vanilla {@code PipeBlock}. It
+ * connects to any neighbour whose BlockEntity is an {@link IEnergyConnectorMK2} (cables, machines,
+ * batteries, generators). Power conduction itself lives in {@link TileEntityCableBaseNT} (a UNINOS
+ * node); these flags are purely the visual/collision shape.
+ *
+ * <p>Ported from 1.12.2's {@code BlockCable} (which used an OBJ-baked model + {@code getActualState});
+ * the 26.1 equivalent is connection properties + a multipart blockstate + {@code updateShape}.
+ */
 public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedBlock {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
@@ -70,7 +80,7 @@ public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedB
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-
+        // Drawn by CableObjRenderer (the real cable_neo.obj), so the block model itself is invisible.
         return RenderShape.INVISIBLE;
     }
 
@@ -79,6 +89,12 @@ public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedB
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
+    /**
+     * Whether the cable should visually/physically connect to the block on side {@code dir}. Mirrors the
+     * 1.12.2 {@code Library.canConnect}: a block-level {@link IEnergyConnectorBlock} (so multiblock
+     * machine footprints connect without a BlockEntity at every cell) OR a tile-level
+     * {@link IEnergyConnectorMK2}. {@code dir.getOpposite()} is the neighbour's side facing the cable.
+     */
     private static boolean canConnectTo(LevelReader level, BlockPos pos, Direction dir) {
         BlockPos neighbour = pos.relative(dir);
         ForgeDirection neighbourSide = ForgeDirection.getOrientation(dir.getOpposite());

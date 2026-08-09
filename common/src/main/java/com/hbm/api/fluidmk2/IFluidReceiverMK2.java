@@ -11,8 +11,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Contract;
 
+/** A tile that draws fluid from a network. */
 public interface IFluidReceiverMK2 extends IFluidUserMK2 {
 
+    /**
+     * Sends fluid of the desired type and pressure to the receiver, returns the remainder that couldn't
+     * be accepted.
+     */
     @Contract(mutates = "this")
     long transferFluid(FluidType type, int pressure, long amount);
 

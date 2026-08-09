@@ -7,21 +7,35 @@ import net.minecraft.resources.Identifier;
 
 import java.util.Locale;
 
+/**
+ * A single fluid kind in HBM's own fluid system (NOT a vanilla/Forge {@code Fluid}). Each FluidType
+ * owns its own {@link INetworkProvider} so that, in UNINOS, every fluid kind has a wholly separate
+ * nodespace — fluid networks are segregated by type (water pipes never mix with oil pipes).
+ *
+ * <p>26.1 slim port: the 1.12.2 original carried Forge {@code Fluid}/{@code FluidRegistry} interop, a
+ * trait subsystem (corrosive/flammable/…), pollution/potion hooks, and client-side tooltip/render
+ * code. None of that is needed by the fluid <em>network</em>, so this port keeps only the identity
+ * (id/name/color/temperature/texture) and the network provider. Traits etc. can be layered back on
+ * later when the fluid-consuming machines that need them are ported.
+ *
+ * @author hbm, mlbv
+ */
 public class FluidType {
 
+    /** The numeric ID of the fluid (assigned by {@link Fluids} on registration). */
     private int id;
-
+    /** The internal/string name (e.g. {@code "water"}). */
     private final String stringId;
-
+    /** Approximate HEX colour of the fluid, used for pipe/GUI rendering. */
     private final int color;
-
+    /** Unlocalized translation key. */
     private final String unlocalized;
-
+    /** GUI tint (defaults to the colour; overridable for custom fluids). */
     private int guiTint;
     private final Identifier texture;
 
     public static final int ROOM_TEMPERATURE = 20;
-
+    /** How hot this fluid is, in °C. */
     public int temperature = ROOM_TEMPERATURE;
 
     public FluidType(String name, int color) {
@@ -33,6 +47,7 @@ public class FluidType {
         this.id = Fluids.registerSelf(this);
     }
 
+    /** Constructor with an asserted ID, mirroring the 1.12.2 safeguard against fluid-ID drift. */
     public FluidType(int forcedId, String name, int color) {
         this(name, color);
         if (this.id != forcedId) {
@@ -52,10 +67,13 @@ public class FluidType {
 
     public int getID() { return this.id; }
 
+    /** Used internally by {@link Fluids} when (re)assigning IDs. */
     void setID(int id) { this.id = id; }
 
+    /** The unique mapping name for this fluid, usually matching the unlocalized name minus the prefix. */
     public String getName() { return this.stringId; }
 
+    /** A human-readable, title-cased name for display, e.g. {@code HEAVY_OIL → "Heavy Oil"}. */
     public String getDisplayName() {
         StringBuilder sb = new StringBuilder();
         for (String part : this.stringId.toLowerCase(java.util.Locale.US).split("_")) {

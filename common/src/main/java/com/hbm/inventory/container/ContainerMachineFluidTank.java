@@ -15,6 +15,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Menu for the fluid tank: 6 canister/identifier I/O slots (inert until the fluid-container items are
+ * ported) + the player inventory. The screen reads the live (client) BlockEntity for the tank fill +
+ * mode bar; the mode button is dispatched through the vanilla {@link #clickMenuButton} path (no custom
+ * packet needed).
+ */
 public class ContainerMachineFluidTank extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 6;
@@ -23,10 +29,12 @@ public class ContainerMachineFluidTank extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityMachineFluidTank tank;
 
+    /** Client-side: resolve the BlockEntity by position. */
     public ContainerMachineFluidTank(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos), ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
+    /** Server-side: bound to the live BlockEntity. */
     public ContainerMachineFluidTank(int containerId, Inventory playerInventory, TileEntityMachineFluidTank machine) {
         this(containerId, playerInventory, machine, ContainerLevelAccess.create(machine.getLevel(), machine.getBlockPos()));
     }
@@ -37,12 +45,12 @@ public class ContainerMachineFluidTank extends AbstractContainerMenu {
         this.machine = machine != null ? machine : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 8, 17));
-        this.addSlot(validated(1, 8, 53));
-        this.addSlot(validated(2, 35, 17));
-        this.addSlot(takeOnly(3, 35, 53));
-        this.addSlot(validated(4, 125, 17));
-        this.addSlot(takeOnly(5, 125, 53));
+        this.addSlot(validated(0, 8, 17));    // identifier in (identifiers only)
+        this.addSlot(validated(1, 8, 53));    // identifier out (identifiers only)
+        this.addSlot(validated(2, 35, 17));   // container in: drained INTO the tank
+        this.addSlot(takeOnly(3, 35, 53));    // emptied container out
+        this.addSlot(validated(4, 125, 17));  // container in: filled FROM the tank
+        this.addSlot(takeOnly(5, 125, 53));   // filled container out
 
         this.addStandardInventorySlots(playerInventory, 8, 84);
     }
@@ -64,10 +72,12 @@ public class ContainerMachineFluidTank extends AbstractContainerMenu {
         return be instanceof TileEntityMachineFluidTank machine ? machine : null;
     }
 
+    /** The live (client) BlockEntity, for the screen to read the tank fill + mode. Null only if unresolved. */
     public @Nullable TileEntityMachineFluidTank getTank() {
         return tank;
     }
 
+    /** Button 0 = cycle the tank I/O mode (receive / both / send / off). */
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (id == 0 && tank != null) {

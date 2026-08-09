@@ -24,6 +24,15 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * A horizontal-facing HBM storage crate block backed by a {@link TileEntityCrate}. One class serves all
+ * three crates; the {@link CrateType} fixes the slot count / GUI, and the {@link BlockEntityType} supplier
+ * is resolved lazily (the block is registered before the block-entity type). Right-click opens the menu.
+ *
+ * <p>Contents are kept on the dropped item via the crate's loot table (a {@code copy_components} of the
+ * {@code minecraft:container} + {@code custom_name} components from the block entity), so no in-code drop
+ * logic is needed — see {@link TileEntityCrate}.
+ */
 public class BlockCrate extends Block implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;

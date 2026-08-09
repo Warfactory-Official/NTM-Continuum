@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:concrete_asbestos_stairs",
+    "hbm:concrete_asbestos_stairs",
+    "hbm:concrete_asbestos_stairs",
+    "hbm:concrete_asbestos_stairs"
+  ],
+  "result": {
+    "id": "hbm:concrete_asbestos",
+    "count": 3
+  }
+}

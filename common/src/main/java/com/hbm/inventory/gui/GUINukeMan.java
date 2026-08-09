@@ -8,6 +8,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
+/**
+ * Client screen for the Fat Man ({@code nuke_man}). Uses the 26.1 render API ({@code extractBackground}
+ * + {@code blit}). The lens "installed" overlays and the ready indicator are drawn from the right-hand
+ * side of the schematic texture, gated by the container's arming state (read off the synced BE).
+ */
 public class GUINukeMan extends AbstractContainerScreen<ContainerNukeMan> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/weapon/fatmanschematic.png");

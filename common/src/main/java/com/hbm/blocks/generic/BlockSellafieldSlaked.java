@@ -1,0 +1,34 @@
+package com.hbm.blocks.generic;
+
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+
+/**
+ * Sellafite — the vitrified terrain left under a nuclear blast, ported from 1.12.2's
+ * {@code BlockSellafieldSlaked}/{@code BlockSellafieldOre}. One block carries a {@code SHADE 0..9}
+ * state (0 = light outer ring, 9 = near-black ground zero); the grayscale darkening is a client
+ * {@code BlockColor} tint ({@code brightness = 1 − shade/15}, see {@code HbmBlockColors}) over 4
+ * position-random texture variants, replacing the old unlisted-property/dynamic-model machinery.
+ * The old block exposed shades 0..15 but every ported system (the fallout transform rings) only
+ * writes 0..9.
+ *
+ * <p>Extends {@link DropExperienceBlock} so the sellafield gem ores (diamond/emerald/radgem) grant
+ * their old 3–7 XP; plain terrain passes a zero provider.
+ */
+public class BlockSellafieldSlaked extends DropExperienceBlock {
+
+    public static final IntegerProperty SHADE = IntegerProperty.create("shade", 0, 9);
+
+    public BlockSellafieldSlaked(IntProvider xp, Properties props) {
+        super(xp, props);
+        registerDefaultState(getStateDefinition().any().setValue(SHADE, 0));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
+        builder.add(SHADE);
+    }
+}

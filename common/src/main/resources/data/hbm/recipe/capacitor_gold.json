@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:plates/steel",
+    "I": "#c:ingots/any_plastic",
+    "C": "#c:storage_blocks/gold",
+    "W": "#c:ingots/steel"
+  },
+  "pattern": [
+    "PPP",
+    "ICI",
+    "WWW"
+  ],
+  "result": {
+    "id": "hbm:capacitor_gold"
+  }
+}

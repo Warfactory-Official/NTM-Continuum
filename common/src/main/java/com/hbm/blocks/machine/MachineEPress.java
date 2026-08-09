@@ -17,12 +17,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
+/** Electric Press: a 1×1×3 dummyable column (core at the bottom, two dummies stacked above). */
 public class MachineEPress extends BlockDummyable implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineEPress(Properties properties) {
         super(properties);
     }
 
+    /** Any face of the column routes hoppers/pipes to the core's sided inventory. */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
@@ -30,6 +32,7 @@ public class MachineEPress extends BlockDummyable implements IEnergyConnectorBlo
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineEPress te ? te : null;
     }
 
+    /** Cables connect only at the press's real power ports (its {@code getConPos()} faces). */
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
         return findCoreTE(world, pos) instanceof TileEntityMachineEPress te

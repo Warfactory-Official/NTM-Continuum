@@ -4,6 +4,10 @@ import com.hbm.api.tile.ILoadedTile;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 
+/**
+ * DO NOT USE DIRECTLY! This is the common ancestor to providers and receivers, because all this
+ * behavior has to be excluded from conductors.
+ */
 public interface IEnergyHandlerMK2 extends IEnergyConnectorMK2, ILoadedTile {
 
     long getPower();

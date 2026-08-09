@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:ingot_niobium"
+  ],
+  "result": {
+    "id": "hbm:nugget_niobium",
+    "count": 9
+  }
+}

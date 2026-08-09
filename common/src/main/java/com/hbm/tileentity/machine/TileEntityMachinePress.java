@@ -23,10 +23,22 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Burner Press — a functional fuel-driven press. It burns furnace fuel (slot 0) to build up
+ * {@code burnTime}; while it has fuel and a valid stamp (slot 1) + ingredient (slot 2) it ramps a
+ * {@code speed} gauge and drives the stamp head up/down ({@code progress}), producing the
+ * {@link PressRecipes} output into slot 3 each full stroke. Faithful port of the 1.12.2
+ * {@code TileEntityMachinePress}.
+ *
+ * <p>Slots: 0 fuel, 1 stamp, 2 input, 3 output, 4–12 storage buffer.
+ *
+ * <p>Deferred (see IMPLEMENTATION.md §18): the {@code press_preheater} block (speeds up the stroke) is
+ * not ported, so {@code preheated} is always false here; the press-operate sound is also deferred.
+ */
 public class TileEntityMachinePress extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
-    private static final int[] SLOTS_DOWN = {3};
-    private static final int[] SLOTS_SIDE = {0, 1, 2};
+    private static final int[] SLOTS_DOWN = {3};            // output only (extract from below)
+    private static final int[] SLOTS_SIDE = {0, 1, 2};      // fuel / stamp / input (insert from the sides)
 
     public int speed = 0;
     public static final int maxSpeed = 400;
@@ -38,6 +50,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     private boolean isRetracting = false;
     private int delay;
 
+    /** Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head. */
     @Nullable
     public ItemStack syncStack;
 
@@ -51,7 +64,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePress te) {
-
+        // The press_preheater block isn't ported yet, so the stroke never gets the preheated speed bonus.
         boolean preheated = false;
 
         boolean canProcess = te.canProcess();
@@ -93,10 +106,11 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
             te.isRetracting = true;
         }
 
+        // Consume fuel into burnTime when below the threshold.
         ItemStack fuel = te.inventory.getStackInSlot(0);
         if (!fuel.isEmpty() && te.burnTime < 200 && level.fuelValues().burnDuration(fuel) > 0) {
             te.burnTime += level.fuelValues().burnDuration(fuel);
-            var remainder = fuel.getItem().getCraftingRemainder();
+            var remainder = fuel.getItem().getCraftingRemainder(); // e.g. lava bucket -> empty bucket
             fuel.shrink(1);
             if (fuel.isEmpty()) {
                 te.inventory.setStackInSlot(0, remainder != null ? remainder.create() : ItemStack.EMPTY);
@@ -121,6 +135,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         damageStamp(stamp);
     }
 
+    /** Damages a breakable stamp by one; clears the slot when it wears out (matching the original). */
     private void damageStamp(ItemStack stamp) {
         if (!stamp.isDamageableItem()) return;
         stamp.setDamageValue(stamp.getDamageValue() + 1);
@@ -161,6 +176,9 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         return (progress * i) / maxProgress;
     }
 
+    // --- WorldlyContainer: hoppers extract only the output (slot 3) from below; insert fuel/stamp/input
+    // from the sides. Without this a hopper under a plain Container BE pulls from every slot. ---
+
     @Override
     public int[] getSlotsForFace(Direction side) {
         return side == Direction.DOWN ? SLOTS_DOWN : SLOTS_SIDE;
@@ -176,6 +194,8 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         return slot == 3;
     }
 
+    // --- MenuProvider ---
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("block.hbm.machine_press");
@@ -185,6 +205,8 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachinePress(containerId, playerInventory, this);
     }
+
+    // --- sync (BufPacket) + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

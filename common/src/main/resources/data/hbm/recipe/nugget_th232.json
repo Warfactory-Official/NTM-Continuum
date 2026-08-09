@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:ingot_th232"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:nugget_th232",
+    "count": 9
+  }
+}

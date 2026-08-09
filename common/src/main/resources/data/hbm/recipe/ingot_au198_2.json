@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:billet_au198"
+  ],
+  "result": {
+    "id": "hbm:ingot_au198",
+    "count": 6
+  }
+}

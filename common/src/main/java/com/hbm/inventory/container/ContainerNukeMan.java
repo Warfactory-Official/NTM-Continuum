@@ -23,11 +23,13 @@ public class ContainerNukeMan extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityNukeMan nuke;
 
+    /** Client-side constructor — receives the {@link BlockPos} sent by the server. */
     public ContainerNukeMan(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos),
                 ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
+    /** Server-side constructor — bound to the live BlockEntity. */
     public ContainerNukeMan(int containerId, Inventory playerInventory, TileEntityNukeMan nuke) {
         this(containerId, playerInventory, nuke,
                 ContainerLevelAccess.create(nuke.getLevel(), nuke.getBlockPos()));
@@ -39,6 +41,11 @@ public class ContainerNukeMan extends AbstractContainerMenu {
         this.machine = nuke != null ? nuke : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
+        // Original layout: igniter (centre-left), four lenses (corners), core (centre-right). Each slot
+        // is validated (only its part type may be placed), so shift-clicking routes parts to the right
+        // slot and the bomb actually reaches the armed/ready state — the original used SlotItemHandler
+        // with isItemValid; plain Slots have no such check (mayPlace defaults to true), which scattered
+        // shift-clicked parts into the wrong slots so isReady() never became true.
         this.addSlot(new ValidatedSlot(this.machine, 0, 26, 35));
         this.addSlot(new ValidatedSlot(this.machine, 1, 8, 17));
         this.addSlot(new ValidatedSlot(this.machine, 2, 44, 17));
@@ -53,6 +60,8 @@ public class ContainerNukeMan extends AbstractContainerMenu {
         BlockEntity be = playerInventory.player.level().getBlockEntity(pos);
         return be instanceof TileEntityNukeMan nuke ? nuke : null;
     }
+
+    // --- arming state, read by the screen straight off the (client-synced) BlockEntity ---
 
     public boolean exp1() { return nuke != null && nuke.exp1(); }
     public boolean exp2() { return nuke != null && nuke.exp2(); }
@@ -79,7 +88,7 @@ public class ContainerNukeMan extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             } else {
-
+                // Player inventory -> bomb component slots (respects per-slot validity).
                 if (!this.moveItemStackTo(stack, 0, invStart, false)) {
                     return ItemStack.EMPTY;
                 }
@@ -94,6 +103,7 @@ public class ContainerNukeMan extends AbstractContainerMenu {
         return result;
     }
 
+    /** A slot that only accepts the part its index is meant to hold (via {@link Container#canPlaceItem}). */
     private static final class ValidatedSlot extends Slot {
         ValidatedSlot(Container container, int slot, int x, int y) {
             super(container, slot, x, y);

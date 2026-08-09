@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:plates/steel",
+    "R": "#c:storage_blocks/copper",
+    "P": "hbm:plate_polymer"
+  },
+  "pattern": [
+    "IRI",
+    "PRP",
+    "IRI"
+  ],
+  "result": {
+    "id": "hbm:capacitor_copper"
+  }
+}

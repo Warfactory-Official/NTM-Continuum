@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:nugget_mercury"
+  ],
+  "result": {
+    "id": "hbm:nugget_mercury_tiny",
+    "count": 9
+  }
+}

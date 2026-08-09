@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:ore_gneiss_rare",
+    "hbm:ore_rare"
+  ]
+}

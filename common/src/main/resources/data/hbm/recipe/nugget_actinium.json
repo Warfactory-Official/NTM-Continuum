@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:ingot_actinium"
+  ],
+  "result": {
+    "id": "hbm:nugget_actinium",
+    "count": 9
+  }
+}

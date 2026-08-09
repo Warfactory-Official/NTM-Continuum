@@ -18,10 +18,26 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+/**
+ * Cross-loader registration helper. Mirrors the ergonomics of NeoForge's {@code DeferredRegister}
+ * but is implemented purely against vanilla APIs so the same code compiles and runs on every loader.
+ *
+ * <p>Common content classes ({@code ModItems}, {@code ModBlocks}, ...) declare their entries against
+ * instances of this class. Each entry is stored as a deferred factory; the actual registration is
+ * driven later by the loader-specific bootstrap via {@link #flushTo(RegistrationSink)} (NeoForge,
+ * per {@code RegisterEvent}) or {@link #flushAll(RegistrationSink)} (Fabric, during init).
+ *
+ * <p>Every entry's id is set on its {@link Item.Properties}/{@link BlockBehaviour.Properties} before
+ * construction, as required by 26.1.
+ */
 public class DeferredRegister<T> {
 
     private static final List<DeferredRegister<?>> ALL = new ArrayList<>();
 
+    /**
+     * Registries flushed first, in this order, before any others. Blocks must come before items so
+     * that {@code BlockItem} factories can resolve their block during flush.
+     */
     private static final List<ResourceKey<? extends Registry<?>>> FLUSH_ORDER = List.of(Registries.BLOCK, Registries.ITEM);
 
     protected final ResourceKey<? extends Registry<T>> registryKey;
@@ -46,6 +62,10 @@ public class DeferredRegister<T> {
         return new Blocks(namespace);
     }
 
+    /**
+     * Register an entry. The factory receives the entry's {@link ResourceKey} (useful for setting the
+     * id on properties) and must return a <em>new</em> instance.
+     */
     public <I extends T> RegistryObject<I> register(String name, Function<ResourceKey<T>, ? extends I> factory) {
         Identifier id = Identifier.fromNamespaceAndPath(namespace, name);
         ResourceKey<T> key = ResourceKey.create(registryKey, id);
@@ -63,14 +83,21 @@ public class DeferredRegister<T> {
         return registryKey;
     }
 
+    /** Push every entry of this register into the given sink. */
     public void flushTo(RegistrationSink sink) {
         entries.forEach((key, factory) -> sink.accept(registryKey, key, () -> factory.apply(key)));
     }
+
+    // --- static flush helpers used by the loader bootstraps ---
 
     public static List<DeferredRegister<?>> all() {
         return Collections.unmodifiableList(ALL);
     }
 
+    /**
+     * Flush every register, honouring {@link #FLUSH_ORDER} so dependencies (blocks before items) are
+     * registered first. Used by Fabric, which registers everything synchronously at init time.
+     */
     public static void flushAll(RegistrationSink sink) {
         List<DeferredRegister<?>> remaining = new ArrayList<>(ALL);
         for (ResourceKey<? extends Registry<?>> order : FLUSH_ORDER) {
@@ -85,6 +112,9 @@ public class DeferredRegister<T> {
         remaining.forEach(dr -> dr.flushTo(sink));
     }
 
+    // === specialized registers (NeoForge-style ergonomics, vanilla-only implementation) ===
+
+    /** Specialized register for {@link Item}s. */
     public static class Items extends DeferredRegister<Item> {
 
         protected Items(String namespace) {
@@ -108,7 +138,8 @@ public class DeferredRegister<T> {
         }
 
         public RegistryObject<BlockItem> registerBlockItem(String name, Supplier<? extends Block> block, UnaryOperator<Item.Properties> properties) {
-
+            // useBlockDescriptionPrefix() makes the item's translation key "block.<ns>.<name>" (matching the
+            // block) instead of "item.<ns>.<name>".
             return registerItem(name, props -> new BlockItem(block.get(), props),
                     p -> properties.apply(p).useBlockDescriptionPrefix());
         }
@@ -118,6 +149,7 @@ public class DeferredRegister<T> {
         }
     }
 
+    /** Specialized register for {@link Block}s. */
     public static class Blocks extends DeferredRegister<Block> {
 
         protected Blocks(String namespace) {

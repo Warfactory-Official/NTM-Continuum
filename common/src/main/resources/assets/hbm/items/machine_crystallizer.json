@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/crystallizer.obj",
+      "texture": "hbm:textures/models/machines/crystallizer.png",
+      "scale": 0.22,
+      "yaw": 180,
+      "ty": 0.0,
+      "exclude": [
+        "Fluid"
+      ]
+    }
+  }
+}

@@ -7,6 +7,10 @@
     "authors": [
         "${mod_author}"
     ],
+    "contact": {
+        "homepage": "https://fabricmc.net/",
+        "sources": "https://github.com/FabricMC/fabric-example-mod"
+    },
     "license": "${license}",
     "icon": "${mod_id}.png",
     "environment": "*",
@@ -16,6 +20,9 @@
         ],
         "client": [
             "com.hbm.HbmClient"
+        ],
+        "jei_mod_plugin": [
+            "com.hbm.handler.jei.HbmJeiPlugin"
         ]
     },
     "mixins": [
@@ -27,6 +34,9 @@
         "fabric-api": "*",
         "minecraft": "~${minecraft_version}",
         "java": ">=${java_version}"
+    },
+    "suggests": {
+        "another-mod": "*"
     }
 }
   

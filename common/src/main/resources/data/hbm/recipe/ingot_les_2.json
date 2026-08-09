@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:nuggets/schrabidium",
+    "#c:nuggets/neptunium",
+    "#c:nuggets/neptunium",
+    "#c:nuggets/neptunium",
+    "#c:nuggets/neptunium",
+    "hbm:nugget_beryllium",
+    "hbm:nugget_beryllium",
+    "hbm:nugget_beryllium",
+    "hbm:nugget_beryllium"
+  ],
+  "result": {
+    "id": "hbm:ingot_les"
+  }
+}

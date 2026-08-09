@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:charcoal",
+    "#minecraft:sand"
+  ],
+  "result": {
+    "id": "hbm:powder_flux"
+  }
+}

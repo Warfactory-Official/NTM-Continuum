@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "U": "hbm:undefined",
+    "A": "hbm:anvil_steel"
+  },
+  "pattern": [
+    "UUU",
+    "UAU",
+    "UUU"
+  ],
+  "result": {
+    "id": "hbm:anvil_murky"
+  }
+}

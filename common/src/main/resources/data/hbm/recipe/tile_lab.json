@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:tile_lab_stairs",
+    "hbm:tile_lab_stairs",
+    "hbm:tile_lab_stairs",
+    "hbm:tile_lab_stairs"
+  ],
+  "result": {
+    "id": "hbm:tile_lab",
+    "count": 3
+  }
+}

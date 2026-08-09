@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": "hbm:plate_polymer",
+    "R": "hbm:wire_fine_red_copper"
+  },
+  "pattern": [
+    " W ",
+    "RRR",
+    " W "
+  ],
+  "result": {
+    "id": "hbm:red_cable",
+    "count": 16
+  }
+}

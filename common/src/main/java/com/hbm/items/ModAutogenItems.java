@@ -14,12 +14,22 @@ import org.jspecify.annotations.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * The auto-generated metal-shape items — one registered {@link ItemAutogen} per (material, shape), built
+ * by iterating {@link Mats} × the autogen shapes (gated by each material's {@link NTMMaterial#autogen}
+ * set). Registry id is {@code <shape-base>_<material>} (e.g. {@code plate_cast_iron}), matching the
+ * pre-baked texture from {@code port-tools/gen_autogen_textures.py}.
+ *
+ * <p>The set of autogen shapes registered here (cast/welded plate, shell, pipe, fine/dense wire, bolt,
+ * heavy component, gun parts) corresponds to the 1.12.2 {@code ItemAutogen} entries.
+ */
 public final class ModAutogenItems {
 
     private ModAutogenItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
+    /** The autogen shapes + their registry-name base (must match gen_autogen_textures.py SHAPE_TO_BASE). */
     private static final Map<MaterialShapes, String> SHAPES = new LinkedHashMap<>();
     static {
         SHAPES.put(MaterialShapes.CASTPLATE, "plate_cast");
@@ -39,6 +49,7 @@ public final class ModAutogenItems {
         SHAPES.put(MaterialShapes.GRIP, "part_grip");
     }
 
+    /** (shape, material name) -> the registered item. */
     private static final Map<String, RegistryObject<ItemAutogen>> BY_KEY = new LinkedHashMap<>();
 
     private static String key(MaterialShapes shape, String materialName) {
@@ -46,7 +57,7 @@ public final class ModAutogenItems {
     }
 
     static {
-
+        // One item per material that auto-generates each shape (registry id <base>_<material>).
         for (Map.Entry<MaterialShapes, String> e : SHAPES.entrySet()) {
             MaterialShapes shape = e.getKey();
             String base = e.getValue();
@@ -60,6 +71,7 @@ public final class ModAutogenItems {
         }
     }
 
+    /** The item for a given material+shape, or null if that combination isn't auto-generated. */
     public static @Nullable ItemAutogen get(MaterialShapes shape, NTMMaterial material) {
         RegistryObject<ItemAutogen> ro = BY_KEY.get(key(shape, material.name));
         return ro == null ? null : ro.get();

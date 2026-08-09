@@ -11,6 +11,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * {@link IFluidProviderMK2} with a standard implementation of provision/removal backed by the tile's own
+ * sending tanks. {@code tryProvide} both subscribes this provider to an adjacent pipe network and
+ * handles direct (network-less) transfer to a touching receiver.
+ */
 public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
 
     default void tryProvide(FluidTankNTM tank, Level world, DirPos pos) { tryProvide(tank.getTankType(), tank.getPressure(), world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir()); }

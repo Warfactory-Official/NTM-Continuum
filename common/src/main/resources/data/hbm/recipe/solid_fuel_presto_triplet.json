@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:solid_fuel_presto",
+    "hbm:solid_fuel_presto",
+    "hbm:solid_fuel_presto",
+    "hbm:ball_dynamite"
+  ],
+  "result": {
+    "id": "hbm:solid_fuel_presto_triplet"
+  }
+}

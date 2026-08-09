@@ -41,6 +41,41 @@ neoForge {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+repositories {
+    // Sodium (and other Modrinth-hosted dev mods) live on the Modrinth maven.
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
+}
+
+// Sodium: dev-runtime only. MDG for this MC version no longer exposes a per-run additional classpath,
+// so Sodium goes on a `localRuntime` configuration folded into the dev runtimeClasspath — never compiled
+// against, never published, never bundled into the jar. Sodium's mods.toml is client-side, so it loads
+// only during the client run, not the dedicated-server run. Leave the property empty to disable.
+configurations {
+    localRuntime
+}
+configurations.named('runtimeClasspath') { extendsFrom(configurations.localRuntime) }
+if (project.findProperty('sodium_neoforge_version')) {
+    dependencies {
+        localRuntime "maven.modrinth:sodium:${sodium_neoforge_version}"
+    }
+}
+
+dependencies {
+    // JEI: API on the compile classpath, the full mod jar on the dev runtime classpath only
+    // (same `localRuntime` seam as Sodium above). Never bundled into the published jar.
+    compileOnly "mezz.jei:jei-${jei_mc_version}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${jei_mc_version}-neoforge-api:${jei_version}"
+    localRuntime "mezz.jei:jei-${jei_mc_version}-neoforge:${jei_version}"
+}
+
 // Implement mcgradleconventions loader attribute
 def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
 ['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->

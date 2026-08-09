@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:ingot_thorium_fuel"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:nugget_thorium_fuel",
+    "count": 9
+  }
+}

@@ -7,6 +7,11 @@ import com.hbm.uninos.UniNodespace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
+/**
+ * Compatibility husk over UNINOS for the power network (formerly Nodespace MK1).
+ *
+ * @author hbm
+ */
 public class Nodespace {
 
     public static final INetworkProvider<PowerNetMK2> THE_POWER_PROVIDER = PowerNetMK2::new;

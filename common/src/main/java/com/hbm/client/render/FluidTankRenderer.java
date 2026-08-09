@@ -21,6 +21,14 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Draws the fluid-tank multiblock from {@code fluidtank.obj}. Unlike the generic
+ * {@link MachineObjRenderer}, the cylinder body ({@code Tank} part) is textured <b>per fluid</b>
+ * ({@code textures/models/tank/tank_<name>.png}, falling back to {@code tank_none} for an empty tank),
+ * matching the 1.12.2 {@code RenderFluidTank}. The {@code Frame} part keeps the fixed
+ * {@code machines/tank.png}. Base yaw 180° (the tank's facing→yaw differs from the machines' — see
+ * {@link HbmBlockEntityRenderers}).
+ */
 public class FluidTankRenderer implements BlockEntityRenderer<TileEntityMachineFluidTank, FluidTankRenderState> {
 
     private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/fluidtank.obj");
@@ -31,9 +39,15 @@ public class FluidTankRenderer implements BlockEntityRenderer<TileEntityMachineF
     private final WavefrontObj model = WavefrontObj.load(OBJ);
     private final RenderType frameType = RenderTypes.entityCutout(FRAME_TEX);
     private final Map<Identifier, RenderType> bodyTypes = new HashMap<>();
-
+    /** Cache of fluid name → resolved body texture (falling back to tank_none when a fluid has no skin). */
     private static final Map<String, Identifier> BODY_TEX = new HashMap<>();
 
+    /**
+     * The body skin for a fluid, falling back to {@code tank_none} when that fluid ships no
+     * {@code tank_<name>.png} (many of the ~157 ported fluids — plasmas, smokes, intermediates — have no
+     * dedicated tank texture; without this they'd render the missing-texture sprite). Existence is
+     * checked once per fluid against the client resource manager and cached.
+     */
     private static Identifier bodyTextureFor(String fluidName) {
         return BODY_TEX.computeIfAbsent(fluidName.toLowerCase(Locale.US), name -> {
             Identifier tex = Identifier.fromNamespaceAndPath("hbm", "textures/models/tank/tank_" + name + ".png");
@@ -48,7 +62,7 @@ public class FluidTankRenderer implements BlockEntityRenderer<TileEntityMachineF
 
     @Override
     public boolean shouldRenderOffScreen() {
-        return true;
+        return true; // the model spans the 5×3×5 footprint well past the 1-block core
     }
 
     @Override
@@ -68,10 +82,10 @@ public class FluidTankRenderer implements BlockEntityRenderer<TileEntityMachineF
         BlockState bs = be.getBlockState();
         int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
         state.yaw = switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;
-            case 3 -> 180F;
-            case 5 -> 270F;
-            default -> 0F;
+            case 4 -> 90F;   // WEST
+            case 3 -> 180F;  // SOUTH
+            case 5 -> 270F;  // EAST
+            default -> 0F;   // NORTH (2)
         };
         state.bodyTexture = bodyTextureFor(be.tank.getTankType().getName());
     }

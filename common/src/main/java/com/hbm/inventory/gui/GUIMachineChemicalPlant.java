@@ -21,11 +21,18 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-public class GUIMachineChemicalPlant extends AbstractContainerScreen<ContainerMachineChemicalPlant> {
+/**
+ * Screen for the chemical plant. Mirrors {@link GUIMachineAssemblyMachine} (power/progress bars, status
+ * LEDs, the recipe-selector button with the selected/template-folder icon, and input ghost slots) and adds
+ * six fluid tank bars (3 input on the left, 3 output on the right) drawn like {@link GUIMachineFluidTank}
+ * (the fluid's own 16×16 sprite tiled into the fill height, or a solid colour fallback). Reads the live
+ * client BlockEntity (synced via the BufPacket). Faithful to the 1.12.2 {@code GUIMachineChemicalPlant}.
+ */
+public class GUIMachineChemicalPlant extends AbstractContainerScreen<ContainerMachineChemicalPlant> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_chemplant.png");
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
-
+    // Tank bars: 16 wide × 34 tall, top at y=18 (so bottom at y=52).
     private static final int TANK_TOP = 18, TANK_W = 16, TANK_H = 34;
 
     public GUIMachineChemicalPlant(ContainerMachineChemicalPlant menu, Inventory playerInventory, Component title) {
@@ -40,30 +47,36 @@ public class GUIMachineChemicalPlant extends AbstractContainerScreen<ContainerMa
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
         if (te == null) return;
 
+        // Power bar: 16×61 at (152,18), filling upward, sampled from u=176.
         long max = te.maxPower;
         int p = max <= 0L ? 0 : (int) (te.power * 61L / max);
         if (p > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 152, this.topPos + 79 - p, 176.0F, (float) (61 - p), 16, p, 256, 256);
 
+        // Progress bar: up to 70×16 at (62,126), sampled from (u=176, v=61).
         double progress = te.chemplantModule.progress;
         if (progress > 0) {
             int j = (int) Math.ceil(70 * progress);
             graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F, 61.0F, j, 16, 256, 256);
         }
 
+        // Fluid tank bars: 3 input (x=8,26,44) + 3 output (x=80,98,116).
         for (int i = 0; i < 3; i++) {
             drawTank(graphics, te.inputTanks[i], 8 + i * 18);
             drawTank(graphics, te.outputTanks[i], 80 + i * 18);
         }
 
+        // Status LEDs (recipe configured / enough power), like the assembly machine.
         GenericRecipe recipe = ChemicalPlantRecipes.INSTANCE.getRecipe(te.chemplantModule.recipe);
         boolean configured = recipe != null || ItemBlueprints.grabPool(te.getItem(1)) != null;
         boolean powered = recipe != null ? te.power >= recipe.power : te.power > 0;
         if (te.didProcess) led(graphics, 51, 195); else if (configured) led(graphics, 51, 192);
         if (te.didProcess) led(graphics, 56, 195); else if (configured && powered) led(graphics, 56, 192);
 
+        // Selector button icon: the selected recipe's icon, or the template-folder fallback.
         graphics.item(recipe != null ? recipe.getIcon() : new ItemStack(ModItems.template_folder.get()),
                 this.leftPos + 8, this.topPos + 126);
 
+        // Ghost slots: faint previews of the recipe's item inputs in empty input slots (menu slots 4..6).
         if (recipe != null && recipe.inputItem != null) {
             for (int i = 0; i < Math.min(recipe.inputItem.length, 3); i++) {
                 if (this.menu.slots.get(4 + i).hasItem()) continue;
@@ -75,6 +88,7 @@ public class GUIMachineChemicalPlant extends AbstractContainerScreen<ContainerMa
         }
     }
 
+    /** Draws a fluid tank's fill bar at GUI x {@code barX}: tile the fluid's 16×16 sprite, or a solid colour. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int barX) {
         int maxF = tank.getMaxFill();
         int h = maxF <= 0 ? 0 : (int) ((long) tank.getFill() * TANK_H / maxF);
@@ -115,11 +129,18 @@ public class GUIMachineChemicalPlant extends AbstractContainerScreen<ContainerMa
                     List.of(Component.translatable("gui.recipe.setRecipe").withStyle(ChatFormatting.YELLOW)), Optional.empty(), mouseX, mouseY);
             return;
         }
-
+        // Fluid tank hover → name + mB.
         for (int i = 0; i < 3; i++) {
             if (this.isHovering(8 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.inputTanks[i], mouseX, mouseY); return; }
             if (this.isHovering(80 + i * 18, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.outputTanks[i], mouseX, mouseY); return; }
         }
+        // (No "Acceptable Upgrades" info panel here — the 1.12.2 chemical plant GUI has none; the upgrade
+        // item's own tooltip [ItemMachineUpgrade + IUpgradeInfoProviderSource] shows this machine's numbers.)
+    }
+
+    @Override
+    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+        return this.menu.getChemplant();
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {

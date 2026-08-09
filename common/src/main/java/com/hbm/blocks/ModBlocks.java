@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import com.hbm.Constants;
+import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.generic.HbmStairBlock;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.registry.DeferredRegister;
@@ -16,12 +17,21 @@ import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
+/** Auto-generated (Wave 1 + 2b + 2c): simple full-cube blocks (old BlockBase), ores
+ *  (old BlockNTMOre), slabs and stairs (old BlockGenericSlab/Stairs -> vanilla SlabBlock/StairBlock). */
 public final class ModBlocks {
 
     private ModBlocks() {}
 
+    // Some Wave-2c stairs stand on rad-resistant bases registered in ModHazardBlocks. The stair
+    // factory resolves base.get().defaultBlockState() at BLOCK-registry flush time, so those bases
+    // must flush FIRST. Registers flush in creation order, so force ModHazardBlocks's DeferredRegister
+    // to be created (join the flush list) before this class's BLOCKS below.
+    static { ModHazardBlocks.init(); }
+
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
 
+    /** A registered block plus the creative tab its item belongs in (null = no tab). */
     public record BlockEntry(RegistryObject<Block> block, HbmTab tab) {}
     public static final List<BlockEntry> ALL = new ArrayList<>();
 
@@ -31,6 +41,7 @@ public final class ModBlocks {
         return ro;
     }
 
+    /** Ore that grants mining XP and (typically) drops a material item via its loot table. */
     private static RegistryObject<Block> oreXp(String name, HbmTab tab, int xp, UnaryOperator<BlockBehaviour.Properties> props) {
         RegistryObject<Block> ro = BLOCKS.registerBlock(name, p -> new DropExperienceBlock(ConstantInt.of(xp), p), props);
         ALL.add(new BlockEntry(ro, tab));
@@ -43,12 +54,14 @@ public final class ModBlocks {
         return ro;
     }
 
-    private static RegistryObject<Block> stairs(String name, HbmTab tab, Supplier<Block> base, UnaryOperator<BlockBehaviour.Properties> props) {
+    /** Stairs over an already-registered base block (its defaultBlockState() is resolved at flush). */
+    private static RegistryObject<Block> stairs(String name, HbmTab tab, Supplier<? extends Block> base, UnaryOperator<BlockBehaviour.Properties> props) {
         RegistryObject<Block> ro = BLOCKS.registerBlock(name, p -> new HbmStairBlock(base.get().defaultBlockState(), p), props);
         ALL.add(new BlockEntry(ro, tab));
         return ro;
     }
 
+    // --- simple full-cube blocks (Wave 1) ---
     public static final RegistryObject<Block> fatduck = block("fatduck", HbmTab.BLOCKS, p -> p);
     public static final RegistryObject<Block> crystal_hardened = block("crystal_hardened", HbmTab.BLOCKS, p -> p.strength(15.0F));
     public static final RegistryObject<Block> reinforced_stone = block("reinforced_stone", HbmTab.BLOCKS, p -> p.strength(15.0F, 100.0F));
@@ -61,7 +74,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> concrete = block("concrete", HbmTab.BLOCKS, p -> p.strength(15.0F, 140.0F));
     public static final RegistryObject<Block> concrete_smooth = block("concrete_smooth", HbmTab.BLOCKS, p -> p.strength(15.0F, 140.0F));
     public static final RegistryObject<Block> concrete_asbestos = block("concrete_asbestos", HbmTab.BLOCKS, p -> p.strength(15.0F, 1500.0F));
-    public static final RegistryObject<Block> ore_bedrock_oil = block("ore_bedrock_oil", HbmTab.RESOURCES, p -> p);
+    public static final RegistryObject<Block> ore_bedrock_oil = block("ore_bedrock_oil", HbmTab.RESOURCES, p -> p.strength(-1.0F, 3600000.0F));
     public static final RegistryObject<Block> ore_oil_empty = block("ore_oil_empty", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F));
     public static final RegistryObject<Block> stone_gneiss = block("stone_gneiss", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F));
     public static final RegistryObject<Block> gneiss_brick = block("gneiss_brick", HbmTab.BLOCKS, p -> p.strength(1.5F, 10.0F));
@@ -129,7 +142,11 @@ public final class ModBlocks {
     public static final RegistryObject<Block> watz_element = block("watz_element", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F));
     public static final RegistryObject<Block> watz_cooler = block("watz_cooler", HbmTab.MACHINES, p -> p.strength(5.0F, 10.0F));
     public static final RegistryObject<Block> pink_planks = block("pink_planks", HbmTab.BLOCKS, p -> p.sound(SoundType.WOOD));
+    public static final RegistryObject<Block> brick_fire = block("brick_fire", HbmTab.BLOCKS, p -> p.strength(10.0F, 10.0F));
+    public static final RegistryObject<Block> tile_lab = block("tile_lab", HbmTab.BLOCKS, p -> p.strength(1.0F, 20.0F).sound(SoundType.GLASS));
+    public static final RegistryObject<Block> tile_lab_cracked = block("tile_lab_cracked", HbmTab.BLOCKS, p -> p.strength(1.0F, 20.0F).sound(SoundType.GLASS));
 
+    // --- ores (Wave 2b); XP ores drop materials, plain ores drop themselves ---
     public static final RegistryObject<Block> ore_schrabidium = block("ore_schrabidium", HbmTab.RESOURCES, p -> p.strength(15.0F, 600.0F));
     public static final RegistryObject<Block> ore_thorium = block("ore_thorium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F));
     public static final RegistryObject<Block> ore_titanium = block("ore_titanium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F));
@@ -148,7 +165,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> ore_cinnabar = oreXp("ore_cinnabar", HbmTab.RESOURCES, 2, p -> p.strength(5.0F, 10.0F));
     public static final RegistryObject<Block> ore_coltan = oreXp("ore_coltan", HbmTab.RESOURCES, 20, p -> p.strength(15.0F, 10.0F));
     public static final RegistryObject<Block> ore_australium = block("ore_australium", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F));
-    public static final RegistryObject<Block> ore_oil = block("ore_oil", HbmTab.RESOURCES, p -> p.strength(5.0F, 10.0F));
+    // ore_oil: hand-registered functional block (see ModOilBlocks), assets still generated
     public static final RegistryObject<Block> ore_gneiss_iron = block("ore_gneiss_iron", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F));
     public static final RegistryObject<Block> ore_gneiss_gold = block("ore_gneiss_gold", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F));
     public static final RegistryObject<Block> ore_gneiss_copper = block("ore_gneiss_copper", HbmTab.RESOURCES, p -> p.strength(1.5F, 10.0F));
@@ -170,6 +187,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> block_meteor_treasure = block("block_meteor_treasure", HbmTab.RESOURCES, p -> p.strength(15.0F, 360.0F));
     public static final RegistryObject<Block> waste_planks = block("waste_planks", HbmTab.RESOURCES, p -> p.strength(0.5F, 2.5F).sound(SoundType.WOOD));
 
+    // --- slabs (Wave 2c); vanilla SlabBlock (TYPE=bottom/top/double replaces the old *_double_slab) ---
     public static final RegistryObject<Block> reinforced_stone_slab = slab("reinforced_stone_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 60.0F));
     public static final RegistryObject<Block> brick_concrete_slab = slab("brick_concrete_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 70.0F));
     public static final RegistryObject<Block> brick_concrete_mossy_slab = slab("brick_concrete_mossy_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 70.0F));
@@ -211,15 +229,26 @@ public final class ModBlocks {
     public static final RegistryObject<Block> tile_lab_broken_slab = slab("tile_lab_broken_slab", HbmTab.BLOCKS, p -> p.strength(1.0F, 10.0F).sound(SoundType.GLASS));
     public static final RegistryObject<Block> pink_slab = slab("pink_slab", null, p -> p.sound(SoundType.WOOD));
 
+    // --- stairs (Wave 2c); base block must be registered above so defaultBlockState() resolves ---
     public static final RegistryObject<Block> reinforced_stone_stairs = stairs("reinforced_stone_stairs", HbmTab.BLOCKS, reinforced_stone, p -> p.strength(15.0F, 76.0F));
+    public static final RegistryObject<Block> brick_concrete_stairs = stairs("brick_concrete_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_concrete, p -> p.strength(15.0F, 95.0F));
+    public static final RegistryObject<Block> brick_concrete_mossy_stairs = stairs("brick_concrete_mossy_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_concrete_mossy, p -> p.strength(15.0F, 94.0F));
     public static final RegistryObject<Block> brick_concrete_cracked_stairs = stairs("brick_concrete_cracked_stairs", HbmTab.BLOCKS, brick_concrete_cracked, p -> p.strength(15.0F, 40.0F));
     public static final RegistryObject<Block> brick_concrete_broken_stairs = stairs("brick_concrete_broken_stairs", HbmTab.BLOCKS, brick_concrete_broken, p -> p.strength(15.0F, 30.0F));
+    public static final RegistryObject<Block> reinforced_brick_stairs = stairs("reinforced_brick_stairs", HbmTab.BLOCKS, ModHazardBlocks.reinforced_brick, p -> p.strength(15.0F, 240.0F));
+    public static final RegistryObject<Block> brick_compound_stairs = stairs("brick_compound_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_compound, p -> p.strength(15.0F, 320.0F));
     public static final RegistryObject<Block> brick_light_stairs = stairs("brick_light_stairs", HbmTab.BLOCKS, brick_light, p -> p.strength(15.0F, 20.0F));
     public static final RegistryObject<Block> reinforced_sand_stairs = stairs("reinforced_sand_stairs", HbmTab.BLOCKS, reinforced_sand, p -> p.strength(15.0F, 32.0F));
     public static final RegistryObject<Block> brick_obsidian_stairs = stairs("brick_obsidian_stairs", HbmTab.BLOCKS, brick_obsidian, p -> p.strength(15.0F, 96.0F));
+    public static final RegistryObject<Block> cmb_brick_reinforced_stairs = stairs("cmb_brick_reinforced_stairs", HbmTab.BLOCKS, ModHazardBlocks.cmb_brick_reinforced, p -> p.strength(25.0F, 45000.0F));
     public static final RegistryObject<Block> concrete_stairs = stairs("concrete_stairs", HbmTab.BLOCKS, concrete, p -> p.strength(15.0F, 94.0F));
     public static final RegistryObject<Block> concrete_smooth_stairs = stairs("concrete_smooth_stairs", HbmTab.BLOCKS, concrete_smooth, p -> p.strength(15.0F, 94.0F));
     public static final RegistryObject<Block> concrete_asbestos_stairs = stairs("concrete_asbestos_stairs", HbmTab.BLOCKS, concrete_asbestos, p -> p.strength(15.0F, 94.0F));
+    public static final RegistryObject<Block> ducrete_smooth_stairs = stairs("ducrete_smooth_stairs", HbmTab.BLOCKS, ModHazardBlocks.ducrete_smooth, p -> p.strength(20.0F, 360.0F));
+    public static final RegistryObject<Block> ducrete_stairs = stairs("ducrete_stairs", HbmTab.BLOCKS, ModHazardBlocks.ducrete, p -> p.strength(20.0F, 360.0F));
+    public static final RegistryObject<Block> tile_lab_stairs = stairs("tile_lab_stairs", HbmTab.BLOCKS, tile_lab, p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS));
+    public static final RegistryObject<Block> tile_lab_cracked_stairs = stairs("tile_lab_cracked_stairs", HbmTab.BLOCKS, tile_lab_cracked, p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS));
+    public static final RegistryObject<Block> brick_fire_stairs = stairs("brick_fire_stairs", HbmTab.BLOCKS, brick_fire, p -> p.strength(15.0F, 35.0F));
     public static final RegistryObject<Block> pink_stairs = stairs("pink_stairs", null, pink_planks, p -> p.sound(SoundType.WOOD));
 
     public static void init() {}

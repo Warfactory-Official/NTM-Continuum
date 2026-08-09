@@ -6,6 +6,11 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 
+/**
+ * Chemical plant processing module: 3 item-input + 3 item-output slots and 3 input + 3 output fluid
+ * tanks. The fluid handling lives in {@link ModuleMachineBase}; this just wires the slot/tank indices.
+ * Ported from HBM's {@code ModuleMachineChemplant}.
+ */
 public class ModuleMachineChemplant extends ModuleMachineBase {
 
     public ModuleMachineChemplant(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {

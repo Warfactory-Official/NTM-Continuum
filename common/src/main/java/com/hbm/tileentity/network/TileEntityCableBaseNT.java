@@ -10,6 +10,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+/**
+ * A power cable: a pure conductor. It owns a {@link Nodespace.PowerNode} in UNINOS, which the engine
+ * links into a network with adjacent conductors. Carries no power itself — providers and receivers
+ * subscribe to the network the cables form.
+ */
 public class TileEntityCableBaseNT extends BlockEntity implements IEnergyConductorMK2, ILoadedTile {
 
     protected Nodespace.PowerNode node;

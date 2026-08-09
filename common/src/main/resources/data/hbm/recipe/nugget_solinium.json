@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:ingot_solinium"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:nugget_solinium",
+    "count": 9
+  }
+}

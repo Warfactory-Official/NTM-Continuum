@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:brick_concrete_broken_slab",
+    "hbm:brick_concrete_broken_slab"
+  ],
+  "result": {
+    "id": "hbm:brick_concrete_broken"
+  }
+}

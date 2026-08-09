@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/anvils/anvil_arsenic_bronze.obj",
+      "texture": "hbm:textures/models/anvils/anvil_arsenic_bronze.png",
+      "scale": 1.3,
+      "yaw": 0,
+      "ty": -0.1
+    }
+  }
+}

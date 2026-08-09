@@ -12,6 +12,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 
+/** Auto-generated (Wave 1 + 2a): simple items (ItemBase/ItemBakedBase) and lore items (ItemCustomLore). */
 public final class ModItems {
 
     private ModItems() {}
@@ -743,10 +744,11 @@ public final class ModItems {
     public static final RegistryObject<ItemCustomLore> entanglement_kit = lore("entanglement_kit", HbmTab.MATERIALS);
     public static final RegistryObject<ItemCustomLore> undefined = lore("undefined", HbmTab.MATERIALS);
 
+    // Block items for every block registered in ModBlocks, added to each block's tab.
     static {
         for (ModBlocks.BlockEntry e : ModBlocks.ALL) {
             RegistryObject<BlockItem> bi = ITEMS.registerBlockItem(e.block().getId().getPath(), e.block());
-            if (e.tab() != null) ModTabs.addTo(e.tab(), bi);
+            if (e.tab() != null) ModTabs.addTo(e.tab(), bi);   // null tab = not shown in any creative tab
         }
     }
 

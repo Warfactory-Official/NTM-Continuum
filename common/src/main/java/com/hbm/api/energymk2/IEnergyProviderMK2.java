@@ -5,16 +5,27 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+/** If it sends energy, use this. */
 public interface IEnergyProviderMK2 extends IEnergyHandlerMK2 {
 
+    /**
+     * Uses up available power. No sanity checking — ensure the requested power is &lt;= the current power.
+     */
     default void usePower(long power) {
         this.setPower(this.getPower() - power);
     }
 
+    /** Max speed at which this provider can send energy. Defaults to its capacity. */
     default long getProviderSpeed() {
         return this.getMaxPower();
     }
 
+    /**
+     * Attempts to provide energy to the target tile entity at the given coordinates. Connects to a
+     * conductor's network, or pushes directly into an adjacent receiver.
+     *
+     * @param dir the {@link ForgeDirection} from this provider to the target.
+     */
     default void tryProvide(Level world, int x, int y, int z, ForgeDirection dir) {
         BlockPos targetPos = new BlockPos(x, y, z);
         BlockEntity targetTE = world.getBlockEntity(targetPos);
@@ -44,7 +55,8 @@ public interface IEnergyProviderMK2 extends IEnergyHandlerMK2 {
                 }
             }
         }
-
+        // NOTE: the 1.12.2 Forge-Energy (HE<->RF) interop branch is intentionally dropped here.
+        // Cross-loader energy interop will be re-added later as a per-loader capability bridge.
     }
 
     default void tryProvide(Level world, BlockPos pos, ForgeDirection dir) {

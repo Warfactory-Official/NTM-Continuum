@@ -24,6 +24,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Animated renderer for the assembly machine — the worked example of porting a 1.12.2 OBJ TESR to the
+ * 26.1 render-state pipeline. It replays the original renderer's transforms: a base + (conditional)
+ * frame, a spinning ring, and under that ring two three-joint robotic arms (lower/upper arm, head,
+ * striker). Animation state lives on the {@link TileEntityMachineAssemblyMachine} (advanced by its
+ * client ticker); here it is read and interpolated by partial-ticks.
+ *
+ * <p>Each part is a separate {@code submitCustomGeometry} call — that snapshots the current pose, so
+ * the accumulated joint transforms apply per part.
+ */
 public class AssemblyMachineRenderer implements BlockEntityRenderer<TileEntityMachineAssemblyMachine, AssemblyRenderState> {
 
     private static final float BASE_YAW = 90F;
@@ -66,10 +76,10 @@ public class AssemblyMachineRenderer implements BlockEntityRenderer<TileEntityMa
         BlockState bs = be.getBlockState();
         int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
         state.yaw = switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;
-            case 3 -> 180F;
-            case 5 -> 270F;
-            default -> 0F;
+            case 4 -> 90F;   // WEST
+            case 3 -> 180F;  // SOUTH
+            case 5 -> 270F;  // EAST
+            default -> 0F;   // NORTH
         };
         state.showFrame = be.getLevel() != null
                 && !be.getLevel().getBlockState(be.getBlockPos().above(FRAME_HEIGHT)).isAir();
@@ -77,6 +87,7 @@ public class AssemblyMachineRenderer implements BlockEntityRenderer<TileEntityMa
         state.arm1 = be.arms[0].getPositions(partialTicks);
         state.arm2 = be.arms[1].getPositions(partialTicks);
 
+        // Floating product display: the selected recipe's output item, shown within 35 blocks (1.12.2).
         state.showItem = false;
         GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.getRecipe(be.assemblerModule.recipe);
         if (recipe != null && be.getLevel() != null) {
@@ -108,10 +119,12 @@ public class AssemblyMachineRenderer implements BlockEntityRenderer<TileEntityMa
         part(col, ps, "Base", light);
         if (s.showFrame) part(col, ps, "Frame", light);
 
+        // Ring (and the arms beneath it) spin together.
         ps.pushPose();
         ps.mulPose(Axis.YP.rotationDegrees((float) s.ring));
         part(col, ps, "Ring", light);
 
+        // Arm 1.
         ps.pushPose();
         ps.translate(0F, 1.625F, 0.9375F);
         ps.mulPose(Axis.XP.rotationDegrees((float) s.arm1[0]));
@@ -129,6 +142,7 @@ public class AssemblyMachineRenderer implements BlockEntityRenderer<TileEntityMa
         part(col, ps, "Spike1", light);
         ps.popPose();
 
+        // Arm 2 (mirrored across Z; rotations negated).
         ps.pushPose();
         ps.translate(0F, 1.625F, -0.9375F);
         ps.mulPose(Axis.XP.rotationDegrees((float) -s.arm2[0]));
@@ -146,8 +160,9 @@ public class AssemblyMachineRenderer implements BlockEntityRenderer<TileEntityMa
         part(col, ps, "Spike2", light);
         ps.popPose();
 
-        ps.popPose();
+        ps.popPose(); // ring
 
+        // Floating product: the recipe output hovering above the machine centre (1.12.2 transforms).
         if (s.showItem) {
             ps.pushPose();
             ps.translate(0F, 1.0625F, 0F);
@@ -164,7 +179,7 @@ public class AssemblyMachineRenderer implements BlockEntityRenderer<TileEntityMa
             ps.popPose();
         }
 
-        ps.popPose();
+        ps.popPose(); // machine
     }
 
     private void part(SubmitNodeCollector col, PoseStack ps, String name, int light) {

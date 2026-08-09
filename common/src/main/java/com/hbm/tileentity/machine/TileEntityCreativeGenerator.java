@@ -8,6 +8,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+/**
+ * A creative (infinite) power source for testing the network. Always full; pushes power into all six
+ * neighbours each tick via {@link IEnergyProviderMK2#tryProvide}.
+ */
 public class TileEntityCreativeGenerator extends BlockEntity implements IEnergyProviderMK2 {
 
     public static final long MAX = Long.MAX_VALUE / 4L;
@@ -29,7 +33,7 @@ public class TileEntityCreativeGenerator extends BlockEntity implements IEnergyP
 
     @Override
     public void setPower(long power) {
-
+        // infinite source — ignore drains
     }
 
     @Override
@@ -39,7 +43,8 @@ public class TileEntityCreativeGenerator extends BlockEntity implements IEnergyP
 
     @Override
     public long getProviderSpeed() {
-        return 100_000L;
+        // 100 MHE/t per side — 1000× the original 100 kHE to feed the high-power machines (mining laser etc.).
+        return 100_000_000L;
     }
 
     @Override

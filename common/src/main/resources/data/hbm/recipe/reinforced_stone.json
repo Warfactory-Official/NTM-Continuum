@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:reinforced_stone_stairs",
+    "hbm:reinforced_stone_stairs",
+    "hbm:reinforced_stone_stairs",
+    "hbm:reinforced_stone_stairs"
+  ],
+  "result": {
+    "id": "hbm:reinforced_stone",
+    "count": 3
+  }
+}

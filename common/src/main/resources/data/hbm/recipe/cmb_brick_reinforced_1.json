@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:cmb_brick_reinforced_slab",
+    "hbm:cmb_brick_reinforced_slab"
+  ],
+  "result": {
+    "id": "hbm:cmb_brick_reinforced"
+  }
+}

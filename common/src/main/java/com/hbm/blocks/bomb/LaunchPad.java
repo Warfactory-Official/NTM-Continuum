@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
+/** Silo Launch Pad: a 3×3 flat dummyable pad (core in the centre, surrounding pad blocks). */
 public class LaunchPad extends BlockDummyable {
 
     public LaunchPad(Properties properties) {

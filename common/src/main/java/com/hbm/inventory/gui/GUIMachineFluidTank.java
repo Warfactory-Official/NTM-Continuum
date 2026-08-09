@@ -15,11 +15,21 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Client screen for the fluid tank multiblock. Draws the {@code gui_tank.png} background, a coloured fill
+ * bar (the carried fluid's colour, height scaled by fill), and the I/O-mode button. Reads the live
+ * client {@link TileEntityMachineFluidTank} for fill/type/mode; the mode button dispatches through the
+ * vanilla menu-button path. 26.1 render API (extractBackground + blit/fill).
+ *
+ * <p>The 1.12.2 {@code FluidTankNTM.renderTank} (a GL-textured fluid sprite) was stripped in the slim
+ * port, so the fill is shown as a solid colour bar — enough to verify the network is filling the tank.
+ */
 public class GUIMachineFluidTank extends AbstractContainerScreen<ContainerMachineFluidTank> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/storage/gui_tank.png");
     private static final String[] MODE_NAMES = {"Input only", "Buffer (in+out)", "Output only", "Disabled"};
 
+    // Fill bar geometry (GUI-relative), matching the 1.12.2 layout: 34×52 at (71, 17)..(71, 69).
     private static final int BAR_X = 71, BAR_TOP = 17, BAR_W = 34, BAR_H = 52, BAR_BOTTOM = 69;
     private static final int BTN_X = 151, BTN_Y = 34, BTN_W = 18, BTN_H = 18;
 
@@ -34,6 +44,9 @@ public class GUIMachineFluidTank extends AbstractContainerScreen<ContainerMachin
 
         TileEntityMachineFluidTank tank = this.menu.getTank();
 
+        // Fluid fill bar — the fluid's own 16×16 GUI texture TILED at native scale into the filled
+        // height, bottom-anchored (the 1.12.2 renderTank tiled type.getTexture() via a REPEAT quad;
+        // stretching it looked wrong). Static, like the original; a scissor clips the partial top tile.
         if (tank != null) {
             FluidTankNTM ft = tank.tank;
             int max = ft.getMaxFill();
@@ -44,7 +57,7 @@ public class GUIMachineFluidTank extends AbstractContainerScreen<ContainerMachin
                 int yBottom = this.topPos + BAR_BOTTOM;
                 int yTop = yBottom - h;
                 if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
-
+                    // Tile the fluid's own 16×16 sprite, clipped to the filled height.
                     graphics.enableScissor(x0, yTop, x0 + BAR_W, yBottom);
                     for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
                         for (int tx = 0; tx < BAR_W; tx += 16) {
@@ -54,11 +67,11 @@ public class GUIMachineFluidTank extends AbstractContainerScreen<ContainerMachin
                     }
                     graphics.disableScissor();
                 } else {
-
+                    // A few of the ~157 fluids ship no GUI sprite — fall back to a solid colour bar.
                     graphics.fill(x0, yTop, x0 + BAR_W, yBottom, 0xFF000000 | (ft.getTankType().getColor() & 0xFFFFFF));
                 }
             }
-
+            // I/O mode button overlay (strip at u=176, v=mode*18).
             int mode = tank.mode;
             graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + BTN_X, this.topPos + BTN_Y, 176.0F, (float) (mode * 18), BTN_W, BTN_H, 256, 256);
         }

@@ -19,10 +19,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+/**
+ * The Battery Socket multiblock's core BlockEntity. Unlike the {@code machine_battery} block (which stores
+ * its own {@code long power}), the socket holds <b>no internal energy</b> — its power IS the charge of the
+ * {@link IBatteryItem} placed in slot 0. {@link #getPower()}/{@link #setPower(long)}/{@link #getMaxPower()}
+ * read and write that item's charge, so charging the socket from the grid literally fills the battery item,
+ * which can then be carried away full. Acts as a cable: all 8 connection ports share one network.
+ *
+ * <p>Slim port of 1.12.2's {@code TileEntityBatterySocket}: the SC-battery discharge (lightning beams +
+ * area explosion), OpenComputers, and Redstone-over-Radio hooks are dropped — they depend on the
+ * vanillant explosion / bullet-beam subsystems which aren't ported. The core socket behaviour (battery as
+ * storage, I/O modes, priority, comparator, the carried-stack sync for rendering) is kept.
+ */
 public class TileEntityBatterySocket extends TileEntityBatteryBase implements MenuProvider {
 
+    /** Net throughput over the last second (HE/s), for the GUI energy-bar tooltip; synced to clients. */
     public long delta = 0L;
-
+    /** Carried battery stack, synced to clients so the renderer can draw the inserted battery. */
     public ItemStack syncStack = ItemStack.EMPTY;
 
     private final long[] log = new long[20];
@@ -40,6 +53,7 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
         long prevPower = socket.getPower();
         socket.serverTickBattery(level);
 
+        // Net throughput over the last second (HE/s), averaged like the 1.12.2 socket's rolling log.
         long avg = (socket.getPower() + prevPower) / 2;
         socket.delta = avg - socket.log[0];
         System.arraycopy(socket.log, 1, socket.log, 0, socket.log.length - 1);
@@ -47,6 +61,8 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
 
         socket.syncStack = socket.inventory.getStackInSlot(0);
     }
+
+    // --- the inserted battery item IS the storage ---
 
     private ItemStack battery() {
         return inventory.getStackInSlot(0);
@@ -102,6 +118,8 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
         return new int[]{0};
     }
 
+    // --- multiblock port geometry (ported verbatim from the 1.12.2 socket) ---
+
     private ForgeDirection facing() {
         return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
     }
@@ -137,6 +155,8 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
                 new DirPos(x - rot.offsetX - dir.offsetX, y, z - rot.offsetZ - dir.offsetZ, rot.getOpposite())};
     }
 
+    // --- MenuProvider ---
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("block.hbm.machine_battery_socket");
@@ -146,6 +166,8 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerBatterySocket(containerId, playerInventory, this);
     }
+
+    // --- sync (BufPacket) + persistence: add delta + the carried stack on top of the base fields ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

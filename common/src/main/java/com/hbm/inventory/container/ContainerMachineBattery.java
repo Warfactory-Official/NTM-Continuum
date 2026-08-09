@@ -23,11 +23,13 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityMachineBattery battery;
 
+    /** Client-side constructor — receives the {@link BlockPos} sent by the server. */
     public ContainerMachineBattery(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos),
                 ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
+    /** Server-side constructor — bound to the live BlockEntity. */
     public ContainerMachineBattery(int containerId, Inventory playerInventory, TileEntityMachineBattery battery) {
         this(containerId, playerInventory, battery,
                 ContainerLevelAccess.create(battery.getLevel(), battery.getBlockPos()));
@@ -39,6 +41,7 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
         this.machine = battery != null ? battery : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
+        // Match the original battery layout: charge slots top, discharge slots bottom, left & right.
         this.addSlot(new Slot(machine, 0, 35, 17));
         this.addSlot(new Slot(machine, 1, 35, 53));
         this.addSlot(new Slot(machine, 2, 125, 17));
@@ -51,6 +54,11 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
         return be instanceof TileEntityMachineBattery battery ? battery : null;
     }
 
+    /**
+     * Synced energy for the screen. Read straight off the (client-side) BlockEntity, whose power is
+     * broadcast as a full {@code long} via the BufPacket — NOT through a {@code ContainerData} slot,
+     * which is transmitted as a 16-bit short and would wrap for power values past 32 767.
+     */
     public long getPower() {
         return battery != null ? battery.power : 0L;
     }
@@ -59,16 +67,19 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
         return TileEntityMachineBattery.MAX_POWER;
     }
 
+    /** Net throughput (HE/s) for the energy-bar tooltip, read off the synced client BlockEntity. */
     public long getDelta() {
         return battery != null ? battery.delta : 0L;
     }
 
+    /** I/O mode while unpowered (0..3), for the GUI button. */
     public int getRedLow() { return battery != null ? battery.redLow : 0; }
-
+    /** I/O mode while redstone-powered (0..3), for the GUI button. */
     public int getRedHigh() { return battery != null ? battery.redHigh : 0; }
-
+    /** Connection priority ordinal, for the GUI button. */
     public int getPriorityOrdinal() { return battery != null ? battery.priority.ordinal() : 0; }
 
+    /** Button 0/1 = cycle the unpowered/powered I/O mode, button 2 = cycle priority. */
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (battery == null) return false;

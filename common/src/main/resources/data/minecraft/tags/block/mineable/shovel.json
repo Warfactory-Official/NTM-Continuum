@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:fallout",
+    "hbm:waste_earth",
+    "hbm:waste_mycelium",
+    "hbm:waste_trinitite",
+    "hbm:waste_trinitite_red",
+    "hbm:gravel_obsidian",
+    "hbm:gravel_diamond",
+    "hbm:dirt_dead",
+    "hbm:dirt_oily",
+    "hbm:sand_dirty",
+    "hbm:sand_dirty_red",
+    "hbm:ore_oil_sand"
+  ]
+}

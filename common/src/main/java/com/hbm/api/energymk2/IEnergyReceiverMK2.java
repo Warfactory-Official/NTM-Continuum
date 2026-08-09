@@ -6,8 +6,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+/** If it receives energy, use this. */
 public interface IEnergyReceiverMK2 extends IEnergyHandlerMK2 {
 
+    /**
+     * Transfers a specified amount of energy to this receiver. Absorbs as much as it can and returns
+     * the excess.
+     */
     default long transferPower(long power, boolean simulate) {
         if (power + this.getPower() <= this.getMaxPower()) {
             if (!simulate) this.setPower(power + this.getPower());
@@ -23,6 +28,7 @@ public interface IEnergyReceiverMK2 extends IEnergyHandlerMK2 {
         return this.getMaxPower();
     }
 
+    /** Whether a provider can provide power by touching the block (via proxies), bypassing the network. */
     default boolean allowDirectProvision() {
         return true;
     }
@@ -65,6 +71,7 @@ public interface IEnergyReceiverMK2 extends IEnergyHandlerMK2 {
         return ConnectionPriority.NORMAL;
     }
 
+    /** More is better-er. */
     enum ConnectionPriority {
         LOWEST,
         LOW,

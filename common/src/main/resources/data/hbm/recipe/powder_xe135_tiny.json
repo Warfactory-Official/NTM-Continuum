@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:powder_xe135"
+  ],
+  "result": {
+    "id": "hbm:powder_xe135_tiny",
+    "count": 9
+  }
+}

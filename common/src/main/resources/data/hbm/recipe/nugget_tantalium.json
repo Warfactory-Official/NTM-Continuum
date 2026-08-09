@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:ingot_tantalium"
+  ],
+  "result": {
+    "id": "hbm:nugget_tantalium",
+    "count": 9
+  }
+}

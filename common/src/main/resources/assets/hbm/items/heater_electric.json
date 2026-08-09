@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/electric_heater.obj",
+      "scale": 0.35,
+      "yaw": 90,
+      "ty": 0.0,
+      "texture": "hbm:textures/models/machines/electric_heater.png"
+    }
+  }
+}

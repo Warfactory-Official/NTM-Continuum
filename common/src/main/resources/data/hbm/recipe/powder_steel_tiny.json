@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:powder_steel"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:powder_steel_tiny",
+    "count": 9
+  }
+}

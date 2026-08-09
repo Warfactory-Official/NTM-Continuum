@@ -13,6 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Unified Nodespace, a Nodespace for all applications. "Nodespace" is an invisible "dimension" where
+ * nodes exist; a node is the "soul" of a tile entity with networking capabilities. Tiles create
+ * nodes at their position in nodespace, which handles connections (even in unloaded chunks), so a
+ * node can act independently of its "body". Each {@link NodeNet} type has its own nodespace.
+ *
+ * <p>26.1 port: World -> Level; the 1.12.2 async/threaded path is replaced by a synchronous
+ * {@link #updateNodespace(MinecraftServer)} driven from a per-loader server-tick hook, iterating
+ * {@code server.getAllLevels()}. {@link #clearLevel(Level)} is new — the original leaked node maps on
+ * world unload.
+ *
+ * @author hbm
+ */
 public final class UniNodespace {
 
     private static final Reference2ObjectOpenHashMap<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>> managers = new Reference2ObjectOpenHashMap<>();
@@ -48,7 +61,7 @@ public final class UniNodespace {
             }
         }
         Constants.LOG.warn("[UniNodeSpace] Node {} attempts to be destroyed through mismatched type provider {}", node.getClass().getName(), provider);
-
+        // Fallback: if provider is null/mismatched or manager isn't present yet, locate the node by identity.
         ObjectIterator<Reference2ObjectMap.Entry<INetworkProvider<?>, PerTypeNodeManager<?, ?, ?, ?>>> it = managers.reference2ObjectEntrySet().fastIterator();
         while (it.hasNext()) {
             PerTypeNodeManager manager = it.next().getValue();
@@ -58,6 +71,10 @@ public final class UniNodespace {
         node.expired = true;
     }
 
+    /**
+     * Tick the entire nodespace once. Driven synchronously on the server thread per server tick, from
+     * the loader-specific server-tick hook. Iterates every loaded level.
+     */
     public static void updateNodespace(MinecraftServer server) {
         boolean any = false;
         for (ServerLevel level : server.getAllLevels()) {
@@ -71,6 +88,7 @@ public final class UniNodespace {
         updateNetworks();
     }
 
+    /** Removes all nodes for a level (call on level unload to avoid leaking the node maps). */
     public static void clearLevel(Level level) {
         for (PerTypeNodeManager<?, ?, ?, ?> manager : managers.values()) {
             manager.worlds.remove(level);
@@ -239,15 +257,15 @@ public final class UniNodespace {
         }
 
         private void connectToNode(L origin, L connection) {
-            if (origin.hasValidNet() && connection.hasValidNet()) {
+            if (origin.hasValidNet() && connection.hasValidNet()) { // both have nets but different, join networks
                 if (origin.net.links.size() > connection.net.links.size()) {
                     origin.net.joinNetworks(connection.net);
                 } else {
                     connection.net.joinNetworks(origin.net);
                 }
-            } else if (!origin.hasValidNet() && connection.hasValidNet()) {
+            } else if (!origin.hasValidNet() && connection.hasValidNet()) { // origin has no net, connection does
                 connection.net.joinLink(origin);
-            } else if (origin.hasValidNet() && !connection.hasValidNet()) {
+            } else if (origin.hasValidNet() && !connection.hasValidNet()) { // ...and vice versa
                 origin.net.joinLink(connection);
             }
         }
@@ -272,6 +290,10 @@ public final class UniNodespace {
             splitNetIfNecessary(nodeWorld, node, oldNet);
         }
 
+        /**
+         * Removing a single node can only split the graph along the removed node's incident edges.
+         * Recompute connected components locally instead of invalidating the entire net.
+         */
         private void splitNetIfNecessary(UniNodeWorld<N, L> nodeWorld, L removedNode, N oldNet) {
             List<L> seeds = collectAdjacentLinks(nodeWorld, removedNode, oldNet);
             if (seeds.size() <= 1) return;
@@ -373,6 +395,7 @@ public final class UniNodespace {
         }
     }
 
+    /** Holds all nodes of a single network type for a specific Level. */
     private static class UniNodeWorld<N extends NodeNet<?, ?, L, N>, L extends GenNode<N>> {
         private final Object2ObjectLinkedOpenHashMap<BlockPos, L> nodesByPosition = new Object2ObjectLinkedOpenHashMap<>();
 
@@ -380,12 +403,14 @@ public final class UniNodespace {
             return nodesByPosition.get(pos);
         }
 
+        /** Adds a node at all its positions to the nodespace. */
         void pushNode(L node) {
             for (BlockPos pos : node.positions) {
                 nodesByPosition.put(pos, node);
             }
         }
 
+        /** Removes the specified node from all positions from nodespace. */
         void popNode(L node) {
             for (BlockPos pos : node.positions) {
                 nodesByPosition.remove(pos, node);
@@ -403,6 +428,7 @@ public final class UniNodespace {
             return false;
         }
 
+        /** @return a view of all nodes in this world, do not modify */
         ObjectCollection<L> getAllNodes() {
             return nodesByPosition.values();
         }

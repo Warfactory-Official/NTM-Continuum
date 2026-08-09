@@ -59,4 +59,9 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
     public void sendToTracking(ServerLevel level, BlockPos pos, CustomPacketPayload payload) {
         PacketDistributor.sendToPlayersTrackingChunk(level, new ChunkPos(pos.getX() >> 4, pos.getZ() >> 4), payload);
     }
+
+    @Override
+    public void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
+        PacketDistributor.sendToPlayer(player, payload);
+    }
 }

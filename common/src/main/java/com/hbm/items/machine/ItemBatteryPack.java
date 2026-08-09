@@ -13,6 +13,16 @@ import net.minecraft.world.item.component.TooltipDisplay;
 
 import java.util.function.Consumer;
 
+/**
+ * Modern HBM battery / capacitor item — the "actual storage" the {@code machine_battery_socket} holds.
+ * Each {@link EnumBatteryPack} variant (6 batteries + 6 capacitors) is registered as its <b>own</b> item
+ * in 26.1 (the old mod used a single item with metadata subtypes, which 1.21+ removed). The stored charge
+ * lives in the {@link ModDataComponents#BATTERY_CHARGE} component (the old NBT {@code "charge"} long).
+ *
+ * <p>Capacity / charge-rate / discharge-rate are intrinsic to the variant; the socket reads them via
+ * {@link IBatteryItem}. The 3D inventory icon is rendered from {@code battery_socket.obj} (the Battery or
+ * Capacitor part) by the {@code machine_obj} special-model system, per the variant's texture.
+ */
 public class ItemBatteryPack extends Item implements IBatteryItem {
 
     public final EnumBatteryPack pack;
@@ -62,6 +72,8 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
         return pack.dischargeRate;
     }
 
+    // --- durability bar shows the fill level ---
+
     @Override
     public boolean isBarVisible(ItemStack stack) {
         return getCharge(stack) < getMaxCharge(stack);
@@ -74,7 +86,7 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return 0x33CC33;
+        return 0x33CC33; // green
     }
 
     @Override
@@ -87,6 +99,12 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
         adder.accept(Component.literal("Discharge rate: " + Library.getShortNumber(pack.dischargeRate) + "HE/t").withStyle(ChatFormatting.YELLOW));
     }
 
+    /**
+     * The 12 battery/capacitor variants with their real 1.12.2 capacities/rates. The two private
+     * constructors reproduce the original's derivation: a "battery" stores 15 minutes of discharge and
+     * charges 10× as fast; a "capacitor" stores 30 seconds and charges at its discharge rate; the quantum
+     * battery uses an explicit duration (1 hour).
+     */
     public enum EnumBatteryPack {
         BATTERY_REDSTONE("battery_redstone", 100L, false),
         BATTERY_LEAD("battery_lead", 1_000L, false),
@@ -102,8 +120,9 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
         CAPACITOR_BISMUTH("capacitor_bismuth", 2_500_000L, true),
         CAPACITOR_SPARK("capacitor_spark", 10_000_000L, true);
 
+        /** Registry id and texture base name. */
         public final String name;
-
+        /** Model texture {@code textures/models/machines/<name>.png}. */
         public final Identifier texture;
         public final long capacity;
         public final long chargeRate;

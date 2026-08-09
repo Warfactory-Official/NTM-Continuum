@@ -1,0 +1,6 @@
+{
+  "parent": "hbm:block/tinted_cube_all",
+  "textures": {
+    "all": "hbm:blocks/sellafield_slaked"
+  }
+}

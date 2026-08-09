@@ -11,7 +11,12 @@ import net.minecraft.world.entity.player.Inventory;
 
 import java.util.Optional;
 
-public class GUIMachineEPress extends AbstractContainerScreen<ContainerMachineEPress> {
+/**
+ * Client screen for the electric press. Reads {@code power}/{@code progress} off the synced client
+ * {@link TileEntityMachineEPress} (BufPacket, not ContainerData). Energy bar (left) + descending stamp
+ * progress bar, with an energy-bar hover tooltip — matching the 1.12.2 GUI.
+ */
+public class GUIMachineEPress extends AbstractContainerScreen<ContainerMachineEPress> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_epress.png");
 
@@ -41,10 +46,18 @@ public class GUIMachineEPress extends AbstractContainerScreen<ContainerMachineEP
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
         TileEntityMachineEPress press = this.menu.getPress();
-        if (press != null && this.isHovering(17, 17, 16, 52, mouseX, mouseY)) {
+        if (press == null) return;
+        if (this.isHovering(17, 17, 16, 52, mouseX, mouseY)) {
             graphics.setTooltipForNextFrame(this.font,
                     GuiUtil.energyTooltip(press.power, TileEntityMachineEPress.maxPower),
                     Optional.empty(), mouseX, mouseY);
         }
+        // (No "Acceptable Upgrades" info panel here — the 1.12.2 e‑press GUI has none; the upgrade item's
+        // own tooltip [ItemMachineUpgrade + IUpgradeInfoProviderSource] shows this machine's numbers.)
+    }
+
+    @Override
+    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+        return this.menu.getPress();
     }
 }

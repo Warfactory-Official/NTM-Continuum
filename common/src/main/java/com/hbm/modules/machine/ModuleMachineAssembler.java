@@ -5,6 +5,7 @@ import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 
+/** Assembler processing module: 12 item input slots, 1 output slot. */
 public class ModuleMachineAssembler extends ModuleMachineBase {
 
     public ModuleMachineAssembler(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {

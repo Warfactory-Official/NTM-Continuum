@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:glass_pane"
+  },
+  "pattern": [
+    " G ",
+    "G G",
+    "GGG"
+  ],
+  "result": {
+    "id": "hbm:bottle_empty",
+    "count": 6
+  }
+}

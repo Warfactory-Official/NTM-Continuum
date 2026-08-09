@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/any_rubber",
+    "P": "#c:plates/saturnite",
+    "C": "hbm:circuit_advanced",
+    "H": "hbm:shell_steel",
+    "W": "hbm:coil_copper"
+  },
+  "pattern": [
+    "IIP",
+    "CHW",
+    "IIP"
+  ],
+  "result": {
+    "id": "hbm:custom_fall"
+  }
+}

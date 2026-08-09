@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:launch_code_piece",
+    "hbm:launch_code_piece",
+    "hbm:launch_code_piece",
+    "hbm:launch_code_piece",
+    "hbm:launch_code_piece",
+    "hbm:launch_code_piece",
+    "hbm:launch_code_piece",
+    "hbm:launch_code_piece",
+    "hbm:circuit_advanced"
+  ],
+  "result": {
+    "id": "hbm:launch_code"
+  }
+}

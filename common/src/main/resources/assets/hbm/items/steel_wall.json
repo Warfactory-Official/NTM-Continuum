@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/deco/steel_wall.obj",
+      "texture": "hbm:textures/models/deco/steelwall.png",
+      "scale": 0.045,
+      "yaw": 180,
+      "ty": 0.0
+    }
+  }
+}

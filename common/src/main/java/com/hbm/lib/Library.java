@@ -12,6 +12,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import java.text.DecimalFormat;
 
+/**
+ * HBM utility constants/helpers. Ported incrementally — currently just the directional aliases used
+ * by the energy/fluid networks. More is added as later content is ported.
+ */
 public final class Library {
 
     private Library() {}
@@ -19,6 +23,10 @@ public final class Library {
     private static final DecimalFormat SHORT_NUMBER_FORMAT = new DecimalFormat("0.00");
     private static final String[] SHORT_SUFFIXES = {"", "k", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"};
 
+    /**
+     * Abbreviated number for GUIs, e.g. {@code 1500000 -> "1.50M"}, {@code 250 -> "250"}. Ported from
+     * the 1.12.2 {@code Library.getShortNumber} (2-decimal {@code DecimalFormat}, metric suffixes).
+     */
     public static String getShortNumber(long value) {
         boolean negative = value < 0;
         double d = Math.abs((double) value);
@@ -33,12 +41,14 @@ public final class Library {
 
     private static final DecimalFormat PERCENT_FORMAT = new DecimalFormat("0.##");
 
+    /** A red→green progress colour (RGB int, no blue), ported from 1.12.2 {@code Library.getColorProgress}. */
     public static int getColorProgress(double fraction) {
         int r = (int) (255 * Math.min(1, fraction * -2 + 2));
         int g = (int) (255 * Math.min(1, fraction * 2));
         return 65536 * r + 256 * g;
     }
 
+    /** A 2-decimal percentage string for a 0..1 fraction (e.g. {@code 0.5 -> "50"}). */
     public static String getPercentage(double fraction) {
         return PERCENT_FORMAT.format(fraction * 100D);
     }
@@ -50,6 +60,13 @@ public final class Library {
     public static final ForgeDirection POS_Z = ForgeDirection.SOUTH;
     public static final ForgeDirection NEG_Z = ForgeDirection.NORTH;
 
+    /**
+     * Whether a fluid duct of the given {@code type} should connect to the neighbour at {@code pos},
+     * approached along {@code dir} (the direction outwards from the duct). Mirrors the 1.12.2
+     * {@code Library.canConnectFluid}: a block-level {@link IFluidConnectorBlockMK2} (so multiblock
+     * machine footprints connect with no BlockEntity per cell) OR a tile-level {@link IFluidConnectorMK2}.
+     * {@code dir.getOpposite()} is the neighbour's side facing the duct.
+     */
     public static boolean canConnectFluid(BlockGetter world, BlockPos pos, ForgeDirection dir, FluidType type) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
@@ -65,20 +82,38 @@ public final class Library {
         return false;
     }
 
+    // --- battery items (the machine power-slot energy source) ------------------------------------
+    // Ported from the 1.12.2 Library, IBatteryItem-only (the Forge-Energy / FE branch is deferred to a
+    // per-loader capability bridge, see IMPLEMENTATION.md §13e). These drive the "battery in slot 0"
+    // power input every HBM machine uses.
+
+    /** Whether {@code stack} is an HBM battery item (can store HE). */
     public static boolean isBattery(ItemStack stack) {
         return !stack.isEmpty() && stack.getItem() instanceof IBatteryItem;
     }
 
+    /** Whether {@code stack} is a machine upgrade module (1.12.2 {@code Library.isMachineUpgrade}). */
+    public static boolean isMachineUpgrade(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() instanceof com.hbm.items.machine.ItemMachineUpgrade;
+    }
+
+    /** Whether {@code stack} is a battery with charge left and a non-zero discharge rate. */
     public static boolean isDischargeableBattery(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof IBatteryItem battery)) return false;
         return battery.getCharge(stack) > 0 && battery.getDischargeRate(stack) > 0;
     }
 
+    /** Whether {@code stack} is a battery item that is fully drained. */
     public static boolean isEmptyBattery(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof IBatteryItem battery)) return false;
         return battery.getCharge(stack) <= 0;
     }
 
+    /**
+     * Pulls energy from a battery item into a machine. Removes (rate-limited) charge from {@code stack}
+     * up to {@code chargeAmountHE} and returns the amount actually extracted. {@code instant} ignores the
+     * battery's discharge rate (for one-shot transfers).
+     */
     public static long dischargeBatteryIfValid(ItemStack stack, long chargeAmountHE, boolean instant) {
         if (stack.isEmpty() || chargeAmountHE <= 0) return 0;
         if (!(stack.getItem() instanceof IBatteryItem battery)) return 0;
@@ -90,6 +125,10 @@ public final class Library {
         return take;
     }
 
+    /**
+     * Pushes energy from a machine into a battery item. Adds (rate-limited) charge to {@code stack} up to
+     * {@code chargeAmountHE} and returns the amount actually inserted.
+     */
     public static long chargeBatteryIfValid(ItemStack stack, long chargeAmountHE, boolean instant) {
         if (stack.isEmpty() || chargeAmountHE <= 0) return 0;
         if (!(stack.getItem() instanceof IBatteryItem battery)) return 0;
@@ -103,6 +142,11 @@ public final class Library {
         return added;
     }
 
+    /**
+     * Tops a machine's internal {@code power} up from a battery item in slot {@code index}, capped at
+     * {@code maxPower}. Returns the new power level. Faithful port of the 1.12.2
+     * {@code Library.chargeTEFromItems} (battery-item path).
+     */
     public static long chargeTEFromItems(NTMItemHandler inventory, int index, long power, long maxPower) {
         ItemStack stack = inventory.getStackInSlot(index);
         long powerNeeded = maxPower - power;
@@ -110,6 +154,20 @@ public final class Library {
         return power + dischargeBatteryIfValid(stack, powerNeeded, false);
     }
 
+    /**
+     * Drains a machine's internal {@code power} into a battery item in slot {@code index}, capped at
+     * {@code maxPower} (the parameter mirrors the old signature — it doesn't bound the transfer here).
+     * Returns the machine's new power level. Faithful port of the 1.12.2 {@code Library.chargeItemsFromTE}
+     * (the inverse of {@link #chargeTEFromItems}, used by generators like the diesel gen).
+     */
+    public static long chargeItemsFromTE(NTMItemHandler inventory, int index, long power, long maxPower) {
+        if (power <= 0) return power;
+        ItemStack stack = inventory.getStackInSlot(index);
+        long moved = chargeBatteryIfValid(stack, power, false);
+        return power - moved;
+    }
+
+    /** FNV-1a 64-bit hash over a byte array; used to dedupe identical per-tick sync packets. */
     public static long fnv1a64(byte[] data) {
         long hash = 0xcbf29ce484222325L;
         for (byte b : data) {

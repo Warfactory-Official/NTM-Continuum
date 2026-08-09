@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "hbm:plate_polymer",
+    "A": "#c:dusts/aluminium",
+    "W": "hbm:wire_fine_aluminium"
+  },
+  "pattern": [
+    "IAI",
+    "W W"
+  ],
+  "result": {
+    "id": "hbm:circuit_capacitor",
+    "count": 2
+  }
+}

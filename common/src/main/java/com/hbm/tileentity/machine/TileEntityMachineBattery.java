@@ -21,19 +21,33 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+/**
+ * Energy Storage Block — the first machine ported onto the HBM BlockEntity tower
+ * ({@link TileEntityMachineBase}). It stores power and, per its configurable I/O mode, draws from /
+ * pushes to / buffers the adjacent power network.
+ *
+ * <p>Behaviour ported from 1.12.2: two mode slots — {@link #redLow} (used while <b>not</b>
+ * redstone-powered) and {@link #redHigh} (used while powered) — each one of input / buffer / output /
+ * none, plus a connection {@link #priority}. The three are toggled by the GUI buttons (via the vanilla
+ * {@code clickMenuButton} path) and synced to the screen on the BufPacket. (Battery <em>item</em>
+ * charge/discharge in the slots is still deferred — no battery items are ported yet.)
+ *
+ * <p>Energy reaches the GUI via the BufPacket (a full {@code long}, not a 16-bit {@code ContainerData}).
+ */
 public class TileEntityMachineBattery extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, IEnergyProviderMK2, IEnergyConductorMK2 {
 
     public static final long MAX_POWER = 1_000_000L;
     public long power = 0L;
-
+    /** Net power throughput in HE/s, shown on the GUI energy bar; synced to clients. */
     public long delta = 0L;
 
+    /** I/O modes. */
     public static final int MODE_INPUT = 0, MODE_BUFFER = 1, MODE_OUTPUT = 2, MODE_NONE = 3;
-
+    /** Mode while NOT receiving a redstone signal (default: input). */
     public short redLow = MODE_INPUT;
-
+    /** Mode while receiving a redstone signal (default: output). */
     public short redHigh = MODE_OUTPUT;
-
+    /** Network connection priority (LOW / NORMAL / HIGH). */
     public ConnectionPriority priority = ConnectionPriority.LOW;
 
     private boolean indirectlyPowered = false;
@@ -43,7 +57,8 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     private int deltaTimer = 0;
 
     public TileEntityMachineBattery(BlockPos pos, BlockState state) {
-
+        // 4 slots like the original: 0/2 = charge (top), 1/3 = discharge (bottom). The charge/discharge
+        // item logic arrives with the battery-item port; for now they are plain slots.
         super(ModBlockEntities.MACHINE_BATTERY.get(), pos, state, 4);
     }
 
@@ -52,6 +67,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         return "container.machine_battery";
     }
 
+    /** The mode in effect right now, picked by the redstone state. */
     public short getRelevantMode() {
         return indirectlyPowered ? redHigh : redLow;
     }
@@ -72,7 +88,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         int mode = battery.getRelevantMode();
 
         if (mode == MODE_BUFFER) {
-
+            // Acts like a cable: owns a node and feeds power into its own network (provider + receiver).
             if (battery.node == null || battery.node.expired) {
                 battery.node = UniNodespace.getNode(level, pos, Nodespace.THE_POWER_PROVIDER);
                 if (battery.node == null || battery.node.expired) {
@@ -102,13 +118,14 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
             }
         }
 
+        // Net throughput over the last second (HE/s), for the GUI bar tooltip.
         if (++battery.deltaTimer >= 20) {
             battery.delta = battery.power - battery.lastPowerForDelta;
             battery.lastPowerForDelta = battery.power;
             battery.deltaTimer = 0;
         }
         battery.setChanged();
-        battery.networkPackNT();
+        battery.networkPackNT(); // broadcast power/mode/priority to tracking clients (deduped when unchanged)
     }
 
     @Override
@@ -118,6 +135,8 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
             UniNodespace.destroyNode(level, getBlockPos(), Nodespace.THE_POWER_PROVIDER);
         }
     }
+
+    // --- IEnergyHandler / receiver / provider (isLoaded() inherited from the tower) ---
 
     @Override
     public long getPower() {
@@ -156,6 +175,8 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         return (mode == MODE_OUTPUT || mode == MODE_BUFFER) ? MAX_POWER / 20L : 0L;
     }
 
+    // --- per-tick sync ---
+
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
@@ -176,6 +197,8 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         priority = ConnectionPriority.VALUES[buf.readByte()];
     }
 
+    // --- persistence (inventory + muffled + name handled by the base) ---
+
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
@@ -193,6 +216,8 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         redHigh = (short) input.getShortOr("redHigh", (short) MODE_OUTPUT);
         priority = ConnectionPriority.VALUES[input.getByteOr("priority", (byte) ConnectionPriority.LOW.ordinal())];
     }
+
+    // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {

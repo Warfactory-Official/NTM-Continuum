@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:digamma",
+    "hbm:monoxide",
+    "hbm:asbestos",
+    "hbm:blacklung"
+  ]
+}

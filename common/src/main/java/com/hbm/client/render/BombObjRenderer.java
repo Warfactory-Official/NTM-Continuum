@@ -17,6 +17,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Draws a HBM bomb's static OBJ model, replacing the 1.12.2 {@code StaticTesrBakedModels} entry. Like
+ * {@link MachineObjRenderer} but keyed on the bomb block's {@link NukeMan#FACING} property (2–5) with
+ * the Fat Man's own yaw map (the old {@code yawMap}: 2→270°, 3→90°, 4→0°, 5→180°).
+ */
 public class BombObjRenderer<T extends BlockEntity> implements BlockEntityRenderer<T, MachineRenderState> {
 
     private final WavefrontObj model;
@@ -59,7 +64,7 @@ public class BombObjRenderer<T extends BlockEntity> implements BlockEntityRender
             case 3 -> 90F;
             case 5 -> 180F;
             case 4 -> 0F;
-            default -> 270F;
+            default -> 270F; // facing 2
         };
     }
 

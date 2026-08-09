@@ -19,6 +19,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Chemical Plant: a 3×3×3 dummyable multiblock (same footprint as the assembly machine). Implements
+ * {@link IEnergyConnectorBlock} (cables) and {@link IFluidConnectorBlockMK2} (ducts) so power and fluid
+ * connect only at the core's 12 edge ports ({@code getConPos}), not every footprint face.
+ */
 public class MachineChemicalPlant extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineChemicalPlant(Properties properties) {
@@ -30,6 +35,7 @@ public class MachineChemicalPlant extends BlockDummyable implements IEnergyConne
         return new TileEntityMachineChemicalPlant(pos, state);
     }
 
+    /** Any face of the multiblock exposes the core's inventory to hoppers/pipes (item inputs 4..6, outputs 7..9). */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
@@ -37,12 +43,14 @@ public class MachineChemicalPlant extends BlockDummyable implements IEnergyConne
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineChemicalPlant te ? te : null;
     }
 
+    /** Cables connect only at the machine's true power ports (the core's {@code getConPos} edge positions). */
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
         return findCoreTE(world, pos) instanceof TileEntityMachineChemicalPlant te
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
+    /** Ducts connect at the same 12 edge ports (the geometry is fluid-agnostic — reuse the energy helper). */
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineChemicalPlant te
@@ -52,7 +60,7 @@ public class MachineChemicalPlant extends BlockDummyable implements IEnergyConne
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-
+        // Server: power/fluids/processing. Client: the slider/spinner animation + sound (gated by didProcess).
         return level.isClientSide()
                 ? createTickerHelper(type, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), TileEntityMachineChemicalPlant::clientTick)
                 : createTickerHelper(type, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), TileEntityMachineChemicalPlant::serverTick);

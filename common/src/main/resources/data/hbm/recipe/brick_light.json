@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:brick_light_stairs",
+    "hbm:brick_light_stairs",
+    "hbm:brick_light_stairs",
+    "hbm:brick_light_stairs"
+  ],
+  "result": {
+    "id": "hbm:brick_light",
+    "count": 3
+  }
+}

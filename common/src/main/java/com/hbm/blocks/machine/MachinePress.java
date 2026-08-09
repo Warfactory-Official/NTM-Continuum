@@ -14,12 +14,19 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Burner Press: a 1×1×3 dummyable column (core at the bottom, two dummies stacked above), identical
+ * footprint to the {@link MachineEPress electric press}. Unlike the electric press it runs on
+ * <b>furnace fuel</b> (no power connection), so it needs no {@code IEnergyConnectorBlock}. Right-click
+ * any part opens the menu via {@link BlockDummyable#useWithoutItem}.
+ */
 public class MachinePress extends BlockDummyable implements WorldlyContainerHolder {
 
     public MachinePress(Properties properties) {
         super(properties);
     }
 
+    /** Any face of the column routes hoppers/pipes to the core's sided inventory. */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
@@ -35,7 +42,7 @@ public class MachinePress extends BlockDummyable implements WorldlyContainerHold
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-
+        // Server only: fuel burn + pressing. The renderer reads the synced progress for the head position.
         return level.isClientSide() ? null
                 : createTickerHelper(type, ModBlockEntities.MACHINE_PRESS.get(), TileEntityMachinePress::serverTick);
     }

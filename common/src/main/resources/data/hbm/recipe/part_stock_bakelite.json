@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": "#c:ingots/bakelite"
+  },
+  "pattern": [
+    "WWW",
+    "  W"
+  ],
+  "result": {
+    "id": "hbm:part_stock_bakelite"
+  }
+}

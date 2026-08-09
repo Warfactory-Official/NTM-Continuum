@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:powder_meteorite"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:powder_meteorite_tiny",
+    "count": 9
+  }
+}

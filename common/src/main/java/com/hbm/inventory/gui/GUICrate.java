@@ -8,6 +8,12 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
+/**
+ * Client screen for the storage crates. One screen serves all three: it sizes itself and picks its
+ * background texture / label colours from the menu's {@link CrateType} (ported from the 1.12.2
+ * {@code GUICrateBase}, which read the same constants off the crate tile). 26.1 render API
+ * (extractBackground + blit; labels via extractLabels).
+ */
 public class GUICrate extends AbstractContainerScreen<ContainerCrate> {
 
     private final CrateType type;
@@ -26,7 +32,7 @@ public class GUICrate extends AbstractContainerScreen<ContainerCrate> {
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-
+        // Title centred in the type's colour; player-inventory label at the type's offset/colour.
         graphics.text(this.font, this.title, (this.imageWidth - this.font.width(this.title)) / 2, this.titleLabelY,
                 0xFF000000 | type.titleColor, false);
         graphics.text(this.font, this.playerInventoryTitle, type.inventoryLabelX, this.imageHeight - 96 + 2,

@@ -9,6 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * The power distribution network. A {@link NodeNet} of providers/receivers using weighted-share
+ * distribution with priority bucketing. Pure Java — ported verbatim from 1.12.2.
+ *
+ * @author hbm, mlbv
+ */
 public class PowerNetMK2 extends NodeNet<IEnergyReceiverMK2, IEnergyProviderMK2, Nodespace.PowerNode, PowerNetMK2> {
 
     public long energyTracker = 0L;
@@ -28,7 +34,7 @@ public class PowerNetMK2 extends NodeNet<IEnergyReceiverMK2, IEnergyProviderMK2,
         if (total <= 0 || part <= 0 || whole <= 0 || cap <= 0) return 0;
         if (part >= whole) return Math.min(total, cap);
         if (total <= Long.MAX_VALUE / part) {
-
+            // this should be 99% of the case
             long share = (total * part) / whole;
             if (share <= 0) return 0;
             return Math.min(share, cap);
@@ -76,12 +82,14 @@ public class PowerNetMK2 extends NodeNet<IEnergyReceiverMK2, IEnergyProviderMK2,
         List<Tuple.ObjectLongPair<IEnergyProviderMK2>> providers = new ArrayList<>();
         long powerAvailable = 0;
 
+        // sum up total demand, categorized by priority
         @SuppressWarnings("unchecked")
         List<Tuple.ObjectLongPair<IEnergyReceiverMK2>>[] receivers = new ArrayList[IEnergyReceiverMK2.ConnectionPriority.VALUES.length];
         for (int i = 0; i < receivers.length; i++) receivers[i] = new ArrayList<>();
         long[] demand = new long[IEnergyReceiverMK2.ConnectionPriority.VALUES.length];
         long totalDemand = 0;
 
+        // sum up available power
         lock.lock();
         try {
             var provIt = providerEntries.object2LongEntrySet().fastIterator();
@@ -117,6 +125,7 @@ public class PowerNetMK2 extends NodeNet<IEnergyReceiverMK2, IEnergyProviderMK2,
         long toTransfer = Math.min(powerAvailable, totalDemand);
         long energyUsed = 0;
 
+        // add power to receivers, ordered by priority
         for (int i = IEnergyReceiverMK2.ConnectionPriority.VALUES.length - 1; i >= 0; i--) {
             var list = receivers[i];
             long priorityDemand = demand[i];
@@ -155,6 +164,7 @@ public class PowerNetMK2 extends NodeNet<IEnergyReceiverMK2, IEnergyProviderMK2,
             }
             updateReceiverRemainderCursor[i] = (receiverStart + 1) % receiverCount;
 
+            // subtract only this priority bucket's accepted total
             energyUsed += priorityUsed;
             toTransfer -= priorityUsed;
         }
@@ -163,6 +173,7 @@ public class PowerNetMK2 extends NodeNet<IEnergyReceiverMK2, IEnergyProviderMK2,
         long remainingToDebit = energyUsed;
         long remainingSupply = powerAvailable;
 
+        // remove power from providers
         int providerCount = providers.size();
         int providerStart = normalizedCursor(updateProviderRemainderCursor, providerCount);
         for (int step = 0; step < providerCount && remainingToDebit > 0; step++) {

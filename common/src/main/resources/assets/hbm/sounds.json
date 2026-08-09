@@ -1,8 +1,200 @@
 {
-  "block.motor": {"category": "block", "sounds": [{"name": "hbm:block/motor", "stream": false}]},
-  "block.assembler_strike": {"category": "block", "sounds": ["hbm:block/assemblerstrike1", "hbm:block/assemblerstrike2"]},
-  "block.assembler_start": {"category": "block", "sounds": [{"name": "hbm:block/assemblerstart", "stream": false}]},
-  "block.assembler_stop": {"category": "block", "sounds": [{"name": "hbm:block/assemblerstop", "stream": false}]},
-  "block.chemical_plant": {"category": "block", "sounds": [{"name": "hbm:block/chemicalplant", "stream": false}]},
-  "block.pressoperate": {"category": "block", "sounds": [{"name": "hbm:block/pressoperate", "stream": false}]}
+  "block.motor": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/motor",
+        "stream": false
+      }
+    ]
+  },
+  "block.assembler_strike": {
+    "category": "block",
+    "sounds": [
+      "hbm:block/assemblerstrike1",
+      "hbm:block/assemblerstrike2"
+    ]
+  },
+  "block.assembler_start": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/assemblerstart",
+        "stream": false
+      }
+    ]
+  },
+  "block.assembler_stop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/assemblerstop",
+        "stream": false
+      }
+    ]
+  },
+  "block.chemical_plant": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/chemicalplant",
+        "stream": false
+      }
+    ]
+  },
+  "block.pressoperate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/pressoperate",
+        "stream": false
+      }
+    ]
+  },
+  "item.geiger1": {
+    "subtitle": "subtitles.item.geiger",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/geiger1",
+        "stream": false
+      }
+    ]
+  },
+  "item.geiger2": {
+    "subtitle": "subtitles.item.geiger",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/geiger2",
+        "stream": false
+      }
+    ]
+  },
+  "item.geiger3": {
+    "subtitle": "subtitles.item.geiger",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/geiger3",
+        "stream": false
+      }
+    ]
+  },
+  "item.geiger4": {
+    "subtitle": "subtitles.item.geiger",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/geiger4",
+        "stream": false
+      }
+    ]
+  },
+  "item.geiger5": {
+    "subtitle": "subtitles.item.geiger",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/geiger5",
+        "stream": false
+      }
+    ]
+  },
+  "item.geiger6": {
+    "subtitle": "subtitles.item.geiger",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/geiger6",
+        "stream": false
+      }
+    ]
+  },
+  "entity.vomit": {
+    "subtitle": "subtitles.entity.vomit",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:player/vomit",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.nuclear_explosion": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/nuclear_explosion",
+        "stream": true
+      }
+    ]
+  },
+  "block.electric_hum": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/electrichum",
+        "stream": false
+      }
+    ]
+  },
+  "item.upgrade_plug": {
+    "subtitle": "subtitles.item.upgradePlug",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/upgradeplug",
+        "stream": false
+      }
+    ]
+  },
+  "block.screm": {
+    "subtitle": "subtitles.block.screm",
+    "category": "block",
+    "sounds": [
+      "hbm:screm/scream01",
+      "hbm:screm/scream02",
+      "hbm:screm/scream03",
+      "hbm:screm/scream04",
+      "hbm:screm/scream05",
+      "hbm:screm/scream06",
+      "hbm:screm/scream07",
+      "hbm:screm/scream08",
+      "hbm:screm/scream09",
+      "hbm:screm/scream1",
+      "hbm:screm/scream10",
+      "hbm:screm/scream11",
+      "hbm:screm/scream12",
+      "hbm:screm/scream13",
+      "hbm:screm/scream14",
+      "hbm:screm/scream15",
+      "hbm:screm/scream16",
+      "hbm:screm/scream17",
+      "hbm:screm/scream18",
+      "hbm:screm/scream19",
+      "hbm:screm/scream2",
+      "hbm:screm/scream20",
+      "hbm:screm/scream21",
+      "hbm:screm/scream22",
+      "hbm:screm/scream23",
+      "hbm:screm/scream24",
+      "hbm:screm/scream25",
+      "hbm:screm/scream3",
+      "hbm:screm/scream4",
+      "hbm:screm/scream5",
+      "hbm:screm/scream6",
+      "hbm:screm/scream7"
+    ]
+  },
+  "item.tech_bleep": {
+    "subtitle": "subtitles.item.techBleep",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/techbleep",
+        "stream": false
+      }
+    ]
+  }
 }

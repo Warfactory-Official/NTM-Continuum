@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:nuclear_waste_vitrified"
+  ],
+  "result": {
+    "id": "hbm:nuclear_waste_vitrified_tiny",
+    "count": 9
+  }
+}

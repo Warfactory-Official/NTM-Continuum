@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:emerald_ores",
+    "hbm:ore_sellafield_emerald"
+  ]
+}

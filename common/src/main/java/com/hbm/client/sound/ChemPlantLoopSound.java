@@ -7,6 +7,11 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 
+/**
+ * The looping operating sound a chemical plant plays while it's processing — a tickable client sound
+ * bound to one machine that stops itself once the machine stops processing or is removed (the 1.12.2
+ * {@code AudioWrapper} loop). Client-only — only constructed from {@link ChemPlantSoundHandler}.
+ */
 public class ChemPlantLoopSound extends AbstractTickableSoundInstance {
 
     private final TileEntityMachineChemicalPlant te;
@@ -21,7 +26,8 @@ public class ChemPlantLoopSound extends AbstractTickableSoundInstance {
         this.looping = true;
         this.delay = 0;
         this.pitch = 1.0F;
-
+        // Keep the base volume well under 1.0 so it audibly attenuates with distance, like the assembly
+        // machine's motor loop (volume 1.0 stays loud across the whole 16-block range — "heard everywhere").
         this.volume = 0.5F * te.getVolume(0.5F);
     }
 

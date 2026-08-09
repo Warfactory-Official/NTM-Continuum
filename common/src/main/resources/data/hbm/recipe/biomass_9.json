@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:sugar",
+    "hbm:powder_sawdust",
+    "hbm:powder_sawdust",
+    "minecraft:melon"
+  ],
+  "result": {
+    "id": "hbm:biomass",
+    "count": 4
+  }
+}

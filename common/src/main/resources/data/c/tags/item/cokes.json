@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:coke_coal",
+    "hbm:coke_lignite",
+    "hbm:coke_petroleum"
+  ]
+}

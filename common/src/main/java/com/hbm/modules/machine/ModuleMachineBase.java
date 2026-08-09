@@ -14,6 +14,17 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.List;
 
+/**
+ * Item-only processing core, ported from HBM's {@code ModuleMachineBase}. Drives one recipe at a time:
+ * checks power + inputs + output space ({@link #canProcess}), drains power and advances
+ * {@link #progress} ({@link #process}), then on completion consumes inputs and produces outputs. The
+ * fluid I/O of the original is deferred (see IMPLEMENTATION.md §18); this version handles items only.
+ *
+ * <p><b>Auto-switch:</b> recipes can share an auto-switch group; if the recipe has one and the first
+ * input slot holds an item matching another group recipe, the module switches to it. Combined with
+ * {@link #autoSelect} (pick an initial recipe from the blueprint pool) this lets a machine run from
+ * just "insert template + ingredient", with no in-GUI recipe picker yet.
+ */
 public abstract class ModuleMachineBase {
 
     public final int index;
@@ -21,7 +32,7 @@ public abstract class ModuleMachineBase {
     public final NTMItemHandler inventory;
     public int[] inputSlots;
     public int[] outputSlots;
-
+    /** Optional fluid tanks (null for item-only machines like the assembler). Set by fluid machines. */
     public FluidTankNTM[] inputTanks;
     public FluidTankNTM[] outputTanks;
 
@@ -45,6 +56,10 @@ public abstract class ModuleMachineBase {
     public boolean canProcess(GenericRecipe recipe, double speed, double power) {
         if (recipe == null) return false;
 
+        // Within-group auto-switch (ported from HBM): if the selected recipe has an auto-switch group and
+        // the input buffer holds the first ingredient of another recipe in that group, hop to it. The
+        // original keys off input slot 0; in this buffer model any input slot counts. Cancel this tick on
+        // a switch so the new recipe is fully re-checked next tick.
         if (recipe.autoSwitchGroup != null) {
             List<GenericRecipe> group = getRecipeSet().autoSwitchGroups.get(recipe.autoSwitchGroup);
             if (group != null) for (GenericRecipe next : group) {
@@ -68,6 +83,7 @@ public abstract class ModuleMachineBase {
         return matchInputs(recipe) != null && hasInputFluid(recipe);
     }
 
+    /** Whether the input tanks hold enough of each of the recipe's input fluids (true for item-only machines). */
     private boolean hasInputFluid(GenericRecipe recipe) {
         if (recipe.inputFluid == null || inputTanks == null) return true;
         for (int i = 0; i < Math.min(recipe.inputFluid.length, inputTanks.length); i++) {
@@ -76,6 +92,11 @@ public abstract class ModuleMachineBase {
         return true;
     }
 
+    /**
+     * Conforms the input/output tanks to the selected recipe's fluids (so they accept/emit the right types
+     * and the network fills/drains them), resetting any unused tank. No-op for item-only machines. Ported
+     * from HBM's {@code ModuleMachineBase.setupTanks}.
+     */
     public void setupTanks(GenericRecipe recipe) {
         if (recipe == null) return;
         if (inputTanks != null) for (int i = 0; i < inputTanks.length; i++) {
@@ -88,6 +109,11 @@ public abstract class ModuleMachineBase {
         }
     }
 
+    /**
+     * Assigns each recipe ingredient to a distinct input slot that satisfies it (the input area is a
+     * shared buffer — items can sit in any slot, so a hopper can fill it and multiple stacks are usable).
+     * @return one slot index per ingredient, or {@code null} if not all ingredients are present.
+     */
     private int[] matchInputs(GenericRecipe recipe) {
         if (recipe.inputItem == null) return new int[0];
         int[] assigned = new int[recipe.inputItem.length];
@@ -179,6 +205,7 @@ public abstract class ModuleMachineBase {
     public void update(double speed, double power, boolean extraCondition, ItemStack blueprint) {
         GenericRecipe recipe = getRecipe();
 
+        // recipe no longer permitted by the inserted template → clear it
         if (recipe != null && recipe.isPooled() && !recipe.isPartOfPool(ItemBlueprints.grabPool(blueprint))) {
             this.didProcess = false;
             this.progress = 0D;
@@ -199,13 +226,19 @@ public abstract class ModuleMachineBase {
         }
     }
 
+    /**
+     * If no recipe is selected, pick the first recipe in {@code blueprint}'s pool whose first input
+     * matches the ingredient in input slot 0. Lets the machine start without a GUI recipe picker.
+     */
     public void autoSelect(ItemStack blueprint) {
         String pool = ItemBlueprints.grabPool(blueprint);
         if (pool == null) return;
 
+        // Keep the current recipe while its ingredients are still in the buffer…
         GenericRecipe current = getRecipe();
         if (current != null && matchInputs(current) != null) return;
 
+        // …otherwise switch to the first recipe in the template's pool that the buffer can make now.
         String chosen = "null";
         List<String> names = GenericRecipes.blueprintPools.get(pool);
         if (names != null) for (String name : names) {
@@ -233,20 +266,27 @@ public abstract class ModuleMachineBase {
         return false;
     }
 
+    /**
+     * Whether {@code stack} may go in {@code slot} given the inserted {@code blueprint}. Accepts the
+     * current recipe's inputs, the first ingredient of any recipe in its auto-switch group (so inserting
+     * a sibling-group ingredient triggers the in-process {@link #canProcess auto-switch}), and the inputs
+     * of any recipe in the inserted template's pool (so an ingredient can be inserted before a recipe is
+     * selected). Without this, no recipe ⇒ no valid input ⇒ nothing could ever start.
+     */
     public boolean isItemValidForPool(int slot, ItemStack stack, ItemStack blueprint) {
-
+        // Buffer model: any input slot accepts any ingredient of the current recipe…
         GenericRecipe recipe = getRecipe();
         if (recipe != null && recipe.inputItem != null) {
             for (AStack in : recipe.inputItem) if (in.matchesRecipe(stack, true)) return true;
         }
-
+        // …or the first ingredient of any recipe in the current recipe's auto-switch group…
         if (recipe != null && recipe.autoSwitchGroup != null) {
             List<GenericRecipe> group = getRecipeSet().autoSwitchGroups.get(recipe.autoSwitchGroup);
             if (group != null) for (GenericRecipe next : group) {
                 if (next.inputItem != null && next.inputItem.length > 0 && next.inputItem[0].matchesRecipe(stack, true)) return true;
             }
         }
-
+        // …or of any recipe in the inserted template's pool.
         String pool = ItemBlueprints.grabPool(blueprint);
         if (pool == null) return false;
         List<String> names = GenericRecipes.blueprintPools.get(pool);
@@ -258,6 +298,8 @@ public abstract class ModuleMachineBase {
         }
         return false;
     }
+
+    // --- sync + persistence ---
 
     public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeDouble(progress);

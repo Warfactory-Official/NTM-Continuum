@@ -15,6 +15,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Menu for the chemical plant: battery, template, 2 upgrades, 3 item-in, 3 item-out, 3 fluid-in load
+ * (+3 emptied-bucket out), 3 fluid-out load (+3 filled-bucket out), and the player inventory. Output and
+ * "bucket out" slots are take-only. Layout mirrors the 1.12.2 {@code ContainerMachineChemicalPlant}.
+ */
 public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 22;
@@ -23,10 +28,12 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityMachineChemicalPlant chemplant;
 
+    /** Client-side: resolve the BlockEntity by position. */
     public ContainerMachineChemicalPlant(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos), ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
+    /** Server-side: bound to the live BlockEntity. */
     public ContainerMachineChemicalPlant(int containerId, Inventory playerInventory, TileEntityMachineChemicalPlant machine) {
         this(containerId, playerInventory, machine, ContainerLevelAccess.create(machine.getLevel(), machine.getBlockPos()));
     }
@@ -37,17 +44,17 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
         this.machine = machine != null ? machine : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 152, 81));
-        this.addSlot(validated(1, 35, 126));
-        this.addSlot(validated(2, 152, 108));
-        this.addSlot(validated(3, 152, 126));
+        this.addSlot(validated(0, 152, 81));   // battery
+        this.addSlot(validated(1, 35, 126));    // template
+        this.addSlot(validated(2, 152, 108));   // upgrade
+        this.addSlot(validated(3, 152, 126));   // upgrade
 
-        for (int i = 0; i < 3; i++) this.addSlot(validated(4 + i, 8 + i * 18, 99));
-        for (int i = 0; i < 3; i++) this.addSlot(takeOnly(7 + i, 80 + i * 18, 99));
-        for (int i = 0; i < 3; i++) this.addSlot(validated(10 + i, 8 + i * 18, 54));
-        for (int i = 0; i < 3; i++) this.addSlot(takeOnly(13 + i, 8 + i * 18, 72));
-        for (int i = 0; i < 3; i++) this.addSlot(validated(16 + i, 80 + i * 18, 54));
-        for (int i = 0; i < 3; i++) this.addSlot(takeOnly(19 + i, 80 + i * 18, 72));
+        for (int i = 0; i < 3; i++) this.addSlot(validated(4 + i, 8 + i * 18, 99));   // item input
+        for (int i = 0; i < 3; i++) this.addSlot(takeOnly(7 + i, 80 + i * 18, 99));   // item output
+        for (int i = 0; i < 3; i++) this.addSlot(validated(10 + i, 8 + i * 18, 54));  // fluid-in load
+        for (int i = 0; i < 3; i++) this.addSlot(takeOnly(13 + i, 8 + i * 18, 72));   // emptied bucket out
+        for (int i = 0; i < 3; i++) this.addSlot(validated(16 + i, 80 + i * 18, 54)); // fluid-out load
+        for (int i = 0; i < 3; i++) this.addSlot(takeOnly(19 + i, 80 + i * 18, 72));  // filled bucket out
 
         this.addStandardInventorySlots(playerInventory, 8, 174);
     }
@@ -69,6 +76,7 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
         return be instanceof TileEntityMachineChemicalPlant machine ? machine : null;
     }
 
+    /** The live (client) BlockEntity, for the screen to read power/progress/tanks/recipe. */
     public @Nullable TileEntityMachineChemicalPlant getChemplant() {
         return chemplant;
     }
@@ -89,8 +97,11 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
+            } else if (stack.getItem() instanceof com.hbm.items.machine.ItemMachineUpgrade) {
+                // upgrades go straight to the upgrade slots (the 1.12.2 transferStackInSlot routing)
+                if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
             } else {
-
+                // player inv -> machine: only the insertable slots (battery/template/upgrades/item-in/bucket-in)
                 if (!this.moveItemStackTo(stack, 0, 7, false)
                         && !this.moveItemStackTo(stack, 10, 13, false)
                         && !this.moveItemStackTo(stack, 16, 19, false)) return ItemStack.EMPTY;

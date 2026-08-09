@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:radiation",
+    "hbm:digamma",
+    "hbm:monoxide",
+    "hbm:asbestos",
+    "hbm:blacklung"
+  ]
+}

@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "hbm:waste_log",
     "hbm:pink_slab",
     "hbm:pink_stairs"
   ]

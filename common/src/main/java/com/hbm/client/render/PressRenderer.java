@@ -20,6 +20,16 @@ import org.jspecify.annotations.Nullable;
 import java.util.Set;
 import java.util.function.ToIntFunction;
 
+/**
+ * Renderer for the burner / electric press: a static <b>body</b> plus a <b>head</b> that descends with
+ * the machine's {@code progress}, ported from the 1.12.2 {@code RenderPress}/{@code RenderEPress}. The
+ * head travels {@code 0.875} blocks down over a full stroke (the original {@code progress*(1-0.125)/max}).
+ *
+ * <p>The two presses differ slightly: the burner press always faces one way (base yaw 180, no facing
+ * rotation) with its head seated at +0.875 and scaled 0.95 in X/Z; the electric press rotates with its
+ * placement (base yaw 90 + the standard facing map) with its head at +1.875. Both are expressed through
+ * the constructor params. The floating pressed-item display above the head is deferred (see §18).
+ */
 public class PressRenderer<T extends BlockEntity> implements BlockEntityRenderer<T, PressRenderState> {
 
     private final WavefrontObj body;
@@ -61,10 +71,10 @@ public class PressRenderer<T extends BlockEntity> implements BlockEntityRenderer
             BlockState bs = be.getBlockState();
             int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
             state.yaw = switch (meta - BlockDummyable.offset) {
-                case 4 -> 90F;
-                case 3 -> 180F;
-                case 5 -> 270F;
-                default -> 0F;
+                case 4 -> 90F;   // WEST
+                case 3 -> 180F;  // SOUTH
+                case 5 -> 270F;  // EAST
+                default -> 0F;   // NORTH
             };
         } else {
             state.yaw = 0F;
@@ -76,6 +86,7 @@ public class PressRenderer<T extends BlockEntity> implements BlockEntityRenderer
     public void submit(PressRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         float yaw = baseYaw + state.yaw;
 
+        // Body (static).
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
@@ -83,6 +94,7 @@ public class PressRenderer<T extends BlockEntity> implements BlockEntityRenderer
                 (pose, buffer) -> body.renderExcept(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, Set.of()));
         poseStack.popPose();
 
+        // Head (descends with progress).
         float travel = state.progress * 0.875F / maxProgress;
         poseStack.pushPose();
         poseStack.translate(0.5F, headBaseOffset - travel, 0.5F);

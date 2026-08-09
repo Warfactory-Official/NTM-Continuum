@@ -11,6 +11,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+/**
+ * Adds a slot inventory to {@link TileEntityLoadedBase}. Backed by an {@link NTMItemHandler} (HBM's
+ * vanilla-only replacement for Forge's {@code ItemStackHandler}) and exposes it as a vanilla
+ * {@link Container} so menus/slots can bind to it directly.
+ *
+ * <p>The handler's {@link NTMItemHandler#onContentsChanged(int)} is wired to {@link #setChanged()},
+ * matching the old base which called {@code markDirty} on content change.
+ */
 public abstract class TileEntityInventoryBase extends TileEntityLoadedBase implements Container {
 
     public final NTMItemHandler inventory;
@@ -20,11 +28,13 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
         this.inventory = createInventory(slotCount);
     }
 
+    /** Builds the backing handler. Override to customise per-slot limits / validity. */
     protected NTMItemHandler createInventory(int slotCount) {
         return new NTMItemHandler(slotCount) {
             @Override
             protected void onContentsChanged(int slot) {
                 TileEntityInventoryBase.this.setChanged();
+                TileEntityInventoryBase.this.onSlotContentsChanged(slot, getStackInSlot(slot));
             }
 
             @Override
@@ -34,9 +44,32 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
         };
     }
 
+    /**
+     * Inclusive {@code {first, last}} upgrade-slot range, or null when the machine takes no upgrades.
+     * Machines override this; inserting an upgrade into the range plays the 1.12.2 "plug" sound
+     * (each old TE hooked its inventory's {@code setStackInSlot} for this).
+     */
+    protected int[] getUpgradeSlotRange() {
+        return null;
+    }
+
+    /** Post-change hook (after {@link #setChanged()}); default plays the upgrade plug sound. */
+    protected void onSlotContentsChanged(int slot, ItemStack stack) {
+        int[] range = getUpgradeSlotRange();
+        if (range != null && slot >= range[0] && slot <= range[1]
+                && com.hbm.lib.Library.isMachineUpgrade(stack)
+                && this.level != null && !this.level.isClientSide()) {
+            this.level.playSound(null, this.worldPosition, com.hbm.sound.ModSounds.UPGRADE_PLUG.get(),
+                    net.minecraft.sounds.SoundSource.BLOCKS, 1.0F, 1.0F);
+        }
+    }
+
+    /** Override to gate which items may live in a slot (mirrors the old {@code isItemValidForSlot}). */
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return true;
     }
+
+    // --- persistence ---
 
     @Override
     protected void saveAdditional(ValueOutput output) {
@@ -49,6 +82,8 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
         super.loadAdditional(input);
         input.child("inventory").ifPresent(inventory::load);
     }
+
+    // --- Container (delegates to the handler) ---
 
     @Override
     public int getContainerSize() {

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:ingot_dineutronium"
+  ],
+  "result": {
+    "id": "hbm:nugget_dineutronium",
+    "count": 9
+  }
+}

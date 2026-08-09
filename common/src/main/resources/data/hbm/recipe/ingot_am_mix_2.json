@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:nuggets/am241",
+    "#c:nuggets/am241",
+    "#c:nuggets/am241",
+    "#c:nuggets/am242",
+    "#c:nuggets/am242",
+    "#c:nuggets/am242",
+    "#c:nuggets/am242",
+    "#c:nuggets/am242",
+    "#c:nuggets/am242"
+  ],
+  "result": {
+    "id": "hbm:ingot_am_mix"
+  }
+}

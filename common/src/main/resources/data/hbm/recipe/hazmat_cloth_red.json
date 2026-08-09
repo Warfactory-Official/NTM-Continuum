@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "hbm:hazmat_cloth",
+    "R": "#c:dusts/redstone"
+  },
+  "pattern": [
+    "C",
+    "R",
+    "C"
+  ],
+  "result": {
+    "id": "hbm:hazmat_cloth_red"
+  }
+}

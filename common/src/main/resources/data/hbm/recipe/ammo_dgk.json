@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "#c:plates/lead",
+    "G": "hbm:ballistite",
+    "C": "#c:ingots/copper"
+  },
+  "pattern": [
+    "LLL",
+    "GGG",
+    "CCC"
+  ],
+  "result": {
+    "id": "hbm:ammo_dgk"
+  }
+}

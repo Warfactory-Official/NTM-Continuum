@@ -10,7 +10,7 @@ public class GenNode<N extends NodeNet<?, ?, ? extends GenNode<N>, N>> {
     public N net;
     public boolean expired = false;
     public boolean recentlyChanged = true;
-
+    /** Used for distinguishing the node type when saving it to UNINOS' node map */
     public INetworkProvider<N> networkProvider;
 
     public GenNode(INetworkProvider<N> provider, BlockPos... positions) {

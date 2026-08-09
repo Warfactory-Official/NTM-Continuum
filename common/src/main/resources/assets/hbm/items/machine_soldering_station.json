@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/soldering_station.obj",
+      "texture": "hbm:textures/models/machines/soldering_station.png",
+      "scale": 0.6,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

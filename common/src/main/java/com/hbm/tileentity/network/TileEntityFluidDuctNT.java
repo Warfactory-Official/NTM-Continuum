@@ -20,6 +20,17 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+/**
+ * A solid fluid duct: a pure fluid conductor, the fluid analogue of {@link TileEntityCableBaseNT}. It
+ * owns a {@link FluidNode} in UNINOS keyed to a single {@link FluidType}, which the engine links into a
+ * network with adjacent ducts of the same type. Carries no fluid itself — providers/receivers subscribe
+ * to the network the ducts form.
+ *
+ * <p>Like the 1.12.2 {@code fluid_duct_mk2}, the duct defaults to {@code Fluids.NONE} (transfers nothing)
+ * and the player sets its type by right-clicking it with a {@code fluid_identifier} — it then forms a
+ * network with adjacent ducts/machines of that one fluid only. The carried type is synced to the client
+ * (chunk-load tag + update packet) so the renderer can tint the duct's overlay with the fluid's colour.
+ */
 public class TileEntityFluidDuctNT extends BlockEntity implements IFluidPipeMK2, ILoadedTile {
 
     protected FluidNode node;
@@ -30,7 +41,7 @@ public class TileEntityFluidDuctNT extends BlockEntity implements IFluidPipeMK2,
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFluidDuctNT duct) {
-        if (duct.type == Fluids.NONE) return;
+        if (duct.type == Fluids.NONE) return; // an untyped duct carries nothing
         if (duct.node == null || duct.node.expired) {
             duct.node = (FluidNode) UniNodespace.getNode(level, pos, duct.type.getNetworkProvider());
             if (duct.node == null || duct.node.expired) {
@@ -46,7 +57,7 @@ public class TileEntityFluidDuctNT extends BlockEntity implements IFluidPipeMK2,
 
     public void setFluidType(FluidType type) {
         if (this.type == type) return;
-
+        // Tear down the node in the old type's nodespace; serverTick rebuilds it under the new type.
         if (this.node != null && level != null && !level.isClientSide()) {
             UniNodespace.destroyNode(level, this.node);
         }
@@ -54,9 +65,11 @@ public class TileEntityFluidDuctNT extends BlockEntity implements IFluidPipeMK2,
         this.node = null;
         setChanged();
         if (level != null && !level.isClientSide()) {
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3); // push the new type to clients
         }
     }
+
+    // --- client sync of the carried type (for the colour-tinted overlay) ---
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {

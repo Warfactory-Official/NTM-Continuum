@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:brick_fire"
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "id": "hbm:brick_fire_slab",
+    "count": 6
+  }
+}

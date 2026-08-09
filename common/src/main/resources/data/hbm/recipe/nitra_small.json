@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:nitra"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:nitra_small",
+    "count": 4
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:block_beryllium"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:ingot_beryllium",
+    "count": 9
+  }
+}

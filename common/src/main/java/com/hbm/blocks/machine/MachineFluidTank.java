@@ -16,6 +16,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Fluid Tank: a 5×3×5 dummyable multiblock (the 1.12.2 {@code MachineFluidTank}), dims {2,0,1,1,2,2}
+ * with the four corner cells filled. Drawn by the generic OBJ renderer ({@code fluidtank.obj}); the core
+ * is {@link TileEntityMachineFluidTank}. Implements {@link IFluidConnectorBlockMK2} so fluid ducts
+ * connect to any face of the footprint without a BlockEntity at each cell.
+ */
 public class MachineFluidTank extends BlockDummyable implements IFluidConnectorBlockMK2 {
 
     public MachineFluidTank(Properties properties) {
@@ -27,20 +33,32 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
         return new TileEntityMachineFluidTank(pos, state);
     }
 
+    /**
+     * Ducts connect only at the tank's actual fluid ports (the {@code getConPos} positions: two per
+     * horizontal side, at the core's Y), NOT every footprint face — so a duct alongside the tank body
+     * doesn't sprout a phantom connection. {@code dir} is the tank's outward face toward the duct.
+     */
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         BlockPos core = findCore(world, new BlockPos(x, y, z));
         return core != null && isPort(core, x, y, z, dir);
     }
 
+    /**
+     * Whether tank cell {@code (x,y,z)} exposes a fluid port on face {@code dir}. The tank's network node
+     * occupies the four corner cells {@code (±1, 0, ±1)} relative to the core (= each
+     * {@code getConPos} entry's {@code pos − dir}); a duct's neighbour is one of those corners, and the
+     * port faces outward from it. Only the corners on the multiblock's short ends are reachable from
+     * outside, so this yields the tank's 4 working ports for any facing.
+     */
     private static boolean isPort(BlockPos c, int x, int y, int z, ForgeDirection dir) {
         int dx = x - c.getX(), dy = y - c.getY(), dz = z - c.getZ();
         if (dy != 0) return false;
         return switch (dir) {
-            case EAST -> dx == 1 && (dz == -1 || dz == 1);
-            case WEST -> dx == -1 && (dz == -1 || dz == 1);
-            case SOUTH -> dz == 1 && (dx == -1 || dx == 1);
-            case NORTH -> dz == -1 && (dx == -1 || dx == 1);
+            case EAST -> dx == 1 && (dz == -1 || dz == 1);   // +X (Library.POS_X)
+            case WEST -> dx == -1 && (dz == -1 || dz == 1);  // -X (Library.NEG_X)
+            case SOUTH -> dz == 1 && (dx == -1 || dx == 1);  // +Z (Library.POS_Z)
+            case NORTH -> dz == -1 && (dx == -1 || dx == 1); // -Z (Library.NEG_Z)
             default -> false;
         };
     }
@@ -65,6 +83,8 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
         this.makeExtra(world, x - dir.offsetX - 1, y, z - dir.offsetZ - 1);
     }
 
+    // --- comparator output from the tank fill (works from any cell via findCore) ---
+
     @Override
     protected boolean hasAnalogOutputSignal(BlockState state) {
         return true;
@@ -79,7 +99,8 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-
+        // Both sides: the side-ladder must be registered on the client too (onClimbable is checked there
+        // for the local player). The server tick also runs the network/identifier logic.
         return level.isClientSide()
                 ? createTickerHelper(type, ModBlockEntities.FLUID_TANK.get(), TileEntityMachineFluidTank::clientTick)
                 : createTickerHelper(type, ModBlockEntities.FLUID_TANK.get(), TileEntityMachineFluidTank::serverTick);

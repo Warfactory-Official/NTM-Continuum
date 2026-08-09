@@ -35,10 +35,21 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import java.util.HashSet;
 
+/**
+ * The fluid tank multiblock's core BlockEntity — a tank-backed fluid transceiver
+ * ({@link IFluidStandardTransceiverMK2}) on the {@link TileEntityMachineBase} tower. Holds a 256,000 mB
+ * tank and a {@code mode} flag (receive / both / send / off); the {@link #serverTick} wires it into the
+ * fluid network according to that mode, exactly like the 1.12.2 tank.
+ *
+ * <p>Slim port: the 1.12.2 original's explosion/fire/corrosive/antimatter hazards, OpenComputers/control
+ * panel hooks, repair, and canister item I/O are dropped — the demo needs the network behaviour, the GUI
+ * fill readout, and (kept) the side ladder ({@link IClimbable}). The tank defaults to {@code NONE}; drop a
+ * {@code fluid_identifier} in slot 0 to set its type (it then passes to slot 1), like the 1.12.2 tank.
+ */
 public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable {
 
     public static final int CAPACITY = 256_000;
-
+    /** 0 = receive-only, 1 = both (acts like a pipe), 2 = send-only, 3 = disabled. */
     public short mode = 0;
     public static final short MODES = 4;
 
@@ -59,6 +70,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return "container.fluidtank";
     }
 
+    /** Client ticker: just keep the side-ladder registered (climbing is checked on both sides). */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFluidTank tank) {
         tank.ensureClimbRegistered();
     }
@@ -66,12 +78,12 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFluidTank tank) {
         tank.ensureClimbRegistered();
         tank.updateTypeFromIdentifier();
-        tank.processCanister(2, 3);
-        tank.processCanister(4, 5);
+        tank.processCanister(2, 3); // canister bay A: fill the tank from / drain into a container
+        tank.processCanister(4, 5); // canister bay B: same (both bays are interchangeable)
         FluidType type = tank.tank.getTankType();
 
         if (tank.mode == 1) {
-
+            // Buffer mode: behave like a pipe — own a node and act as both provider and receiver.
             if (tank.node == null || tank.node.expired || type != tank.lastType) {
                 tank.node = (FluidNode) UniNodespace.getNode(level, pos, type.getNetworkProvider());
                 if (tank.node == null || tank.node.expired || type != tank.lastType) {
@@ -113,10 +125,15 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         setChanged();
     }
 
+    /**
+     * Slot 0 (in) holds a fluid identifier; adopt its type and move the identifier to slot 1 (out),
+     * mirroring the 1.12.2 {@code tank.setType(0, 1, inventory)} — the identifier passes from the top
+     * slot to the bottom slot once consumed. Only fires when the type actually changes and slot 1 is free.
+     */
     private void updateTypeFromIdentifier() {
         ItemStack id = inventory.getStackInSlot(0);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
-        if (!inventory.getStackInSlot(1).isEmpty()) return;
+        if (!inventory.getStackInSlot(1).isEmpty()) return; // out slot must be empty to receive it
 
         FluidType t = ident.getType(level, getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), id);
         if (t == tank.getTankType()) return;
@@ -126,21 +143,32 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
             UniNodespace.destroyNode(level, getBlockPos(), tank.getTankType().getNetworkProvider());
             node = null;
         }
-
+        // pass the identifier from the in-slot (0) to the out-slot (1)
         inventory.insertItem(1, id.copy(), false);
         inventory.extractItem(0, 1, false);
         setChanged();
     }
 
+    /**
+     * Processes a canister bay {@code (in → out)}: a <b>full</b> container drains INTO the machine tank, an
+     * <b>empty</b> one is filled FROM it, and the modified single container moves to {@code out}. Handles
+     * both the universal tank/barrel ({@link IFillableItem}) and buckets (HBM {@link ItemFluidBucket} +
+     * vanilla water/lava/empty). <b>Both</b> bays (2→3 and 4→5) run this, so either can fill <i>or</i>
+     * drain — the port's two canister bays are interchangeable (more forgiving than the 1.12.2 directional
+     * load/unload). Only fires when the out slot can hold the result (no loss); a NONE tank adopts the
+     * incoming fluid, and the network node is reset on a type change.
+     */
     private void processCanister(int inSlot, int outSlot) {
         ItemStack in = inventory.getStackInSlot(inSlot);
         if (in.isEmpty()) return;
         FluidType tankType = tank.getTankType();
 
+        // --- universal tank / barrel ---
         if (in.getItem() instanceof IFillableItem fillable) {
             int held = fillable.getFill(in);
             FluidType heldType = fillable.getFirstFluidType(in);
 
+            // full -> tank (drain)
             if (held > 0 && heldType != null && heldType != Fluids.NONE
                     && (tankType == Fluids.NONE || tankType == heldType)) {
                 int addable = tank.fill(heldType, held, false);
@@ -156,7 +184,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                     }
                 }
             }
-
+            // empty/same -> filled from tank
             if (tankType != Fluids.NONE && tank.getFill() > 0 && fillable.acceptsFluid(tankType, in)) {
                 ItemStack work = single(in);
                 int remainder = fillable.tryFill(tankType, tank.getFill(), work);
@@ -169,10 +197,11 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
             return;
         }
 
+        // --- buckets ---
         FluidType bucketFluid = bucketFluid(in);
         if (bucketFluid != Fluids.NONE && (tankType == Fluids.NONE || tankType == bucketFluid)
                 && tank.fill(bucketFluid, ItemFluidBucket.VOLUME, false) >= ItemFluidBucket.VOLUME) {
-
+            // full bucket -> tank, empty bucket out
             ItemStack empty = new ItemStack(Items.BUCKET);
             if (fits(outSlot, empty)) {
                 FluidType before = tank.getTankType();
@@ -181,7 +210,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                 resetNodeOnTypeChange(before);
             }
         } else if (in.is(Items.BUCKET) && tankType != Fluids.NONE && tank.getFill() >= ItemFluidBucket.VOLUME) {
-
+            // empty bucket <- tank: water/lava -> vanilla bucket, else an HBM fluid bucket
             ItemStack filled = tankType == Fluids.WATER ? new ItemStack(Items.WATER_BUCKET)
                     : tankType == Fluids.LAVA ? new ItemStack(Items.LAVA_BUCKET)
                     : ItemFluidBucket.make(tankType);
@@ -192,6 +221,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         }
     }
 
+    /** The fluid a full bucket in {@code stack} would give the tank (NONE if it's not a full bucket). */
     private static FluidType bucketFluid(ItemStack stack) {
         if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
         if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
@@ -215,6 +245,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         setChanged();
     }
 
+    /** Resets the network node when the tank's fluid type changed, so it re-forms on the right nodespace. */
     private void resetNodeOnTypeChange(FluidType before) {
         if (before != tank.getTankType() && node != null) {
             UniNodespace.destroyNode(level, getBlockPos(), before.getNetworkProvider());
@@ -222,20 +253,31 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         }
     }
 
+    /**
+     * Slot roles: 0/1 = identifier in/out (identifiers <b>only</b>); 2 and 4 = canister input bays (any
+     * fluid container — bucket or universal tank/barrel, full <i>or</i> empty). Slots 3/5 are the result
+     * outputs: they must return {@code true} so the machine's own {@link com.hbm.inventory.NTMItemHandler#insertItem} can
+     * place the emptied/filled container there (the handler rejects an insert whose slot is invalid) —
+     * player insertion into them is blocked instead by the take-only slots in
+     * {@link com.hbm.inventory.container.ContainerMachineFluidTank}.
+     */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
             case 0, 1 -> stack.getItem() instanceof IItemFluidIdentifier;
             case 2, 4 -> isFluidContainer(stack);
-            default -> true;
+            default -> true; // 3 + 5: outputs — the machine inserts results here; player UI is take-only
         };
     }
 
+    /** Any fluid container the canister bays accept: a tank/barrel, an HBM fluid bucket, or a vanilla bucket. */
     private static boolean isFluidContainer(ItemStack stack) {
         return stack.getItem() instanceof IFillableItem
                 || stack.getItem() instanceof ItemFluidBucket
                 || stack.is(Items.BUCKET) || stack.is(Items.WATER_BUCKET) || stack.is(Items.LAVA_BUCKET);
     }
+
+    // --- IClimbable: a functional ladder up one side (ported from the 1.12.2 tank) ---
 
     private void ensureClimbRegistered() {
         if (!climbRegistered) {
@@ -244,6 +286,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         }
     }
 
+    /** The ladder box: a 1×3×1 column hugging one side of the tank, on the back-left relative to facing. */
     private AABB getLadderAABB() {
         if (ladderAABB == null) {
             ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
@@ -260,6 +303,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return entity.getBoundingBox().intersects(getLadderAABB());
     }
 
+    /** The 8 network-connection positions around the 3×3 footprint edges (ported verbatim). */
     public DirPos[] getConPos() {
         int x = getBlockPos().getX(), y = getBlockPos().getY(), z = getBlockPos().getZ();
         return new DirPos[]{
@@ -289,6 +333,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         }
     }
 
+    // --- IFluidStandardTransceiverMK2 (tank-backed, gated by mode) ---
+
     @Override
     public FluidTankNTM[] getAllTanks() {
         return new FluidTankNTM[]{tank};
@@ -304,6 +350,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return (mode == 0 || mode == 1) ? new FluidTankNTM[]{tank} : new FluidTankNTM[0];
     }
 
+    // --- MenuProvider ---
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("block.hbm.machine_fluidtank");
@@ -313,6 +361,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineFluidTank(containerId, playerInventory, this);
     }
+
+    // --- sync (BufPacket) + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

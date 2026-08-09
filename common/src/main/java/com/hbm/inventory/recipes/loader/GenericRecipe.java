@@ -11,6 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * One machine recipe, ported (item-only) from HBM's {@code GenericRecipe}. Inputs are {@link AStack}s
+ * (exact item or tag); outputs are plain {@link ItemStack}s (the original's chance/multi-output and
+ * fluid I/O are deferred — see IMPLEMENTATION.md §18). A recipe may belong to one or more
+ * <b>blueprint pools</b> (which template unlocks it) and an <b>auto-switch group</b> (machines pick the
+ * matching recipe in the group from the inserted ingredient).
+ */
 public class GenericRecipe {
 
     public final String name;
@@ -84,17 +91,22 @@ public class GenericRecipe {
     public ItemStack getIcon() {
         if (!icon.isEmpty()) return icon;
         if (outputItem != null && outputItem.length > 0) return outputItem[0];
-
+        // No item output → represent the recipe by its first output (or input) fluid's droplet icon.
         if (outputFluid != null && outputFluid.length > 0) return ItemFluidIcon.make(outputFluid[0]);
         if (inputFluid != null && inputFluid.length > 0) return ItemFluidIcon.make(inputFluid[0]);
         return ItemStack.EMPTY;
     }
 
+    /** The recipe's display name — the icon's item name (the original's customLocalization is deferred). */
     public String getLocalizedName() {
         ItemStack icon = getIcon();
         return icon.isEmpty() ? this.name : icon.getHoverName().getString();
     }
 
+    /**
+     * Multi-line recipe description for the GUI tooltip (name, duration, power, inputs, outputs). Ported
+     * from HBM's {@code GenericRecipe.print()} — item-only (fluids/chance outputs are deferred).
+     */
     public List<Component> print() {
         List<Component> list = new ArrayList<>();
         list.add(Component.literal(getLocalizedName()).withStyle(ChatFormatting.YELLOW));
@@ -132,6 +144,7 @@ public class GenericRecipe {
         return Component.literal(text).withStyle(ChatFormatting.BLUE);
     }
 
+    /** Whether this recipe's localized name contains {@code substring} (case-insensitive). */
     public boolean matchesSearch(String substring) {
         return getLocalizedName().toLowerCase(Locale.US).contains(substring.toLowerCase(Locale.US));
     }

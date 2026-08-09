@@ -11,6 +11,14 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The fluid distribution network. A {@link NodeNet} of providers/receivers segregated by pressure
+ * level (0..{@link IFluidUserMK2#HIGHEST_VALID_PRESSURE}) and {@link ConnectionPriority}, using the same
+ * weighted-share, priority-bucketed, round-robin algorithm as {@link PowerNetMK2}. One FluidNetMK2 per
+ * {@link FluidType} (every fluid kind has its own UNINOS nodespace). Ported nearly verbatim from 1.12.2.
+ *
+ * @author hbm, mlbv
+ */
 public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, FluidNode, FluidNetMK2> {
 
     public long fluidTracker = 0L;
@@ -44,6 +52,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
         cleanUp();
     }
 
+    // this sucks ass, but it makes the code just a smidge more structured
     @SuppressWarnings("unchecked")
     public long[] fluidAvailable = new long[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1];
     @SuppressWarnings("unchecked")
@@ -97,7 +106,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
         long[] received = new long[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1];
         long[] notAccountedFor = new long[IFluidUserMK2.HIGHEST_VALID_PRESSURE + 1];
 
-        for (int p = 0; p <= IFluidUserMK2.HIGHEST_VALID_PRESSURE; p++) {
+        for (int p = 0; p <= IFluidUserMK2.HIGHEST_VALID_PRESSURE; p++) { // if the pressure range were ever to increase, we might have to rethink this
 
             long totalAvailable = fluidAvailable[p];
 

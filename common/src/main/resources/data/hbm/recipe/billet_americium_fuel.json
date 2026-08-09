@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:billet_u238",
+    "hbm:billet_u238",
+    "hbm:billet_am_mix"
+  ],
+  "result": {
+    "id": "hbm:billet_americium_fuel",
+    "count": 3
+  }
+}

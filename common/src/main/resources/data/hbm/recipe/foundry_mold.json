@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "hbm:ingot_firebrick",
+    "S": "minecraft:stone_slab"
+  },
+  "pattern": [
+    "B B",
+    "BSB"
+  ],
+  "result": {
+    "id": "hbm:foundry_mold"
+  }
+}

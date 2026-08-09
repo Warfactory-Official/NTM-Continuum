@@ -11,12 +11,18 @@ import com.hbm.registry.RegistryObject;
 import java.util.EnumMap;
 import java.util.Map;
 
+/**
+ * The modern HBM battery / capacitor items — the storage medium the {@code machine_battery_socket} holds.
+ * One registered item per {@link EnumBatteryPack} variant (the old single metadata item is split into 12
+ * in 26.1). Kept out of the generated {@link ModItems} so codegen never clobbers them.
+ */
 public final class ModBatteryItems {
 
     private ModBatteryItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
+    /** Lookup from variant → its registered item, used by the socket renderer / item-icon JSON wiring. */
     public static final Map<EnumBatteryPack, RegistryObject<ItemBatteryPack>> PACKS = new EnumMap<>(EnumBatteryPack.class);
 
     static {

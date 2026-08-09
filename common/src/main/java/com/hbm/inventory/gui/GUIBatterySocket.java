@@ -13,14 +13,21 @@ import net.minecraft.world.entity.player.Inventory;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Client screen for the battery socket. Mirrors {@link GUIMachineBattery} (energy bar + two redstone I/O
+ * mode buttons + a priority button), but the energy reflects the inserted battery item's charge rather
+ * than an internal buffer. Reads the live (client) BlockEntity through the container; clicks dispatch
+ * through the vanilla {@code clickMenuButton} path. 26.1 render API (extractBackground + blit).
+ */
 public class GUIBatterySocket extends AbstractContainerScreen<ContainerBatterySocket> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/storage/gui_battery_socket.png");
     private static final String[] MODE_NAMES = {"Input only", "Buffer (both)", "Output only", "Disabled"};
     private static final String[] PRIORITY_NAMES = {"Lowest", "Low", "Normal", "High", "Highest"};
 
+    // Energy bar (GUI-relative): 34×52, bottom anchored at (62, 69).
     private static final int BAR_X = 62, BAR_W = 34, BAR_H = 52, BAR_BOTTOM = 69, BAR_TOP = BAR_BOTTOM - BAR_H;
-
+    // Buttons.
     private static final int REDLOW_X = 106, REDLOW_Y = 16, REDHIGH_X = 106, REDHIGH_Y = 52, RED_W = 18;
     private static final int PRIO_X = 125, PRIO_Y = 35, PRIO_W = 16;
 
@@ -36,7 +43,7 @@ public class GUIBatterySocket extends AbstractContainerScreen<ContainerBatterySo
         if (!this.menu.getBattery().isEmpty()) {
             long power = this.menu.getPower();
             long max = this.menu.getMaxPower();
-
+            // Guard the long->int multiply for very large capacities (the limits of the LONG data type).
             if (power > Long.MAX_VALUE / 100) { power /= 100; max /= 100; }
             if (max <= 1) max = 1;
             int p = (int) (power * BAR_H / max);
@@ -56,7 +63,7 @@ public class GUIBatterySocket extends AbstractContainerScreen<ContainerBatterySo
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-
+        // Centre the title (the 1.12.2 socket drew it at xSize/2 - width/2); keep the inventory label default.
         graphics.text(this.font, this.title, (this.imageWidth - this.font.width(this.title)) / 2, this.titleLabelY, -12566464, false);
         graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
     }

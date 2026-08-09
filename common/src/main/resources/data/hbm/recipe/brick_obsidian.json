@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:brick_obsidian_stairs",
+    "hbm:brick_obsidian_stairs",
+    "hbm:brick_obsidian_stairs",
+    "hbm:brick_obsidian_stairs"
+  ],
+  "result": {
+    "id": "hbm:brick_obsidian",
+    "count": 3
+  }
+}

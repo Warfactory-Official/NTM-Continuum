@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:block_ra226"
+  ],
+  "result": {
+    "id": "hbm:ingot_ra226",
+    "count": 9
+  }
+}

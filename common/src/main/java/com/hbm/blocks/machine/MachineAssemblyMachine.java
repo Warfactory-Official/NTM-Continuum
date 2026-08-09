@@ -17,12 +17,18 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
+/** Assembly Machine: a 3×3×3 dummyable multiblock (core + 8 ringed "extra" dummies + fill). */
 public class MachineAssemblyMachine extends BlockDummyable implements WorldlyContainerHolder, IEnergyConnectorBlock {
 
     public MachineAssemblyMachine(Properties properties) {
         super(properties);
     }
 
+    /**
+     * Cables connect only at the machine's true power ports (the {@code getConPos()} edge positions, two
+     * per horizontal side at the core's Y) — not every footprint face. The core's BlockEntity isn't at
+     * the dummy cells, so we walk to the core and match the cell/side against its connection points.
+     */
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
         return findCoreTE(world, pos) instanceof TileEntityMachineAssemblyMachine te
@@ -34,6 +40,7 @@ public class MachineAssemblyMachine extends BlockDummyable implements WorldlyCon
         return new TileEntityMachineAssemblyMachine(pos, state);
     }
 
+    /** Any face of the multiblock exposes the core's inventory to hoppers/pipes. */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
@@ -44,7 +51,7 @@ public class MachineAssemblyMachine extends BlockDummyable implements WorldlyCon
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-
+        // Server: power + recipe processing. Client: the arm/ring animation (gated by didProcess).
         return level.isClientSide()
                 ? createTickerHelper(type, ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), TileEntityMachineAssemblyMachine::clientTick)
                 : createTickerHelper(type, ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), TileEntityMachineAssemblyMachine::serverTick);

@@ -19,7 +19,13 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 import java.util.Optional;
 
-public class GUIMachineAssemblyMachine extends AbstractContainerScreen<ContainerMachineAssemblyMachine> {
+/**
+ * Screen for the assembly machine. Reads the live (client) BlockEntity for the power and progress bars
+ * (synced via the BufPacket). The recipe is chosen automatically from the inserted template + ingredient,
+ * so there's no in-GUI recipe picker yet (the 1.12.2 selector popup + ghost slots + fluid tanks are
+ * deferred — see IMPLEMENTATION.md §18).
+ */
+public class GUIMachineAssemblyMachine extends AbstractContainerScreen<ContainerMachineAssemblyMachine> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_assembler.png");
 
@@ -35,43 +41,57 @@ public class GUIMachineAssemblyMachine extends AbstractContainerScreen<Container
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
         if (te == null) return;
 
+        // Power bar: 16×61, anchored at the bottom (topPos+79), filling upward, sampled from u=176.
         long max = te.maxPower;
         int p = max <= 0L ? 0 : (int) (te.power * 61L / max);
         if (p > 0) {
             graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 152, this.topPos + 79 - p, 176.0F, (float) (61 - p), 16, p, 256, 256);
         }
 
+        // Progress bar: up to 70×16 at (62,126), sampled from (u=176, v=61).
         double progress = te.assemblerModule.progress;
         if (progress > 0) {
             int j = (int) Math.ceil(70 * progress);
             graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 62, this.topPos + 126, 176.0F, 61.0F, j, 16, 256, 256);
         }
 
+        // Status LEDs (3×6 each): LEFT = a recipe is configured, RIGHT = enough power for it; each turns
+        // from amber/orange (u=192, "ready/idle") to green (u=195, "processing"). Ported from the 1.12.2
+        // GUI — but where the original kept a manually-picked recipe selected (so the orange standby light
+        // showed whenever idle), this port auto-selects and clears the recipe between cycles, so the LEDs
+        // key off the inserted blueprint template (a recipe pool is configured) so the orange standby
+        // light is actually visible, not just the rare 1-tick gap between auto-selected recipes.
         GenericRecipe recipe = te.assemblerModule.getRecipe();
         boolean configured = recipe != null || ItemBlueprints.grabPool(te.getItem(1)) != null;
         boolean powered = recipe != null ? te.power >= recipe.power : te.power > 0;
         boolean processing = te.didProcess;
 
+        // LEFT LED — recipe configured
         if (processing) {
             led(graphics, 51, 195);
         } else if (configured) {
             led(graphics, 51, 192);
         }
-
+        // RIGHT LED — enough power
         if (processing) {
             led(graphics, 56, 195);
         } else if (configured && powered) {
             led(graphics, 56, 192);
         }
 
+        // Selector button icon: the selected recipe's output, or the template-folder icon when none is set
+        // (the 1.12.2 TEMPLATE_FOLDER fallback).
         graphics.item(recipe != null ? recipe.getIcon() : new ItemStack(ModItems.template_folder.get()),
                 this.leftPos + 8, this.topPos + 126);
 
+        // Ghost slots: faint previews of the selected recipe's inputs in still-empty input slots, dimmed by
+        // overdrawing the slot background at 50% alpha (the 1.12.2 translucent-slot-quad trick). Inputs map
+        // 1:1 onto the 3×4 input grid (machine/menu slots 4..15).
         if (recipe != null && recipe.inputItem != null) {
             for (int i = 0; i < Math.min(recipe.inputItem.length, 12); i++) {
                 if (this.menu.slots.get(4 + i).hasItem()) continue;
                 int sx = 8 + (i % 3) * 18, sy = 18 + (i / 3) * 18;
-
+                // Cycling preview: a tag ingredient blinks between all matching items (vanilla + HBM, etc.).
                 graphics.item(recipe.inputItem[i].getCyclingDisplayStack(), this.leftPos + sx, this.topPos + sy);
                 graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + sx, this.topPos + sy,
                         (float) sx, (float) sy, 16, 16, 256, 256, 0x80FFFFFF);
@@ -79,6 +99,7 @@ public class GUIMachineAssemblyMachine extends AbstractContainerScreen<Container
         }
     }
 
+    /** The selector button hot-zone (GUI-relative), matching the 1.12.2 layout. */
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
 
     @Override
@@ -92,6 +113,7 @@ public class GUIMachineAssemblyMachine extends AbstractContainerScreen<Container
         return super.mouseClicked(event, doubleClick);
     }
 
+    /** Draws a 3×6 status LED at GUI-relative x / topPos+121 from texture column {@code u} (192 = orange, 195 = green). */
     private void led(GuiGraphicsExtractor graphics, int x, int u) {
         graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + x, this.topPos + 121, (float) u, 0.0F, 3, 6, 256, 256);
     }
@@ -99,14 +121,14 @@ public class GUIMachineAssemblyMachine extends AbstractContainerScreen<Container
     @Override
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         super.extractTooltip(graphics, mouseX, mouseY);
-
+        // Power bar hover region (GUI-relative): the full 16×61 bar at (152, 18)..(152, 79).
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
         if (te == null) return;
         if (this.isHovering(152, 18, 16, 61, mouseX, mouseY)) {
             graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, te.maxPower),
                     Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
-
+            // Selector button: show the active recipe, or a hint to pick one.
             GenericRecipe recipe = AssemblyMachineRecipes.INSTANCE.getRecipe(te.assemblerModule.recipe);
             if (recipe != null) {
                 graphics.setTooltipForNextFrame(this.font, recipe.print(), Optional.empty(), mouseX, mouseY);
@@ -116,5 +138,12 @@ public class GUIMachineAssemblyMachine extends AbstractContainerScreen<Container
                         Optional.empty(), mouseX, mouseY);
             }
         }
+        // (No "Acceptable Upgrades" info panel here — the 1.12.2 assembly GUI has none; the upgrade item's
+        // own tooltip [ItemMachineUpgrade + IUpgradeInfoProviderSource] shows this machine's numbers.)
+    }
+
+    @Override
+    public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
+        return this.menu.getAssembler();
     }
 }

@@ -7,6 +7,20 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+/**
+ * Vanilla-only replacement for Forge's {@code ItemStackHandler} / {@code IItemHandler}, which common
+ * cannot use (they live in the loader APIs). Backed by a {@link NonNullList} of {@link ItemStack} and
+ * persisted with {@link ContainerHelper} (the {@link ItemStack} codec).
+ *
+ * <p>The public method surface deliberately mirrors the old {@code ItemStackHandler} so ported machine
+ * code needs minimal edits: {@link #getSlots()}, {@link #getStackInSlot(int)},
+ * {@link #setStackInSlot(int, ItemStack)}, {@link #insertItem(int, ItemStack, boolean)},
+ * {@link #extractItem(int, int, boolean)}, {@link #getSlotLimit(int)}, plus the
+ * {@link #onContentsChanged(int)} / {@link #isItemValid(int, ItemStack)} hooks.
+ *
+ * <p>Save/load is via {@link #save(ValueOutput)} / {@link #load(ValueInput)} (26.1's
+ * {@code ValueOutput}/{@code ValueInput}) rather than the old {@code serializeNBT}/{@code deserializeNBT}.
+ */
 public class NTMItemHandler {
 
     protected NonNullList<ItemStack> stacks;
@@ -34,6 +48,7 @@ public class NTMItemHandler {
         onContentsChanged(slot);
     }
 
+    /** Per-slot stack cap (clamped against the item's own max stack size by callers). */
     public int getSlotLimit(int slot) {
         return slotLimit;
     }
@@ -42,12 +57,18 @@ public class NTMItemHandler {
         return Math.min(getSlotLimit(slot), stack.getMaxStackSize());
     }
 
+    /** Override to gate which items may live in a slot. */
     public boolean isItemValid(int slot, ItemStack stack) {
         return true;
     }
 
+    /** Called whenever a slot's contents change. Override to {@code setChanged()} the owning tile. */
     protected void onContentsChanged(int slot) {}
 
+    /**
+     * Inserts as much of {@code stack} into {@code slot} as the limits allow; returns the remainder.
+     * Mirrors {@code ItemStackHandler.insertItem}.
+     */
     public ItemStack insertItem(int slot, ItemStack stack, boolean simulate) {
         if (stack.isEmpty()) return ItemStack.EMPTY;
         if (!isItemValid(slot, stack)) return stack;
@@ -75,6 +96,7 @@ public class NTMItemHandler {
         return remainder <= 0 ? ItemStack.EMPTY : stack.copyWithCount(remainder);
     }
 
+    /** Extracts up to {@code amount} from {@code slot}. Mirrors {@code ItemStackHandler.extractItem}. */
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (amount <= 0) return ItemStack.EMPTY;
         ItemStack existing = stacks.get(slot);
@@ -100,6 +122,9 @@ public class NTMItemHandler {
         return stacks;
     }
 
+    // --- persistence ---
+
+    /** Writes the inventory under the {@code "Items"} list (the {@link ContainerHelper} format). */
     public void save(ValueOutput output) {
         ContainerHelper.saveAllItems(output, stacks, true);
     }
@@ -108,6 +133,8 @@ public class NTMItemHandler {
         ContainerHelper.loadAllItems(input, stacks);
     }
 
+    // Kept for parity with future code that uses the registry-aware helpers; HolderLookup is unused for
+    // the plain ItemStack codec path but several call sites pass it through, so accept it explicitly.
     public void save(ValueOutput output, HolderLookup.Provider registries) {
         save(output);
     }

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:block_schrabidate"
+  ],
+  "result": {
+    "id": "hbm:ingot_schrabidate",
+    "count": 9
+  }
+}

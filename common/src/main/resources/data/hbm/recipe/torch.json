@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "#c:gems/lignite",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "L",
+    "S"
+  ],
+  "result": {
+    "id": "minecraft:torch",
+    "count": 3
+  }
+}

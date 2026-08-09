@@ -9,6 +9,19 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * HBM's fluid tank: a typed, pressurised fill buffer used by every fluid machine/pipe. It holds a
+ * {@link FluidType}, a fill amount, a capacity, and a pressure level.
+ *
+ * <p>26.1 slim port: the 1.12.2 original implemented Forge's {@code IFluidHandler}/{@code IFluidTank},
+ * carried embedded GL tank-rendering, and handled canister item fill/unload. All of that is stripped
+ * here — the network/machines only need the typed buffer + persistence. The GL render moves to a
+ * client-side GUI helper later; item I/O comes back with the fluid-container item port. Persistence is
+ * via 26.1 {@code ValueOutput}/{@code ValueInput} (NBT) and {@code RegistryFriendlyByteBuf} (the
+ * per-tick BufPacket sync), replacing the old {@code NBTTagCompound}/{@code ByteBuf}.
+ *
+ * @author hbm, mlbv
+ */
 public class FluidTankNTM implements Cloneable {
 
     @NonNull
@@ -52,6 +65,7 @@ public class FluidTankNTM implements Cloneable {
         this.pressure = 0;
     }
 
+    /** Changes type and pressure based on a fluid stack, useful for changing tank types based on recipes. */
     public FluidTankNTM conform(FluidStack stack) {
         this.setTankType(stack.type);
         this.withPressure(stack.pressure);
@@ -76,6 +90,10 @@ public class FluidTankNTM implements Cloneable {
         return 0;
     }
 
+    /**
+     * Fills this tank with {@code amount} of {@code incomingType}, returns how much was accepted. If the
+     * tank is empty it adopts the incoming type; otherwise the types must match.
+     */
     public int fill(FluidType incomingType, int amount, boolean doFill) {
         if (incomingType == null || incomingType == Fluids.NONE || amount <= 0) return 0;
         if (this.type == Fluids.NONE) {
@@ -93,6 +111,9 @@ public class FluidTankNTM implements Cloneable {
         }
     }
 
+    // --- persistence (NBT) ---
+
+    /** Writes fill/max/type/pressure under keys prefixed by {@code s}. */
     public void writeToNBT(ValueOutput nbt, String s) {
         nbt.putInt(s, fluid);
         nbt.putInt(s + "_max", maxFluid);
@@ -108,6 +129,8 @@ public class FluidTankNTM implements Cloneable {
         type = Fluids.fromID(nbt.getIntOr(s + "_type", 0));
         this.pressure = nbt.getShortOr(s + "_p", (short) 0);
     }
+
+    // --- per-tick sync ---
 
     public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeInt(fluid);

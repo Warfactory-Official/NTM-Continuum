@@ -4,6 +4,10 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * {@link IFluidReceiverMK2} with a standard implementation of transfer/demand backed by the tile's own
+ * receiving tanks.
+ */
 public interface IFluidStandardReceiverMK2 extends IFluidReceiverMK2 {
 
     @NonNull FluidTankNTM[] getReceivingTanks();

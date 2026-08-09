@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:fallout"
+  },
+  "pattern": [
+    "##"
+  ],
+  "result": {
+    "id": "hbm:fallout",
+    "count": 2
+  }
+}

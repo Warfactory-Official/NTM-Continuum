@@ -20,6 +20,16 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Draws HBM's {@code fluid_duct_mk2} as the real {@code pipe_neo.obj} model (replacing the 1.12.2
+ * {@code DuctNeoBakedModel}). Reads the six connection booleans from the {@link BlockFluidDuct} state to
+ * pick OBJ parts (straight run on one axis, else connected arms + corner cubes), then draws each part
+ * with the metal {@code fluid_duct_mk2} base sprite and — for a typed duct — again with the
+ * {@code fluid_duct_mk2_overlay} sprite vertex-tinted by the carried fluid's colour. The overlay is
+ * mostly transparent, so only its small "fluid window" band shows as a coloured indicator (faithful to
+ * the 1.12.2 {@code DuctNeoBakedModel}, which bakes a base + overlay quad per face). The block renders
+ * {@code INVISIBLE}; this BER draws it, like {@link CableObjRenderer}.
+ */
 public class FluidDuctObjRenderer implements BlockEntityRenderer<TileEntityFluidDuctNT, FluidDuctRenderState> {
 
     private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/blocks/pipe_neo.obj");
@@ -47,11 +57,12 @@ public class FluidDuctObjRenderer implements BlockEntityRenderer<TileEntityFluid
         boolean pZ = bs.getValue(BlockFluidDuct.SOUTH);
         boolean nZ = bs.getValue(BlockFluidDuct.NORTH);
         state.parts = selectParts(pX, nX, pY, nY, pZ, nZ);
-
+        // A single un-connected NONE duct still draws its core (all parts) so the placed block is visible.
         if (state.parts.isEmpty()) state.parts = selectParts(false, false, false, false, false, false);
         state.fluidColor = be.getFluidType() == Fluids.NONE ? 0 : (0xFF000000 | (be.getFluidType().getColor() & 0xFFFFFF));
     }
 
+    /** The 1.12.2 {@code DuctNeoBakedModel.buildWorldQuads} part selection, verbatim. */
     private static Set<String> selectParts(boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ) {
         int mask = (pX ? 32 : 0) | (nX ? 16 : 0) | (pY ? 8 : 0) | (nY ? 4 : 0) | (pZ ? 2 : 0) | (nZ ? 1 : 0);
         Set<String> parts = new HashSet<>();
@@ -69,8 +80,8 @@ public class FluidDuctObjRenderer implements BlockEntityRenderer<TileEntityFluid
                 if (nX) parts.add("nX");
                 if (pY) parts.add("pY");
                 if (nY) parts.add("nY");
-                if (pZ) parts.add("nZ");
-                if (nZ) parts.add("pZ");
+                if (pZ) parts.add("nZ"); // mirrors original (pZ -> nZ)
+                if (nZ) parts.add("pZ"); // mirrors original (nZ -> pZ)
 
                 if (!pX && !pY && !pZ) parts.add("ppn");
                 if (!pX && !pY && !nZ) parts.add("ppp");
@@ -89,15 +100,18 @@ public class FluidDuctObjRenderer implements BlockEntityRenderer<TileEntityFluid
     public void submit(FluidDuctRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         if (state.parts.isEmpty()) return;
         poseStack.pushPose();
-        poseStack.translate(0.5F, 0.5F, 0.5F);
-
+        poseStack.translate(0.5F, 0.5F, 0.5F); // OBJ is centred on the origin (-0.5..0.5)
+        // Base metal pass (untinted), then — for a typed duct — the overlay sprite tinted by the fluid
+        // colour on the SAME geometry. The overlay is mostly transparent, so only its small "fluid window"
+        // band shows as a coloured indicator (the 1.12.2 DuctNeoBakedModel draws base + overlay per face).
         collector.submitCustomGeometry(poseStack, baseType, (pose, buffer) -> {
             for (String part : state.parts) {
                 model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY);
             }
         });
         if (state.fluidColor != 0) {
-
+            // Push the overlay a hair outward (it's the same geometry as the base) so it renders in front
+            // of the metal instead of z-fighting / losing the draw-order to it.
             poseStack.pushPose();
             poseStack.scale(1.02F, 1.02F, 1.02F);
             collector.submitCustomGeometry(poseStack, overlayType, (pose, buffer) -> {

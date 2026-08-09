@@ -15,6 +15,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Menu for the battery socket: one validated battery slot ({@link com.hbm.api.energymk2.IBatteryItem}
+ * only) + the player inventory (laid out for the taller 181px GUI). The screen reads the live (client)
+ * BlockEntity for the carried battery's charge / I/O mode; the mode/priority buttons are dispatched
+ * through the vanilla {@link #clickMenuButton} path.
+ */
 public class ContainerBatterySocket extends AbstractContainerMenu {
 
     private static final int MACHINE_SLOTS = 1;
@@ -23,11 +29,13 @@ public class ContainerBatterySocket extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityBatterySocket socket;
 
+    /** Client-side: resolve the BlockEntity by position. */
     public ContainerBatterySocket(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos),
                 ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
+    /** Server-side: bound to the live BlockEntity. */
     public ContainerBatterySocket(int containerId, Inventory playerInventory, TileEntityBatterySocket socket) {
         this(containerId, playerInventory, socket,
                 ContainerLevelAccess.create(socket.getLevel(), socket.getBlockPos()));
@@ -48,6 +56,8 @@ public class ContainerBatterySocket extends AbstractContainerMenu {
         return be instanceof TileEntityBatterySocket socket ? socket : null;
     }
 
+    // --- synced readouts for the screen (read off the client-side BlockEntity) ---
+
     public long getPower() { return socket != null ? socket.getPower() : 0L; }
     public long getMaxPower() { return socket != null ? socket.getMaxPower() : 0L; }
     public long getDelta() { return socket != null ? socket.delta : 0L; }
@@ -56,6 +66,7 @@ public class ContainerBatterySocket extends AbstractContainerMenu {
     public int getRedHigh() { return socket != null ? socket.redHigh : 0; }
     public int getPriorityOrdinal() { return socket != null ? socket.priority.ordinal() : 0; }
 
+    /** Button 0/1 = cycle the unpowered/powered I/O mode, button 2 = cycle priority. */
     @Override
     public boolean clickMenuButton(Player player, int id) {
         if (socket == null) return false;
@@ -93,6 +104,7 @@ public class ContainerBatterySocket extends AbstractContainerMenu {
         return result;
     }
 
+    /** A slot that only accepts {@link com.hbm.api.energymk2.IBatteryItem}s (via {@link Container#canPlaceItem}). */
     private static final class BatterySlot extends Slot {
         BatterySlot(Container container, int slot, int x, int y) {
             super(container, slot, x, y);

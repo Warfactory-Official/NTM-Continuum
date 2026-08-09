@@ -1,6 +1,7 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.config.BombConfig;
+import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.interfaces.IBomb;
 import com.hbm.platform.Services;
@@ -31,6 +32,14 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
+/**
+ * The Fat Man ({@code nuke_man}) bomb block. Ported from 1.12.2. Renders {@code INVISIBLE} (its OBJ
+ * model is drawn by a {@code BlockEntityRenderer}); right-click opens the assembly GUI, and a redstone
+ * signal detonates it when {@link TileEntityNukeMan#isReady()}. Detonation spawns an
+ * {@link EntityNukeExplosionMK5} of radius {@link BombConfig#manRadius}.
+ *
+ * <p>{@code FACING} (2–5, the old ForgeDirection horizontal ordinals N/S/W/E) drives the model yaw.
+ */
 public class NukeMan extends Block implements EntityBlock, IBomb {
 
     public static final IntegerProperty FACING = IntegerProperty.create("facing", 2, 5);
@@ -59,12 +68,12 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-
+        // Mirror the 1.12.2 yaw->facing map: the player's horizontal facing rotates to a 2..5 value.
         int facing = switch (context.getHorizontalDirection()) {
             case SOUTH -> 5;
             case WEST -> 3;
             case EAST -> 2;
-            default -> 4;
+            default -> 4; // NORTH
         };
         return this.defaultBlockState().setValue(FACING, facing);
     }
@@ -96,7 +105,7 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
 
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-
+        // Drop the bomb's components when it's broken (the old breakBlock behaviour).
         if (level.getBlockEntity(pos) instanceof TileEntityNukeMan nuke) {
             net.minecraft.world.Containers.dropContents(level, pos, nuke);
         }
@@ -128,5 +137,13 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
         else mk5.detonator = placer;
         level.addFreshEntity(mk5);
 
+        // The mushroom cloud (which carries the shockwave ring, condensation collar, flare, flash + the
+        // client sky flash / detonation sound / HUD white-out + shake). Gated like the original, and it
+        // only affects visuals — the blast/crater above runs regardless.
+        if (BombConfig.enableNukeClouds) {
+            EntityNukeTorex torex = EntityNukeTorex.statFac(level,
+                    pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, BombConfig.manRadius);
+            level.addFreshEntity(torex);
+        }
     }
 }

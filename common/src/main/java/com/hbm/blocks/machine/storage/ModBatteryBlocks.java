@@ -8,6 +8,11 @@ import com.hbm.registry.RegistryObject;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 
+/**
+ * Hand-registered energy-storage machine blocks (the battery socket; future: capacitor banks, FENSU,
+ * etc.). Separate from the generated {@link com.hbm.blocks.ModBlocks} and the general
+ * {@link com.hbm.blocks.machine.ModMachineBlocks} so codegen never clobbers them.
+ */
 public final class ModBatteryBlocks {
 
     private ModBatteryBlocks() {}

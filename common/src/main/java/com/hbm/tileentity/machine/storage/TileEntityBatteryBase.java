@@ -16,6 +16,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+/**
+ * Base for HBM "energy storage" machines that act as a conductor on the power grid — they own a network
+ * node spanning their footprint and, per a configurable I/O mode, register themselves as a provider
+ * and/or receiver on that net. Ported from 1.12.2's {@code TileEntityBatteryBase}.
+ *
+ * <p>Two mode slots — {@link #redLow} (while <b>not</b> redstone-powered) and {@link #redHigh} (while
+ * powered) — each one of input / buffer / output / none, plus a connection {@link #priority}. Subclasses
+ * supply the storage ({@link #getPower}/{@link #setPower}/{@link #getMaxPower}) and the multiblock's port
+ * geometry ({@link #getPortPos}/{@link #getConPos}); the energy-storage <em>block battery</em>
+ * ({@code machine_battery}) keeps its own standalone implementation, so this base is currently the
+ * battery <em>socket</em>'s. The SC-battery discharge/lightning behaviour and the OpenComputers/RoR hooks
+ * are dropped (see {@link TileEntityBatterySocket}).
+ */
 public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         implements IEnergyConductorMK2, IEnergyProviderMK2, IEnergyReceiverMK2 {
 
@@ -24,8 +37,9 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
     public static final int mode_output = 2;
     public static final int mode_none = 3;
 
+    /** Mode while NOT receiving a redstone signal (default: input). */
     public short redLow = mode_input;
-
+    /** Mode while receiving a redstone signal (default: output). */
     public short redHigh = mode_output;
     public ConnectionPriority priority = ConnectionPriority.LOW;
 
@@ -42,9 +56,10 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
 
     public abstract DirPos[] getConPos();
 
+    /** Walks the I/O state machine — owns/keeps the network node and toggles provider/receiver per mode. */
     protected void serverTickBattery(Level level) {
         if (priority == null || priority.ordinal() == 0 || priority.ordinal() == 4) {
-            priority = ConnectionPriority.LOW;
+            priority = ConnectionPriority.LOW; // LOWEST/HIGHEST aren't selectable; clamp to LOW
         }
 
         if (node == null || node.expired) {
@@ -83,6 +98,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         }
     }
 
+    /** 0..15 comparator output from the fill fraction. */
     public byte getComparatorPower() {
         long max = getMaxPower();
         if (max <= 0) return 0;
@@ -90,6 +106,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         return (byte) Mth.clamp((int) frac + 1, 0, 15);
     }
 
+    /** The mode in effect right now (cached), picked by whether any port cell is redstone-powered. */
     public short getRelevantMode(boolean useCache) {
         if (useCache) return modeCache;
         boolean powered = false;
@@ -121,6 +138,8 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
     public ConnectionPriority getPriority() {
         return priority;
     }
+
+    // --- sync + persistence (subclasses extend with their own fields) ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

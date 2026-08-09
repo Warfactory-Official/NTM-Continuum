@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:gold_ores",
+    "hbm:ore_gneiss_gold"
+  ]
+}

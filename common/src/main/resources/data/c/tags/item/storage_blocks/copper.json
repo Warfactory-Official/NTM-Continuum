@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:block_copper",
+    "minecraft:copper_block"
+  ]
+}

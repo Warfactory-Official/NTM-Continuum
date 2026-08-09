@@ -12,25 +12,43 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Recipe ingredient matching, ported (and trimmed for 26.1) from HBM's {@code RecipesCommon}. An
+ * {@link AStack} is an abstract "ingredient stack" the recipe system matches against real
+ * {@link ItemStack}s. The 1.12.2 ore dictionary is replaced by item {@link TagKey tags}
+ * ({@link TagStack}); {@link ComparableStack} matches an exact item. (NBT/meta variants and the JEI
+ * helpers from the original are deferred.)
+ */
 public class RecipesCommon {
 
     public static abstract class AStack {
         public int stacksize = 1;
 
+        /** Fluent setter for the required count — so one ingredient consumes {@code n} from a single stack
+         * (e.g. {@code mat.plate().count(3)} = 3 plates in ONE slot, not 3 separate inputs). */
         public AStack count(int n) {
             this.stacksize = n;
             return this;
         }
 
+        /** @param ignoreSize match by item/tag only (for slot validation), else also require enough count. */
         public abstract boolean matchesRecipe(ItemStack stack, boolean ignoreSize);
 
+        /** Every real stack this ingredient matches (one item for {@link ComparableStack}, all tag members
+         * for {@link TagStack}) — for ghost-slot / icon display. */
         public abstract List<ItemStack> getDisplayStacks();
 
+        /** A single representative stack (the first match). */
         public ItemStack getDisplayStack() {
             List<ItemStack> list = getDisplayStacks();
             return list.isEmpty() ? ItemStack.EMPTY : list.get(0);
         }
 
+        /**
+         * The display stack <b>cycling</b> through all matches over time (so a tag ingredient blinks between
+         * e.g. the vanilla and HBM copper ingots) — the 26.1 port of the original {@code extractForCyclingDisplay}.
+         * Switches every {@code CYCLE_MS} via the wall clock.
+         */
         public ItemStack getCyclingDisplayStack() {
             List<ItemStack> list = getDisplayStacks();
             if (list.isEmpty()) return ItemStack.EMPTY;
@@ -39,9 +57,11 @@ public class RecipesCommon {
             return list.get(idx);
         }
 
+        /** Milliseconds each cycling-display variant is shown (≈ the original's {@code cycle*50}). */
         private static final long CYCLE_MS = 1000L;
     }
 
+    /** Matches one exact {@link Item}. */
     public static class ComparableStack extends AStack {
         public final Item item;
 
@@ -60,9 +80,12 @@ public class RecipesCommon {
         }
     }
 
+    /** Matches any item in a {@link TagKey} (the ore-dictionary replacement). */
     public static class TagStack extends AStack {
         public final TagKey<Item> tag;
 
+        /** Cached tag membership for display — resolved lazily once the tag is non-empty (tags load with
+         * the world; computing this fresh every frame for each ghost slot would scan the whole item registry). */
         private List<ItemStack> displayCache;
 
         public TagStack(TagKey<Item> tag) { this(tag, 1); }
@@ -82,12 +105,18 @@ public class RecipesCommon {
                 ItemStack s = new ItemStack(item, stacksize);
                 if (s.is(tag)) list.add(s);
             }
-
+            // Only cache once non-empty — before the world (and its tags) load this scan finds nothing.
             if (!list.isEmpty()) displayCache = list;
             return list;
         }
     }
 
+    /**
+     * Matches an HBM <b>autogen</b> metal-shape item ({@link ItemAutogen}) of a given {@link NTMMaterial} +
+     * {@link MaterialShapes shape} — the ingredient for shapes that are one item recoloured per material
+     * (cast/welded plate, shell, pipe, wire, …) and so can't be distinguished by item tags. Matching is by
+     * the item's {@link com.hbm.items.ModDataComponents#MATERIAL} component.
+     */
     public static class MaterialStack extends AStack {
         public final NTMMaterial material;
         public final MaterialShapes shape;

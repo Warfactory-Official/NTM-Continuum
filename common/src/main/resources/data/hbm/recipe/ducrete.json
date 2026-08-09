@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:ducrete_stairs",
+    "hbm:ducrete_stairs",
+    "hbm:ducrete_stairs",
+    "hbm:ducrete_stairs"
+  ],
+  "result": {
+    "id": "hbm:ducrete",
+    "count": 3
+  }
+}

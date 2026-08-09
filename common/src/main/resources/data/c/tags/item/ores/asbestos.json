@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:ore_asbestos",
+    "hbm:ore_gneiss_asbestos"
+  ]
+}

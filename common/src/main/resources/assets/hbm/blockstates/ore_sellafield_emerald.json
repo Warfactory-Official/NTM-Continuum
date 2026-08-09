@@ -1,0 +1,144 @@
+{
+  "variants": {
+    "shade=0": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=1": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=2": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=3": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=4": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=5": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=6": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=7": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=8": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ],
+    "shade=9": [
+      {
+        "model": "hbm:block/ore_sellafield_emerald_0"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_1"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_2"
+      },
+      {
+        "model": "hbm:block/ore_sellafield_emerald_3"
+      }
+    ]
+  }
+}

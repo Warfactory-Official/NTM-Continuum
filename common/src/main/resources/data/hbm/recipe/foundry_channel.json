@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "hbm:ingot_firebrick",
+    "S": "minecraft:stone_slab"
+  },
+  "pattern": [
+    "B B",
+    " S "
+  ],
+  "result": {
+    "id": "hbm:foundry_channel",
+    "count": 4
+  }
+}

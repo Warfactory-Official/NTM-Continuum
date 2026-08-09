@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:powder_actinium"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:powder_actinium_tiny",
+    "count": 9
+  }
+}

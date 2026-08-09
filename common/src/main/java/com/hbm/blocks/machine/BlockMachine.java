@@ -15,6 +15,16 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Generic horizontal-facing machine block backed by a {@link BlockEntity}. This is the scaffolding
+ * base for ported HBM machines: a placeable, directional, BlockEntity-carrying block. It deliberately
+ * carries no processing logic, ticker or GUI — those land per machine in a later wave (see
+ * IMPLEMENTATION.md §18). Plain {@link Block} + {@link EntityBlock} (not BaseEntityBlock, which would
+ * force a {@code codec()} and INVISIBLE render), mirroring {@link BlockMachineBattery}.
+ *
+ * <p>Each machine supplies its own BlockEntity via a {@link BlockEntityFactory}, so no per-machine
+ * block subclass is needed for the scaffold.
+ */
 public class BlockMachine extends Block implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;

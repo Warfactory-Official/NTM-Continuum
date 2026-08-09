@@ -21,6 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * The in-GUI recipe selector popup — a faithful 26.1 port of HBM's 1.12.2 {@code GUIScreenRecipeSelector}.
+ * Opened from a machine screen via {@link #openSelector}, it shows the machine's recipes (filtered to the
+ * non-pooled ones plus any matching the inserted blueprint's pool), with a search box, scroll paging, a
+ * recipe tooltip on hover, and a "current selection" slot. On close it sends the chosen recipe back to the
+ * server via a {@link ControlEventPayload} (the {@code index}/{@code selection} tag the machine's
+ * {@link com.hbm.interfaces.IControlReceiver#receiveControl} expects) and returns to the previous screen.
+ */
 public class GUIScreenRecipeSelector extends Screen {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_recipe_selector.png");
@@ -109,12 +117,14 @@ public class GUIScreenRecipeSelector extends Screen {
             graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, guiLeft + 26, guiTop + 108, 0.0F, 132.0F, 106, 16, 256, 256);
         }
 
+        // Button hover highlights (page up/down, close, clear search, focus hint).
         hoverBlit(graphics, mouseX, mouseY, 152, 18, 176, 0);
         hoverBlit(graphics, mouseX, mouseY, 152, 36, 176, 16);
         hoverBlit(graphics, mouseX, mouseY, 152, 90, 176, 32);
         hoverBlit(graphics, mouseX, mouseY, 134, 108, 176, 48);
         hoverBlit(graphics, mouseX, mouseY, 8, 108, 176, 64);
 
+        // Selection highlight behind the matching grid cell.
         for (int i = pageIndex * 8; i < pageIndex * 8 + 40 && i < recipes.size(); i++) {
             int ind = i - pageIndex * 8;
             if (recipes.get(i).getInternalName().equals(this.selection)) {
@@ -122,11 +132,13 @@ public class GUIScreenRecipeSelector extends Screen {
             }
         }
 
+        // Recipe icons grid (8 wide × 5 tall).
         for (int i = pageIndex * 8; i < pageIndex * 8 + 40 && i < recipes.size(); i++) {
             int ind = i - pageIndex * 8;
             graphics.item(recipes.get(i).getIcon(), guiLeft + 8 + 18 * (ind % 8), guiTop + 18 + 18 * (ind / 8));
         }
 
+        // Current selection icon.
         GenericRecipe selected = recipeSet.getRecipe(selection);
         if (selected != null) graphics.item(selected.getIcon(), guiLeft + 152, guiTop + 72);
     }
@@ -139,8 +151,9 @@ public class GUIScreenRecipeSelector extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick);
+        super.extractRenderState(graphics, mouseX, mouseY, partialTick); // renders the search EditBox
 
+        // Recipe tooltips over the grid.
         if (isOver(mouseX, mouseY, 7, 17, 144, 90)) {
             for (int i = pageIndex * 8; i < pageIndex * 8 + 40 && i < recipes.size(); i++) {
                 int ind = i - pageIndex * 8;
@@ -151,6 +164,7 @@ public class GUIScreenRecipeSelector extends Screen {
             }
         }
 
+        // Tooltip over the current selection icon.
         GenericRecipe selected = recipeSet.getRecipe(selection);
         if (selected != null && isOver(mouseX, mouseY, 151, 71, 18, 18)) {
             graphics.setTooltipForNextFrame(this.font, selected.print(), Optional.empty(), mouseX, mouseY);
@@ -165,18 +179,19 @@ public class GUIScreenRecipeSelector extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (super.mouseClicked(event, doubleClick)) return true;
+        if (super.mouseClicked(event, doubleClick)) return true; // EditBox focus etc.
         int x = (int) event.x(), y = (int) event.y();
 
-        if (isOver(x, y, 152, 18, 16, 16)) { if (pageIndex > 0) pageIndex--; return true; }
-        if (isOver(x, y, 152, 36, 16, 16)) { if (pageIndex < size) pageIndex++; return true; }
+        if (isOver(x, y, 152, 18, 16, 16)) { if (pageIndex > 0) pageIndex--; return true; }   // page up
+        if (isOver(x, y, 152, 36, 16, 16)) { if (pageIndex < size) pageIndex++; return true; } // page down
 
-        if (isOver(x, y, 134, 108, 16, 16)) {
+        if (isOver(x, y, 134, 108, 16, 16)) { // clear search
             this.search.setValue("");
             this.search.setFocused(true);
             return true;
         }
 
+        // Grid selection (click again to deselect).
         for (int i = pageIndex * 8; i < pageIndex * 8 + 40 && i < recipes.size(); i++) {
             int ind = i - pageIndex * 8;
             int ix = 7 + 18 * (ind % 8), iy = 17 + 18 * (ind / 8);
@@ -187,12 +202,12 @@ public class GUIScreenRecipeSelector extends Screen {
             }
         }
 
-        if (isOver(x, y, 151, 71, 18, 18) && !NULL_SELECTION.equals(this.selection)) {
+        if (isOver(x, y, 151, 71, 18, 18) && !NULL_SELECTION.equals(this.selection)) { // deselect current
             this.selection = NULL_SELECTION;
             return true;
         }
 
-        if (isOver(x, y, 152, 90, 16, 16)) { onClose(); return true; }
+        if (isOver(x, y, 152, 90, 16, 16)) { onClose(); return true; } // close
         return false;
     }
 
@@ -205,7 +220,7 @@ public class GUIScreenRecipeSelector extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (event.key() == 257 || event.key() == 335) {
+        if (event.key() == 257 || event.key() == 335) { // ENTER / numpad enter toggles search focus
             this.search.setFocused(!this.search.isFocused());
             return true;
         }

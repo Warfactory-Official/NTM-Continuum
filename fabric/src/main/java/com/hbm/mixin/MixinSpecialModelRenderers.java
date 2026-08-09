@@ -13,6 +13,13 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Fabric has no API for registering custom item special-model renderers (NeoForge uses
+ * {@code RegisterSpecialModelRendererEvent}). The codec id→{@code MapCodec} map lives in the private
+ * static {@code SpecialModelRenderers.ID_MAPPER}, populated once in {@code bootstrap()}; we append our
+ * machine renderer at the tail. This is the one place a mixin is genuinely required (no vanilla/Fabric
+ * hook exists).
+ */
 @Mixin(SpecialModelRenderers.class)
 public class MixinSpecialModelRenderers {
 

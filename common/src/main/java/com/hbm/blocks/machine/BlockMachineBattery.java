@@ -24,6 +24,12 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A machine block backed by a {@link TileEntityMachineBattery}. Plain {@link Block} + {@link EntityBlock}
+ * (not BaseEntityBlock) so it renders with its normal block model. Opens its menu on right-click via
+ * the cross-loader platform service. Implements {@link ILookOverlay} to show its charge/throughput when
+ * looked at.
+ */
 public class BlockMachineBattery extends Block implements EntityBlock, ILookOverlay {
 
     public BlockMachineBattery(Properties properties) {
@@ -62,6 +68,7 @@ public class BlockMachineBattery extends Block implements EntityBlock, ILookOver
         return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
+    /** Look-overlay: charge / max, throughput (±HE/s), and a colour-coded fill percentage. */
     @Override
     public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityMachineBattery battery)) return;

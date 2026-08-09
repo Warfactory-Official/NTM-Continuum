@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#c:billets/zirconium",
+    "#c:billets/zirconium",
+    "#c:billets/zirconium",
+    "#c:billets/uranium",
+    "#c:billets/pu241",
+    "#c:billets/bismuth"
+  ],
+  "result": {
+    "id": "hbm:billet_zfb_bismuth",
+    "count": 6
+  }
+}

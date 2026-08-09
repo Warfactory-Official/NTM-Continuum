@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
+/** Menu for the burner press: fuel, stamp, input, output, 9-slot buffer (+ player inv). */
 public class ContainerMachinePress extends AbstractContainerMenu {
 
     public static final int MACHINE_SLOTS = 13;
@@ -23,10 +24,12 @@ public class ContainerMachinePress extends AbstractContainerMenu {
     private final ContainerLevelAccess access;
     private final @Nullable TileEntityMachinePress press;
 
+    /** Client-side: resolve the BlockEntity by position. */
     public ContainerMachinePress(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos), ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
+    /** Server-side: bound to the live BlockEntity. */
     public ContainerMachinePress(int containerId, Inventory playerInventory, TileEntityMachinePress press) {
         this(containerId, playerInventory, press, ContainerLevelAccess.create(press.getLevel(), press.getBlockPos()));
     }
@@ -37,14 +40,15 @@ public class ContainerMachinePress extends AbstractContainerMenu {
         this.machine = press != null ? press : new SimpleContainer(MACHINE_SLOTS);
         this.access = access;
 
-        this.addSlot(validated(0, 26, 53));
-        this.addSlot(validated(1, 80, 17));
-        this.addSlot(validated(2, 80, 53));
-        this.addSlot(new Slot(this.machine, 3, 140, 35) {
+        this.addSlot(validated(0, 26, 53));   // fuel
+        this.addSlot(validated(1, 80, 17));    // stamp
+        this.addSlot(validated(2, 80, 53));    // input
+        this.addSlot(new Slot(this.machine, 3, 140, 35) { // output (take only)
             @Override public boolean mayPlace(ItemStack stack) { return false; }
         });
-        for (int i = 0; i < 9; i++) this.addSlot(validated(4 + i, 8 + i * 18, 84));
+        for (int i = 0; i < 9; i++) this.addSlot(validated(4 + i, 8 + i * 18, 84)); // storage buffer
 
+        // Player inventory: rows at y=120 (GUI is 202 tall), hotbar at y=178.
         for (int row = 0; row < 3; row++) for (int col = 0; col < 9; col++) {
             this.addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 120 + row * 18));
         }
@@ -62,6 +66,7 @@ public class ContainerMachinePress extends AbstractContainerMenu {
         return be instanceof TileEntityMachinePress p ? p : null;
     }
 
+    /** The live (client) BlockEntity for the screen to read speed/burn/progress. */
     public @Nullable TileEntityMachinePress getPress() {
         return press;
     }
@@ -83,7 +88,7 @@ public class ContainerMachinePress extends AbstractContainerMenu {
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else {
-
+                // player inv -> machine (skip output slot 3)
                 if (!this.moveItemStackTo(stack, 0, 3, false) && !this.moveItemStackTo(stack, 4, MACHINE_SLOTS, false)) {
                     return ItemStack.EMPTY;
                 }

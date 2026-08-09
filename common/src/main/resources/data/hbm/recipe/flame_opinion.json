@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "minecraft:paper",
+    "R": "minecraft:red_dye"
+  },
+  "pattern": [
+    " R ",
+    "RPR",
+    " R "
+  ],
+  "result": {
+    "id": "hbm:flame_opinion"
+  }
+}

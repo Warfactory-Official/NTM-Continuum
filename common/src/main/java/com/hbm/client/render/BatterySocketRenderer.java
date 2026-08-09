@@ -22,6 +22,12 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Draws the battery socket from {@code battery_socket.obj}: the {@code Socket} cradle (always), plus the
+ * inserted battery's {@code Battery} or {@code Capacitor} part textured with that variant's skin. Ported
+ * from the 1.12.2 {@code RenderBatterySocket} (the SC/creative-battery special renders are dropped with
+ * those items). The carried stack is read from the BlockEntity's synced {@code syncStack}.
+ */
 public class BatterySocketRenderer implements BlockEntityRenderer<TileEntityBatterySocket, BatterySocketRenderState> {
 
     private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/battery_socket.obj");
@@ -38,7 +44,7 @@ public class BatterySocketRenderer implements BlockEntityRenderer<TileEntityBatt
 
     @Override
     public boolean shouldRenderOffScreen() {
-        return true;
+        return true; // the socket spans the 2×2 footprint past the 1-block core
     }
 
     @Override
@@ -58,10 +64,10 @@ public class BatterySocketRenderer implements BlockEntityRenderer<TileEntityBatt
         BlockState bs = be.getBlockState();
         int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 5;
         state.yaw = switch (meta - BlockDummyable.offset) {
-            case 2 -> 90F;
-            case 4 -> 180F;
-            case 3 -> 270F;
-            default -> 0F;
+            case 2 -> 90F;   // NORTH
+            case 4 -> 180F;  // WEST
+            case 3 -> 270F;  // SOUTH
+            default -> 0F;   // EAST (5)
         };
 
         ItemStack stack = be.syncStack;
@@ -77,7 +83,7 @@ public class BatterySocketRenderer implements BlockEntityRenderer<TileEntityBatt
     @Override
     public void submit(BatterySocketRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         poseStack.pushPose();
-
+        // Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset.
         poseStack.translate(0.5F, 0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
         poseStack.translate(-0.5F, 0F, 0.5F);

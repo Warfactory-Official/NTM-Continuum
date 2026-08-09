@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:dandelion"
+  },
+  "pattern": [
+    "DD",
+    "DD"
+  ],
+  "result": {
+    "id": "hbm:ball_resin"
+  }
+}

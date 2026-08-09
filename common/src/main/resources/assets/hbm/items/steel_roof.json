@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/deco/steel_roof.obj",
+      "texture": "hbm:textures/models/deco/steelroof.png",
+      "scale": 0.045,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

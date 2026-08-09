@@ -45,6 +45,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * HBM's solid fluid duct: a connecting fluid conductor backed by {@link TileEntityFluidDuctNT}. Six
+ * {@link BooleanProperty} connection flags drive the {@code pipe_neo.obj} model (via
+ * {@link com.hbm.client.render.FluidDuctObjRenderer}), exactly like the power cable's
+ * {@code cable_neo.obj}. Conduction lives in the BlockEntity (a UNINOS node); these flags are purely the
+ * visual/collision shape.
+ *
+ * <p>The duct's fluid type defaults to {@code NONE} (no connections) and is set by right-clicking it with
+ * a {@code fluid_identifier}: the connection flags are then recomputed against that one fluid, so a typed
+ * duct only links to neighbours carrying the same fluid.
+ */
 public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterloggedBlock, ILookOverlay {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
@@ -82,7 +93,7 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-
+        // Drawn by FluidDuctObjRenderer (the real pipe_neo.obj), so the block model itself is invisible.
         return RenderShape.INVISIBLE;
     }
 
@@ -93,6 +104,12 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
                 : super.getFluidState(state);
     }
 
+    /**
+     * Whether the duct at {@code pos} should connect on side {@code dir}: whether the neighbour can connect
+     * with the duct's current fluid type. Reads the duct's type from its BlockEntity — so two untyped
+     * (NONE) ducts still connect to each other (you can lay a line, then type it), a typed duct links only
+     * to same-type ducts, and either connects to a machine port (which accepts any type).
+     */
     private static boolean canConnectTo(BlockGetter level, BlockPos pos, Direction dir) {
         BlockPos neighbour = pos.relative(dir);
         ForgeDirection ductSide = ForgeDirection.getOrientation(dir);
@@ -103,6 +120,7 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
         return level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct ? duct.getFluidType() : Fluids.NONE;
     }
 
+    /** Recomputes all six connection flags from the duct's current type (after the type changes). */
     private BlockState recomputeConnections(BlockState state, BlockGetter level, BlockPos pos) {
         for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
             state = state.setValue(e.getValue(), canConnectTo(level, pos, e.getKey()));
@@ -136,13 +154,33 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        // The hitbox must match what FluidDuctObjRenderer.selectParts DRAWS, not just the raw connection
+        // flags: a duct with a single connection on one axis (or none) renders a full straight pipe (both
+        // arms of that axis), so the hitbox has to cover the opposite arm too — otherwise the visible far
+        // arm has no collision ("straight but not connected on one side" click‑through). §20 fix.
+        boolean pX = state.getValue(EAST), nX = state.getValue(WEST);
+        boolean pY = state.getValue(UP), nY = state.getValue(DOWN);
+        boolean pZ = state.getValue(SOUTH), nZ = state.getValue(NORTH);
+        boolean anyX = pX || nX, anyY = pY || nY, anyZ = pZ || nZ;
+
         VoxelShape shape = CORE;
-        for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
-            if (state.getValue(e.getValue())) shape = Shapes.or(shape, ARM.get(e.getKey()));
+        if (!anyX && !anyY && !anyZ) {
+            for (VoxelShape arm : ARM.values()) shape = Shapes.or(shape, arm); // renderer draws all 6 arms
+        } else if (anyX && !anyY && !anyZ) {
+            shape = Shapes.or(shape, ARM.get(Direction.EAST), ARM.get(Direction.WEST)); // straight X pipe
+        } else if (anyY && !anyX && !anyZ) {
+            shape = Shapes.or(shape, ARM.get(Direction.UP), ARM.get(Direction.DOWN));   // straight Y pipe
+        } else if (anyZ && !anyX && !anyY) {
+            shape = Shapes.or(shape, ARM.get(Direction.SOUTH), ARM.get(Direction.NORTH)); // straight Z pipe
+        } else {
+            for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
+                if (state.getValue(e.getValue())) shape = Shapes.or(shape, ARM.get(e.getKey()));
+            }
         }
         return shape;
     }
 
+    /** Right-click with a fluid identifier → set the duct's fluid type and recompute its connections. */
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
                                           Player player, InteractionHand hand, BlockHitResult hit) {
@@ -150,7 +188,7 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             duct.setFluidType(type);
-            level.setBlock(pos, recomputeConnections(state, level, pos), 3);
+            level.setBlock(pos, recomputeConnections(state, level, pos), 3); // refresh this duct + notify neighbours
             player.sendSystemMessage(Component.literal("Duct fluid: " + type.getName()).withStyle(ChatFormatting.AQUA));
         }
         return InteractionResult.SUCCESS;
@@ -176,6 +214,7 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
         return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
+    /** Look-overlay: the duct's carried fluid type, tinted by its colour. */
     @Override
     public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct)) return;

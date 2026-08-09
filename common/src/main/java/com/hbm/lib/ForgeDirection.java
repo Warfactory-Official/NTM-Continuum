@@ -3,20 +3,27 @@ package com.hbm.lib;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Rotation;
 
+/**
+ * HBM's own direction enum (copied from 1.7.10 ForgeDirection) — kept because vanilla
+ * {@link Direction} has no {@code UNKNOWN} value, which the power/fluid networks rely on as a
+ * sentinel. Ported verbatim; {@code EnumFacing} -> {@link Direction}. The first six values match
+ * vanilla {@link Direction}'s ordinal order (DOWN, UP, NORTH, SOUTH, WEST, EAST).
+ */
 public enum ForgeDirection {
 
+    /** -Y */
     DOWN(0, -1, 0),
-
+    /** +Y */
     UP(0, 1, 0),
-
+    /** -Z */
     NORTH(0, 0, -1),
-
+    /** +Z */
     SOUTH(0, 0, 1),
-
+    /** -X */
     WEST(-1, 0, 0),
-
+    /** +X */
     EAST(1, 0, 0),
-
+    /** Used only by getOrientation, for invalid inputs */
     UNKNOWN(0, 0, 0);
 
     public final int offsetX;
@@ -25,7 +32,7 @@ public enum ForgeDirection {
     public final int flag;
     public static final ForgeDirection[] VALUES = values();
     public static final ForgeDirection[] VALID_DIRECTIONS = {DOWN, UP, NORTH, SOUTH, WEST, EAST};
-
+    // Left hand rule rotation matrix for all possible axes of rotation
     public static final int[][] ROTATION_MATRIX = {
         {0, 1, 4, 5, 3, 2, 6},
         {0, 1, 5, 4, 2, 3, 6},

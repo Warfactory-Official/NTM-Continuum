@@ -17,6 +17,11 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Menu for the storage crates (iron / steel / desh). A single menu type serves all three: the layout
+ * (slot grid + player-inventory offsets) comes from the bound {@link TileEntityCrate}'s {@link CrateType}.
+ * The crate slot grid is followed by the player inventory at the type's configured positions.
+ */
 public class ContainerCrate extends AbstractContainerMenu {
 
     private final Container machine;
@@ -25,11 +30,13 @@ public class ContainerCrate extends AbstractContainerMenu {
     private final int crateSlots;
     private final @Nullable Block crateBlock;
 
+    /** Client-side: resolve the BlockEntity by position to learn the crate type + bind its inventory. */
     public ContainerCrate(int containerId, Inventory playerInventory, BlockPos pos) {
         this(containerId, playerInventory, resolve(playerInventory, pos),
                 ContainerLevelAccess.create(playerInventory.player.level(), pos));
     }
 
+    /** Server-side: bound to the live BlockEntity. */
     public ContainerCrate(int containerId, Inventory playerInventory, TileEntityCrate crate) {
         this(containerId, playerInventory, crate, ContainerLevelAccess.create(crate.getLevel(), crate.getBlockPos()));
     }
@@ -42,6 +49,7 @@ public class ContainerCrate extends AbstractContainerMenu {
         this.access = access;
         this.crateBlock = crateBlockFor(type);
 
+        // Crate slot grid (cols × rows) at the type's origin.
         for (int row = 0; row < type.rows; row++) {
             for (int col = 0; col < type.columns; col++) {
                 int slot = col + row * type.columns;
@@ -49,6 +57,7 @@ public class ContainerCrate extends AbstractContainerMenu {
             }
         }
 
+        // Player inventory + hotbar at the type's positions (the crates use non-default layouts).
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 this.addSlot(new Slot(playerInventory, col + row * 9 + 9,
@@ -73,6 +82,7 @@ public class ContainerCrate extends AbstractContainerMenu {
         };
     }
 
+    /** The crate's layout, for the screen to size itself + draw the right texture. */
     public CrateType getCrateType() {
         return type;
     }

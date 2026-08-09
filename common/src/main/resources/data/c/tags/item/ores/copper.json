@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:copper_ores",
+    "hbm:ore_copper",
+    "hbm:ore_gneiss_copper"
+  ]
+}

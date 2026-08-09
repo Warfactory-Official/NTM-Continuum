@@ -28,6 +28,15 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * Electric Furnace — a single horizontal-facing, BlockEntity-backed machine. It smelts vanilla furnace
+ * recipes using HE drawn from adjacent power networks (its {@link TileEntityMachineElectricFurnace}
+ * implements {@code IEnergyReceiverMK2}, which a red cable connects to directly).
+ *
+ * <p>The 1.12.2 original used two separate blocks ({@code _off}/{@code _on}); here that becomes a single
+ * block with a {@link #LIT} property (the TE flips it while smelting), driving the lit front texture in
+ * the blockstate. Right-click opens the menu. The lit "flame particle" effect is deferred (§18).
+ */
 public class MachineElectricFurnace extends Block implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -58,6 +67,8 @@ public class MachineElectricFurnace extends Block implements EntityBlock {
         return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
+    /** Smoke + flame puffing from the front face while smelting (LIT) — ported from the 1.12.2
+     * {@code randomDisplayTick} of the {@code machine_electric_furnace_on} block. */
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         if (!state.getValue(LIT)) return;
@@ -73,7 +84,7 @@ public class MachineElectricFurnace extends Block implements EntityBlock {
             case WEST -> { px = f - f3; pz = f2 + f4; }
             case EAST -> { px = f + f3; pz = f2 + f4; }
             case NORTH -> { px = f + f4; pz = f2 - f3; }
-            default -> { px = f + f4; pz = f2 + f3; }
+            default -> { px = f + f4; pz = f2 + f3; } // SOUTH
         }
         level.addParticle(ParticleTypes.SMOKE, px, f1, pz, 0.0, 0.0, 0.0);
         level.addParticle(ParticleTypes.FLAME, px, f1, pz, 0.0, 0.0, 0.0);

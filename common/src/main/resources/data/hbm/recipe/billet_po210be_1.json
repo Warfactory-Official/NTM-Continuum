@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:billet_polonium",
+    "hbm:billet_beryllium"
+  ],
+  "result": {
+    "id": "hbm:billet_po210be",
+    "count": 2
+  }
+}

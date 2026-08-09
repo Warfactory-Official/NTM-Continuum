@@ -1,0 +1,23 @@
+package com.hbm.hazard;
+
+/**
+ * Post-registration hazard setup entrypoint. Must run <b>after</b> all items/blocks are registered
+ * (so {@link HazardRegistry#registerItems()} can resolve items from the registry), i.e. from each
+ * loader's post-registration hook (NeoForge {@code FMLCommonSetupEvent}, Fabric after
+ * {@code DeferredRegister.flushAll}).
+ */
+public final class Hazards {
+
+    private Hazards() {}
+
+    private static boolean done = false;
+
+    public static void init() {
+        if (done) return;
+        done = true;
+        HazardRegistry.registerTrafos();
+        HazardRegistry.registerItems();
+        com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership
+        com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
+    }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "#c:plates/steel",
+    "A": "#c:plates/aluminium"
+  },
+  "pattern": [
+    "SAS",
+    "   ",
+    "SAS"
+  ],
+  "result": {
+    "id": "hbm:fluid_duct_mk2",
+    "count": 8
+  }
+}

@@ -77,4 +77,9 @@ public class FabricPlatformHelper implements IPlatformHelper {
             ServerPlayNetworking.send(player, payload);
         }
     }
+
+    @Override
+    public void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
+        ServerPlayNetworking.send(player, payload);
+    }
 }

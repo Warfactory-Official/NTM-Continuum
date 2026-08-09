@@ -3,9 +3,14 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.sound.ChemPlantSoundHandler;
 import com.hbm.interfaces.IControlReceiver;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineChemicalPlant;
+import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
+import com.hbm.tileentity.IUpgradeInfoProvider;
+import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -34,9 +39,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+/**
+ * Chemical Plant — the first functional <b>fluid</b> machine, built on the assembly machine's recipe
+ * framework (selector + control packet) plus the fluid I/O added to {@link ModuleMachineChemplant}/
+ * {@link com.hbm.modules.machine.ModuleMachineBase}. 22 slots: battery, blueprint, 2 upgrades, 3 item-in,
+ * 3 item-out, 3 fluid-in (bucket fill → empty out) and 3 fluid-out (empty bucket in → full out). It has 3
+ * input + 3 output tanks; the selected recipe {@link com.hbm.modules.machine.ModuleMachineBase#setupTanks
+ * conforms} them to its fluids, then the {@link #serverTick} feeds the input tanks from the fluid network
+ * (and from buckets) and pushes the output tanks back out.
+ *
+ * <p>Slim port (deferred): battery-item charging, the canister/Forge fluid container I/O (only HBM
+ * buckets + the network are wired). Upgrades (slots 2–3: SPEED/POWER/OVERDRIVE) use the 1.12.2 formulas.
+ */
 public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer {
+        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer, IUpgradeInfoProvider {
 
+    /** Slots a hopper/pipe may touch: the 3 item inputs + the 3 item outputs. */
     private static final int[] IO_SLOTS = {4, 5, 6, 7, 8, 9};
 
     public long power;
@@ -46,14 +64,16 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     public final FluidTankNTM[] inputTanks = new FluidTankNTM[3];
     public final FluidTankNTM[] outputTanks = new FluidTankNTM[3];
 
+    // --- client-only animation state (not saved; advanced while didProcess, like the 1.12.2 anim) ---
     public int anim;
     public int prevAnim;
 
     public final ModuleMachineChemplant chemplantModule;
+    public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
     public TileEntityMachineChemicalPlant(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), pos, state, 22);
-        ChemicalPlantRecipes.INSTANCE.registerRecipes();
+        ChemicalPlantRecipes.INSTANCE.registerRecipes(); // idempotent; registries are flushed by now
         for (int i = 0; i < 3; i++) {
             inputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
             outputTanks[i] = new FluidTankNTM(Fluids.NONE, 24_000);
@@ -69,8 +89,10 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         return "container.machine_chemical_plant";
     }
 
-    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
+    // --- server: power + fluids + processing ---
 
+    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
+        // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
         for (DirPos dp : te.getConPos()) {
             te.trySubscribe(level, dp);
             for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
@@ -79,20 +101,33 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         te.fillInputTanks();
         te.unloadOutputTanks();
 
+        // Upgrades (1.12.2 formulas, identical to the assembly machine).
+        te.upgradeManager.checkSlots(te.inventory, 2, 3);
+        double speed = 1D;
+        double pow = 1D;
+        speed += Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3) / 3D;
+        speed += Math.min(te.upgradeManager.getLevel(UpgradeType.OVERDRIVE), 3);
+        pow -= Math.min(te.upgradeManager.getLevel(UpgradeType.POWER), 3) * 0.25D;
+        pow += Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3) * 1D;
+        pow += Math.min(te.upgradeManager.getLevel(UpgradeType.OVERDRIVE), 3) * 10D / 3D;
+
         ItemStack blueprint = te.inventory.getStackInSlot(1);
-        te.chemplantModule.update(1.0D, 1.0D, true, blueprint);
+        te.chemplantModule.update(speed, pow, true, blueprint);
         te.didProcess = te.chemplantModule.didProcess;
 
         if (te.chemplantModule.markDirty) te.setChanged();
         te.networkPackNT();
     }
 
+    /** Client ticker: advance the animation counter (gated by the synced {@code didProcess}) + the sound loop. */
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
         ChemPlantSoundHandler.tickLoop(te);
         te.prevAnim = te.anim;
         if (te.didProcess) te.anim++;
     }
 
+    /** Drains a full container in each fluid-in load slot (10..12) INTO that input tank, emptied container
+     * → out slot (13..15). Handles HBM/vanilla buckets and the universal tank/barrel ({@link IFillableItem}). */
     private void fillInputTanks() {
         for (int i = 0; i < 3; i++) {
             ItemStack in = inventory.getStackInSlot(10 + i);
@@ -104,7 +139,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
                 FluidType heldType = fillable.getFirstFluidType(in);
                 if (held <= 0 || heldType == Fluids.NONE) continue;
                 int addable = tank.fill(heldType, held, false);
-                if (addable <= 0) continue;
+                if (addable <= 0) continue; // tank full or wrong type
                 ItemStack work = single(in);
                 int taken = fillable.tryEmpty(heldType, addable, work);
                 if (taken <= 0 || !fits(13 + i, work)) continue;
@@ -122,6 +157,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         }
     }
 
+    /** Fills an empty container in each fluid-out load slot (16..18) FROM that output tank, filled container
+     * → out slot (19..21). Handles the universal tank/barrel ({@link IFillableItem}) and empty buckets. */
     private void unloadOutputTanks() {
         for (int i = 0; i < 3; i++) {
             FluidTankNTM tank = outputTanks[i];
@@ -156,6 +193,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         return Fluids.NONE;
     }
 
+    /** Any fluid container the load slots accept: a tank/barrel, an HBM fluid bucket, or a vanilla bucket. */
     private static boolean isFluidContainer(ItemStack stack) {
         return stack.getItem() instanceof IFillableItem
                 || stack.getItem() instanceof ItemFluidBucket
@@ -178,6 +216,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         setChanged();
     }
 
+    /** Power connection points around the 3×3 footprint (one block out from each edge cell). Same as assembly. */
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
@@ -190,31 +229,75 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot == 0) return true;
-        if (slot == 1) return stack.getItem() instanceof ItemBlueprints;
-        if (slot >= 2 && slot <= 3) return false;
-        if (slot >= 7 && slot <= 9) return false;
-        if (slot >= 10 && slot <= 12) return isFluidContainer(stack);
-        if (slot >= 13 && slot <= 15) return true;
-        if (slot >= 16 && slot <= 18) return isFluidContainer(stack);
-        if (slot >= 19 && slot <= 21) return true;
-        return chemplantModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1));
+        if (slot == 0) return true;                                       // battery slot (charging deferred)
+        if (slot == 1) return stack.getItem() instanceof ItemBlueprints;  // template
+        if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
+        if (slot >= 7 && slot <= 9) return false;                         // item outputs (module writes via setStackInSlot)
+        if (slot >= 10 && slot <= 12) return isFluidContainer(stack);     // fluid-in load (bucket / tank / barrel)
+        if (slot >= 13 && slot <= 15) return true;                        // emptied-container out (machine-insert)
+        if (slot >= 16 && slot <= 18) return isFluidContainer(stack);     // fluid-out load (empty bucket / tank / barrel)
+        if (slot >= 19 && slot <= 21) return true;                        // filled-container out (machine-insert)
+        return chemplantModule.isItemValidForPool(slot, stack, inventory.getStackInSlot(1)); // item inputs 4..6
     }
+
+    // --- WorldlyContainer: hoppers/pipes feed item inputs, pull item outputs ---
 
     @Override public int[] getSlotsForFace(Direction side) { return IO_SLOTS; }
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot >= 4 && slot <= 6 && isItemValidForSlot(slot, stack); }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot >= 7 && slot <= 9; }
+
+    // --- IUpgradeInfoProvider (identical to the assembly machine's 1.12.2 provideInfo) ---
+
+    @Override
+    protected int[] getUpgradeSlotRange() {
+        return new int[]{2, 3};
+    }
+
+    @Override
+    public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
+        return type == UpgradeType.SPEED || type == UpgradeType.POWER || type == UpgradeType.OVERDRIVE;
+    }
+
+    @Override
+    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_chemical_plant.get()));
+        if (type == UpgradeType.SPEED) {
+            info.add(Component.translatable(KEY_SPEED, "+" + (level * 100 / 3) + "%").withStyle(ChatFormatting.GREEN));
+            info.add(Component.translatable(KEY_CONSUMPTION, "+" + (level * 50) + "%").withStyle(ChatFormatting.RED));
+        }
+        if (type == UpgradeType.POWER) {
+            info.add(Component.translatable(KEY_CONSUMPTION, "-" + (level * 25) + "%").withStyle(ChatFormatting.GREEN));
+        }
+        if (type == UpgradeType.OVERDRIVE) {
+            info.add(Component.literal("YES").withStyle(IUpgradeInfoProvider.getBlink() ? ChatFormatting.RED : ChatFormatting.DARK_GRAY));
+        }
+    }
+
+    @Override
+    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
+        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+        upgrades.put(UpgradeType.SPEED, 3);
+        upgrades.put(UpgradeType.POWER, 3);
+        upgrades.put(UpgradeType.OVERDRIVE, 3);
+        return upgrades;
+    }
+
+    // --- IEnergyReceiverMK2 ---
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
     @Override public long getReceiverSpeed() { return maxPower; }
 
+    // --- IFluidStandardTransceiverMK2 ---
+
     @Override public FluidTankNTM[] getReceivingTanks() { return inputTanks; }
     @Override public FluidTankNTM[] getSendingTanks() { return outputTanks; }
     @Override public FluidTankNTM[] getAllTanks() {
         return new FluidTankNTM[]{inputTanks[0], inputTanks[1], inputTanks[2], outputTanks[0], outputTanks[1], outputTanks[2]};
     }
+
+    // --- IControlReceiver: the in-GUI recipe selector sets the active recipe (index 0) ---
 
     @Override
     public void receiveControl(CompoundTag data) {
@@ -227,6 +310,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         }
     }
 
+    // --- MenuProvider ---
+
     @Override
     public Component getDisplayName() {
         return Component.translatable("block.hbm.machine_chemical_plant");
@@ -236,6 +321,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineChemicalPlant(containerId, playerInventory, this);
     }
+
+    // --- sync (BufPacket) + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

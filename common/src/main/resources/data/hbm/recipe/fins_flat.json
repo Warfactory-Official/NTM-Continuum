@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:plates/steel",
+    "I": "#c:ingots/steel"
+  },
+  "pattern": [
+    "IP",
+    "PP",
+    "IP"
+  ],
+  "result": {
+    "id": "hbm:fins_flat"
+  }
+}

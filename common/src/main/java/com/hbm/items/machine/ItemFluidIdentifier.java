@@ -19,6 +19,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
+/**
+ * A fluid identifier: stamps a tank/duct with one fixed {@link FluidType} (right-click a duct or drop it
+ * in a tank's identifier slot). Each fluid has its <b>own dedicated</b> identifier — a single registered
+ * item carries the fluid in {@link ModDataComponents#FLUID_ID}, and the creative menu shows one variant
+ * per fluid (see {@link ModMachineItems}), exactly as the 1.12.2 {@code ItemFluidIDMulti} listed one
+ * metadata subtype per fluid.
+ *
+ * <p>Icon: the base {@code fluid_identifier_multi} sprite under a {@code fluid_identifier_overlay} tinted
+ * by the fluid colour (stored in the vanilla {@code custom_model_data} colour list, read by the item-model
+ * definition's {@code minecraft:custom_model_data} tint source) — the 26.1 replacement for the original's
+ * {@code IItemColor} handler. No cycling, no per-fluid model.
+ */
 public class ItemFluidIdentifier extends Item implements IItemFluidIdentifier {
 
     public ItemFluidIdentifier(Properties properties) {
@@ -29,6 +41,7 @@ public class ItemFluidIdentifier extends Item implements IItemFluidIdentifier {
         return Fluids.fromID(stack.getOrDefault(ModDataComponents.FLUID_ID.get(), 0));
     }
 
+    /** Builds a dedicated identifier for {@code fluid} (FLUID_ID for logic + the tint colour for rendering). */
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModMachineItems.fluid_identifier.get());
         stack.set(ModDataComponents.FLUID_ID.get(), fluid.getID());
@@ -42,6 +55,7 @@ public class ItemFluidIdentifier extends Item implements IItemFluidIdentifier {
         return getFluid(stack);
     }
 
+    /** Title-cases the internal fluid name, e.g. {@code HEAVY_OIL} → {@code "Heavy Oil"}. */
     private static String prettify(String name) {
         StringBuilder sb = new StringBuilder();
         for (String part : name.toLowerCase(Locale.US).split("_")) {

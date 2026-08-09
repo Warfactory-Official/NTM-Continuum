@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:ingots/beryllium",
+    "R": "hbm:coil_tungsten",
+    "W": "hbm:plate_cast_copper",
+    "F": "minecraft:furnace"
+  },
+  "pattern": [
+    "BBB",
+    "WFW",
+    "RRR"
+  ],
+  "result": {
+    "id": "hbm:machine_electric_furnace_off"
+  }
+}

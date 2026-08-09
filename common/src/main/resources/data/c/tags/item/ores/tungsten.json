@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:ore_nether_tungsten",
+    "hbm:ore_tungsten"
+  ]
+}

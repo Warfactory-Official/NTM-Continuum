@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:glass_pane",
+    "W": "hbm:wire_fine_tungsten",
+    "I": "hbm:plate_polymer"
+  },
+  "pattern": [
+    "G",
+    "W",
+    "I"
+  ],
+  "result": {
+    "id": "hbm:circuit_vacuum_tube"
+  }
+}

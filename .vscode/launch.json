@@ -1,0 +1,71 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "NeoForge Client (:neoforge)",
+      "presentation": {
+        "group": "Mod Development - neoforge",
+        "order": 0
+      },
+      "projectName": "neoforge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\build\\moddev\\clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dhbm%%C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\neoforge\\runs\\client",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "NeoForge Data (:neoforge)",
+      "presentation": {
+        "group": "Mod Development - neoforge",
+        "order": 1
+      },
+      "projectName": "neoforge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\build\\moddev\\dataRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\build\\moddev\\dataRunVmArgs.txt",
+        "-Dfml.modFolders\u003dhbm%%C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\neoforge\\runs\\data",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "NeoForge Server (:neoforge)",
+      "presentation": {
+        "group": "Mod Development - neoforge",
+        "order": 2
+      },
+      "projectName": "neoforge",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\build\\moddev\\serverRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dhbm%%C:\\Users\\Kelvin\\Documents\\Mod FIles\\HBM PORT\\new-hbm\\neoforge\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\neoforge\\runs\\server",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    }
+  ]
+}

@@ -21,6 +21,12 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Battery Socket: a small 2×2 dummyable multiblock (dims {1,0,1,0,1,0} + 3 extra cells), drawn by the
+ * {@code BatterySocketRenderer}. Its core is {@link TileEntityBatterySocket}, which exposes the inserted
+ * battery item's charge to the power grid. Implements {@link IEnergyConnectorBlock} so cables connect to
+ * any footprint face (the core's BlockEntity isn't present at the dummy cells).
+ */
 public class MachineBatterySocket extends BlockDummyable implements IEnergyConnectorBlock, ILookOverlay {
 
     public MachineBatterySocket(Properties properties) {
@@ -32,6 +38,7 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
         return new TileEntityBatterySocket(pos, state);
     }
 
+    /** Cables connect only at the socket's true power ports (its {@code getConPos()} positions), not every footprint face. */
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
         return findCoreTE(world, pos) instanceof TileEntityBatterySocket te
@@ -58,6 +65,8 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
         this.makeExtra(world, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
     }
 
+    // --- comparator output from the carried battery's fill (works from any cell via findCore) ---
+
     @Override
     protected boolean hasAnalogOutputSignal(BlockState state) {
         return true;
@@ -82,10 +91,14 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
         return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
+    /** Look-overlay: the carried battery item's charge / max (or "Empty" when no battery is inserted). */
     @Override
     public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
         if (!(findCoreTE(level, pos) instanceof TileEntityBatterySocket socket)) return;
 
+        // Read the SYNCED carried stack, not getPower()/getMaxPower() — those read the slot-0 inventory
+        // item, which is only synced to the client while the container is open (so the HUD would show a
+        // frozen charge with no GUI open). syncStack is broadcast every tick via the BufPacket.
         long power = TileEntityBatterySocket.powerFromStack(socket.syncStack);
         long max = TileEntityBatterySocket.maxPowerFromStack(socket.syncStack);
         List<String> text = new ArrayList<>();

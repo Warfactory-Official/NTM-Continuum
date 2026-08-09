@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:nugget_pu_mix",
+    "hbm:nugget_pu_mix",
+    "hbm:nugget_uranium_fuel",
+    "hbm:nugget_uranium_fuel",
+    "hbm:nugget_uranium_fuel",
+    "hbm:nugget_uranium_fuel"
+  ],
+  "result": {
+    "id": "hbm:billet_mox_fuel"
+  }
+}

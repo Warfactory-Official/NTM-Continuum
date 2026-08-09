@@ -19,8 +19,15 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.UUID;
 
+/**
+ * The Fat Man ({@code nuke_man}) BlockEntity. Six slots, ported from 1.12.2: slot 0 = igniter, slots
+ * 1–4 = explosive lenses, slot 5 = the fissile core. The bomb is "ready" only when all six are filled
+ * with the correct parts ({@link #isReady()}). Sits on the {@link TileEntityMachineBase} tower so it
+ * gets the inventory + chunk-load sync for free.
+ */
 public class TileEntityNukeMan extends TileEntityMachineBase implements MenuProvider {
 
+    /** The player who placed the bomb, attributed as the detonator when triggered by redstone. */
     public @Nullable UUID placerID;
 
     public TileEntityNukeMan(BlockPos pos, BlockState state) {
@@ -73,6 +80,8 @@ public class TileEntityNukeMan extends TileEntityMachineBase implements MenuProv
         super.loadAdditional(input);
         placerID = input.read("placer", UUIDUtil.CODEC).orElse(null);
     }
+
+    // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {

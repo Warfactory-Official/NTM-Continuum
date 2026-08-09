@@ -6,6 +6,11 @@ import com.hbm.lib.Library;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+/**
+ * {@link IFluidConnectorMK2} with a node-creation method — the fluid analogue of
+ * {@link com.hbm.api.energymk2.IEnergyConductorMK2}. A pipe creates one {@link FluidNode} per
+ * {@link FluidType} it carries (the node's provider is keyed to that type).
+ */
 public interface IFluidPipeMK2 extends IFluidConnectorMK2 {
 
     default FluidNode createNode(FluidType type) {

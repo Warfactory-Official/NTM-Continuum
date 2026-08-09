@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:billet_technetium"
+  ],
+  "result": {
+    "id": "hbm:ingot_technetium",
+    "count": 6
+  }
+}

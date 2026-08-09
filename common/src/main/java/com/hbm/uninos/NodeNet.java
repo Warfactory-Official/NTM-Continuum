@@ -9,6 +9,7 @@ import java.util.Random;
 
 public abstract class NodeNet<R, P, L extends GenNode<N>, N extends NodeNet<R, P, L, N>> {
 
+    /** Global random for figuring things out like random leftover distribution */
     public static Random rand = new Random();
 
     public boolean valid = true;
@@ -20,14 +21,17 @@ public abstract class NodeNet<R, P, L extends GenNode<N>, N extends NodeNet<R, P
     public NodeNet() {
     }
 
+    /// SUBSCRIBER HANDLING ///
     public boolean isSubscribed(R receiver) { return this.receiverEntries.containsKey(receiver); }
     public void addReceiver(R receiver) { this.receiverEntries.put(receiver, System.currentTimeMillis()); }
     public void removeReceiver(R receiver) { this.receiverEntries.removeLong(receiver); }
 
+    /// PROVIDER HANDLING ///
     public boolean isProvider(P provider) { return this.providerEntries.containsKey(provider); }
     public void addProvider(P provider) { this.providerEntries.put(provider, System.currentTimeMillis()); }
     public void removeProvider(P provider) { this.providerEntries.removeLong(provider); }
 
+    /** Combines two networks into one */
     public void joinNetworks(NodeNet<R, P, L, N> network) {
         if (network == this || !network.isValid()) return;
 
@@ -39,26 +43,30 @@ public abstract class NodeNet<R, P, L extends GenNode<N>, N extends NodeNet<R, P
         network.destroy();
     }
 
+    /** Adds the node as part of this network's links */
     public NodeNet<R, P, L, N> joinLink(L node) {
         if (node.net != null) node.net.leaveLink(node);
         return forceJoinLink(node);
     }
 
+    /** Adds the node as part of this network's links, skips the part about removing it from existing networks */
     public NodeNet<R, P, L, N> forceJoinLink(L node) {
         this.links.add(node);
-
+        // noinspection unchecked
         node.setNet((N) this);
         return this;
     }
 
+    /** Removes the specified node */
     public void leaveLink(L node) {
         node.setNet(null);
         this.links.remove(node);
         if (this.links.isEmpty()) {
-            this.destroy();
+            this.destroy(); // An empty network is invalid
         }
     }
 
+    /// GENERAL POWER NET CONTROL ///
     public void invalidate() {
         if (!this.valid) return;
         this.valid = false;

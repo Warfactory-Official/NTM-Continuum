@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:block_trinitite"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:trinitite",
+    "count": 9
+  }
+}

@@ -17,6 +17,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.core.BlockPos;
 
+/**
+ * The HBM storage crate BlockEntity — a plain slot inventory whose size and GUI layout come from its
+ * {@link CrateType} (iron 36 / steel 54 / desh 104). One class serves all three crates; the type is
+ * passed in by the block / {@link com.hbm.tileentity.ModBlockEntities} factory.
+ *
+ * <p><b>Contents travel with the dropped crate</b> (the 1.12.2 {@code CRATE_KEEP_CONTENTS=true} default):
+ * implemented the vanilla shulker-box way — the inventory round-trips through the
+ * {@link DataComponents#CONTAINER} component ({@link #applyImplicitComponents}/
+ * {@link #collectImplicitComponents}), and the crate's loot table copies that component from the block
+ * entity onto the dropped item, so breaking a crate gives you a crate item holding everything, and
+ * placing it back restores the contents. (The 1.12.2 lock/lockpicking, hazard-radiation, loot-table
+ * fill, and hand-held "open from item" behaviours are dropped — see IMPLEMENTATION.md.)
+ */
 public class TileEntityCrate extends TileEntityMachineBase implements MenuProvider {
 
     public final CrateType crateType;
@@ -35,9 +48,17 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
         return inventory.getStacks();
     }
 
+    /**
+     * Don't spill the inventory on removal — the contents travel with the dropped crate item via the
+     * CONTAINER component + loot table. The {@link net.minecraft.world.level.block.entity.BlockEntity}
+     * default drops a {@link net.minecraft.world.Container}'s contents (chest behaviour); the crate keeps
+     * them (the shulker box overrides this the same way).
+     */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
     }
+
+    // --- contents-in-item (vanilla CONTAINER-component round-trip, like the shulker box) ---
 
     @Override
     protected void applyImplicitComponents(DataComponentGetter components) {
@@ -53,9 +74,12 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
 
     @Override
     public void removeComponentsFromTag(ValueOutput output) {
-
+        // The inventory lives in the CONTAINER component on the item; drop the redundant saved copy
+        // (mirrors vanilla discarding "Items"). Only affects the save-to-item path, not the world save.
         output.discard("inventory");
     }
+
+    // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {

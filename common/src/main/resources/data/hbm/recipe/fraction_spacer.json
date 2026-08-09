@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": "hbm:shell_steel",
+    "B": "minecraft:iron_bars"
+  },
+  "pattern": [
+    "BHB"
+  ],
+  "result": {
+    "id": "hbm:fraction_spacer"
+  }
+}

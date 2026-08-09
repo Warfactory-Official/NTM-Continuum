@@ -19,6 +19,16 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Draws HBM's red cable as the real {@code cable_neo.obj} model, replacing the 1.12.2 baked model
+ * ({@code BlockCableBakedModel}). Reads the six connection booleans from the {@link BlockCable} state
+ * and draws the matching OBJ parts: a {@code Core} plus an arm per connected side, with the
+ * straight-through optimisations {@code CX}/{@code CY}/{@code CZ} for a cable that only connects along
+ * one axis. (The block renders {@code INVISIBLE}; this BER draws it.)
+ *
+ * <p>Mirrors the original part selection exactly, including the Z-axis quirk (a NORTH connection draws
+ * the {@code posZ} part, SOUTH draws {@code negZ}).
+ */
 public class CableObjRenderer<T extends BlockEntity> implements BlockEntityRenderer<T, CableRenderState> {
 
     private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/blocks/cable_neo.obj");
@@ -46,6 +56,7 @@ public class CableObjRenderer<T extends BlockEntity> implements BlockEntityRende
         state.parts = selectParts(pX, nX, pY, nY, pZ, nZ);
     }
 
+    /** The 1.12.2 {@code BlockCableBakedModel.buildWorldQuads} part selection, verbatim. */
     private static Set<String> selectParts(boolean pX, boolean nX, boolean pY, boolean nY, boolean pZ, boolean nZ) {
         if (pX && nX && !pY && !nY && !pZ && !nZ) return Set.of("CX");
         if (!pX && !nX && pY && nY && !pZ && !nZ) return Set.of("CY");
@@ -56,8 +67,8 @@ public class CableObjRenderer<T extends BlockEntity> implements BlockEntityRende
         if (nX) parts.add("negX");
         if (pY) parts.add("posY");
         if (nY) parts.add("negY");
-        if (nZ) parts.add("posZ");
-        if (pZ) parts.add("negZ");
+        if (nZ) parts.add("posZ"); // mirrors the original (NORTH -> posZ)
+        if (pZ) parts.add("negZ"); // mirrors the original (SOUTH -> negZ)
         return parts;
     }
 
@@ -65,7 +76,7 @@ public class CableObjRenderer<T extends BlockEntity> implements BlockEntityRende
     public void submit(CableRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
         if (state.parts.isEmpty()) return;
         poseStack.pushPose();
-        poseStack.translate(0.5F, 0.5F, 0.5F);
+        poseStack.translate(0.5F, 0.5F, 0.5F); // OBJ is centred on the origin (-0.5..0.5)
         collector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
             for (String part : state.parts) {
                 model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY);

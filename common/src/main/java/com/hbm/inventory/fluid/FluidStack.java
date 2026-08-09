@@ -1,5 +1,10 @@
 package com.hbm.inventory.fluid;
 
+/**
+ * An amount of a {@link FluidType} at a given pressure. Ported verbatim from 1.12.2.
+ *
+ * @author hbm
+ */
 public class FluidStack {
 
     public FluidType type;

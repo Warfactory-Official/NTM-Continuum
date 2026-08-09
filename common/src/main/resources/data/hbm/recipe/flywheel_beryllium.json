@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:storage_blocks/beryllium",
+    "I": "hbm:plate_cast_iron",
+    "T": "hbm:pipe_dura_steel"
+  },
+  "pattern": [
+    "IBI",
+    "BTB",
+    "IBI"
+  ],
+  "result": {
+    "id": "hbm:flywheel_beryllium"
+  }
+}

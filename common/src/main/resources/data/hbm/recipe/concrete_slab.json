@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:concrete"
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "id": "hbm:concrete_slab",
+    "count": 6
+  }
+}

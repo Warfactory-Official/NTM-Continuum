@@ -9,6 +9,11 @@ import com.hbm.registry.RegistryObject;
 import com.hbm.tileentity.machine.storage.CrateType;
 import net.minecraft.world.level.block.SoundType;
 
+/**
+ * Hand-registered storage blocks (the iron / steel / desh crates; future: tungsten crate, safe, file
+ * cabinet, mass storage). Separate from generated {@link com.hbm.blocks.ModBlocks} so codegen never
+ * clobbers them.
+ */
 public final class ModStorageBlocks {
 
     private ModStorageBlocks() {}
@@ -35,7 +40,8 @@ public final class ModStorageBlocks {
     }
 
     private static void tabItem(String name, RegistryObject<BlockCrate> block, CrateType type) {
-
+        // Custom block item so the tooltip shows the "X/Y Slots used" readout (it carries the crate's
+        // contents in the CONTAINER component). useBlockDescriptionPrefix() keeps the block.hbm.<id> key.
         RegistryObject<ItemBlockStorageCrate> item = ITEMS.registerItem(name,
                 p -> new ItemBlockStorageCrate(block.get(), p, type), p -> p.useBlockDescriptionPrefix());
         ModTabs.addTo(HbmTab.MACHINES, item);

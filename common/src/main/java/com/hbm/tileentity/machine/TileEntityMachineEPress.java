@@ -1,14 +1,19 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineEPress;
 import com.hbm.inventory.recipes.PressRecipes;
+import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
+import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -26,9 +31,19 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import org.jspecify.annotations.Nullable;
 
-public class TileEntityMachineEPress extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer {
+/**
+ * Electric Press — a functional powered press. It draws HE from adjacent power networks (and from a
+ * battery item in slot 0), and while powered presses a stamp (slot 1) + ingredient (slot 2) into the
+ * {@link PressRecipes} output (slot 3) over a stroke. Faithful port of the 1.12.2
+ * {@code TileEntityMachineEPress}.
+ *
+ * <p>Slots: 0 battery, 1 stamp, 2 input, 3 output, 4 upgrade (SPEED only, 1.12.2 formula: faster
+ * stroke + shorter inter-cycle delay). Deferred (see IMPLEMENTATION.md §18): the per-loader energy
+ * capability bridge.
+ */
+public class TileEntityMachineEPress extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer, IUpgradeInfoProvider {
 
-    private static final int[] IO_SLOTS = {1, 2, 3};
+    private static final int[] IO_SLOTS = {1, 2, 3}; // stamp / input (insert) + output (extract)
 
     public long power = 0;
     public static final long maxPower = 50000;
@@ -38,6 +53,9 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     private boolean isRetracting = false;
     private int delay;
 
+    public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
+
+    /** Client-only: the ingredient (slot 2) being pressed, for the floating-item render above the head. */
     @Nullable
     public ItemStack syncStack;
 
@@ -53,6 +71,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineEPress te) {
         for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
+        te.upgradeManager.checkSlots(te.inventory, 4, 4);
 
         boolean canProcess = te.canProcess();
         boolean hasPower = te.power >= 100;
@@ -61,8 +80,8 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
             te.power -= 100;
 
             if (te.delay <= 0) {
-
-                int speed = 1;
+                // 1.12.2 formula: speed = 1 + SPEED level (1..4) -> stroke ×(1 + speed/4), delay 5-speed+1.
+                int speed = 1 + Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
                 double processSpeed = (te.isRetracting ? 20 : 45) * (1.0D + speed / 4.0D);
 
                 if (te.isRetracting) {
@@ -129,11 +148,13 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         return switch (i) {
             case 0 -> Library.isBattery(stack);
             case 1 -> stack.getItem() instanceof ItemStamp;
-            case 2 -> !(stack.getItem() instanceof ItemStamp) && !Library.isBattery(stack);
-
-            default -> false;
+            case 2 -> !(stack.getItem() instanceof ItemStamp) && !Library.isBattery(stack) && !Library.isMachineUpgrade(stack);
+            case 4 -> Library.isMachineUpgrade(stack); // upgrade slot (any type, like SlotUpgrade)
+            default -> false; // case 3 output
         };
     }
+
+    // --- WorldlyContainer: hoppers extract only the output (slot 3); insert stamp/input. ---
 
     @Override
     public int[] getSlotsForFace(Direction side) {
@@ -150,6 +171,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         return slot == 3;
     }
 
+    /** Power connection points: the 4 horizontal faces + the bottom of the core block. */
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
@@ -161,6 +183,35 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         };
     }
 
+    // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---
+
+    @Override
+    protected int[] getUpgradeSlotRange() {
+        return new int[]{4, 4};
+    }
+
+    @Override
+    public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
+        return type == UpgradeType.SPEED;
+    }
+
+    @Override
+    public void provideInfo(UpgradeType type, int level, java.util.List<Component> info, boolean extendedInfo) {
+        info.add(IUpgradeInfoProvider.getStandardLabel(ModMachineBlocks.machine_epress.get()));
+        if (type == UpgradeType.SPEED) {
+            info.add(Component.translatable(KEY_DELAY, "-" + (50 * level / 3) + "%").withStyle(ChatFormatting.GREEN));
+        }
+    }
+
+    @Override
+    public java.util.HashMap<UpgradeType, Integer> getValidUpgrades() {
+        java.util.HashMap<UpgradeType, Integer> upgrades = new java.util.HashMap<>();
+        upgrades.put(UpgradeType.SPEED, 3);
+        return upgrades;
+    }
+
+    // --- IEnergyReceiverMK2 ---
+
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
@@ -168,6 +219,8 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
 
     public long getPowerScaled(int i) { return (power * i) / maxPower; }
     public int getProgressScaled(int i) { return (progress * i) / maxProgress; }
+
+    // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {
@@ -178,6 +231,8 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineEPress(containerId, playerInventory, this);
     }
+
+    // --- sync (BufPacket) + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

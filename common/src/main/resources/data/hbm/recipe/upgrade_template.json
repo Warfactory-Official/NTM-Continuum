@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": "hbm:wire_fine_copper",
+    "I": "#c:plates/iron",
+    "C": "hbm:circuit_analog",
+    "P": "hbm:plate_polymer"
+  },
+  "pattern": [
+    "WIW",
+    "PCP",
+    "WIW"
+  ],
+  "result": {
+    "id": "hbm:upgrade_template"
+  }
+}

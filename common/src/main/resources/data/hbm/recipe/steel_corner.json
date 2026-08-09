@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:steel_wall",
+    "hbm:steel_wall"
+  ],
+  "result": {
+    "id": "hbm:steel_corner"
+  }
+}
