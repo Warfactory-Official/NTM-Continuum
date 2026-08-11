@@ -39,6 +39,7 @@ public final class HbmBlockEntityRenderers {
         // The chemical plant has its own animated renderer too: a sliding Slider + rotating Spinner + the
         // Fluid mixer overlay (its own texture, tinted by the recipe fluid, only while processing).
         regCustom(sink, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), ctx -> new ChemicalPlantRenderer());
+        regCustom(sink, ModBlockEntities.MACHINE_PUREX.get(), ctx -> new PUREXRenderer());
         // Presses: a static body + a head that descends with the machine's progress.
         regCustom(sink, ModBlockEntities.MACHINE_EPRESS.get(), ctx -> new PressRenderer<>(
                 obj("epress_body.obj"), tex("machines/epress_body.png"),
@@ -58,6 +59,12 @@ public final class HbmBlockEntityRenderers {
         // Ore acidizer: static Body + rotating Spinner + the tinted acid overlay while processing.
         regCustom(sink, ModBlockEntities.MACHINE_CRYSTALLIZER.get(), ctx -> new CrystallizerRenderer());
         regCustom(sink, ModBlockEntities.MACHINE_MINING_LASER.get(), ctx -> new MiningLaserRenderer());
+        // SILEX: fully static upstream (it had no TESR at all — it was a StaticTesrBakedModels entry).
+        // Old yaw map N90/S270/W180/E0 = base yaw 90 + the standard map, same as the compressor's.
+        reg(sink, ModBlockEntities.MACHINE_SILEX.get(), 90F, 1F,
+                new ModelDef(obj("machines/silex.obj"), tex("machines/silex.png")));
+        // FEL: its own renderer — the static emitter plus the BeamPronter beam out to the hit block.
+        regCustom(sink, ModBlockEntities.MACHINE_FEL.get(), ctx -> new FELRenderer());
         // Oil derrick: static OBJ; old yaw map (N180/S0/W270/E90) = base yaw 180 + the standard map.
         reg(sink, ModBlockEntities.MACHINE_OIL_WELL.get(), 180F, 1F,
                 new ModelDef(obj("machines/derrick.obj"), tex("machines/derrick.png")));
@@ -112,6 +119,12 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModBlockEntities.MACHINE_PYROOVEN.get(),
                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven>(180F, 1F,
                         new ModelDef(obj("machines/pyrooven.obj"), tex("machines/pyrooven.png"))));
+        // ZIRNOX: old yaw map meta12(N)=90/13(S)=270/14(W)=180/15(E)=0 = built-in + 90.
+        regCustom(sink, ModBlockEntities.MACHINE_ZIRNOX.get(),
+                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityReactorZirnox>(90F, 1F,
+                        new ModelDef(obj("zirnox.obj"), tex("machines/zirnox.png"))).doubleSided());
+        regCustom(sink, ModBlockEntities.ZIRNOX_DESTROYED.get(),
+                ctx -> new ZirnoxDestroyedRenderer());
         // Combustion engine: the old RenderCombustionEngine yaw map is N90/S270/W180/E0 — exactly the
         // generic renderer's built-in map (N0/S180/W90/E270) + 90 — then a post-rotation
         // translate(-0.5, 0, 3) (the model isn't centred on the core cell).

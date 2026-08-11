@@ -44,6 +44,12 @@ public final class ModFallingBlocks {
     /** Tar sand — the oil-sand-bubble worldgen block; liquefies into BITUMEN (old {@code ModBlocks.ore_oil_sand}). */
     public static final RegistryObject<BlockFallingBase> ore_oil_sand = falling("ore_oil_sand", 0.5F, 1.0F, SoundType.SAND);
 
+    /** Lead-mixed sand — the PUREX vitrification medium (old {@code ModBlocks.sand_lead}, hardness 0.5). */
+    public static final RegistryObject<BlockFallingBase> sand_lead = falling("sand_lead", 0.5F, 0.5F, SoundType.SAND);
+
+    /** Digamma ash — laid under every cell a DRX laser burns through (old {@code BlockHazardFalling}). */
+    public static final RegistryObject<BlockFallingBase> ash_digamma = falling("ash_digamma", 0.5F, 150.0F, SoundType.SAND);
+
     private static RegistryObject<BlockFallingBase> falling(String id, float hardness, float resistance, SoundType sound) {
         RegistryObject<BlockFallingBase> block = BLOCKS.registerBlock(id, BlockFallingBase::new,
                 p -> p.strength(hardness, resistance).sound(sound));

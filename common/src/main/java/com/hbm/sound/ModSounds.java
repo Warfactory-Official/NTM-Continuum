@@ -28,6 +28,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> PRESS_OPERATE = register("block.pressoperate");
     /** The electric heater's hum loop (old {@code block.electricHum}). */
     public static final RegistryObject<SoundEvent> ELECTRIC_HUM = register("block.electric_hum");
+    /** The FEL's looping laser hum; its volume and pitch ramp with the machine's audioDuration. */
+    public static final RegistryObject<SoundEvent> FEL = register("block.fel");
 
     /** Machine-upgrade insertion "plug" click (old {@code item.upgradePlug}). */
     public static final RegistryObject<SoundEvent> UPGRADE_PLUG = register("item.upgrade_plug");
@@ -48,6 +50,9 @@ public final class ModSounds {
 
     /** The nuclear detonation roar played by the Torex cloud when its shockwave reaches the player. */
     public static final RegistryObject<SoundEvent> NUCLEAR_EXPLOSION = register("weapon.nuclear_explosion");
+
+    /** Original RBMK/ZIRNOX reactor accident sound; used only by the vanilla ZIRNOX meltdown blast. */
+    public static final RegistryObject<SoundEvent> RBMK_EXPLOSION = register("block.rbmk_explosion");
 
     /** Geiger click ladder, index 0..5 = old {@code geigerSounds}. */
     @SuppressWarnings("unchecked")

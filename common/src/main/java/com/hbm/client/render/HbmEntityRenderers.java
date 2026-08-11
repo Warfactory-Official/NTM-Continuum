@@ -28,5 +28,6 @@ public final class HbmEntityRenderers {
         sink.register(ModEntities.NUKE_EXPLOSION_MK5.get(), NoopRenderer::new);
         sink.register(ModEntities.FALLOUT_RAIN.get(), NoopRenderer::new);
         sink.register(ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
+        sink.register(ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
     }
 }

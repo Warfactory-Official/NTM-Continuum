@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.item.ItemStack;
 
 /** HBM's custom item data components (the 26.1 replacement for item NBT / metadata). */
 public final class ModDataComponents {
@@ -60,6 +61,27 @@ public final class ModDataComponents {
             COMPONENTS.register("hazard_radiation", () -> DataComponentType.<Float>builder()
                     .persistent(Codec.FLOAT)
                     .networkSynchronized(ByteBufCodecs.FLOAT)
+                    .build());
+
+    /** Number of neutron-exposure operations already performed by an active ZIRNOX fuel rod. */
+    public static final RegistryObject<DataComponentType<Integer>> ZIRNOX_LIFE =
+            COMPONENTS.register("zirnox_life", () -> DataComponentType.<Integer>builder()
+                    .persistent(Codec.INT)
+                    .networkSynchronized(ByteBufCodecs.INT)
+                    .build());
+
+    /** Whether one of the nine ZIRNOX spent-fuel item stacks still requires pool cooling. */
+    public static final RegistryObject<DataComponentType<Boolean>> FUEL_WASTE_HOT =
+            COMPONENTS.register("fuel_waste_hot", () -> DataComponentType.<Boolean>builder()
+                    .persistent(Codec.BOOL)
+                    .networkSynchronized(ByteBufCodecs.BOOL)
+                    .build());
+
+    /** The single filter installed in an {@link com.hbm.api.item.IGasMask}. */
+    public static final RegistryObject<DataComponentType<ItemStack>> GAS_MASK_FILTER =
+            COMPONENTS.register("gas_mask_filter", () -> DataComponentType.<ItemStack>builder()
+                    .persistent(ItemStack.CODEC)
+                    .networkSynchronized(ItemStack.OPTIONAL_STREAM_CODEC)
                     .build());
 
     public static void init() {}

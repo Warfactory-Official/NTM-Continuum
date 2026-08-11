@@ -4,6 +4,7 @@ package com.hbm.inventory.recipes.gen;
 // Curated recipes live in the hand-written class; this file holds the mechanical bulk port.
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModGlassBlocks;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -60,6 +61,10 @@ public final class AssemblyMachineRecipesGenerated {
                 .inputItems(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.LEAD_PLATING), 3), FERRO.plateCast().count(4), ANY_RESISTANTALLOY.ingot().count(4))
                 .inputFluids(new FluidStack(Fluids.UNSATURATEDS, 1_000))
                 .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.FERRO_PLATING, 1)));
+        reg.registerGenerated(new GenericRecipe("ass.excomputer").setup(1_200, 16_000)
+                .inputItems(new ComparableStack(ModIntermediateItems.expensive(EnumExpensiveType.CIRCUIT), 3), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 4), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR_BOARD), 4), new ComparableStack(ModGlassBlocks.glass_quartz.get().asItem(), 8))
+                .inputFluids(new FluidStack(Fluids.PERFLUOROMETHYL, 2_000))
+                .outputItems(ModIntermediateItems.expensive(EnumExpensiveType.COMPUTER, 1)));
         reg.registerGenerated(new GenericRecipe("ass.explastic").setup(600, 20_000)
                 .inputItems(ANY_HARDPLASTIC.ingot().count(4), ANY_PLASTIC.ingot().count(16), ANY_RUBBER.ingot().count(8))
                 .inputFluids(new FluidStack(Fluids.SOLVENT, 1_000))
@@ -167,12 +172,12 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.pyrooven").setup(300, 100)
                 .inputItems(STEEL.plateWelded().count(16), ANY_HARDPLASTIC.ingot().count(16), new ComparableStack(ModItems.ingot_cft.get(), 4), CU.pipe().count(12), new ComparableStack(ModItems.motor_desh.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID)))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_pyrooven.get())));
-        reg.registerGenerated(new GenericRecipe("ass.solidifier").setup(200, 100)
-                .inputItems(STEEL.shell().count(4), AL.plate().count(12), ANY_PLASTIC.ingot().count(4), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR), 12), new ComparableStack(ModItems.coil_copper.get(), 4))
-                .outputItems(new ItemStack(ModMachineBlocks.machine_solidifier.get())));
     }
 
     private static void register1(GenericRecipes reg) {
+        reg.registerGenerated(new GenericRecipe("ass.solidifier").setup(200, 100)
+                .inputItems(STEEL.shell().count(4), AL.plate().count(12), ANY_PLASTIC.ingot().count(4), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR), 12), new ComparableStack(ModItems.coil_copper.get(), 4))
+                .outputItems(new ItemStack(ModMachineBlocks.machine_solidifier.get())));
         reg.registerGenerated(new GenericRecipe("ass.compressor").setup(200, 100)
                 .inputItems(STEEL.plateCast().count(8), CU.plate().count(4), STEEL.shell().count(2), new ComparableStack(ModItems.motor.get(), 3), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ANALOG)))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_compressor.get())));
@@ -248,12 +253,18 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.thrusternerva").setup(600, 100)
                 .inputItems(DURA.ingot().count(32), B.ingot().count(8), PB.plate().count(16), STEEL.pipe().count(4))
                 .outputItems(new ItemStack(ModItems.thruster_nuclear.get())));
+        reg.registerGenerated(new GenericRecipe("ass.satellitemapper").setup(600, 100)
+                .inputItems(STEEL.shell().count(3), new ComparableStack(ModItems.plate_desh.get(), 4), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4), new ComparableStack(ModGlassBlocks.glass_quartz.get().asItem(), 8))
+                .outputItems(new ItemStack(ModItems.sat_head_mapper.get())));
         reg.registerGenerated(new GenericRecipe("ass.satellitescanner").setup(600, 100)
                 .inputItems(STEEL.shell().count(3), TI.plateCast().count(8), new ComparableStack(ModItems.plate_desh.get(), 4), new ComparableStack(ModItems.magnetron.get(), 8), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 8))
                 .outputItems(new ItemStack(ModItems.sat_head_scanner.get())));
         reg.registerGenerated(new GenericRecipe("ass.satelliteradar").setup(600, 100)
                 .inputItems(STEEL.shell().count(3), TI.plateCast().count(12), new ComparableStack(ModItems.magnetron.get(), 12), new ComparableStack(ModItems.coil_gold.get(), 16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4))
                 .outputItems(new ItemStack(ModItems.sat_head_radar.get())));
+        reg.registerGenerated(new GenericRecipe("ass.satellitelaser").setup(600, 100)
+                .inputItems(STEEL.shell().count(6), CU.plateCast().count(24), ANY_HARDPLASTIC.ingot().count(16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 8), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CAPACITOR_BOARD), 16), new ComparableStack(ModItems.crystal_diamond.get(), 8), new ComparableStack(ModGlassBlocks.glass_quartz.get().asItem(), 8))
+                .outputItems(new ItemStack(ModItems.sat_head_laser.get())));
         reg.registerGenerated(new GenericRecipe("ass.satelliteresonator").setup(600, 100)
                 .inputItems(STEEL.plateCast().count(6), STAR.ingot().count(12), ANY_PLASTIC.ingot().count(48), new ComparableStack(ModUpgradeItems.crystal_xen.get()), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 16))
                 .outputItems(new ItemStack(ModItems.sat_head_resonator.get())));

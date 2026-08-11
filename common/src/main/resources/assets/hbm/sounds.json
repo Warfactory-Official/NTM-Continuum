@@ -130,6 +130,16 @@
       }
     ]
   },
+  "block.rbmk_explosion": {
+    "subtitle": "subtitles.block.rbmk_explosion",
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/rbmk_explosion",
+        "stream": false
+      }
+    ]
+  },
   "block.electric_hum": {
     "category": "block",
     "sounds": [
@@ -193,6 +203,16 @@
     "sounds": [
       {
         "name": "hbm:tool/techbleep",
+        "stream": false
+      }
+    ]
+  },
+  "block.fel": {
+    "subtitle": "subtitles.block.fel",
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/fel",
         "stream": false
       }
     ]

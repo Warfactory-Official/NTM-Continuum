@@ -6,7 +6,9 @@ import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
+import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.inventory.recipes.PressRecipes;
+import com.hbm.inventory.recipes.PUREXRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -42,9 +44,11 @@ public final class HbmJeiPluginCommon {
     // Categories are created in registerCategories (needs the IGuiHelper) and reused in registerRecipes.
     private static JEIGenericRecipeHandler assembly;
     private static JEIGenericRecipeHandler chemplant;
+    private static JEIGenericRecipeHandler purex;
     private static PressRecipeHandler press;
     private static SolderingStationRecipeHandler soldering;
     private static CrystallizerRecipeHandler crystallizer;
+    private static SILEXRecipeHandler silex;
     private static ShredderRecipeHandler shredder;
     private static CrucibleAlloyingHandler crucible;
     private static AnvilConstructionRecipeHandler anvilCon;
@@ -54,6 +58,7 @@ public final class HbmJeiPluginCommon {
     private static LiquefactionRecipeHandler liquefaction;
     private static SolidificationRecipeHandler solidification;
     private static BoilingRecipeHandler boiling;
+    private static CoolingRecipeHandler cooling;
     private static VacuumRecipeHandler vacuum;
     private static ReformingRecipeHandler reforming;
     private static CrackingRecipeHandler cracking;
@@ -88,12 +93,16 @@ public final class HbmJeiPluginCommon {
                 title("assembly_machine"), AssemblyMachineRecipes.INSTANCE, stack(ModMachineBlocks.machine_assembly_machine.get()));
         chemplant = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.CHEMICAL_PLANT,
                 title("chemical_plant"), ChemicalPlantRecipes.INSTANCE, stack(ModMachineBlocks.machine_chemical_plant.get()));
+        purex = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.PUREX,
+                title("purex"), PUREXRecipes.INSTANCE, stack(ModMachineBlocks.machine_purex.get()));
         press = new PressRecipeHandler(helper, HbmJeiRecipeTypes.PRESS, title("press"),
                 stack(ModMachineBlocks.machine_press.get()));
         soldering = new SolderingStationRecipeHandler(helper, HbmJeiRecipeTypes.SOLDERING_STATION,
                 title("soldering_station"), stack(ModMachineBlocks.machine_soldering_station.get()));
         crystallizer = new CrystallizerRecipeHandler(helper, HbmJeiRecipeTypes.CRYSTALLIZER,
                 title("crystallizer"), stack(ModMachineBlocks.machine_crystallizer.get()));
+        silex = new SILEXRecipeHandler(helper, HbmJeiRecipeTypes.SILEX,
+                title("silex"), stack(ModMachineBlocks.machine_silex.get()));
         shredder = new ShredderRecipeHandler(helper, HbmJeiRecipeTypes.SHREDDER,
                 title("shredder"), stack(ModMachineBlocks.machine_shredder.get()));
         crucible = new CrucibleAlloyingHandler(helper, HbmJeiRecipeTypes.CRUCIBLE_ALLOY,
@@ -113,6 +122,8 @@ public final class HbmJeiPluginCommon {
                 title("solidification"), stack(ModMachineBlocks.machine_solidifier.get()));
         boiling = new BoilingRecipeHandler(helper, HbmJeiRecipeTypes.BOILING,
                 title("boiling"), stack(ModMachineBlocks.machine_boiler.get()));
+        cooling = new CoolingRecipeHandler(helper, HbmJeiRecipeTypes.COOLING,
+                title("cooling"), stack(ModMachineBlocks.machine_turbine.get()));
 
         vacuum = new VacuumRecipeHandler(helper, HbmJeiRecipeTypes.VACUUM,
                 title("vacuum_distiller"), stack(ModMachineBlocks.machine_vacuum_distill.get()));
@@ -129,23 +140,27 @@ public final class HbmJeiPluginCommon {
         compressor = new CompressorRecipeHandler(helper, HbmJeiRecipeTypes.COMPRESSOR,
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
 
-        reg.addRecipeCategories(assembly, chemplant, press, soldering, crystallizer, shredder, crucible, anvilCon, anvilSmith,
-                refinery, fractioning, liquefaction, solidification, boiling,
+        reg.addRecipeCategories(assembly, chemplant, purex, press, soldering, crystallizer, silex, shredder, crucible, anvilCon, anvilSmith,
+                refinery, fractioning, liquefaction, solidification, boiling, cooling,
                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor);
     }
 
     public static void registerRecipes(IRecipeRegistration reg) {
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
+        PUREXRecipes.INSTANCE.registerRecipes();
         PressRecipes.register();
         SolderingRecipes.register();
         CrystallizerRecipes.register();
 
         reg.addRecipes(HbmJeiRecipeTypes.ASSEMBLY_MACHINE, assembly.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.CHEMICAL_PLANT, chemplant.buildRecipes());
+        reg.addRecipes(HbmJeiRecipeTypes.PUREX, purex.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
         reg.addRecipes(HbmJeiRecipeTypes.CRYSTALLIZER, CrystallizerRecipes.recipes);
+        SILEXRecipes.register();
+        reg.addRecipes(HbmJeiRecipeTypes.SILEX, SILEXRecipes.recipes);
         reg.addRecipes(HbmJeiRecipeTypes.SHREDDER, ShredderRecipeHandler.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.CRUCIBLE_ALLOY, CrucibleAlloyingHandler.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.ANVIL_CON, AnvilConstructionRecipeHandler.buildRecipes());
@@ -156,6 +171,7 @@ public final class HbmJeiPluginCommon {
         reg.addRecipes(HbmJeiRecipeTypes.LIQUEFACTION, LiquefactionRecipeHandler.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.SOLIDIFICATION, SolidificationRecipeHandler.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.BOILING, BoilingRecipeHandler.buildRecipes());
+        reg.addRecipes(HbmJeiRecipeTypes.COOLING, CoolingRecipeHandler.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.VACUUM, VacuumRecipeHandler.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.REFORMING, ReformingRecipeHandler.buildRecipes());
         reg.addRecipes(HbmJeiRecipeTypes.CRACKING, CrackingRecipeHandler.buildRecipes());
@@ -168,9 +184,19 @@ public final class HbmJeiPluginCommon {
     public static void registerCatalysts(IRecipeCatalystRegistration reg) {
         reg.addCraftingStation(HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
         reg.addCraftingStation(HbmJeiRecipeTypes.CHEMICAL_PLANT, stack(ModMachineBlocks.machine_chemical_plant.get()));
+        reg.addCraftingStation(HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
         reg.addCraftingStation(HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
         reg.addCraftingStation(HbmJeiRecipeTypes.SOLDERING_STATION, stack(ModMachineBlocks.machine_soldering_station.get()));
         reg.addCraftingStation(HbmJeiRecipeTypes.CRYSTALLIZER, stack(ModMachineBlocks.machine_crystallizer.get()));
+        reg.addCraftingStation(HbmJeiRecipeTypes.SILEX, stack(ModMachineBlocks.machine_silex.get()));
+        // Each laser crystal is also a catalyst: clicking one shows what the SILEX can do with it
+        // loaded (the old plugin's per-wavelength categories, folded into one).
+        reg.addCraftingStation(HbmJeiRecipeTypes.SILEX,
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_co2.get()),
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_bismuth.get()),
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_cmb.get()),
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_bale.get()),
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_digamma.get()));
         reg.addCraftingStation(HbmJeiRecipeTypes.SHREDDER, stack(ModMachineBlocks.machine_shredder.get()));
         reg.addCraftingStation(HbmJeiRecipeTypes.CRUCIBLE_ALLOY, stack(ModMachineBlocks.machine_crucible.get()));
         reg.addCraftingStation(HbmJeiRecipeTypes.ANVIL_CON, anvilIcon());
@@ -191,6 +217,8 @@ public final class HbmJeiPluginCommon {
         reg.addCraftingStation(HbmJeiRecipeTypes.BOILING, stack(ModMachineBlocks.machine_boiler.get()),
                 stack(ModMachineBlocks.heater_firebox.get()), stack(ModMachineBlocks.heater_electric.get()),
                 stack(ModMachineBlocks.heater_oilburner.get()));
+        reg.addCraftingStation(HbmJeiRecipeTypes.COOLING, stack(ModMachineBlocks.machine_turbine.get()),
+                stack(ModMachineBlocks.machine_condenser.get()));
 
         // The electric furnace runs vanilla smelting — surface it under JEI's built-in furnace category
         // (mirrors the old JEIConfig line; no bespoke category needed).

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "rolls": 1.0,
+      "conditions": [
+        { "condition": "minecraft:survives_explosion" }
+      ],
+      "entries": [
+        { "type": "minecraft:item", "name": "hbm:machine_waste_drum" }
+      ]
+    }
+  ],
+  "random_sequence": "hbm:blocks/machine_waste_drum"
+}

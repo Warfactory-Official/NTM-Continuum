@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": { "F": "hbm:rag_damp", "I": "#c:plates/iron" },
+  "pattern": [" I ", " F "],
+  "result": { "id": "hbm:gas_mask_filter_rag" }
+}

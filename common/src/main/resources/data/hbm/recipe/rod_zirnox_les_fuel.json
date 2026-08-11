@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": ["hbm:rod_zirnox_empty", "hbm:billet_les", "hbm:billet_les"],
+  "result": { "id": "hbm:rod_zirnox_les_fuel" }
+}

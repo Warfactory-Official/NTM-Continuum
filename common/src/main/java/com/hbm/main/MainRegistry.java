@@ -27,9 +27,27 @@ public final class MainRegistry {
 
     private MainRegistry() {}
 
+    /**
+     * The "polaroid" — a per-launch easter-egg roll, ported from 1.12.2's {@code MainRegistry}. Rolled
+     * once at bootstrap as {@code rand.nextInt(18) + 1}, <b>re-rolling 4 and 9</b> (upstream skips
+     * those two ids). Only one consumer is ported so far: on a world where this lands on 11, a
+     * digamma-wavelength FEL beam leaves spreading {@code digamma_matter} instead of a plain
+     * {@code fire_digamma}. Upstream also honoured a {@code generalOverride} config, which the port
+     * has no config file for — set the field directly if you want to force an id.
+     */
+    public static int polaroidID = 1;
+
+    private static void rollPolaroid() {
+        java.util.Random rand = new java.util.Random();
+        do {
+            polaroidID = rand.nextInt(18) + 1;
+        } while (polaroidID == 4 || polaroidID == 9);
+    }
+
     public static void bootstrap() {
         // The fluid registry is a plain static map (not an MC registry); populate it first so any
         // fluid tile/recipe that references Fluids.* during registration finds the types ready.
+        rollPolaroid();
         Fluids.init();
         com.hbm.inventory.material.Mats.init(); // material registry (tag-based ore-dict replacement)
         // Order matters: blocks before items (block items reference blocks), tabs last.
@@ -43,8 +61,12 @@ public final class MainRegistry {
         com.hbm.blocks.ModDecoBlocks.init();    // decorative DecoBlock set (steel structures, sat dishes, boxcar/boat)
         com.hbm.blocks.ModAnvilBlocks.init();   // the 12 tiered anvils (must precede block entities)
         com.hbm.blocks.ModOilBlocks.init();     // special oil blocks (ore_oil deposit / oil_pipe / oil_spill)
+        com.hbm.blocks.ModNuclearBlocks.init(); // uranium outgassing ores and radon gases
+        com.hbm.blocks.ModOreBlocks.init();     // clusters, depth rock/ores, resource stone, cave spikes, gas pockets
+        com.hbm.blocks.ModGlassBlocks.init();   // the BlockNTMGlass family (glass_quartz so far)
         ModDataComponents.init();  // custom item data components (referenced by hand items below)
         ModItems.init();
+        com.hbm.items.ModZirnoxItems.init(); // component-backed reactor fuel and spent fuel
         ModMachineItems.init();    // hand-registered machine items (templates)
         com.hbm.items.machine.ModStampItems.init(); // press stamps (dies)
         com.hbm.items.machine.ModMoldItems.init();  // casting molds (foundry mold/basin) + mold_base

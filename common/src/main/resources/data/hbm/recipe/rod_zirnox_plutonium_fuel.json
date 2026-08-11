@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": ["hbm:rod_zirnox_empty", "hbm:billet_plutonium", "hbm:billet_plutonium"],
+  "result": { "id": "hbm:rod_zirnox_plutonium_fuel" }
+}

@@ -76,6 +76,19 @@ public class hbm implements ModInitializer {
         BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(), GenerationStep.Decoration.UNDERGROUND_ORES,
                 ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "bedrock_oil")));
 
+        // Ore worldgen (the 1:1 HbmWorldGen port). The three noise features go in at
+        // LOCAL_MODIFICATIONS, i.e. BEFORE the UNDERGROUND_ORES step: the gneiss veins in
+        // overworld_ores target the stone_gneiss band that schist_stratum lays down, and would find
+        // nothing if it ran later. Mirrors neoforge/.../biome_modifier/*.json — keep the two in sync.
+        addOverworld("schist_stratum", GenerationStep.Decoration.LOCAL_MODIFICATIONS);
+        addOverworld("ore_caves", GenerationStep.Decoration.LOCAL_MODIFICATIONS);
+        addOverworld("ore_layers", GenerationStep.Decoration.LOCAL_MODIFICATIONS);
+        addOverworld("overworld_ores", GenerationStep.Decoration.UNDERGROUND_ORES);
+        BiomeModifications.addFeature(BiomeSelectors.foundInTheNether(), GenerationStep.Decoration.UNDERGROUND_ORES,
+                ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "nether_ores")));
+        BiomeModifications.addFeature(BiomeSelectors.foundInTheEnd(), GenerationStep.Decoration.UNDERGROUND_ORES,
+                ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "end_ores")));
+
         // Populate our creative tabs from the common contents map.
         ModTabs.CONTENTS.forEach((tabKey, contents) ->
                 CreativeModeTabEvents.modifyOutputEvent(tabKey).register(output -> {
@@ -106,6 +119,12 @@ public class hbm implements ModInitializer {
 
         // Register all item/material hazards (registration has flushed above, so items exist).
         Hazards.init();
+    }
+
+    /** Inject an {@code hbm:} placed feature into every overworld biome at the given decoration step. */
+    private static void addOverworld(String feature, GenerationStep.Decoration step) {
+        BiomeModifications.addFeature(BiomeSelectors.foundInOverworld(), step,
+                ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, feature)));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

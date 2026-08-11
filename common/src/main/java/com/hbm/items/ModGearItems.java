@@ -5,6 +5,10 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.HazmatRegistry;
+import com.hbm.items.gear.ItemGasMask;
+import com.hbm.util.ArmorRegistry;
+import com.hbm.util.ArmorRegistry.HazardClass;
+import java.util.List;
 import com.hbm.items.tool.ItemDosimeter;
 import com.hbm.items.tool.ItemGeigerCounter;
 import com.hbm.registry.DeferredRegister;
@@ -48,8 +52,32 @@ public final class ModGearItems {
     public static final RegistryObject<Item> hazmat_legs_grey = armor("hazmat_legs_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorType.LEGGINGS);
     public static final RegistryObject<Item> hazmat_boots_grey = armor("hazmat_boots_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorType.BOOTS);
 
+    // ---- gas masks and replaceable filters ----
+    public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
+    public static final RegistryObject<ItemGasMask> gas_mask_m65 = gasMask("gas_mask_m65", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
+    public static final RegistryObject<ItemGasMask> gas_mask_mono = gasMask("gas_mask_mono", List.of(HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT, HazardClass.BACTERIA));
+    public static final RegistryObject<ItemGasMask> gas_mask_olde = gasMask("gas_mask_olde", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
+    public static final RegistryObject<Item> gas_mask_filter_rag = filter("gas_mask_filter_rag", 4_000);
+    public static final RegistryObject<Item> gas_mask_filter_piss = filter("gas_mask_filter_piss", 4_000);
+    public static final RegistryObject<Item> gas_mask_filter_mono = filter("gas_mask_filter_mono", 12_000);
+    public static final RegistryObject<Item> gas_mask_filter = filter("gas_mask_filter", 18_000);
+    public static final RegistryObject<Item> gas_mask_filter_combo = filter("gas_mask_filter_combo", 24_000);
+
     private static RegistryObject<Item> armor(String name, ArmorMaterial mat, ArmorType type) {
         RegistryObject<Item> ro = ITEMS.registerItem(name, Item::new, (UnaryOperator<Item.Properties>) p -> p.humanoidArmor(mat, type));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static RegistryObject<ItemGasMask> gasMask(String name, List<HazardClass> blacklist) {
+        RegistryObject<ItemGasMask> ro = ITEMS.registerItem(name, p -> new ItemGasMask(p, blacklist),
+                p -> p.humanoidArmor(HbmArmorMaterials.HAZMAT, ArmorType.HELMET).stacksTo(1));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static RegistryObject<Item> filter(String name, int durability) {
+        RegistryObject<Item> ro = ITEMS.registerSimpleItem(name, p -> p.stacksTo(1).durability(durability));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
@@ -64,6 +92,15 @@ public final class ModGearItems {
         registerSet(HazmatRegistry.hazYellow, hazmat_helmet, hazmat_plate, hazmat_legs, hazmat_boots);
         registerSet(HazmatRegistry.hazRed, hazmat_helmet_red, hazmat_plate_red, hazmat_legs_red, hazmat_boots_red);
         registerSet(HazmatRegistry.hazGray, hazmat_helmet_grey, hazmat_plate_grey, hazmat_legs_grey, hazmat_boots_grey);
+        ArmorRegistry.registerHazard(gas_mask_filter_rag.get(), HazardClass.PARTICLE_COARSE);
+        ArmorRegistry.registerHazard(gas_mask_filter_piss.get(), HazardClass.PARTICLE_COARSE, HazardClass.GAS_LUNG);
+        ArmorRegistry.registerHazard(gas_mask_filter_mono.get(), HazardClass.PARTICLE_COARSE, HazardClass.GAS_MONOXIDE);
+        ArmorRegistry.registerHazard(gas_mask_filter.get(), HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE,
+                HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA);
+        ArmorRegistry.registerHazard(gas_mask_filter_combo.get(), HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE,
+                HazardClass.GAS_LUNG, HazardClass.GAS_BLISTERING, HazardClass.BACTERIA, HazardClass.GAS_MONOXIDE);
+        ArmorRegistry.registerHazard(gas_mask.get(), HazardClass.SAND, HazardClass.LIGHT);
+        ArmorRegistry.registerHazard(gas_mask_m65.get(), HazardClass.SAND);
     }
 
     private static void registerSet(double koeff, RegistryObject<Item> helmet, RegistryObject<Item> chest,

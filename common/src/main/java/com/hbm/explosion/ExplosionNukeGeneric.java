@@ -1,10 +1,15 @@
 package com.hbm.explosion;
 
+import com.hbm.blocks.ModFalloutBlocks;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -62,5 +67,37 @@ public final class ExplosionNukeGeneric {
         // CollisionContext.of(entity) which NPEs on a null entity.
         return world.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()))
                 .getType() != HitResult.Type.MISS;
+    }
+
+    /**
+     * Small, server-only remnant of the old nuclear wasteland conversion. It deliberately changes only
+     * natural terrain and never creates fallout layers, weather, nuclear entities, or blast effects.
+     */
+    public static void transformWaste(Level level, BlockPos center, int radius) {
+        if (!(level instanceof ServerLevel) || radius <= 0) return;
+
+        int radiusSquared = radius * radius;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        RandomSource random = level.getRandom();
+        for (int x = -radius; x <= radius; x++) {
+            for (int y = -radius; y <= radius; y++) {
+                for (int z = -radius; z <= radius; z++) {
+                    if (x * x + y * y + z * z > radiusSquared) continue;
+                    pos.set(center.getX() + x, center.getY() + y, center.getZ() + z);
+                    BlockState state = level.getBlockState(pos);
+                    if (state.is(Blocks.GRASS_BLOCK)) {
+                        level.setBlock(pos, ModFalloutBlocks.waste_earth.get().defaultBlockState(), 2);
+                    } else if (state.is(Blocks.MYCELIUM)) {
+                        level.setBlock(pos, ModFalloutBlocks.waste_mycelium.get().defaultBlockState(), 2);
+                    } else if (state.is(Blocks.SAND) && random.nextInt(20) == 0) {
+                        level.setBlock(pos, ModFalloutBlocks.waste_trinitite.get().defaultBlockState(), 2);
+                    } else if (state.is(Blocks.RED_SAND) && random.nextInt(20) == 0) {
+                        level.setBlock(pos, ModFalloutBlocks.waste_trinitite_red.get().defaultBlockState(), 2);
+                    } else if (state.is(Blocks.CLAY)) {
+                        level.setBlock(pos, Blocks.TERRACOTTA.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
     }
 }

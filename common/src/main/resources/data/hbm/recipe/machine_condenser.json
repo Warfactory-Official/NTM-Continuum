@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "#c:ingots/steel",
+    "I": "#c:plates/iron",
+    "C": "hbm:plate_cast_copper"
+  },
+  "pattern": [
+    "SIS",
+    "ICI",
+    "SIS"
+  ],
+  "result": {
+    "id": "hbm:machine_condenser"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "hbm:plate_steel",
+    "U": "hbm:block_uranium",
+    "R": "hbm:rod_zirnox_empty",
+    "C": "hbm:coil_copper"
+  },
+  "pattern": ["SUS", "RCR", "SUS"],
+  "result": { "id": "hbm:machine_zirnox" }
+}

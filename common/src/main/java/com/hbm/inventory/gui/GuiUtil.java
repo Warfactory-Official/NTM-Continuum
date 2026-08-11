@@ -53,6 +53,11 @@ public final class GuiUtil {
         graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_UTILITY, x, y, 0.0F, 32.0F, INFO_PANEL_SIZE, INFO_PANEL_SIZE, 256, 256);
     }
 
+    /** The 16×16 "large red !" warning glyph (1.12.2 {@code drawInfoPanel(...,16,16,6)}) at screen {@code x,y}. */
+    public static void drawWarningPanel(GuiGraphicsExtractor graphics, int x, int y) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_UTILITY, x, y, 8.0F, 16.0F, 16, 16, 256, 256);
+    }
+
     /**
      * The "Acceptable Upgrades:" list shown when hovering a machine's upgrade slots — a faithful port of
      * the 1.12.2 {@code GuiInfoContainer.getUpgradeInfo}: one {@code upgrade.gui.<type>} line (with the

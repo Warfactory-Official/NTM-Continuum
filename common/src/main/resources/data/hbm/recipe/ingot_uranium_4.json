@@ -1,14 +1,9 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:smelting",
   "category": "misc",
-  "key": {
-    "#": "hbm:nugget_uranium"
-  },
-  "pattern": [
-    "###",
-    "###",
-    "###"
-  ],
+  "cookingtime": 200,
+  "experience": 12.0,
+  "ingredient": "hbm:ore_gneiss_uranium",
   "result": {
     "id": "hbm:ingot_uranium"
   }

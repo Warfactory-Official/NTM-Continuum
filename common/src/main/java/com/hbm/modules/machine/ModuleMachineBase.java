@@ -8,6 +8,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.machine.ItemBlueprints;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -35,6 +36,9 @@ public abstract class ModuleMachineBase {
     /** Optional fluid tanks (null for item-only machines like the assembler). Set by fluid machines. */
     public FluidTankNTM[] inputTanks;
     public FluidTankNTM[] outputTanks;
+
+    /** Server-side only: rolls chance outputs (see {@link #rollOutput}). */
+    protected final RandomSource random = RandomSource.create();
 
     public String recipe = "null";
     public double progress;
@@ -182,7 +186,8 @@ public abstract class ModuleMachineBase {
     protected void produceItem(GenericRecipe recipe) {
         if (recipe.outputItem != null) {
             for (int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
-                ItemStack out = recipe.outputItem[i].copy();
+                ItemStack out = rollOutput(recipe, i);
+                if (out.isEmpty()) continue;
                 int idx = outputSlots[i];
                 ItemStack slot = inventory.getStackInSlot(idx);
                 if (slot.isEmpty()) {
@@ -200,6 +205,22 @@ public abstract class ModuleMachineBase {
             }
         }
         this.markDirty = true;
+    }
+
+    /**
+     * The actual stack output {@code index} yields this cycle. Guaranteed outputs pass through unchanged;
+     * a chance output rolls once <b>per item</b> in the stack, so a 25% ×4 output averages one item (the
+     * original {@code ChanceOutput.collapse}). May return an empty stack when every roll fails.
+     */
+    private ItemStack rollOutput(GenericRecipe recipe, int index) {
+        ItemStack out = recipe.outputItem[index].copy();
+        float chance = recipe.getChance(index);
+        if (chance >= 1F) return out;
+        int kept = 0;
+        for (int i = 0; i < out.getCount(); i++) if (random.nextFloat() < chance) kept++;
+        if (kept <= 0) return ItemStack.EMPTY;
+        out.setCount(kept);
+        return out;
     }
 
     public void update(double speed, double power, boolean extraCondition, ItemStack blueprint) {
@@ -249,6 +270,32 @@ public abstract class ModuleMachineBase {
             this.recipe = chosen;
             this.progress = 0D;
         }
+    }
+
+    /**
+     * Whether {@code slot} is an input slot holding something the current recipe cannot use — such a stack
+     * must be extractable again so automation can unblock the machine (the original
+     * {@code ModuleMachineBase.isSlotClogged}, used by {@code canExtractItem}).
+     */
+    public boolean isSlotClogged(int slot) {
+        ItemStack stack = inventory.getStackInSlot(slot);
+        if (stack.isEmpty()) return false;
+        boolean isInput = false;
+        for (int s : inputSlots) if (s == slot) { isInput = true; break; }
+        if (!isInput) return false;
+
+        // Buffer model: usable in ANY input slot, so "clogged" means it matches no ingredient of the
+        // current recipe (nor the trigger ingredient of a sibling in its auto-switch group).
+        GenericRecipe recipe = getRecipe();
+        if (recipe == null) return true;
+        if (recipe.inputItem != null) for (AStack in : recipe.inputItem) if (in.matchesRecipe(stack, true)) return false;
+        if (recipe.autoSwitchGroup != null) {
+            List<GenericRecipe> group = getRecipeSet().autoSwitchGroups.get(recipe.autoSwitchGroup);
+            if (group != null) for (GenericRecipe next : group) {
+                if (next.inputItem != null && next.inputItem.length > 0 && next.inputItem[0].matchesRecipe(stack, true)) return false;
+            }
+        }
+        return true;
     }
 
     public boolean isItemValid(int slot, ItemStack stack) {

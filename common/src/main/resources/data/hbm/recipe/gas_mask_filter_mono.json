@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": { "C": "hbm:catalyst_clay", "I": "#c:plates/iron" },
+  "pattern": ["III", "ICI", "III"],
+  "result": { "id": "hbm:gas_mask_filter_mono" }
+}

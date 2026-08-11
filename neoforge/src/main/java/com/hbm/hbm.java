@@ -34,6 +34,7 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
 @Mod(Constants.MOD_ID)
 public class hbm {
@@ -46,6 +47,8 @@ public class hbm {
 
         Constants.LOG.info("Hello NeoForge world!");
 
+        // Test functions are a NeoForge-only dev registry. Do not initialize this common class on Fabric.
+        com.hbm.gametest.HbmGameTestFunctions.init();
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
 
@@ -57,6 +60,7 @@ public class hbm {
 
         // Register HBM's custom S2C payloads (the BufPacket-equivalent BlockEntity sync).
         eventBus.addListener(this::onRegisterPayloads);
+        eventBus.addListener(com.hbm.gametest.HbmNeoForgeGameTests::register);
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (FMLLoader.getCurrent().getDist() == Dist.CLIENT) {

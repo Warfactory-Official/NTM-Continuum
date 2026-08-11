@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": { "C": "hbm:catalyst_clay", "F": "hbm:gas_mask_filter" },
+  "pattern": [" C ", "CFC", " C "],
+  "result": { "id": "hbm:gas_mask_filter_combo" }
+}

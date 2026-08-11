@@ -1,14 +1,10 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:smelting",
   "category": "misc",
-  "key": {
-    "#": "hbm:block_uranium"
-  },
-  "pattern": [
-    "#"
-  ],
+  "cookingtime": 200,
+  "experience": 12.0,
+  "ingredient": "hbm:ore_nether_uranium_scorched",
   "result": {
-    "id": "hbm:ingot_uranium",
-    "count": 9
+    "id": "hbm:ingot_uranium"
   }
 }

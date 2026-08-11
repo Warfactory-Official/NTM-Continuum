@@ -11,6 +11,8 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
 import com.hbm.items.machine.ItemBlades;
 import com.hbm.items.machine.ItemBlueprints;
+import com.hbm.items.machine.ItemFELCrystal;
+import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidIdentifier;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.inventory.material.MaterialShapes;
@@ -55,8 +57,29 @@ public final class ModMachineItems {
     public static final RegistryObject<ItemScraps> scraps = ITEMS.registerItem(
             "scraps", ItemScraps::new, p -> p.stacksTo(64));
 
+    // --- FEL laser crystals: the wavelength "lens" a Free Electron Laser is loaded with. Each one
+    // unlocks the SILEX recipes at or below its wavelength and multiplies the speed of the weaker
+    // ones (see TileEntitySILEX.process). ---
+
+    public static final RegistryObject<ItemFELCrystal> laser_crystal_co2 = ITEMS.registerItem(
+            "laser_crystal_co2", p -> new ItemFELCrystal(p, EnumWavelengths.IR, false));
+    public static final RegistryObject<ItemFELCrystal> laser_crystal_bismuth = ITEMS.registerItem(
+            "laser_crystal_bismuth", p -> new ItemFELCrystal(p, EnumWavelengths.VISIBLE, false));
+    public static final RegistryObject<ItemFELCrystal> laser_crystal_cmb = ITEMS.registerItem(
+            "laser_crystal_cmb", p -> new ItemFELCrystal(p, EnumWavelengths.UV, false));
+    public static final RegistryObject<ItemFELCrystal> laser_crystal_bale = ITEMS.registerItem(
+            "laser_crystal_bale", p -> new ItemFELCrystal(p, EnumWavelengths.GAMMA, false));
+    /** The digamma crystal shows scrambled text instead of a description — upstream's easter egg. */
+    public static final RegistryObject<ItemFELCrystal> laser_crystal_digamma = ITEMS.registerItem(
+            "laser_crystal_digamma", p -> new ItemFELCrystal(p, EnumWavelengths.DRX, true));
+
     static {
         ModTabs.addTo(HbmTab.TEMPLATES, blueprint_plate);
+        ModTabs.addTo(HbmTab.CONTROL, laser_crystal_co2);
+        ModTabs.addTo(HbmTab.CONTROL, laser_crystal_bismuth);
+        ModTabs.addTo(HbmTab.CONTROL, laser_crystal_cmb);
+        ModTabs.addTo(HbmTab.CONTROL, laser_crystal_bale);
+        ModTabs.addTo(HbmTab.CONTROL, laser_crystal_digamma);
         ModTabs.addTo(HbmTab.CONTROL, blades_steel);
         ModTabs.addTo(HbmTab.CONTROL, blades_titanium);
         ModTabs.addTo(HbmTab.CONTROL, blades_desh);

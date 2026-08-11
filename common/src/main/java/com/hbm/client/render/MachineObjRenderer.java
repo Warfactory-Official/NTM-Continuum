@@ -53,6 +53,7 @@ public class MachineObjRenderer<T extends BlockEntity> implements BlockEntityRen
     private final int frameHeight;
     /** When true the facing rotation is skipped (old all-zero yaw maps, e.g. the oilburner). */
     private boolean ignoreFacing = false;
+    private boolean doubleSided = false;
 
     public MachineObjRenderer(float baseYaw, float scale, ModelDef... defs) {
         this(baseYaw, scale, 0F, 0F, Set.of(), 0, defs);
@@ -89,6 +90,12 @@ public class MachineObjRenderer<T extends BlockEntity> implements BlockEntityRen
     /** Old machines whose StaticTesrBakedModels yaw map is all zeros render facing-independent. */
     public MachineObjRenderer<T> ignoreFacing() {
         this.ignoreFacing = true;
+        return this;
+    }
+
+    /** Emits reversed faces for thin legacy OBJ geometry that was registered with doubleSided(). */
+    public MachineObjRenderer<T> doubleSided() {
+        this.doubleSided = true;
         return this;
     }
 
@@ -150,7 +157,8 @@ public class MachineObjRenderer<T extends BlockEntity> implements BlockEntityRen
             if (offsetX != 0F || offsetZ != 0F) poseStack.translate(offsetX, 0F, offsetZ); // footprint offset (post-rotation)
             if (scale != 1.0F) poseStack.scale(scale, scale, scale);
             collector.submitCustomGeometry(poseStack, part.renderType(),
-                    (pose, buffer) -> part.model().renderExcept(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, exclude));
+                    (pose, buffer) -> part.model().renderExcept(pose, buffer, state.lightCoords,
+                            OverlayTexture.NO_OVERLAY, exclude, doubleSided));
             poseStack.popPose();
         }
     }

@@ -173,9 +173,19 @@ public final class WavefrontObj {
         renderExcept(pose, buffer, light, overlay, java.util.Set.of());
     }
 
+    /** Draws every part and optionally emits reversed faces for legacy double-sided models. */
+    public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, boolean doubleSided) {
+        renderExcept(pose, buffer, light, overlay, java.util.Set.of(), doubleSided);
+    }
+
     /** Draws every part except those named in {@code exclude} (e.g. dynamic parts like a fluid overlay). */
     public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, java.util.Set<String> exclude) {
-        for (Group g : groups) if (!exclude.contains(g.name)) drawGroup(g, pose, buffer, light, overlay);
+        renderExcept(pose, buffer, light, overlay, exclude, false);
+    }
+
+    public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
+                             java.util.Set<String> exclude, boolean doubleSided) {
+        for (Group g : groups) if (!exclude.contains(g.name)) drawGroup(g, pose, buffer, light, overlay, -1, doubleSided);
     }
 
     /** Draws a single named part (no-op if the part doesn't exist). */
@@ -189,10 +199,15 @@ public final class WavefrontObj {
     }
 
     private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
-        drawGroup(g, pose, buffer, light, overlay, -1);
+        drawGroup(g, pose, buffer, light, overlay, -1, false);
     }
 
     private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
+        drawGroup(g, pose, buffer, light, overlay, color, false);
+    }
+
+    private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
+                           int color, boolean doubleSided) {
         for (int[][] face : g.faces) {
             // Fan-triangulate; emit each triangle as a quad (4th vertex duplicates the 3rd) for QUADS mode.
             for (int i = 1; i + 1 < face.length; i++) {
@@ -200,11 +215,22 @@ public final class WavefrontObj {
                 emit(face[i], pose, buffer, light, overlay, color);
                 emit(face[i + 1], pose, buffer, light, overlay, color);
                 emit(face[i + 1], pose, buffer, light, overlay, color);
+                if (doubleSided) {
+                    emit(face[i + 1], pose, buffer, light, overlay, color, true);
+                    emit(face[i + 1], pose, buffer, light, overlay, color, true);
+                    emit(face[i], pose, buffer, light, overlay, color, true);
+                    emit(face[0], pose, buffer, light, overlay, color, true);
+                }
             }
         }
     }
 
     private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
+        emit(ref, pose, buffer, light, overlay, color, false);
+    }
+
+    private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
+                      boolean reverseNormal) {
         float[] p = positions[ref[0]];
         float u = ref[1] >= 0 ? uvs[ref[1]][0] : 0F;
         float v = ref[1] >= 0 ? uvs[ref[1]][1] : 0F;
@@ -213,6 +239,7 @@ public final class WavefrontObj {
             float[] nrm = normals[ref[2]];
             nx = nrm[0]; ny = nrm[1]; nz = nrm[2];
         }
+        if (reverseNormal) { nx = -nx; ny = -ny; nz = -nz; }
         buffer.addVertex(pose, p[0], p[1], p[2])
                 .setColor(color)
                 .setUv(u, v)

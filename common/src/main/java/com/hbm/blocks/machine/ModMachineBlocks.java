@@ -35,6 +35,24 @@ public final class ModMachineBlocks {
             "creative_generator", BlockCreativeGenerator::new,
             p -> p.strength(2.0F, 4.0F).sound(SoundType.METAL));
 
+    /** Nuclear steam-cycle machines. */
+    public static final RegistryObject<MachineTurbine> machine_turbine = BLOCKS.registerBlock(
+            "machine_turbine", MachineTurbine::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<MachineCondenser> machine_condenser = BLOCKS.registerBlock(
+            "machine_condenser", MachineCondenser::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<MachineZirnox> machine_zirnox = BLOCKS.registerBlock(
+            "machine_zirnox", MachineZirnox::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    /** Accident-only replacement for a melted-down ZIRNOX; intentionally has no block item. */
+    public static final RegistryObject<MachineZirnoxDestroyed> zirnox_destroyed = BLOCKS.registerBlock(
+            "zirnox_destroyed", MachineZirnoxDestroyed::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineWasteDrum> machine_waste_drum = BLOCKS.registerBlock(
+            "machine_waste_drum", MachineWasteDrum::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
     // --- Phase C: fluid network demo (duct conductor + infinite source + receiving tank) ---
 
     public static final RegistryObject<BlockFluidDuct> fluid_duct_mk2 = BLOCKS.registerBlock(
@@ -75,6 +93,9 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineChemicalPlant> machine_chemical_plant = BLOCKS.registerBlock(
             "machine_chemical_plant", MachineChemicalPlant::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachinePUREX> machine_purex = BLOCKS.registerBlock(
+            "machine_purex", MachinePUREX::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     /** Diesel Generator — burns combustible fluids into HE (the first real energy producer). */
@@ -182,6 +203,16 @@ public final class ModMachineBlocks {
             "machine_crystallizer", MachineCrystallizer::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    /** SILEX — the laser isotope separation chamber. Fluid-only (peroxide); the laser supplies the energy. */
+    public static final RegistryObject<MachineSILEX> machine_silex = BLOCKS.registerBlock(
+            "machine_silex", MachineSILEX::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    /** Free Electron Laser — the SILEX's power source. Energy only; no fluids, no internal recipes. */
+    public static final RegistryObject<MachineFEL> machine_fel = BLOCKS.registerBlock(
+            "machine_fel", MachineFEL::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     // --- crucible / foundry ---
 
     public static final RegistryObject<MachineCrucible> machine_crucible = BLOCKS.registerBlock(
@@ -243,6 +274,10 @@ public final class ModMachineBlocks {
         tabItem("machine_battery", machine_battery);
         tabItem("red_cable", red_cable);
         tabItem("creative_generator", creative_generator);
+        tabItem("machine_turbine", machine_turbine);
+        tabItem("machine_condenser", machine_condenser);
+        tabItem("machine_zirnox", machine_zirnox);
+        tabItem("machine_waste_drum", machine_waste_drum);
         tabItem("fluid_duct_mk2", fluid_duct_mk2);
         tabItem("creative_fluid_source", creative_fluid_source);
         tabItem("machine_fluidtank", machine_fluidtank);
@@ -252,6 +287,7 @@ public final class ModMachineBlocks {
         tabItem("machine_press", machine_press);
         tabItem("machine_assembly_machine", machine_assembly_machine);
         tabItem("machine_chemical_plant", machine_chemical_plant);
+        tabItem("machine_purex", machine_purex);
         tabItem("machine_well", machine_well);
         tabItem("machine_pumpjack", machine_pumpjack);
         tabItem("machine_fracking_tower", machine_fracking_tower);
@@ -275,6 +311,8 @@ public final class ModMachineBlocks {
         tabItem("heater_oilburner", heater_oilburner);
         tabItem("machine_soldering_station", machine_soldering_station);
         tabItem("machine_crystallizer", machine_crystallizer);
+        tabItem("machine_silex", machine_silex);
+        tabItem("machine_fel", machine_fel);
         tabItem("machine_crucible", machine_crucible);
         tabItem("heater_firebox", heater_firebox);
         tabItem("heater_electric", heater_electric);

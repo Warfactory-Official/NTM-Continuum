@@ -25,10 +25,19 @@ public class GenericRecipe {
     public ItemStack[] outputItem;
     public FluidStack[] inputFluid;
     public FluidStack[] outputFluid;
+    /**
+     * Per-output drop chance, index-aligned with {@link #outputItem}; a missing entry or {@code 0} means
+     * guaranteed. This is the port's stand-in for the original's {@code ChanceOutput} wrapper — a parallel
+     * array keeps every existing {@code outputItems(ItemStack...)} call site untouched. As in the original,
+     * the roll happens per <i>item</i> in the stack, so a 50% ×4 output averages two items.
+     */
+    public float[] outputChance;
     public int duration;
     public long power;
     public String autoSwitchGroup = null;
     public String[] blueprintPools = null;
+    /** Translation key wrapping the icon's name for display, e.g. {@code purex.recycle} = "Reprocessing of %s". */
+    public String nameWrapper = null;
     private ItemStack icon = ItemStack.EMPTY;
 
     public GenericRecipe(String name) {
@@ -48,6 +57,12 @@ public class GenericRecipe {
 
     public GenericRecipe outputItems(ItemStack... output) {
         this.outputItem = output;
+        return this;
+    }
+
+    /** Drop chances (0..1) for the outputs set by {@link #outputItems}, in the same order. */
+    public GenericRecipe outputChances(float... chances) {
+        this.outputChance = chances;
         return this;
     }
 
@@ -78,6 +93,17 @@ public class GenericRecipe {
         return this;
     }
 
+    public GenericRecipe setNameWrapper(String key) {
+        this.nameWrapper = key;
+        return this;
+    }
+
+    /** The chance of output {@code index} dropping, 1 when no chance table applies. */
+    public float getChance(int index) {
+        if (outputChance == null || index >= outputChance.length || outputChance[index] <= 0F) return 1F;
+        return Math.min(outputChance[index], 1F);
+    }
+
     public boolean isPooled() { return blueprintPools != null; }
 
     public boolean isPartOfPool(String lookingFor) {
@@ -97,10 +123,14 @@ public class GenericRecipe {
         return ItemStack.EMPTY;
     }
 
-    /** The recipe's display name — the icon's item name (the original's customLocalization is deferred). */
+    /**
+     * The recipe's display name: the icon's item name, wrapped by {@link #nameWrapper} when set (the
+     * original's {@code nameWrapper}, e.g. "Reprocessing of Spent MOX").
+     */
     public String getLocalizedName() {
         ItemStack icon = getIcon();
-        return icon.isEmpty() ? this.name : icon.getHoverName().getString();
+        String base = icon.isEmpty() ? this.name : icon.getHoverName().getString();
+        return nameWrapper == null ? base : Component.translatable(nameWrapper, base).getString();
     }
 
     /**
@@ -129,8 +159,11 @@ public class GenericRecipe {
         if (inputFluid != null) for (FluidStack fluid : inputFluid) list.add(fluidLine(fluid));
 
         list.add(Component.translatable("gui.recipe.output").append(":").withStyle(ChatFormatting.BOLD));
-        if (outputItem != null) for (ItemStack out : outputItem) {
-            list.add(Component.literal("  " + out.getCount() + "x ")
+        if (outputItem != null) for (int i = 0; i < outputItem.length; i++) {
+            ItemStack out = outputItem[i];
+            float chance = getChance(i);
+            String prefix = chance >= 1F ? "  " : "  " + Math.round(chance * 100F) + "% ";
+            list.add(Component.literal(prefix + out.getCount() + "x ")
                     .append(out.getHoverName()).withStyle(ChatFormatting.GRAY));
         }
         if (outputFluid != null) for (FluidStack fluid : outputFluid) list.add(fluidLine(fluid));

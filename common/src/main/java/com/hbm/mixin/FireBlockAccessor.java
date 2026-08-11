@@ -15,4 +15,11 @@ public interface FireBlockAccessor {
 
     @Invoker("getBurnOdds")
     int hbm$getBurnOdds(BlockState state);
+
+    /**
+     * The other half of the same table — 1.12's {@code Block.getFireSpreadSpeed}, which balefire's
+     * area sweep reads to decide whether an air cell has anything nearby worth igniting.
+     */
+    @Invoker("getIgniteOdds")
+    int hbm$getIgniteOdds(BlockState state);
 }

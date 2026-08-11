@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.hbm.api.item.IGasMask;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -22,8 +23,7 @@ import net.minecraft.world.item.ItemStack;
  * </ul>
  *
  * <p>Deferred vs the original: the digamma armor set (FAU — {@code checkForDigamma} returns false),
- * the mutation-potion hazmat bypass (no potions yet), asbestos suit, and gas-mask filter damage
- * ({@link #damageGasMaskFilter} is a no-op until {@code IGasMask} lands).
+ * the mutation-potion hazmat bypass (no potions yet), and asbestos suit.
  */
 public class ArmorUtil {
 
@@ -101,11 +101,9 @@ public class ArmorUtil {
         return false; // TODO(armor): FAU set
     }
 
-    /**
-     * Damages the gas-mask filter of the entity's helmet. No-op until the {@code IGasMask} mask/filter
-     * system is ported — protective helmets currently absorb the hazard for free.
-     */
+    /** Damages the installed filter of a filterable helmet, removing it once exhausted. */
     public static void damageGasMaskFilter(LivingEntity entity, int damage) {
-        // TODO(gas-masks): damage the filter item stored in the mask
+        ItemStack helmet = entity.getItemBySlot(EquipmentSlot.HEAD);
+        if (helmet.getItem() instanceof IGasMask mask) mask.damageFilter(helmet, damage);
     }
 }

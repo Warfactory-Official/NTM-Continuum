@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.hbm.handler.ArmorUtil;
+import com.hbm.api.item.IGasMask;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
@@ -13,9 +14,8 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * Maps armor items to the {@link HazardClass}es they protect against, ported from 1.12.2's
- * {@code ArmorRegistry}. Deferred vs the original: gas-mask filters ({@code IGasMask}) and armor mods
- * ({@code ArmorModHandler}) — {@link #getProtectionFromItem} only reads the direct item registration
- * until those systems land.
+ * {@code ArmorRegistry}. Direct armor registrations and installed {@code IGasMask} filters contribute
+ * protection. Armor-mod recursion remains deferred.
  */
 public class ArmorRegistry {
 
@@ -52,7 +52,14 @@ public class ArmorRegistry {
         if (hazardClasses.containsKey(item))
             prot.addAll(hazardClasses.get(item));
 
-        // TODO(gas-masks): IGasMask filter contents + mask blacklist
+        if (item instanceof IGasMask mask) {
+            ItemStack filter = mask.getFilter(stack);
+            if (!filter.isEmpty() && hazardClasses.containsKey(filter.getItem())) {
+                prot.addAll(hazardClasses.get(filter.getItem()));
+                prot.removeAll(mask.getBlacklist(stack));
+            }
+        }
+
         // TODO(armor-mods): ArmorModHandler recursion
 
         return prot;

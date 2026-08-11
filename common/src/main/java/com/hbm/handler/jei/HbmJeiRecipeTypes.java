@@ -32,11 +32,13 @@ public final class HbmJeiRecipeTypes {
 
     public static final IRecipeType<GenericRecipe> ASSEMBLY_MACHINE = type("assembly_machine", GenericRecipe.class);
     public static final IRecipeType<GenericRecipe> CHEMICAL_PLANT = type("chemical_plant", GenericRecipe.class);
+    public static final IRecipeType<GenericRecipe> PUREX = type("purex", GenericRecipe.class);
 
     public static final IRecipeType<PressRecipes.PressRecipe> PRESS = type("press", PressRecipes.PressRecipe.class);
     public static final IRecipeType<SolderingRecipes.SolderingRecipe> SOLDERING_STATION = type("soldering_station", SolderingRecipes.SolderingRecipe.class);
     public static final IRecipeType<CrystallizerRecipes.CrystallizerRecipe> CRYSTALLIZER = type("crystallizer", CrystallizerRecipes.CrystallizerRecipe.class);
     public static final IRecipeType<ShredderRecipeHandler.ShredderPair> SHREDDER = type("shredder", ShredderRecipeHandler.ShredderPair.class);
+    public static final IRecipeType<com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe> SILEX = type("silex", com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe.class);
 
     public static final IRecipeType<CrucibleRecipes.CrucibleRecipe> CRUCIBLE_ALLOY = type("crucible_alloy", CrucibleRecipes.CrucibleRecipe.class);
     public static final IRecipeType<AnvilRecipes.AnvilConstructionRecipe> ANVIL_CON = type("anvil_construction", AnvilRecipes.AnvilConstructionRecipe.class);
@@ -48,6 +50,7 @@ public final class HbmJeiRecipeTypes {
     public static final IRecipeType<LiquefactionRecipeHandler.Entry> LIQUEFACTION = type("liquefaction", LiquefactionRecipeHandler.Entry.class);
     public static final IRecipeType<SolidificationRecipeHandler.Entry> SOLIDIFICATION = type("solidification", SolidificationRecipeHandler.Entry.class);
     public static final IRecipeType<BoilingRecipeHandler.Entry> BOILING = type("boiling", BoilingRecipeHandler.Entry.class);
+    public static final IRecipeType<CoolingRecipeHandler.Entry> COOLING = type("cooling", CoolingRecipeHandler.Entry.class);
 
     // advanced oil wave categories
     public static final IRecipeType<VacuumRecipeHandler.Entry> VACUUM = type("vacuum_distiller", VacuumRecipeHandler.Entry.class);

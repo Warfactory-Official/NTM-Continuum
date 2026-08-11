@@ -2,6 +2,7 @@ package com.hbm.entity;
 
 import com.hbm.Constants;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.registry.DeferredRegister;
 import com.hbm.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -55,6 +56,15 @@ public final class ModEntities {
                             .fireImmune()
                             .clientTrackingRange(64)
                             .updateInterval(20)
+                            .build((ResourceKey<EntityType<?>>) key));
+
+    /** Collectable debris thrown from a ZIRNOX reactor meltdown. */
+    public static final RegistryObject<EntityType<EntityZirnoxDebris>> ZIRNOX_DEBRIS =
+            ENTITY_TYPES.register("entity_zirnox_debris", key ->
+                    EntityType.Builder.<EntityZirnoxDebris>of(EntityZirnoxDebris::new, MobCategory.MISC)
+                            .sized(1.0F, 0.5F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
                             .build((ResourceKey<EntityType<?>>) key));
 
     public static void init() {}

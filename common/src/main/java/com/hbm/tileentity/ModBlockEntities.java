@@ -51,6 +51,26 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("creative_generator",
                     () -> Services.PLATFORM.blockEntityType(TileEntityCreativeGenerator::new, ModMachineBlocks.creative_generator.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineTurbine>> MACHINE_TURBINE =
+            BLOCK_ENTITIES.register("machine_turbine",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineTurbine::new, ModMachineBlocks.machine_turbine.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCondenser>> MACHINE_CONDENSER =
+            BLOCK_ENTITIES.register("machine_condenser",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityCondenser::new, ModMachineBlocks.machine_condenser.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityReactorZirnox>> MACHINE_ZIRNOX =
+            BLOCK_ENTITIES.register("machine_zirnox",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityReactorZirnox::new, ModMachineBlocks.machine_zirnox.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityZirnoxDestroyed>> ZIRNOX_DESTROYED =
+            BLOCK_ENTITIES.register("zirnox_destroyed",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityZirnoxDestroyed::new, ModMachineBlocks.zirnox_destroyed.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityWasteDrum>> MACHINE_WASTE_DRUM =
+            BLOCK_ENTITIES.register("machine_waste_drum",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityWasteDrum::new, ModMachineBlocks.machine_waste_drum.get()));
+
     // --- Phase C: fluid network demo ---
 
     public static final RegistryObject<BlockEntityType<TileEntityFluidDuctNT>> FLUID_DUCT =
@@ -115,6 +135,10 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_chemical_plant",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineChemicalPlant::new, ModMachineBlocks.machine_chemical_plant.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachinePUREX>> MACHINE_PUREX =
+            BLOCK_ENTITIES.register("machine_purex",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachinePUREX::new, ModMachineBlocks.machine_purex.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityMachineSolderingStation>> MACHINE_SOLDERING_STATION =
             BLOCK_ENTITIES.register("machine_soldering_station",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineSolderingStation::new, ModMachineBlocks.machine_soldering_station.get()));
@@ -122,6 +146,14 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityMachineCrystallizer>> MACHINE_CRYSTALLIZER =
             BLOCK_ENTITIES.register("machine_crystallizer",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineCrystallizer::new, ModMachineBlocks.machine_crystallizer.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntitySILEX>> MACHINE_SILEX =
+            BLOCK_ENTITIES.register("machine_silex",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntitySILEX::new, ModMachineBlocks.machine_silex.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityFEL>> MACHINE_FEL =
+            BLOCK_ENTITIES.register("machine_fel",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityFEL::new, ModMachineBlocks.machine_fel.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineOilWell>> MACHINE_OIL_WELL =
             BLOCK_ENTITIES.register("machine_well",

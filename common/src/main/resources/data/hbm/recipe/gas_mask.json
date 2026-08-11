@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "minecraft:glass_pane",
+    "H": "hbm:hazmat_helmet",
+    "P": "#c:plates/iron"
+  },
+  "pattern": [" G ", "G H", " P "],
+  "result": { "id": "hbm:gas_mask" }
+}

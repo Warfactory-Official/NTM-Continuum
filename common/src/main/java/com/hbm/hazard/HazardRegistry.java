@@ -15,6 +15,7 @@ import com.hbm.hazard.type.HazardTypeRadiation;
 import com.hbm.hazard.type.HazardTypeToxic;
 import com.hbm.hazard.type.IHazardType;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
+import com.hbm.hazard.transformer.HazardTransformerZirnox;
 import com.hbm.Constants;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
@@ -73,6 +74,7 @@ public class HazardRegistry {
 
     public static void registerTrafos() {
         HazardSystem.trafos.add(new HazardTransformerRadiationNBT());
+        HazardSystem.trafos.add(new HazardTransformerZirnox());
         // Deferred: ForgeFluid / RadiationContainer / RadiationME / PostCustom transformers
     }
 
@@ -103,6 +105,8 @@ public class HazardRegistry {
         regItem("nuclear_waste_vitrified_tiny", makeData(RADIATION, wstv * nugget).addEntry(CONTAMINATING, wstv * powder_tiny));
         regItem("scrap_nuclear", makeData(RADIATION, 1F));
         regItem("trinitite", makeData(RADIATION, trn * ingot).addEntry(CONTAMINATING, 5));
+
+        registerZirnoxFuel();
 
         // ---- debris ----
         regItem("debris_graphite", makeData().addEntry(RADIATION, 70F).addEntry(HOT, 5F));
@@ -289,6 +293,25 @@ public class HazardRegistry {
         regItem("nugget_" + name, makeData(RADIATION, base * nugget));
         regItem("billet_" + name, makeData(RADIATION, base * billet));
         regItem("ingot_" + name, makeData(RADIATION, base * ingot));
+    }
+
+    private static void registerZirnoxFuel() {
+        for (com.hbm.items.machine.ZirnoxFuel fuel : com.hbm.items.machine.ZirnoxFuel.values()) {
+            if (!com.hbm.items.ModZirnoxItems.hasDepleted(fuel)) continue;
+            HazardData rod = makeData(RADIATION, fuel.depletedRadiation);
+            if (fuel == com.hbm.items.machine.ZirnoxFuel.LES) rod.addEntry(BLINDING, 20F);
+            HazardSystem.register(com.hbm.items.ModZirnoxItems.depleted(fuel), rod);
+
+            HazardData waste = makeData(RADIATION, fuel.depletedRadiation * 0.0375F)
+                    .addEntry(CONTAMINATING, fuel == com.hbm.items.machine.ZirnoxFuel.ZFB_MOX ? 10F : 15F);
+            if (fuel == com.hbm.items.machine.ZirnoxFuel.THORIUM) {
+                waste = makeData(RADIATION, fuel.depletedRadiation * 0.0375F).addEntry(CONTAMINATING, 10F);
+            } else if (fuel == com.hbm.items.machine.ZirnoxFuel.LES) {
+                waste = makeData(RADIATION, fuel.depletedRadiation * 0.0375F).addEntry(CONTAMINATING, 40F);
+            }
+            HazardSystem.register(com.hbm.items.ModZirnoxItems.waste(fuel), waste);
+        }
+        regItem("rod_zirnox_tritium", makeData(RADIATION, 0.001F));
     }
 
     // ---- helpers ----

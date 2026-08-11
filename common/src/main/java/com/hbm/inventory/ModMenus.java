@@ -7,6 +7,7 @@ import com.hbm.inventory.container.ContainerMachineAssemblyMachine;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.inventory.container.ContainerCrystallizer;
 import com.hbm.inventory.container.ContainerMachineChemicalPlant;
+import com.hbm.inventory.container.ContainerMachinePUREX;
 import com.hbm.inventory.container.ContainerMachineElectricFurnace;
 import com.hbm.inventory.container.ContainerMachineEPress;
 import com.hbm.inventory.container.ContainerMachinePress;
@@ -14,6 +15,8 @@ import com.hbm.inventory.container.ContainerMachineShredder;
 import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
 import com.hbm.inventory.container.ContainerNukeMan;
+import com.hbm.inventory.container.ContainerWasteDrum;
+import com.hbm.inventory.container.ContainerReactorZirnox;
 import com.hbm.platform.Services;
 import com.hbm.registry.DeferredRegister;
 import com.hbm.registry.RegistryObject;
@@ -32,17 +35,32 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerMachineBattery>> MACHINE_BATTERY =
             MENUS.register("machine_battery", () -> Services.PLATFORM.menuTypeWithPos(ContainerMachineBattery::new));
 
+    public static final RegistryObject<MenuType<ContainerWasteDrum>> MACHINE_WASTE_DRUM =
+            MENUS.register("machine_waste_drum", () -> Services.PLATFORM.menuTypeWithPos(ContainerWasteDrum::new));
+
     public static final RegistryObject<MenuType<ContainerMachineAssemblyMachine>> MACHINE_ASSEMBLY_MACHINE =
             MENUS.register("machine_assembly_machine", () -> Services.PLATFORM.menuTypeWithPos(ContainerMachineAssemblyMachine::new));
 
     public static final RegistryObject<MenuType<ContainerMachineChemicalPlant>> MACHINE_CHEMICAL_PLANT =
             MENUS.register("machine_chemical_plant", () -> Services.PLATFORM.menuTypeWithPos(ContainerMachineChemicalPlant::new));
 
+    public static final RegistryObject<MenuType<ContainerMachinePUREX>> MACHINE_PUREX =
+            MENUS.register("machine_purex", () -> Services.PLATFORM.menuTypeWithPos(ContainerMachinePUREX::new));
+
     public static final RegistryObject<MenuType<ContainerMachineSolderingStation>> MACHINE_SOLDERING_STATION =
             MENUS.register("machine_soldering_station", () -> Services.PLATFORM.menuTypeWithPos(ContainerMachineSolderingStation::new));
 
     public static final RegistryObject<MenuType<ContainerCrystallizer>> MACHINE_CRYSTALLIZER =
             MENUS.register("machine_crystallizer", () -> Services.PLATFORM.menuTypeWithPos(ContainerCrystallizer::new));
+
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerSILEX>> MACHINE_SILEX =
+            MENUS.register("machine_silex", () -> Services.PLATFORM.menuTypeWithPos(com.hbm.inventory.container.ContainerSILEX::new));
+
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerFEL>> MACHINE_FEL =
+            MENUS.register("machine_fel", () -> Services.PLATFORM.menuTypeWithPos(com.hbm.inventory.container.ContainerFEL::new));
+
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineTurbine>> MACHINE_TURBINE =
+            MENUS.register("machine_turbine", () -> Services.PLATFORM.menuTypeWithPos(com.hbm.inventory.container.ContainerMachineTurbine::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineDiesel>> MACHINE_DIESEL =
             MENUS.register("machine_diesel", () -> Services.PLATFORM.menuTypeWithPos(com.hbm.inventory.container.ContainerMachineDiesel::new));
@@ -100,6 +118,9 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerNukeMan>> NUKE_MAN =
             MENUS.register("nuke_man", () -> Services.PLATFORM.menuTypeWithPos(ContainerNukeMan::new));
+
+    public static final RegistryObject<MenuType<ContainerReactorZirnox>> REACTOR_ZIRNOX =
+            MENUS.register("reactor_zirnox", () -> Services.PLATFORM.menuTypeWithPos(ContainerReactorZirnox::new));
 
     public static final RegistryObject<MenuType<ContainerMachinePress>> MACHINE_PRESS =
             MENUS.register("machine_press", () -> Services.PLATFORM.menuTypeWithPos(ContainerMachinePress::new));

@@ -1,0 +1,70 @@
+package com.hbm.client.render;
+
+import com.hbm.Constants;
+import com.hbm.client.model.WavefrontObj;
+import com.hbm.entity.projectile.EntityZirnoxDebris;
+import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
+import org.joml.Quaternionf;
+
+/** Renders the six physical debris variants ejected by a ZIRNOX meltdown. */
+public class ZirnoxDebrisRenderer extends EntityRenderer<EntityZirnoxDebris, ZirnoxDebrisRenderState> {
+
+    private static final float DIAGONAL_AXIS = 0.57735026F;
+    private final WavefrontObj[] models = new WavefrontObj[DebrisType.values().length];
+    private final RenderType[] renderTypes = new RenderType[DebrisType.values().length];
+
+    public ZirnoxDebrisRenderer(EntityRendererProvider.Context context) {
+        super(context);
+        register(DebrisType.BLANK, "zirnox/deb_blank.obj", "models/machines/zirnox.png");
+        register(DebrisType.ELEMENT, "zirnox/deb_element.obj", "models/zirnox/zirnox_deb_element.png");
+        register(DebrisType.SHRAPNEL, "zirnox/deb_shrapnel.obj", "models/machines/zirnox.png");
+        register(DebrisType.GRAPHITE, "projectiles/deb_graphite.obj", "blocks/block_graphite.png");
+        register(DebrisType.CONCRETE, "zirnox/deb_concrete.obj", "models/machines/zirnox_destroyed.png");
+        register(DebrisType.EXCHANGER, "zirnox/deb_exchanger.obj", "models/machines/zirnox.png");
+    }
+
+    private void register(DebrisType type, String model, String texture) {
+        models[type.ordinal()] = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/" + model));
+        renderTypes[type.ordinal()] = RenderTypes.entityCutout(
+                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/" + texture));
+    }
+
+    @Override
+    public ZirnoxDebrisRenderState createRenderState() {
+        return new ZirnoxDebrisRenderState();
+    }
+
+    @Override
+    public void extractRenderState(EntityZirnoxDebris entity, ZirnoxDebrisRenderState state, float partialTicks) {
+        super.extractRenderState(entity, state, partialTicks);
+        state.type = entity.getDebrisType();
+        state.entityId = entity.getId();
+        state.rotation = entity.lastRot + (entity.rot - entity.lastRot) * partialTicks;
+    }
+
+    @Override
+    public void submit(ZirnoxDebrisRenderState state, PoseStack poseStack, SubmitNodeCollector collector,
+                       CameraRenderState camera) {
+        if (state.type == null) return;
+        int index = state.type.ordinal();
+        poseStack.pushPose();
+        poseStack.translate(0.0F, 0.125F, 0.0F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(Math.floorMod(state.entityId, 360)));
+        poseStack.mulPose(new Quaternionf().rotationAxis((float) Math.toRadians(state.rotation),
+                DIAGONAL_AXIS, DIAGONAL_AXIS, DIAGONAL_AXIS));
+        collector.submitCustomGeometry(poseStack, renderTypes[index],
+                (pose, buffer) -> models[index].renderAll(pose, buffer, state.lightCoords,
+                        OverlayTexture.NO_OVERLAY, true));
+        poseStack.popPose();
+    }
+}

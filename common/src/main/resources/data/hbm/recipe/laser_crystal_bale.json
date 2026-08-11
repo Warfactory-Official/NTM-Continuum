@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "Q": "hbm:glass_quartz",
+    "D": "#c:ingots/dineutronium",
+    "B": "hbm:egg_balefire",
+    "S": "hbm:powder_spark_mix"
+  },
+  "pattern": [
+    "QDQ",
+    "SBS",
+    "QDQ"
+  ],
+  "result": {
+    "id": "hbm:laser_crystal_bale"
+  }
+}

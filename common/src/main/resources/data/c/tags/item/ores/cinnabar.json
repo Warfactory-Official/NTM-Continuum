@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "hbm:ore_cinnabar"
+    "hbm:ore_cinnabar",
+    "hbm:ore_depth_cinnabar"
   ]
 }
