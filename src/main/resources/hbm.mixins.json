@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.hbm.mixin",
+  "refmap": "${mod_id}.refmap.json",
+  "compatibilityLevel": "JAVA_18",
+  "mixins": [
+    "FireBlockAccessor",
+    "MixinLivingEntity",
+    "MixinServerLevel"
+  ],
+  "client": [
+    "MixinGui"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

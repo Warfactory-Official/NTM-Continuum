@@ -1,24 +1,37 @@
-# eclipse
-bin
-*.launch
-.settings
-.metadata
-.classpath
-.project
+### Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
 
-# idea
-out
+### Stonecutter
+# Node directories are generated; only the per-node gradle.properties is authored by hand.
+versions/*/build/
+versions/*/.gradle/
+versions/*/runs/
+versions/*/src/generated/
+.stonecutter-cache/
+
+### Dev runs
+runs/
+run/
+
+### IDE
+.idea/
+*.iml
 *.ipr
 *.iws
-*.iml
-.idea/*
-!.idea/scopes
+out/
+.vscode/
+.classpath
+.project
+.settings/
+bin/
 
-# gradle
-build
-.gradle
+### Java
+*.class
+hs_err_pid*
+replay_pid*
 
-# other
-eclipse
-run
-runs
+### OS
+.DS_Store
+Thumbs.db
