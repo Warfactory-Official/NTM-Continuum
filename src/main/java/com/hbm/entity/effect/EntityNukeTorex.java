@@ -102,7 +102,11 @@ public class EntityNukeTorex extends CompatEntity {
     }
 
     @Override
+    //? if >=26.1 {
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+    //?} else {
+    /*public boolean hurt(DamageSource source, float damage) {
+    *///?}
         return false;
     }
 

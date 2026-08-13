@@ -1,10 +1,10 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatBERProvider;
 import dev.golem.core.render.CompatRenderState;
 import com.hbm.Constants;
 import com.hbm.client.render.MachineObjRenderer.ModelDef;
 import com.hbm.tileentity.ModBlockEntities;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -26,7 +26,8 @@ public final class HbmBlockEntityRenderers {
 
     /** Loader-provided registration callback. */
     public interface Sink {
-        <T extends BlockEntity> void register(BlockEntityType<? extends T> type, BlockEntityRendererProvider<T, ?> provider);
+        <T extends BlockEntity, S extends CompatRenderState> void register(
+                BlockEntityType<? extends T> type, CompatBERProvider<T, S> provider);
     }
 
     /** The 1.12.2 "frame" appears only when a block sits this many blocks above the core. */
@@ -196,20 +197,20 @@ public final class HbmBlockEntityRenderers {
     /** Generic renderer with a post-rotation footprint offset (for asymmetric machines like the soldering station). */
     private static <T extends BlockEntity> void reg(Sink sink, BlockEntityType<T> type, float yaw, float scale,
                                                     float offsetX, float offsetZ, ModelDef... defs) {
-        BlockEntityRendererProvider<T, MachineRenderState> provider =
+        CompatBERProvider<T, MachineRenderState> provider =
                 ctx -> new MachineObjRenderer<>(yaw, scale, offsetX, offsetZ, Set.of(), 0, defs);
         sink.register(type, provider);
     }
 
     /** Registers a fully custom renderer (e.g. an animated machine) rather than the generic OBJ one. */
     private static <T extends BlockEntity, S extends CompatRenderState> void regCustom(
-            Sink sink, BlockEntityType<T> type, BlockEntityRendererProvider<T, S> provider) {
+            Sink sink, BlockEntityType<T> type, CompatBERProvider<T, S> provider) {
         sink.register(type, provider);
     }
 
     private static <T extends BlockEntity> void reg(Sink sink, BlockEntityType<T> type, float yaw, float scale,
                                                     Set<String> frameParts, int frameHeight, ModelDef... defs) {
-        BlockEntityRendererProvider<T, MachineRenderState> provider =
+        CompatBERProvider<T, MachineRenderState> provider =
                 ctx -> new MachineObjRenderer<>(yaw, scale, frameParts, frameHeight, defs);
         sink.register(type, provider);
     }

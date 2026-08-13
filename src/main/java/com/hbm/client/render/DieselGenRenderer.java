@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CameraInfo;
@@ -10,7 +11,6 @@ import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -30,7 +30,7 @@ public class DieselGenRenderer implements CompatBER<TileEntityMachineDiesel, Die
 
     public DieselGenRenderer() {
         this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/dieselgen.obj"));
-        this.renderType = RenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/dieselgen.png"));
+        this.renderType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/dieselgen.png"));
     }
 
     @Override public DieselGenRenderState createRenderState() { return new DieselGenRenderState(); }

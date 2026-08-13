@@ -1,12 +1,12 @@
 package com.hbm.client;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.Constants;
 import com.hbm.items.ModGearItems;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -51,34 +51,38 @@ public final class RadCounterOverlay {
         int posY = mc.getWindow().getGuiScaledHeight() - 20;
 
         // frame + fill
-        graphics.blit(RenderPipelines.GUI_TEXTURED, MISC, posX, posY, 0, 0, 94, 18, 256, 256);
+        GuiDraw.blit(graphics, MISC, posX, posY, 0, 0, 94, 18, 256, 256);
         if (bar > 0)
-            graphics.blit(RenderPipelines.GUI_TEXTURED, MISC, posX + 1, posY + 1, 1, 19, bar, 16, 256, 256);
+            GuiDraw.blit(graphics, MISC, posX + 1, posY + 1, 1, 19, bar, 16, 256, 256);
 
         // warning icons
         int iconX = posX + length + 2 + 18;
         if (radiation >= 25) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, MISC, iconX, posY, 36, 36, 18, 18, 256, 256);
+            GuiDraw.blit(graphics, MISC, iconX, posY, 36, 36, 18, 18, 256, 256);
         } else if (radiation >= 10) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, MISC, iconX, posY, 18, 36, 18, 18, 256, 256);
+            GuiDraw.blit(graphics, MISC, iconX, posY, 18, 36, 18, 18, 256, 256);
         } else if (radiation >= 2.5) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, MISC, iconX, posY, 0, 36, 18, 18, 256, 256);
+            GuiDraw.blit(graphics, MISC, iconX, posY, 0, 36, 18, 18, 256, 256);
         }
 
         Font font = mc.font;
         if (radiation > 1000) {
-            graphics.text(font, ">1000 RAD/s", posX, posY - 8, 0xFFFF0000, false);
+            GuiDraw.text(graphics, font, ">1000 RAD/s", posX, posY - 8, 0xFFFF0000, false);
         } else if (radiation >= 1) {
-            graphics.text(font, Math.round(radiation) + " RAD/s", posX, posY - 8, 0xFFFFFF00, false);
+            GuiDraw.text(graphics, font, Math.round(radiation) + " RAD/s", posX, posY - 8, 0xFFFFFF00, false);
         } else if (radiation > 0) {
-            graphics.text(font, "<1 RAD/s", posX, posY - 8, 0xFF00FF00, false);
+            GuiDraw.text(graphics, font, "<1 RAD/s", posX, posY - 8, 0xFF00FF00, false);
         }
     }
 
     private static boolean carriesCounter(Player player) {
         Item geiger = ModGearItems.geiger_counter.get();
         Item dosimeter = ModGearItems.dosimeter.get();
+        //? if >=26.1 {
         for (ItemStack stack : player.getInventory()) {
+        //?} else {
+        /*for (ItemStack stack : player.getInventory().items) {
+        *///?}
             if (stack.is(geiger) || stack.is(dosimeter)) return true;
         }
         return false;

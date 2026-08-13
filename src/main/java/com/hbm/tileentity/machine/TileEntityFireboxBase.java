@@ -62,7 +62,11 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
                 var remainder = fuel.getItem().getCraftingRemainder(); // e.g. lava bucket -> empty bucket
                 fuel.shrink(1);
                 if (fuel.isEmpty()) {
+                    //? if >=26.1 {
                     te.inventory.setStackInSlot(i, remainder != null ? remainder.create() : ItemStack.EMPTY);
+                    //?} else {
+                    /*te.inventory.setStackInSlot(i, remainder != null ? new ItemStack(remainder) : ItemStack.EMPTY);
+                    *///?}
                 }
 
                 te.wasOn = true;

@@ -8,7 +8,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -65,7 +65,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
             }
         }
 
-        te.updateTypeFromIdentifier();
+        te.updateTypeFromFluidId();
         te.processCanister(te.input, 2, 3);
         te.power = Library.chargeItemsFromTE(te.inventory, 4, te.power, MAX_POWER);
 
@@ -105,9 +105,9 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
      * slot 1 — the 1.12.2 {@code tanksNew[0].setType(0, 1, inventory)}. Retyping resets the output tank so
      * the next {@link #convert()} re-derives it from the new steam stage.
      */
-    private void updateTypeFromIdentifier() {
+    private void updateTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         if (!inventory.getStackInSlot(1).isEmpty()) return; // out slot must be free to receive it
 
         FluidType type = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
@@ -220,7 +220,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
-            case 0, 1 -> stack.getItem() instanceof IItemFluidIdentifier;
+            case 0, 1 -> stack.getItem() instanceof IItemFluidId;
             case 2, 5 -> isFluidContainer(stack);
             case 4 -> Library.isBattery(stack);
             default -> true; // 3 + 6: bay outputs — the machine writes them; the menu keeps players out

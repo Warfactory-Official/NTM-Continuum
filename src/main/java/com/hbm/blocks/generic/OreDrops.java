@@ -2,7 +2,9 @@ package com.hbm.blocks.generic;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.util.RandomSource;
+//? if >=26.1 {
 import net.minecraft.world.item.ItemInstance;
+//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -84,8 +86,16 @@ public final class OreDrops {
 
     /** The Fortune level on the harvesting tool, or 0 when there is no tool in the loot context. */
     public static int fortune(LootParams.Builder params) {
+        //? if >=26.1 {
         ItemInstance tool = params.getOptionalParameter(LootContextParams.TOOL);
+        //?} else {
+        /*ItemStack tool = params.getOptionalParameter(LootContextParams.TOOL);
+        *///?}
+        //? if >=26.1 {
         if (tool == null || tool.count() <= 0) return 0;
+        //?} else {
+        /*if (tool == null || tool.getCount() <= 0) return 0;
+        *///?}
         return EnchantmentHelper.getItemEnchantmentLevel(
                 params.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.FORTUNE),
                 tool);
@@ -93,8 +103,16 @@ public final class OreDrops {
 
     /** Whether the harvesting tool carries Silk Touch. */
     public static boolean silkTouch(LootParams.Builder params) {
+        //? if >=26.1 {
         ItemInstance tool = params.getOptionalParameter(LootContextParams.TOOL);
+        //?} else {
+        /*ItemStack tool = params.getOptionalParameter(LootContextParams.TOOL);
+        *///?}
+        //? if >=26.1 {
         if (tool == null || tool.count() <= 0) return false;
+        //?} else {
+        /*if (tool == null || tool.getCount() <= 0) return false;
+        *///?}
         return EnchantmentHelper.getItemEnchantmentLevel(
                 params.getLevel().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH),
                 tool) > 0;

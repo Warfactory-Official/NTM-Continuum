@@ -32,7 +32,7 @@ public final class FelGameTests {
     private static TileEntityFEL placeFel(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_fel.get().defaultBlockState()
                 .setValue(BlockDummyable.META, FACING_NORTH));
-        TileEntityFEL te = helper.getBlockEntity(pos, TileEntityFEL.class);
+        TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityFEL.class);
         helper.assertTrue(te != null, "FEL BlockEntity was not created");
         return te;
     }
@@ -40,7 +40,7 @@ public final class FelGameTests {
     private static TileEntitySILEX placeSilex(GameTestHelper helper, BlockPos pos, int meta) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
                 .setValue(BlockDummyable.META, meta));
-        TileEntitySILEX te = helper.getBlockEntity(pos, TileEntitySILEX.class);
+        TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;
     }
@@ -233,7 +233,7 @@ public final class FelGameTests {
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
                 new ItemStack(block));
 
-        TileEntityFEL te = helper.getBlockEntity(core, TileEntityFEL.class);
+        TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityFEL.class);
         helper.assertTrue(te != null, "The FEL did not form through the real placement path");
 
         DirPos[] ports = te.getConPos();
@@ -264,7 +264,7 @@ public final class FelGameTests {
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
                 new ItemStack(block));
 
-        TileEntityFEL te = helper.getBlockEntity(core, TileEntityFEL.class);
+        TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityFEL.class);
         helper.assertTrue(te != null, "The FEL did not form");
 
         DirPos port = te.getConPos()[0];

@@ -91,7 +91,11 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
     }
 
     @Override
+    //? if >=26.1 {
     protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
+    //?} else {
+    /*protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+    *///?}
         return findCoreTE(level, pos) instanceof TileEntityMachineFluidTank tank
                 ? tank.tank.getRedstoneComparatorPower() : 0;
     }

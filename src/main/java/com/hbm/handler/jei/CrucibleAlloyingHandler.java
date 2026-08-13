@@ -1,12 +1,14 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.items.machine.ItemScraps;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -23,7 +25,7 @@ public class CrucibleAlloyingHandler extends HbmRecipeCategory<CrucibleRecipes.C
 
     private final ItemStack crucible;
 
-    public CrucibleAlloyingHandler(IGuiHelper helper, IRecipeType<CrucibleRecipes.CrucibleRecipe> type, Component title, ItemStack crucible) {
+    public CrucibleAlloyingHandler(IGuiHelper helper, JeiRecipeType<CrucibleRecipes.CrucibleRecipe> type, Component title, ItemStack crucible) {
         super(helper, type, title, crucible, "gui_nei_crucible.png");
         this.crucible = crucible;
     }
@@ -48,7 +50,7 @@ public class CrucibleAlloyingHandler extends HbmRecipeCategory<CrucibleRecipes.C
             }
         }
 
-        builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 75, 42)                              // old init 74,41
+        builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75, 42)                              // old init 74,41
                 .addItemStacks(List.of(crucible));
 
         if (recipe.output != null) {
@@ -61,3 +63,4 @@ public class CrucibleAlloyingHandler extends HbmRecipeCategory<CrucibleRecipes.C
         }
     }
 }
+//?}

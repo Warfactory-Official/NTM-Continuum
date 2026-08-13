@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
@@ -46,7 +47,11 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
         this.addSlot(new Slot(machine, 1, 35, 53));
         this.addSlot(new Slot(machine, 2, 125, 17));
         this.addSlot(new Slot(machine, 3, 125, 53));
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 84);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
+        *///?}
     }
 
     private static @Nullable TileEntityMachineBattery resolve(Inventory playerInventory, BlockPos pos) {

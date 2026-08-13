@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.data.ModelData;
 import com.hbm.items.ModDataComponents;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
@@ -9,7 +10,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 
 /** One of the historical spent-fuel material identities; heat is mutable stack state, not another ID. */
 public class ItemZirnoxWaste extends Item {
@@ -33,8 +36,7 @@ public class ItemZirnoxWaste extends Item {
     public static void setHot(ItemStack stack, boolean hot) {
         if (hot) {
             stack.set(ModDataComponents.FUEL_WASTE_HOT.get(), true);
-            stack.set(DataComponents.CUSTOM_MODEL_DATA,
-                    new CustomModelData(java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.List.of(HOT_TINT)));
+            ModelData.setColor(stack, HOT_TINT);
         } else {
             stack.remove(ModDataComponents.FUEL_WASTE_HOT.get());
             stack.remove(DataComponents.CUSTOM_MODEL_DATA);
@@ -42,8 +44,13 @@ public class ItemZirnoxWaste extends Item {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         if (isHot(stack)) {
             adder.accept(Component.translatable("item.hbm.nuclear_waste.cool").withStyle(ChatFormatting.GOLD));
         }

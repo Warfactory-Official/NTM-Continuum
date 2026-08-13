@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.Compat;
 import java.util.List;
 import java.util.function.UnaryOperator;
 
@@ -76,7 +77,7 @@ public final class ModDecoBlocks {
     }
 
     private static void blockItem(String id, RegistryObject<Block> block) {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> p.useBlockDescriptionPrefix());
+        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.BLOCKS, item);
     }
 

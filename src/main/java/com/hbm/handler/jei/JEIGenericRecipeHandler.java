@@ -1,5 +1,7 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
@@ -11,7 +13,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -37,7 +39,7 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
     protected final IDrawable slotFrame;    // gui_nei 5,87 18x18
     protected final IDrawable machinePill;  // gui_nei 59,87 18x36 (arrow above, machine below)
 
-    public JEIGenericRecipeHandler(IGuiHelper helper, IRecipeType<GenericRecipe> type, Component title,
+    public JEIGenericRecipeHandler(IGuiHelper helper, JeiRecipeType<GenericRecipe> type, Component title,
                                    GenericRecipes recipeSet, ItemStack... machines) {
         super(helper, type, title, machines.length > 0 ? machines[0] : ItemStack.EMPTY, "gui_nei.png");
         this.recipeSet = recipeSet;
@@ -108,7 +110,7 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
 
         // The machine itself, sitting in the lower half of the pill (old: init(74+off, 29) → item at +1).
         if (machines != null && machines.length > 0) {
-            builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 75 + off, 30)
+            builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75 + off, 30)
                     .addItemStacks(List.of(machines));
         }
     }
@@ -151,3 +153,4 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         };
     }
 }
+//?}

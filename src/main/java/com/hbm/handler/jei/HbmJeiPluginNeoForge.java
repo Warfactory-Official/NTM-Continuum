@@ -1,6 +1,6 @@
 package com.hbm.handler.jei;
 
-//? if neoforge {
+//? if jei && neoforge {
 
 import com.hbm.Constants;
 import mezz.jei.api.IModPlugin;

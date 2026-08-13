@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.packet.ControlEventPayload;
@@ -9,9 +10,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
+//? if >=26.1 {
 import net.minecraft.client.input.KeyEvent;
+//?}
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -109,12 +113,18 @@ public class GUIScreenRecipeSelector extends Screen {
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, guiLeft, guiTop, 0.0F, 0.0F, xSize, ySize, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, guiLeft, guiTop, 0.0F, 0.0F, xSize, ySize, 256, 256);
 
         if (this.search.isFocused()) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, guiLeft + 26, guiTop + 108, 0.0F, 132.0F, 106, 16, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, guiLeft + 26, guiTop + 108, 0.0F, 132.0F, 106, 16, 256, 256);
         }
 
         // Button hover highlights (page up/down, close, clear search, focus hint).
@@ -128,30 +138,35 @@ public class GUIScreenRecipeSelector extends Screen {
         for (int i = pageIndex * 8; i < pageIndex * 8 + 40 && i < recipes.size(); i++) {
             int ind = i - pageIndex * 8;
             if (recipes.get(i).getInternalName().equals(this.selection)) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, guiLeft + 7 + 18 * (ind % 8), guiTop + 17 + 18 * (ind / 8), 192.0F, 0.0F, 18, 18, 256, 256);
+                GuiDraw.blit(graphics, TEXTURE, guiLeft + 7 + 18 * (ind % 8), guiTop + 17 + 18 * (ind / 8), 192.0F, 0.0F, 18, 18, 256, 256);
             }
         }
 
         // Recipe icons grid (8 wide × 5 tall).
         for (int i = pageIndex * 8; i < pageIndex * 8 + 40 && i < recipes.size(); i++) {
             int ind = i - pageIndex * 8;
-            graphics.item(recipes.get(i).getIcon(), guiLeft + 8 + 18 * (ind % 8), guiTop + 18 + 18 * (ind / 8));
+            GuiDraw.item(graphics, recipes.get(i).getIcon(), guiLeft + 8 + 18 * (ind % 8), guiTop + 18 + 18 * (ind / 8));
         }
 
         // Current selection icon.
         GenericRecipe selected = recipeSet.getRecipe(selection);
-        if (selected != null) graphics.item(selected.getIcon(), guiLeft + 152, guiTop + 72);
+        if (selected != null) GuiDraw.item(graphics, selected.getIcon(), guiLeft + 152, guiTop + 72);
     }
 
     private void hoverBlit(GuiGraphicsExtractor graphics, int mouseX, int mouseY, int x, int y, int u, int v) {
         if (isOver(mouseX, mouseY, x, y, 16, 16)) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, guiLeft + x, guiTop + y, (float) u, (float) v, 16, 16, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, guiLeft + x, guiTop + y, (float) u, (float) v, 16, 16, 256, 256);
         }
     }
 
     @Override
+    //? if >=26.1 {
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick); // renders the search EditBox
+    //?} else {
+    /*public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick); // renders the search EditBox
+    *///?}
 
         // Recipe tooltips over the grid.
         if (isOver(mouseX, mouseY, 7, 17, 144, 90)) {
@@ -159,7 +174,7 @@ public class GUIScreenRecipeSelector extends Screen {
                 int ind = i - pageIndex * 8;
                 int ix = 7 + 18 * (ind % 8), iy = 17 + 18 * (ind / 8);
                 if (isOver(mouseX, mouseY, ix, iy, 18, 18)) {
-                    graphics.setTooltipForNextFrame(this.font, recipes.get(i).print(), Optional.empty(), mouseX, mouseY);
+                    GuiDraw.tooltip(graphics, this.font, recipes.get(i).print(), Optional.empty(), mouseX, mouseY);
                 }
             }
         }
@@ -167,19 +182,28 @@ public class GUIScreenRecipeSelector extends Screen {
         // Tooltip over the current selection icon.
         GenericRecipe selected = recipeSet.getRecipe(selection);
         if (selected != null && isOver(mouseX, mouseY, 151, 71, 18, 18)) {
-            graphics.setTooltipForNextFrame(this.font, selected.print(), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, selected.print(), Optional.empty(), mouseX, mouseY);
         }
         if (isOver(mouseX, mouseY, 152, 90, 16, 16)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal("Close").withStyle(ChatFormatting.YELLOW)), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal("Close").withStyle(ChatFormatting.YELLOW)), Optional.empty(), mouseX, mouseY);
         }
         if (isOver(mouseX, mouseY, 134, 108, 16, 16)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal("Clear search").withStyle(ChatFormatting.YELLOW)), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal("Clear search").withStyle(ChatFormatting.YELLOW)), Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
+        //? if >=26.1 {
         if (super.mouseClicked(event, doubleClick)) return true; // EditBox focus etc.
+        //?} else {
+        /*if (super.mouseClicked(hbm$mx, hbm$my, hbm$btn)) return true; // EditBox focus etc.
+        *///?}
         int x = (int) event.x(), y = (int) event.y();
 
         if (isOver(x, y, 152, 18, 16, 16)) { if (pageIndex > 0) pageIndex--; return true; }   // page up
@@ -219,17 +243,30 @@ public class GUIScreenRecipeSelector extends Screen {
     }
 
     @Override
+    //? if >=26.1 {
     public boolean keyPressed(KeyEvent event) {
+    //?} else {
+    /*public boolean keyPressed(int hbm$key, int hbm$scan, int hbm$mods) {
+        dev.golem.core.gui.KeyInput event = new dev.golem.core.gui.KeyInput(hbm$key, hbm$scan, hbm$mods);
+    *///?}
         if (event.key() == 257 || event.key() == 335) { // ENTER / numpad enter toggles search focus
             this.search.setFocused(!this.search.isFocused());
             return true;
         }
         if (!this.search.isFocused() && this.minecraft != null
+                //? if >=26.1 {
                 && this.minecraft.options.keyInventory.matches(event)) {
+                //?} else {
+                /*&& this.minecraft.options.keyInventory.matches(hbm$key, hbm$scan)) {
+                *///?}
             onClose();
             return true;
         }
+        //? if >=26.1 {
         return super.keyPressed(event);
+        //?} else {
+        /*return super.keyPressed(hbm$key, hbm$scan, hbm$mods);
+        *///?}
     }
 
     @Override

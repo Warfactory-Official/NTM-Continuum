@@ -9,7 +9,7 @@ import com.hbm.inventory.container.ContainerMachineFluidTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -77,7 +77,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFluidTank tank) {
         tank.ensureClimbRegistered();
-        tank.updateTypeFromIdentifier();
+        tank.updateTypeFromFluidId();
         tank.processCanister(2, 3); // canister bay A: fill the tank from / drain into a container
         tank.processCanister(4, 5); // canister bay B: same (both bays are interchangeable)
         FluidType type = tank.tank.getTankType();
@@ -130,9 +130,9 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
      * mirroring the 1.12.2 {@code tank.setType(0, 1, inventory)} — the identifier passes from the top
      * slot to the bottom slot once consumed. Only fires when the type actually changes and slot 1 is free.
      */
-    private void updateTypeFromIdentifier() {
+    private void updateTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         if (!inventory.getStackInSlot(1).isEmpty()) return; // out slot must be empty to receive it
 
         FluidType t = ident.getType(level, getBlockPos().getX(), getBlockPos().getY(), getBlockPos().getZ(), id);
@@ -264,7 +264,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
-            case 0, 1 -> stack.getItem() instanceof IItemFluidIdentifier;
+            case 0, 1 -> stack.getItem() instanceof IItemFluidId;
             case 2, 4 -> isFluidContainer(stack);
             default -> true; // 3 + 5: outputs — the machine inserts results here; player UI is take-only
         };

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -218,8 +219,8 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
     @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_purex"); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) { return new ContainerMachinePUREX(id, inv, this); }
     @Override public void receiveControl(CompoundTag data) {
-        if (data.getIntOr("index", -1) == 0) {
-            String selection = data.getStringOr("selection", "null");
+        if (Tags.getIntOr(data, "index", -1) == 0) {
+            String selection = Tags.getStringOr(data, "selection", "null");
             purexModule.recipe = PUREXRecipes.INSTANCE.getRecipe(selection) != null ? selection : "null";
             purexModule.progress = 0D;
             setChanged();

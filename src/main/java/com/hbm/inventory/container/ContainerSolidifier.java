@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier;
 import net.minecraft.core.BlockPos;
@@ -80,7 +80,7 @@ public class ContainerSolidifier extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 2, 4, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
             } else {
                 return ItemStack.EMPTY;

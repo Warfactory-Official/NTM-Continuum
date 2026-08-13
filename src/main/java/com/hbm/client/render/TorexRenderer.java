@@ -1,8 +1,8 @@
 package com.hbm.client.render;
 
-import net.minecraft.client.renderer.OrderedSubmitNodeCollector;
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.client.NukeScreenEffects;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -14,7 +14,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -42,7 +41,7 @@ import java.util.Comparator;
  * It also latches the HUD {@link NukeScreenEffects} flash/shake timestamps and the local player's
  * hurt-camera-tilt when the blast is close, exactly like the original.
  */
-public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderState> {
+public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<EntityNukeTorex, TorexRenderState> {
 
     private static final Identifier CLOUDLET_TEX = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/particle/particle_base.png");
     private static final Identifier FLARE_TEX = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/particle/flare.png");
@@ -68,7 +67,7 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
      * (An emissive type skips the lightmap, and folding {@code br/255} into RGB by hand is a too‑dim linear
      * approximation of the lightmap curve — that was the "cloud too dark" bug.)
      */
-    private static final RenderType CLOUDLET_TYPE = RenderTypes.entityTranslucent(CLOUDLET_TEX);
+    private static final RenderType CLOUDLET_TYPE = CompatRenderTypes.entityTranslucent(CLOUDLET_TEX);
 
     public static final int flashBaseDuration = 30;
     public static final int flareBaseDuration = 100;
@@ -87,19 +86,19 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
 
     /** Always render — the cloud has no meaningful bounding box and must be visible at any distance. */
     @Override
-    protected boolean affectedByCulling(EntityNukeTorex entity) {
+    public boolean culled(EntityNukeTorex entity) {
         return false;
     }
 
     @Override
-    public void extractRenderState(EntityNukeTorex entity, TorexRenderState state, float partialTicks) {
+    public void extract(EntityNukeTorex entity, TorexRenderState state, float partialTicks) {
         state.torex = entity;
         state.partialTicks = partialTicks;
         state.entityId = entity.getId();
     }
 
     @Override
-    public void submit(TorexRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+    public void submit(TorexRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
         EntityNukeTorex cloud = state.torex;
         if (cloud == null) return;
 
@@ -146,7 +145,7 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
 
     // ---- Cloudlets ----
 
-    private void sortCloudlets(EntityNukeTorex cloud, CameraRenderState camera) {
+    private void sortCloudlets(EntityNukeTorex cloud, CameraInfo camera) {
         if (cloud.lastRenderSortTick == cloud.tickCount) return;
         Vec3 cam = camera.pos;
         for (Cloudlet cloudlet : cloud.cloudlets) {
@@ -159,8 +158,8 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
         cloud.lastRenderSortTick = cloud.tickCount;
     }
 
-    private void submitCloudlets(EntityNukeTorex cloud, PoseStack poseStack, OrderedSubmitNodeCollector collector,
-                                 CameraRenderState camera, float partialTicks) {
+    private void submitCloudlets(EntityNukeTorex cloud, PoseStack poseStack, SubmitSink collector,
+                                 CameraInfo camera, float partialTicks) {
         if (cloud.cloudlets.isEmpty()) return;
 
         Quaternionf q = camera.orientation;
@@ -241,8 +240,8 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
 
     // ---- Flare ----
 
-    private void submitFlare(EntityNukeTorex cloud, int entityId, PoseStack poseStack, OrderedSubmitNodeCollector collector,
-                             CameraRenderState camera, float partialTicks, float flareDuration) {
+    private void submitFlare(EntityNukeTorex cloud, int entityId, PoseStack poseStack, SubmitSink collector,
+                             CameraInfo camera, float partialTicks, float flareDuration) {
         double age = Math.min(cloud.tickCount + partialTicks, flareDuration);
         float alpha = (float) Math.min(1, (flareDuration - age) / flareDuration);
         if (alpha <= 0F) return;
@@ -261,7 +260,7 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
             offsets[i][2] = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);
         }
 
-        collector.submitCustomGeometry(poseStack, RenderTypes.energySwirl(FLARE_TEX, 0F, 0F), (pose, buffer) -> {
+        collector.submitCustomGeometry(poseStack, CompatRenderTypes.energySwirl(FLARE_TEX, 0F, 0F), (pose, buffer) -> {
             float rx = rightBase.x * size, ry = rightBase.y * size, rz = rightBase.z * size;
             float ux = upBase.x * size, uy = upBase.y * size, uz = upBase.z * size;
             for (float[] o : offsets) {
@@ -287,7 +286,7 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
 
     // ---- Flash ----
 
-    private void submitFlash(EntityNukeTorex cloud, PoseStack poseStack, SubmitNodeCollector collector,
+    private void submitFlash(EntityNukeTorex cloud, PoseStack poseStack, SubmitSink collector,
                              float flashDuration, float partialTicks) {
         double intensity = (cloud.tickCount + partialTicks) / flashDuration;
         // Euler damping: fast rise, smooth fade-out.
@@ -297,18 +296,18 @@ public class TorexRenderer extends EntityRenderer<EntityNukeTorex, TorexRenderSt
         double coreHeight = cloud.coreHeight;
         final double fIntensity = intensity;
 
-        collector.submitCustomGeometry(poseStack, RenderTypes.dragonRays(), (pose, buffer) -> {
-            pose.scale(0.2F, 0.2F, 0.2F);
-            pose.translate(0F, (float) (coreHeight * 4), 0F);
+        collector.submitCustomGeometry(poseStack, CompatRenderTypes.dragonRays(), (pose, buffer) -> {
+            dev.golem.core.render.Poses.scale(pose, 0.2F, 0.2F, 0.2F);
+            dev.golem.core.render.Poses.translate(pose, 0F, (float) (coreHeight * 4), 0F);
 
             RandomSource random = RandomSource.create(432L);
             for (int i = 0; i < 300; i++) {
                 // Accumulating random walk (the 1.12.2 GL rotations were never reset inside the loop).
-                pose.rotate(Axis.XP.rotationDegrees(random.nextFloat() * 360F));
-                pose.rotate(Axis.YP.rotationDegrees(random.nextFloat() * 360F));
-                pose.rotate(Axis.ZP.rotationDegrees(random.nextFloat() * 360F));
-                pose.rotate(Axis.XP.rotationDegrees(random.nextFloat() * 360F));
-                pose.rotate(Axis.YP.rotationDegrees(random.nextFloat() * 360F));
+                dev.golem.core.render.Poses.rotate(pose, Axis.XP.rotationDegrees(random.nextFloat() * 360F));
+                dev.golem.core.render.Poses.rotate(pose, Axis.YP.rotationDegrees(random.nextFloat() * 360F));
+                dev.golem.core.render.Poses.rotate(pose, Axis.ZP.rotationDegrees(random.nextFloat() * 360F));
+                dev.golem.core.render.Poses.rotate(pose, Axis.XP.rotationDegrees(random.nextFloat() * 360F));
+                dev.golem.core.render.Poses.rotate(pose, Axis.YP.rotationDegrees(random.nextFloat() * 360F));
 
                 float vert1 = (random.nextFloat() * 20F + 5F + 10F) * (float) (fIntensity * flashSize);
                 float vert2 = (random.nextFloat() * 2F + 1F + 2F) * (float) (fIntensity * flashSize);

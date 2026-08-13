@@ -1,12 +1,13 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
 /**
  * Shared molten-metal quad emitters for the foundry renderers (crucible pool, channel/caster levels,
- * pour streams). Draw these with {@code RenderTypes.entityTranslucentEmissive} — that pipeline is
+ * pour streams). Draw these with {@code CompatRenderTypes.entityTranslucentEmissive} — that pipeline is
  * no-cull (one winding shows both sides) and emissive (uniform brightness, the modern stand-in for the
  * old lighting-off + lightmap-240 TESR state). Do NOT emit reversed duplicate quads: two coplanar
  * windings z-fight, and the back face renders at 40% brightness (dark shimmer).

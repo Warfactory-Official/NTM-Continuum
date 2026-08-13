@@ -1,5 +1,6 @@
 package com.hbm.explosion;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.ModFalloutBlocks;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
@@ -48,7 +49,7 @@ public final class ExplosionNukeGeneric {
             if (isObstructed(world, x, y, z, entX, entY, entZ)) continue;
 
             double damage = maxDamage * (radius - dist) / radius;
-            boolean doKnockback = e.hurtServer(serverLevel, source, (float) damage);
+            boolean doKnockback = Compat.hurt(e, serverLevel, source, (float) damage);
 
             e.igniteForSeconds(5);
 

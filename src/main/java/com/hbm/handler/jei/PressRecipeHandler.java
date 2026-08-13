@@ -1,5 +1,7 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.items.machine.ItemStamp.StampType;
@@ -13,7 +15,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -38,7 +40,7 @@ public class PressRecipeHandler extends HbmRecipeCategory<PressRecipes.PressReci
     /** StampType → all registered stamp items of that type (built once from ModStampItems). */
     private static Map<StampType, List<ItemStack>> stampsByType;
 
-    public PressRecipeHandler(IGuiHelper helper, IRecipeType<PressRecipes.PressRecipe> type, Component title, ItemStack icon) {
+    public PressRecipeHandler(IGuiHelper helper, JeiRecipeType<PressRecipes.PressRecipe> type, Component title, ItemStack icon) {
         super(helper, type, title, icon, "gui_nei_press.png");
         IDrawableStatic progressStatic = helper.createDrawable(tex("gui_nei_press.png"), 0, 86, 18, 18);
         this.progress = helper.createAnimatedDrawable(progressStatic, 20, IDrawableAnimated.StartDirection.TOP, false);
@@ -72,3 +74,4 @@ public class PressRecipeHandler extends HbmRecipeCategory<PressRecipes.PressReci
         progress.draw(g, 47, 24);
     }
 }
+//?}

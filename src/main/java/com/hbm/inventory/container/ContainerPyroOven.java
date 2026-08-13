@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
 import net.minecraft.core.BlockPos;
@@ -81,7 +81,7 @@ public class ContainerPyroOven extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else if (Library.isMachineUpgrade(stack)) {
                 if (!this.moveItemStackTo(stack, 4, 6, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else {
                 if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;

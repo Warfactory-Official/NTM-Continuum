@@ -18,7 +18,9 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+//? if >=26.1 {
 import net.minecraft.world.level.ScheduledTickAccess;
+//?}
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -40,7 +42,7 @@ import org.jspecify.annotations.Nullable;
  * facing this block), which drives both the JSON model variant and the shape. Right-click with a shovel
  * empties the content to scraps. Molten level is drawn by the channel BER.
  */
-public class FoundryChannel extends Block implements EntityBlock, ICrucibleAcceptor {
+public class FoundryChannel extends dev.golem.core.world.CompatBlock implements EntityBlock, ICrucibleAcceptor {
 
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
@@ -61,9 +63,15 @@ public class FoundryChannel extends Block implements EntityBlock, ICrucibleAccep
     }
 
     @Override
+    //? if >=26.1 {
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
                                      Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
                                      RandomSource random) {
+    //?} else {
+    /*protected BlockState updateShape(BlockState state, Direction directionToNeighbour, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
+        net.minecraft.world.level.LevelAccessor ticks = level;
+        net.minecraft.util.RandomSource random = level.getRandom();
+    *///?}
         return state.setValue(META, getConnectionMeta(level, pos));
     }
 
@@ -122,9 +130,22 @@ public class FoundryChannel extends Block implements EntityBlock, ICrucibleAccep
     }
 
     /** Shovel right-click empties the content to scraps. */
+    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+    //?} else {
+    /*@Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
+             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
+             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+    *///?}
+
+    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.is(ItemTags.SHOVELS)) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFoundryChannel cast && cast.amount > 0 && cast.type != null) {
                 ItemStack scrap = ItemScraps.create(new MaterialStack(cast.type, cast.amount));
@@ -138,7 +159,12 @@ public class FoundryChannel extends Block implements EntityBlock, ICrucibleAccep
             }
             return InteractionResult.SUCCESS;
         }
+        //? if >=26.1 {
         return super.useItemOn(stack, state, level, pos, player, hand, hit);
+        //?} else {
+        /*return super.useItemOn(stack, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
+                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        *///?}
     }
 
     // --- ICrucibleAcceptor: delegate to the TE ---

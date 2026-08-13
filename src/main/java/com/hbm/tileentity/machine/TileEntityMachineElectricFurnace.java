@@ -147,7 +147,11 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         if (cooldown > 0) return false;
         SmeltingRecipe recipe = getRecipe(level);
         if (recipe == null) return false;
+        //? if >=26.1 {
         ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)));
+        //?} else {
+        /*ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)), level.registryAccess());
+        *///?}
         if (result.isEmpty()) return false;
 
         ItemStack outSlot = inventory.getStackInSlot(2);
@@ -159,7 +163,11 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     private void processItem(ServerLevel level) {
         SmeltingRecipe recipe = getRecipe(level);
         if (recipe == null) return;
+        //? if >=26.1 {
         ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)));
+        //?} else {
+        /*ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)), level.registryAccess());
+        *///?}
         if (result.isEmpty()) return;
 
         ItemStack outSlot = inventory.getStackInSlot(2);

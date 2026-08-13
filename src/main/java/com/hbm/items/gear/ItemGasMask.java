@@ -61,8 +61,25 @@ public class ItemGasMask extends Item implements IGasMask {
         }
     }
 
+    //? if >=26.1 {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        return hbm$use(level, player, hand);
+    }
+    //?} else {
+    /*@Override
+    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
+        InteractionResult hbm$r = hbm$use(level, player, hand);
+        net.minecraft.world.item.ItemStack hbm$held = player.getItemInHand(hand);
+        return hbm$r == InteractionResult.SUCCESS
+                ? net.minecraft.world.InteractionResultHolder.success(hbm$held)
+                : hbm$r == InteractionResult.CONSUME
+                ? net.minecraft.world.InteractionResultHolder.consume(hbm$held)
+                : net.minecraft.world.InteractionResultHolder.pass(hbm$held);
+    }
+    *///?}
+
+    private InteractionResult hbm$use(Level level, Player player, InteractionHand hand) {
         ItemStack mask = player.getItemInHand(hand);
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
@@ -75,7 +92,7 @@ public class ItemGasMask extends Item implements IGasMask {
         }
 
         ItemStack offered = player.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
-        if (!isFilterApplicable(mask, offered)) return InteractionResult.PASS;
+        if (!isFilterApplicable(mask, offered)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         ItemStack previous = getFilter(mask);
         installFilter(mask, offered);

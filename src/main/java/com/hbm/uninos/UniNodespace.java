@@ -161,7 +161,7 @@ public final class UniNodespace {
         }
 
         private UniNodeWorld<N, L> getWorldManager(Level world) {
-            return worlds.computeIfAbsent(world, _ -> new UniNodeWorld<>());
+            return worlds.computeIfAbsent(world, key -> new UniNodeWorld<>());
         }
 
         L getNode(Level world, BlockPos pos) {

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.inventory.ModMenus;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityOilDrillBase;
@@ -54,7 +55,12 @@ public class ContainerMachineOilWell extends AbstractContainerMenu {
         this.addSlot(validated(6, 152, 35));
         this.addSlot(validated(7, 152, 53));
 
-        this.addStandardInventorySlots(playerInventory, 8, 84); // rows 84/102/120, hotbar 142 (old layout)
+        //? if >=26.1 {
+        this.addStandardInventorySlots(playerInventory, 8, 84);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
+        *///?}
+        // rows 84/102/120, hotbar 142 (old layout)
     }
 
     private Slot validated(int index, int x, int y) {

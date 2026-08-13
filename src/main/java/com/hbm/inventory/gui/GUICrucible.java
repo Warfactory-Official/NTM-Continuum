@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
@@ -10,8 +11,9 @@ import com.hbm.tileentity.machine.TileEntityCrucible;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -30,7 +32,7 @@ import java.util.Optional;
  * {@code gui_crucible.png} (u=176 normal / u=210 additive) tinted by the material's {@code moltenColor},
  * exactly like the 1.12.2 {@code drawStack}.
  */
-public class GUICrucible extends AbstractContainerScreen<ContainerCrucible> {
+public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<ContainerCrucible> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_crucible.png");
 
@@ -44,28 +46,34 @@ public class GUICrucible extends AbstractContainerScreen<ContainerCrucible> {
     /** The 1.12.2 GUI drew no title (the texture carries it) — only the player-inventory label. */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityCrucible te = this.menu.getCrucible();
         if (te == null) return;
 
         // Progress bar: 33×5 at (126, 82) from tex (176, 0).
         int pGauge = te.progress * 33 / TileEntityCrucible.processTime;
-        if (pGauge > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 126, this.topPos + 82, 176.0F, 0.0F, pGauge, 5, 256, 256);
+        if (pGauge > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 126, this.topPos + 82, 176.0F, 0.0F, pGauge, 5, 256, 256);
 
         // Heat bar: 33×5 at (126, 91) from tex (176, 5).
         int hGauge = te.heat * 33 / TileEntityCrucible.maxHeat;
-        if (hGauge > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 126, this.topPos + 91, 176.0F, 5.0F, hGauge, 5, 256, 256);
+        if (hGauge > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 126, this.topPos + 91, 176.0F, 5.0F, hGauge, 5, 256, 256);
 
         // Recipe selector icon.
         GenericRecipe recipe = CrucibleRecipes.INSTANCE.recipeNameMap.get(te.recipe);
-        graphics.item(recipe != null ? recipe.getIcon() : new ItemStack(ModItems.template_folder.get()), this.leftPos + 107, this.topPos + 81);
+        GuiDraw.item(graphics, recipe != null ? recipe.getIcon() : new ItemStack(ModItems.template_folder.get()), this.leftPos + 107, this.topPos + 81);
 
         // Molten columns: waste at x=17, recipe at x=62 — 34 wide, up to 79 tall, bottom at y=97.
         drawStack(graphics, te.wasteStack, TileEntityCrucible.wasteZCapacity, 17, 97);
@@ -89,7 +97,7 @@ public class GUICrucible extends AbstractContainerScreen<ContainerCrucible> {
             if (lastHeight != targetHeight) {
                 int offset = sta.material.smeltable == SmeltingBehavior.ADDITIVE ? 34 : 0; // additives use a different texture
                 int tint = 0xFF000000 | (sta.material.moltenColor & 0xFFFFFF);
-                graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE,
+                GuiDraw.blit(graphics, TEXTURE,
                         this.leftPos + x, this.topPos + y - targetHeight,
                         176.0F + offset, 89.0F - targetHeight,
                         34, targetHeight - lastHeight, 256, 256, tint);
@@ -100,26 +108,34 @@ public class GUICrucible extends AbstractContainerScreen<ContainerCrucible> {
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityCrucible te = this.menu.getCrucible();
         if (te == null) return;
 
         if (this.isHovering(16, 17, 36, 81, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, stackInfo(te.wasteStack), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, stackInfo(te.wasteStack), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(61, 17, 36, 81, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, stackInfo(te.recipeStack), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, stackInfo(te.recipeStack), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(125, 81, 34, 7, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal(
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(
                     String.format(Locale.US, "%,d", te.progress) + " / " + String.format(Locale.US, "%,d", TileEntityCrucible.processTime) + " TU")), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(125, 90, 34, 7, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal(
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(
                     String.format(Locale.US, "%,d", te.heat) + " / " + String.format(Locale.US, "%,d", TileEntityCrucible.maxHeat) + " TU")), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
             if (CrucibleRecipes.INSTANCE.recipeNameMap.get(te.recipe) instanceof CrucibleRecipes.CrucibleRecipe recipe) {
-                graphics.setTooltipForNextFrame(this.font, recipe.print(), Optional.empty(), mouseX, mouseY);
+                GuiDraw.tooltip(graphics, this.font, recipe.print(), Optional.empty(), mouseX, mouseY);
             } else {
-                graphics.setTooltipForNextFrame(this.font, List.of(
+                GuiDraw.tooltip(graphics, this.font, List.of(
                         Component.translatable("gui.recipe.setRecipe").withStyle(ChatFormatting.YELLOW)), Optional.empty(), mouseX, mouseY);
             }
         }
@@ -135,12 +151,21 @@ public class GUICrucible extends AbstractContainerScreen<ContainerCrucible> {
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         TileEntityCrucible te = this.menu.getCrucible();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             GUIScreenRecipeSelector.openSelector(CrucibleRecipes.INSTANCE, te.getBlockPos(), te.recipe, 0, null, this);
             return true;
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 }

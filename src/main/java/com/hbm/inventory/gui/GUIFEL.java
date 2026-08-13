@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerFEL;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.tileentity.machine.TileEntityFEL;
@@ -7,8 +8,9 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -26,7 +28,7 @@ import java.util.Optional;
  * <p>The horizontal streak across the middle is the in-GUI beam, drawn in the current wavelength's
  * colour (VISIBLE cycles the hue).
  */
-public class GUIFEL extends AbstractContainerScreen<ContainerFEL> {
+public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFEL> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/machine/gui_fel.png");
 
@@ -38,9 +40,15 @@ public class GUIFEL extends AbstractContainerScreen<ContainerFEL> {
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F,
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F,
                 this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityFEL te = this.menu.getFel();
@@ -48,13 +56,13 @@ public class GUIFEL extends AbstractContainerScreen<ContainerFEL> {
 
         // The switch lights up while the laser is on.
         if (te.isOn) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + TOGGLE_X, this.topPos + TOGGLE_Y,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + TOGGLE_X, this.topPos + TOGGLE_Y,
                     203.0F, 0.0F, TOGGLE_W, TOGGLE_H, 256, 256);
         }
 
         int k = (int) te.getPowerScaled(POWER_H);
         if (k > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + POWER_X,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + POWER_X,
                     this.topPos + POWER_Y + POWER_H - k, 203.0F, (float) (17 + POWER_H - k), POWER_W, k, 256, 256);
         }
 
@@ -83,39 +91,52 @@ public class GUIFEL extends AbstractContainerScreen<ContainerFEL> {
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         // Upstream nudges the title 90px right of centre; the status words sit to its left.
         int titleX = 90 + this.imageWidth / 2 - this.font.width(this.title) / 2;
-        graphics.text(this.font, this.title, titleX, 7, 0xFFFFFFFF, false);
-        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, this.title, titleX, 7, 0xFFFFFFFF, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
 
         TileEntityFEL te = this.menu.getFel();
         if (te == null) return;
 
         if (te.isOn) {
             Component live = Component.literal("LIVE").withStyle(ChatFormatting.GREEN);
-            graphics.text(this.font, live, 54 + this.imageWidth / 2 - this.font.width(live) / 2, 9, 0xFF00FF00, false);
+            GuiDraw.text(graphics, this.font, live, 54 + this.imageWidth / 2 - this.font.width(live) / 2, 9, 0xFF00FF00, false);
             if (te.missingValidSilex) {
                 Component err = Component.literal("ERR.").withStyle(ChatFormatting.RED);
-                graphics.text(this.font, err, 55 + this.imageWidth / 2 - this.font.width(err) / 2, 9, 0xFFFF0000, false);
+                GuiDraw.text(graphics, this.font, err, 55 + this.imageWidth / 2 - this.font.width(err) / 2, 9, 0xFFFF0000, false);
             }
         }
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityFEL te = this.menu.getFel();
         if (te == null) return;
 
         if (this.isHovering(POWER_X, POWER_Y, POWER_W, POWER_H, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font,
+            GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(te.power, TileEntityFEL.maxPower), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_W, TOGGLE_H, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font,
+            GuiDraw.tooltip(graphics, this.font,
                     List.of(Component.literal(te.isOn ? "Turn off" : "Turn on")), Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         if (this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_W, TOGGLE_H, event.x(), event.y())) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
@@ -123,6 +144,10 @@ public class GUIFEL extends AbstractContainerScreen<ContainerFEL> {
                 return true;
             }
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 }

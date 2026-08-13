@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -9,7 +10,6 @@ import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,7 +36,7 @@ public class FluidTankRenderer implements CompatBER<TileEntityMachineFluidTank, 
     private static final float BASE_YAW = 180F;
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType frameType = RenderTypes.entityCutout(FRAME_TEX);
+    private final RenderType frameType = CompatRenderTypes.entityCutout(FRAME_TEX);
     private final Map<Identifier, RenderType> bodyTypes = new HashMap<>();
     /** Cache of fluid name → resolved body texture (falling back to tank_none when a fluid has no skin). */
     private static final Map<String, Identifier> BODY_TEX = new HashMap<>();
@@ -90,7 +90,7 @@ public class FluidTankRenderer implements CompatBER<TileEntityMachineFluidTank, 
 
     @Override
     public void submit(FluidTankRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        RenderType bodyType = bodyTypes.computeIfAbsent(state.bodyTexture, RenderTypes::entityCutout);
+        RenderType bodyType = bodyTypes.computeIfAbsent(state.bodyTexture, CompatRenderTypes::entityCutout);
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(BASE_YAW + state.yaw));

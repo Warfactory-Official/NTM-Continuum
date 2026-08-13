@@ -10,7 +10,7 @@ import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
@@ -82,7 +82,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
             te.trySubscribe(te.tank.getTankType(), level, dp);
         }
 
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
         te.loadTank();
 
         int maxVent = 50;
@@ -184,9 +184,9 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         }
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(3);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tank.getTankType()) {
             tank.setTankType(t);
@@ -217,7 +217,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 3) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 3) return stack.getItem() instanceof IItemFluidId;
         if (slot >= 4 && slot <= 5) return Library.isMachineUpgrade(stack);
         // Slot 2 (emptied-container out) stays TRUE — the machine fills it via inventory.insertItem,
         // which validates against this method; the menu's take-only slot blocks the player.

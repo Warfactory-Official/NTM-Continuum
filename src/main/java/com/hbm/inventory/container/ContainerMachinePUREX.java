@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.machine.ItemBlueprints;
@@ -59,7 +60,11 @@ public class ContainerMachinePUREX extends AbstractContainerMenu {
             for (int col = 0; col < 2; col++) this.addSlot(takeOnly(7 + row * 2 + col, 80 + col * 18, 36 + row * 18));
         }
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 174);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
+        *///?}
     }
 
     private Slot validated(int index, int x, int y) {

@@ -1,5 +1,6 @@
 package com.hbm.world.feature;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.config.WorldConfig;
 import com.mojang.serialization.Codec;
@@ -108,7 +109,7 @@ public class OreCaveFeature extends Feature<NoneFeatureConfiguration> {
                     if (!level.hasChunk(x >> 4, z >> 4)) continue;
 
                     BlockState state = level.getBlockState(pos);
-                    boolean solidRock = state.isSolidRender() && OreVeinPlacer.STONE.test(state);
+                    boolean solidRock = Compat.isSolidRender(state) && OreVeinPlacer.STONE.test(state);
 
                     if (solidRock) {
                         // TODO(acid pool): upstream additionally turned cells with air above, solid

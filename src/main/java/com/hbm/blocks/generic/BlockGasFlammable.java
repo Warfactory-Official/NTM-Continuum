@@ -6,14 +6,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+//? if >=26.1 {
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+//? if >=26.1 {
 import net.minecraft.world.level.redstone.Orientation;
+//?}
 import net.minecraft.world.level.storage.loot.LootParams;
 import org.jspecify.annotations.Nullable;
 
@@ -107,8 +111,12 @@ public class BlockGasFlammable extends Block {
     // --- ignition ---------------------------------------------------------------------------------
 
     @Override
+    //? if >=26.1 {
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock,
                                    @Nullable Orientation orientation, boolean movedByPiston) {
+    //?} else {
+    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos hbm$fromPos, boolean movedByPiston) {
+    *///?}
         if (level.isClientSide() || !enabled()) return;
         for (Direction dir : Direction.values()) {
             if (isFireSource(level.getBlockState(pos.relative(dir)))) {
@@ -119,8 +127,12 @@ public class BlockGasFlammable extends Block {
     }
 
     @Override
+    //? if >=26.1 {
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
                                 InsideBlockEffectApplier effects, boolean precise) {
+    //?} else {
+    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    *///?}
         if (!level.isClientSide() && enabled() && entity.isOnFire()) combust(level, pos);
     }
 

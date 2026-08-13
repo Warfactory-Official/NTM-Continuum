@@ -1,5 +1,6 @@
 package com.hbm.handler.radiation;
 
+import dev.golem.core.world.Compat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -247,13 +248,13 @@ public final class RadiationSystemNT {
         }
 
         void onChunkLoaded(ChunkPos pos) {
-            ChunkRad cr = chunkAt(pos.x(), pos.z(), true);
-            double[][] pending = saved.take(ChunkPos.pack(pos.x(), pos.z()));
+            ChunkRad cr = chunkAt(Compat.chunkX(pos), Compat.chunkZ(pos), true);
+            double[][] pending = saved.take(ChunkPos.pack(Compat.chunkX(pos), Compat.chunkZ(pos)));
             if (pending != null) cr.applyPending(pending);
         }
 
         void onChunkUnloaded(ChunkPos pos) {
-            long key = ChunkPos.pack(pos.x(), pos.z());
+            long key = ChunkPos.pack(Compat.chunkX(pos), Compat.chunkZ(pos));
             ChunkRad cr = chunks.remove(key);
             if (cr != null) {
                 double[][] snap = cr.snapshot();

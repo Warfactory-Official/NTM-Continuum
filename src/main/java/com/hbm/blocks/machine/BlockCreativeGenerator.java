@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-public class BlockCreativeGenerator extends Block implements EntityBlock {
+public class BlockCreativeGenerator extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public BlockCreativeGenerator(Properties properties) {
         super(properties);

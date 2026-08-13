@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
@@ -9,7 +10,6 @@ import com.hbm.blocks.machine.FoundryChannel;
 import com.hbm.tileentity.machine.TileEntityFoundryChannel;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -33,7 +33,7 @@ public class FoundryChannelRenderer implements CompatBER<TileEntityFoundryChanne
 
     public FoundryChannelRenderer() {
         // Emissive = uniform fullbright, no per-face shading (the old lighting-off molten quads).
-        this.meltType = RenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+        this.meltType = CompatRenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineEPress;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,7 +16,7 @@ import java.util.Optional;
  * {@link TileEntityMachineEPress} (BufPacket, not ContainerData). Energy bar (left) + descending stamp
  * progress bar, with an energy-bar hover tooltip — matching the 1.12.2 GUI.
  */
-public class GUIMachineEPress extends AbstractContainerScreen<ContainerMachineEPress> implements IUpgradeInfoProviderSource {
+public class GUIMachineEPress extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineEPress> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_epress.png");
 
@@ -25,30 +25,44 @@ public class GUIMachineEPress extends AbstractContainerScreen<ContainerMachineEP
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineEPress press = this.menu.getPress();
         if (press == null) return;
 
         int i = (int) press.getPowerScaled(52);
         if (i > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 17, this.topPos + 69 - i, 176.0F, (float) (52 - i), 16, i, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 17, this.topPos + 69 - i, 176.0F, (float) (52 - i), 16, i, 256, 256);
         }
         int k = press.getProgressScaled(16);
         if (k > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 79, this.topPos + 35, 192.0F, 0.0F, 18, k, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 35, 192.0F, 0.0F, 18, k, 256, 256);
         }
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineEPress press = this.menu.getPress();
         if (press == null) return;
         if (this.isHovering(17, 17, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font,
+            GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(press.power, TileEntityMachineEPress.maxPower),
                     Optional.empty(), mouseX, mouseY);
         }

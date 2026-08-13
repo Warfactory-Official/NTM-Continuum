@@ -56,11 +56,20 @@ public class MachineWasteDrum extends Block implements EntityBlock {
     }
 
     @Override
+    //? if >=26.1 {
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos,
                                                boolean movedByPiston) {
+    //?} else {
+    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
+        if (!(hbm$level instanceof ServerLevel level)) return;
+    *///?}
         if (level.getBlockEntity(pos) instanceof TileEntityWasteDrum drum) {
             Containers.dropContents(level, pos, drum);
         }
+        //? if >=26.1 {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        //?} else {
+        /*super.onRemove(state, hbm$level, pos, hbm$newState, movedByPiston);
+        *///?}
     }
 }

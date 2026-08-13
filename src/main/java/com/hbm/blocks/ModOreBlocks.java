@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockCluster;
 import com.hbm.blocks.generic.BlockDepth;
@@ -192,7 +193,7 @@ public final class ModOreBlocks {
     static {
         ALL.forEach((id, block) -> {
             if (NO_ITEM.contains(id)) return;
-            RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> p.useBlockDescriptionPrefix());
+            RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
             ModTabs.addTo(HbmTab.RESOURCES, item);
         });
     }

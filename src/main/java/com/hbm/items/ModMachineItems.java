@@ -13,7 +13,7 @@ import com.hbm.items.machine.ItemBlades;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemFELCrystal;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
-import com.hbm.items.machine.ItemFluidIdentifier;
+import com.hbm.items.machine.ItemFluidId;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.inventory.material.MaterialShapes;
 import dev.golem.core.registry.DeferredRegister;
@@ -38,8 +38,8 @@ public final class ModMachineItems {
             "blueprint_plate", p -> new ItemBlueprints(p, AssemblyMachineRecipes.POOL_PLATES), p -> p.stacksTo(1));
 
     /** Fluid identifier — a dedicated one per fluid; set a tank/duct's type with it. */
-    public static final RegistryObject<ItemFluidIdentifier> fluid_identifier = ITEMS.registerItem(
-            "fluid_identifier", ItemFluidIdentifier::new, p -> p.stacksTo(1));
+    public static final RegistryObject<ItemFluidId> fluid_identifier = ITEMS.registerItem(
+            "fluid_identifier", ItemFluidId::new, p -> p.stacksTo(1));
 
     // --- shredder blades (wear parts; two per shredder). Durabilities are the 1.12.2 values; desh has
     // none, which means unbreakable (the original's maxDamage == 0). ---
@@ -90,7 +90,7 @@ public final class ModMachineItems {
             List<ItemStack> list = new ArrayList<>();
             for (FluidType fluid : Fluids.getAll()) {
                 if (fluid == Fluids.NONE) continue;
-                list.add(ItemFluidIdentifier.make(fluid));
+                list.add(ItemFluidId.make(fluid));
             }
             return list;
         });

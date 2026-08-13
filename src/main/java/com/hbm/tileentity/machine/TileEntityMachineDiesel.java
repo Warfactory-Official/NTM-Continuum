@@ -8,7 +8,7 @@ import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -77,7 +77,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
             te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
 
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
         te.loadTank();
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.trySubscribe(te.tank.getTankType(), level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
@@ -149,9 +149,9 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
         }
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(3);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tank.getTankType() && tank.getFill() == 0) {
             tank.setTankType(t);
@@ -162,7 +162,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 2) return Library.isBattery(stack);
-        if (slot == 3) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 3) return stack.getItem() instanceof IItemFluidId;
         // Slot 1 (emptied-container out) must stay TRUE: the machine writes it via inventory.insertItem,
         // which validates against this method — false here silently kills loadTank (the chemplant
         // convention: the MENU's take-only slot blocks the player, not the BE validity).

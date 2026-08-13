@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemPistons;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
@@ -96,7 +96,7 @@ public class ContainerCombustionEngine extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() instanceof ItemPistons) {
                 if (!this.moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;
             } else {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;

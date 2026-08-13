@@ -1,10 +1,12 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.recipes.PyroOvenRecipes;
 import com.hbm.inventory.recipes.PyroOvenRecipes.PyroOvenRecipe;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,7 +18,7 @@ public class PyrolysisRecipeHandler extends JEIUniversalHandler<PyrolysisRecipeH
 
     public record Entry(PyroOvenRecipe recipe) {}
 
-    public PyrolysisRecipeHandler(IGuiHelper helper, IRecipeType<Entry> type, Component title, ItemStack... machines) {
+    public PyrolysisRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -42,3 +44,4 @@ public class PyrolysisRecipeHandler extends JEIUniversalHandler<PyrolysisRecipeH
         return out;
     }
 }
+//?}

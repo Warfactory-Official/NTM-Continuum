@@ -1,12 +1,12 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerSolidifier;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,7 +18,7 @@ import java.util.Optional;
  * Screen for the solidifier — 1.12.2 {@code GUISolidifier} ({@code gui_solidifier.png}, 176×204):
  * same layout as the liquefactor but the tank bar sits at (35,36) (the input/output sides swap).
  */
-public class GUISolidifier extends AbstractContainerScreen<ContainerSolidifier> implements IUpgradeInfoProviderSource {
+public class GUISolidifier extends dev.golem.core.gui.CompatContainerScreen<ContainerSolidifier> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_solidifier.png");
 
@@ -28,26 +28,32 @@ public class GUISolidifier extends AbstractContainerScreen<ContainerSolidifier> 
 
     /** The 1.12.2 GUI drew no machine title (only the inventory label) — the texture carries the art. */
     @Override
-    protected void extractLabels(net.minecraft.client.gui.GuiGraphicsExtractor graphics, int xm, int ym) {
-        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
+    protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
     }
 
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineSolidifier te = this.menu.getSolidifier();
         if (te == null) return;
 
         int i = (int) (te.getPower() * 52 / te.getMaxPower());
-        if (i > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 134, this.topPos + 70 - i, 176.0F, (float) (52 - i), 16, i, 256, 256);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 134, this.topPos + 70 - i, 176.0F, (float) (52 - i), 16, i, 256, 256);
 
         int j = te.processTime > 0 ? te.progress * 42 / te.processTime : 0;
-        if (j > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 42, this.topPos + 17, 192.0F, 0.0F, j, 35, 256, 256);
+        if (j > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 42, this.topPos + 17, 192.0F, 0.0F, j, 35, 256, 256);
 
-        if (i > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 138, this.topPos + 4, 176.0F, 52.0F, 9, 12, 256, 256);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 138, this.topPos + 4, 176.0F, 52.0F, 9, 12, 256, 256);
 
         drawTank(graphics, te.tank, 35, 36);
     }
@@ -63,7 +69,7 @@ public class GUISolidifier extends AbstractContainerScreen<ContainerSolidifier> 
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + 16, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, 16, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, 16, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -72,17 +78,25 @@ public class GUISolidifier extends AbstractContainerScreen<ContainerSolidifier> 
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineSolidifier te = this.menu.getSolidifier();
         if (te == null) return;
 
         if (this.isHovering(134, 18, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(35, 36, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.tank.getTankType().getName()),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
         }

@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockNTMGlass;
 import com.hbm.creativetabs.HbmTab;
@@ -34,7 +35,7 @@ public final class ModGlassBlocks {
 
     static {
         RegistryObject<BlockItem> item = ITEMS.registerBlockItem("glass_quartz", glass_quartz,
-                p -> p.useBlockDescriptionPrefix());
+                p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.BLOCKS, item);
     }
 

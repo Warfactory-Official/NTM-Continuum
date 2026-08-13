@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerReactorZirnox;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
@@ -8,14 +9,15 @@ import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 
 /** ZIRNOX reactor control panel. */
-public class GUIReactorZirnox extends AbstractContainerScreen<ContainerReactorZirnox> {
+public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<ContainerReactorZirnox> {
 
     private static final Identifier TEXTURE =
             Identifier.fromNamespaceAndPath("hbm", "textures/gui/reactors/gui_zirnox.png");
@@ -31,11 +33,17 @@ public class GUIReactorZirnox extends AbstractContainerScreen<ContainerReactorZi
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
+        //?}
         int x = this.leftPos;
         int y = this.topPos;
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 0.0F,
+        GuiDraw.blit(graphics, TEXTURE, x, y, 0.0F, 0.0F,
                 this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityReactorZirnox reactor = this.menu.getReactor();
@@ -64,13 +72,21 @@ public class GUIReactorZirnox extends AbstractContainerScreen<ContainerReactorZi
 
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        graphics.text(this.font, this.title, (this.imageWidth - this.font.width(this.title)) / 2, 6, 0xFF404040, false);
-        graphics.text(this.font, this.playerInventoryTitle, 8, 160, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, this.title, (this.imageWidth - this.font.width(this.title)) / 2, 6, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, 8, 160, 0xFF404040, false);
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityReactorZirnox reactor = this.menu.getReactor();
         if (reactor == null) return;
         if (this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_SIZE, TOGGLE_SIZE, mouseX, mouseY)) {
@@ -93,18 +109,27 @@ public class GUIReactorZirnox extends AbstractContainerScreen<ContainerReactorZi
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         int button = this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_SIZE, TOGGLE_SIZE, event.x(), event.y()) ? 0
                 : this.isHovering(VENT_X, VENT_Y, VENT_SIZE, VENT_SIZE, event.x(), event.y()) ? 1 : -1;
         if (button >= 0 && Minecraft.getInstance().gameMode != null) {
             Minecraft.getInstance().gameMode.handleInventoryButtonClick(this.menu.containerId, button);
             return true;
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 
     private void drawGauge(GuiGraphicsExtractor graphics, int x, int y, int u, int v, int width, int height) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + x, this.topPos + y,
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + x, this.topPos + y,
                 (float) u, (float) v, width, height, 256, 256);
     }
 
@@ -118,11 +143,11 @@ public class GUIReactorZirnox extends AbstractContainerScreen<ContainerReactorZi
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        graphics.setTooltipForNextFrame(this.font, List.of(Component.literal(tank.getTankType().getName()),
+        GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(tank.getTankType().getName()),
                 Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
     }
 
     private void tooltip(GuiGraphicsExtractor graphics, Component text, int mouseX, int mouseY) {
-        graphics.setTooltipForNextFrame(this.font, List.of(text), Optional.empty(), mouseX, mouseY);
+        GuiDraw.tooltip(graphics, this.font, List.of(text), Optional.empty(), mouseX, mouseY);
     }
 }

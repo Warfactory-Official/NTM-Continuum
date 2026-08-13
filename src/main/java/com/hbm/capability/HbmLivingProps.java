@@ -1,5 +1,6 @@
 package com.hbm.capability;
 
+import dev.golem.core.world.Compat;
 import java.util.List;
 
 import com.hbm.Constants;
@@ -111,7 +112,7 @@ public class HbmLivingProps {
                 && entity.level() instanceof ServerLevel serverLevel) {
             DamageSource source = ModDamageSources.digamma(serverLevel);
             entity.setAbsorptionAmount(0);
-            entity.hurtServer(serverLevel, source, 5000000F);
+            Compat.hurt(entity, serverLevel, source, 5000000F);
             if (entity.isAlive()) {
                 entity.setHealth(0);
                 entity.die(source);
@@ -143,7 +144,7 @@ public class HbmLivingProps {
 
         if (asbestos >= EntityHbmProps.MAX_ASBESTOS && entity.level() instanceof ServerLevel serverLevel) {
             props.setAsbestos(0);
-            entity.hurtServer(serverLevel, ModDamageSources.asbestos(serverLevel), 1000);
+            Compat.hurt(entity, serverLevel, ModDamageSources.asbestos(serverLevel), 1000);
         }
     }
 
@@ -167,7 +168,7 @@ public class HbmLivingProps {
 
         if (blacklung >= EntityHbmProps.MAX_BLACKLUNG && entity.level() instanceof ServerLevel serverLevel) {
             props.setBlacklung(0);
-            entity.hurtServer(serverLevel, ModDamageSources.blacklung(serverLevel), 1000);
+            Compat.hurt(entity, serverLevel, ModDamageSources.blacklung(serverLevel), 1000);
         }
     }
 

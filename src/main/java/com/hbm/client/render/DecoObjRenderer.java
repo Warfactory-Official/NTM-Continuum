@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -10,7 +11,6 @@ import com.hbm.tileentity.deco.TileEntityDeco;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -85,7 +85,7 @@ public class DecoObjRenderer implements CompatBER<TileEntityDeco, DecoRenderStat
 
     private static Part part(String obj, String texture) {
         return new Part(WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, obj)),
-                RenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/" + texture + ".png")));
+                CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/" + texture + ".png")));
     }
 
     private void put(Block block, Style style, Map<Direction, Float> yaw, Part... parts) {

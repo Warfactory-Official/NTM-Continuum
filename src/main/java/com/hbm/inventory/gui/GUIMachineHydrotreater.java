@@ -1,12 +1,12 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineHydrotreater;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -16,7 +16,7 @@ import java.util.Optional;
 
 /** Screen for the hydrotreater — 1.12.2 {@code GUIMachineHydrotreater} (176×238 panel on a 256×256
  * texture). Power bar at x=17; 4 tank bars at x=35/53/125/143 (bottom y=70). */
-public class GUIMachineHydrotreater extends AbstractContainerScreen<ContainerMachineHydrotreater> {
+public class GUIMachineHydrotreater extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineHydrotreater> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_hydrotreater.png");
     private static final int[] TANK_X = {35, 53, 125, 143};
@@ -34,15 +34,21 @@ public class GUIMachineHydrotreater extends AbstractContainerScreen<ContainerMac
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineHydrotreater te = this.menu.getTile();
         if (te == null) return;
 
         int j = (int) te.getPowerScaled(52);
-        if (j > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 17, this.topPos + 70 - j, 176.0F, (float) (52 - j), 16, j, 256, 256);
+        if (j > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 17, this.topPos + 70 - j, 176.0F, (float) (52 - j), 16, j, 256, 256);
 
         for (int i = 0; i < 4; i++) drawTank(graphics, te.tanks[i], TANK_X[i], 18, 16, 52);
     }
@@ -58,7 +64,7 @@ public class GUIMachineHydrotreater extends AbstractContainerScreen<ContainerMac
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + w, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -67,19 +73,27 @@ public class GUIMachineHydrotreater extends AbstractContainerScreen<ContainerMac
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineHydrotreater te = this.menu.getTile();
         if (te == null) return;
 
         if (this.isHovering(17, 18, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineHydrotreater.maxPower), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineHydrotreater.maxPower), Optional.empty(), mouseX, mouseY);
             return;
         }
         for (int i = 0; i < 4; i++) {
             if (this.isHovering(TANK_X[i], 18, 16, 52, mouseX, mouseY)) {
                 FluidTankNTM tank = te.tanks[i];
-                graphics.setTooltipForNextFrame(this.font, List.of(
+                GuiDraw.tooltip(graphics, this.font, List.of(
                         Component.literal(tank.getTankType().getName()),
                         Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
                 return;

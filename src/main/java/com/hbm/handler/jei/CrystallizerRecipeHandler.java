@@ -1,10 +1,12 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -19,7 +21,7 @@ import java.util.List;
  */
 public class CrystallizerRecipeHandler extends JEIUniversalHandler<CrystallizerRecipes.CrystallizerRecipe> {
 
-    public CrystallizerRecipeHandler(IGuiHelper helper, IRecipeType<CrystallizerRecipes.CrystallizerRecipe> type, Component title, ItemStack... machines) {
+    public CrystallizerRecipeHandler(IGuiHelper helper, JeiRecipeType<CrystallizerRecipes.CrystallizerRecipe> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -47,3 +49,4 @@ public class CrystallizerRecipeHandler extends JEIUniversalHandler<CrystallizerR
         }
     }
 }
+//?}

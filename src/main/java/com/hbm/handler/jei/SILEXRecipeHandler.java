@@ -1,9 +1,11 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.recipes.SILEXRecipes;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +28,7 @@ import java.util.List;
  */
 public class SILEXRecipeHandler extends JEIUniversalHandler<SILEXRecipes.SILEXRecipe> {
 
-    public SILEXRecipeHandler(IGuiHelper helper, IRecipeType<SILEXRecipes.SILEXRecipe> type, Component title, ItemStack... machines) {
+    public SILEXRecipeHandler(IGuiHelper helper, JeiRecipeType<SILEXRecipes.SILEXRecipe> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -64,3 +66,4 @@ public class SILEXRecipeHandler extends JEIUniversalHandler<SILEXRecipes.SILEXRe
         text(g, chances.toString(), 8, 64);
     }
 }
+//?}

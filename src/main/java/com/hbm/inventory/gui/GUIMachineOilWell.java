@@ -1,12 +1,12 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineOilWell;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.oil.TileEntityOilDrillBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,7 +20,7 @@ import java.util.Optional;
  * the "no third tank" cover 18×34 at (34,36) (u=192 — the fracking tower variant exposes a solution
  * tank there), and the two 16×52 tank bars at (62,17) / (107,17). Upgrade info glyph at (156,3).
  */
-public class GUIMachineOilWell extends AbstractContainerScreen<ContainerMachineOilWell> implements IUpgradeInfoProviderSource {
+public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineOilWell> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/machine/gui_well.png");
     private static final int TANK_TOP = 17, TANK_W = 16, TANK_H = 52;
@@ -40,27 +40,33 @@ public class GUIMachineOilWell extends AbstractContainerScreen<ContainerMachineO
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityOilDrillBase te = this.menu.getDrill();
         if (te == null) return;
 
         // Power bar (16×34 at (8,17), fills upward; fill texture at u=176 v=0).
         int i = te.getMaxPower() <= 0 ? 0 : (int) (te.power * 34 / te.getMaxPower());
-        if (i > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 8, this.topPos + 51 - i, 176.0F, (float) (34 - i), 16, i, 256, 256);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 8, this.topPos + 51 - i, 176.0F, (float) (34 - i), 16, i, 256, 256);
 
         // Drill indicator lamp: 1 = bottomed out, 2 = power-starved / tanks full.
         int k = te.indicator;
-        if (k != 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 35, this.topPos + 17, (float) (176 + (k - 1) * 16), 52.0F, 16, 16, 256, 256);
+        if (k != 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 35, this.topPos + 17, (float) (176 + (k - 1) * 16), 52.0F, 16, 16, 256, 256);
 
         if (te.tanks.length >= 3) {
             // Fracking tower: draw the FRACKSOL solution tank (6×32 at (40,69) bottom).
             drawTankCustom(graphics, te.tanks[2], 40, 37, 6, 32);
         } else {
             // The derrick/pumpjack have no third tank — draw the cover plate.
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 34, this.topPos + 36, 192.0F, 0.0F, 18, 34, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 34, this.topPos + 36, 192.0F, 0.0F, 18, 34, 256, 256);
         }
 
         drawTank(graphics, te.tanks[0], 62);
@@ -81,7 +87,7 @@ public class GUIMachineOilWell extends AbstractContainerScreen<ContainerMachineO
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + TANK_W, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, TANK_W, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, TANK_W, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -101,25 +107,33 @@ public class GUIMachineOilWell extends AbstractContainerScreen<ContainerMachineO
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityOilDrillBase te = this.menu.getDrill();
         if (te == null) return;
 
         if (this.isHovering(8, 17, 16, 34, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (te.tanks.length >= 3 && this.isHovering(40, 37, 6, 32, mouseX, mouseY)) { tankTooltip(graphics, te.tanks[2], mouseX, mouseY); return; }
         if (this.isHovering(62, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.tanks[0], mouseX, mouseY); return; }
         if (this.isHovering(107, TANK_TOP, TANK_W, TANK_H, mouseX, mouseY)) { tankTooltip(graphics, te.tanks[1], mouseX, mouseY); return; }
         if (this.isHovering(156, 3, GuiUtil.INFO_PANEL_SIZE, GuiUtil.INFO_PANEL_SIZE, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.upgradeInfo(te), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.upgradeInfo(te), Optional.empty(), mouseX, mouseY);
         }
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        graphics.setTooltipForNextFrame(this.font, java.util.List.of(
+        GuiDraw.tooltip(graphics, this.font, java.util.List.of(
                 Component.literal(tank.getTankType().getName()),
                 Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")
         ), Optional.empty(), mouseX, mouseY);

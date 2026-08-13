@@ -289,7 +289,11 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 if (level instanceof ServerLevel serverLevel) {
                     ItemStack result = smeltCheck.getRecipeFor(new SingleRecipeInput(stack), serverLevel)
                             .map(RecipeHolder::value)
+                            //? if >=26.1 {
                             .map(r -> r.assemble(new SingleRecipeInput(stack)))
+                            //?} else {
+                            /*.map(r -> r.assemble(new SingleRecipeInput(stack), serverLevel.registryAccess()))
+                            *///?}
                             .orElse(ItemStack.EMPTY);
                     if (!result.isEmpty()) {
                         spawnDrop(result.copy());

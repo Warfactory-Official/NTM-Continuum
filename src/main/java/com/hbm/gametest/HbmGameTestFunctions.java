@@ -10,10 +10,8 @@ import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
-import dev.golem.core.registry.DeferredRegister;
-import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.gametest.GameTests;
 import java.util.function.Consumer;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 /** Shared, server-only GameTest functions. NeoForge registers their test instances in its loader module. */
@@ -21,107 +19,104 @@ public final class HbmGameTestFunctions {
 
     private HbmGameTestFunctions() {}
 
-    public static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS =
-            DeferredRegister.create(Registries.TEST_FUNCTION, Constants.MOD_ID);
-
-    public static final RegistryObject<Consumer<GameTestHelper>> COOLING_RECIPES =
-            FUNCTIONS.register("cooling_recipes", () -> HbmGameTestFunctions::coolingRecipes);
-    public static final RegistryObject<Consumer<GameTestHelper>> TURBINE_CONVERSION =
-            FUNCTIONS.register("turbine_conversion", () -> HbmGameTestFunctions::turbineConversion);
-    public static final RegistryObject<Consumer<GameTestHelper>> TURBINE_IDENTIFIER =
-            FUNCTIONS.register("turbine_identifier", () -> HbmGameTestFunctions::turbineIdentifier);
-    public static final RegistryObject<Consumer<GameTestHelper>> TURBINE_SLOTS =
-            FUNCTIONS.register("turbine_slots", () -> HbmGameTestFunctions::turbineSlots);
-    public static final RegistryObject<Consumer<GameTestHelper>> TURBINE_MENU =
-            FUNCTIONS.register("turbine_menu", () -> HbmGameTestFunctions::turbineMenu);
-    public static final RegistryObject<Consumer<GameTestHelper>> CONDENSER_CONVERSION =
-            FUNCTIONS.register("condenser_conversion", () -> HbmGameTestFunctions::condenserConversion);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_RECIPE_CYCLE =
-            FUNCTIONS.register("purex_recipe_cycle", () -> HbmGameTestFunctions::purexRecipeCycle);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_HOT_WASTE_REJECTED =
-            FUNCTIONS.register("purex_hot_waste_rejected", () -> HbmGameTestFunctions::purexHotWasteRejected);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_UPGRADES =
-            FUNCTIONS.register("purex_upgrades", () -> HbmGameTestFunctions::purexUpgrades);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_MAX_POWER =
-            FUNCTIONS.register("purex_max_power", () -> HbmGameTestFunctions::purexMaxPower);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_OUTPUT_FLUID =
-            FUNCTIONS.register("purex_output_fluid", () -> HbmGameTestFunctions::purexOutputFluid);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_SLOTS =
-            FUNCTIONS.register("purex_slots", () -> HbmGameTestFunctions::purexSlots);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_MENU =
-            FUNCTIONS.register("purex_menu", () -> HbmGameTestFunctions::purexMenu);
-    public static final RegistryObject<Consumer<GameTestHelper>> PUREX_LAYOUT =
-            FUNCTIONS.register("purex_layout", () -> HbmGameTestFunctions::purexLayout);
-    public static final RegistryObject<Consumer<GameTestHelper>> ZIRNOX_GOLDEN_TICK =
-            FUNCTIONS.register("zirnox_golden_tick", () -> HbmGameTestFunctions::zirnoxGoldenTick);
-    public static final RegistryObject<Consumer<GameTestHelper>> ZIRNOX_LAYOUT =
-            FUNCTIONS.register("zirnox_layout", () -> HbmGameTestFunctions::zirnoxLayout);
-    public static final RegistryObject<Consumer<GameTestHelper>> ZIRNOX_WORLD_TICK =
-            FUNCTIONS.register("zirnox_world_tick", () -> HbmGameTestFunctions::zirnoxWorldTick);
-    public static final RegistryObject<Consumer<GameTestHelper>> ZIRNOX_STEAM_OUTPUT =
-            FUNCTIONS.register("zirnox_steam_output", () -> HbmGameTestFunctions::zirnoxSteamOutput);
-    public static final RegistryObject<Consumer<GameTestHelper>> ZIRNOX_MELTDOWN =
-            FUNCTIONS.register("zirnox_meltdown", () -> HbmGameTestFunctions::zirnoxMeltdown);
-    public static final RegistryObject<Consumer<GameTestHelper>> ZIRNOX_WRECK_HAZARDS =
-            FUNCTIONS.register("zirnox_wreck_hazards", () -> HbmGameTestFunctions::zirnoxWreckHazards);
+        public static final GameTests.Function COOLING_RECIPES =
+            GameTests.function(Constants.MOD_ID, "cooling_recipes", () -> HbmGameTestFunctions::coolingRecipes);
+    public static final GameTests.Function TURBINE_CONVERSION =
+            GameTests.function(Constants.MOD_ID, "turbine_conversion", () -> HbmGameTestFunctions::turbineConversion);
+    public static final GameTests.Function TURBINE_IDENTIFIER =
+            GameTests.function(Constants.MOD_ID, "turbine_identifier", () -> HbmGameTestFunctions::turbineFluidId);
+    public static final GameTests.Function TURBINE_SLOTS =
+            GameTests.function(Constants.MOD_ID, "turbine_slots", () -> HbmGameTestFunctions::turbineSlots);
+    public static final GameTests.Function TURBINE_MENU =
+            GameTests.function(Constants.MOD_ID, "turbine_menu", () -> HbmGameTestFunctions::turbineMenu);
+    public static final GameTests.Function CONDENSER_CONVERSION =
+            GameTests.function(Constants.MOD_ID, "condenser_conversion", () -> HbmGameTestFunctions::condenserConversion);
+    public static final GameTests.Function PUREX_RECIPE_CYCLE =
+            GameTests.function(Constants.MOD_ID, "purex_recipe_cycle", () -> HbmGameTestFunctions::purexRecipeCycle);
+    public static final GameTests.Function PUREX_HOT_WASTE_REJECTED =
+            GameTests.function(Constants.MOD_ID, "purex_hot_waste_rejected", () -> HbmGameTestFunctions::purexHotWasteRejected);
+    public static final GameTests.Function PUREX_UPGRADES =
+            GameTests.function(Constants.MOD_ID, "purex_upgrades", () -> HbmGameTestFunctions::purexUpgrades);
+    public static final GameTests.Function PUREX_MAX_POWER =
+            GameTests.function(Constants.MOD_ID, "purex_max_power", () -> HbmGameTestFunctions::purexMaxPower);
+    public static final GameTests.Function PUREX_OUTPUT_FLUID =
+            GameTests.function(Constants.MOD_ID, "purex_output_fluid", () -> HbmGameTestFunctions::purexOutputFluid);
+    public static final GameTests.Function PUREX_SLOTS =
+            GameTests.function(Constants.MOD_ID, "purex_slots", () -> HbmGameTestFunctions::purexSlots);
+    public static final GameTests.Function PUREX_MENU =
+            GameTests.function(Constants.MOD_ID, "purex_menu", () -> HbmGameTestFunctions::purexMenu);
+    public static final GameTests.Function PUREX_LAYOUT =
+            GameTests.function(Constants.MOD_ID, "purex_layout", () -> HbmGameTestFunctions::purexLayout);
+    public static final GameTests.Function ZIRNOX_GOLDEN_TICK =
+            GameTests.function(Constants.MOD_ID, "zirnox_golden_tick", () -> HbmGameTestFunctions::zirnoxGoldenTick);
+    public static final GameTests.Function ZIRNOX_LAYOUT =
+            GameTests.function(Constants.MOD_ID, "zirnox_layout", () -> HbmGameTestFunctions::zirnoxLayout);
+    public static final GameTests.Function ZIRNOX_WORLD_TICK =
+            GameTests.function(Constants.MOD_ID, "zirnox_world_tick", () -> HbmGameTestFunctions::zirnoxWorldTick);
+    public static final GameTests.Function ZIRNOX_STEAM_OUTPUT =
+            GameTests.function(Constants.MOD_ID, "zirnox_steam_output", () -> HbmGameTestFunctions::zirnoxSteamOutput);
+    public static final GameTests.Function ZIRNOX_MELTDOWN =
+            GameTests.function(Constants.MOD_ID, "zirnox_meltdown", () -> HbmGameTestFunctions::zirnoxMeltdown);
+    public static final GameTests.Function ZIRNOX_WRECK_HAZARDS =
+            GameTests.function(Constants.MOD_ID, "zirnox_wreck_hazards", () -> HbmGameTestFunctions::zirnoxWreckHazards);
 
     // --- ore worldgen (implementations live in OreWorldgenGameTests) ---
-    public static final RegistryObject<Consumer<GameTestHelper>> ORE_VEIN_SHAPE =
-            FUNCTIONS.register("ore_vein_shape", () -> OreWorldgenGameTests::oreVeinShape);
-    public static final RegistryObject<Consumer<GameTestHelper>> ORE_VEIN_OFFSET =
-            FUNCTIONS.register("ore_vein_offset", () -> OreWorldgenGameTests::oreVeinOffset);
-    public static final RegistryObject<Consumer<GameTestHelper>> ORE_VEIN_PREDICATE =
-            FUNCTIONS.register("ore_vein_predicate", () -> OreWorldgenGameTests::oreVeinPredicate);
-    public static final RegistryObject<Consumer<GameTestHelper>> ORE_TARGETS =
-            FUNCTIONS.register("ore_targets", () -> OreWorldgenGameTests::oreTargets);
-    public static final RegistryObject<Consumer<GameTestHelper>> ORE_DEPTH_DEPOSIT =
-            FUNCTIONS.register("ore_depth_deposit", () -> OreWorldgenGameTests::oreDepthDeposit);
-    public static final RegistryObject<Consumer<GameTestHelper>> ORE_COUNTS =
-            FUNCTIONS.register("ore_counts", () -> OreWorldgenGameTests::oreCounts);
-    public static final RegistryObject<Consumer<GameTestHelper>> ORE_SMOLDERING =
-            FUNCTIONS.register("ore_smoldering", () -> OreWorldgenGameTests::oreSmoldering);
+    public static final GameTests.Function ORE_VEIN_SHAPE =
+            GameTests.function(Constants.MOD_ID, "ore_vein_shape", () -> OreWorldgenGameTests::oreVeinShape);
+    public static final GameTests.Function ORE_VEIN_OFFSET =
+            GameTests.function(Constants.MOD_ID, "ore_vein_offset", () -> OreWorldgenGameTests::oreVeinOffset);
+    public static final GameTests.Function ORE_VEIN_PREDICATE =
+            GameTests.function(Constants.MOD_ID, "ore_vein_predicate", () -> OreWorldgenGameTests::oreVeinPredicate);
+    public static final GameTests.Function ORE_TARGETS =
+            GameTests.function(Constants.MOD_ID, "ore_targets", () -> OreWorldgenGameTests::oreTargets);
+    public static final GameTests.Function ORE_DEPTH_DEPOSIT =
+            GameTests.function(Constants.MOD_ID, "ore_depth_deposit", () -> OreWorldgenGameTests::oreDepthDeposit);
+    public static final GameTests.Function ORE_COUNTS =
+            GameTests.function(Constants.MOD_ID, "ore_counts", () -> OreWorldgenGameTests::oreCounts);
+    public static final GameTests.Function ORE_SMOLDERING =
+            GameTests.function(Constants.MOD_ID, "ore_smoldering", () -> OreWorldgenGameTests::oreSmoldering);
 
     // --- SILEX (implementations live in SilexGameTests) ---
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_PROCESS =
-            FUNCTIONS.register("silex_process", () -> SilexGameTests::silexProcess);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_LOAD =
-            FUNCTIONS.register("silex_load", () -> SilexGameTests::silexLoad);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_LOAD_FLUID =
-            FUNCTIONS.register("silex_load_fluid", () -> SilexGameTests::silexLoadFluid);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_OUTPUT_WEIGHTS =
-            FUNCTIONS.register("silex_output_weights", () -> SilexGameTests::silexOutputWeights);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_QUEUE =
-            FUNCTIONS.register("silex_queue", () -> SilexGameTests::silexQueue);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_SLOTS =
-            FUNCTIONS.register("silex_slots", () -> SilexGameTests::silexSlots);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_MENU =
-            FUNCTIONS.register("silex_menu", () -> SilexGameTests::silexMenu);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_LAYOUT =
-            FUNCTIONS.register("silex_layout", () -> SilexGameTests::silexLayout);
-    public static final RegistryObject<Consumer<GameTestHelper>> SILEX_MODE_RESET =
-            FUNCTIONS.register("silex_mode_reset", () -> SilexGameTests::silexModeReset);
+    public static final GameTests.Function SILEX_PROCESS =
+            GameTests.function(Constants.MOD_ID, "silex_process", () -> SilexGameTests::silexProcess);
+    public static final GameTests.Function SILEX_LOAD =
+            GameTests.function(Constants.MOD_ID, "silex_load", () -> SilexGameTests::silexLoad);
+    public static final GameTests.Function SILEX_LOAD_FLUID =
+            GameTests.function(Constants.MOD_ID, "silex_load_fluid", () -> SilexGameTests::silexLoadFluid);
+    public static final GameTests.Function SILEX_OUTPUT_WEIGHTS =
+            GameTests.function(Constants.MOD_ID, "silex_output_weights", () -> SilexGameTests::silexOutputWeights);
+    public static final GameTests.Function SILEX_QUEUE =
+            GameTests.function(Constants.MOD_ID, "silex_queue", () -> SilexGameTests::silexQueue);
+    public static final GameTests.Function SILEX_SLOTS =
+            GameTests.function(Constants.MOD_ID, "silex_slots", () -> SilexGameTests::silexSlots);
+    public static final GameTests.Function SILEX_MENU =
+            GameTests.function(Constants.MOD_ID, "silex_menu", () -> SilexGameTests::silexMenu);
+    public static final GameTests.Function SILEX_LAYOUT =
+            GameTests.function(Constants.MOD_ID, "silex_layout", () -> SilexGameTests::silexLayout);
+    public static final GameTests.Function SILEX_MODE_RESET =
+            GameTests.function(Constants.MOD_ID, "silex_mode_reset", () -> SilexGameTests::silexModeReset);
 
     // --- FEL (implementations live in FelGameTests) ---
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_BEAM =
-            FUNCTIONS.register("fel_beam", () -> FelGameTests::felBeam);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_BEAM_ILLEGAL =
-            FUNCTIONS.register("fel_beam_illegal", () -> FelGameTests::felBeamIllegal);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_ROTATION =
-            FUNCTIONS.register("fel_rotation", () -> FelGameTests::felRotation);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_POWER =
-            FUNCTIONS.register("fel_power", () -> FelGameTests::felPower);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_BURN =
-            FUNCTIONS.register("fel_burn", () -> FelGameTests::felBurn);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_BURN_INFRARED =
-            FUNCTIONS.register("fel_burn_infrared", () -> FelGameTests::felBurnInfrared);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_POWER_PORT =
-            FUNCTIONS.register("fel_power_port", () -> FelGameTests::felPowerPort);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_LAYOUT =
-            FUNCTIONS.register("fel_layout", () -> FelGameTests::felLayout);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_SLOTS =
-            FUNCTIONS.register("fel_slots", () -> FelGameTests::felSlots);
-    public static final RegistryObject<Consumer<GameTestHelper>> FEL_MENU =
-            FUNCTIONS.register("fel_menu", () -> FelGameTests::felMenu);
+    public static final GameTests.Function FEL_BEAM =
+            GameTests.function(Constants.MOD_ID, "fel_beam", () -> FelGameTests::felBeam);
+    public static final GameTests.Function FEL_BEAM_ILLEGAL =
+            GameTests.function(Constants.MOD_ID, "fel_beam_illegal", () -> FelGameTests::felBeamIllegal);
+    public static final GameTests.Function FEL_ROTATION =
+            GameTests.function(Constants.MOD_ID, "fel_rotation", () -> FelGameTests::felRotation);
+    public static final GameTests.Function FEL_POWER =
+            GameTests.function(Constants.MOD_ID, "fel_power", () -> FelGameTests::felPower);
+    public static final GameTests.Function FEL_BURN =
+            GameTests.function(Constants.MOD_ID, "fel_burn", () -> FelGameTests::felBurn);
+    public static final GameTests.Function FEL_BURN_INFRARED =
+            GameTests.function(Constants.MOD_ID, "fel_burn_infrared", () -> FelGameTests::felBurnInfrared);
+    public static final GameTests.Function FEL_POWER_PORT =
+            GameTests.function(Constants.MOD_ID, "fel_power_port", () -> FelGameTests::felPowerPort);
+    public static final GameTests.Function FEL_LAYOUT =
+            GameTests.function(Constants.MOD_ID, "fel_layout", () -> FelGameTests::felLayout);
+    public static final GameTests.Function FEL_SLOTS =
+            GameTests.function(Constants.MOD_ID, "fel_slots", () -> FelGameTests::felSlots);
+    public static final GameTests.Function FEL_MENU =
+            GameTests.function(Constants.MOD_ID, "fel_menu", () -> FelGameTests::felMenu);
 
     public static void init() {}
 
@@ -176,21 +171,21 @@ public final class HbmGameTestFunctions {
     }
 
     /** The fluid identifier picks the steam stage and passes from slot 0 to slot 1. */
-    private static void turbineIdentifier(GameTestHelper helper) {
+    private static void turbineFluidId(GameTestHelper helper) {
         Fluids.init();
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
 
         TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
-        turbine.inventory.setStackInSlot(0, com.hbm.items.machine.ItemFluidIdentifier.make(Fluids.SUPERHOTSTEAM));
+        turbine.inventory.setStackInSlot(0, com.hbm.items.machine.ItemFluidId.make(Fluids.SUPERHOTSTEAM));
         tick(helper, pos, turbine);
         helper.assertTrue(turbine.input.getTankType() == Fluids.SUPERHOTSTEAM, "Identifier did not retype the input tank");
         helper.assertTrue(turbine.inventory.getStackInSlot(0).isEmpty(), "Consumed identifier must leave slot 0");
-        helper.assertTrue(turbine.inventory.getStackInSlot(1).getItem() instanceof com.hbm.items.machine.IItemFluidIdentifier,
+        helper.assertTrue(turbine.inventory.getStackInSlot(1).getItem() instanceof com.hbm.items.machine.IItemFluidId,
                 "Identifier must pass down into slot 1");
 
         // a fluid the turbine cannot cool: no power, and the output tank goes NONE (the GUI's warning state)
         turbine = placeTurbine(helper, pos);
-        turbine.inventory.setStackInSlot(0, com.hbm.items.machine.ItemFluidIdentifier.make(Fluids.WATER));
+        turbine.inventory.setStackInSlot(0, com.hbm.items.machine.ItemFluidId.make(Fluids.WATER));
         tick(helper, pos, turbine);
         helper.assertTrue(turbine.input.getTankType() == Fluids.WATER, "Identifier must retype even to a non-coolable fluid");
         helper.assertTrue(turbine.output.getTankType() == Fluids.NONE, "Non-coolable input must blank the output tank");
@@ -204,7 +199,7 @@ public final class HbmGameTestFunctions {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
 
-        var identifier = com.hbm.items.machine.ItemFluidIdentifier.make(Fluids.STEAM);
+        var identifier = com.hbm.items.machine.ItemFluidId.make(Fluids.STEAM);
         var bucket = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BUCKET);
         var battery = new net.minecraft.world.item.ItemStack(
                 com.hbm.items.ModBatteryItems.PACKS.get(com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_LEAD).get());
@@ -265,7 +260,7 @@ public final class HbmGameTestFunctions {
         assertSlot(helper, menu, 4, 98, 53);
         assertSlot(helper, menu, 5, 152, 17);
         assertSlot(helper, menu, 6, 152, 53);
-        helper.assertFalse(menu.slots.get(1).mayPlace(com.hbm.items.machine.ItemFluidIdentifier.make(Fluids.STEAM)),
+        helper.assertFalse(menu.slots.get(1).mayPlace(com.hbm.items.machine.ItemFluidId.make(Fluids.STEAM)),
                 "The identifier output slot must be take-only");
         helper.succeed();
     }
@@ -282,7 +277,7 @@ public final class HbmGameTestFunctions {
         Fluids.init();
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.machine_condenser.get().defaultBlockState());
-        var condenser = helper.getBlockEntity(pos, com.hbm.tileentity.machine.TileEntityCondenser.class);
+        var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, com.hbm.tileentity.machine.TileEntityCondenser.class);
         condenser.input.setFill(100);
         com.hbm.tileentity.machine.TileEntityCondenser.serverTick(helper.getLevel(), helper.absolutePos(pos),
                 condenser.getBlockState(), condenser);
@@ -295,7 +290,7 @@ public final class HbmGameTestFunctions {
     private static TileEntityMachineTurbine placeTurbine(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
         helper.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
         helper.setBlock(pos, ModMachineBlocks.machine_turbine.get().defaultBlockState());
-        return helper.getBlockEntity(pos, TileEntityMachineTurbine.class);
+        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachineTurbine.class);
     }
 
     private static void tick(GameTestHelper helper, net.minecraft.core.BlockPos pos, TileEntityMachineTurbine turbine) {
@@ -508,7 +503,7 @@ public final class HbmGameTestFunctions {
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
                 new net.minecraft.world.item.ItemStack(block));
 
-        TileEntityMachinePUREX purex = helper.getBlockEntity(core, TileEntityMachinePUREX.class);
+        TileEntityMachinePUREX purex = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityMachinePUREX.class);
         helper.assertTrue(purex != null, "PUREX controller setup failed");
 
         int cells = 0;
@@ -531,7 +526,7 @@ public final class HbmGameTestFunctions {
     private static TileEntityMachinePUREX placePurex(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
         helper.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
         helper.setBlock(pos, ModMachineBlocks.machine_purex.get().defaultBlockState().setValue(BlockDummyable.META, 12));
-        return helper.getBlockEntity(pos, TileEntityMachinePUREX.class);
+        return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachinePUREX.class);
     }
 
     private static void tick(GameTestHelper helper, net.minecraft.core.BlockPos pos, TileEntityMachinePUREX purex) {
@@ -548,7 +543,7 @@ public final class HbmGameTestFunctions {
     private static void zirnoxGoldenTick(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         helper.setBlock(pos, ModMachineBlocks.machine_zirnox.get().defaultBlockState().setValue(BlockDummyable.META, 12));
-        TileEntityReactorZirnox reactor = helper.getBlockEntity(pos, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityReactorZirnox.class);
         reactor.heat = 50_000;
         reactor.isOn = true;
         reactor.carbonDioxide.setFill(14_000);
@@ -566,7 +561,7 @@ public final class HbmGameTestFunctions {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
         helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        helper.assertTrue(helper.getBlockEntity(core, TileEntityReactorZirnox.class) != null,
+        helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class) != null,
                 "ZIRNOX controller setup failed");
         block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
 
@@ -592,7 +587,7 @@ public final class HbmGameTestFunctions {
         helper.assertBlockProperty(core.offset(-2, 3, 0), BlockDummyable.META, 7);
         helper.assertBlockProperty(core.above(4), BlockDummyable.META, 7);
 
-        TileEntityReactorZirnox reactor = helper.getBlockEntity(core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         var ports = reactor.getConPos();
         helper.assertTrue(ports.size() == 4, "ZIRNOX must expose four lateral duct ports");
         helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.offset(3, 1, 0)))
@@ -615,7 +610,7 @@ public final class HbmGameTestFunctions {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
         helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        TileEntityReactorZirnox reactor = helper.getBlockEntity(core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
         block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
         var rod = new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM));
@@ -633,7 +628,7 @@ public final class HbmGameTestFunctions {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var reactorBlock = ModMachineBlocks.machine_zirnox.get();
         helper.setBlock(core, reactorBlock.defaultBlockState().setValue(BlockDummyable.META, 12));
-        TileEntityReactorZirnox reactor = helper.getBlockEntity(core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
         reactorBlock.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
 
@@ -641,15 +636,15 @@ public final class HbmGameTestFunctions {
         var tankDuctPos = core.offset(4, 1, 0);
         helper.setBlock(reactorDuctPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState());
         helper.setBlock(tankDuctPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState());
-        var reactorDuct = helper.getBlockEntity(reactorDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
-        var tankDuct = helper.getBlockEntity(tankDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
+        var reactorDuct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, reactorDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
+        var tankDuct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
         reactorDuct.setFluidType(Fluids.SUPERHOTSTEAM);
         tankDuct.setFluidType(Fluids.SUPERHOTSTEAM);
 
         var tankCore = core.offset(6, 1, 1);
         helper.setBlock(tankCore, ModMachineBlocks.machine_fluidtank.get().defaultBlockState()
                 .setValue(BlockDummyable.META, 13));
-        var tank = helper.getBlockEntity(tankCore, com.hbm.tileentity.machine.TileEntityMachineFluidTank.class);
+        var tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankCore, com.hbm.tileentity.machine.TileEntityMachineFluidTank.class);
         helper.assertTrue(tank != null, "Fluid tank controller setup failed");
         tank.mode = 1; // Buffer mode owns the network node at its physical port cells.
         tank.tank.setTankType(Fluids.SUPERHOTSTEAM);
@@ -672,7 +667,7 @@ public final class HbmGameTestFunctions {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
         helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        TileEntityReactorZirnox reactor = helper.getBlockEntity(core, TileEntityReactorZirnox.class);
+        TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
         block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
         reactor.heat = TileEntityReactorZirnox.MAX_HEAT + 1;
@@ -702,7 +697,7 @@ public final class HbmGameTestFunctions {
     private static void zirnoxWreckHazards(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         helper.setBlock(core, ModMachineBlocks.zirnox_destroyed.get().defaultBlockState().setValue(BlockDummyable.META, 12));
-        var wreck = helper.getBlockEntity(core, com.hbm.tileentity.machine.TileEntityZirnoxDestroyed.class);
+        var wreck = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, com.hbm.tileentity.machine.TileEntityZirnoxDestroyed.class);
         helper.assertTrue(wreck != null && wreck.isOnFire(), "Fresh ZIRNOX wreck must start burning");
         wreck.extinguish();
         helper.assertFalse(wreck.isOnFire(), "ZIRNOX wreck extinguish did not persist");

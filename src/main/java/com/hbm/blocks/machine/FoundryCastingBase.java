@@ -34,7 +34,7 @@ import java.util.List;
  * right-click with a shovel empties the molten content to scraps. The look-overlay shows the installed
  * mold + fill state.
  */
-public abstract class FoundryCastingBase extends Block implements EntityBlock, ICrucibleAcceptor, ILookOverlay {
+public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBlock implements EntityBlock, ICrucibleAcceptor, ILookOverlay {
 
     protected FoundryCastingBase(Properties properties) {
         super(properties);
@@ -47,7 +47,7 @@ public abstract class FoundryCastingBase extends Block implements EntityBlock, I
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         TileEntityFoundryCastingBase cast = getTE(level, pos);
-        if (cast == null) return InteractionResult.PASS;
+        if (cast == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         // take the finished item
         if (!cast.inventory.getStackInSlot(1).isEmpty()) {
@@ -68,13 +68,26 @@ public abstract class FoundryCastingBase extends Block implements EntityBlock, I
         return InteractionResult.SUCCESS;
     }
 
+    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack heldItem, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useItemOn(ItemStack heldItem, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return hbm$useItemOn(heldItem, state, level, pos, player, hand, hit);
+    }
+    //?} else {
+    /*@Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack heldItem, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        InteractionResult hbm$r = hbm$useItemOn(heldItem, state, level, pos, player, hand, hit);
+        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
+             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
+             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+    *///?}
+
+    private InteractionResult hbm$useItemOn(ItemStack heldItem, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         TileEntityFoundryCastingBase cast = getTE(level, pos);
-        if (cast == null) return InteractionResult.PASS;
+        if (cast == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         // take the finished item first, regardless of what's held
         if (!cast.inventory.getStackInSlot(1).isEmpty()) {
@@ -115,7 +128,12 @@ public abstract class FoundryCastingBase extends Block implements EntityBlock, I
             return InteractionResult.SUCCESS;
         }
 
+        //? if >=26.1 {
         return super.useItemOn(heldItem, state, level, pos, player, hand, hit);
+        //?} else {
+        /*return super.useItemOn(heldItem, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
+                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        *///?}
     }
 
     // --- ICrucibleAcceptor: delegate to the TE ---

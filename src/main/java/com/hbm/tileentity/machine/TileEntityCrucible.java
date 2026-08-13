@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.BlockDummyable;
@@ -457,8 +458,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("index") && data.contains("selection")) {
-            int index = data.getIntOr("index", 0);
-            String selection = data.getStringOr("selection", "null");
+            int index = Tags.getIntOr(data, "index", 0);
+            String selection = Tags.getStringOr(data, "selection", "null");
             if (index == 0) {
                 this.recipe = selection;
                 this.setChanged();
@@ -467,6 +468,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     }
 
     /** On destruction, drop the slot items (super) plus the molten content as scraps (old breakBlock). */
+    //? if >=26.1 {
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
@@ -481,6 +483,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         recipeStack.clear();
         wasteStack.clear();
     }
+    //?}
 
     // --- MenuProvider ---
 

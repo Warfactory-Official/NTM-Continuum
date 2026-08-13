@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
@@ -53,7 +54,11 @@ public class ContainerMachineMiningLaser extends AbstractContainerMenu {
             this.addSlot(takeOnly(9 + i * 7 + j, 44 + j * 18, 72 + i * 18));
         }
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 140);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
+        *///?}
     }
 
     private Slot validated(int index, int x, int y) {

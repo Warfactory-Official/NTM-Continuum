@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.data.ModelData;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -36,8 +37,7 @@ public class ItemFluidIcon extends Item {
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModFluidItems.fluid_icon.get());
         stack.set(ModDataComponents.FLUID_ID.get(), fluid.getID());
-        stack.set(DataComponents.CUSTOM_MODEL_DATA,
-                new CustomModelData(List.of(), List.of(), List.of(), List.of(fluid.getColor())));
+        ModelData.setColor(stack, fluid.getColor());
         return stack;
     }
 

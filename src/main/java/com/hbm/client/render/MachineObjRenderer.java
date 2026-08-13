@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -8,7 +9,6 @@ import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -81,7 +81,7 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
             // entityCutout (alpha test) not entitySolid: the old TESRs ran with GL alpha-test on, so
             // fully-transparent texels (e.g. the chemical plant's glass) are discarded instead of being
             // drawn as opaque black.
-            built.add(new Part(WavefrontObj.load(d.obj()), RenderTypes.entityCutout(d.texture()), d.yOffset(), d.exclude()));
+            built.add(new Part(WavefrontObj.load(d.obj()), CompatRenderTypes.entityCutout(d.texture()), d.yOffset(), d.exclude()));
         }
         this.parts = built;
     }

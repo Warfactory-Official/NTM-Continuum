@@ -52,7 +52,9 @@ public class NeoForgeInit {
         Constants.LOG.info("Hello NeoForge world!");
 
         // Test functions are a NeoForge-only dev registry. Do not initialize this common class on Fabric.
+        //? if >=26.1 {
         com.hbm.gametest.HbmGameTestFunctions.init();
+        //?}
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
 
@@ -67,7 +69,11 @@ public class NeoForgeInit {
         eventBus.addListener(com.hbm.gametest.HbmNeoForgeGameTests::register);
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
+        //? if >=26.1 {
         if (FMLLoader.getCurrent().getDist() == Dist.CLIENT) {
+        //?} else {
+        /*if (FMLLoader.getDist() == Dist.CLIENT) {
+        *///?}
             NeoForgeClientInit.init(eventBus);
         }
 
@@ -145,7 +151,7 @@ public class NeoForgeInit {
         for (DeferredRegister<?> register : DeferredRegister.all()) {
             if (event.getRegistryKey().equals(register.getRegistryKey())) {
                 register.flushTo((registryKey, entryKey, value) ->
-                        event.register((ResourceKey) registryKey, entryKey.identifier(), (Supplier) value));
+                        event.register((ResourceKey) registryKey, dev.golem.core.Ids.keyId(entryKey), (Supplier) value));
             }
         }
     }

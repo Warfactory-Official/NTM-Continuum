@@ -1,11 +1,11 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,7 +19,7 @@ import java.util.Optional;
  * progress bar, and a "powered" indicator, with an energy-bar hover tooltip. (The fluid-level bar is
  * deferred — the tank still works; recipes needing a fluid just show no gauge yet.)
  */
-public class GUIMachineSolderingStation extends AbstractContainerScreen<ContainerMachineSolderingStation> implements IUpgradeInfoProviderSource {
+public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineSolderingStation> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_soldering_station.png");
     // Fluid gauge (GUI-relative), matching the 1.12.2 layout: a 34×16 area at (35, 63).
@@ -32,23 +32,29 @@ public class GUIMachineSolderingStation extends AbstractContainerScreen<Containe
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineSolderingStation te = this.menu.getStation();
         if (te == null) return;
 
         int p = (int) (te.power * 52 / Math.max(te.maxPower, 1));
         if (p > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 152, this.topPos + 70 - p, 176.0F, (float) (52 - p), 16, p, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 152, this.topPos + 70 - p, 176.0F, (float) (52 - p), 16, p, 256, 256);
         }
         int i = te.progress * 33 / Math.max(te.processTime, 1);
         if (i > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 72, this.topPos + 28, 192.0F, 0.0F, i, 14, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 72, this.topPos + 28, 192.0F, 0.0F, i, 14, 256, 256);
         }
         if (te.power >= te.consumption) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 156, this.topPos + 4, 176.0F, 52.0F, 9, 12, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 156, this.topPos + 4, 176.0F, 52.0F, 9, 12, 256, 256);
         }
 
         // Fluid fill bar — a solid-colour level (the fluid's colour), bottom-anchored in the 34×16 gauge at
@@ -67,19 +73,27 @@ public class GUIMachineSolderingStation extends AbstractContainerScreen<Containe
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineSolderingStation te = this.menu.getStation();
         if (te == null) return;
         if (this.isHovering(152, 18, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, te.maxPower), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.maxPower), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(FLUID_X, FLUID_TOP, FLUID_W, FLUID_H, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.tank.getTankType().getName()),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(INFO_X, INFO_Y, GuiUtil.INFO_PANEL_SIZE, GuiUtil.INFO_PANEL_SIZE, mouseX, mouseY)) {
             // Info-panel glyph hover: the "Acceptable Upgrades" panel (1.12.2 getUpgradeInfo).
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.upgradeInfo(te), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.upgradeInfo(te), Optional.empty(), mouseX, mouseY);
         }
     }
 

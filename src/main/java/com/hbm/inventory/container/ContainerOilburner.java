@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -39,7 +40,12 @@ public class ContainerOilburner extends AbstractContainerMenu {
         this.addSlot(takeOnly(1, 26, 53));
         this.addSlot(validated(2, 44, 71));
 
-        this.addStandardInventorySlots(playerInventory, 8, 121); // rows 121/139/157, hotbar 179 (old offset 37)
+        //? if >=26.1 {
+        this.addStandardInventorySlots(playerInventory, 8, 121);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 121);
+        *///?}
+        // rows 121/139/157, hotbar 179 (old offset 37)
     }
 
     private Slot validated(int index, int x, int y) {
@@ -87,7 +93,7 @@ public class ContainerOilburner extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
             } else {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;

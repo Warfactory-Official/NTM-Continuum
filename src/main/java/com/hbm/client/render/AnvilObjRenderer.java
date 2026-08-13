@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -12,7 +13,6 @@ import com.hbm.tileentity.TileEntityAnvil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -48,7 +48,7 @@ public class AnvilObjRenderer implements CompatBER<TileEntityAnvil, AnvilRenderS
             String id = anvil.getId().getPath();
             configs.put(anvil.get(), new Cfg(
                     WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/anvils/" + id + ".obj")),
-                    RenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/anvils/" + id + ".png"))));
+                    CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/anvils/" + id + ".png"))));
         }
     }
 

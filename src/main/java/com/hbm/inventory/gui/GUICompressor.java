@@ -1,13 +1,15 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCompressor;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineCompressorBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,7 +23,7 @@ import java.util.Optional;
  * the 5-way compression selector at (43 + j·11, 46) 8×14 — its highlight blits from (193,18).
  * The old title is drawn centred on <b>x=70</b> (not the panel centre) at y=6.
  */
-public class GUICompressor extends AbstractContainerScreen<ContainerCompressor> {
+public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<ContainerCompressor> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_compressor.png");
 
@@ -38,26 +40,32 @@ public class GUICompressor extends AbstractContainerScreen<ContainerCompressor> 
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineCompressorBase te = this.menu.getTile();
         if (te == null) return;
 
         // "powered" indicator lamp
         if (te.power >= te.powerRequirement) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 156, this.topPos + 4, 176.0F, 52.0F, 9, 12, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 156, this.topPos + 4, 176.0F, 52.0F, 9, 12, 256, 256);
         }
 
         // compression selector highlight over the chosen level
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 43 + te.tanks[0].getPressure() * 11, this.topPos + 46, 193.0F, 18.0F, 8, 124, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 43 + te.tanks[0].getPressure() * 11, this.topPos + 46, 193.0F, 18.0F, 8, 124, 256, 256);
 
         int i = te.getProgressScaled(55);
-        if (i > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 42, this.topPos + 26, 192.0F, 0.0F, i, 17, 256, 256);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 42, this.topPos + 26, 192.0F, 0.0F, i, 17, 256, 256);
 
         int j = (int) te.getPowerScaled(52);
-        if (j > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 152, this.topPos + 70 - j, 176.0F, (float) (52 - j), 16, j, 256, 256);
+        if (j > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 152, this.topPos + 70 - j, 176.0F, (float) (52 - j), 16, j, 256, 256);
 
         drawTank(graphics, te.tanks[0], 17, 18, 16, 52);
         drawTank(graphics, te.tanks[1], 107, 18, 16, 52);
@@ -74,7 +82,7 @@ public class GUICompressor extends AbstractContainerScreen<ContainerCompressor> 
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + w, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -83,19 +91,27 @@ public class GUICompressor extends AbstractContainerScreen<ContainerCompressor> 
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineCompressorBase te = this.menu.getTile();
         if (te == null) return;
 
         if (this.isHovering(152, 18, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineCompressorBase.maxPower), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineCompressorBase.maxPower), Optional.empty(), mouseX, mouseY);
             return;
         }
         // Compression selector: old "<j> PU -> <j+1> PU".
         for (int j = 0; j <= TileEntityMachineCompressorBase.MAX_COMPRESSION; j++) {
             if (this.isHovering(43 + j * 11, 46, 8, 14, mouseX, mouseY)) {
-                graphics.setTooltipForNextFrame(this.font, List.of(Component.literal(j + " PU -> " + (j + 1) + " PU")), Optional.empty(), mouseX, mouseY);
+                GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(j + " PU -> " + (j + 1) + " PU")), Optional.empty(), mouseX, mouseY);
                 return;
             }
         }
@@ -103,7 +119,7 @@ public class GUICompressor extends AbstractContainerScreen<ContainerCompressor> 
         for (int k = 0; k < 2; k++) {
             if (this.isHovering(xs[k], 18, 16, 52, mouseX, mouseY)) {
                 FluidTankNTM tank = te.tanks[k];
-                graphics.setTooltipForNextFrame(this.font, List.of(
+                GuiDraw.tooltip(graphics, this.font, List.of(
                         Component.literal(tank.getTankType().getName()),
                         Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB"),
                         Component.literal(tank.getPressure() + " PU")), Optional.empty(), mouseX, mouseY);
@@ -113,7 +129,12 @@ public class GUICompressor extends AbstractContainerScreen<ContainerCompressor> 
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         Minecraft mc = Minecraft.getInstance();
         double mx = event.x(), my = event.y();
 
@@ -128,6 +149,10 @@ public class GUICompressor extends AbstractContainerScreen<ContainerCompressor> 
                 return true;
             }
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 }

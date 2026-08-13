@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
@@ -53,7 +54,11 @@ public class ContainerMachineSolderingStation extends AbstractContainerMenu {
         this.addSlot(validated(9, 89, 63));    // upgrade
         this.addSlot(validated(10, 107, 63));  // upgrade
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 122);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
+        *///?}
     }
 
     private Slot validated(int index, int x, int y) {

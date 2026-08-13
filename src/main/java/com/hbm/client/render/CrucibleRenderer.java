@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CameraInfo;
@@ -12,7 +13,6 @@ import com.hbm.tileentity.machine.TileEntityCrucible;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -38,15 +38,15 @@ public class CrucibleRenderer implements CompatBER<TileEntityCrucible, CrucibleR
         Identifier lava = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava.png");
         Identifier lavaGray = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png");
         this.model = WavefrontObj.load(obj);
-        this.baseType = RenderTypes.entityCutout(tex);
+        this.baseType = CompatRenderTypes.entityCutout(tex);
         // Pool surface: flat single quad, no self-overlap → emissive (uniform fullbright) reads well.
-        this.lavaType = RenderTypes.entityTranslucentEmissive(lava);
+        this.lavaType = CompatRenderTypes.entityTranslucentEmissive(lava);
         // Stream: a self-overlapping tube. It MUST write depth or its far faces overwrite the near ones
         // and "sides disappear" with view angle (translucent-emissive has depth-write OFF). entitySolid is
         // opaque + depth-write and shades by the vertex NORMAL (all up here → every face uniform, unlike
         // entityCutout's winding-based per-face darkening). It culls, so the geometry is double-wound
         // (FoundryRenderHelper.quad) → cull keeps the outward face. lava_gray is fully opaque.
-        this.streamType = RenderTypes.entitySolid(lavaGray);
+        this.streamType = CompatRenderTypes.entitySolid(lavaGray);
     }
 
     @Override public CrucibleRenderState createRenderState() { return new CrucibleRenderState(); }

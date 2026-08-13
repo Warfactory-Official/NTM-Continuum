@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.Poses;
@@ -7,7 +8,6 @@ import com.hbm.Constants;
 import com.hbm.tileentity.machine.TileEntityZirnoxDestroyed;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -29,9 +29,8 @@ public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnox
     }
 
     @Override
-    public void extractRenderState(TileEntityZirnoxDestroyed wreck, MachineRenderState state, float partialTicks,
-                                   net.minecraft.world.phys.Vec3 cameraPosition,
-                                   net.minecraft.client.renderer.feature.ModelFeatureRenderer.CrumblingOverlay breakProgress) {
+    public void extract(TileEntityZirnoxDestroyed wreck, MachineRenderState state, float partialTicks,
+                                   net.minecraft.world.phys.Vec3 cameraPosition) {
         state.burningWreck = wreck.isOnFire();
         state.wreckGameTime = wreck.getLevel() == null ? 0L : wreck.getLevel().getGameTime();
     }
@@ -43,7 +42,7 @@ public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnox
 
         SubmitSink flameCollector = collector.order(1);
         long latestEmission = state.wreckGameTime / 50L;
-        flameCollector.submitCustomGeometry(poseStack, RenderTypes.energySwirl(FLAME_TEXTURE, 0F, 0F), (pose, buffer) -> {
+        flameCollector.submitCustomGeometry(poseStack, CompatRenderTypes.energySwirl(FLAME_TEXTURE, 0F, 0F), (pose, buffer) -> {
             Poses.rotate(pose, Axis.YP.rotationDegrees(-camera.yRot));
             for (int i = 0; i < 2; i++) {
                 long emission = latestEmission - i;

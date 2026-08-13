@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
@@ -12,7 +13,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
@@ -40,7 +40,7 @@ public class SolderingStationRenderer implements CompatBER<TileEntityMachineSold
 
     public SolderingStationRenderer() {
         this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/soldering_station.obj"));
-        this.renderType = RenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/soldering_station.png"));
+        this.renderType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/soldering_station.png"));
     }
 
     @Override

@@ -14,7 +14,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes.SolderingRecipe;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -170,7 +170,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     /** Slot 8 holds a fluid identifier; adopt its type (kept in-slot, matching the 1.12.2 {@code setType(8, ...)}). */
     private void updateTankType() {
         ItemStack id = inventory.getStackInSlot(8);
-        if (id.getItem() instanceof IItemFluidIdentifier ident) {
+        if (id.getItem() instanceof IItemFluidId ident) {
             var t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
             if (t != tank.getTankType()) tank.setTankType(t);
         }
@@ -199,7 +199,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         if (slot < 5) return validForGroup(slot, 3, 5, SolderingRecipes.pcb, stack);
         if (slot < 6) return validForGroup(slot, 5, 6, SolderingRecipes.solder, stack);
         if (slot == 7) return Library.isBattery(stack);
-        if (slot == 8) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 8) return stack.getItem() instanceof IItemFluidId;
         if (slot == 9 || slot == 10) return Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
         return false; // 6 output
     }

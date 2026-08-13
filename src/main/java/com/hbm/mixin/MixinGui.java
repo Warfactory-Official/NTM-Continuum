@@ -1,9 +1,14 @@
 package com.hbm.mixin;
 
+
 import com.hbm.client.NukeScreenEffects;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
+//? if >=26.1 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+//?} else {
+/*import net.minecraft.client.gui.GuiGraphicsExtractor;
+*///?}
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,6 +31,10 @@ public class MixinGui {
     // Latched at HEAD so the RETURN pop can't desync if the shake window expires mid-frame.
     @Unique private boolean hbm$shaking;
 
+    // The injector's parameters and target name must match the target method's descriptor exactly, so
+    // both differ per version: 26.1 extracts the HUD through a GuiGraphicsExtractor, older versions
+    // render it directly. The pose type differs too — a Matrix3x2fStack versus a PoseStack.
+    //? if >=26.1 {
     @Inject(method = "extractRenderState", at = @At("HEAD"))
     private void hbm$shakePush(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         hbm$shaking = NukeScreenEffects.isShakeActive();
@@ -33,10 +42,29 @@ public class MixinGui {
         graphics.pose().pushMatrix();
         graphics.pose().translate((float) NukeScreenEffects.shakeOffsetX(), (float) NukeScreenEffects.shakeOffsetY());
     }
+    //?} else {
+    /*@Inject(method = "render", at = @At("HEAD"))
+    private void hbm$shakePush(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        hbm$shaking = NukeScreenEffects.isShakeActive();
+        if (!hbm$shaking) return;
+        graphics.pose().pushPose();
+        graphics.pose().translate(NukeScreenEffects.shakeOffsetX(), NukeScreenEffects.shakeOffsetY(), 0D);
+    }
+    *///?}
 
+    //? if >=26.1 {
     @Inject(method = "extractRenderState", at = @At("RETURN"))
     private void hbm$shakePop(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         if (!hbm$shaking) return;
+        hbm$shaking = false;
         graphics.pose().popMatrix();
     }
+    //?} else {
+    /*@Inject(method = "render", at = @At("RETURN"))
+    private void hbm$shakePop(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (!hbm$shaking) return;
+        hbm$shaking = false;
+        graphics.pose().popPose();
+    }
+    *///?}
 }

@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineTurbine;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -7,7 +8,6 @@ import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +22,7 @@ import java.util.Optional;
  * whose source row picks STEAM / HOTSTEAM / SUPERHOTSTEAM / ULTRAHOTSTEAM. When the input fluid can't be
  * cooled the output tank goes NONE and the "large red !" panel appears left of the GUI.
  */
-public class GUIMachineTurbine extends AbstractContainerScreen<ContainerMachineTurbine> {
+public class GUIMachineTurbine extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineTurbine> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_turbine.png");
 
@@ -38,22 +38,28 @@ public class GUIMachineTurbine extends AbstractContainerScreen<ContainerMachineT
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineTurbine te = this.menu.getTurbine();
         if (te == null) return;
 
         int stage = stageRow(te);
         if (stage >= 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 99, this.topPos + 18,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 99, this.topPos + 18,
                     183.0F, (float) (stage * 14), 14, 14, 256, 256);
         }
 
         int i = (int) te.getPowerScaled(34);
         if (i > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 123, this.topPos + 69 - i,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 123, this.topPos + 69 - i,
                     176.0F, (float) (34 - i), 7, i, 256, 256);
         }
 
@@ -86,7 +92,7 @@ public class GUIMachineTurbine extends AbstractContainerScreen<ContainerMachineT
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + 16, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, 16, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, 16, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -95,13 +101,21 @@ public class GUIMachineTurbine extends AbstractContainerScreen<ContainerMachineT
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineTurbine te = this.menu.getTurbine();
         if (te == null) return;
 
         if (this.isHovering(123, 35, 7, 34, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, te.getMaxPower()), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(62, 17, 16, 52, mouseX, mouseY)) {
@@ -114,7 +128,7 @@ public class GUIMachineTurbine extends AbstractContainerScreen<ContainerMachineT
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        graphics.setTooltipForNextFrame(this.font, List.of(
+        GuiDraw.tooltip(graphics, this.font, List.of(
                 Component.literal(tank.getTankType().getName()),
                 Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
     }

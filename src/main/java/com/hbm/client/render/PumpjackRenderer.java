@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CameraInfo;
@@ -11,7 +12,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,12 +39,12 @@ public class PumpjackRenderer implements CompatBER<TileEntityMachinePumpjack, Pu
 
     public PumpjackRenderer() {
         this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/pumpjack.obj"));
-        this.baseType = RenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/pumpjack.png"));
+        this.baseType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/pumpjack.png"));
         // The untextured crank/rope geometry is drawn on entitySolid (opaque, depth-writing, culls) —
         // its faces are double-wound below so the cull keeps exactly the outward copy, giving the flat
         // uniform shading the old disableCull+disableLighting POSITION_COLOR pass had. entityCutout would
         // draw both windings (no cull) and PER_FACE_LIGHTING would darken the back copy → the odd look.
-        this.colorType = RenderTypes.entitySolid(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/misc/white.png"));
+        this.colorType = CompatRenderTypes.entitySolid(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/misc/white.png"));
     }
 
     @Override public PumpjackRenderState createRenderState() { return new PumpjackRenderState(); }

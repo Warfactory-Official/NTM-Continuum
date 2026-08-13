@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine.storage;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -43,7 +44,7 @@ public final class ModStorageBlocks {
         // Custom block item so the tooltip shows the "X/Y Slots used" readout (it carries the crate's
         // contents in the CONTAINER component). useBlockDescriptionPrefix() keeps the block.hbm.<id> key.
         RegistryObject<ItemBlockStorageCrate> item = ITEMS.registerItem(name,
-                p -> new ItemBlockStorageCrate(block.get(), p, type), p -> p.useBlockDescriptionPrefix());
+                p -> new ItemBlockStorageCrate(block.get(), p, type), p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.MACHINES, item);
     }
 

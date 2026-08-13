@@ -5,7 +5,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 
 import java.util.function.Consumer;
 
@@ -72,8 +74,13 @@ public class ItemFELCrystal extends Item {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         // The digamma crystal replaces its description with scrambled text rather than a lang key.
         adder.accept(digamma
                 ? Component.literal("THERADIANCEOFATHOUSANDSUNS").withStyle(ChatFormatting.OBFUSCATED)

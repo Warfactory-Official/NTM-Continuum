@@ -10,7 +10,7 @@ import com.hbm.inventory.fluid.FluidCombustion.Combustible;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemPistons;
 import com.hbm.lib.DirPos;
@@ -69,7 +69,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCombustionEngine te) {
         te.loadTank();
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
 
         te.wasOn = false;
 
@@ -155,9 +155,9 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
         }
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(4);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tank.getTankType()) {
             tank.setTankType(t);
@@ -179,7 +179,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 2) return stack.getItem() instanceof ItemPistons;
         if (slot == 3) return Library.isBattery(stack);
-        if (slot == 4) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 4) return stack.getItem() instanceof IItemFluidId;
         // slot 1 (emptied container out) stays TRUE — machine writes it via insertItem
         return true;
     }

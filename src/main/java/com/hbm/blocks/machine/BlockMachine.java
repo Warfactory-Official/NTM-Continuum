@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Each machine supplies its own BlockEntity via a {@link BlockEntityFactory}, so no per-machine
  * block subclass is needed for the scaffold.
  */
-public class BlockMachine extends Block implements EntityBlock {
+public class BlockMachine extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

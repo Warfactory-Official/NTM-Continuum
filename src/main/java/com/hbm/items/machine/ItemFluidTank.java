@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.data.ModelData;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -11,7 +12,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 
 import java.util.List;
 import java.util.Locale;
@@ -62,8 +65,7 @@ public class ItemFluidTank extends Item implements IFillableItem {
         }
         stack.set(ModDataComponents.FLUID_ID.get(), type.getID());
         stack.set(ModDataComponents.FLUID_AMOUNT.get(), amount);
-        stack.set(DataComponents.CUSTOM_MODEL_DATA,
-                new CustomModelData(List.of(), List.of(), List.of(), List.of(type.getColor())));
+        ModelData.setColor(stack, type.getColor());
     }
 
     /** A container holding {@code amount} mB of {@code type} (for creative variants / recipes). */
@@ -136,8 +138,13 @@ public class ItemFluidTank extends Item implements IFillableItem {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         adder.accept(Component.literal(getFill(stack) + " / " + capacity + " mB").withStyle(ChatFormatting.GRAY));
     }
 

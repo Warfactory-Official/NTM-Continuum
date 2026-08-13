@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.container.ContainerAnvil;
@@ -12,9 +13,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.KeyEvent;
+//?}
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -34,7 +38,7 @@ import java.util.Locale;
  * the selected recipe's inputs/outputs (drawn at half scale, like the original). The hammer button crafts
  * the selection straight from the player's inventory via a {@link AnvilCraftPayload} (LSHIFT = ×64).
  */
-public class GUIAnvil extends AbstractContainerScreen<ContainerAnvil> {
+public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<ContainerAnvil> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_anvil.png");
 
@@ -98,44 +102,50 @@ public class GUIAnvil extends AbstractContainerScreen<ContainerAnvil> {
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
 
         // Slide-out info panel, widened to fit the selected recipe's (half-scale) text.
         int slide = Mth.clamp(this.lastSize - 42, 0, 1000);
         int mul = 1;
         while (slide >= 51 * mul) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 125 + 51 * mul, topPos + 17, 125.0F, 17.0F, 54, 108, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, leftPos + 125 + 51 * mul, topPos + 17, 125.0F, 17.0F, 54, 108, 256, 256);
             mul++;
         }
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 125 + slide, topPos + 17, 125.0F, 17.0F, 54, 108, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, leftPos + 125 + slide, topPos + 17, 125.0F, 17.0F, 54, 108, 256, 256);
 
         if (this.search != null && this.search.isFocused()) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 8, topPos + 108, 168.0F, 222.0F, 88, 16, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, leftPos + 8, topPos + 108, 168.0F, 222.0F, 88, 16, 256, 256);
         }
 
         // Button hover highlights (page left/right, craft, apply-search).
-        if (isOver(mouseX, mouseY, 7, 71, 9, 36)) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 7, topPos + 71, 176.0F, 186.0F, 9, 36, 256, 256);
-        if (isOver(mouseX, mouseY, 106, 71, 9, 36)) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 106, topPos + 71, 185.0F, 186.0F, 9, 36, 256, 256);
-        if (isOver(mouseX, mouseY, 52, 53, 18, 18)) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 52, topPos + 53, 176.0F, 150.0F, 18, 18, 256, 256);
-        if (isOver(mouseX, mouseY, 97, 107, 18, 18)) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, leftPos + 97, topPos + 107, 176.0F, 168.0F, 18, 18, 256, 256);
+        if (isOver(mouseX, mouseY, 7, 71, 9, 36)) GuiDraw.blit(graphics, TEXTURE, leftPos + 7, topPos + 71, 176.0F, 186.0F, 9, 36, 256, 256);
+        if (isOver(mouseX, mouseY, 106, 71, 9, 36)) GuiDraw.blit(graphics, TEXTURE, leftPos + 106, topPos + 71, 185.0F, 186.0F, 9, 36, 256, 256);
+        if (isOver(mouseX, mouseY, 52, 53, 18, 18)) GuiDraw.blit(graphics, TEXTURE, leftPos + 52, topPos + 53, 176.0F, 150.0F, 18, 18, 256, 256);
+        if (isOver(mouseX, mouseY, 97, 107, 18, 18)) GuiDraw.blit(graphics, TEXTURE, leftPos + 97, topPos + 107, 176.0F, 168.0F, 18, 18, 256, 256);
 
         // Recipe grid icons (5 columns × 2 rows, paged by column).
         for (int i = index * 2; i < index * 2 + 10 && i < recipes.size(); i++) {
             int ind = i - index * 2;
-            graphics.item(recipes.get(i).getDisplay(), leftPos + 17 + 18 * (ind / 2), topPos + 72 + 18 * (ind % 2));
+            GuiDraw.item(graphics, recipes.get(i).getDisplay(), leftPos + 17 + 18 * (ind / 2), topPos + 72 + 18 * (ind % 2));
         }
 
         // Overlay badges + the selection highlight sit ON TOP of the item sprites (old zLevel 300).
-        graphics.nextStratum();
+        GuiDraw.nextStratum(graphics);
         for (int i = index * 2; i < index * 2 + 10 && i < recipes.size(); i++) {
             int ind = i - index * 2;
             int x = leftPos + 16 + 18 * (ind / 2);
             int y = topPos + 71 + 18 * (ind % 2);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 18 + 18 * recipes.get(i).getOverlay().ordinal(), 222.0F, 18, 18, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, x, y, 18 + 18 * recipes.get(i).getOverlay().ordinal(), 222.0F, 18, 18, 256, 256);
             if (selection == i) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, y, 0.0F, 222.0F, 18, 18, 256, 256);
+                GuiDraw.blit(graphics, TEXTURE, x, y, 0.0F, 222.0F, 18, 18, 256, 256);
             }
         }
     }
@@ -143,8 +153,8 @@ public class GUIAnvil extends AbstractContainerScreen<ContainerAnvil> {
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         String name = Component.translatable("container.anvil", this.tier).getString();
-        graphics.text(this.font, name, 61 - this.font.width(name) / 2, 8, 0xFF404040, false);
-        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, name, 61 - this.font.width(name) / 2, 8, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
 
         // The selected recipe's ingredient/output list on the slide-out panel, at half scale (gui-local
         // coordinates: pose is already translated to leftPos/topPos here).
@@ -153,15 +163,15 @@ public class GUIAnvil extends AbstractContainerScreen<ContainerAnvil> {
             int longest = 0;
             for (String s : list) longest = Math.max(longest, this.font.width(s));
 
-            graphics.pose().pushMatrix();
-            graphics.pose().scale(0.5F, 0.5F);
+            GuiDraw.pushMatrix(graphics);
+            GuiDraw.scale(graphics, 0.5F, 0.5F);
             int offset = 0;
             for (String s : list) {
                 boolean yellow = s.startsWith("§e");
-                graphics.text(this.font, yellow ? s.substring(2) : s, 260, 50 + offset, yellow ? 0xFFFFFF55 : 0xFFFFFFFF, false);
+                GuiDraw.text(graphics, this.font, yellow ? s.substring(2) : s, 260, 50 + offset, yellow ? 0xFFFFFF55 : 0xFFFFFFFF, false);
                 offset += 9;
             }
-            graphics.pose().popMatrix();
+            GuiDraw.popMatrix(graphics);
             this.lastSize = (int) (longest * 0.5F);
         } else {
             this.lastSize = 0;
@@ -205,7 +215,12 @@ public class GUIAnvil extends AbstractContainerScreen<ContainerAnvil> {
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         int x = (int) event.x(), y = (int) event.y();
 
         if (isOver(x, y, 7, 71, 9, 36)) { // page left
@@ -240,18 +255,35 @@ public class GUIAnvil extends AbstractContainerScreen<ContainerAnvil> {
             }
         }
 
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 
     @Override
+    //? if >=26.1 {
     public boolean keyPressed(KeyEvent event) {
+    //?} else {
+    /*public boolean keyPressed(int hbm$key, int hbm$scan, int hbm$mods) {
+        dev.golem.core.gui.KeyInput event = new dev.golem.core.gui.KeyInput(hbm$key, hbm$scan, hbm$mods);
+    *///?}
         // While the search box has focus, let it consume typing (incl. the inventory key, e.g. 'e') so the
         // default AbstractContainerScreen behaviour of closing the menu on the inventory key doesn't fire.
         if (this.search != null && this.search.isFocused() && event.key() != 256 /* ESC still closes */) {
+            //? if >=26.1 {
             this.search.keyPressed(event);
+            //?} else {
+            /*this.search.keyPressed(hbm$key, hbm$scan, hbm$mods);
+            *///?}
             return true;
         }
+        //? if >=26.1 {
         return super.keyPressed(event);
+        //?} else {
+        /*return super.keyPressed(hbm$key, hbm$scan, hbm$mods);
+        *///?}
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineRefinery;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
@@ -7,7 +8,6 @@ import com.hbm.tileentity.machine.oil.TileEntityMachineRefinery;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +22,7 @@ import java.util.Optional;
  * and the four output tank bars 16×52 at x=86/106/126/146 (y=95 bottom). Because the texture is not
  * 256×256, every blit passes explicit source dimensions 350×256.
  */
-public class GUIMachineRefinery extends AbstractContainerScreen<ContainerMachineRefinery> {
+public class GUIMachineRefinery extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineRefinery> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_refinery.png");
     private static final int TEX_W = 350, TEX_H = 256;
@@ -40,23 +40,29 @@ public class GUIMachineRefinery extends AbstractContainerScreen<ContainerMachine
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, TEX_W, TEX_H);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, TEX_W, TEX_H);
 
         TileEntityMachineRefinery te = this.menu.getRefinery();
         if (te == null) return;
 
         // Power bar (16×52 at (186,18)).
         int j = (int) te.getPowerScaled(50);
-        if (j > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 186, this.topPos + 69 - j, 210.0F, (float) (52 - j), 16, j, TEX_W, TEX_H);
+        if (j > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 186, this.topPos + 69 - j, 210.0F, (float) (52 - j), 16, j, TEX_W, TEX_H);
 
         // Input oil column (16×101 at (33,29), fill from u=226) tinted by the input fluid colour.
         FluidTankNTM inputOil = te.tanks[0];
         if (inputOil.getFill() > 0) {
             int h = inputOil.getFill() * 101 / inputOil.getMaxFill();
             int color = 0xFF000000 | (inputOil.getTankType().getColor() & 0xFFFFFF);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 33, this.topPos + 130 - h, 226.0F, (float) (101 - h), 16, h, TEX_W, TEX_H, color);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 33, this.topPos + 130 - h, 226.0F, (float) (101 - h), 16, h, TEX_W, TEX_H, color);
         }
 
         // The 4 product pipes, tinted by the recipe's fraction colours (grey when no recipe).
@@ -65,10 +71,10 @@ public class GUIMachineRefinery extends AbstractContainerScreen<ContainerMachine
         int cNaph = recipe != null ? tint(recipe.frac2().type.getColor()) : 0xFFFFFFFF;
         int cLight = recipe != null ? tint(recipe.frac3().type.getColor()) : 0xFFFFFFFF;
         int cGas = recipe != null ? tint(recipe.frac4().type.getColor()) : 0xFFFFFFFF;
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 52, this.topPos + 63, 247.0F, 1.0F, 33, 48, TEX_W, TEX_H, cHeavy);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 52, this.topPos + 32, 247.0F, 50.0F, 66, 52, TEX_W, TEX_H, cNaph);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 52, this.topPos + 24, 247.0F, 145.0F, 86, 35, TEX_W, TEX_H, cLight);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 36, this.topPos + 16, 211.0F, 119.0F, 122, 25, TEX_W, TEX_H, cGas);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 52, this.topPos + 63, 247.0F, 1.0F, 33, 48, TEX_W, TEX_H, cHeavy);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 52, this.topPos + 32, 247.0F, 50.0F, 66, 52, TEX_W, TEX_H, cNaph);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 52, this.topPos + 24, 247.0F, 145.0F, 86, 35, TEX_W, TEX_H, cLight);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 36, this.topPos + 16, 211.0F, 119.0F, 122, 25, TEX_W, TEX_H, cGas);
 
         // Output tank bars.
         drawTank(graphics, te.tanks[1], 86);
@@ -92,7 +98,7 @@ public class GUIMachineRefinery extends AbstractContainerScreen<ContainerMachine
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + 16, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, 16, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, 16, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -101,13 +107,21 @@ public class GUIMachineRefinery extends AbstractContainerScreen<ContainerMachine
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineRefinery te = this.menu.getRefinery();
         if (te == null) return;
 
         if (this.isHovering(186, 18, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineRefinery.maxPower), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineRefinery.maxPower), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(33, 29, 16, 101, mouseX, mouseY)) { tankTooltip(graphics, te.tanks[0], mouseX, mouseY); return; }
@@ -118,7 +132,7 @@ public class GUIMachineRefinery extends AbstractContainerScreen<ContainerMachine
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        graphics.setTooltipForNextFrame(this.font, List.of(
+        GuiDraw.tooltip(graphics, this.font, List.of(
                 Component.literal(tank.getTankType().getName()),
                 Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")
         ), Optional.empty(), mouseX, mouseY);

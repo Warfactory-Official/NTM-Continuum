@@ -37,7 +37,11 @@ public final class InventoryUtil {
 
     public static boolean doesPlayerHaveAStacks(Player player, List<AStack> stacks, boolean shouldRemove) {
 
+        //? if >=26.1 {
         NonNullList<ItemStack> original = player.getInventory().getNonEquipmentItems();
+        //?} else {
+        /*NonNullList<ItemStack> original = player.getInventory().items;
+        *///?}
 
         // Work on copies so the availability check never mutates the real inventory.
         ItemStack[] inventory = new ItemStack[original.size()];

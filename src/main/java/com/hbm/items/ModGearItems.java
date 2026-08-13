@@ -15,8 +15,15 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.function.UnaryOperator;
 import net.minecraft.world.item.Item;
+//? if >=26.1 {
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
+//?} else {
+/*import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.core.Holder;
+*///?}
+import dev.golem.core.world.ArmorSlot;
 
 /**
  * Hand-registered gear: the radiation diagnostic tools (geiger counter / dosimeter) and the three hazmat
@@ -37,20 +44,20 @@ public final class ModGearItems {
             ITEMS.registerItem("dosimeter", ItemDosimeter::new, p -> p.stacksTo(1));
 
     // ---- hazmat suits (yellow / red / grey) ----
-    public static final RegistryObject<Item> hazmat_helmet = armor("hazmat_helmet", HbmArmorMaterials.HAZMAT, ArmorType.HELMET);
-    public static final RegistryObject<Item> hazmat_plate = armor("hazmat_plate", HbmArmorMaterials.HAZMAT, ArmorType.CHESTPLATE);
-    public static final RegistryObject<Item> hazmat_legs = armor("hazmat_legs", HbmArmorMaterials.HAZMAT, ArmorType.LEGGINGS);
-    public static final RegistryObject<Item> hazmat_boots = armor("hazmat_boots", HbmArmorMaterials.HAZMAT, ArmorType.BOOTS);
+    public static final RegistryObject<Item> hazmat_helmet = armor("hazmat_helmet", HbmArmorMaterials.HAZMAT, ArmorSlot.HELMET);
+    public static final RegistryObject<Item> hazmat_plate = armor("hazmat_plate", HbmArmorMaterials.HAZMAT, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<Item> hazmat_legs = armor("hazmat_legs", HbmArmorMaterials.HAZMAT, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<Item> hazmat_boots = armor("hazmat_boots", HbmArmorMaterials.HAZMAT, ArmorSlot.BOOTS);
 
-    public static final RegistryObject<Item> hazmat_helmet_red = armor("hazmat_helmet_red", HbmArmorMaterials.HAZMAT_RED, ArmorType.HELMET);
-    public static final RegistryObject<Item> hazmat_plate_red = armor("hazmat_plate_red", HbmArmorMaterials.HAZMAT_RED, ArmorType.CHESTPLATE);
-    public static final RegistryObject<Item> hazmat_legs_red = armor("hazmat_legs_red", HbmArmorMaterials.HAZMAT_RED, ArmorType.LEGGINGS);
-    public static final RegistryObject<Item> hazmat_boots_red = armor("hazmat_boots_red", HbmArmorMaterials.HAZMAT_RED, ArmorType.BOOTS);
+    public static final RegistryObject<Item> hazmat_helmet_red = armor("hazmat_helmet_red", HbmArmorMaterials.HAZMAT_RED, ArmorSlot.HELMET);
+    public static final RegistryObject<Item> hazmat_plate_red = armor("hazmat_plate_red", HbmArmorMaterials.HAZMAT_RED, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<Item> hazmat_legs_red = armor("hazmat_legs_red", HbmArmorMaterials.HAZMAT_RED, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<Item> hazmat_boots_red = armor("hazmat_boots_red", HbmArmorMaterials.HAZMAT_RED, ArmorSlot.BOOTS);
 
-    public static final RegistryObject<Item> hazmat_helmet_grey = armor("hazmat_helmet_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorType.HELMET);
-    public static final RegistryObject<Item> hazmat_plate_grey = armor("hazmat_plate_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorType.CHESTPLATE);
-    public static final RegistryObject<Item> hazmat_legs_grey = armor("hazmat_legs_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorType.LEGGINGS);
-    public static final RegistryObject<Item> hazmat_boots_grey = armor("hazmat_boots_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorType.BOOTS);
+    public static final RegistryObject<Item> hazmat_helmet_grey = armor("hazmat_helmet_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.HELMET);
+    public static final RegistryObject<Item> hazmat_plate_grey = armor("hazmat_plate_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<Item> hazmat_legs_grey = armor("hazmat_legs_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<Item> hazmat_boots_grey = armor("hazmat_boots_grey", HbmArmorMaterials.HAZMAT_GREY, ArmorSlot.BOOTS);
 
     // ---- gas masks and replaceable filters ----
     public static final RegistryObject<ItemGasMask> gas_mask = gasMask("gas_mask", List.of(HazardClass.GAS_BLISTERING, HazardClass.NERVE_AGENT));
@@ -63,15 +70,50 @@ public final class ModGearItems {
     public static final RegistryObject<Item> gas_mask_filter = filter("gas_mask_filter", 18_000);
     public static final RegistryObject<Item> gas_mask_filter_combo = filter("gas_mask_filter_combo", 24_000);
 
-    private static RegistryObject<Item> armor(String name, ArmorMaterial mat, ArmorType type) {
-        RegistryObject<Item> ro = ITEMS.registerItem(name, Item::new, (UnaryOperator<Item.Properties>) p -> p.humanoidArmor(mat, type));
+    //? if >=26.1 {
+    private static RegistryObject<Item> armor(String name, ArmorMaterial mat, ArmorSlot slot) {
+        RegistryObject<Item> ro = ITEMS.registerItem(name, Item::new,
+                (UnaryOperator<Item.Properties>) p -> p.humanoidArmor(mat, toVanilla(slot)));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
 
+    private static ArmorType toVanilla(ArmorSlot slot) {
+        return switch (slot) {
+            case HELMET -> ArmorType.HELMET;
+            case CHESTPLATE -> ArmorType.CHESTPLATE;
+            case LEGGINGS -> ArmorType.LEGGINGS;
+            case BOOTS -> ArmorType.BOOTS;
+        };
+    }
+    //?} else {
+    /*private static RegistryObject<Item> armor(String name, RegistryObject<ArmorMaterial> mat, ArmorSlot slot) {
+        // Pre-26.1 armour is a dedicated Item subclass rather than a Properties modifier. The holder is
+        // resolved inside the factory, which runs after the ARMOR_MATERIAL flush.
+        RegistryObject<Item> ro = ITEMS.registerItem(name,
+                p -> new ArmorItem(HbmArmorMaterials.holder(mat), toVanilla(slot), p));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static ArmorItem.Type toVanilla(ArmorSlot slot) {
+        return switch (slot) {
+            case HELMET -> ArmorItem.Type.HELMET;
+            case CHESTPLATE -> ArmorItem.Type.CHESTPLATE;
+            case LEGGINGS -> ArmorItem.Type.LEGGINGS;
+            case BOOTS -> ArmorItem.Type.BOOTS;
+        };
+    }
+    *///?}
+
     private static RegistryObject<ItemGasMask> gasMask(String name, List<HazardClass> blacklist) {
+        //? if >=26.1 {
         RegistryObject<ItemGasMask> ro = ITEMS.registerItem(name, p -> new ItemGasMask(p, blacklist),
                 p -> p.humanoidArmor(HbmArmorMaterials.HAZMAT, ArmorType.HELMET).stacksTo(1));
+        //?} else {
+        /*RegistryObject<ItemGasMask> ro = ITEMS.registerItem(name, p -> new ItemGasMask(p, blacklist),
+                p -> p.stacksTo(1));
+        *///?}
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }

@@ -6,7 +6,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 
 /**
  * Common-safe (vanilla-only) port of HBM's ItemCustomLore base.
@@ -31,7 +33,12 @@ public class ItemCustomLore extends Item {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, Item.TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         String base = this.getDescriptionId() + ".desc.";
         Language language = Language.getInstance();
         for (int i = 0; language.has(base + i); i++) {

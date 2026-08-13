@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
@@ -10,7 +11,6 @@ import com.hbm.tileentity.machine.TileEntityFoundryOutlet;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -43,13 +43,13 @@ public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> implements
         var mtl = WavefrontObj.loadMtl(Identifier.fromNamespaceAndPath(Constants.MOD_ID, objPath.replace(".obj", ".mtl")));
         for (String mat : body.materialNames()) {
             Identifier tex = mtl.get(mat);
-            if (tex != null) materialTypes.put(mat, RenderTypes.entityCutout(tex));
+            if (tex != null) materialTypes.put(mat, CompatRenderTypes.entityCutout(tex));
         }
         // Stream: opaque + depth-writing (entitySolid) so the self-overlapping tube's near faces occlude
         // the far ones — translucent-emissive doesn't write depth, so sides vanish with view angle. Solid
         // shades by the vertex normal (all up → uniform, unlike entityCutout's winding-based per-face
         // darkening); it culls, so the stream is double-wound (FoundryRenderHelper.quad). lava_gray is opaque.
-        this.streamType = RenderTypes.entitySolid(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+        this.streamType = CompatRenderTypes.entitySolid(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

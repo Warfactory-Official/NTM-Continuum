@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.SolidificationRecipes;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
@@ -66,7 +66,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSolidifier te) {
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
         te.updateConnections();
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
@@ -89,9 +89,9 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         }
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(4);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tank.getTankType()) {
             tank.setTankType(t);
@@ -149,7 +149,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         if (slot == 0) return false; // output, machine-write only
         if (slot == 1) return Library.isBattery(stack);
         if (slot >= 2 && slot <= 3) return Library.isMachineUpgrade(stack);
-        if (slot == 4) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 4) return stack.getItem() instanceof IItemFluidId;
         return false;
     }
 

@@ -21,7 +21,11 @@ public class HbmEffectRadiation extends MobEffect {
     }
 
     @Override
+    //? if >=26.1 {
     public boolean applyEffectTick(ServerLevel level, LivingEntity entity, int amplifier) {
+    //?} else {
+    /*public boolean applyEffectTick(LivingEntity entity, int amplifier) {
+    *///?}
         ContaminationUtil.contaminate(entity, HazardType.RADIATION, ContaminationType.CREATIVE, (amplifier + 1) * 0.05F);
         return true;
     }

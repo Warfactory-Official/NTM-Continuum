@@ -5,10 +5,16 @@ import com.hbm.entity.IHbmLivingDuck;
 import com.hbm.handler.ClimbableRegistry;
 import com.hbm.handler.EntityEffectHandler;
 import net.minecraft.world.entity.LivingEntity;
+//? if >=26.1 {
 import dev.golem.core.data.ValueDataIn;
 import dev.golem.core.data.ValueDataOut;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+//?} else {
+/*import dev.golem.core.data.TagDataIn;
+import dev.golem.core.data.TagDataOut;
+import net.minecraft.nbt.CompoundTag;
+*///?}
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -54,14 +60,28 @@ public class MixinLivingEntity implements IHbmLivingDuck {
     // wrapping happens inside the body instead. This is also why these two injections will need a
     // per-version guard: the target's descriptor is ValueOutput on 26.1 and CompoundTag below it.
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    //? if >=26.1 {
     private void hbm$save(ValueOutput output, CallbackInfo ci) {
         hbm$props.save(new ValueDataOut(output).child("HbmLivingProps"));
     }
+    //?} else {
+    /*private void hbm$save(CompoundTag tag, CallbackInfo ci) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        hbm$props.save(new TagDataOut(tag, self.level().registryAccess()).child("HbmLivingProps"));
+    }
+    *///?}
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    //? if >=26.1 {
     private void hbm$load(ValueInput input, CallbackInfo ci) {
         new ValueDataIn(input).child("HbmLivingProps").ifPresent(hbm$props::load);
     }
+    //?} else {
+    /*private void hbm$load(CompoundTag tag, CallbackInfo ci) {
+        LivingEntity self = (LivingEntity) (Object) this;
+        new TagDataIn(tag, self.level().registryAccess()).child("HbmLivingProps").ifPresent(hbm$props::load);
+    }
+    *///?}
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void hbm$tick(CallbackInfo ci) {

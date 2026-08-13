@@ -1,11 +1,11 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
@@ -50,12 +50,12 @@ public final class GuiUtil {
 
     /** Draws the "small blue *" info‑panel glyph (1.12.2 {@code drawInfoPanel(...,8)}) at screen {@code x,y}. */
     public static void drawUpgradeInfoPanel(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_UTILITY, x, y, 0.0F, 32.0F, INFO_PANEL_SIZE, INFO_PANEL_SIZE, 256, 256);
+        GuiDraw.blit(graphics, GUI_UTILITY, x, y, 0.0F, 32.0F, INFO_PANEL_SIZE, INFO_PANEL_SIZE, 256, 256);
     }
 
     /** The 16×16 "large red !" warning glyph (1.12.2 {@code drawInfoPanel(...,16,16,6)}) at screen {@code x,y}. */
     public static void drawWarningPanel(GuiGraphicsExtractor graphics, int x, int y) {
-        graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_UTILITY, x, y, 8.0F, 16.0F, 16, 16, 256, 256);
+        GuiDraw.blit(graphics, GUI_UTILITY, x, y, 8.0F, 16.0F, 16, 16, 256, 256);
     }
 
     /**

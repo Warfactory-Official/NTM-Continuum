@@ -1,12 +1,14 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +28,7 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
     protected final IDrawable slotFrame;
     protected final IDrawable machinePill;
 
-    protected JEIUniversalHandler(IGuiHelper helper, IRecipeType<T> type, Component title, ItemStack... machines) {
+    protected JEIUniversalHandler(IGuiHelper helper, JeiRecipeType<T> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines.length > 0 ? machines[0] : ItemStack.EMPTY, "gui_nei.png");
         this.machines = machines;
         this.slotFrame = helper.createDrawable(tex("gui_nei.png"), 5, 87, 18, 18);
@@ -58,7 +60,7 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
 
         // Machine icon in the pill's lower half (old: init(74,31) → item at 75,32).
         if (machines != null && machines.length > 0) {
-            builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 75, 32)
+            builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75, 32)
                     .addItemStacks(List.of(machines));
         }
     }
@@ -99,3 +101,4 @@ public abstract class JEIUniversalHandler<T> extends HbmRecipeCategory<T> {
         };
     }
 }
+//?}

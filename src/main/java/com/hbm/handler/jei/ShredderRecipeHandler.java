@@ -1,5 +1,7 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.recipes.ShredderRecipes;
 import com.hbm.items.ModMachineItems;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -9,7 +11,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -34,7 +36,7 @@ public class ShredderRecipeHandler extends HbmRecipeCategory<ShredderRecipeHandl
     private final IDrawableAnimated powerBar;
     private final IDrawableAnimated progressBar;
 
-    public ShredderRecipeHandler(IGuiHelper helper, IRecipeType<ShredderPair> type, Component title, ItemStack icon) {
+    public ShredderRecipeHandler(IGuiHelper helper, JeiRecipeType<ShredderPair> type, Component title, ItemStack icon) {
         super(helper, type, title, icon, "gui_nei_shredder.png");
         IDrawableStatic power = helper.createDrawable(tex("gui_nei_shredder.png"), 36, 86, 16, 52);
         this.powerBar = helper.createAnimatedDrawable(power, 480, IDrawableAnimated.StartDirection.TOP, true);
@@ -65,8 +67,8 @@ public class ShredderRecipeHandler extends HbmRecipeCategory<ShredderRecipeHandl
         builder.addSlot(RecipeIngredientRole.INPUT, 39, 24).addItemStacks(List.of(recipe.input()));   // old init 38,23
         builder.addSlot(RecipeIngredientRole.OUTPUT, 129, 24).addItemStacks(List.of(recipe.output())); // old init 128,23
         List<ItemStack> blades = blades();
-        builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 84, 6).addItemStacks(blades);           // old init 83,5
-        builder.addSlot(RecipeIngredientRole.CRAFTING_STATION, 84, 42).addItemStacks(blades);          // old init 83,41
+        builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 84, 6).addItemStacks(blades);           // old init 83,5
+        builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 84, 42).addItemStacks(blades);          // old init 83,41
     }
 
     @Override
@@ -76,3 +78,4 @@ public class ShredderRecipeHandler extends HbmRecipeCategory<ShredderRecipeHandl
         progressBar.draw(g, 80, 23);
     }
 }
+//?}

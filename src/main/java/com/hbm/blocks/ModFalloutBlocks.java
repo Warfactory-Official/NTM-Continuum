@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockFallout;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
@@ -78,7 +79,7 @@ public final class ModFalloutBlocks {
             java.util.function.Function<BlockBehaviour.Properties, B> factory,
             java.util.function.UnaryOperator<BlockBehaviour.Properties> props) {
         RegistryObject<B> block = BLOCKS.registerBlock(id, factory, props);
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> p.useBlockDescriptionPrefix());
+        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.BLOCKS, item);
         return block;
     }

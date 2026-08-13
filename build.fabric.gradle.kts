@@ -1,6 +1,6 @@
 plugins {
     id("java-library")
-    id("net.fabricmc.fabric-loom") version "1.15.5"
+    id("dev.kikugie.loom-back-compat")
 }
 
 fun prop(name: String): String = property(name) as String
@@ -33,6 +33,19 @@ repositories {
 // plus an explicit Mojmap layer. This is an ordinary Kotlin conditional, not a Stonecutter `//?`
 // comment: Stonecutter only preprocesses files under src/, never build scripts.
 val obfuscated = mcVersion.substringBefore('.').toInt() < 26
+
+// Whether this node has vanilla's special-model-renderer system (26.1+). Tracked separately from
+// `obfuscated` even though the two currently coincide: they are unrelated facts that will diverge.
+val modernRendering = mcVersion.substringBefore('.').toInt() >= 26
+
+// pack.mcmeta's version field, whose very name changed: 26.1 declares a supported RANGE
+// (min_format/max_format) where older versions declare a single pack_format. Getting this wrong is
+// not cosmetic — vanilla rejects the pack outright, and every datapack entry in the mod (worldgen
+// features, recipes, tags) silently disappears with it.
+val packFormatEntry = if (modernRendering)
+    "\"min_format\": ${prop("pack_format")}, \"max_format\": ${prop("pack_format")}"
+else
+    "\"pack_format\": ${prop("pack_format")}"
 val modCfg = if (obfuscated) "modImplementation" else "implementation"
 // Loom's `localRuntime` is not remapped either way; with obfuscation off the plain config is correct.
 val devRuntime = if (obfuscated) "modLocalRuntime" else "localRuntime"
@@ -46,11 +59,14 @@ dependencies {
     // Golem Core supplies the cross-version API facades, resolved from the composite build.
     modCfg("dev.golem:golemcore-fabric-$mcVersion:${prop("deps.golemcore")}+$mcVersion")
 
-    val jei = prop("deps.jei_mc")
-    val jeiVer = prop("deps.jei")
-    "compileOnly"("mezz.jei:jei-$jei-common-api:$jeiVer")
-    "compileOnly"("mezz.jei:jei-$jei-fabric-api:$jeiVer")
-    devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer")
+    // JEI is per-node optional; see the neoforge buildscript for the rationale.
+    val jei = propOrNull("deps.jei_mc")
+    val jeiVer = propOrNull("deps.jei")
+    if (jei != null && jeiVer != null) {
+        "compileOnly"("mezz.jei:jei-$jei-common-api:$jeiVer")
+        "compileOnly"("mezz.jei:jei-$jei-fabric-api:$jeiVer")
+        devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer")
+    }
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.
     propOrNull("deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
@@ -89,6 +105,11 @@ tasks.processResources {
         "fabric_loader" to prop("deps.fabric_loader"),
         "java_version" to javaVersion.toString(),
         "pack_format" to prop("pack_format"),
+        "pack_format_entry" to packFormatEntry,
+        // MixinSpecialModelRenderers targets a class that only exists on 26.1, and is compiled out
+        // below it. A mixin config may not name a class that is absent from the jar — Mixin fails the
+        // whole config at PREPARE — so the entry is filtered here in step with the Stonecutter guard.
+        "fabric_client_mixins" to if (modernRendering) "\"MixinSpecialModelRenderers\"" else "",
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "pack.mcmeta", "*.mixins.json")) { expand(props) }
@@ -105,4 +126,18 @@ tasks.jar {
 tasks.compileJava { dependsOn(tasks.named("stonecutterGenerate")) }
 tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 
+// Recipe ingredients are written in the 26.1 shape and converted downward for older nodes.
+extra["mc_version"] = mcVersion
+extra["java_version"] = javaVersion.toString()
+apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
+apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
+apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
+
 apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
+
+dependencies {
+    // NeoForge ships jspecify transitively on 26.1 but not on older versions, and HBM uses @Nullable in
+    // ~156 files. Declared explicitly so the shared tree compiles on every node; annotations-only jar,
+    // no runtime component.
+    compileOnly("org.jspecify:jspecify:1.0.0")
+}

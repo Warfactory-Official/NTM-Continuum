@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
@@ -8,7 +9,6 @@ import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockDynamicSlag.TileEntitySlag;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -29,7 +29,7 @@ public class SlagRenderer implements CompatBER<TileEntitySlag, SlagRenderer.Stat
     public SlagRenderer() {
         // Emissive: uniform brightness on all faces (the single-winding quads read as back faces from
         // two sides under PER_FACE_LIGHTING otherwise).
-        this.renderType = RenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/blocks/slag.png"));
+        this.renderType = CompatRenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/blocks/slag.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

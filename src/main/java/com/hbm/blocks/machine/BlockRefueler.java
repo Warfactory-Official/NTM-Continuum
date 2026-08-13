@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityRefueler;
@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
  * fuel pad drawn by {@code RefuelerRenderer}. Fluid-ID right-click retypes the tank. Collision is a
  * 12/16-tall slab (the old directional slab is simplified to a uniform pad — §20).
  */
-public class BlockRefueler extends Block implements EntityBlock, IFluidConnectorBlockMK2 {
+public class BlockRefueler extends dev.golem.core.world.CompatBlock implements EntityBlock, IFluidConnectorBlockMK2 {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 12, 16);
@@ -81,10 +81,23 @@ public class BlockRefueler extends Block implements EntityBlock, IFluidConnector
         return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
+    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidIdentifier identifier) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+    //?} else {
+    /*@Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
+             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
+             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+    *///?}
+
+    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidId identifier) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityRefueler te) {
                 FluidType type = identifier.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
                 te.setTankType(type);
@@ -93,7 +106,12 @@ public class BlockRefueler extends Block implements EntityBlock, IFluidConnector
             }
             return InteractionResult.SUCCESS;
         }
+        //? if >=26.1 {
         return super.useItemOn(stack, state, level, pos, player, hand, hit);
+        //?} else {
+        /*return super.useItemOn(stack, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
+                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        *///?}
     }
 
     @Override

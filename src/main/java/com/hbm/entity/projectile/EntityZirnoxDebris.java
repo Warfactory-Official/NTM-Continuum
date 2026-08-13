@@ -60,7 +60,11 @@ public class EntityZirnoxDebris extends CompatEntity {
     }
 
     @Override
+    //? if >=26.1 {
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
+    //?} else {
+    /*public boolean hurt(DamageSource source, float damage) {
+    *///?}
         return false;
     }
 
@@ -86,7 +90,11 @@ public class EntityZirnoxDebris extends CompatEntity {
     }
 
     @Override
+    //? if >=26.1 {
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitPosition) {
+    //?} else {
+    /*public InteractionResult interact(Player player, InteractionHand hand) {
+    *///?}
         if (level().isClientSide()) return InteractionResult.SUCCESS;
 
         ItemStack stack = new ItemStack(getDebrisType().item.get());

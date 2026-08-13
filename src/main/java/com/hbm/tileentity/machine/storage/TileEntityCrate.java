@@ -3,7 +3,9 @@ package com.hbm.tileentity.machine.storage;
 import com.hbm.inventory.container.ContainerCrate;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.NonNullList;
+//? if >=26.1 {
 import net.minecraft.core.component.DataComponentGetter;
+//?}
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -61,7 +63,11 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
     // --- contents-in-item (vanilla CONTAINER-component round-trip, like the shulker box) ---
 
     @Override
+    //? if >=26.1 {
     protected void applyImplicitComponents(DataComponentGetter components) {
+    //?} else {
+    /*protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
+    *///?}
         super.applyImplicitComponents(components);
         components.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(getItems());
     }

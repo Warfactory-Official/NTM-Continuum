@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -7,8 +8,9 @@ import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -24,7 +26,7 @@ import java.util.Optional;
  * the flame icon hover; left/right-click the flame area to raise/lower the mB/t setting (old
  * screwdriver IToolable — documented GUI stand-in).
  */
-public class GUIOilburner extends AbstractContainerScreen<ContainerOilburner> {
+public class GUIOilburner extends dev.golem.core.gui.CompatContainerScreen<ContainerOilburner> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/machine/gui_oilburner.png");
 
@@ -39,21 +41,27 @@ public class GUIOilburner extends AbstractContainerScreen<ContainerOilburner> {
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityHeaterOilburner te = this.menu.getHeater();
         if (te == null) return;
 
         int i = Math.min(te.heatEnergy, TileEntityHeaterOilburner.maxHeatEnergy) * 52 / TileEntityHeaterOilburner.maxHeatEnergy;
-        if (i > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 116, this.topPos + 69 - i, 194.0F, (float) (52 - i), 16, i, 256, 256);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 116, this.topPos + 69 - i, 194.0F, (float) (52 - i), 16, i, 256, 256);
 
         if (te.isOn) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 70, this.topPos + 54, 210.0F, 0.0F, 35, 14, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 70, this.topPos + 54, 210.0F, 0.0F, 35, 14, 256, 256);
 
             if (te.tank.getFill() > 0 && FluidCombustion.isFlammable(te.tank.getTankType())) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 79, this.topPos + 34, 176.0F, 0.0F, 18, 18, 256, 256);
+                GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 34, 176.0F, 0.0F, 18, 18, 256, 256);
             }
         }
 
@@ -71,7 +79,7 @@ public class GUIOilburner extends AbstractContainerScreen<ContainerOilburner> {
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + w, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -80,34 +88,47 @@ public class GUIOilburner extends AbstractContainerScreen<ContainerOilburner> {
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityHeaterOilburner te = this.menu.getHeater();
         if (te == null) return;
 
         if (this.isHovering(116, 17, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal(
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(
                     String.format("%,d", Math.min(te.heatEnergy, TileEntityHeaterOilburner.maxHeatEnergy))
                             + " / " + String.format("%,d", TileEntityHeaterOilburner.maxHeatEnergy) + " TU")), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(79, 34, 18, 18, mouseX, mouseY)) {
             long perBucket = FluidCombustion.getFlammableEnergy(te.tank.getTankType());
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.setting + " mB/t"),
                     Component.literal(String.format(Locale.US, "%,d", (int) (perBucket / 1000) * te.setting) + " TU/t"),
                     Component.literal("LMB +1, RMB -1")), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(44, 17, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.tank.getTankType().getName()),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         Minecraft mc = Minecraft.getInstance();
         if (mc.gameMode != null) {
             // burn toggle (old 16×14 hit area at (80,54))
@@ -121,6 +142,10 @@ public class GUIOilburner extends AbstractContainerScreen<ContainerOilburner> {
                 return true;
             }
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 }

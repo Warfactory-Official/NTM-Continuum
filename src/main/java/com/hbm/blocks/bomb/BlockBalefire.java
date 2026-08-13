@@ -8,7 +8,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+//? if >=26.1 {
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -73,7 +75,11 @@ public class BlockBalefire extends BaseFireBlock {
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         // 26.1 folds the old `doFireTick` gamerule check and the area-loaded guard into one helper,
         // which is exactly what vanilla FireBlock.tick now calls.
+        //? if >=26.1 {
         if (!level.canSpreadFireAround(pos)) return;
+        //?} else {
+        /*if (!level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)) return;
+        *///?}
 
         int age = state.getValue(AGE);
         if (age < 15) {
@@ -179,8 +185,12 @@ public class BlockBalefire extends BaseFireBlock {
     }
 
     @Override
+    //? if >=26.1 {
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
                                 InsideBlockEffectApplier effects, boolean precise) {
+    //?} else {
+    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    *///?}
         entity.igniteForSeconds(10);
         if (!level.isClientSide() && entity instanceof LivingEntity living) {
             living.addEffect(new MobEffectInstance(ModEffects.radiation(), 5 * 20, 9));

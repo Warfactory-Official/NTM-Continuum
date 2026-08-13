@@ -244,7 +244,17 @@ public abstract class BlockDummyable extends Block implements EntityBlock {
     // --- breaking: removing any part tears down the whole structure ---
 
     @Override
+    //? if >=26.1 {
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+    //?} else {
+    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
+        if (!(hbm$level instanceof ServerLevel level)) return;
+    *///?}
+        // The machine's own inventory. 26.1's BlockEntity.preRemoveSideEffects drops a Container's
+        // contents automatically; below it nothing does, so every dummyable machine silently voided its
+        // inventory when broken. No-op on 26.1, where vanilla has already run it.
+        dev.golem.core.world.Compat.preRemoveSideEffects(level, pos, state);
+
         if (safeRem) return;
         int meta = state.getValue(META);
         safeRem = true;

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Compat;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.items.machine.ItemStamp;
@@ -108,12 +109,16 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
 
         // Consume fuel into burnTime when below the threshold.
         ItemStack fuel = te.inventory.getStackInSlot(0);
-        if (!fuel.isEmpty() && te.burnTime < 200 && level.fuelValues().burnDuration(fuel) > 0) {
-            te.burnTime += level.fuelValues().burnDuration(fuel);
+        if (!fuel.isEmpty() && te.burnTime < 200 && Compat.burnDuration(level, fuel) > 0) {
+            te.burnTime += Compat.burnDuration(level, fuel);
             var remainder = fuel.getItem().getCraftingRemainder(); // e.g. lava bucket -> empty bucket
             fuel.shrink(1);
             if (fuel.isEmpty()) {
+                //? if >=26.1 {
                 te.inventory.setStackInSlot(0, remainder != null ? remainder.create() : ItemStack.EMPTY);
+                //?} else {
+                /*te.inventory.setStackInSlot(0, remainder != null ? new ItemStack(remainder) : ItemStack.EMPTY);
+                *///?}
             }
             te.setChanged();
         }
@@ -163,10 +168,10 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     public boolean isItemValidForSlot(int i, ItemStack stack) {
         Level level = this.level;
         return switch (i) {
-            case 0 -> level != null && level.fuelValues().burnDuration(stack) > 0;
+            case 0 -> level != null && Compat.burnDuration(level, stack) > 0;
             case 1 -> stack.getItem() instanceof ItemStamp;
             case 2 -> !(stack.getItem() instanceof ItemStamp)
-                    && (level == null || level.fuelValues().burnDuration(stack) <= 0);
+                    && (level == null || Compat.burnDuration(level, stack) <= 0);
             case 3 -> false;
             default -> i >= 4 && i <= 12;
         };

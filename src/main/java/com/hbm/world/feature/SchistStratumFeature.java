@@ -1,5 +1,6 @@
 package com.hbm.world.feature;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.ModBlocks;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
@@ -88,7 +89,7 @@ public class SchistStratumFeature extends Feature<NoneFeatureConfiguration> {
                     pos.set(x, y, z);
                     BlockState target = level.getBlockState(pos);
                     // old: target.isNormalCube() && material == ROCK
-                    if (target.isSolidRender() && OreVeinPlacer.STONE.test(target)) {
+                    if (Compat.isSolidRender(target) && OreVeinPlacer.STONE.test(target)) {
                         level.setBlock(pos, gneiss, 2 | 16);
                     }
                 }

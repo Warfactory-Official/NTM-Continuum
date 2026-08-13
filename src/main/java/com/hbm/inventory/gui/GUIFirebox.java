@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerFirebox;
 import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,7 +18,7 @@ import java.util.Optional;
  * icon while burning — texture layout matches the 1.12.2 {@code gui_firebox.png} (176×168, bars at
  * tex 176,0 / 176,5 and the 18×18 flame at 176,10).
  */
-public class GUIFirebox extends AbstractContainerScreen<ContainerFirebox> {
+public class GUIFirebox extends dev.golem.core.gui.CompatContainerScreen<ContainerFirebox> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/machine/gui_firebox.png");
 
@@ -34,9 +34,15 @@ public class GUIFirebox extends AbstractContainerScreen<ContainerFirebox> {
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityFireboxBase te = this.menu.getFirebox();
         if (te == null) return;
@@ -44,31 +50,39 @@ public class GUIFirebox extends AbstractContainerScreen<ContainerFirebox> {
         // Heat bar: 69×5 at (81, 28) from tex (176, 0).
         int i = te.heatEnergy * 69 / te.getMaxHeat();
         if (i > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 81, this.topPos + 28, 176.0F, 0.0F, i, 5, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 81, this.topPos + 28, 176.0F, 0.0F, i, 5, 256, 256);
         }
 
         // Burn-time bar: 70×5 at (81, 37) from tex (176, 5).
         int j = te.burnTime * 70 / Math.max(te.maxBurnTime, 1);
         if (j > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 81, this.topPos + 37, 176.0F, 5.0F, j, 5, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 81, this.topPos + 37, 176.0F, 5.0F, j, 5, 256, 256);
         }
 
         // Flame while burning: 18×18 at (25, 26) from tex (176, 10).
         if (te.wasOn) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 25, this.topPos + 26, 176.0F, 10.0F, 18, 18, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 25, this.topPos + 26, 176.0F, 10.0F, 18, 18, 256, 256);
         }
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityFireboxBase te = this.menu.getFirebox();
         if (te == null) return;
         if (this.isHovering(80, 27, 71, 7, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(String.format("%,d", te.heatEnergy) + " / " + String.format("%,d", te.getMaxHeat()) + " TU")), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(80, 36, 71, 7, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.burnHeat + " TU/t"),
                     Component.literal((te.burnTime / 20) + "s")), Optional.empty(), mouseX, mouseY);
         }

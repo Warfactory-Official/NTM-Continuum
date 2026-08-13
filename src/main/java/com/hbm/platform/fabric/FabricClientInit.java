@@ -35,7 +35,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+// The HUD hook. 26.1's fabric-api models the HUD as an ordered list of named elements; 1.21.1 has a
+// single "after the vanilla HUD" callback, which is where all three of ours would land anyway.
+//? if >=26.1 {
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+//?} else {
+/^import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+^///?}
 import net.minecraft.resources.Identifier;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -52,6 +58,11 @@ public class FabricClientInit implements ClientModInitializer {
     public void onInitializeClient() {
         // Client→server control packet send path (recipe selector etc.).
         HbmClientPackets.setSender(ClientPlayNetworking::send);
+
+        // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
+        // the engine applies them; below it Golem Core wires the loader's colour registry to the same
+        // stored colour. One call, every version, both loaders.
+        dev.golem.core.client.Tints.install(com.hbm.Constants.MOD_ID);
 
         MenuScreens.register(ModMenus.MACHINE_BATTERY.get(), GUIMachineBattery::new);
         MenuScreens.register(ModMenus.MACHINE_WASTE_DRUM.get(), GUIWasteDrum::new);
@@ -92,17 +103,27 @@ public class FabricClientInit implements ClientModInitializer {
         MenuScreens.register(ModMenus.MACHINE_COMPRESSOR.get(), com.hbm.inventory.gui.GUICompressor::new);
 
         // Look-overlay HUD (battery charge / duct type / ...) — drawn after the vanilla HUD each frame.
+        //? if >=26.1 {
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("hbm", "look_overlay"),
                 (graphics, deltaTracker) -> HbmLookOverlay.render(graphics));
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("hbm", "rad_counter"),
                 (graphics, deltaTracker) -> RadCounterOverlay.render(graphics));
         HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("hbm", "nuke_flash"),
                 (graphics, deltaTracker) -> com.hbm.client.NukeScreenEffects.render(graphics));
+        //?} else {
+        /^// One callback, three draws, in the same order the named elements would run in.
+        HudRenderCallback.EVENT.register((graphics, deltaTracker) -> {
+            HbmLookOverlay.render(graphics);
+            RadCounterOverlay.render(graphics);
+            com.hbm.client.NukeScreenEffects.render(graphics);
+        });
+        ^///?}
 
         HbmBlockEntityRenderers.registerAll(new HbmBlockEntityRenderers.Sink() {
             @Override
-            public <T extends BlockEntity> void register(BlockEntityType<? extends T> type, BlockEntityRendererProvider<T, ?> provider) {
-                BlockEntityRendererRegistry.register(type, provider);
+            public <T extends BlockEntity, S extends dev.golem.core.render.CompatRenderState> void register(
+                    BlockEntityType<? extends T> type, dev.golem.core.render.CompatBERProvider<T, S> provider) {
+                BlockEntityRendererRegistry.register(type, dev.golem.core.render.Renderers.toVanilla(provider));
             }
         });
 
@@ -112,11 +133,36 @@ public class FabricClientInit implements ClientModInitializer {
                 EntityRendererRegistry.register(type, provider);
             }
         });
+        // 26.1: block tint sources (sellafite shade tint) — fabric-api has no colour registry there, so
+        // register directly on the vanilla BlockColors once the client instance is fully constructed.
+        // Below 26.1: OBJ machine item models. 26.1 drives those through its special-model system
+        // (registered by MixinSpecialModelRenderers); here the item definitions are parsed on reload and
+        // every HBM item gets a dynamic renderer. Only items whose generated model parents onto
+        // builtin/entity actually reach it, so registering broadly is free.
+        HbmBlockColors.registerAll();
+//? if <26.1 {
 
-        // Block tint sources (sellafite shade tint) — fabric-api has no color registry on 26.1; register
-        // directly on the vanilla BlockColors once the client instance is fully constructed.
-        ClientLifecycleEvents.CLIENT_STARTED.register(client ->
-                HbmBlockColors.registerAll((sources, blocks) -> client.getBlockColors().register(sources, blocks)));
+        /^net.fabricmc.fabric.api.resource.ResourceManagerHelper
+                .get(net.minecraft.server.packs.PackType.CLIENT_RESOURCES)
+                .registerReloadListener(new net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener() {
+                    @Override
+                    public net.minecraft.resources.Identifier getFabricId() {
+                        return net.minecraft.resources.Identifier.fromNamespaceAndPath(
+                                com.hbm.Constants.MOD_ID, "machine_item_models");
+                    }
+
+                    @Override
+                    public void onResourceManagerReload(net.minecraft.server.packs.resources.ResourceManager resources) {
+                        com.hbm.client.render.MachineItemModels.reload(resources);
+                    }
+                });
+
+        net.minecraft.core.registries.BuiltInRegistries.ITEM.entrySet().stream()
+                .filter(e -> e.getKey().location().getNamespace().equals(com.hbm.Constants.MOD_ID))
+                .forEach(e -> net.fabricmc.fabric.api.client.rendering.v1.BuiltinItemRendererRegistry.INSTANCE
+                        .register(e.getValue(), (stack, mode, poseStack, buffers, light, overlay) ->
+                                com.hbm.client.render.MachineItemRenderers.render(stack, mode, poseStack, buffers, light, overlay)));
+        ^///?}
 
         // BufPacket-equivalent BlockEntity sync: Fabric runs the receiver on the client game thread.
         ClientPlayNetworking.registerGlobalReceiver(BlockEntitySyncPayload.TYPE,

@@ -1,10 +1,12 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.recipes.RefineryRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -20,7 +22,7 @@ public class RefineryRecipeHandler extends JEIUniversalHandler<RefineryRecipeHan
     /** One refinery recipe keyed on its input fluid. */
     public record Entry(FluidType input, RefineryRecipes.RefineryRecipe recipe) {}
 
-    public RefineryRecipeHandler(IGuiHelper helper, IRecipeType<Entry> type, Component title, ItemStack... machines) {
+    public RefineryRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -48,3 +50,4 @@ public class RefineryRecipeHandler extends JEIUniversalHandler<RefineryRecipeHan
         return out;
     }
 }
+//?}

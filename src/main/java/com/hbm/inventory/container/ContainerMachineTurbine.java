@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import net.minecraft.core.BlockPos;
@@ -43,7 +44,11 @@ public class ContainerMachineTurbine extends AbstractContainerMenu {
         this.addSlot(validated(5, 152, 17));  // output tank: container in
         this.addSlot(takeOnly(6, 152, 53));   // output tank: container out
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 84);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
+        *///?}
     }
 
     private Slot validated(int index, int x, int y) {
@@ -83,7 +88,7 @@ public class ContainerMachineTurbine extends AbstractContainerMenu {
             int invStart = MACHINE_SLOTS, invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 4, 5, false)) return ItemStack.EMPTY;

@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerSILEX;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.SILEXRecipes;
@@ -9,8 +10,9 @@ import com.hbm.tileentity.machine.TileEntitySILEX;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -35,7 +37,7 @@ import java.util.Optional;
  * <p>The 12×12 hotspot at (10, 92) is the "void contents" button, routed through the vanilla
  * {@code clickMenuButton} path like the battery socket's buttons.
  */
-public class GUISILEX extends AbstractContainerScreen<ContainerSILEX> {
+public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<ContainerSILEX> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_silex.png");
 
@@ -48,9 +50,15 @@ public class GUISILEX extends AbstractContainerScreen<ContainerSILEX> {
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F,
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F,
                 this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntitySILEX te = this.menu.getSilex();
@@ -61,25 +69,25 @@ public class GUISILEX extends AbstractContainerScreen<ContainerSILEX> {
         if (te.tank.getFill() > 0) {
             boolean usable = te.tank.getTankType() == Fluids.PEROXIDE
                     || SILEXRecipes.getOutput(ItemFluidIcon.make(te.tank.getTankType())) != null;
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 7, this.topPos + 41,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 7, this.topPos + 41,
                     176.0F, usable ? 118.0F : 109.0F, 54, 9, 256, 256);
         }
 
         int p = te.getProgressScaled(69);
         if (p > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 45, this.topPos + 82,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 45, this.topPos + 82,
                     176.0F, 0.0F, p, 43, 256, 256);
         }
 
         int f = te.getFillScaled(POOL_H);
         if (f > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + POOL_X, this.topPos + 124 - f,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + POOL_X, this.topPos + 124 - f,
                     176.0F, (float) (109 - f), POOL_W, f, 256, 256);
         }
 
         int i = te.getFluidScaled(52);
         if (i > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + TANK_X, this.topPos + TANK_Y,
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + TANK_X, this.topPos + TANK_Y,
                     176.0F, te.tank.getTankType() == Fluids.PEROXIDE ? 43.0F : 50.0F, i, TANK_H, 256, 256);
         }
 
@@ -137,39 +145,52 @@ public class GUISILEX extends AbstractContainerScreen<ContainerSILEX> {
         // wavelength name in the panel to its right. Both are GUI-local coordinates.
         Component title = this.title;
         int titleX = this.imageWidth / 2 - this.font.width(title) / 2 - 54;
-        graphics.text(this.font, title, titleX, 8, 0xFF404040, false);
-        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, title, titleX, 8, 0xFF404040, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
 
         TileEntitySILEX te = this.menu.getSilex();
         if (te != null && te.mode != EnumWavelengths.NULL) {
             Component mode = Component.translatable(te.mode.name).withStyle(te.mode.textColor);
-            graphics.text(this.font, mode, 100 + (32 - this.font.width(mode) / 2), 16, 0xFF000000, false);
+            GuiDraw.text(graphics, this.font, mode, 100 + (32 - this.font.width(mode) / 2), 16, 0xFF000000, false);
         }
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntitySILEX te = this.menu.getSilex();
         if (te == null) return;
 
         if (this.isHovering(TANK_X, TANK_Y, TANK_W, TANK_H, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.tank.getTankType().getName()),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")),
                     Optional.empty(), mouseX, mouseY);
         } else if (te.current != null && this.isHovering(POOL_X + 1, POOL_TOP, POOL_W, POOL_H, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.currentFill + "/" + TileEntitySILEX.maxFill + "mB"),
                     te.current.getHoverName()), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(VOID_X, VOID_Y, VOID_W, VOID_W, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal("Void contents")),
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal("Void contents")),
                     Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         if (this.isHovering(VOID_X, VOID_Y, VOID_W, VOID_W, event.x(), event.y())) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
@@ -177,6 +198,10 @@ public class GUISILEX extends AbstractContainerScreen<ContainerSILEX> {
                 return true;
             }
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 }

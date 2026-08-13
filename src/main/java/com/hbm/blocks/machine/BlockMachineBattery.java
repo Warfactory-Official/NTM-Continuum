@@ -30,7 +30,7 @@ import java.util.List;
  * the cross-loader platform service. Implements {@link ILookOverlay} to show its charge/throughput when
  * looked at.
  */
-public class BlockMachineBattery extends Block implements EntityBlock, ILookOverlay {
+public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
 
     public BlockMachineBattery(Properties properties) {
         super(properties);

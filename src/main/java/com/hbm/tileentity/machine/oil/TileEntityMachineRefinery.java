@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
@@ -76,7 +76,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         te.updateConnections();
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
         te.loadInput();
 
         te.refine();
@@ -158,9 +158,9 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     }
 
     /** Slot 12 fluid identifier types the input tank (old tanks[0].setType(12,...)). */
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(12);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
@@ -237,7 +237,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 12) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 12) return stack.getItem() instanceof IItemFluidId;
         // The container-out slots (2/4/6/8/10) stay TRUE — the machine writes them via
         // inventory.insertItem, which validates against this method; the menu's take-only slots block
         // the player. Slot 11 (byproduct) is written via setStackInSlot (no validation) so it can stay

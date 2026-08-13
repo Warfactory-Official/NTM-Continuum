@@ -1,17 +1,17 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
 /**
  * The 1.12.2 {@code BeamPronter} SOLID/STRAIGHT beam, ported to the 26.1 submit API. The original drew
  * layered concentric quad prisms (4 axis-plane quads per layer) in POSITION_COLOR with additive blending,
- * no depth write and no cull; {@code RenderTypes.dragonRays()} is the exact modern pipeline match
+ * no depth write and no cull; {@code CompatRenderTypes.dragonRays()} is the exact modern pipeline match
  * (POSITION_COLOR triangles, {@code BlendFunction.LIGHTNING} additive, depth-write OFF) — each quad is
  * emitted as two triangles, double-wound to reproduce the original's cull-off visibility.
  *
@@ -43,7 +43,7 @@ public final class BeamPronter {
         float length = (float) skeleton.length();
         float radius = thickness / layers;
 
-        collector.submitCustomGeometry(ps, RenderTypes.dragonRays(), (pose, buffer) -> {
+        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(), (pose, buffer) -> {
             for (int j = 1; j <= layers; j++) {
                 int color = layers == 1 ? outerColor
                         : interpolateColor(innerColor, outerColor, (float) (j - 1) / (layers - 1));

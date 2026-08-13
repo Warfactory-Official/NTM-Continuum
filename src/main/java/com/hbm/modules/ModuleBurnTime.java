@@ -1,5 +1,6 @@
 package com.hbm.modules;
 
+import dev.golem.core.world.Compat;
 import com.hbm.items.ModFuelItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
@@ -35,7 +36,7 @@ public class ModuleBurnTime {
     }
 
     public int getBurnTime(Level level, ItemStack stack) {
-        int fuel = level.fuelValues().burnDuration(stack);
+        int fuel = Compat.burnDuration(level, stack);
         if (fuel == 0) return 0;
         return (int) (fuel * getMod(stack, modTime));
     }

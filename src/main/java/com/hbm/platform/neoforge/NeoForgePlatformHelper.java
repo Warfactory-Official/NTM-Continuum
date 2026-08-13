@@ -39,7 +39,11 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
     @Override
     public boolean isDevelopmentEnvironment() {
 
+        //? if >=26.1 {
         return !FMLLoader.getCurrent().isProduction();
+        //?} else {
+        /*return !FMLLoader.isProduction();
+        *///?}
     }
 
     @Override
@@ -54,7 +58,11 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
+        //? if >=26.1 {
         return new BlockEntityType<>(factory::create, Set.of(blocks));
+        //?} else {
+        /*return new BlockEntityType<T>(factory::create, Set.of(blocks), null);
+        *///?}
     }
 
     @Override

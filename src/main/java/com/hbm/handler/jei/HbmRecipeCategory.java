@@ -1,11 +1,14 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.Constants;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.category.AbstractRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -27,8 +30,8 @@ public abstract class HbmRecipeCategory<T> extends AbstractRecipeCategory<T> {
     protected final IGuiHelper helper;
     protected final IDrawable background;
 
-    protected HbmRecipeCategory(IGuiHelper helper, IRecipeType<T> type, Component title, ItemStack icon, String texture) {
-        super(type, title, helper.createDrawableItemStack(icon), WIDTH, HEIGHT);
+    protected HbmRecipeCategory(IGuiHelper helper, JeiRecipeType<T> type, Component title, ItemStack icon, String texture) {
+        super(type.unwrap(), title, helper.createDrawableItemStack(icon), WIDTH, HEIGHT);
         this.helper = helper;
         this.background = helper.createDrawable(tex(texture), 5, 11, WIDTH, HEIGHT);
     }
@@ -44,10 +47,11 @@ public abstract class HbmRecipeCategory<T> extends AbstractRecipeCategory<T> {
 
     /** Draws a dark stat string exactly like the old handlers' {@code fontRenderer.drawString(s, x, y, 0x404040)}. */
     protected static void text(GuiGraphicsExtractor g, String s, int x, int y) {
-        g.text(Minecraft.getInstance().font, s, x, y, 0xFF404040, false);
+        GuiDraw.text(g, Minecraft.getInstance().font, s, x, y, 0xFF404040, false);
     }
 
     protected static int textWidth(String s) {
         return Minecraft.getInstance().font.width(s);
     }
 }
+//?}

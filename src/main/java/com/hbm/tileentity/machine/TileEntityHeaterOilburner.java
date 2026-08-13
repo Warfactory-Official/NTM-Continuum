@@ -8,7 +8,7 @@ import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
@@ -57,7 +57,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterOilburner te) {
         te.loadTank();
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
 
         for (DirPos dp : te.getConPos()) {
             te.trySubscribe(te.tank.getTankType(), level, dp);
@@ -122,9 +122,9 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
     }
 
     /** Slot 2 fluid identifier retypes the tank (old tank.setType(2, inventory)). */
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(2);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tank.getTankType()) {
             tank.setTankType(t);
@@ -167,7 +167,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         // Slot 1 (emptied-container out) stays TRUE — the machine fills it via inventory.insertItem,
         // which validates against this method; the menu's take-only slot blocks the player.
-        if (slot == 2) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 2) return stack.getItem() instanceof IItemFluidId;
         return true;
     }
 

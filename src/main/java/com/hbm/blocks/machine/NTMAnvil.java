@@ -39,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * {@code getBoundingBox}. <b>Deferred:</b> the old {@code BlockFalling} gravity (a falling-block entity
  * would render nothing for an INVISIBLE block) and the tier tooltip's JEI hooks.
  */
-public class NTMAnvil extends Block implements EntityBlock {
+public class NTMAnvil extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -84,7 +84,7 @@ public class NTMAnvil extends Block implements EntityBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             Services.PLATFORM.openMenu(serverPlayer, new SimpleMenuProvider(
                     (id, inventory, p) -> new ContainerAnvil(id, inventory, pos),

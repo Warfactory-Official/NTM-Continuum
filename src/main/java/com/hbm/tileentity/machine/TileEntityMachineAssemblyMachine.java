@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.client.sound.AssemblerSoundHandler;
 import com.hbm.interfaces.IControlReceiver;
@@ -202,8 +203,8 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("index") && data.contains("selection")) {
-            int index = data.getIntOr("index", 0);
-            String selection = data.getStringOr("selection", "null");
+            int index = Tags.getIntOr(data, "index", 0);
+            String selection = Tags.getStringOr(data, "selection", "null");
             if (index == 0) {
                 this.assemblerModule.recipe = selection;
                 this.assemblerModule.progress = 0D;

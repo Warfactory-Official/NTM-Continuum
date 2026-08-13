@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemPistons;
@@ -7,8 +8,9 @@ import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -21,7 +23,7 @@ import java.util.Optional;
 /** Screen for the combustion engine — 1.12.2 {@code GUICombustionEngine} ({@code gui_combustion.png},
  * 176×203 on 256×256). Ignition button (79,13), throttle drag x79-114 y38-46, piston icon (80,51),
  * power bar x=143, tank bar x=35 (bottom y=69). */
-public class GUICombustionEngine extends AbstractContainerScreen<ContainerCombustionEngine> {
+public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScreen<ContainerCombustionEngine> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_combustion.png");
 
@@ -40,13 +42,19 @@ public class GUICombustionEngine extends AbstractContainerScreen<ContainerCombus
     /** Old {@code drawGuiContainerForegroundLayer} emits only the inventory line (no machine title). */
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int xm, int ym) {
-        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, -12566464, false);
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         // Old: the locked slider re-reads mouseX every frame (so holding still off-axis still tracks).
         if (this.isMouseLocked) applyThrottle(mouseX);
@@ -56,17 +64,17 @@ public class GUICombustionEngine extends AbstractContainerScreen<ContainerCombus
 
         ItemStack piston = te.inventory.getStackInSlot(2);
         if (!piston.isEmpty() && piston.getItem() instanceof ItemPistons p) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 80, this.topPos + 51, 176.0F, (float) (52 + p.getVariant().ordinal() * 12), 25, 12, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 80, this.topPos + 51, 176.0F, (float) (52 + p.getVariant().ordinal() * 12), 25, 12, 256, 256);
         }
 
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 79 + (te.setting * 32 / 30), this.topPos + 38, 192.0F, 15.0F, 4, 8, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79 + (te.setting * 32 / 30), this.topPos + 38, 192.0F, 15.0F, 4, 8, 256, 256);
 
         if (te.isOn) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 79, this.topPos + 13, 192.0F, 0.0F, 35, 15, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 13, 192.0F, 0.0F, 35, 15, 256, 256);
         }
 
         int i = (int) te.getPowerScaled(53);
-        if (i > 0) graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 143, this.topPos + 69 - i, 176.0F, (float) (52 - i), 16, i, 256, 256);
+        if (i > 0) GuiDraw.blit(graphics, TEXTURE, this.leftPos + 143, this.topPos + 69 - i, 176.0F, (float) (52 - i), 16, i, 256, 256);
 
         drawTank(graphics, te.tank, 35, 17, 16, 52);
     }
@@ -82,7 +90,7 @@ public class GUICombustionEngine extends AbstractContainerScreen<ContainerCombus
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTex).isPresent()) {
             graphics.enableScissor(x0, yTop, x0 + w, yBottom);
             for (int ty = yBottom - 16; ty > yTop - 16; ty -= 16) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTex, x0, ty, 0F, 0F, w, 16, 16, 16);
             }
             graphics.disableScissor();
         } else {
@@ -91,26 +99,34 @@ public class GUICombustionEngine extends AbstractContainerScreen<ContainerCombus
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineCombustionEngine te = this.menu.getTile();
         if (te == null) return;
 
         if (this.isHovering(143, 17, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineCombustionEngine.maxPower), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineCombustionEngine.maxPower), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(79, 13, 35, 15, mouseX, mouseY)) {
             // Old drawCustomInfoStat over the 35×15 area (wider than the 16×14 button itself).
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal("Ignition")), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal("Ignition")), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(79, 38, 36, 8, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(Component.literal(((te.setting * 2) / 10D) + " mB/t")), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(((te.setting * 2) / 10D) + " mB/t")), Optional.empty(), mouseX, mouseY);
             return;
         }
         if (this.isHovering(35, 17, 16, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.tank.getTankType().getName()),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
         }
@@ -125,7 +141,12 @@ public class GUICombustionEngine extends AbstractContainerScreen<ContainerCombus
     private boolean isMouseLocked = false;
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         Minecraft mc = Minecraft.getInstance();
         double mx = event.x(), my = event.y();
 
@@ -147,16 +168,29 @@ public class GUICombustionEngine extends AbstractContainerScreen<ContainerCombus
             return true;
         }
 
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseReleased(MouseButtonEvent event) {
+    //?} else {
+    /*public boolean mouseReleased(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         // Old mouseReleased: any left/right release drops the lock.
         if (this.isMouseLocked && (event.button() == 0 || event.button() == 1)) {
             this.isMouseLocked = false;
         }
+        //? if >=26.1 {
         return super.mouseReleased(event);
+        //?} else {
+        /*return super.mouseReleased(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 
     /** While locked the setting tracks mouseX only — no Y test (old: the drag runs in the render loop). */

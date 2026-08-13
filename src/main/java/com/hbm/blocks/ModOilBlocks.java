@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockLayering;
 import com.hbm.blocks.generic.BlockOilDeposit;
@@ -44,7 +45,7 @@ public final class ModOilBlocks {
     }
 
     private static void blockItem(String id, RegistryObject<? extends Block> block, HbmTab tab) {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> p.useBlockDescriptionPrefix());
+        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
         if (tab != null) ModTabs.addTo(tab, item);
     }
 

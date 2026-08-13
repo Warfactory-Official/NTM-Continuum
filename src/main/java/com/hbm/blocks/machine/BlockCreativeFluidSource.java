@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Infinite fluid source for testing; backed by {@link TileEntityCreativeFluidSource}. */
-public class BlockCreativeFluidSource extends Block implements EntityBlock {
+public class BlockCreativeFluidSource extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public BlockCreativeFluidSource(Properties properties) {
         super(properties);

@@ -3,7 +3,7 @@ package com.hbm.blocks.network;
 import com.hbm.client.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -23,7 +23,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+//? if >=26.1 {
 import net.minecraft.world.level.ScheduledTickAccess;
+//?}
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -141,9 +143,15 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
     }
 
     @Override
+    //? if >=26.1 {
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
                                      Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
                                      RandomSource random) {
+    //?} else {
+    /*protected BlockState updateShape(BlockState state, Direction directionToNeighbour, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
+        net.minecraft.world.level.LevelAccessor ticks = level;
+        net.minecraft.util.RandomSource random = level.getRandom();
+    *///?}
         if (state.getValue(WATERLOGGED)) {
             ticks.scheduleTick(pos, net.minecraft.world.level.material.Fluids.WATER,
                     net.minecraft.world.level.material.Fluids.WATER.getTickDelay(level));
@@ -181,10 +189,23 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
     }
 
     /** Right-click with a fluid identifier → set the duct's fluid type and recompute its connections. */
+    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!(stack.getItem() instanceof IItemFluidIdentifier ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+    //?} else {
+    /*@Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
+             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
+             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+    *///?}
+
+    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             duct.setFluidType(type);

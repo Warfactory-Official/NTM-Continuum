@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
@@ -64,7 +64,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHydrotreater te) {
         te.updateConnections();
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
         te.loadInput();
 
         if (level.getGameTime() % 2 == 0) te.reform();
@@ -128,9 +128,9 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         power -= 20_000;
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(7);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
@@ -203,7 +203,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 7) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 7) return stack.getItem() instanceof IItemFluidId;
         if (slot == 8) return stack.getItem() == ModItems.catalytic_converter.get();
         return true;
     }

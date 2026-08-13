@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -9,7 +10,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,8 +36,8 @@ public class FluidDuctObjRenderer implements CompatBER<TileEntityFluidDuctNT, Fl
     private static final Identifier OVERLAY = Identifier.fromNamespaceAndPath("hbm", "textures/models/blocks/fluid_duct_mk2_overlay.png");
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType baseType = RenderTypes.entityCutout(BASE);
-    private final RenderType overlayType = RenderTypes.entityCutout(OVERLAY);
+    private final RenderType baseType = CompatRenderTypes.entityCutout(BASE);
+    private final RenderType overlayType = CompatRenderTypes.entityCutout(OVERLAY);
 
     @Override
     public FluidDuctRenderState createRenderState() {

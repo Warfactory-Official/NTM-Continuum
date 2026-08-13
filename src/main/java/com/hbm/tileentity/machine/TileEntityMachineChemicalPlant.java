@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -302,8 +303,8 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("index") && data.contains("selection")) {
-            if (data.getIntOr("index", 0) == 0) {
-                this.chemplantModule.recipe = data.getStringOr("selection", "null");
+            if (Tags.getIntOr(data, "index", 0) == 0) {
+                this.chemplantModule.recipe = Tags.getStringOr(data, "selection", "null");
                 this.chemplantModule.progress = 0D;
                 setChanged();
             }

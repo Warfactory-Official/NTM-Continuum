@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CokerRecipes;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -64,7 +64,7 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCoker te) {
         te.tryPullHeat();
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
 
         if (level.getGameTime() % 20 == 0) {
             for (DirPos dp : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
@@ -169,9 +169,9 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
         this.heat = Math.max(this.heat - Math.max(this.heat / 1000, 1), 0);
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
@@ -184,7 +184,7 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot == 0) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 0) return stack.getItem() instanceof IItemFluidId;
         return true; // slot 1 is machine-written output
     }
 

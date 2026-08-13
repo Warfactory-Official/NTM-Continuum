@@ -8,7 +8,7 @@ import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
-import com.hbm.items.machine.ItemFluidIdentifier;
+import com.hbm.items.machine.ItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.tileentity.machine.TileEntitySILEX;
 import net.minecraft.core.BlockPos;
@@ -29,7 +29,7 @@ public final class SilexGameTests {
     private static TileEntitySILEX place(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
                 .setValue(BlockDummyable.META, BlockDummyable.offset + 2)); // facing NORTH
-        TileEntitySILEX te = helper.getBlockEntity(pos, TileEntitySILEX.class);
+        TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;
     }
@@ -231,7 +231,7 @@ public final class SilexGameTests {
                 "Slot 0 must accept a dissolvable input");
         helper.assertFalse(te.isItemValidForSlot(0, new ItemStack(net.minecraft.world.item.Items.STICK)),
                 "Slot 0 must reject an item with no SILEX recipe");
-        helper.assertTrue(te.isItemValidForSlot(1, ItemFluidIdentifier.make(Fluids.PEROXIDE)),
+        helper.assertTrue(te.isItemValidForSlot(1, ItemFluidId.make(Fluids.PEROXIDE)),
                 "Slot 1 must accept a fluid identifier");
         helper.assertFalse(te.isItemValidForSlot(4, new ItemStack(ModItems.nugget_u235.get())),
                 "Slot 4 is machine-written output and must reject insertion");
@@ -295,7 +295,7 @@ public final class SilexGameTests {
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
                 new ItemStack(block));
 
-        TileEntitySILEX te = helper.getBlockEntity(core, TileEntitySILEX.class);
+        TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX did not form through the real placement path");
 
         DirPos[] ports = te.getConPos();

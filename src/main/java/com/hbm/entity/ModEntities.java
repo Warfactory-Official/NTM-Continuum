@@ -32,7 +32,11 @@ public final class ModEntities {
                             .sized(1.0F, 1.0F)
                             .clientTrackingRange(8)
                             .updateInterval(Integer.MAX_VALUE)
+                            //? if >=26.1 {
                             .build((ResourceKey<EntityType<?>>) key));
+                            //?} else {
+                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
+                            *///?}
 
     /** The invisible fallout sweep spawned when the crater completes (old {@code entity_fallout_rain}). */
     public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityFalloutRain>> FALLOUT_RAIN =
@@ -41,7 +45,11 @@ public final class ModEntities {
                             .sized(4.0F, 20.0F)
                             .clientTrackingRange(8)
                             .updateInterval(Integer.MAX_VALUE)
+                            //? if >=26.1 {
                             .build((ResourceKey<EntityType<?>>) key));
+                            //?} else {
+                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
+                            *///?}
 
     /**
      * The toroidal-convection mushroom cloud spawned alongside a nuke blast (old {@code entity_effect_torex}).
@@ -56,7 +64,11 @@ public final class ModEntities {
                             .fireImmune()
                             .clientTrackingRange(64)
                             .updateInterval(20)
+                            //? if >=26.1 {
                             .build((ResourceKey<EntityType<?>>) key));
+                            //?} else {
+                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
+                            *///?}
 
     /** Collectable debris thrown from a ZIRNOX reactor meltdown. */
     public static final RegistryObject<EntityType<EntityZirnoxDebris>> ZIRNOX_DEBRIS =
@@ -65,7 +77,11 @@ public final class ModEntities {
                             .sized(1.0F, 0.5F)
                             .clientTrackingRange(64)
                             .updateInterval(1)
+                            //? if >=26.1 {
                             .build((ResourceKey<EntityType<?>>) key));
+                            //?} else {
+                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
+                            *///?}
 
     public static void init() {}
 }

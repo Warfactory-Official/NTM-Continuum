@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * block with a {@link #LIT} property (the TE flips it while smelting), driving the lit front texture in
  * the blockstate. Right-click opens the menu. The lit "flame particle" effect is deferred (§18).
  */
-public class MachineElectricFurnace extends Block implements EntityBlock {
+public class MachineElectricFurnace extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;

@@ -1,5 +1,6 @@
 package com.hbm.util;
 
+import dev.golem.core.world.Compat;
 import java.util.List;
 
 import com.hbm.capability.HbmLivingProps;
@@ -365,7 +366,7 @@ public class ContaminationUtil {
                 float fireDmg = fire3d;
                 fireDmg /= (float) (dmgLen * dmgLen * res * res);
                 if (fireDmg > 0.025) {
-                    e.hurtServer(serverLevel, serverLevel.damageSources().inFire(), fireDmg);
+                    Compat.hurt(e, serverLevel, serverLevel.damageSources().inFire(), fireDmg);
                     e.igniteForSeconds(5);
                 }
             }
@@ -375,7 +376,7 @@ public class ContaminationUtil {
                 blastDmg /= (float) (dmgLen * dmgLen * res);
                 if (blastDmg > 0.025) {
                     // TODO(damage): dedicated nuclearBlast/blast damage types
-                    e.hurtServer(serverLevel, serverLevel.damageSources().explosion(null, null), blastDmg);
+                    Compat.hurt(e, serverLevel, serverLevel.damageSources().explosion(null, null), blastDmg);
                 }
                 e.push(vec.x * 0.005D * blastDmg, vec.y * 0.005D * blastDmg, vec.z * 0.005D * blastDmg);
             }
@@ -442,7 +443,7 @@ public class ContaminationUtil {
         switch (hazard) {
             case MONOXIDE -> {
                 if (entity.level() instanceof ServerLevel serverLevel)
-                    entity.hurtServer(serverLevel, ModDamageSources.monoxide(serverLevel), (float) amount);
+                    Compat.hurt(entity, serverLevel, ModDamageSources.monoxide(serverLevel), (float) amount);
             }
             case RADIATION ->
                     HbmLivingProps.incrementRadiation(entity, amount * (cont == ContaminationType.RAD_BYPASS ? 1D : calculateRadiationMod(entity)));

@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Passive steam condenser; the look overlay lists both tanks, as the 1.12.2 {@code printHook} did. */
-public class MachineCondenser extends Block implements EntityBlock, ILookOverlay {
+public class MachineCondenser extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
     public MachineCondenser(Properties properties) { super(properties); }
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new TileEntityCondenser(pos, state); }
     @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {

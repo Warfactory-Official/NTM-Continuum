@@ -1,5 +1,7 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
@@ -70,7 +72,7 @@ public final class HbmJeiPluginCommon {
     /** Make each fluid-icon variant a distinct JEI ingredient, keyed on its {@code FLUID_ID} component
      * (so the droplet icons don't all collapse to one "fluid_icon" in the item list). */
     public static void registerItemSubtypes(ISubtypeRegistration reg) {
-        reg.registerFromDataComponentTypes(ModFluidItems.fluid_icon.get(), ModDataComponents.FLUID_ID.get());
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_icon.get(), ModDataComponents.FLUID_ID.get());
     }
 
     /** Add a droplet icon for every registered fluid to JEI's ingredient list / search — the fluid‑icon item
@@ -153,76 +155,76 @@ public final class HbmJeiPluginCommon {
         SolderingRecipes.register();
         CrystallizerRecipes.register();
 
-        reg.addRecipes(HbmJeiRecipeTypes.ASSEMBLY_MACHINE, assembly.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.CHEMICAL_PLANT, chemplant.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.PUREX, purex.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
-        reg.addRecipes(HbmJeiRecipeTypes.CRYSTALLIZER, CrystallizerRecipes.recipes);
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, assembly.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, chemplant.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PUREX, purex.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRYSTALLIZER, CrystallizerRecipes.recipes);
         SILEXRecipes.register();
-        reg.addRecipes(HbmJeiRecipeTypes.SILEX, SILEXRecipes.recipes);
-        reg.addRecipes(HbmJeiRecipeTypes.SHREDDER, ShredderRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.CRUCIBLE_ALLOY, CrucibleAlloyingHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.ANVIL_CON, AnvilConstructionRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.ANVIL_SMITH, AnvilSmithingRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SILEX, SILEXRecipes.recipes);
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SHREDDER, ShredderRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRUCIBLE_ALLOY, CrucibleAlloyingHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ANVIL_CON, AnvilConstructionRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ANVIL_SMITH, AnvilSmithingRecipeHandler.buildRecipes());
 
-        reg.addRecipes(HbmJeiRecipeTypes.REFINERY, RefineryRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.FRACTIONING, FractioningRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.LIQUEFACTION, LiquefactionRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.SOLIDIFICATION, SolidificationRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.BOILING, BoilingRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.COOLING, CoolingRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.VACUUM, VacuumRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.REFORMING, ReformingRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.CRACKING, CrackingRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.HYDROTREATING, HydrotreatingRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.COKER, CokerRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.PYROLYSIS, PyrolysisRecipeHandler.buildRecipes());
-        reg.addRecipes(HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.REFINERY, RefineryRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.FRACTIONING, FractioningRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.LIQUEFACTION, LiquefactionRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SOLIDIFICATION, SolidificationRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.BOILING, BoilingRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COOLING, CoolingRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.VACUUM, VacuumRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.REFORMING, ReformingRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRACKING, CrackingRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.HYDROTREATING, HydrotreatingRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COKER, CokerRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PYROLYSIS, PyrolysisRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
     }
 
     public static void registerCatalysts(IRecipeCatalystRegistration reg) {
-        reg.addCraftingStation(HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.CHEMICAL_PLANT, stack(ModMachineBlocks.machine_chemical_plant.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.SOLDERING_STATION, stack(ModMachineBlocks.machine_soldering_station.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.CRYSTALLIZER, stack(ModMachineBlocks.machine_crystallizer.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.SILEX, stack(ModMachineBlocks.machine_silex.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, stack(ModMachineBlocks.machine_chemical_plant.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SOLDERING_STATION, stack(ModMachineBlocks.machine_soldering_station.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRYSTALLIZER, stack(ModMachineBlocks.machine_crystallizer.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SILEX, stack(ModMachineBlocks.machine_silex.get()));
         // Each laser crystal is also a catalyst: clicking one shows what the SILEX can do with it
         // loaded (the old plugin's per-wavelength categories, folded into one).
-        reg.addCraftingStation(HbmJeiRecipeTypes.SILEX,
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SILEX,
                 new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_co2.get()),
                 new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_bismuth.get()),
                 new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_cmb.get()),
                 new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_bale.get()),
                 new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_digamma.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.SHREDDER, stack(ModMachineBlocks.machine_shredder.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.CRUCIBLE_ALLOY, stack(ModMachineBlocks.machine_crucible.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.ANVIL_CON, anvilIcon());
-        reg.addCraftingStation(HbmJeiRecipeTypes.ANVIL_SMITH, anvilIcon());
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SHREDDER, stack(ModMachineBlocks.machine_shredder.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRUCIBLE_ALLOY, stack(ModMachineBlocks.machine_crucible.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ANVIL_CON, anvilIcon());
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ANVIL_SMITH, anvilIcon());
 
-        reg.addCraftingStation(HbmJeiRecipeTypes.REFINERY, stack(ModMachineBlocks.machine_refinery.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.FRACTIONING, stack(ModMachineBlocks.machine_fraction_tower.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.LIQUEFACTION, stack(ModMachineBlocks.machine_liquefactor.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.SOLIDIFICATION, stack(ModMachineBlocks.machine_solidifier.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.REFINERY, stack(ModMachineBlocks.machine_refinery.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.FRACTIONING, stack(ModMachineBlocks.machine_fraction_tower.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.LIQUEFACTION, stack(ModMachineBlocks.machine_liquefactor.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SOLIDIFICATION, stack(ModMachineBlocks.machine_solidifier.get()));
         // Boiling: the boiler + all three heaters (firebox / electric / oilburner) can drive it.
-        reg.addCraftingStation(HbmJeiRecipeTypes.VACUUM, stack(ModMachineBlocks.machine_vacuum_distill.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.REFORMING, stack(ModMachineBlocks.machine_catalytic_reformer.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.CRACKING, stack(ModMachineBlocks.machine_catalytic_cracker.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.HYDROTREATING, stack(ModMachineBlocks.machine_hydrotreater.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.COKER, stack(ModMachineBlocks.machine_coker.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.PYROLYSIS, stack(ModMachineBlocks.machine_pyrooven.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.COMPRESSOR, stack(ModMachineBlocks.machine_compressor.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.BOILING, stack(ModMachineBlocks.machine_boiler.get()),
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.VACUUM, stack(ModMachineBlocks.machine_vacuum_distill.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.REFORMING, stack(ModMachineBlocks.machine_catalytic_reformer.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRACKING, stack(ModMachineBlocks.machine_catalytic_cracker.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.HYDROTREATING, stack(ModMachineBlocks.machine_hydrotreater.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.COKER, stack(ModMachineBlocks.machine_coker.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PYROLYSIS, stack(ModMachineBlocks.machine_pyrooven.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.COMPRESSOR, stack(ModMachineBlocks.machine_compressor.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.BOILING, stack(ModMachineBlocks.machine_boiler.get()),
                 stack(ModMachineBlocks.heater_firebox.get()), stack(ModMachineBlocks.heater_electric.get()),
                 stack(ModMachineBlocks.heater_oilburner.get()));
-        reg.addCraftingStation(HbmJeiRecipeTypes.COOLING, stack(ModMachineBlocks.machine_turbine.get()),
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.COOLING, stack(ModMachineBlocks.machine_turbine.get()),
                 stack(ModMachineBlocks.machine_condenser.get()));
 
         // The electric furnace runs vanilla smelting — surface it under JEI's built-in furnace category
         // (mirrors the old JEIConfig line; no bespoke category needed).
-        reg.addCraftingStation(RecipeTypes.SMELTING, stack(ModMachineBlocks.machine_electric_furnace_off.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, RecipeTypes.SMELTING, stack(ModMachineBlocks.machine_electric_furnace_off.get()));
     }
 
     /** The category title, from the {@code hbm.<path>.name} lang key (the old title-key convention). */
@@ -239,3 +241,4 @@ public final class HbmJeiPluginCommon {
         return new ItemStack(ModAnvilBlocks.anvil_iron.get());
     }
 }
+//?}

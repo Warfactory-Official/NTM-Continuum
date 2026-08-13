@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import net.minecraft.core.BlockPos;
@@ -52,7 +53,11 @@ public class ContainerFirebox extends AbstractContainerMenu {
         this.addSlot(validated(0, 44, 27)); // fuel
         this.addSlot(validated(1, 62, 27)); // fuel
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 86);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 86);
+        *///?}
     }
 
     @Override

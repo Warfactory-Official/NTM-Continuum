@@ -1,5 +1,7 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilSmithingRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -7,7 +9,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -24,7 +26,7 @@ import java.util.List;
  */
 public class AnvilSmithingRecipeHandler extends HbmRecipeCategory<AnvilSmithingRecipe> {
 
-    public AnvilSmithingRecipeHandler(IGuiHelper helper, IRecipeType<AnvilSmithingRecipe> type, Component title, ItemStack icon) {
+    public AnvilSmithingRecipeHandler(IGuiHelper helper, JeiRecipeType<AnvilSmithingRecipe> type, Component title, ItemStack icon) {
         super(helper, type, title, icon, "gui_nei_smithing.png");
     }
 
@@ -51,3 +53,4 @@ public class AnvilSmithingRecipeHandler extends HbmRecipeCategory<AnvilSmithingR
         text(g, "Tier " + recipe.tier, 52, 43);
     }
 }
+//?}

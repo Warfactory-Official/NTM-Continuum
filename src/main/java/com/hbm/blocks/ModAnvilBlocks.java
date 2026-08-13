@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.creativetabs.HbmTab;
@@ -48,7 +49,7 @@ public final class ModAnvilBlocks {
         RegistryObject<NTMAnvil> block = BLOCKS.registerBlock(id, p -> new NTMAnvil(p, tier),
                 p -> p.strength(5.0F, 100.0F).sound(SoundType.ANVIL).noOcclusion());
         RegistryObject<BlockItem> item = ITEMS.registerItem(id,
-                p -> new ItemBlockAnvil(block.get(), p), p -> p.useBlockDescriptionPrefix());
+                p -> new ItemBlockAnvil(block.get(), p), p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.MACHINES, item);
         ANVILS.add(block);
         return block;

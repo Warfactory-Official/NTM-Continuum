@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import net.minecraft.core.BlockPos;
@@ -41,7 +42,11 @@ public class ContainerMachineDiesel extends AbstractContainerMenu {
         this.addSlot(validated(3, 8, 17));    // fluid identifier
         this.addSlot(takeOnly(4, 8, 53));     // identifier out
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 84);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
+        *///?}
     }
 
     private Slot validated(int index, int x, int y) {
@@ -78,7 +83,7 @@ public class ContainerMachineDiesel extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 2, 3, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;

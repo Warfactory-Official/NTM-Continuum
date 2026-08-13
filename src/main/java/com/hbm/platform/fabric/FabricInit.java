@@ -18,13 +18,21 @@ import com.hbm.handler.radiation.RadiationSystemNT;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
-import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerChunkEvents;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+// Fabric API renamed several of its own entrypoints between the 1.21.1 and 26.1 lines, independently
+// of vanilla. Each pair below is the same event under two names.
+//? if >=26.1 {
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLevelEvents;
 import net.fabricmc.fabric.api.registry.FuelValueEvents;
+//?} else {
+/^import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.registry.FuelRegistry;
+^///?}
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -52,8 +60,13 @@ public class FabricInit implements ModInitializer {
         // Furnace burn times for the ItemFuel family. NeoForge reads these from the `neoforge:furnace_fuels`
         // data map (plain JSON in common resources, ignored by Fabric); Fabric has no data map for fuels, so
         // add them to the FuelValues builder as it is assembled.
+        //? if >=26.1 {
         FuelValueEvents.BUILD.register((builder, context) ->
                 ModFuelItems.BURN_TIMES.forEach((item, ticks) -> builder.add(item.get(), ticks)));
+        //?} else {
+        /^// 1.21.1 predates the FuelValues builder: burn times go into a global mutable registry.
+        ModFuelItems.BURN_TIMES.forEach((item, ticks) -> FuelRegistry.INSTANCE.add(item.get(), ticks));
+        ^///?}
 
         // Register HBM's custom S2C payloads (the BufPacket-equivalent BlockEntity sync). The type must
         // be known on both sides to encode/decode; the client-side receiver lives in HbmClient.
@@ -94,12 +107,22 @@ public class FabricInit implements ModInitializer {
                 ResourceKey.create(Registries.PLACED_FEATURE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, "end_ores")));
 
         // Populate our creative tabs from the common contents map.
+        //? if >=26.1 {
         ModTabs.CONTENTS.forEach((tabKey, contents) ->
                 CreativeModeTabEvents.modifyOutputEvent(tabKey).register(output -> {
                     contents.forEach(item -> output.accept(item.get()));
                     var stacks = ModTabs.STACK_CONTENTS.get(tabKey);
                     if (stacks != null) stacks.forEach(supplier -> supplier.get().forEach(output::accept));
                 }));
+        //?} else {
+        /^// Same event under its older name; the entries object exposes the same accept overloads.
+        ModTabs.CONTENTS.forEach((tabKey, contents) ->
+                ItemGroupEvents.modifyEntriesEvent(tabKey).register(output -> {
+                    contents.forEach(item -> output.accept(item.get()));
+                    var stacks = ModTabs.STACK_CONTENTS.get(tabKey);
+                    if (stacks != null) stacks.forEach(supplier -> supplier.get().forEach(output::accept));
+                }));
+        ^///?}
 
         // Power/network engine driver: tick the nodespace each server tick, clear it on level unload.
         // The radiation engine ticks on the same hook.
@@ -107,14 +130,22 @@ public class FabricInit implements ModInitializer {
             UniNodespace.updateNodespace(server);
             RadiationSystemNT.tickServer(server);
         });
+        //? if >=26.1 {
         ServerLevelEvents.UNLOAD.register((server, level) -> {
+        //?} else {
+        /^ServerWorldEvents.UNLOAD.register((server, level) -> {
+        ^///?}
             UniNodespace.clearLevel(level);
             RadiationSystemNT.clearWorld(level);
         });
 
-        // Radiation chunk lifecycle: (re)build pockets on load, persist on unload. (This fabric-api's
-        // Load SAM carries an extra boolean; Unload is 2-arg.)
+        // Radiation chunk lifecycle: (re)build pockets on load, persist on unload. Unload is 2-arg on
+        // both lines; Load grew a "newly generated" flag in the 26.1 fabric-api, so its SAM differs.
+        //? if >=26.1 {
         ServerChunkEvents.CHUNK_LOAD.register((level, chunk, newlyGenerated) -> RadiationSystemNT.onChunkLoaded(level, chunk));
+        //?} else {
+        /^ServerChunkEvents.CHUNK_LOAD.register((level, chunk) -> RadiationSystemNT.onChunkLoaded(level, chunk));
+        ^///?}
         ServerChunkEvents.CHUNK_UNLOAD.register((level, chunk) -> RadiationSystemNT.onChunkUnloaded(level, chunk));
 
         // Debug commands (/hbm rad ...).
@@ -133,7 +164,12 @@ public class FabricInit implements ModInitializer {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void register(ResourceKey<? extends Registry<?>> registryKey, ResourceKey<?> entryKey, Supplier<?> value) {
+        //? if >=26.1 {
         Registry<Object> registry = (Registry<Object>) (Registry<?>) BuiltInRegistries.REGISTRY.getValueOrThrow((ResourceKey) registryKey);
+        //?} else {
+        /^// 1.21.1's root registry is keyed by location and returns the value directly.
+        Registry<Object> registry = (Registry<Object>) (Registry<?>) BuiltInRegistries.REGISTRY.get(registryKey.location());
+        ^///?}
         Registry.register(registry, (ResourceKey<Object>) (ResourceKey<?>) entryKey, value.get());
     }
 }

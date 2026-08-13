@@ -11,7 +11,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
@@ -41,8 +43,13 @@ public class ItemMold extends Item {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 java.util.function.Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         adder.accept(Component.literal(mold.getTitle()).withStyle(ChatFormatting.YELLOW));
         adder.accept(Component.literal(Mats.formatAmount(mold.getCost(), false)).withStyle(ChatFormatting.GRAY));
         if (mold.size == 0) adder.accept(Component.translatable("block.hbm.foundry_mold").withStyle(ChatFormatting.GOLD));
@@ -98,7 +105,7 @@ public class ItemMold extends Item {
             ItemStack first = ItemStack.EMPTY;
             for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(mat.tag(shape))) {
                 if (first.isEmpty()) first = new ItemStack(holder.value(), amount);
-                if (holder.unwrapKey().map(k -> k.identifier().getNamespace().equals("hbm")).orElse(false)) {
+                if (holder.unwrapKey().map(k -> dev.golem.core.Ids.keyId(k).getNamespace().equals("hbm")).orElse(false)) {
                     return new ItemStack(holder.value(), amount);
                 }
             }

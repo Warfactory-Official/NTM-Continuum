@@ -7,7 +7,9 @@ import com.hbm.client.RadCounterOverlay;
 import com.hbm.client.render.HbmBlockColors;
 import com.hbm.client.render.HbmBlockEntityRenderers;
 import com.hbm.client.render.HbmEntityRenderers;
+//? if >=26.1 {
 import com.hbm.client.render.MachineItemModelRenderer;
+//?}
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.gui.GUIMachineAssemblyMachine;
 import com.hbm.inventory.gui.GUIBatterySocket;
@@ -40,7 +42,9 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+//? if >=26.1 {
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
+//?}
 import net.minecraft.resources.Identifier;
 
 /**
@@ -58,6 +62,11 @@ public final class NeoForgeClientInit {
             ClientPacketListener conn = Minecraft.getInstance().getConnection();
             if (conn != null) conn.send(new ServerboundCustomPayloadPacket(payload));
         });
+
+        // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
+        // the engine applies them; below it Golem Core wires the loader's colour registry to the same
+        // stored colour. One call, every version, both loaders.
+        dev.golem.core.client.Tints.install(com.hbm.Constants.MOD_ID);
 
         // Look-overlay HUD (battery charge / duct type / ...) — a GUI layer drawn above the vanilla HUD,
         // so its text is extracted/submitted in the same pass (mirrors Fabric's HudElementRegistry).
@@ -116,8 +125,9 @@ public final class NeoForgeClientInit {
         modBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> {
             HbmBlockEntityRenderers.registerAll(new HbmBlockEntityRenderers.Sink() {
                 @Override
-                public <T extends BlockEntity> void register(BlockEntityType<? extends T> type, BlockEntityRendererProvider<T, ?> provider) {
-                    event.registerBlockEntityRenderer(type, provider);
+                public <T extends BlockEntity, S extends dev.golem.core.render.CompatRenderState> void register(
+                    BlockEntityType<? extends T> type, dev.golem.core.render.CompatBERProvider<T, S> provider) {
+                    event.registerBlockEntityRenderer(type, dev.golem.core.render.Renderers.toVanilla(provider));
                 }
             });
             HbmEntityRenderers.registerAll(new HbmEntityRenderers.Sink() {
@@ -127,13 +137,53 @@ public final class NeoForgeClientInit {
                 }
             });
         });
+        // Block tint sources (sellafite shade tint) — Golem picks the era's colour API and the moment
+        // this loader allows registering one.
+        HbmBlockColors.registerAll();
 
-        // Block tint sources (sellafite shade tint).
-        modBus.addListener((RegisterColorHandlersEvent.BlockTintSources event) ->
-                HbmBlockColors.registerAll(event::register));
-
+        // OBJ machine item models. 26.1 has a special-model system and registers a codec for them; below
+        // it the equivalent hook is a BEWLR hung off the item's client extensions, fed by the same item
+        // definitions parsed on resource reload.
+        //? if >=26.1 {
         modBus.addListener((RegisterSpecialModelRendererEvent event) ->
                 event.register(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC));
+        //?} else {
+        /*modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent event) ->
+                event.registerReloadListener(
+                        (net.minecraft.server.packs.resources.ResourceManagerReloadListener)
+                                com.hbm.client.render.MachineItemModels::reload));
+
+        modBus.addListener((net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent event) -> {
+            var extension = new net.neoforged.neoforge.client.extensions.common.IClientItemExtensions() {
+                private net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer renderer;
+
+                @Override
+                public net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                    if (renderer == null) {
+                        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+                        renderer = new net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer(
+                                mc.getBlockEntityRenderDispatcher(), mc.getEntityModels()) {
+                            @Override
+                            public void renderByItem(net.minecraft.world.item.ItemStack stack,
+                                                     net.minecraft.world.item.ItemDisplayContext context,
+                                                     com.mojang.blaze3d.vertex.PoseStack poseStack,
+                                                     net.minecraft.client.renderer.MultiBufferSource buffers,
+                                                     int light, int overlay) {
+                                com.hbm.client.render.MachineItemRenderers.render(stack, context, poseStack, buffers, light, overlay);
+                            }
+                        };
+                    }
+                    return renderer;
+                }
+            };
+            // Registering for every HBM item is harmless: vanilla only consults the custom renderer for
+            // items whose baked model reports isCustomRenderer(), i.e. those the build gave a
+            // builtin/entity parent, which is exactly the machine_obj set.
+            net.minecraft.core.registries.BuiltInRegistries.ITEM.entrySet().stream()
+                    .filter(e -> e.getKey().location().getNamespace().equals(com.hbm.Constants.MOD_ID))
+                    .forEach(e -> event.registerItem(extension, e.getValue()));
+        });
+        *///?}
     }
 }
 //?}

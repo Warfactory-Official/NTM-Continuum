@@ -1,13 +1,15 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineMiningLaser;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.packet.HbmClientPackets;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -24,7 +26,7 @@ import java.util.Optional;
  * descending break-progress bar, the oil-tank column and the mining-square width number. The on/off
  * button sends a {@link ControlEventPayload} toggle (the old {@code AuxButtonPacket}).
  */
-public class GUIMachineMiningLaser extends AbstractContainerScreen<ContainerMachineMiningLaser> implements IUpgradeInfoProviderSource {
+public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineMiningLaser> implements IUpgradeInfoProviderSource {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/machine/gui_laser_miner.png");
 
@@ -66,33 +68,39 @@ public class GUIMachineMiningLaser extends AbstractContainerScreen<ContainerMach
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te != null) {
             String width = "" + te.getWidth();
-            graphics.text(this.font, width, 43 - this.font.width(width) / 2, 26, 0xFFFFFFFF, false);
+            GuiDraw.text(graphics, this.font, width, 43 - this.font.width(width) / 2, 26, 0xFFFFFFFF, false);
         }
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te == null) return;
 
         // On-state button overlay: 18×18 at (61,17) from tex (200,0).
         if (te.isOn) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + BTN_X, this.topPos + BTN_Y, 200.0F, 0.0F, BTN_W, BTN_H, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + BTN_X, this.topPos + BTN_Y, 200.0F, 0.0F, BTN_W, BTN_H, 256, 256);
         }
 
         // Power bar: 16×88 at (8, 18)..(8, 106), filling upward from tex (176, 88-i).
         int i = (int) te.getPowerScaled(88);
         if (i > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 8, this.topPos + 106 - i, 176.0F, (float) (88 - i), 16, i, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 8, this.topPos + 106 - i, 176.0F, (float) (88 - i), 16, i, 256, 256);
         }
 
         // Break-progress bar: 8 wide, growing downward from (66,36), tex (192,0).
         int j = te.getProgressScaled(34);
         if (j > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 66, this.topPos + 36, 192.0F, 0.0F, 8, j, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 66, this.topPos + 36, 192.0F, 0.0F, 8, j, 256, 256);
         }
 
         // "Acceptable upgrades" info glyph (small blue *).
@@ -109,24 +117,37 @@ public class GUIMachineMiningLaser extends AbstractContainerScreen<ContainerMach
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te == null) return;
 
         if (this.isHovering(8, 18, 16, 88, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineMiningLaser.maxPower), Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.energyTooltip(te.power, TileEntityMachineMiningLaser.maxPower), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(FLUID_X, FLUID_TOP, FLUID_W, FLUID_H, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal(te.tank.getTankType().getName()),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(INFO_X, INFO_Y, GuiUtil.INFO_PANEL_SIZE, GuiUtil.INFO_PANEL_SIZE, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, UPGRADE_TEXT, Optional.empty(), mouseX, mouseY);
+            GuiDraw.tooltip(graphics, this.font, UPGRADE_TEXT, Optional.empty(), mouseX, mouseY);
         }
     }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
@@ -135,7 +156,11 @@ public class GUIMachineMiningLaser extends AbstractContainerScreen<ContainerMach
             HbmClientPackets.send(new ControlEventPayload(te.getBlockPos(), data));
             return true;
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 
     @Override

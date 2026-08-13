@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -7,7 +8,6 @@ import com.hbm.blocks.network.BlockCable;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -34,7 +34,7 @@ public class CableObjRenderer<T extends BlockEntity> implements CompatBER<T, Cab
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/models/blocks/cable_neo.png");
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType renderType = RenderTypes.entityCutout(TEXTURE);
+    private final RenderType renderType = CompatRenderTypes.entityCutout(TEXTURE);
 
     @Override
     public CableRenderState createRenderState() {

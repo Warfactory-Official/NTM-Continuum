@@ -34,7 +34,10 @@ neoForge {
             gameDirectory = file("runs/client")
         }
         register("data") {
-            clientData()
+            // 26.1 splits datagen into clientData/serverData; NeoForge 21.1 has only the combined
+            // `data` type, and asking for a type the version does not define fails the IDE sync
+            // (`Trying to prepare unknown run: clientData`), not just the run itself.
+            type = if (mcVersion.substringBefore('.').toInt() >= 26) "clientData" else "data"
             gameDirectory = file("runs/data")
             programArguments.addAll(
                 "--mod", modId,
@@ -76,6 +79,29 @@ repositories {
 val localRuntime by configurations.creating
 configurations.named("runtimeClasspath") { extendsFrom(localRuntime) }
 
+/**
+ * Dev-only mods that must be real mod FILES rather than classpath entries.
+ *
+ * FML discovers a jar on the run classpath and lists it as a mod, but registers only its code — not its
+ * mixin configs ("passed in as source" in the JarSelector warning). A mixin-driven mod therefore loads
+ * and then does nothing at all: Sodium appeared in the mod list while never initialising, writing no
+ * config and replacing no renderer. Dropping the jar into the run directory's `mods` folder makes FML
+ * treat it as a normal mod file, mixins included.
+ *
+ * Deliberately NOT folded into `runtimeClasspath`: a jar present both there and in `mods` is discovered
+ * twice and fails the run as a duplicate mod. Mods that need no mixins (JEI) stay on `localRuntime`,
+ * where they already work.
+ */
+val devModJar: Configuration by configurations.creating
+
+val syncDevMods = tasks.register<Sync>("syncDevMods") {
+    description = "Places dev-only mod jars in the client run's mods folder."
+    from(devModJar)
+    into(layout.projectDirectory.dir("runs/client/mods"))
+}
+
+tasks.matching { it.name == "runClient" }.configureEach { dependsOn(syncDevMods) }
+
 dependencies {
     // Golem Core supplies the cross-version API facades. settings.gradle.kts includes it as a
     // composite build, so this resolves against the local checkout with no publish cycle.
@@ -86,14 +112,19 @@ dependencies {
     compileOnly("io.github.llamalad7:mixinextras-common:0.3.5")
     annotationProcessor("io.github.llamalad7:mixinextras-common:0.3.5")
 
-    val jei = "${prop("deps.jei_mc")}"
-    val jeiVer = prop("deps.jei")
-    compileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
-    compileOnly("mezz.jei:jei-$jei-neoforge-api:$jeiVer")
-    localRuntime("mezz.jei:jei-$jei-neoforge:$jeiVer")
+    // JEI is per-node optional: a node with no JEI coordinates simply builds without the integration
+    // (the plugin classes are guarded off by the `jei` constant) instead of failing to resolve.
+    val jei = propOrNull("deps.jei_mc")
+    val jeiVer = propOrNull("deps.jei")
+    if (jei != null && jeiVer != null) {
+        compileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
+        compileOnly("mezz.jei:jei-$jei-neoforge-api:$jeiVer")
+        localRuntime("mezz.jei:jei-$jei-neoforge:$jeiVer")
+    }
 
-    // Sodium declares itself client-side, so it loads only during the client run.
-    propOrNull("deps.sodium_neoforge")?.let { localRuntime("maven.modrinth:sodium:$it") }
+    // Sodium declares itself client-side, so it loads only during the client run. It goes on
+    // `devModJar` rather than `localRuntime` — see that configuration for why.
+    propOrNull("deps.sodium_neoforge")?.let { devModJar("maven.modrinth:sodium:$it") }
 }
 
 tasks.processResources {
@@ -110,6 +141,13 @@ tasks.processResources {
         "neoforge_loader_range" to prop("deps.neoforge_loader_range"),
         "java_version" to javaVersion.toString(),
         "pack_format" to prop("pack_format"),
+        // pack.mcmeta's version field, whose very name changed: 26.1 declares a supported RANGE
+        // (min_format/max_format) where older versions declare a single pack_format. Keep in step
+        // with the fabric buildscript — the resource is shared.
+        "pack_format_entry" to if (mcVersion.substringBefore('.').toInt() >= 26)
+            "\"min_format\": ${prop("pack_format")}, \"max_format\": ${prop("pack_format")}"
+        else
+            "\"pack_format\": ${prop("pack_format")}",
     )
     inputs.properties(props)
     filesMatching(listOf("META-INF/neoforge.mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(props) }
@@ -127,4 +165,21 @@ tasks.named("createMinecraftArtifacts") { dependsOn(tasks.named("stonecutterGene
 tasks.compileJava { dependsOn(tasks.named("stonecutterGenerate")) }
 tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 
+// Recipe ingredients are written in the 26.1 shape and converted downward for older nodes.
+extra["mc_version"] = mcVersion
+extra["java_version"] = javaVersion.toString()
+apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
+apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
+apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
+
 apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
+
+dependencies {
+    // NeoForge ships jspecify transitively on 26.1 but not on older versions, and HBM uses @Nullable in
+    // ~156 files. Declared explicitly so the shared tree compiles on every node; annotations-only jar,
+    // no runtime component.
+    compileOnly("org.jspecify:jspecify:1.0.0")
+}
+
+// javac stops reporting after 100 errors by default, which hides the tail while porting a new node.
+tasks.compileJava { options.compilerArgs.addAll(listOf("-Xmaxerrs", "2000")) }

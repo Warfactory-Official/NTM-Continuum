@@ -1,7 +1,8 @@
 package com.hbm.client.render;
 
-import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.state.level.CameraRenderState;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
@@ -11,13 +12,12 @@ import com.mojang.math.Axis;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import org.joml.Quaternionf;
 
 /** Renders the six physical debris variants ejected by a ZIRNOX meltdown. */
-public class ZirnoxDebrisRenderer extends EntityRenderer<EntityZirnoxDebris, ZirnoxDebrisRenderState> {
+public class ZirnoxDebrisRenderer extends dev.golem.core.render.CompatEntityRenderer<EntityZirnoxDebris, ZirnoxDebrisRenderState> {
 
     private static final float DIAGONAL_AXIS = 0.57735026F;
     private final WavefrontObj[] models = new WavefrontObj[DebrisType.values().length];
@@ -35,7 +35,7 @@ public class ZirnoxDebrisRenderer extends EntityRenderer<EntityZirnoxDebris, Zir
 
     private void register(DebrisType type, String model, String texture) {
         models[type.ordinal()] = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/" + model));
-        renderTypes[type.ordinal()] = RenderTypes.entityCutout(
+        renderTypes[type.ordinal()] = CompatRenderTypes.entityCutout(
                 Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/" + texture));
     }
 
@@ -45,15 +45,15 @@ public class ZirnoxDebrisRenderer extends EntityRenderer<EntityZirnoxDebris, Zir
     }
 
     @Override
-    public void extractRenderState(EntityZirnoxDebris entity, ZirnoxDebrisRenderState state, float partialTicks) {
+    public void extract(EntityZirnoxDebris entity, ZirnoxDebrisRenderState state, float partialTicks) {
         state.type = entity.getDebrisType();
         state.entityId = entity.getId();
         state.rotation = entity.lastRot + (entity.rot - entity.lastRot) * partialTicks;
     }
 
     @Override
-    public void submit(ZirnoxDebrisRenderState state, PoseStack poseStack, SubmitNodeCollector collector,
-                       CameraRenderState camera) {
+    public void submit(ZirnoxDebrisRenderState state, PoseStack poseStack, SubmitSink collector,
+                       CameraInfo camera) {
         if (state.type == null) return;
         int index = state.type.ordinal();
         poseStack.pushPose();

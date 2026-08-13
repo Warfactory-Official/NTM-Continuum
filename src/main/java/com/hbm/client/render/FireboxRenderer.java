@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CameraInfo;
@@ -10,7 +11,6 @@ import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,7 +31,7 @@ public class FireboxRenderer<T extends TileEntityFireboxBase> implements CompatB
         Identifier obj = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/firebox.obj");
         Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/firebox.png");
         this.model = WavefrontObj.load(obj);
-        this.baseType = RenderTypes.entityCutout(tex);
+        this.baseType = CompatRenderTypes.entityCutout(tex);
     }
 
     @Override public FireboxRenderState createRenderState() { return new FireboxRenderState(); }

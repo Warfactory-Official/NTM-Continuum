@@ -26,7 +26,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+//? if >=26.1 {
 import net.minecraft.world.level.redstone.Orientation;
+//?}
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
@@ -97,19 +99,36 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
     }
 
     @Override
+    //? if >=26.1 {
+    //? if >=26.1 {
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) {
+    //?} else {
+    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos hbm$fromPos, boolean movedByPiston) {
+    *///?}
+    //?} else {
+    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos hbm$fromPos, boolean movedByPiston) {
+    *///?}
         if (!level.isClientSide() && level.hasNeighborSignal(pos)) {
             explode(level, pos, null);
         }
     }
 
     @Override
+    //? if >=26.1 {
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+    //?} else {
+    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
+        if (!(hbm$level instanceof ServerLevel level)) return;
+    *///?}
         // Drop the bomb's components when it's broken (the old breakBlock behaviour).
         if (level.getBlockEntity(pos) instanceof TileEntityNukeMan nuke) {
             net.minecraft.world.Containers.dropContents(level, pos, nuke);
         }
+        //? if >=26.1 {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        //?} else {
+        /*super.onRemove(state, hbm$level, pos, hbm$newState, movedByPiston);
+        *///?}
     }
 
     @Override

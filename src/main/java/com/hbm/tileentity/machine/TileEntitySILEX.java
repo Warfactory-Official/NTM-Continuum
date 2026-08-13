@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemFluidIcon;
@@ -240,7 +240,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     /** Slot 1 holds a fluid identifier; the tank adopts its type (the 1.12.2 {@code setType(1, 1)}). */
     private void updateTankType() {
         ItemStack id = inventory.getStackInSlot(1);
-        if (id.getItem() instanceof IItemFluidIdentifier ident) {
+        if (id.getItem() instanceof IItemFluidId ident) {
             FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
             if (t != tank.getTankType()) {
                 tank.setTankType(t);
@@ -326,7 +326,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
             case 0 -> SILEXRecipes.getOutput(stack) != null;
-            case 1 -> stack.getItem() instanceof IItemFluidIdentifier;
+            case 1 -> stack.getItem() instanceof IItemFluidId;
             case 2 -> stack.getItem() instanceof IFillableItem || stack.getItem() instanceof ItemFluidBucket;
             case 3 -> true;
             default -> false;

@@ -8,7 +8,9 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+//? if >=26.1 {
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -111,8 +113,16 @@ public class BlockHazard extends Block {
     }
 
     @Override
+    //? if >=26.1 {
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean isPrecise) {
-        super.entityInside(state, level, pos, entity, effects, isPrecise);
+    //?} else {
+    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    *///?}
+        //? if >=26.1 {
+super.entityInside(state, level, pos, entity, effects, isPrecise);
+        //?} else {
+        /*super.entityInside(state, level, pos, entity);
+        *///?}
         if (entity instanceof LivingEntity living) HazardSystem.applyHazards(this, living);
     }
 

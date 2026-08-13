@@ -1,5 +1,7 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.inventory.RecipesCommon.AStack;
@@ -14,7 +16,7 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
@@ -42,7 +44,7 @@ public class AnvilConstructionRecipeHandler extends HbmRecipeCategory<AnvilConst
     private final IDrawable smallSlot;  // single-slot highlight
     private final IDrawable opNone, opSmith, opCon, opRecycle; // 18x36 operation pills
 
-    public AnvilConstructionRecipeHandler(IGuiHelper helper, IRecipeType<AnvilConstructionRecipe> type, Component title, ItemStack icon) {
+    public AnvilConstructionRecipeHandler(IGuiHelper helper, JeiRecipeType<AnvilConstructionRecipe> type, Component title, ItemStack icon) {
         super(helper, type, title, icon, "gui_nei_anvil.png");
         this.area72 = helper.createDrawable(tex("gui_nei_anvil.png"), 5, 87, 72, 54);
         this.area108 = helper.createDrawable(tex("gui_nei_anvil.png"), 5, 87, 108, 54);
@@ -125,3 +127,4 @@ public class AnvilConstructionRecipeHandler extends HbmRecipeCategory<AnvilConst
         }
     }
 }
+//?}

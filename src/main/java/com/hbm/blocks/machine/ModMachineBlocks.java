@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.network.BlockCable;
 import com.hbm.blocks.network.BlockFluidDuct;
@@ -326,15 +327,23 @@ public final class ModMachineBlocks {
         RegistryObject<BlockItem> miningLaserItem = ITEMS.registerItem("machine_mining_laser",
                 p -> new BlockItem(machine_mining_laser.get(), p) {
                     @Override
+                    //? if >=26.1 {
                     public void appendHoverText(net.minecraft.world.item.ItemStack stack,
                                                 net.minecraft.world.item.Item.TooltipContext context,
                                                 net.minecraft.world.item.component.TooltipDisplay display,
                                                 java.util.function.Consumer<net.minecraft.network.chat.Component> adder,
                                                 net.minecraft.world.item.TooltipFlag flag) {
+                    //?} else {
+                    /*public void appendHoverText(net.minecraft.world.item.ItemStack stack,
+                                                net.minecraft.world.item.Item.TooltipContext context,
+                                                java.util.List<net.minecraft.network.chat.Component> hbm$lines,
+                                                net.minecraft.world.item.TooltipFlag flag) {
+                        java.util.function.Consumer<net.minecraft.network.chat.Component> adder = hbm$lines::add;
+                    *///?}
                         adder.accept(net.minecraft.network.chat.Component.translatable("desc.mininglaser1"));
                         adder.accept(net.minecraft.network.chat.Component.translatable("desc.mininglaser2"));
                     }
-                }, p -> p.useBlockDescriptionPrefix());
+                }, p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.MACHINES, miningLaserItem);
         tabItem(HbmTab.BLOCKS, "sandbags", sandbags);
     }

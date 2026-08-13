@@ -9,7 +9,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
@@ -68,7 +68,7 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         te.updateConnections();
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
         te.refine();
 
         te.unloadTank(1, 1, 2);
@@ -127,9 +127,9 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         for (int i = 0; i < stacks.length; i++) tanks[i + 1].setFill(tanks[i + 1].getFill() + stacks[i].fill);
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(9);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
@@ -171,7 +171,7 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 9) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 9) return stack.getItem() instanceof IItemFluidId;
         return true;
     }
 

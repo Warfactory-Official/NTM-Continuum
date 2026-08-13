@@ -5,9 +5,7 @@
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
-  "client": [
-    "MixinSpecialModelRenderers"
-  ],
+  "client": [${fabric_client_mixins}],
   "server": [],
   "injectors": {
     "defaultRequire": 1

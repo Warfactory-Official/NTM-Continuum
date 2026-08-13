@@ -1,7 +1,8 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.inventory.ModMenus;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare;
 import net.minecraft.core.BlockPos;
@@ -42,7 +43,12 @@ public class ContainerMachineGasFlare extends AbstractContainerMenu {
         this.addSlot(validated(4, 80, 71));   // upgrades
         this.addSlot(validated(5, 98, 71));
 
-        this.addStandardInventorySlots(playerInventory, 8, 121); // rows 121/139/157, hotbar 179 (old offset 37)
+        //? if >=26.1 {
+        this.addStandardInventorySlots(playerInventory, 8, 121);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 121);
+        *///?}
+        // rows 121/139/157, hotbar 179 (old offset 37)
     }
 
     private Slot validated(int index, int x, int y) {
@@ -89,7 +95,7 @@ public class ContainerMachineGasFlare extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, 4, 6, false)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 3, 4, false)) return ItemStack.EMPTY;
             } else {
                 if (!this.moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;

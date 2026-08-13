@@ -11,7 +11,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.PyroOvenRecipes;
 import com.hbm.inventory.recipes.PyroOvenRecipes.PyroOvenRecipe;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -75,7 +75,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePyroOven te) {
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
 
         for (DirPos dp : te.getConPos()) {
             te.trySubscribe(level, dp);
@@ -188,9 +188,9 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         };
     }
 
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(3);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
@@ -204,7 +204,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         if (slot == 0) return Library.isBattery(stack);
-        if (slot == 3) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 3) return stack.getItem() instanceof IItemFluidId;
         if (slot == 4 || slot == 5) return Library.isMachineUpgrade(stack);
         return true;
     }

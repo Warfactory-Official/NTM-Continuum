@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.world.Compat;
 import dev.golem.core.data.CompatBlockEntity;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.util.ContaminationUtil;
@@ -47,7 +48,7 @@ public class TileEntityZirnoxDestroyed extends CompatBlockEntity {
             for (LivingEntity living : level.getEntitiesOfClass(LivingEntity.class,
                     new net.minecraft.world.phys.AABB(pos).inflate(5.0D))) {
                 if (living.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) < 25.0D) {
-                    living.hurtServer((ServerLevel) level, level.damageSources().onFire(), 2.0F);
+                    Compat.hurt(living, (ServerLevel) level, level.damageSources().onFire(), 2.0F);
                 }
             }
             if (level.getGameTime() % 50L == 0L) {

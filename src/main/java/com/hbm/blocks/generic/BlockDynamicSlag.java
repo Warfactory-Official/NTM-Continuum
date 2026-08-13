@@ -32,7 +32,7 @@ import org.jspecify.annotations.Nullable;
  * moves), merges into same-material slag below, and spreads sideways once ≥ 1/5 full. Rendered by a
  * BER as a tinted box at {@code amount / maxAmount} height; drops its content as scraps.
  */
-public class BlockDynamicSlag extends Block implements EntityBlock {
+public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public BlockDynamicSlag(Properties properties) {
         super(properties);

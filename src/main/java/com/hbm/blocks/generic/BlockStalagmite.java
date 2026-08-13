@@ -5,7 +5,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
+//? if >=26.1 {
 import net.minecraft.world.level.ScheduledTickAccess;
+//?}
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -58,9 +60,15 @@ public class BlockStalagmite extends Block {
     }
 
     @Override
+    //? if >=26.1 {
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks,
                                      BlockPos pos, Direction direction, BlockPos neighbourPos, BlockState neighbourState,
                                      RandomSource random) {
+    //?} else {
+    /*protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
+        net.minecraft.world.level.LevelAccessor ticks = level;
+        net.minecraft.util.RandomSource random = level.getRandom();
+    *///?}
         return canSurvive(state, level, pos) ? state : Blocks.AIR.defaultBlockState();
     }
 

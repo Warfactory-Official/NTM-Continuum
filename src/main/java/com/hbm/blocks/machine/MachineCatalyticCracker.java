@@ -7,7 +7,7 @@ import com.hbm.client.ILookOverlay;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticCracker;
@@ -79,10 +79,23 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
         this.makeExtra(world, cx - dir.offsetX * 2 - rot.offsetX * 3, cy, cz - dir.offsetZ * 2 - rot.offsetZ * 3);
     }
 
+    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
-        if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidIdentifier identifier) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+    //?} else {
+    /*@Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
+             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
+             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+    *///?}
+
+    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidId identifier) {
             if (!level.isClientSide()) {
                 BlockPos core = findCore(level, pos);
                 if (core == null) return InteractionResult.FAIL;
@@ -96,7 +109,12 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
             }
             return InteractionResult.SUCCESS;
         }
+        //? if >=26.1 {
         return super.useItemOn(stack, state, level, pos, player, hand, hit);
+        //?} else {
+        /*return super.useItemOn(stack, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
+                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        *///?}
     }
 
     @Override

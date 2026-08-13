@@ -1,10 +1,12 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.recipes.LiquefactionRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
@@ -19,7 +21,7 @@ public class LiquefactionRecipeHandler extends JEIUniversalHandler<LiquefactionR
 
     public record Entry(List<ItemStack> input, FluidStack output) {}
 
-    public LiquefactionRecipeHandler(IGuiHelper helper, IRecipeType<Entry> type, Component title, ItemStack... machines) {
+    public LiquefactionRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -37,7 +39,7 @@ public class LiquefactionRecipeHandler extends JEIUniversalHandler<LiquefactionR
 
     private static List<ItemStack> itemsOfTag(TagKey<Item> tag) {
         List<ItemStack> stacks = new ArrayList<>();
-        BuiltInRegistries.ITEM.get(tag).ifPresent(named -> named.forEach(h -> stacks.add(new ItemStack(h))));
+        stacks.addAll(dev.golem.core.world.Compat.itemsInTag(tag));
         return stacks;
     }
 
@@ -51,3 +53,4 @@ public class LiquefactionRecipeHandler extends JEIUniversalHandler<LiquefactionR
         return List.of(List.of(ItemFluidIcon.make(recipe.output.type)));
     }
 }
+//?}

@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CameraInfo;
@@ -13,7 +14,6 @@ import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
@@ -42,8 +42,8 @@ public class ChemicalPlantRenderer implements CompatBER<TileEntityMachineChemica
         Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/chemical_plant.png");
         Identifier fluidTex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/chemical_plant_fluid.png");
         this.model = WavefrontObj.load(obj);
-        this.baseType = RenderTypes.entityCutout(tex);
-        this.fluidType = RenderTypes.entityTranslucent(fluidTex, false);
+        this.baseType = CompatRenderTypes.entityCutout(tex);
+        this.fluidType = CompatRenderTypes.entityTranslucent(fluidTex, false);
     }
 
     @Override public ChemPlantRenderState createRenderState() { return new ChemPlantRenderState(); }

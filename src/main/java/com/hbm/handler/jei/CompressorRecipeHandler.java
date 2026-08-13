@@ -1,10 +1,12 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.recipes.CompressorRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -21,7 +23,7 @@ public class CompressorRecipeHandler extends JEIUniversalHandler<CompressorRecip
 
     public record Entry(CompressorRecipes.Key key, CompressorRecipes.CompressorRecipe recipe) {}
 
-    public CompressorRecipeHandler(IGuiHelper helper, IRecipeType<Entry> type, Component title, ItemStack... machines) {
+    public CompressorRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -48,3 +50,4 @@ public class CompressorRecipeHandler extends JEIUniversalHandler<CompressorRecip
         return List.of(List.of(ItemFluidIcon.make(recipe.recipe.output())));
     }
 }
+//?}

@@ -15,7 +15,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 import net.minecraft.world.level.Level;
 
 import java.util.function.Consumer;
@@ -34,7 +36,12 @@ public class ItemOilDetector extends Item {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, Item.TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         adder.accept(Component.translatable("item.hbm.oil_detector.desc1"));
         adder.accept(Component.translatable("item.hbm.oil_detector.desc2"));
     }
@@ -47,8 +54,25 @@ public class ItemOilDetector extends Item {
         return level.getBlockState(pos).getBlock() == ModBlocks.ore_bedrock_oil.get();
     }
 
+    //? if >=26.1 {
     @Override
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
+        return hbm$use(level, player, hand);
+    }
+    //?} else {
+    /*@Override
+    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
+        InteractionResult hbm$r = hbm$use(level, player, hand);
+        net.minecraft.world.item.ItemStack hbm$held = player.getItemInHand(hand);
+        return hbm$r == InteractionResult.SUCCESS
+                ? net.minecraft.world.InteractionResultHolder.success(hbm$held)
+                : hbm$r == InteractionResult.CONSUME
+                ? net.minecraft.world.InteractionResultHolder.consume(hbm$held)
+                : net.minecraft.world.InteractionResultHolder.pass(hbm$held);
+    }
+    *///?}
+
+    private InteractionResult hbm$use(Level level, Player player, InteractionHand hand) {
         boolean oil = false;
         boolean bedrockoil = false;
         int x = (int) player.getX();

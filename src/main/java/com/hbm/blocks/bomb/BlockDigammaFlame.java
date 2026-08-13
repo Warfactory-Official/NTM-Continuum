@@ -6,7 +6,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+//? if >=26.1 {
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -65,8 +67,12 @@ public class BlockDigammaFlame extends BaseFireBlock {
     }
 
     @Override
+    //? if >=26.1 {
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
                                 InsideBlockEffectApplier effects, boolean precise) {
+    //?} else {
+    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    *///?}
         if (!level.isClientSide() && entity instanceof LivingEntity living) {
             ContaminationUtil.contaminate(living, ContaminationUtil.HazardType.DIGAMMA,
                     ContaminationUtil.ContaminationType.DIGAMMA, 0.05F);

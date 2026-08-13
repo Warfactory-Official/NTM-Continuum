@@ -1,5 +1,6 @@
 package com.hbm.config;
 
+import dev.golem.core.world.Compat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -186,7 +187,7 @@ public final class FalloutConfig {
 
             // the ROCK/IRON/SAND/GROUND terrain catch-all (grass/mycelium had their own GRASS-material entry)
             e.add(FalloutEntry.builder()
-                    .matchesPredicate(state -> state.isSolidRender()
+                    .matchesPredicate(state -> Compat.isSolidRender(state)
                             && !(state.getBlock() instanceof GrassBlock) && !state.is(Blocks.MYCELIUM))
                     .addPrimary(sellafield(ModFalloutBlocks.sellafield_slaked.get(), m), 1)
                     .max(max).opaque(true).solid(true).build());
@@ -281,7 +282,7 @@ public final class FalloutConfig {
             if (matchBlock != null && !state.is(matchBlock)) return null;
             if (matchTag != null && !state.is(matchTag)) return null;
             if (matchPredicate != null && !matchPredicate.test(state)) return null;
-            if (matchesOpaque && !state.isSolidRender()) return null;
+            if (matchesOpaque && ! Compat.isSolidRender(state)) return null;
 
             // gaussian falloff tail: increasingly likely rejection over the last (1-falloffStart) of maxDist
             if (dist > maxDist * falloffStart) {

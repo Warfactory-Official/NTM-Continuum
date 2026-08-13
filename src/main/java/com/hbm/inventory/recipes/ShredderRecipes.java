@@ -129,12 +129,20 @@ public final class ShredderRecipes {
         // bucket every c:<shape>/<material> item tag by material
         Map<String, Map<String, TagKey<Item>>> byMat = new HashMap<>();
         BuiltInRegistries.ITEM.getTags().forEach(named -> {
+            //? if >=26.1 {
             Identifier id = named.key().location();
+            //?} else {
+            /*Identifier id = named.getFirst().location();
+            *///?}
             int slash = id.getPath().indexOf('/');
             if (!id.getNamespace().equals("c") || slash < 0) return;
             String shape = id.getPath().substring(0, slash);
             String mat = id.getPath().substring(slash + 1);
+            //? if >=26.1 {
             byMat.computeIfAbsent(mat, k -> new HashMap<>()).put(shape, named.key());
+            //?} else {
+            /*byMat.computeIfAbsent(mat, k -> new HashMap<>()).put(shape, named.getFirst());
+            *///?}
         });
 
         for (Map.Entry<String, Map<String, TagKey<Item>>> entry : byMat.entrySet()) {

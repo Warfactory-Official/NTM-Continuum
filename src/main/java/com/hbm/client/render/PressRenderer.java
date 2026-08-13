@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -8,7 +9,6 @@ import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -47,8 +47,8 @@ public class PressRenderer<T extends BlockEntity> implements CompatBER<T, PressR
                          int maxProgress, ToIntFunction<T> progress) {
         this.body = WavefrontObj.load(bodyObj);
         this.head = WavefrontObj.load(headObj);
-        this.bodyType = RenderTypes.entityCutout(bodyTex);
-        this.headType = RenderTypes.entityCutout(headTex);
+        this.bodyType = CompatRenderTypes.entityCutout(bodyTex);
+        this.headType = CompatRenderTypes.entityCutout(headTex);
         this.baseYaw = baseYaw;
         this.applyFacing = applyFacing;
         this.headBaseOffset = headBaseOffset;

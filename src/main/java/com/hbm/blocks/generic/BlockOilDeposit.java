@@ -5,7 +5,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+//? if >=26.1 {
 import net.minecraft.world.level.redstone.Orientation;
+//?}
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -22,7 +24,15 @@ public class BlockOilDeposit extends Block {
     }
 
     @Override
+    //? if >=26.1 {
+    //? if >=26.1 {
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) {
+    //?} else {
+    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos hbm$fromPos, boolean movedByPiston) {
+    *///?}
+    //?} else {
+    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos hbm$fromPos, boolean movedByPiston) {
+    *///?}
         if (!level.isClientSide() && level.getBlockState(pos.below()).getBlock() == ModBlocks.ore_oil_empty.get()) {
             level.setBlockAndUpdate(pos, ModBlocks.ore_oil_empty.get().defaultBlockState());
             level.setBlockAndUpdate(pos.below(), this.defaultBlockState());

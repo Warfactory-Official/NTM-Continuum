@@ -1,10 +1,10 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,7 +18,7 @@ import java.util.Optional;
  * slot). Background + the burn-flame icon + the descending stamp progress bar, with hover tooltips for
  * the speed percentage and the remaining fuel operations — matching the 1.12.2 GUI.
  */
-public class GUIMachinePress extends AbstractContainerScreen<ContainerMachinePress> {
+public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePress> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_press.png");
 
@@ -27,21 +27,27 @@ public class GUIMachinePress extends AbstractContainerScreen<ContainerMachinePre
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachinePress press = this.menu.getPress();
         if (press == null) return;
 
         // Burn-flame indicator (lit while there is fuel buffered).
         if (press.burnTime > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 27, this.topPos + 36, 0.0F, 202.0F, 14, 14, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 27, this.topPos + 36, 0.0F, 202.0F, 14, 14, 256, 256);
         }
         // Descending stamp progress bar (grows downward from the top).
         int progress = press.getProgressScaled(16);
         if (progress > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 79, this.topPos + 35, 14.0F, 202.0F, 18, progress, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 35, 14.0F, 202.0F, 18, progress, 256, 256);
         }
 
         // Dynamic speed dial — the rotating needle from the 1.12.2 GUIElements.drawSmoothGauge, a faithful
@@ -61,13 +67,13 @@ public class GUIMachinePress extends AbstractContainerScreen<ContainerMachinePre
         // original's rotateRollSelf — placing the unrotated local tip (0,+tipLen) at the same screen point
         // requires pose angle = speed*270 + 45° (= -(−speed*270−45)).
         float angle = (float) Math.toRadians(speed * 270.0 + 45.0);
-        graphics.pose().pushMatrix();
-        graphics.pose().translate(cx, cy);
-        graphics.pose().rotate(angle);
-        graphics.pose().scale(1.0F / SS, 1.0F / SS);
+        GuiDraw.pushMatrix(graphics);
+        GuiDraw.translate(graphics, cx, cy);
+        GuiDraw.rotate(graphics, angle);
+        GuiDraw.scale(graphics, 1.0F / SS, 1.0F / SS);
         fillNeedle(graphics, 1.5, 0xFF000000); // outer (black) ×1.5
         fillNeedle(graphics, 1.0, 0xFF7F0000); // inner (dark red) ×1.0
-        graphics.pose().popMatrix();
+        GuiDraw.popMatrix(graphics);
     }
 
     /** The 1.12.2 gauge needle: a triangle, tip at local +5, base width ±1 at local −2. Symmetric about
@@ -84,15 +90,23 @@ public class GUIMachinePress extends AbstractContainerScreen<ContainerMachinePre
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachinePress press = this.menu.getPress();
         if (press == null) return;
         if (this.isHovering(25, 16, 18, 18, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal((press.speed * 100 / TileEntityMachinePress.maxSpeed) + "%")), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(25, 34, 18, 18, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.translatable("gui.press.operations", press.burnTime / 200)), Optional.empty(), mouseX, mouseY);
         }
     }

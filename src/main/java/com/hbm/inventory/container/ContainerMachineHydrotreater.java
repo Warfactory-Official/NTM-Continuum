@@ -2,7 +2,7 @@ package com.hbm.inventory.container;
 
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.ModItems;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.machine.oil.TileEntityMachineHydrotreater;
 import net.minecraft.core.BlockPos;
@@ -83,7 +83,7 @@ public class ContainerMachineHydrotreater extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
             } else if (Library.isBattery(stack)) {
                 if (!this.moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
-            } else if (stack.getItem() instanceof IItemFluidIdentifier) {
+            } else if (stack.getItem() instanceof IItemFluidId) {
                 if (!this.moveItemStackTo(stack, 7, 8, false)) return ItemStack.EMPTY;
             } else if (stack.getItem() == ModItems.catalytic_converter.get()) {
                 if (!this.moveItemStackTo(stack, 8, 9, false)) return ItemStack.EMPTY;

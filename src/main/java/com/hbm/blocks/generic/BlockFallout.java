@@ -9,12 +9,16 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
+//? if >=26.1 {
 import net.minecraft.world.entity.InsideBlockEffectApplier;
+//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+//? if >=26.1 {
 import net.minecraft.world.level.ScheduledTickAccess;
+//?}
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -73,11 +77,21 @@ public class BlockFallout extends Block {
     }
 
     @Override
+    //? if >=26.1 {
     protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
                                      Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
                                      RandomSource random) {
+    //?} else {
+    /*protected BlockState updateShape(BlockState state, Direction directionToNeighbour, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
+        net.minecraft.world.level.LevelAccessor ticks = level;
+        net.minecraft.util.RandomSource random = level.getRandom();
+    *///?}
         if (!state.canSurvive(level, pos)) return Blocks.AIR.defaultBlockState();
+        //? if >=26.1 {
         return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
+        //?} else {
+        /*return super.updateShape(state, directionToNeighbour, neighbourState, level, pos, neighbourPos);
+        *///?}
     }
 
     @Override
@@ -87,8 +101,16 @@ public class BlockFallout extends Block {
     }
 
     @Override
+    //? if >=26.1 {
     protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean isPrecise) {
-        super.entityInside(state, level, pos, entity, effects, isPrecise);
+    //?} else {
+    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+    *///?}
+        //? if >=26.1 {
+super.entityInside(state, level, pos, entity, effects, isPrecise);
+        //?} else {
+        /*super.entityInside(state, level, pos, entity);
+        *///?}
         irradiate(level, entity);
     }
 

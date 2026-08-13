@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CameraInfo;
@@ -10,7 +11,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -39,8 +39,8 @@ public class TankGlassRenderer<T extends BlockEntity> implements CompatBER<T, Ta
     public TankGlassRenderer(String objName, String texName, Function<T, FluidTankNTM> tankGetter) {
         this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/" + objName + ".obj"));
         Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/" + texName + ".png");
-        this.baseType = RenderTypes.entityCutout(tex);
-        this.glassType = RenderTypes.entityTranslucent(tex, false);
+        this.baseType = CompatRenderTypes.entityCutout(tex);
+        this.glassType = CompatRenderTypes.entityTranslucent(tex, false);
         this.tankGetter = tankGetter;
     }
 

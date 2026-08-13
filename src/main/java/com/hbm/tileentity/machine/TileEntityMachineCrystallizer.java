@@ -17,7 +17,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes.CrystallizerRecipe;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -202,7 +202,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
     /** Slot 7 holds a fluid identifier; adopt its type (kept in-slot, matching the 1.12.2 {@code setType(7, ...)}). */
     private void updateTankType() {
         ItemStack id = inventory.getStackInSlot(7);
-        if (id.getItem() instanceof IItemFluidIdentifier ident) {
+        if (id.getItem() instanceof IItemFluidId ident) {
             FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
             if (t != tank.getTankType()) {
                 tank.setTankType(t);
@@ -294,7 +294,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
             case 3 -> isFluidContainer(stack);
             case 4 -> true;
             case 5, 6 -> Library.isMachineUpgrade(stack); // upgrades (any type, like SlotUpgrade)
-            case 7 -> stack.getItem() instanceof IItemFluidIdentifier;
+            case 7 -> stack.getItem() instanceof IItemFluidId;
             default -> false; // 2 output
         };
     }

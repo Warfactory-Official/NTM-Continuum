@@ -1,6 +1,6 @@
 package com.hbm.handler.jei;
 
-//? if fabric {
+//? if jei && fabric {
 
 /*import com.hbm.Constants;
 import mezz.jei.api.IModPlugin;

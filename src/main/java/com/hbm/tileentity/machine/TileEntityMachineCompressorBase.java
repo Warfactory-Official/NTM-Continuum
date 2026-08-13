@@ -10,7 +10,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CompressorRecipes;
 import com.hbm.inventory.recipes.CompressorRecipes.CompressorRecipe;
-import com.hbm.items.machine.IItemFluidIdentifier;
+import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
@@ -77,7 +77,7 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
         if (level.getGameTime() % 20 == 0) te.updateConnections();
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
-        te.setTypeFromIdentifier();
+        te.setTypeFromFluidId();
         te.setupTanks();
 
         te.upgradeManager.checkSlots(te.inventory, 1, 3);
@@ -159,9 +159,9 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
     }
 
     /** Slot 0 fluid identifier types the input tank (old {@code tanks[0].setType(0, inventory)}). */
-    private void setTypeFromIdentifier() {
+    private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(0);
-        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidIdentifier ident)) return;
+        if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
         FluidType t = ident.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         if (t != tanks[0].getTankType()) {
             tanks[0].setTankType(t);
@@ -189,7 +189,7 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        if (slot == 0) return stack.getItem() instanceof IItemFluidIdentifier;
+        if (slot == 0) return stack.getItem() instanceof IItemFluidId;
         if (slot == 1) return Library.isBattery(stack);
         if (slot == 2 || slot == 3) return Library.isMachineUpgrade(stack);
         return true;

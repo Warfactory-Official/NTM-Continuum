@@ -1,11 +1,13 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+//? if >=26.1 {
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
+//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -23,7 +25,7 @@ import java.util.Optional;
  * I/O-mode toggle (right), and the priority toggle (top-right). Their state is read off the synced
  * client BlockEntity; clicks dispatch through the vanilla {@code clickMenuButton} path.
  */
-public class GUIMachineBattery extends AbstractContainerScreen<ContainerMachineBattery> {
+public class GUIMachineBattery extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineBattery> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/storage/gui_battery.png");
     private static final String[] MODE_NAMES = {"Input only", "Buffer (both)", "Output only", "Disabled"};
@@ -38,40 +40,54 @@ public class GUIMachineBattery extends AbstractContainerScreen<ContainerMachineB
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         // Energy bar — a 34px-wide textured bar at u=176, anchored at the bottom (topPos+69) and growing
         // upward as power fills, sampled from v=52-i.
         long max = this.menu.getMaxPower();
         int i = max <= 0L ? 0 : (int) (this.menu.getPower() * 52L / max);
         if (i > 0) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 71, this.topPos + 69 - i, 176.0F, (float) (52 - i), 34, i, 256, 256);
+            GuiDraw.blit(graphics, TEXTURE, this.leftPos + 71, this.topPos + 69 - i, 176.0F, (float) (52 - i), 34, i, 256, 256);
         }
 
         // Button-state overlays (strips below the energy bar in the texture: modes at u=176, v=52+mode*18;
         // priority at u=194, v=52+(ordinal-1)*16).
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 7, this.topPos + 34, 176.0F, (float) (52 + this.menu.getRedLow() * 18), 18, 18, 256, 256);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 151, this.topPos + 34, 176.0F, (float) (52 + this.menu.getRedHigh() * 18), 18, 18, 256, 256);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 152, this.topPos + 17, 194.0F, (float) (52 + (this.menu.getPriorityOrdinal() - 1) * 16), 16, 16, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 7, this.topPos + 34, 176.0F, (float) (52 + this.menu.getRedLow() * 18), 18, 18, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 151, this.topPos + 34, 176.0F, (float) (52 + this.menu.getRedHigh() * 18), 18, 18, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 152, this.topPos + 17, 194.0F, (float) (52 + (this.menu.getPriorityOrdinal() - 1) * 16), 16, 16, 256, 256);
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         if (this.isHovering(71, 17, 34, 52, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font,
+            GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(this.menu.getPower(), this.menu.getMaxPower(), this.menu.getDelta()),
                     Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(REDLOW_X, REDLOW_Y, RED_W, RED_W, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal("No redstone: " + mode(this.menu.getRedLow()))), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(REDHIGH_X, RED_Y, RED_W, RED_W, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal("Redstone on: " + mode(this.menu.getRedHigh()))), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(PRIO_X, PRIO_Y, PRIO_W, PRIO_W, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font, List.of(
+            GuiDraw.tooltip(graphics, this.font, List.of(
                     Component.literal("Priority: " + priority(this.menu.getPriorityOrdinal()))), Optional.empty(), mouseX, mouseY);
         }
     }
@@ -80,7 +96,12 @@ public class GUIMachineBattery extends AbstractContainerScreen<ContainerMachineB
     private static String priority(int o) { return o >= 0 && o < PRIORITY_NAMES.length ? PRIORITY_NAMES[o] : "?"; }
 
     @Override
+    //? if >=26.1 {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    //?} else {
+    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
+        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
+    *///?}
         int button = -1;
         if (this.isHovering(REDLOW_X, REDLOW_Y, RED_W, RED_W, event.x(), event.y())) button = 0;
         else if (this.isHovering(REDHIGH_X, RED_Y, RED_W, RED_W, event.x(), event.y())) button = 1;
@@ -93,6 +114,10 @@ public class GUIMachineBattery extends AbstractContainerScreen<ContainerMachineB
                 return true;
             }
         }
+        //? if >=26.1 {
         return super.mouseClicked(event, doubleClick);
+        //?} else {
+        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
+        *///?}
     }
 }

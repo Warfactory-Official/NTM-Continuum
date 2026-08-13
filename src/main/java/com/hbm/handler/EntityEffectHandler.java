@@ -1,5 +1,6 @@
 package com.hbm.handler;
 
+import dev.golem.core.world.Compat;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -160,7 +161,7 @@ public class EntityEffectHandler {
         if (eRad > 2500000) HbmLivingProps.setRadiation(entity, 2500000);
 
         if (eRad >= 1000) {
-            entity.hurtServer(serverLevel, radiation, 1000F);
+            Compat.hurt(entity, serverLevel, radiation, 1000F);
             HbmLivingProps.setRadiation(entity, 0);
             if (entity.getHealth() > 0) {
                 entity.setHealth(0);
@@ -196,7 +197,11 @@ public class EntityEffectHandler {
     }
 
     private static void convert(Mob from, EntityType<? extends Mob> toType, ServerLevel level) {
+        //? if >=26.1 {
         Mob to = toType.create(level, EntitySpawnReason.CONVERSION);
+        //?} else {
+        /*Mob to = toType.create(level);
+        *///?}
         if (to == null) return;
         to.snapTo(from.getX(), from.getY(), from.getZ(), from.getYRot(), from.getXRot());
         if (from.isAlive() && level.addFreshEntity(to)) {

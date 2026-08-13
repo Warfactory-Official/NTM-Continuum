@@ -1,5 +1,6 @@
 package com.hbm.client;
 
+import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -33,8 +34,8 @@ public interface ILookOverlay {
         int pX = mc.getWindow().getGuiScaledWidth() / 2 + 8;
         int pZ = mc.getWindow().getGuiScaledHeight() / 2;
 
-        graphics.text(font, title, pX + 1, pZ - 9, opaque(bgCol), false);
-        graphics.text(font, title, pX, pZ - 10, opaque(titleCol), false);
+        GuiDraw.text(graphics, font, title, pX + 1, pZ - 9, opaque(bgCol), false);
+        GuiDraw.text(graphics, font, title, pX, pZ - 10, opaque(titleCol), false);
 
         for (String line : text) {
             int color = 0xFFFFFF;
@@ -47,7 +48,7 @@ public interface ILookOverlay {
                     line = line.substring(end + 2);
                 }
             }
-            graphics.text(font, line, pX, pZ, opaque(color), true);
+            GuiDraw.text(graphics, font, line, pX, pZ, opaque(color), true);
             pZ += 10;
         }
     }

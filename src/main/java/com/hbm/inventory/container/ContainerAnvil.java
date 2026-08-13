@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.NTMAnvil;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
@@ -68,7 +69,11 @@ public class ContainerAnvil extends AbstractContainerMenu {
             }
         });
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 140);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
+        *///?}
 
         updateSmithing();
     }

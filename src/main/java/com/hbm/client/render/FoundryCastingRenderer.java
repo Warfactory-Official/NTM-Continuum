@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatItemRenderState;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
@@ -14,7 +15,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
@@ -56,13 +56,13 @@ public class FoundryCastingRenderer<T extends TileEntityFoundryCastingBase> impl
             var mtl = WavefrontObj.loadMtl(Identifier.fromNamespaceAndPath(Constants.MOD_ID, bodyObjPath.replace(".obj", ".mtl")));
             for (String mat : body.materialNames()) {
                 Identifier tex = mtl.get(mat);
-                if (tex != null) materialTypes.put(mat, RenderTypes.entityCutout(tex));
+                if (tex != null) materialTypes.put(mat, CompatRenderTypes.entityCutout(tex));
             }
         } else {
             this.body = null;
         }
         // Emissive = uniform fullbright, no per-face shading (the old lighting-off molten quads).
-        this.meltType = RenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+        this.meltType = CompatRenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

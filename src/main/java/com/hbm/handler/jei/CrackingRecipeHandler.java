@@ -1,12 +1,14 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CrackingRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
@@ -19,7 +21,7 @@ public class CrackingRecipeHandler extends JEIUniversalHandler<CrackingRecipeHan
 
     public record Entry(FluidType input, CrackingRecipes.CrackingRecipe recipe) {}
 
-    public CrackingRecipeHandler(IGuiHelper helper, IRecipeType<Entry> type, Component title, ItemStack... machines) {
+    public CrackingRecipeHandler(IGuiHelper helper, JeiRecipeType<Entry> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -45,3 +47,4 @@ public class CrackingRecipeHandler extends JEIUniversalHandler<CrackingRecipeHan
         return out;
     }
 }
+//?}

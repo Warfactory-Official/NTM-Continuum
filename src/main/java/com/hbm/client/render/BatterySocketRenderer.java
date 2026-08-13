@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
@@ -10,7 +11,6 @@ import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
@@ -33,7 +33,7 @@ public class BatterySocketRenderer implements CompatBER<TileEntityBatterySocket,
     private static final Identifier SOCKET_TEX = Identifier.fromNamespaceAndPath("hbm", "textures/models/machines/battery_socket.png");
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType socketType = RenderTypes.entityCutout(SOCKET_TEX);
+    private final RenderType socketType = CompatRenderTypes.entityCutout(SOCKET_TEX);
     private final Map<Identifier, RenderType> bodyTypes = new HashMap<>();
 
     @Override
@@ -90,7 +90,7 @@ public class BatterySocketRenderer implements CompatBER<TileEntityBatterySocket,
                 (pose, buffer) -> model.renderPart("Socket", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
 
         if (state.batteryPart != null && state.batteryTexture != null) {
-            RenderType bodyType = bodyTypes.computeIfAbsent(state.batteryTexture, RenderTypes::entityCutout);
+            RenderType bodyType = bodyTypes.computeIfAbsent(state.batteryTexture, CompatRenderTypes::entityCutout);
             String part = state.batteryPart;
             collector.submitCustomGeometry(poseStack, bodyType,
                     (pose, buffer) -> model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));

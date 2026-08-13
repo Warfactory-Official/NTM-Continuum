@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.data.ModelData;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
@@ -13,7 +14,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
@@ -26,7 +29,7 @@ import java.util.function.Consumer;
  * contents. The 1.12.2 {@code ItemScraps} stored material as item metadata + amount as NBT; the port uses
  * the {@link ModDataComponents#MATERIAL} (material name) + {@link ModDataComponents#MAT_AMOUNT} (quanta)
  * components. Icon: the grayscale {@code scraps} sprite tinted by the material's solid colour via the
- * vanilla {@code custom_model_data} colour list (same trick as {@code ItemFluidIdentifier}).
+ * vanilla {@code custom_model_data} colour list (same trick as {@code ItemFluidId}).
  */
 public class ItemScraps extends Item {
 
@@ -59,15 +62,13 @@ public class ItemScraps extends Item {
         ItemStack scrap = new ItemStack(ModMachineItems.scraps.get());
         scrap.set(ModDataComponents.MATERIAL.get(), mats.material.name);
         scrap.set(ModDataComponents.MAT_AMOUNT.get(), mats.amount);
-        scrap.set(DataComponents.CUSTOM_MODEL_DATA,
-                new CustomModelData(List.of(), List.of(liquid), List.of(), List.of(mats.material.solidColorLight)));
+        ModelData.setColorAndFlag(scrap, mats.material.solidColorLight, liquid);
         return scrap;
     }
 
     /** Whether this is the molten display form (custom_model_data flag 0). */
     public static boolean isLiquid(ItemStack stack) {
-        CustomModelData cmd = stack.get(DataComponents.CUSTOM_MODEL_DATA);
-        return cmd != null && !cmd.flags().isEmpty() && Boolean.TRUE.equals(cmd.flags().get(0));
+        return ModelData.flag(stack);
     }
 
     /** Spawns the material as scrap item entities at the given position (old world-spill behaviour). */
@@ -89,8 +90,13 @@ public class ItemScraps extends Item {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         Mats.MaterialStack contents = getMats(stack);
         if (contents != null) {
             adder.accept(Component.literal(Mats.formatAmount(contents.amount, false)).withStyle(ChatFormatting.GRAY));

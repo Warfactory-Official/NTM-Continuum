@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
@@ -52,7 +53,11 @@ public class ContainerMachineFluidTank extends AbstractContainerMenu {
         this.addSlot(validated(4, 125, 17));  // container in: filled FROM the tank
         this.addSlot(takeOnly(5, 125, 53));   // filled container out
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 84);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
+        *///?}
     }
 
     private Slot validated(int index, int x, int y) {

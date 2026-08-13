@@ -1,5 +1,6 @@
 package com.hbm.world.feature;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.config.WorldConfig;
 import com.mojang.serialization.Codec;
@@ -115,7 +116,7 @@ public class OreLayer3DFeature extends Feature<NoneFeatureConfiguration> {
 
                     pos.set(x, y, z);
                     BlockState state = level.getBlockState(pos);
-                    if (state.isSolidRender() && OreVeinPlacer.STONE.test(state)) {
+                    if (Compat.isSolidRender(state) && OreVeinPlacer.STONE.test(state)) {
                         level.setBlock(pos, ore, 2 | 16);
                     }
                 }

@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -53,7 +54,7 @@ public final class ModFallingBlocks {
     private static RegistryObject<BlockFallingBase> falling(String id, float hardness, float resistance, SoundType sound) {
         RegistryObject<BlockFallingBase> block = BLOCKS.registerBlock(id, BlockFallingBase::new,
                 p -> p.strength(hardness, resistance).sound(sound));
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> p.useBlockDescriptionPrefix());
+        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.RESOURCES, item);
         return block;
     }

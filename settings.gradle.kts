@@ -12,6 +12,13 @@ pluginManagement {
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
     id("dev.kikugie.stonecutter") version "0.9.7"
+    // Picks the right Fabric Loom variant per node. Loom split at the obfuscation boundary:
+    // `net.fabricmc.fabric-loom` builds the unobfuscated era (26.1+) and its officialMojangMappings()
+    // throws outright, while `net.fabricmc.fabric-loom-remap` carries the remapping pipeline for
+    // everything below. Both ship under the same version line, so this selects the plugin id rather
+    // than juggling two Loom versions on one buildscript classpath. Its default selector is exactly
+    // ours — obfuscated below 26 — so no explicit `loomx.obfuscated` is needed.
+    id("dev.kikugie.loom-back-compat") version "0.4.2"
 }
 
 stonecutter {
@@ -24,7 +31,7 @@ stonecutter {
         }
 
         match("26.1", "fabric", "neoforge")
-        // Phase 1: match("1.21.1", "fabric", "neoforge")
+        match("1.21.1", "fabric", "neoforge")
         // Phase 2: match("1.20.1", "fabric", "forge")
 
         vcsVersion = "26.1-neoforge"
@@ -43,7 +50,7 @@ rootProject.name = "hbm"
 // Keep in step with Golem-Core/settings.gradle.kts as nodes are added.
 includeBuild("../Golem-Core") {
     dependencySubstitution {
-        listOf("26.1-fabric", "26.1-neoforge", "1.21.1-neoforge").forEach { node ->
+        listOf("26.1-fabric", "26.1-neoforge", "1.21.1-fabric", "1.21.1-neoforge").forEach { node ->
             val (mc, loader) = node.split('-', limit = 2)
             substitute(module("dev.golem:golemcore-$loader-$mc")).using(project(":$node"))
         }

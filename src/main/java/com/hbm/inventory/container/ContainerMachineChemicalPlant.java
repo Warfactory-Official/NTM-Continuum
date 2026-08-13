@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
@@ -56,7 +57,11 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
         for (int i = 0; i < 3; i++) this.addSlot(validated(16 + i, 80 + i * 18, 54)); // fluid-out load
         for (int i = 0; i < 3; i++) this.addSlot(takeOnly(19 + i, 80 + i * 18, 72));  // filled bucket out
 
+        //? if >=26.1 {
         this.addStandardInventorySlots(playerInventory, 8, 174);
+        //?} else {
+        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
+        *///?}
     }
 
     private Slot validated(int index, int x, int y) {

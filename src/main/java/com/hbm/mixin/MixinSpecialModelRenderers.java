@@ -1,6 +1,9 @@
 package com.hbm.mixin;
 
-//? if fabric {
+// 26.1 only: the renderer this registers, MachineItemModelRenderer, is itself a 26.1-only class (the
+// special-model-renderer system does not exist below), and so is the ID_MAPPER it patches. The
+// matching entry in hbm.fabric.mixins.json is filtered out per node by processResources.
+//? if fabric && >=26.1 {
 
 /*import com.hbm.client.render.MachineItemModelRenderer;
 import com.mojang.serialization.MapCodec;

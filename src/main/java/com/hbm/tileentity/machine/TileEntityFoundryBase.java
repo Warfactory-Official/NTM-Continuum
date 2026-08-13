@@ -82,6 +82,7 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
     }
 
     /** On destruction, drop the molten content as scraps (old breakBlock). */
+    //? if >=26.1 {
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
@@ -92,6 +93,7 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
             amount = 0;
         }
     }
+    //?}
 
     // --- sync (BufPacket) + persistence (1.12.2 keys) ---
 

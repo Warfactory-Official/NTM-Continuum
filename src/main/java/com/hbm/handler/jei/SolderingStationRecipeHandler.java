@@ -1,11 +1,13 @@
 package com.hbm.handler.jei;
 
+//? if jei {
+
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
-import mezz.jei.api.recipe.types.IRecipeType;
+import dev.golem.core.jei.JeiRecipeType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -22,7 +24,7 @@ import java.util.Locale;
  */
 public class SolderingStationRecipeHandler extends JEIUniversalHandler<SolderingRecipes.SolderingRecipe> {
 
-    public SolderingStationRecipeHandler(IGuiHelper helper, IRecipeType<SolderingRecipes.SolderingRecipe> type, Component title, ItemStack... machines) {
+    public SolderingStationRecipeHandler(IGuiHelper helper, JeiRecipeType<SolderingRecipes.SolderingRecipe> type, Component title, ItemStack... machines) {
         super(helper, type, title, machines);
     }
 
@@ -61,3 +63,4 @@ public class SolderingStationRecipeHandler extends JEIUniversalHandler<Soldering
         text(g, consumption, 160 - textWidth(consumption), 55);
     }
 }
+//?}

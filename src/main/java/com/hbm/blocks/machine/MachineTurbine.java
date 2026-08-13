@@ -41,11 +41,20 @@ public class MachineTurbine extends Block implements EntityBlock {
 
     /** Spill the 7-slot inventory when broken (the 1.12.2 {@code breakBlock} → {@code dropInventoryItems}). */
     @Override
+    //? if >=26.1 {
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+    //?} else {
+    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
+        if (!(hbm$level instanceof ServerLevel level)) return;
+    *///?}
         if (level.getBlockEntity(pos) instanceof TileEntityMachineTurbine turbine) {
             Containers.dropContents(level, pos, turbine);
         }
+        //? if >=26.1 {
         super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        //?} else {
+        /*super.onRemove(state, hbm$level, pos, hbm$newState, movedByPiston);
+        *///?}
     }
 
     @SuppressWarnings("unchecked")

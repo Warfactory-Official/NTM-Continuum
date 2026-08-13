@@ -1,11 +1,11 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineShredder;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +22,7 @@ import java.util.Optional;
  * is stalled, so the blade icons carry a hover tooltip explaining it — the 26.1 stand-in for the old
  * {@code drawInfoPanel} error marker that hung off the GUI's left edge.
  */
-public class GUIMachineShredder extends AbstractContainerScreen<ContainerMachineShredder> {
+public class GUIMachineShredder extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineShredder> {
 
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_shredder.png");
 
@@ -31,9 +31,15 @@ public class GUIMachineShredder extends AbstractContainerScreen<ContainerMachine
     }
 
     @Override
+    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+    //?} else {
+    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F,
+        //?}
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F,
                 this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineShredder shredder = this.menu.getShredder();
@@ -42,13 +48,13 @@ public class GUIMachineShredder extends AbstractContainerScreen<ContainerMachine
         if (shredder.power > 0) {
             int i = (int) shredder.getPowerScaled(88);
             if (i > 0) {
-                graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 8, this.topPos + 106 - i,
+                GuiDraw.blit(graphics, TEXTURE, this.leftPos + 8, this.topPos + 106 - i,
                         176.0F, (float) (160 - i), 16, i, 256, 256);
             }
         }
 
         int progress = shredder.getProgressScaled(34);
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos + 63, this.topPos + 89,
+        GuiDraw.blit(graphics, TEXTURE, this.leftPos + 63, this.topPos + 89,
                 176.0F, 54.0F, progress + 1, 18, 256, 256);
 
         drawGear(graphics, shredder.getGearLeft(), this.leftPos + 43, 176.0F);
@@ -59,21 +65,29 @@ public class GUIMachineShredder extends AbstractContainerScreen<ContainerMachine
     private void drawGear(GuiGraphicsExtractor graphics, int state, int x, float u) {
         if (state < 1 || state > 3) return;
         float v = (state - 1) * 18.0F;
-        graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, x, this.topPos + 71, u, v, 18, 18, 256, 256);
+        GuiDraw.blit(graphics, TEXTURE, x, this.topPos + 71, u, v, 18, 18, 256, 256);
     }
 
     @Override
+    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    //?} else {
+    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    *///?}
+        //? if >=26.1 {
         super.extractTooltip(graphics, mouseX, mouseY);
+        //?} else {
+        /*super.renderTooltip(graphics, mouseX, mouseY);
+        *///?}
         TileEntityMachineShredder shredder = this.menu.getShredder();
         if (shredder == null) return;
 
         if (this.isHovering(8, 18, 16, 88, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font,
+            GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(shredder.power, TileEntityMachineShredder.maxPower),
                     Optional.empty(), mouseX, mouseY);
         } else if (shredder.bladesBroken() && this.isHovering(43, 71, 54, 18, mouseX, mouseY)) {
-            graphics.setTooltipForNextFrame(this.font,
+            GuiDraw.tooltip(graphics, this.font,
                     List.of(Component.translatable("gui.shredder.bladesBroken").withStyle(ChatFormatting.RED)),
                     Optional.empty(), mouseX, mouseY);
         }
@@ -82,7 +96,7 @@ public class GUIMachineShredder extends AbstractContainerScreen<ContainerMachine
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         // Only the player-inventory label; the taller (233px) background already carries the machine name.
-        graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.imageHeight - 96 + 2,
+        GuiDraw.text(graphics, this.font, this.playerInventoryTitle, this.inventoryLabelX, this.imageHeight - 96 + 2,
                 0xFF404040, false);
     }
 }

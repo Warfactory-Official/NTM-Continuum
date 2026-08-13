@@ -40,7 +40,7 @@ import java.util.List;
  * filter; empty-hand right-click clears it (the invert toggles are deferred with IToolable). Drawn by
  * the BER (the old {@code foundry_outlet.obj}).
  */
-public class FoundryOutlet extends Block implements EntityBlock, ICrucibleAcceptor, ILookOverlay {
+public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements EntityBlock, ICrucibleAcceptor, ILookOverlay {
 
     public FoundryOutlet(Properties properties) {
         super(properties);
@@ -99,9 +99,22 @@ public class FoundryOutlet extends Block implements EntityBlock, ICrucibleAccept
 
     /** 1.12.2 interactions: scraps set the filter, any other right-click toggles the redstone invert;
      * sneak-right-click with an empty hand clears the filter (replaces the old screwdriver). */
+    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+    }
+    //?} else {
+    /*@Override
+    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
+        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
+             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
+             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+    *///?}
+
+    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         MaterialStack mats = ItemScraps.getMats(stack);
         if (mats != null) {
             if (!level.isClientSide()) {
@@ -113,7 +126,12 @@ public class FoundryOutlet extends Block implements EntityBlock, ICrucibleAccept
             }
             return InteractionResult.SUCCESS;
         }
+        //? if >=26.1 {
         return super.useItemOn(stack, state, level, pos, player, hand, hit);
+        //?} else {
+        /*return super.useItemOn(stack, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
+                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
+        *///?}
     }
 
     @Override

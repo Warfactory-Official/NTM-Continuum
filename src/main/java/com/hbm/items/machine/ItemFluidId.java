@@ -1,5 +1,6 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.data.ModelData;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
@@ -11,7 +12,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomModelData;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
@@ -31,9 +34,9 @@ import java.util.function.Consumer;
  * definition's {@code minecraft:custom_model_data} tint source) — the 26.1 replacement for the original's
  * {@code IItemColor} handler. No cycling, no per-fluid model.
  */
-public class ItemFluidIdentifier extends Item implements IItemFluidIdentifier {
+public class ItemFluidId extends Item implements IItemFluidId {
 
-    public ItemFluidIdentifier(Properties properties) {
+    public ItemFluidId(Properties properties) {
         super(properties);
     }
 
@@ -45,8 +48,7 @@ public class ItemFluidIdentifier extends Item implements IItemFluidIdentifier {
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModMachineItems.fluid_identifier.get());
         stack.set(ModDataComponents.FLUID_ID.get(), fluid.getID());
-        stack.set(DataComponents.CUSTOM_MODEL_DATA,
-                new CustomModelData(List.of(), List.of(), List.of(), List.of(fluid.getColor())));
+        ModelData.setColor(stack, fluid.getColor());
         return stack;
     }
 
@@ -71,8 +73,13 @@ public class ItemFluidIdentifier extends Item implements IItemFluidIdentifier {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         adder.accept(Component.translatable("item.hbm.fluid_identifier.info").withStyle(ChatFormatting.GRAY));
         adder.accept(Component.literal("   " + prettify(getFluid(stack).getName())).withStyle(ChatFormatting.AQUA));
     }

@@ -23,7 +23,67 @@ stonecutter parameters {
 
     swaps["mc_version"] = "\"${node.metadata.version}\";"
 
-    // Phase 1 will add the mechanical 26.1 -> older renames here, e.g.
-    //   replacements { string(current.parsed < "1.21.11") { replace("Identifier", "ResourceLocation") } }
-    // Declared in the 26.1 -> older direction because 26.1 is the source of truth for this port.
+    // True only where the node declares JEI coordinates, so the integration compiles out elsewhere.
+    constants["jei"] = !(node.project.findProperty("deps.jei") as String?).isNullOrBlank()
+
+    // Mechanical renames, declared 26.1 -> older because 26.1 is this port's source of truth.
+    replacements {
+        string(current.parsed < "1.21.11") {
+            replace("Identifier", "ResourceLocation")
+        }
+        string(current.parsed < "26.1") {
+            replace("GuiGraphicsExtractor", "GuiGraphics")
+        }
+        // 26.1 moved RenderType into a `rendertype` subpackage. Only the fully-qualified path is
+        // replaced, never the bare type name: a substring swap of "RenderType" would also mangle
+        // RenderTypes, CompatRenderTypes and any other symbol containing it.
+        string(current.parsed < "26.1") {
+            replace("net.minecraft.client.renderer.rendertype.RenderType", "net.minecraft.client.renderer.RenderType")
+        }
+        // Vanilla renames between 1.21.1 and 26.1. Each string below is distinctive enough that a
+        // substring swap cannot hit an unrelated symbol — the lesson from "Identifier", which had to
+        // become a helper because it appeared inside HBM's own class names.
+        string(current.parsed < "26.1") {
+            replace("getMinY()", "getMinBuildHeight()")
+            replace("getMaxY()", "getMaxBuildHeight()")
+            replace("MobEffects.SLOWNESS", "MobEffects.MOVEMENT_SLOWDOWN")
+            replace("MobEffects.MINING_FATIGUE", "MobEffects.DIG_SLOWDOWN")
+            // Older versions spell this with a doubled s. Injective in both directions: the 26.1
+            // spelling never appears below, and vice versa.
+            replace("noCollision()", "noCollission()")
+            // 26.1 renamed ChunkPos.asLong to pack. Injective: neither spelling exists in the other era.
+            replace("ChunkPos.pack(", "ChunkPos.asLong(")
+            // 26.1 re-homed several vanilla animals into per-family subpackages. Spelled out per
+            // class, not per package: Stonecutter rejects rules that are ambiguous in reverse, and
+            // both `cow.` and `feline.` would map back onto plain `animal.`.
+            replace("net.minecraft.world.entity.animal.cow.Cow", "net.minecraft.world.entity.animal.Cow")
+            replace("net.minecraft.world.entity.animal.cow.MushroomCow", "net.minecraft.world.entity.animal.MushroomCow")
+            replace("net.minecraft.world.entity.animal.equine.Horse", "net.minecraft.world.entity.animal.horse.Horse")
+            replace("net.minecraft.world.entity.animal.equine.SkeletonHorse", "net.minecraft.world.entity.animal.horse.SkeletonHorse")
+            replace("net.minecraft.world.entity.animal.equine.ZombieHorse", "net.minecraft.world.entity.animal.horse.ZombieHorse")
+            replace("net.minecraft.world.entity.animal.feline.Cat", "net.minecraft.world.entity.animal.Cat")
+            replace("net.minecraft.world.entity.animal.feline.Ocelot", "net.minecraft.world.entity.animal.Ocelot")
+            // Straight renames. Each 26.1 spelling is absent below, and each older spelling is absent
+            // on 26.1, so the mapping is reversible.
+            replace("EntitySpawnReason", "MobSpawnType")
+            replace("VegetationBlock", "BushBlock")
+            replace("getMinSectionY()", "getMinSection()")
+            replace("snapTo(", "moveTo(")
+            // More 26.1 per-family subpackages, spelled per class to stay reversible.
+            replace("net.minecraft.world.entity.monster.zombie.Zombie", "net.minecraft.world.entity.monster.Zombie")
+            replace("net.minecraft.world.entity.monster.skeleton.AbstractSkeleton", "net.minecraft.world.entity.monster.AbstractSkeleton")
+            replace("net.minecraft.world.entity.npc.villager.Villager", "net.minecraft.world.entity.npc.Villager")
+            // Screen label pass: 26.1 renamed renderLabels when screen drawing became an extract pass.
+            replace("extractLabels(", "renderLabels(")
+            replace("getCraftingRemainder()", "getCraftingRemainingItem()")
+            replace("MobEffects.INSTANT_DAMAGE", "MobEffects.HARM")
+            replace("InteractionResult.TRY_WITH_EMPTY_HAND", "InteractionResult.PASS")
+            replace("MobEffects.NAUSEA", "MobEffects.CONFUSION")
+            // Fabric API's own rename, not vanilla's. Qualified with the owning type so the rule can
+            // only ever hit these calls, and reversible: neither spelling exists in the other era.
+            replace("PayloadTypeRegistry.clientboundPlay()", "PayloadTypeRegistry.playS2C()")
+            replace("PayloadTypeRegistry.serverboundPlay()", "PayloadTypeRegistry.playC2S()")
+        }
+    }
+
 }

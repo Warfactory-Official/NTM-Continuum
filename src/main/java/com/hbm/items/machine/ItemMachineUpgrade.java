@@ -8,7 +8,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+//? if >=26.1 {
 import net.minecraft.world.item.component.TooltipDisplay;
+//?}
 
 /**
  * A machine upgrade module (1.12.2 {@code ItemMachineUpgrade}). Carries its {@link UpgradeType} and a
@@ -35,7 +37,12 @@ public class ItemMachineUpgrade extends Item {
     }
 
     @Override
+    //? if >=26.1 {
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
+    //?} else {
+    /*public void appendHoverText(ItemStack stack, Item.TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
+        java.util.function.Consumer<Component> adder = hbm$lines::add;
+    *///?}
         IUpgradeInfoProvider provider = com.hbm.inventory.gui.UpgradeInfoHelper.resolveProvider();
         if (provider != null && provider.canProvideInfo(this.type, this.tier, flag.isAdvanced())) {
             List<Component> info = new ArrayList<>();
