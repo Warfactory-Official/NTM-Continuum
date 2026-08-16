@@ -86,16 +86,12 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     }
 
     @Override
-    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+    protected void defineData(dev.golem.core.data.SynchedData data) {
         // No synced data — the entity is invisible and purely server-driven.
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-    //?} else {
-    /*public boolean hurt(DamageSource source, float damage) {
-    *///?}
+    protected boolean onHurt(DamageSource source, float damage) {
         // The blast cannot be damaged/killed by anything.
         return false;
     }

@@ -49,7 +49,7 @@ public class MachineDiesel extends dev.golem.core.world.CompatBlock implements E
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE; // the DieselGenRenderer draws the OBJ
     }
 
@@ -68,7 +68,7 @@ public class MachineDiesel extends dev.golem.core.world.CompatBlock implements E
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
             Services.PLATFORM.openMenu(serverPlayer, provider, pos);
@@ -83,12 +83,12 @@ public class MachineDiesel extends dev.golem.core.world.CompatBlock implements E
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 

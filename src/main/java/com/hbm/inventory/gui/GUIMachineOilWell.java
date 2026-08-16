@@ -6,7 +6,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.oil.TileEntityOilDrillBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +21,7 @@ import java.util.Optional;
  */
 public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineOilWell> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/machine/gui_well.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_well.png");
     private static final int TANK_TOP = 17, TANK_W = 16, TANK_H = 52;
 
     public GUIMachineOilWell(ContainerMachineOilWell menu, Inventory playerInventory, Component title) {
@@ -40,14 +39,7 @@ public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityOilDrillBase te = this.menu.getDrill();
@@ -107,16 +99,7 @@ public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityOilDrillBase te = this.menu.getDrill();
         if (te == null) return;
 

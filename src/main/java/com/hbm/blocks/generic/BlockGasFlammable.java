@@ -6,18 +6,12 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-//? if >=26.1 {
-import net.minecraft.world.level.redstone.Orientation;
-//?}
 import net.minecraft.world.level.storage.loot.LootParams;
 import org.jspecify.annotations.Nullable;
 
@@ -48,7 +42,7 @@ import java.util.List;
  * {@code scheduleTick} the explicit pulse (see the block-tick gotcha in IMPLEMENTATION.md §22), so the
  * drift/dissipation runs on {@code randomTick} and only the ignition chain uses {@code scheduleTick}.
  */
-public class BlockGasFlammable extends Block {
+public class BlockGasFlammable extends dev.golem.core.world.CompatBlock {
 
     public BlockGasFlammable(Properties properties) {
         super(properties);
@@ -57,7 +51,7 @@ public class BlockGasFlammable extends Block {
     // --- drops: a gas cell yields nothing, ever ---------------------------------------------------
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         return List.of();
     }
 
@@ -79,7 +73,7 @@ public class BlockGasFlammable extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!enabled()) {
             level.removeBlock(pos, false);
             return;
@@ -111,12 +105,8 @@ public class BlockGasFlammable extends Block {
     // --- ignition ---------------------------------------------------------------------------------
 
     @Override
-    //? if >=26.1 {
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock,
-                                   @Nullable Orientation orientation, boolean movedByPiston) {
-    //?} else {
-    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos hbm$fromPos, boolean movedByPiston) {
-    *///?}
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock,
+                                     boolean movedByPiston) {
         if (level.isClientSide() || !enabled()) return;
         for (Direction dir : Direction.values()) {
             if (isFireSource(level.getBlockState(pos.relative(dir)))) {
@@ -127,17 +117,12 @@ public class BlockGasFlammable extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
-                                InsideBlockEffectApplier effects, boolean precise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!level.isClientSide() && enabled() && entity.isOnFire()) combust(level, pos);
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         // the chain-burn pulse scheduled by a neighbouring cell's combust()
         if (enabled()) combust(level, pos);
     }

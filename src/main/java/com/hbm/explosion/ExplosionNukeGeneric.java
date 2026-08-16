@@ -1,19 +1,19 @@
 package com.hbm.explosion;
 
+import dev.golem.core.world.Effects;
+
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.Raycasts;
 import com.hbm.blocks.ModFalloutBlocks;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
 
 import java.util.List;
 
@@ -46,12 +46,12 @@ public final class ExplosionNukeGeneric {
             double entY = e.getY() + e.getEyeHeight();
             double entZ = e.getZ();
 
-            if (isObstructed(world, x, y, z, entX, entY, entZ)) continue;
+            if (isObstructed(world, x, y, z, entX, entY, entZ, e)) continue;
 
             double damage = maxDamage * (radius - dist) / radius;
             boolean doKnockback = Compat.hurt(e, serverLevel, source, (float) damage);
 
-            e.igniteForSeconds(5);
+            Effects.ignite(e, 5);
 
             if (doKnockback) {
                 Vec3 knock = new Vec3(entX - x, entY - y, entZ - z).normalize();
@@ -61,13 +61,11 @@ public final class ExplosionNukeGeneric {
     }
 
     /** True if a solid block lies between the two points (line-of-sight blocked). */
-    private static boolean isObstructed(Level world, double x1, double y1, double z1, double x2, double y2, double z2) {
+    private static boolean isObstructed(Level world, double x1, double y1, double z1,
+                                        double x2, double y2, double z2, Entity contextEntity) {
         Vec3 from = new Vec3(x1, y1, z1);
         Vec3 to = new Vec3(x2, y2, z2);
-        // Use the CollisionContext overload with CollisionContext.empty(): the (…, Entity) ctor calls
-        // CollisionContext.of(entity) which NPEs on a null entity.
-        return world.clip(new ClipContext(from, to, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty()))
-                .getType() != HitResult.Type.MISS;
+        return Raycasts.isObstructed(world, from, to, contextEntity);
     }
 
     /**

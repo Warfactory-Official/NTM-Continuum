@@ -24,7 +24,9 @@ public final class Services {
         /*IPlatformHelper helper = new com.hbm.platform.fabric.FabricPlatformHelper();
         *///?} elif neoforge {
         IPlatformHelper helper = new com.hbm.platform.neoforge.NeoForgePlatformHelper();
-        //?}
+        //?} elif forge {
+        /*IPlatformHelper helper = new com.hbm.platform.forge.ForgePlatformHelper();
+        *///?}
         Constants.LOG.debug("Loaded {} for service {}", helper, IPlatformHelper.class);
         return helper;
     }

@@ -1,5 +1,7 @@
 package com.hbm.client.model;
 
+import dev.golem.core.Ids;
+import dev.golem.core.render.Vertexes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -149,8 +151,8 @@ public final class WavefrontObj {
                 if (t[0].equals("newmtl") && t.length > 1) {
                     current = t[1];
                 } else if (t[0].equals("map_Kd") && t.length > 1 && current != null) {
-                    Identifier tex = Identifier.parse(t[1]);
-                    map.put(current, Identifier.fromNamespaceAndPath(tex.getNamespace(), "textures/" + tex.getPath() + ".png"));
+                    Identifier tex = Ids.parse(t[1]);
+                    map.put(current, Ids.of(tex.getNamespace(), "textures/" + tex.getPath() + ".png"));
                 }
             }
         } catch (IOException e) {
@@ -240,11 +242,6 @@ public final class WavefrontObj {
             nx = nrm[0]; ny = nrm[1]; nz = nrm[2];
         }
         if (reverseNormal) { nx = -nx; ny = -ny; nz = -nz; }
-        buffer.addVertex(pose, p[0], p[1], p[2])
-                .setColor(color)
-                .setUv(u, v)
-                .setOverlay(overlay)
-                .setLight(light)
-                .setNormal(pose, nx, ny, nz);
+        Vertexes.vertex(buffer, pose, p[0], p[1], p[2], color, u, v, overlay, light, nx, ny, nz);
     }
 }

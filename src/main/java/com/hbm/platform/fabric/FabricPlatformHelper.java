@@ -12,16 +12,19 @@ import com.hbm.platform.services.MenuPosFactory;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 //?} else {
-/^import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+ /^import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
-^///?}
+import net.minecraft.network.RegistryFriendlyByteBuf;
+ ^///?}
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+//? if >=1.20.5 {
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+//?}
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
@@ -55,8 +58,11 @@ public class FabricPlatformHelper implements IPlatformHelper {
     public <T extends AbstractContainerMenu> MenuType<T> menuTypeWithPos(MenuPosFactory<T> factory) {
         //? if >=26.1 {
         return new ExtendedMenuType<>(factory::create, BlockPos.STREAM_CODEC);
-        //?} else {
+        //?} elif >=1.20.5 {
         /^return new ExtendedScreenHandlerType<>(factory::create, BlockPos.STREAM_CODEC);
+        ^///?} else {
+        /^return new ExtendedScreenHandlerType<>((containerId, inventory, buffer) ->
+                factory.create(containerId, inventory, buffer.readBlockPos()));
         ^///?}
     }
 
@@ -65,12 +71,18 @@ public class FabricPlatformHelper implements IPlatformHelper {
         //? if >=26.1 {
         player.openMenu(new ExtendedMenuProvider<BlockPos>() {
         //?} else {
-        /^player.openMenu(new ExtendedScreenHandlerFactory<BlockPos>() {
+        /^player.openMenu(new ExtendedScreenHandlerFactory() {
         ^///?}
             @Override
+            //? if >=1.20.5 {
             public BlockPos getScreenOpeningData(ServerPlayer p) {
                 return pos;
             }
+            //?} else {
+            /^public void writeScreenOpeningData(ServerPlayer p, RegistryFriendlyByteBuf buffer) {
+                buffer.writeBlockPos(pos);
+            }
+            ^///?}
 
             @Override
             public Component getDisplayName() {
@@ -89,6 +101,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
         return FabricBlockEntityTypeBuilder.<T>create(factory::create, blocks).build();
     }
 
+    //? if >=1.20.5 {
     @Override
     public void sendToTracking(ServerLevel level, BlockPos pos, CustomPacketPayload payload) {
         for (ServerPlayer player : PlayerLookup.tracking(level, pos)) {
@@ -100,5 +113,6 @@ public class FabricPlatformHelper implements IPlatformHelper {
     public void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
         ServerPlayNetworking.send(player, payload);
     }
+    //?}
 }
 *///?}

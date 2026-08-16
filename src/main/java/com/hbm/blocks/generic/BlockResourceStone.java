@@ -20,7 +20,7 @@ import java.util.List;
  * {@code chunk_ore[MALACHITE] × (3 + fortune + rand.nextInt(fortune + 2))} — a single stack, not a
  * per-item roll, exactly as upstream.
  */
-public class BlockResourceStone extends Block {
+public class BlockResourceStone extends dev.golem.core.world.CompatBlock {
 
     private final boolean malachite;
 
@@ -30,7 +30,7 @@ public class BlockResourceStone extends Block {
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         if (!malachite) return List.of(new ItemStack(this));
         RandomSource rand = params.getLevel().getRandom();
         int fortune = OreDrops.fortune(params);

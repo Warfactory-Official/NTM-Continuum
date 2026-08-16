@@ -51,7 +51,7 @@ public final class LiquefactionRecipes {
     public static Map<TagKey<Item>, FluidStack> getTagRecipes() { init(); return Collections.unmodifiableMap(byTag); }
 
     private static TagKey<Item> c(String path) {
-        return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", path));
+        return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", path));
     }
 
     private static void item(Item in, int fill, com.hbm.inventory.fluid.FluidType type) {
@@ -100,6 +100,6 @@ public final class LiquefactionRecipes {
     }
 
     private static Item byName(String ns, String path) {
-        return BuiltInRegistries.ITEM.getOptional(Identifier.fromNamespaceAndPath(ns, path)).orElse(null);
+        return BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.of(ns, path)).orElse(null);
     }
 }

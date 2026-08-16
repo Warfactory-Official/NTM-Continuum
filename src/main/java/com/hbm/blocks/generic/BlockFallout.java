@@ -2,24 +2,19 @@ package com.hbm.blocks.generic;
 
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.potion.ModEffects;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-//? if >=26.1 {
-import net.minecraft.world.level.ScheduledTickAccess;
-//?}
 import net.minecraft.world.level.block.Block;
+import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -37,7 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * never on ice/packed ice; loses support → pops off (snow-layer pattern via {@code updateShape},
  * which also covers the old fork's post-placement fallout re-validation pass).
  */
-public class BlockFallout extends Block {
+public class BlockFallout extends dev.golem.core.world.CompatBlock {
 
     private static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 2, 16);
 
@@ -46,7 +41,7 @@ public class BlockFallout extends Block {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
@@ -55,7 +50,7 @@ public class BlockFallout extends Block {
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!level.isClientSide()) {
             level.scheduleTick(pos, this, tickDelay(level.getRandom()));
@@ -63,13 +58,13 @@ public class BlockFallout extends Block {
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         ChunkRadiationManager.proxy.incrementRad(level, pos, 1, 100);
         level.scheduleTick(pos, this, tickDelay(random));
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockPos below = pos.below();
         BlockState belowState = level.getBlockState(below);
         if (belowState.is(Blocks.ICE) || belowState.is(Blocks.PACKED_ICE)) return false;
@@ -77,21 +72,10 @@ public class BlockFallout extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
-                                     Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
-                                     RandomSource random) {
-    //?} else {
-    /*protected BlockState updateShape(BlockState state, Direction directionToNeighbour, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
-        net.minecraft.world.level.LevelAccessor ticks = level;
-        net.minecraft.util.RandomSource random = level.getRandom();
-    *///?}
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState) {
         if (!state.canSurvive(level, pos)) return Blocks.AIR.defaultBlockState();
-        //? if >=26.1 {
-        return super.updateShape(state, level, ticks, pos, directionToNeighbour, neighbourPos, neighbourState, random);
-        //?} else {
-        /*return super.updateShape(state, directionToNeighbour, neighbourState, level, pos, neighbourPos);
-        *///?}
+        return state;
     }
 
     @Override
@@ -101,22 +85,13 @@ public class BlockFallout extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean isPrecise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
-        //? if >=26.1 {
-super.entityInside(state, level, pos, entity, effects, isPrecise);
-        //?} else {
-        /*super.entityInside(state, level, pos, entity);
-        *///?}
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         irradiate(level, entity);
     }
 
     private static void irradiate(Level level, Entity entity) {
         if (!level.isClientSide() && entity instanceof LivingEntity living) {
-            living.addEffect(new MobEffectInstance(ModEffects.radiation(), 2 * 60 * 20, 14));
+            Effects.addRegistered(living, ModEffects.RADIATION.get(), 2 * 60 * 20, 14);
         }
     }
 }

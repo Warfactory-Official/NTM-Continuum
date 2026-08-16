@@ -32,9 +32,9 @@ public class HeatBoilerRenderer implements CompatBER<TileEntityHeatBoiler, HeatB
     private final RenderType renderType;
 
     public HeatBoilerRenderer() {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/boiler.obj"));
-        this.burstModel = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/boiler_burst.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/boiler.png"));
+        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/boiler.obj"));
+        this.burstModel = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/boiler_burst.obj"));
+        this.renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/boiler.png"));
     }
 
     @Override public HeatBoilerRenderState createRenderState() { return new HeatBoilerRenderState(); }

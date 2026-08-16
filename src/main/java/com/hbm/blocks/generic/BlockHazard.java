@@ -8,12 +8,8 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -32,7 +28,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * from the block‑item's configured RADIATION hazard (the old {@code getRawRadsFromBlock} two‑step), so
  * holding the block irradiates you too.
  */
-public class BlockHazard extends Block {
+public class BlockHazard extends dev.golem.core.world.CompatBlock {
 
     private float radIn = 0.0F;
     private float radMax = 0.0F;
@@ -74,7 +70,7 @@ public class BlockHazard extends Block {
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         // Old onBlockAdded: ONE initial scheduled tick; the STEADY cadence for radIn-only blocks is vanilla
         // random ticks (setTickRandomly ≙ Properties.randomTicks()), NOT self-re-scheduling.
@@ -91,7 +87,7 @@ public class BlockHazard extends Block {
      * reading is a faithful sawtooth (spike +radIn, then decay/diffusion), capped at radMax.
      */
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (rad3d > 0) {
             ContaminationUtil.radiate(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 32, rad3d);
             level.scheduleTick(pos, this, tickDelay(random));
@@ -102,7 +98,7 @@ public class BlockHazard extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         tick(state, level, pos, random);
     }
 
@@ -113,16 +109,7 @@ public class BlockHazard extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean isPrecise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
-        //? if >=26.1 {
-super.entityInside(state, level, pos, entity, effects, isPrecise);
-        //?} else {
-        /*super.entityInside(state, level, pos, entity);
-        *///?}
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (entity instanceof LivingEntity living) HazardSystem.applyHazards(this, living);
     }
 

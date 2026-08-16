@@ -1,26 +1,21 @@
 package com.hbm.items.machine;
 
 import dev.golem.core.data.ModelData;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomModelData;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 /**
  * A fluid identifier: stamps a tank/duct with one fixed {@link FluidType} (right-click a duct or drop it
@@ -34,20 +29,20 @@ import java.util.function.Consumer;
  * definition's {@code minecraft:custom_model_data} tint source) — the 26.1 replacement for the original's
  * {@code IItemColor} handler. No cycling, no per-fluid model.
  */
-public class ItemFluidId extends Item implements IItemFluidId {
+public class ItemFluidId extends CompatItem implements IItemFluidId {
 
     public ItemFluidId(Properties properties) {
         super(properties);
     }
 
     public static FluidType getFluid(ItemStack stack) {
-        return Fluids.fromID(stack.getOrDefault(ModDataComponents.FLUID_ID.get(), 0));
+        return Fluids.fromID(ModDataComponents.fluidId(stack));
     }
 
     /** Builds a dedicated identifier for {@code fluid} (FLUID_ID for logic + the tint colour for rendering). */
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModMachineItems.fluid_identifier.get());
-        stack.set(ModDataComponents.FLUID_ID.get(), fluid.getID());
+        ModDataComponents.fluidId(stack, fluid.getID());
         ModelData.setColor(stack, fluid.getColor());
         return stack;
     }
@@ -73,14 +68,9 @@ public class ItemFluidId extends Item implements IItemFluidId {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                               Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
-        adder.accept(Component.translatable("item.hbm.fluid_identifier.info").withStyle(ChatFormatting.GRAY));
-        adder.accept(Component.literal("   " + prettify(getFluid(stack).getName())).withStyle(ChatFormatting.AQUA));
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("item.hbm.fluid_identifier.info").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.literal("   " + prettify(getFluid(stack).getName())).withStyle(ChatFormatting.AQUA));
     }
 }

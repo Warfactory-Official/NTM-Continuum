@@ -5,20 +5,14 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomModelData;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 
-import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 /**
  * A portable universal fluid container — the 1.12.2 {@code ItemFluidTankV2}. One registered item holds
@@ -32,7 +26,7 @@ import java.util.function.Consumer;
  * the fill level shows on the vanilla durability bar. (The Forge {@code IFluidHandlerItem} capability and
  * the lead-shielded variant are dropped — re-add with the per-loader fluid capability bridge, §13d.)
  */
-public class ItemFluidTank extends Item implements IFillableItem {
+public class ItemFluidTank extends CompatItem implements IFillableItem {
 
     public final int capacity;
     private final String base; // texture/lang base, e.g. "fluid_tank" / "fluid_barrel"
@@ -46,25 +40,25 @@ public class ItemFluidTank extends Item implements IFillableItem {
     // --- component access ---
 
     public static FluidType getType(ItemStack stack) {
-        return Fluids.fromID(stack.getOrDefault(ModDataComponents.FLUID_ID.get(), 0));
+        return Fluids.fromID(ModDataComponents.fluidId(stack));
     }
 
     @Override
     public int getFill(ItemStack stack) {
-        return Math.max(0, stack.getOrDefault(ModDataComponents.FLUID_AMOUNT.get(), 0));
+        return Math.max(0, ModDataComponents.fluidAmount(stack));
     }
 
     /** Writes the fluid + amount onto the stack (and the tint colour for rendering). When empty, the
      * components are removed so an emptied container is identical to (and stacks with) a pristine one. */
     public void setFluid(ItemStack stack, FluidType type, int amount) {
         if (type == null || type == Fluids.NONE || amount <= 0) {
-            stack.remove(ModDataComponents.FLUID_ID.get());
-            stack.remove(ModDataComponents.FLUID_AMOUNT.get());
-            stack.remove(DataComponents.CUSTOM_MODEL_DATA);
+            ModDataComponents.removeFluidId(stack);
+            ModDataComponents.removeFluidAmount(stack);
+            ModDataComponents.removeCustomModelData(stack);
             return;
         }
-        stack.set(ModDataComponents.FLUID_ID.get(), type.getID());
-        stack.set(ModDataComponents.FLUID_AMOUNT.get(), amount);
+        ModDataComponents.fluidId(stack, type.getID());
+        ModDataComponents.fluidAmount(stack, amount);
         ModelData.setColor(stack, type.getColor());
     }
 
@@ -138,14 +132,9 @@ public class ItemFluidTank extends Item implements IFillableItem {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
-        adder.accept(Component.literal(getFill(stack) + " / " + capacity + " mB").withStyle(ChatFormatting.GRAY));
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.literal(getFill(stack) + " / " + capacity + " mB").withStyle(ChatFormatting.GRAY));
     }
 
     /** Title-cases the internal fluid name, e.g. {@code HEAVY_OIL} → {@code "Heavy Oil"}. */

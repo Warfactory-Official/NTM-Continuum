@@ -2,7 +2,9 @@ package com.hbm.mixin;
 
 
 import com.hbm.client.NukeScreenEffects;
+//? if >=1.21.1 {
 import net.minecraft.client.DeltaTracker;
+//?}
 import net.minecraft.client.gui.Gui;
 //? if >=26.1 {
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -42,9 +44,17 @@ public class MixinGui {
         graphics.pose().pushMatrix();
         graphics.pose().translate((float) NukeScreenEffects.shakeOffsetX(), (float) NukeScreenEffects.shakeOffsetY());
     }
-    //?} else {
+    //?} else if >=1.21.1 {
     /*@Inject(method = "render", at = @At("HEAD"))
     private void hbm$shakePush(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        hbm$shaking = NukeScreenEffects.isShakeActive();
+        if (!hbm$shaking) return;
+        graphics.pose().pushPose();
+        graphics.pose().translate(NukeScreenEffects.shakeOffsetX(), NukeScreenEffects.shakeOffsetY(), 0D);
+    }
+    *///?} else {
+    /*@Inject(method = "render", at = @At("HEAD"))
+    private void hbm$shakePush(GuiGraphicsExtractor graphics, float partialTick, CallbackInfo ci) {
         hbm$shaking = NukeScreenEffects.isShakeActive();
         if (!hbm$shaking) return;
         graphics.pose().pushPose();
@@ -59,9 +69,16 @@ public class MixinGui {
         hbm$shaking = false;
         graphics.pose().popMatrix();
     }
-    //?} else {
+    //?} else if >=1.21.1 {
     /*@Inject(method = "render", at = @At("RETURN"))
     private void hbm$shakePop(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        if (!hbm$shaking) return;
+        hbm$shaking = false;
+        graphics.pose().popPose();
+    }
+    *///?} else {
+    /*@Inject(method = "render", at = @At("RETURN"))
+    private void hbm$shakePop(GuiGraphicsExtractor graphics, float partialTick, CallbackInfo ci) {
         if (!hbm$shaking) return;
         hbm$shaking = false;
         graphics.pose().popPose();

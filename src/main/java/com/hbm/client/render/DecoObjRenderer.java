@@ -84,8 +84,8 @@ public class DecoObjRenderer implements CompatBER<TileEntityDeco, DecoRenderStat
     }
 
     private static Part part(String obj, String texture) {
-        return new Part(WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, obj)),
-                CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/" + texture + ".png")));
+        return new Part(WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, obj)),
+                CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/" + texture + ".png")));
     }
 
     private void put(Block block, Style style, Map<Direction, Float> yaw, Part... parts) {

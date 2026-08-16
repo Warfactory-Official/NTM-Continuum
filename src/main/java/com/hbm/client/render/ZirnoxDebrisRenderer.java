@@ -34,9 +34,9 @@ public class ZirnoxDebrisRenderer extends dev.golem.core.render.CompatEntityRend
     }
 
     private void register(DebrisType type, String model, String texture) {
-        models[type.ordinal()] = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/" + model));
+        models[type.ordinal()] = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + model));
         renderTypes[type.ordinal()] = CompatRenderTypes.entityCutout(
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/" + texture));
+                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/" + texture));
     }
 
     @Override

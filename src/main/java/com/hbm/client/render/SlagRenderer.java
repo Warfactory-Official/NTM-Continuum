@@ -29,7 +29,7 @@ public class SlagRenderer implements CompatBER<TileEntitySlag, SlagRenderer.Stat
     public SlagRenderer() {
         // Emissive: uniform brightness on all faces (the single-winding quads read as back faces from
         // two sides under PER_FACE_LIGHTING otherwise).
-        this.renderType = CompatRenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/blocks/slag.png"));
+        this.renderType = CompatRenderTypes.entityTranslucentEmissive(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/blocks/slag.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

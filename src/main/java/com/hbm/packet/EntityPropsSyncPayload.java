@@ -1,10 +1,9 @@
 package com.hbm.packet;
 
 import com.hbm.Constants;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import dev.golem.core.Ids;
+import dev.golem.core.net.GolemCodec;
+import dev.golem.core.net.GolemPayload;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -14,17 +13,15 @@ import net.minecraft.resources.Identifier;
  * only to the owning player (every 5 ticks from {@code EntityEffectHandler}), so no entity id is
  * carried.
  */
-public record EntityPropsSyncPayload(byte[] data) implements CustomPacketPayload {
+public record EntityPropsSyncPayload(byte[] data) implements GolemPayload {
 
-    public static final Type<EntityPropsSyncPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "props_sync"));
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, EntityPropsSyncPayload> CODEC = StreamCodec.composite(
-            ByteBufCodecs.BYTE_ARRAY, EntityPropsSyncPayload::data,
-            EntityPropsSyncPayload::new);
+    public static final GolemCodec<EntityPropsSyncPayload> CODEC = GolemCodec.of(EntityPropsSyncPayload.class,
+            Ids.of(Constants.MOD_ID, "props_sync"),
+            (payload, buffer) -> buffer.writeByteArray(payload.data),
+            buffer -> new EntityPropsSyncPayload(buffer.readByteArray()));
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public Identifier id() {
+        return CODEC.id();
     }
 }

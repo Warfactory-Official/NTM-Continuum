@@ -4,14 +4,12 @@ import com.hbm.platform.Services;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityWasteDrum;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -21,7 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** Water-cooled storage for hot ZIRNOX spent fuel. */
-public class MachineWasteDrum extends Block implements EntityBlock {
+public class MachineWasteDrum extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public MachineWasteDrum(Properties properties) {
         super(properties);
@@ -46,8 +44,8 @@ public class MachineWasteDrum extends Block implements EntityBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
-                                               BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                 BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
             Services.PLATFORM.openMenu(serverPlayer, provider, pos);
@@ -56,20 +54,9 @@ public class MachineWasteDrum extends Block implements EntityBlock {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos,
-                                               boolean movedByPiston) {
-    //?} else {
-    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
-        if (!(hbm$level instanceof ServerLevel level)) return;
-    *///?}
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         if (level.getBlockEntity(pos) instanceof TileEntityWasteDrum drum) {
             Containers.dropContents(level, pos, drum);
         }
-        //? if >=26.1 {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        //?} else {
-        /*super.onRemove(state, hbm$level, pos, hbm$newState, movedByPiston);
-        *///?}
     }
 }

@@ -1,11 +1,10 @@
 package com.hbm.packet;
 
 import com.hbm.Constants;
+import dev.golem.core.Ids;
+import dev.golem.core.net.GolemCodec;
+import dev.golem.core.net.GolemPayload;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -17,18 +16,18 @@ import net.minecraft.resources.Identifier;
  * <p>The payload type + codec are pure-vanilla and live in common; only registration (per loader) and
  * the send/receive entry points differ between NeoForge and Fabric.
  */
-public record BlockEntitySyncPayload(BlockPos pos, byte[] data) implements CustomPacketPayload {
+public record BlockEntitySyncPayload(BlockPos pos, byte[] data) implements GolemPayload {
 
-    public static final Type<BlockEntitySyncPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "be_sync"));
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, BlockEntitySyncPayload> CODEC = StreamCodec.composite(
-            BlockPos.STREAM_CODEC, BlockEntitySyncPayload::pos,
-            ByteBufCodecs.BYTE_ARRAY, BlockEntitySyncPayload::data,
-            BlockEntitySyncPayload::new);
+    public static final GolemCodec<BlockEntitySyncPayload> CODEC = GolemCodec.of(BlockEntitySyncPayload.class,
+            Ids.of(Constants.MOD_ID, "be_sync"),
+            (payload, buffer) -> {
+                buffer.writeBlockPos(payload.pos);
+                buffer.writeByteArray(payload.data);
+            },
+            buffer -> new BlockEntitySyncPayload(buffer.readBlockPos(), buffer.readByteArray()));
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public Identifier id() {
+        return CODEC.id();
     }
 }

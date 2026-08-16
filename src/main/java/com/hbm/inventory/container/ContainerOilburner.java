@@ -40,11 +40,7 @@ public class ContainerOilburner extends AbstractContainerMenu {
         this.addSlot(takeOnly(1, 26, 53));
         this.addSlot(validated(2, 44, 71));
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 121);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 121);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 121);
         // rows 121/139/157, hotbar 179 (old offset 37)
     }
 

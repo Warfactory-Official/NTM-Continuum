@@ -5,6 +5,7 @@ import java.util.List;
 import com.hbm.config.RadiationConfig;
 import com.hbm.hazard.helper.HazardHelper;
 import com.hbm.hazard.modifier.IHazardModifier;
+import dev.golem.core.world.Effects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
@@ -20,7 +21,7 @@ public class HazardTypeHot implements IHazardType {
         final boolean wetOrReacher = HazardHelper.isHoldingReacher(target) || target.isInWaterOrRain();
         if (RadiationConfig.disableHot || wetOrReacher) return;
         if (target instanceof Player player && player.isCreative()) return;
-        target.igniteForSeconds((int) Math.ceil(level) * hazardRate);
+        Effects.ignite(target, (int) Math.ceil(level) * hazardRate);
     }
 
     @Override

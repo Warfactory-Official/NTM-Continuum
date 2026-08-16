@@ -112,7 +112,7 @@ public final class CrucibleUtil {
 
     /** Raytraces from {@code start} to {@code end}; returns the hit {@link ICrucibleAcceptor} block (or null). */
     public static @Nullable ICrucibleAcceptor getPouringTarget(Level world, Vec3 start, Vec3 end, BlockHitResult @Nullable [] mopHolder) {
-        BlockHitResult mop = world.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty()));
+        BlockHitResult mop = dev.golem.core.world.Compat.clip(world, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY);
 
         if (mopHolder != null) {
             mopHolder[0] = mop;

@@ -1,5 +1,7 @@
 package com.hbm.handler;
 
+import dev.golem.core.world.Effects;
+
 import dev.golem.core.world.Compat;
 import java.util.Iterator;
 import java.util.Random;
@@ -12,7 +14,7 @@ import com.hbm.entity.EntityHbmProps.ContaminationEffect;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.EntityPropsSyncPayload;
-import com.hbm.platform.Services;
+import dev.golem.core.net.GolemNetwork;
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
@@ -21,13 +23,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -119,12 +118,12 @@ public class EntityEffectHandler {
         if (HbmLivingProps.getRadiation(entity) > 600 && (time + r600) % 600 < 20 && canVomit(entity)) {
             if ((time + r600) % 600 == 1 && level instanceof ServerLevel) {
                 level.playSound(null, pos, ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
-                entity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 60, 19));
+                Effects.add(entity, MobEffects.HUNGER, 60, 19);
             }
         } else if (HbmLivingProps.getRadiation(entity) > 200 && (time + r1200) % 1200 < 20 && canVomit(entity)) {
             if ((time + r1200) % 1200 == 1 && level instanceof ServerLevel) {
                 level.playSound(null, pos, ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
-                entity.addEffect(new MobEffectInstance(MobEffects.HUNGER, 60, 19));
+                Effects.add(entity, MobEffects.HUNGER, 60, 19);
             }
         }
     }
@@ -168,31 +167,31 @@ public class EntityEffectHandler {
                 entity.die(radiation);
             }
         } else if (eRad >= 800) {
-            if (rng % 300 == 0) addEffect(entity, MobEffects.NAUSEA, 5 * 30, 0);
-            if (rng % 300 == 50) addEffect(entity, MobEffects.SLOWNESS, 10 * 20, 2);
-            if (rng % 300 == 100) addEffect(entity, MobEffects.WEAKNESS, 10 * 20, 2);
-            if (rng % 500 == 0) addEffect(entity, MobEffects.POISON, 3 * 20, 2);
-            if (rng % 700 == 0) addEffect(entity, MobEffects.WITHER, 3 * 20, 1);
-            if (rng % 300 == 150) addEffect(entity, MobEffects.HUNGER, 5 * 20, 3);
-            if (rng % 300 == 200) addEffect(entity, MobEffects.MINING_FATIGUE, 5 * 20, 3);
+            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
+            if (rng % 300 == 50) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);
+            if (rng % 300 == 100) Effects.add(entity, MobEffects.WEAKNESS, 10 * 20, 2);
+            if (rng % 500 == 0) Effects.add(entity, MobEffects.POISON, 3 * 20, 2);
+            if (rng % 700 == 0) Effects.add(entity, MobEffects.WITHER, 3 * 20, 1);
+            if (rng % 300 == 150) Effects.add(entity, MobEffects.HUNGER, 5 * 20, 3);
+            if (rng % 300 == 200) Effects.add(entity, MobEffects.MINING_FATIGUE, 5 * 20, 3);
         } else if (eRad >= 600) {
-            if (rng % 300 == 0) addEffect(entity, MobEffects.NAUSEA, 5 * 30, 0);
-            if (rng % 300 == 50) addEffect(entity, MobEffects.SLOWNESS, 10 * 20, 2);
-            if (rng % 300 == 100) addEffect(entity, MobEffects.WEAKNESS, 10 * 20, 2);
-            if (rng % 500 == 0) addEffect(entity, MobEffects.POISON, 3 * 20, 1);
-            if (rng % 300 == 150) addEffect(entity, MobEffects.HUNGER, 3 * 20, 3);
-            if (rng % 400 == 0) addEffect(entity, MobEffects.MINING_FATIGUE, 6 * 20, 2);
+            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
+            if (rng % 300 == 50) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);
+            if (rng % 300 == 100) Effects.add(entity, MobEffects.WEAKNESS, 10 * 20, 2);
+            if (rng % 500 == 0) Effects.add(entity, MobEffects.POISON, 3 * 20, 1);
+            if (rng % 300 == 150) Effects.add(entity, MobEffects.HUNGER, 3 * 20, 3);
+            if (rng % 400 == 0) Effects.add(entity, MobEffects.MINING_FATIGUE, 6 * 20, 2);
         } else if (eRad >= 400) {
-            if (rng % 300 == 0) addEffect(entity, MobEffects.NAUSEA, 5 * 30, 0);
-            if (rng % 500 == 50) addEffect(entity, MobEffects.SLOWNESS, 5 * 20, 0);
-            if (rng % 300 == 100) addEffect(entity, MobEffects.WEAKNESS, 5 * 20, 1);
-            if (rng % 500 == 150) addEffect(entity, MobEffects.HUNGER, 3 * 20, 2);
-            if (rng % 600 == 0) addEffect(entity, MobEffects.MINING_FATIGUE, 4 * 20, 1);
+            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
+            if (rng % 500 == 50) Effects.add(entity, MobEffects.SLOWNESS, 5 * 20, 0);
+            if (rng % 300 == 100) Effects.add(entity, MobEffects.WEAKNESS, 5 * 20, 1);
+            if (rng % 500 == 150) Effects.add(entity, MobEffects.HUNGER, 3 * 20, 2);
+            if (rng % 600 == 0) Effects.add(entity, MobEffects.MINING_FATIGUE, 4 * 20, 1);
         } else if (eRad >= 200) {
-            if (rng % 300 == 0) addEffect(entity, MobEffects.NAUSEA, 5 * 20, 0);
-            if (rng % 500 == 0) addEffect(entity, MobEffects.WEAKNESS, 5 * 20, 0);
-            if (rng % 700 == 0) addEffect(entity, MobEffects.HUNGER, 3 * 20, 2);
-            if (rng % 800 == 0) addEffect(entity, MobEffects.MINING_FATIGUE, 4 * 20, 0);
+            if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 20, 0);
+            if (rng % 500 == 0) Effects.add(entity, MobEffects.WEAKNESS, 5 * 20, 0);
+            if (rng % 700 == 0) Effects.add(entity, MobEffects.HUNGER, 3 * 20, 2);
+            if (rng % 800 == 0) Effects.add(entity, MobEffects.MINING_FATIGUE, 4 * 20, 0);
         }
     }
 
@@ -238,25 +237,21 @@ public class EntityEffectHandler {
         double total = 1 - (blacklungDelta * asbestosDelta);
 
         if (total > 0.8D) {
-            addEffect(entity, MobEffects.WEAKNESS, 100, 6);
-            addEffect(entity, MobEffects.NAUSEA, 100, 0);
-            addEffect(entity, MobEffects.SLOWNESS, 100, 3);
-            if (entity.getRandom().nextInt(250) == 0) addEffect(entity, MobEffects.POISON, 100, 2);
+            Effects.add(entity, MobEffects.WEAKNESS, 100, 6);
+            Effects.add(entity, MobEffects.NAUSEA, 100, 0);
+            Effects.add(entity, MobEffects.SLOWNESS, 100, 3);
+            if (entity.getRandom().nextInt(250) == 0) Effects.add(entity, MobEffects.POISON, 100, 2);
         } else if (total > 0.65D) {
-            addEffect(entity, MobEffects.WEAKNESS, 100, 2);
-            addEffect(entity, MobEffects.SLOWNESS, 100, 2);
-            if (entity.getRandom().nextInt(500) == 0) addEffect(entity, MobEffects.POISON, 100, 0);
+            Effects.add(entity, MobEffects.WEAKNESS, 100, 2);
+            Effects.add(entity, MobEffects.SLOWNESS, 100, 2);
+            if (entity.getRandom().nextInt(500) == 0) Effects.add(entity, MobEffects.POISON, 100, 0);
         } else if (total > 0.45D) {
-            addEffect(entity, MobEffects.WEAKNESS, 100, 1);
-            addEffect(entity, MobEffects.SLOWNESS, 100, 1);
+            Effects.add(entity, MobEffects.WEAKNESS, 100, 1);
+            Effects.add(entity, MobEffects.SLOWNESS, 100, 1);
         } else if (total > 0.25D) {
-            addEffect(entity, MobEffects.SLOWNESS, 100, 0);
+            Effects.add(entity, MobEffects.SLOWNESS, 100, 0);
         }
         // Cough sound + particles deferred.
-    }
-
-    private static void addEffect(LivingEntity entity, Holder<MobEffect> effect, int duration, int amplifier) {
-        if (amplifier >= 0) entity.addEffect(new MobEffectInstance(effect, duration, amplifier));
     }
 
     private static void syncToPlayer(ServerPlayer player) {
@@ -265,6 +260,6 @@ public class EntityEffectHandler {
         props.serialize(buf);
         byte[] data = ByteBufUtil.getBytes(buf);
         buf.release();
-        Services.PLATFORM.sendToPlayer(player, new EntityPropsSyncPayload(data));
+        GolemNetwork.sendToPlayer(player, EntityPropsSyncPayload.CODEC, new EntityPropsSyncPayload(data));
     }
 }

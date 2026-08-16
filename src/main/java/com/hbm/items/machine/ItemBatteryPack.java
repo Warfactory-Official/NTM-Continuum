@@ -3,17 +3,13 @@ package com.hbm.items.machine;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.Library;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
-
-import java.util.function.Consumer;
 
 /**
  * Modern HBM battery / capacitor item — the "actual storage" the {@code machine_battery_socket} holds.
@@ -25,7 +21,7 @@ import java.util.function.Consumer;
  * {@link IBatteryItem}. The 3D inventory icon is rendered from {@code battery_socket.obj} (the Battery or
  * Capacitor part) by the {@code machine_obj} special-model system, per the variant's texture.
  */
-public class ItemBatteryPack extends Item implements IBatteryItem {
+public class ItemBatteryPack extends CompatItem implements IBatteryItem {
 
     public final EnumBatteryPack pack;
 
@@ -35,7 +31,7 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
     }
 
     private long charge(ItemStack stack) {
-        return stack.getOrDefault(ModDataComponents.BATTERY_CHARGE.get(), 0L);
+        return ModDataComponents.batteryCharge(stack);
     }
 
     @Override
@@ -51,7 +47,7 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
     @Override
     public void setCharge(ItemStack stack, long i) {
         long clamped = Math.max(0L, Math.min(i, pack.capacity));
-        stack.set(ModDataComponents.BATTERY_CHARGE.get(), clamped);
+        ModDataComponents.batteryCharge(stack, clamped);
     }
 
     @Override
@@ -92,18 +88,13 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
         long c = getCharge(stack);
-        adder.accept(Component.literal("Energy stored: " + Library.getShortNumber(c) + "/" + Library.getShortNumber(pack.capacity)
+        tooltip.add(Component.literal("Energy stored: " + Library.getShortNumber(c) + "/" + Library.getShortNumber(pack.capacity)
                 + "HE (" + (pack.capacity <= 0 ? 0 : c * 100 / pack.capacity) + "%)").withStyle(ChatFormatting.GREEN));
-        adder.accept(Component.literal("Charge rate: " + Library.getShortNumber(pack.chargeRate) + "HE/t").withStyle(ChatFormatting.YELLOW));
-        adder.accept(Component.literal("Discharge rate: " + Library.getShortNumber(pack.dischargeRate) + "HE/t").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Charge rate: " + Library.getShortNumber(pack.chargeRate) + "HE/t").withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal("Discharge rate: " + Library.getShortNumber(pack.dischargeRate) + "HE/t").withStyle(ChatFormatting.YELLOW));
     }
 
     /**
@@ -149,7 +140,7 @@ public class ItemBatteryPack extends Item implements IBatteryItem {
 
         EnumBatteryPack(String name, long capacity, long chargeRate, long dischargeRate) {
             this.name = name;
-            this.texture = Identifier.fromNamespaceAndPath("hbm", "textures/models/machines/" + name + ".png");
+            this.texture = dev.golem.core.Ids.of("hbm", "textures/models/machines/" + name + ".png");
             this.capacity = capacity;
             this.chargeRate = chargeRate;
             this.dischargeRate = dischargeRate;

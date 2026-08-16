@@ -32,7 +32,7 @@ public class BlockNTMGlass extends Block implements com.hbm.interfaces.IRadResis
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         return doesDrop ? List.of(new ItemStack(this)) : List.of();
     }
 

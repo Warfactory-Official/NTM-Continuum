@@ -1,16 +1,12 @@
 package com.hbm.items.machine;
 
 import com.hbm.inventory.fluid.FluidCombustion.FuelGrade;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
-
-import java.util.function.Consumer;
 
 /**
  * Combustion-engine piston set — 1:1 port of the 1.12.2 {@code items/machine/ItemPistons}. The old
@@ -18,7 +14,7 @@ import java.util.function.Consumer;
  * carries a per-fuel-grade efficiency array (indexed by {@link FuelGrade}) the combustion engine reads.
  * The tooltip lists the efficiency per grade, matching the old {@code addInformation}.
  */
-public class ItemPistons extends Item {
+public class ItemPistons extends CompatItem {
 
     /** Old {@code EnumPistonType} — eff indexed by {@link FuelGrade#ordinal()} (LOW, MEDIUM, HIGH, AERO, GAS). */
     public enum Variant {
@@ -54,15 +50,11 @@ public class ItemPistons extends Item {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, Item.TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
-        adder.accept(Component.translatable("desc.item.pistonEfficiency").withStyle(ChatFormatting.YELLOW));
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("desc.item.pistonEfficiency").withStyle(ChatFormatting.YELLOW));
         for (int i = 0; i < variant.eff.length; i++) {
-            adder.accept(Component.literal(ChatFormatting.YELLOW + "-")
+            tooltip.add(Component.literal(ChatFormatting.YELLOW + "-")
                     .append(Component.translatable(GRADE_KEYS[i]).withStyle(ChatFormatting.YELLOW))
                     .append(Component.literal(ChatFormatting.YELLOW + ": " + ChatFormatting.RED + (int) (variant.eff[i] * 100) + "%")));
         }

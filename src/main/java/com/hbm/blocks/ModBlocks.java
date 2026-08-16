@@ -12,7 +12,7 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.DropExperienceBlock;
+import dev.golem.core.world.CompatDropExperienceBlock;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -43,7 +43,7 @@ public final class ModBlocks {
 
     /** Ore that grants mining XP and (typically) drops a material item via its loot table. */
     private static RegistryObject<Block> oreXp(String name, HbmTab tab, int xp, UnaryOperator<BlockBehaviour.Properties> props) {
-        RegistryObject<Block> ro = BLOCKS.registerBlock(name, p -> new DropExperienceBlock(ConstantInt.of(xp), p), props);
+        RegistryObject<Block> ro = BLOCKS.registerBlock(name, p -> new CompatDropExperienceBlock(ConstantInt.of(xp), p), props);
         ALL.add(new BlockEntry(ro, tab));
         return ro;
     }

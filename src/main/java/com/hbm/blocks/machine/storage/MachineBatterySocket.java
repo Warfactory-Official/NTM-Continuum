@@ -68,16 +68,12 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
     // --- comparator output from the carried battery's fill (works from any cell via findCore) ---
 
     @Override
-    protected boolean hasAnalogOutputSignal(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    //? if >=26.1 {
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
-    //?} else {
-    /*protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-    *///?}
+    protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         return findCoreTE(level, pos) instanceof TileEntityBatterySocket socket ? socket.getComparatorPower() : 0;
     }
 

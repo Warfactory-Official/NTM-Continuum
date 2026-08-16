@@ -86,16 +86,12 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
     // --- comparator output from the tank fill (works from any cell via findCore) ---
 
     @Override
-    protected boolean hasAnalogOutputSignal(BlockState state) {
+    public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
-    //? if >=26.1 {
-    protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
-    //?} else {
-    /*protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-    *///?}
+    protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
         return findCoreTE(level, pos) instanceof TileEntityMachineFluidTank tank
                 ? tank.tank.getRedstoneComparatorPower() : 0;
     }

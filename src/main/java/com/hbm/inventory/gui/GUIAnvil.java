@@ -8,17 +8,10 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import com.hbm.packet.AnvilCraftPayload;
-import com.hbm.packet.HbmClientPackets;
+import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.KeyEvent;
-//?}
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -40,7 +33,7 @@ import java.util.Locale;
  */
 public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<ContainerAnvil> {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_anvil.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_anvil.png");
 
     private final int tier;
     private final List<AnvilConstructionRecipe> originList = new ArrayList<>();
@@ -102,14 +95,7 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, leftPos, topPos, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
 
         // Slide-out info panel, widened to fit the selected recipe's (half-scale) text.
@@ -215,12 +201,7 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         int x = (int) event.x(), y = (int) event.y();
 
         if (isOver(x, y, 7, 71, 9, 36)) { // page left
@@ -237,7 +218,8 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
             if (this.selection >= 0 && this.selection < this.recipes.size()) {
                 click();
                 int globalIndex = AnvilRecipes.getConstruction().indexOf(this.recipes.get(this.selection));
-                HbmClientPackets.send(new AnvilCraftPayload(globalIndex, event.hasShiftDown() ? 1 : 0));
+                GolemNetwork.sendToServer(AnvilCraftPayload.CODEC,
+                        new AnvilCraftPayload(globalIndex, event.hasShiftDown() ? 1 : 0));
             }
             return true;
         }
@@ -255,46 +237,29 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
             }
         }
 
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean keyPressed(KeyEvent event) {
-    //?} else {
-    /*public boolean keyPressed(int hbm$key, int hbm$scan, int hbm$mods) {
-        dev.golem.core.gui.KeyInput event = new dev.golem.core.gui.KeyInput(hbm$key, hbm$scan, hbm$mods);
-    *///?}
+    protected boolean keyPressed(dev.golem.core.gui.KeyInput event) {
         // While the search box has focus, let it consume typing (incl. the inventory key, e.g. 'e') so the
         // default AbstractContainerScreen behaviour of closing the menu on the inventory key doesn't fire.
         if (this.search != null && this.search.isFocused() && event.key() != 256 /* ESC still closes */) {
-            //? if >=26.1 {
-            this.search.keyPressed(event);
-            //?} else {
-            /*this.search.keyPressed(hbm$key, hbm$scan, hbm$mods);
-            *///?}
+            event.keyPressed(this.search);
             return true;
         }
-        //? if >=26.1 {
-        return super.keyPressed(event);
-        //?} else {
-        /*return super.keyPressed(hbm$key, hbm$scan, hbm$mods);
-        *///?}
+        return false;
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    protected boolean mouseScrolledCompat(double mouseX, double mouseY, double scrollX, double scrollY) {
         // Page the recipe browser when the cursor is inside the GUI but not over a slot (like the old GUI).
         if (isOver((int) mouseX, (int) mouseY, 0, 0, imageWidth, imageHeight) && this.hoveredSlot == null) {
             if (scrollY > 0 && this.index > 0) this.index--;
             if (scrollY < 0 && this.index < this.size) this.index++;
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        return false;
     }
 
     private void click() {

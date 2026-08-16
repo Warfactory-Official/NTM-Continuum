@@ -5,7 +5,6 @@ import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,7 +20,7 @@ import java.util.Optional;
  */
 public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineSolderingStation> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_soldering_station.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_soldering_station.png");
     // Fluid gauge (GUI-relative), matching the 1.12.2 layout: a 34×16 area at (35, 63).
     private static final int FLUID_X = 35, FLUID_TOP = 63, FLUID_W = 34, FLUID_H = 16;
     // "Acceptable Upgrades" info-panel glyph (1.12.2 drawInfoPanel at 78, 67).
@@ -32,14 +31,7 @@ public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContain
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineSolderingStation te = this.menu.getStation();
@@ -73,16 +65,7 @@ public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContain
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachineSolderingStation te = this.menu.getStation();
         if (te == null) return;
         if (this.isHovering(152, 18, 16, 52, mouseX, mouseY)) {

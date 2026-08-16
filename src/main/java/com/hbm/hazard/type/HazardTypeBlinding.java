@@ -6,9 +6,9 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
+import dev.golem.core.world.Effects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +25,7 @@ public class HazardTypeBlinding implements IHazardType {
             return;
 
         if (!ArmorRegistry.hasProtection(target, EquipmentSlot.HEAD, HazardClass.LIGHT)) {
-            target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, (int) level * hazardRate, 0));
+            Effects.add(target, MobEffects.BLINDNESS, (int) level * hazardRate, 0);
         }
     }
 

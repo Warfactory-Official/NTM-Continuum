@@ -129,16 +129,16 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeInt(cooloff);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, inventory.getStackInSlot(0));
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, inventory.getStackInSlot(1));
+        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(0));
+        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(1));
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
         cooloff = buf.readInt();
-        syncMold = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
-        syncOutput = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        syncMold = dev.golem.core.world.ItemStacks.readOptional(buf);
+        syncOutput = dev.golem.core.world.ItemStacks.readOptional(buf);
     }
 
     @Override

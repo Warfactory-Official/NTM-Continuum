@@ -5,12 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 
@@ -26,25 +22,20 @@ import java.util.List;
  * than strictly walking on top. Standing on a full cube puts the entity's feet inside it, so the
  * practical behaviour matches.
  */
-public class BlockSmolder extends Block {
+public class BlockSmolder extends dev.golem.core.world.CompatBlock {
 
     public BlockSmolder(Properties properties) {
         super(properties);
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         return List.of(new ItemStack(ModFuelItems.powder_fire.get()));
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
-                                InsideBlockEffectApplier effects, boolean precise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
-        if (!level.isClientSide()) entity.igniteForSeconds(3);
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        if (!level.isClientSide()) dev.golem.core.world.Effects.ignite(entity, 3);
     }
 
     @Override

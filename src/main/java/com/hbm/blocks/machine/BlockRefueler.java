@@ -57,12 +57,12 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements E
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE; // RefuelerRenderer draws the OBJ
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
     }
 
@@ -81,22 +81,8 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements E
         return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
-    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
-    }
-    //?} else {
-    /*@Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
-        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
-             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
-             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
-    }
-    *///?}
-
-    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidId identifier) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityRefueler te) {
                 FluidType type = identifier.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
@@ -106,12 +92,7 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements E
             }
             return InteractionResult.SUCCESS;
         }
-        //? if >=26.1 {
-        return super.useItemOn(stack, state, level, pos, player, hand, hit);
-        //?} else {
-        /*return super.useItemOn(stack, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
-                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
-        *///?}
+        return super.onUseItem(state, level, pos, player, hand, stack, hit);
     }
 
     @Override
@@ -121,12 +102,12 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements E
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 

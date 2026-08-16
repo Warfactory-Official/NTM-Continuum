@@ -1,15 +1,11 @@
 package com.hbm.items.machine;
 
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
-
-import java.util.function.Consumer;
 
 /**
  * A laser crystal — the interchangeable "lens" that sets a {@code machine_fel}'s wavelength, and with
@@ -18,7 +14,7 @@ import java.util.function.Consumer;
  * <p>Five crystals exist, one per usable wavelength; the sixth enum constant, {@link
  * EnumWavelengths#NULL}, is the "no crystal / powered down" state and has no item.
  */
-public class ItemFELCrystal extends Item {
+public class ItemFELCrystal extends CompatItem {
 
     /**
      * The electromagnetic spectrum as HBM models it. <b>Ordinal is load-bearing</b>: the SILEX gates a
@@ -74,18 +70,13 @@ public class ItemFELCrystal extends Item {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
         // The digamma crystal replaces its description with scrambled text rather than a lang key.
-        adder.accept(digamma
+        tooltip.add(digamma
                 ? Component.literal("THERADIANCEOFATHOUSANDSUNS").withStyle(ChatFormatting.OBFUSCATED)
                 : Component.translatable(stack.getItem().getDescriptionId() + ".desc"));
-        adder.accept(Component.translatable(wavelength.name)
+        tooltip.add(Component.translatable(wavelength.name)
                 .append(" - ")
                 .append(Component.translatable(wavelength.wavelengthRange))
                 .withStyle(wavelength.textColor));

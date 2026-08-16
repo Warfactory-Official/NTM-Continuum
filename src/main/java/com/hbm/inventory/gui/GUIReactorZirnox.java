@@ -8,10 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,7 +16,7 @@ import net.minecraft.world.entity.player.Inventory;
 public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<ContainerReactorZirnox> {
 
     private static final Identifier TEXTURE =
-            Identifier.fromNamespaceAndPath("hbm", "textures/gui/reactors/gui_zirnox.png");
+            dev.golem.core.Ids.of("hbm", "textures/gui/reactors/gui_zirnox.png");
     private static final int TOGGLE_X = 144;
     private static final int TOGGLE_Y = 35;
     private static final int TOGGLE_SIZE = 14;
@@ -33,14 +29,7 @@ public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         int x = this.leftPos;
         int y = this.topPos;
         GuiDraw.blit(graphics, TEXTURE, x, y, 0.0F, 0.0F,
@@ -77,16 +66,7 @@ public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityReactorZirnox reactor = this.menu.getReactor();
         if (reactor == null) return;
         if (this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_SIZE, TOGGLE_SIZE, mouseX, mouseY)) {
@@ -109,23 +89,14 @@ public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         int button = this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_SIZE, TOGGLE_SIZE, event.x(), event.y()) ? 0
                 : this.isHovering(VENT_X, VENT_Y, VENT_SIZE, VENT_SIZE, event.x(), event.y()) ? 1 : -1;
         if (button >= 0 && Minecraft.getInstance().gameMode != null) {
             Minecraft.getInstance().gameMode.handleInventoryButtonClick(this.menu.containerId, button);
             return true;
         }
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 
     private void drawGauge(GuiGraphicsExtractor graphics, int x, int y, int u, int v, int width, int height) {

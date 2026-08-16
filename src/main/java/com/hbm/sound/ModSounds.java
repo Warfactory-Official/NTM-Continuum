@@ -61,7 +61,7 @@ public final class ModSounds {
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, name)));
+                dev.golem.core.Ids.of(Constants.MOD_ID, name)));
     }
 
     public static void init() {}

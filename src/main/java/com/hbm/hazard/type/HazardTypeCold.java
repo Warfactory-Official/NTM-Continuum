@@ -6,11 +6,9 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.hazard.helper.HazardHelper;
 import com.hbm.hazard.modifier.IHazardModifier;
+import dev.golem.core.world.Effects;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -29,17 +27,13 @@ public class HazardTypeCold implements IHazardType {
         final int baseLevel = (int) level - 1;
         final int witherLevel = (int) level - 3;
 
-        applyPotionEffect(target, MobEffects.MINING_FATIGUE, 110, baseLevel);
-        applyPotionEffect(target, MobEffects.SLOWNESS, 110, Math.min(4, baseLevel));
-        applyPotionEffect(target, MobEffects.WEAKNESS, 110, baseLevel);
+        Effects.add(target, MobEffects.MINING_FATIGUE, 110, baseLevel);
+        Effects.add(target, MobEffects.SLOWNESS, 110, Math.min(4, baseLevel));
+        Effects.add(target, MobEffects.WEAKNESS, 110, baseLevel);
 
         if (level > 4) {
-            applyPotionEffect(target, MobEffects.WITHER, 110, witherLevel);
+            Effects.add(target, MobEffects.WITHER, 110, witherLevel);
         }
-    }
-
-    private static void applyPotionEffect(LivingEntity target, Holder<MobEffect> effect, int duration, int amplifier) {
-        if (amplifier >= 0) target.addEffect(new MobEffectInstance(effect, duration, amplifier));
     }
 
     @Override

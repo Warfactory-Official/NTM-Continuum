@@ -13,13 +13,9 @@ import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-//? if >=26.1 {
-import net.minecraft.world.level.redstone.Orientation;
-//?}
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -67,17 +63,8 @@ public class MachineZirnox extends BlockDummyable implements IFluidConnectorBloc
         makeExtra(level, core.getX() - rot.offsetX * 2, core.getY() + 3, core.getZ() - rot.offsetZ * 2);
         makeExtra(level, core.getX(), core.getY() + 4, core.getZ());
     }
-    //? if >=26.1 {
-    @Override protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block,
-                                              @Nullable Orientation orientation, boolean movedByPiston) {
-    //?} else {
-    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos hbm$fromPos, boolean movedByPiston) {
-    *///?}
-        //? if >=26.1 {
-        super.neighborChanged(state, level, pos, block, orientation, movedByPiston);
-        //?} else {
-        /*super.neighborChanged(state, level, pos, block, hbm$fromPos, movedByPiston);
-        *///?}
+    @Override protected void onNeighborChanged(BlockState state, Level level, BlockPos pos,
+                                                net.minecraft.world.level.block.Block block, boolean movedByPiston) {
         if (level.isClientSide()) return;
         BlockPos core = findCore(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityReactorZirnox reactor)) return;

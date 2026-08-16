@@ -34,10 +34,10 @@ public class MiningLaserRenderer implements CompatBER<TileEntityMachineMiningLas
     private final RenderType laserType;
 
     public MiningLaserRenderer() {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/mining_laser.obj"));
-        this.baseType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/mining_laser_base.png"));
-        this.pivotType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/mining_laser_pivot.png"));
-        this.laserType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/mining_laser_laser.png"));
+        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mining_laser.obj"));
+        this.baseType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mining_laser_base.png"));
+        this.pivotType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mining_laser_pivot.png"));
+        this.laserType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mining_laser_laser.png"));
     }
 
     @Override public MiningLaserRenderState createRenderState() { return new MiningLaserRenderState(); }

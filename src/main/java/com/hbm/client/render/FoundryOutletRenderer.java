@@ -39,8 +39,8 @@ public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> implements
     private final RenderType streamType;
 
     public FoundryOutletRenderer(String objPath) {
-        this.body = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, objPath));
-        var mtl = WavefrontObj.loadMtl(Identifier.fromNamespaceAndPath(Constants.MOD_ID, objPath.replace(".obj", ".mtl")));
+        this.body = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, objPath));
+        var mtl = WavefrontObj.loadMtl(dev.golem.core.Ids.of(Constants.MOD_ID, objPath.replace(".obj", ".mtl")));
         for (String mat : body.materialNames()) {
             Identifier tex = mtl.get(mat);
             if (tex != null) materialTypes.put(mat, CompatRenderTypes.entityCutout(tex));
@@ -49,7 +49,7 @@ public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> implements
         // the far ones — translucent-emissive doesn't write depth, so sides vanish with view angle. Solid
         // shades by the vertex normal (all up → uniform, unlike entityCutout's winding-based per-face
         // darkening); it culls, so the stream is double-wound (FoundryRenderHelper.quad). lava_gray is opaque.
-        this.streamType = CompatRenderTypes.entitySolid(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+        this.streamType = CompatRenderTypes.entitySolid(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

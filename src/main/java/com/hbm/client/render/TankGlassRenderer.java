@@ -37,8 +37,8 @@ public class TankGlassRenderer<T extends BlockEntity> implements CompatBER<T, Ta
     private final Function<T, FluidTankNTM> tankGetter;
 
     public TankGlassRenderer(String objName, String texName, Function<T, FluidTankNTM> tankGetter) {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/" + objName + ".obj"));
-        Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/" + texName + ".png");
+        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/" + objName + ".obj"));
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/" + texName + ".png");
         this.baseType = CompatRenderTypes.entityCutout(tex);
         this.glassType = CompatRenderTypes.entityTranslucent(tex, false);
         this.tankGetter = tankGetter;

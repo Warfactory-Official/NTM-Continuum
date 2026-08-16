@@ -2,12 +2,9 @@ package com.hbm.blocks.generic;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelReader;
-//? if >=26.1 {
-import net.minecraft.world.level.ScheduledTickAccess;
-//?}
+import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -23,7 +20,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * lost, drops nothing (old {@code getItemDropped} = AIR; empty loot table). Not replaceable and no
  * stack-on-place behavior — worldgen is the only placer (old Material.GROUND was non-replaceable too).
  */
-public class BlockLayering extends Block {
+public class BlockLayering extends dev.golem.core.world.CompatBlock {
 
     public static final IntegerProperty LAYERS = BlockStateProperties.LAYERS;
     private static final VoxelShape[] SHAPES = new VoxelShape[8];
@@ -45,17 +42,17 @@ public class BlockLayering extends Block {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES[state.getValue(LAYERS) - 1];
     }
 
     @Override
-    protected boolean useShapeForLightOcclusion(BlockState state) {
+    public boolean useShapeForLightOcclusion(BlockState state) {
         return true;
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockState below = level.getBlockState(pos.below());
         if (below.is(Blocks.ICE) || below.is(Blocks.PACKED_ICE)) return false;
         if (below.getBlock() == this) return below.getValue(LAYERS) == 8;
@@ -63,18 +60,8 @@ public class BlockLayering extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction, BlockPos neighborPos, BlockState neighborState, RandomSource random) {
-    //?} else {
-    /*protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        net.minecraft.world.level.LevelAccessor ticks = level;
-        net.minecraft.util.RandomSource random = level.getRandom();
-    *///?}
-        return !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState()
-                : //? if >=26.1 {
- super.updateShape(state, level, ticks, pos, direction, neighborPos, neighborState, random);
- //?} else {
- /*super.updateShape(state, direction, neighborState, level, pos, neighborPos);
- *///?}
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction direction, BlockPos neighborPos, BlockState neighborState) {
+        return !state.canSurvive(level, pos) ? Blocks.AIR.defaultBlockState() : state;
     }
 }

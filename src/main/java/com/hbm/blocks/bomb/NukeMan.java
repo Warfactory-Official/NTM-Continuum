@@ -7,7 +7,6 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.platform.Services;
 import com.hbm.tileentity.bomb.TileEntityNukeMan;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -26,9 +25,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-//? if >=26.1 {
-import net.minecraft.world.level.redstone.Orientation;
-//?}
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
@@ -42,7 +38,7 @@ import java.util.UUID;
  *
  * <p>{@code FACING} (2–5, the old ForgeDirection horizontal ordinals N/S/W/E) drives the model yaw.
  */
-public class NukeMan extends Block implements EntityBlock, IBomb {
+public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityBlock, IBomb {
 
     public static final IntegerProperty FACING = IntegerProperty.create("facing", 2, 5);
 
@@ -57,7 +53,7 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
 
@@ -89,7 +85,8 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                 BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
                 Services.PLATFORM.openMenu(serverPlayer, provider, pos);
@@ -99,36 +96,19 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
     }
 
     @Override
-    //? if >=26.1 {
-    //? if >=26.1 {
-    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean movedByPiston) {
-    //?} else {
-    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos hbm$fromPos, boolean movedByPiston) {
-    *///?}
-    //?} else {
-    /*protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, BlockPos hbm$fromPos, boolean movedByPiston) {
-    *///?}
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos,
+                                     net.minecraft.world.level.block.Block block, boolean movedByPiston) {
         if (!level.isClientSide() && level.hasNeighborSignal(pos)) {
             explode(level, pos, null);
         }
     }
 
     @Override
-    //? if >=26.1 {
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-    //?} else {
-    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
-        if (!(hbm$level instanceof ServerLevel level)) return;
-    *///?}
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         // Drop the bomb's components when it's broken (the old breakBlock behaviour).
         if (level.getBlockEntity(pos) instanceof TileEntityNukeMan nuke) {
             net.minecraft.world.Containers.dropContents(level, pos, nuke);
         }
-        //? if >=26.1 {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        //?} else {
-        /*super.onRemove(state, hbm$level, pos, hbm$newState, movedByPiston);
-        *///?}
     }
 
     @Override
@@ -147,7 +127,9 @@ public class NukeMan extends Block implements EntityBlock, IBomb {
     }
 
     private void ignite(Level level, @Nullable Entity detonator, BlockPos pos, @Nullable UUID placer) {
-        level.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 1.0F,
+        level.playSound(null, pos,
+                SoundEvents.GENERIC_EXPLODE.value(),
+                SoundSource.BLOCKS, 1.0F,
                 level.getRandom().nextFloat() * 0.1F + 0.9F);
 
         EntityNukeExplosionMK5 mk5 = EntityNukeExplosionMK5.statFac(level, BombConfig.manRadius,

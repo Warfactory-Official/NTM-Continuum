@@ -128,21 +128,13 @@ public final class ShredderRecipes {
     private static void registerTagSweep() {
         // bucket every c:<shape>/<material> item tag by material
         Map<String, Map<String, TagKey<Item>>> byMat = new HashMap<>();
-        BuiltInRegistries.ITEM.getTags().forEach(named -> {
-            //? if >=26.1 {
-            Identifier id = named.key().location();
-            //?} else {
-            /*Identifier id = named.getFirst().location();
-            *///?}
+        dev.golem.core.world.Compat.itemTagKeys().forEach(tag -> {
+            Identifier id = tag.location();
             int slash = id.getPath().indexOf('/');
             if (!id.getNamespace().equals("c") || slash < 0) return;
             String shape = id.getPath().substring(0, slash);
             String mat = id.getPath().substring(slash + 1);
-            //? if >=26.1 {
-            byMat.computeIfAbsent(mat, k -> new HashMap<>()).put(shape, named.key());
-            //?} else {
-            /*byMat.computeIfAbsent(mat, k -> new HashMap<>()).put(shape, named.getFirst());
-            *///?}
+            byMat.computeIfAbsent(mat, k -> new HashMap<>()).put(shape, tag);
         });
 
         for (Map.Entry<String, Map<String, TagKey<Item>>> entry : byMat.entrySet()) {
@@ -180,7 +172,7 @@ public final class ShredderRecipes {
     // --- tag / registry helpers ---
 
     private static TagKey<Item> cTag(String path) {
-        return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", path));
+        return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", path));
     }
 
     /** The items in an item tag; empty when the tag doesn't exist (the {@code doesOreNameExist} guard). */
@@ -198,6 +190,6 @@ public final class ShredderRecipes {
 
     /** A direct {@code hbm:<id>} lookup (the tiny dusts have no {@code c:} tag). */
     private static Optional<Item> firstOfId(String path) {
-        return BuiltInRegistries.ITEM.getOptional(Identifier.fromNamespaceAndPath("hbm", path));
+        return BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.of("hbm", path));
     }
 }

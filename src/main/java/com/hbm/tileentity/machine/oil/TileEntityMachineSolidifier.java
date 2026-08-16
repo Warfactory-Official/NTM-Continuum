@@ -119,7 +119,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
 
         ItemStack cur = inventory.getStackInSlot(0);
         if (!cur.isEmpty()) {
-            if (!ItemStack.isSameItemSameComponents(cur, out.output())) return false;
+            if (!dev.golem.core.world.ItemStacks.sameItemAndData(cur, out.output())) return false;
             return cur.getCount() + out.output().getCount() <= cur.getMaxStackSize();
         }
         return true;

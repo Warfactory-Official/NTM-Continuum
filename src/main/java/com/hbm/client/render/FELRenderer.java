@@ -35,9 +35,9 @@ public class FELRenderer implements CompatBER<TileEntityFEL, FELRenderState> {
     private final RenderType renderType;
 
     public FELRenderer() {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/fel.obj"));
+        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fel.obj"));
         this.renderType = CompatRenderTypes.entityCutout(
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/fel.png"));
+                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/fel.png"));
     }
 
     @Override public FELRenderState createRenderState() { return new FELRenderState(); }

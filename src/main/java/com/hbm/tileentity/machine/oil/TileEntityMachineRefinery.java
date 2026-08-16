@@ -146,7 +146,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
                 ItemStack cur = inventory.getStackInSlot(11);
                 if (cur.isEmpty()) {
                     inventory.setStackInSlot(11, out.copy());
-                } else if (ItemStack.isSameItemSameComponents(cur, out) && cur.getCount() + out.getCount() <= cur.getMaxStackSize()) {
+                } else if (dev.golem.core.world.ItemStacks.sameItemAndData(cur, out) && cur.getCount() + out.getCount() <= cur.getMaxStackSize()) {
                     cur.grow(out.getCount());
                     inventory.setStackInSlot(11, cur);
                 }

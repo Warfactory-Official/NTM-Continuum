@@ -34,7 +34,7 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> BLACKLUNG = key("blacklung");
 
     private static ResourceKey<DamageType> key(String name) {
-        return ResourceKey.create(Registries.DAMAGE_TYPE, Identifier.fromNamespaceAndPath(Constants.MOD_ID, name));
+        return ResourceKey.create(Registries.DAMAGE_TYPE, dev.golem.core.Ids.of(Constants.MOD_ID, name));
     }
 
     public static DamageSource source(Level level, ResourceKey<DamageType> key) {

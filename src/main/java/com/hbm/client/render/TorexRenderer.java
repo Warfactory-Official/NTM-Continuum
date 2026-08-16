@@ -3,6 +3,8 @@ package com.hbm.client.render;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
+import dev.golem.core.Ids;
+import dev.golem.core.render.Vertexes;
 import com.hbm.Constants;
 import com.hbm.client.NukeScreenEffects;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -43,8 +45,8 @@ import java.util.Comparator;
  */
 public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<EntityNukeTorex, TorexRenderState> {
 
-    private static final Identifier CLOUDLET_TEX = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/particle/particle_base.png");
-    private static final Identifier FLARE_TEX = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/particle/flare.png");
+    private static final Identifier CLOUDLET_TEX = Ids.of(Constants.MOD_ID, "textures/particle/particle_base.png");
+    private static final Identifier FLARE_TEX = Ids.of(Constants.MOD_ID, "textures/particle/flare.png");
 
     /**
      * The cloudlet layer. {@code RenderType.create} is package-private (common can't build a custom type on
@@ -212,12 +214,8 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
 
     private static void cloudletVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
                                        float x, float y, float z, float u, float v, float r, float g, float b, float a, int packedLight) {
-        buffer.addVertex(pose, x, y, z)
-                .setColor(r, g, b, a)
-                .setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(packedLight)
-                .setNormal(pose, 0F, 1F, 0F);
+        Vertexes.vertex(buffer, pose, x, y, z, r, g, b, a, u, v,
+                OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
     }
 
     private static double color(Cloudlet c, double prev, double cur, float partialTicks, double greying) {
@@ -276,12 +274,8 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
     private static void flareVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
                                     float x, float y, float z, float u, float v, float alpha) {
         // Additive pipeline ignores alpha in the blend, so the fade is baked into RGB.
-        buffer.addVertex(pose, x, y, z)
-                .setColor(alpha, alpha, alpha, 1F)
-                .setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(0x00F000F0)
-                .setNormal(pose, 0F, 1F, 0F);
+        Vertexes.vertex(buffer, pose, x, y, z, alpha, alpha, alpha, 1F, u, v,
+                OverlayTexture.NO_OVERLAY, 0x00F000F0, 0F, 1F, 0F);
     }
 
     // ---- Flash ----
@@ -325,8 +319,8 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
 
     private static void emitFlashTri(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
                                      float centerAlpha, float x1, float y1, float z1, float x2, float y2, float z2) {
-        buffer.addVertex(pose, 0F, 0F, 0F).setColor(1F, 1F, 1F, centerAlpha);
-        buffer.addVertex(pose, x1, y1, z1).setColor(1F, 1F, 1F, 0F);
-        buffer.addVertex(pose, x2, y2, z2).setColor(1F, 1F, 1F, 0F);
+        Vertexes.color(buffer, pose, 0F, 0F, 0F, 1F, 1F, 1F, centerAlpha);
+        Vertexes.color(buffer, pose, x1, y1, z1, 1F, 1F, 1F, 0F);
+        Vertexes.color(buffer, pose, x2, y2, z2, 1F, 1F, 1F, 0F);
     }
 }

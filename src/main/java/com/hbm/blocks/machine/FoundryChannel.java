@@ -9,7 +9,6 @@ import com.hbm.tileentity.machine.TileEntityFoundryChannel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -18,9 +17,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-//? if >=26.1 {
-import net.minecraft.world.level.ScheduledTickAccess;
-//?}
+import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -63,15 +60,8 @@ public class FoundryChannel extends dev.golem.core.world.CompatBlock implements 
     }
 
     @Override
-    //? if >=26.1 {
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
-                                     Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
-                                     RandomSource random) {
-    //?} else {
-    /*protected BlockState updateShape(BlockState state, Direction directionToNeighbour, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
-        net.minecraft.world.level.LevelAccessor ticks = level;
-        net.minecraft.util.RandomSource random = level.getRandom();
-    *///?}
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState) {
         return state.setValue(META, getConnectionMeta(level, pos));
     }
 
@@ -98,7 +88,7 @@ public class FoundryChannel extends dev.golem.core.world.CompatBlock implements 
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         int meta = state.getValue(META);
         double minX = (meta & 2) != 0 ? 0 : 0.3125D;
         double maxX = (meta & 1) != 0 ? 1 : 0.6875D;
@@ -130,22 +120,8 @@ public class FoundryChannel extends dev.golem.core.world.CompatBlock implements 
     }
 
     /** Shovel right-click empties the content to scraps. */
-    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
-    }
-    //?} else {
-    /*@Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
-        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
-             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
-             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
-    }
-    *///?}
-
-    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.is(ItemTags.SHOVELS)) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFoundryChannel cast && cast.amount > 0 && cast.type != null) {
                 ItemStack scrap = ItemScraps.create(new MaterialStack(cast.type, cast.amount));
@@ -159,12 +135,7 @@ public class FoundryChannel extends dev.golem.core.world.CompatBlock implements 
             }
             return InteractionResult.SUCCESS;
         }
-        //? if >=26.1 {
-        return super.useItemOn(stack, state, level, pos, player, hand, hit);
-        //?} else {
-        /*return super.useItemOn(stack, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
-                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
-        *///?}
+        return super.onUseItem(state, level, pos, player, hand, stack, hit);
     }
 
     // --- ICrucibleAcceptor: delegate to the TE ---

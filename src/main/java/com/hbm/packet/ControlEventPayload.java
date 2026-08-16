@@ -1,12 +1,11 @@
 package com.hbm.packet;
 
 import com.hbm.Constants;
+import dev.golem.core.Ids;
+import dev.golem.core.net.GolemCodec;
+import dev.golem.core.net.GolemPayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
 
 /**
@@ -16,20 +15,20 @@ import net.minecraft.resources.Identifier;
  * {@link HbmPackets#handleControl}).
  *
  * <p>The type + codec are pure-vanilla and live in common; only registration (per loader) and the
- * client send entry point differ between NeoForge and Fabric (see {@link HbmClientPackets}).
+ * client send entry point is supplied by {@link dev.golem.core.net.GolemNetwork}.
  */
-public record ControlEventPayload(BlockPos pos, CompoundTag data) implements CustomPacketPayload {
+public record ControlEventPayload(BlockPos pos, CompoundTag data) implements GolemPayload {
 
-    public static final Type<ControlEventPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "control_event"));
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, ControlEventPayload> CODEC = StreamCodec.composite(
-            BlockPos.STREAM_CODEC, ControlEventPayload::pos,
-            ByteBufCodecs.COMPOUND_TAG, ControlEventPayload::data,
-            ControlEventPayload::new);
+    public static final GolemCodec<ControlEventPayload> CODEC = GolemCodec.of(ControlEventPayload.class,
+            Ids.of(Constants.MOD_ID, "control_event"),
+            (payload, buffer) -> {
+                buffer.writeBlockPos(payload.pos);
+                buffer.writeNbt(payload.data);
+            },
+            buffer -> new ControlEventPayload(buffer.readBlockPos(), buffer.readNbt()));
 
     @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public Identifier id() {
+        return CODEC.id();
     }
 }

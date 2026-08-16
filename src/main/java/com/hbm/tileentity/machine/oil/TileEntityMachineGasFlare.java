@@ -126,7 +126,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 AABB flameBox = new AABB(pos.getX() - 1, pos.getY() + 12, pos.getZ() - 2, pos.getX() + 2, pos.getY() + 17, pos.getZ() + 2);
                 List<Entity> list = level.getEntitiesOfClass(Entity.class, flameBox);
                 for (Entity e : list) {
-                    e.igniteForSeconds(5);
+                    dev.golem.core.world.Effects.ignite(e, 5);
                     e.hurt(level.damageSources().onFire(), 5F);
                 }
             }

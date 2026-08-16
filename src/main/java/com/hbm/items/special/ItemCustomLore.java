@@ -1,14 +1,12 @@
 package com.hbm.items.special;
 
-import java.util.function.Consumer;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 
 /**
  * Common-safe (vanilla-only) port of HBM's ItemCustomLore base.
@@ -26,23 +24,19 @@ import net.minecraft.world.item.component.TooltipDisplay;
  * items (old {@code hasEffect}) -> {@code DataComponents.ENCHANTMENT_GLINT_OVERRIDE}; the
  * {@code ModItems.undefined} scrambling-name gimmick -> a dedicated special item.
  */
-public class ItemCustomLore extends Item {
+public class ItemCustomLore extends CompatItem {
 
     public ItemCustomLore(Item.Properties properties) {
         super(properties);
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, Item.TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
         String base = this.getDescriptionId() + ".desc.";
         Language language = Language.getInstance();
         for (int i = 0; language.has(base + i); i++) {
-            adder.accept(Component.translatable(base + i));
+            tooltip.add(Component.translatable(base + i));
         }
     }
 }

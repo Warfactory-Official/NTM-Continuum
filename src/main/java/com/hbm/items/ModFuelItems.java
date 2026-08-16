@@ -70,7 +70,7 @@ public final class ModFuelItems {
 
     /** 1.12.2 {@code ItemLemon(2, 0.5F, false, …)} — edible, 2 hunger / 0.5 saturation. */
     public static final RegistryObject<Item> powder_cement = ITEMS.registerSimpleItem("powder_cement",
-            p -> p.food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(2).saturationModifier(0.5F).build()));
+            p -> p.food(dev.golem.core.world.ItemStacks.food(2, 0.5F)));
 
     private static RegistryObject<Item> plain(String name) {
         RegistryObject<Item> ro = ITEMS.registerSimpleItem(name);

@@ -20,7 +20,7 @@ public class HazardTransformerRadiationNBT implements IHazardTransformer {
 
     @Override
     public void transformPost(final ItemStack stack, final List<HazardEntry> entries) {
-        Float rad = stack.get(ModDataComponents.HAZARD_RADIATION.get());
+        Float rad = ModDataComponents.hazardRadiation(stack);
         if (rad != null && rad > 0) {
             entries.add(new HazardEntry(HazardRegistry.RADIATION, rad));
         }

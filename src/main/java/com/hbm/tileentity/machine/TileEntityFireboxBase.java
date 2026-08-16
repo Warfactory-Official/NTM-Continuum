@@ -11,6 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
+import dev.golem.core.world.Compat;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -59,14 +60,12 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
                 te.maxBurnTime = te.burnTime = (int) (baseTime * te.getTimeMult());
                 te.burnHeat = te.getModule().getBurnHeat(te.getBaseHeat(), fuel);
 
-                var remainder = fuel.getItem().getCraftingRemainder(); // e.g. lava bucket -> empty bucket
+                // Captured BEFORE the shrink: once the stack empties its item is AIR, and asking AIR
+                // for a crafting remainder silently returns nothing (lava bucket -> no empty bucket).
+                ItemStack remainder = Compat.craftingRemainder(fuel); // e.g. lava bucket -> empty bucket
                 fuel.shrink(1);
                 if (fuel.isEmpty()) {
-                    //? if >=26.1 {
-                    te.inventory.setStackInSlot(i, remainder != null ? remainder.create() : ItemStack.EMPTY);
-                    //?} else {
-                    /*te.inventory.setStackInSlot(i, remainder != null ? new ItemStack(remainder) : ItemStack.EMPTY);
-                    *///?}
+                    te.inventory.setStackInSlot(i, remainder);
                 }
 
                 te.wasOn = true;

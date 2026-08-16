@@ -54,13 +54,13 @@ public class MachineZirnoxDestroyed extends BlockDummyable {
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (!level.isClientSide()) level.scheduleTick(pos, this, 100 + level.getRandom().nextInt(20));
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         BlockState above = level.getBlockState(pos.above());
         if (above.isAir() && random.nextInt(10) == 0) {
             level.setBlock(pos.above(), ModNuclearBlocks.gas_meltdown.get().defaultBlockState(), 2);

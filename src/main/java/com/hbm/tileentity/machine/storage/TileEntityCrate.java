@@ -6,15 +6,12 @@ import net.minecraft.core.NonNullList;
 //? if >=26.1 {
 import net.minecraft.core.component.DataComponentGetter;
 //?}
-import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -26,8 +23,8 @@ import net.minecraft.core.BlockPos;
  *
  * <p><b>Contents travel with the dropped crate</b> (the 1.12.2 {@code CRATE_KEEP_CONTENTS=true} default):
  * implemented the vanilla shulker-box way — the inventory round-trips through the
- * {@link DataComponents#CONTAINER} component ({@link #applyImplicitComponents}/
- * {@link #collectImplicitComponents}), and the crate's loot table copies that component from the block
+ * {@code minecraft:container} component on 1.20.5+ and the legacy block-entity item tag on 1.20.1.
+ * The crate's loot table copies that component from the block
  * entity onto the dropped item, so breaking a crate gives you a crate item holding everything, and
  * placing it back restores the contents. (The 1.12.2 lock/lockpicking, hazard-radiation, loot-table
  * fill, and hand-held "open from item" behaviours are dropped — see IMPLEMENTATION.md.)
@@ -60,22 +57,21 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
     }
 
-    // --- contents-in-item (vanilla CONTAINER-component round-trip, like the shulker box) ---
+    // --- contents-in-item ---
 
-    @Override
     //? if >=26.1 {
+    @Override
     protected void applyImplicitComponents(DataComponentGetter components) {
-    //?} else {
-    /*protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
-    *///?}
         super.applyImplicitComponents(components);
-        components.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(getItems());
+        components.getOrDefault(net.minecraft.core.component.DataComponents.CONTAINER,
+                net.minecraft.world.item.component.ItemContainerContents.EMPTY).copyInto(getItems());
     }
 
     @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder components) {
+    protected void collectImplicitComponents(net.minecraft.core.component.DataComponentMap.Builder components) {
         super.collectImplicitComponents(components);
-        components.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(getItems()));
+        components.set(net.minecraft.core.component.DataComponents.CONTAINER,
+                net.minecraft.world.item.component.ItemContainerContents.fromItems(getItems()));
     }
 
     @Override
@@ -84,7 +80,21 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
         // (mirrors vanilla discarding "Items"). Only affects the save-to-item path, not the world save.
         output.discard("inventory");
     }
+    //?} else if >=1.20.5 {
+    /*@Override
+    protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
+        super.applyImplicitComponents(components);
+        components.getOrDefault(net.minecraft.core.component.DataComponents.CONTAINER,
+                net.minecraft.world.item.component.ItemContainerContents.EMPTY).copyInto(getItems());
+    }
 
+    @Override
+    protected void collectImplicitComponents(net.minecraft.core.component.DataComponentMap.Builder components) {
+        super.collectImplicitComponents(components);
+        components.set(net.minecraft.core.component.DataComponents.CONTAINER,
+                net.minecraft.world.item.component.ItemContainerContents.fromItems(getItems()));
+    }
+    *///?}
     // --- MenuProvider ---
 
     @Override

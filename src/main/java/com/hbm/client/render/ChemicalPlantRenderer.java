@@ -38,9 +38,9 @@ public class ChemicalPlantRenderer implements CompatBER<TileEntityMachineChemica
     private final RenderType fluidType;
 
     public ChemicalPlantRenderer() {
-        Identifier obj = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/chemical_plant.obj");
-        Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/chemical_plant.png");
-        Identifier fluidTex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/chemical_plant_fluid.png");
+        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/chemical_plant.obj");
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/chemical_plant.png");
+        Identifier fluidTex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/chemical_plant_fluid.png");
         this.model = WavefrontObj.load(obj);
         this.baseType = CompatRenderTypes.entityCutout(tex);
         this.fluidType = CompatRenderTypes.entityTranslucent(fluidTex, false);

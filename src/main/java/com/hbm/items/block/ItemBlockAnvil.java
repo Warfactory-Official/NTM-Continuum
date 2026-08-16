@@ -1,37 +1,27 @@
 package com.hbm.items.block;
 
 import com.hbm.blocks.machine.NTMAnvil;
+import dev.golem.core.world.CompatBlockItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 import net.minecraft.world.level.block.Block;
 
-import java.util.function.Consumer;
 
 /** Block item for the {@link NTMAnvil}s — adds the gold "Tier: N" tooltip the 1.12.2 block showed. */
-public class ItemBlockAnvil extends BlockItem {
+public class ItemBlockAnvil extends CompatBlockItem {
 
     public ItemBlockAnvil(Block block, Properties properties) {
         super(block, properties);
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> adder, TooltipFlag flag) {
-        super.appendHoverText(stack, context, display, adder, flag);
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> lines, TooltipFlag flag) {
-        super.appendHoverText(stack, context, lines, flag);
-        java.util.function.Consumer<Component> adder = lines::add;
-    *///?}
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> lines, TooltipFlag flag) {
         if (getBlock() instanceof NTMAnvil anvil) {
-            adder.accept(Component.literal("Tier: " + anvil.tier).withStyle(ChatFormatting.GOLD));
+            lines.add(Component.literal("Tier: " + anvil.tier).withStyle(ChatFormatting.GOLD));
         }
     }
 }

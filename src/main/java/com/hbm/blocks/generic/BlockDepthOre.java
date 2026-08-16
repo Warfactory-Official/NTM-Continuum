@@ -40,7 +40,7 @@ public class BlockDepthOre extends BlockDepth {
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         return OreDrops.roll(params, quantity, dropSelf ? () -> new ItemStack(this) : drop);
     }
 }

@@ -111,14 +111,10 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         ItemStack fuel = te.inventory.getStackInSlot(0);
         if (!fuel.isEmpty() && te.burnTime < 200 && Compat.burnDuration(level, fuel) > 0) {
             te.burnTime += Compat.burnDuration(level, fuel);
-            var remainder = fuel.getItem().getCraftingRemainder(); // e.g. lava bucket -> empty bucket
+            ItemStack remainder = Compat.craftingRemainder(fuel); // e.g. lava bucket -> empty bucket
             fuel.shrink(1);
             if (fuel.isEmpty()) {
-                //? if >=26.1 {
-                te.inventory.setStackInSlot(0, remainder != null ? remainder.create() : ItemStack.EMPTY);
-                //?} else {
-                /*te.inventory.setStackInSlot(0, remainder != null ? new ItemStack(remainder) : ItemStack.EMPTY);
-                *///?}
+                te.inventory.setStackInSlot(0, remainder);
             }
             te.setChanged();
         }
@@ -160,7 +156,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
 
         ItemStack outSlot = inventory.getStackInSlot(3);
         if (outSlot.isEmpty()) return true;
-        if (!ItemStack.isSameItemSameComponents(outSlot, output)) return false;
+        if (!dev.golem.core.world.ItemStacks.sameItemAndData(outSlot, output)) return false;
         return outSlot.getCount() + output.getCount() <= outSlot.getMaxStackSize();
     }
 
@@ -219,7 +215,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         buf.writeInt(speed);
         buf.writeInt(burnTime);
         buf.writeInt(progress);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, inventory.getStackInSlot(2));
+        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
     }
 
     @Override
@@ -228,7 +224,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
         speed = buf.readInt();
         burnTime = buf.readInt();
         progress = buf.readInt();
-        syncStack = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        syncStack = dev.golem.core.world.ItemStacks.readOptional(buf);
     }
 
     @Override

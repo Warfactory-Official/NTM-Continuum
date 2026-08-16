@@ -93,7 +93,7 @@ public final class SilexGameTests {
 
     /** Fills the solution pool directly so the test measures processing, not loading. */
     private static void primePool(TileEntitySILEX te, SILEXRecipe recipe) {
-        te.current = recipe.input.getDisplayStack().copyWithCount(1);
+        te.current = dev.golem.core.world.ItemStacks.copyWithCount(recipe.input.getDisplayStack(), 1);
         te.currentFill = TileEntitySILEX.maxFill;
     }
 
@@ -256,7 +256,7 @@ public final class SilexGameTests {
     public static void silexMenu(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
         TileEntitySILEX te = place(helper, pos);
-        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerSILEX menu = new ContainerSILEX(1, player.getInventory(), te);
 
         int[][] expected = {{80, 12}, {8, 24}, {26, 24}, {44, 24}, {116, 90},
@@ -289,7 +289,7 @@ public final class SilexGameTests {
         // setPlacedBy resolves facing from the placer's yaw (0 -> NORTH) and puts the core `offset`
         // blocks along it: NORTH with offset 1 -> one block +Z from the clicked cell.
         var core = clicked.offset(0, 0, 1);
-        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,

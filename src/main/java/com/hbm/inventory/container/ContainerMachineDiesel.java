@@ -42,11 +42,7 @@ public class ContainerMachineDiesel extends AbstractContainerMenu {
         this.addSlot(validated(3, 8, 17));    // fluid identifier
         this.addSlot(takeOnly(4, 8, 53));     // identifier out
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 84);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
     private Slot validated(int index, int x, int y) {

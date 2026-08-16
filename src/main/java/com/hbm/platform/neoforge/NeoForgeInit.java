@@ -13,13 +13,10 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 
-import com.hbm.packet.BlockEntitySyncPayload;
-import com.hbm.packet.ControlEventPayload;
-import com.hbm.packet.EntityPropsSyncPayload;
 import com.hbm.packet.HbmPackets;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.hazard.Hazards;
-import net.minecraft.server.level.ServerPlayer;
+import dev.golem.core.net.GolemNetwork;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -34,11 +31,12 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
-import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 
 @Mod(Constants.MOD_ID)
 public class NeoForgeInit {
@@ -64,9 +62,10 @@ public class NeoForgeInit {
         // Populate our creative tabs from the common contents map.
         eventBus.addListener(this::onBuildTabContents);
 
-        // Register HBM's custom S2C payloads (the BufPacket-equivalent BlockEntity sync).
+        HbmPackets.declare();
         eventBus.addListener(this::onRegisterPayloads);
-        eventBus.addListener(com.hbm.gametest.HbmNeoForgeGameTests::register);
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.HbmGameTestFunctions.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         //? if >=26.1 {
@@ -110,29 +109,12 @@ public class NeoForgeInit {
         // Debug commands (/hbm rad ...).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) ->
                 com.hbm.command.HbmCommands.register(event.getDispatcher()));
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> Constants.LOG.info(
+                "[HBM] Loaded {} total recipes", event.getServer().getRecipeManager().getRecipes().size()));
     }
 
     private void onRegisterPayloads(RegisterPayloadHandlersEvent event) {
-        event.registrar(Constants.MOD_ID).playToClient(
-                BlockEntitySyncPayload.TYPE,
-                BlockEntitySyncPayload.CODEC,
-                (payload, context) -> context.enqueueWork(
-                        () -> HbmPackets.handleSync(context.player().level(), payload)));
-        event.registrar(Constants.MOD_ID).playToServer(
-                ControlEventPayload.TYPE,
-                ControlEventPayload.CODEC,
-                (payload, context) -> context.enqueueWork(
-                        () -> HbmPackets.handleControl((ServerPlayer) context.player(), payload)));
-        event.registrar(Constants.MOD_ID).playToServer(
-                com.hbm.packet.AnvilCraftPayload.TYPE,
-                com.hbm.packet.AnvilCraftPayload.CODEC,
-                (payload, context) -> context.enqueueWork(
-                        () -> HbmPackets.handleAnvilCraft((ServerPlayer) context.player(), payload)));
-        event.registrar(Constants.MOD_ID).playToClient(
-                EntityPropsSyncPayload.TYPE,
-                EntityPropsSyncPayload.CODEC,
-                (payload, context) -> context.enqueueWork(
-                        () -> HbmPackets.handlePropsSync(context.player(), payload)));
+        GolemNetwork.flushRegistrations(event);
     }
 
     private void onBuildTabContents(BuildCreativeModeTabContentsEvent event) {

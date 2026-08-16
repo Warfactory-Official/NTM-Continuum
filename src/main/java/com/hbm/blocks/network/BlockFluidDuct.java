@@ -13,7 +13,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -23,9 +22,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-//? if >=26.1 {
-import net.minecraft.world.level.ScheduledTickAccess;
-//?}
+import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -58,7 +55,7 @@ import java.util.Map;
  * a {@code fluid_identifier}: the connection flags are then recomputed against that one fluid, so a typed
  * duct only links to neighbours carrying the same fluid.
  */
-public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterloggedBlock, ILookOverlay {
+public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements EntityBlock, SimpleWaterloggedBlock, ILookOverlay {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -94,13 +91,13 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         // Drawn by FluidDuctObjRenderer (the real pipe_neo.obj), so the block model itself is invisible.
         return RenderShape.INVISIBLE;
     }
 
     @Override
-    protected FluidState getFluidState(BlockState state) {
+    public FluidState getFluidState(BlockState state) {
         return state.getValue(WATERLOGGED)
                 ? net.minecraft.world.level.material.Fluids.WATER.getSource(false)
                 : super.getFluidState(state);
@@ -143,15 +140,8 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
     }
 
     @Override
-    //? if >=26.1 {
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
-                                     Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
-                                     RandomSource random) {
-    //?} else {
-    /*protected BlockState updateShape(BlockState state, Direction directionToNeighbour, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
-        net.minecraft.world.level.LevelAccessor ticks = level;
-        net.minecraft.util.RandomSource random = level.getRandom();
-    *///?}
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState) {
         if (state.getValue(WATERLOGGED)) {
             ticks.scheduleTick(pos, net.minecraft.world.level.material.Fluids.WATER,
                     net.minecraft.world.level.material.Fluids.WATER.getTickDelay(level));
@@ -161,7 +151,7 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         // The hitbox must match what FluidDuctObjRenderer.selectParts DRAWS, not just the raw connection
         // flags: a duct with a single connection on one axis (or none) renders a full straight pipe (both
         // arms of that axis), so the hitbox has to cover the opposite arm too — otherwise the visible far
@@ -189,22 +179,8 @@ public class BlockFluidDuct extends Block implements EntityBlock, SimpleWaterlog
     }
 
     /** Right-click with a fluid identifier → set the duct's fluid type and recompute its connections. */
-    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return hbm$useItemOn(stack, state, level, pos, player, hand, hit);
-    }
-    //?} else {
-    /*@Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        InteractionResult hbm$r = hbm$useItemOn(stack, state, level, pos, player, hand, hit);
-        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
-             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
-             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
-    }
-    *///?}
-
-    private InteractionResult hbm$useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);

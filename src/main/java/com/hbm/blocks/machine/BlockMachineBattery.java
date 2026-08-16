@@ -52,7 +52,7 @@ public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implem
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
                 Services.PLATFORM.openMenu(serverPlayer, provider, pos);

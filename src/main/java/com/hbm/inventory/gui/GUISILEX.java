@@ -9,10 +9,6 @@ import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.tileentity.machine.TileEntitySILEX;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -39,7 +35,7 @@ import java.util.Optional;
  */
 public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<ContainerSILEX> {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_silex.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_silex.png");
 
     private static final int VOID_X = 10, VOID_Y = 92, VOID_W = 12;
     private static final int TANK_X = 8, TANK_Y = 42, TANK_W = 52, TANK_H = 7;
@@ -50,14 +46,7 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F,
                 this.imageWidth, this.imageHeight, 256, 256);
 
@@ -156,16 +145,7 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntitySILEX te = this.menu.getSilex();
         if (te == null) return;
 
@@ -185,12 +165,7 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         if (this.isHovering(VOID_X, VOID_Y, VOID_W, VOID_W, event.x(), event.y())) {
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
@@ -198,10 +173,6 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
                 return true;
             }
         }
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 }

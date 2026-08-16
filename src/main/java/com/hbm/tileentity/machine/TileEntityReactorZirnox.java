@@ -23,7 +23,6 @@ import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.sound.ModSounds;
 import com.hbm.Constants;
 import java.util.List;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -158,7 +157,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             if (held <= 0 || fillable.getFirstFluidType(input) != expected) return;
             int addable = tank.fill(expected, held, false);
             if (addable <= 0) return;
-            ItemStack result = input.copyWithCount(1);
+            ItemStack result = dev.golem.core.world.ItemStacks.copyWithCount(input, 1);
             int taken = fillable.tryEmpty(expected, addable, result);
             if (taken <= 0 || !inventory.insertItem(outputSlot, result.copy(), true).isEmpty()) return;
             tank.fill(expected, taken, true);
@@ -267,12 +266,10 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     }
 
     private static void grantMeltdownAdvancement(Level level, BlockPos pos) {
-        AdvancementHolder advancement = level.getServer().getAdvancements().get(
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "zirnox_meltdown"));
-        if (advancement == null) return;
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class,
                 new net.minecraft.world.phys.AABB(pos).inflate(100.0D))) {
-            player.getAdvancements().award(advancement, "meltdown");
+            dev.golem.core.world.Advancements.award(player,
+                    Constants.MOD_ID + ":zirnox_meltdown", "meltdown");
         }
     }
 

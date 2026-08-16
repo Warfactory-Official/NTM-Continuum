@@ -9,10 +9,6 @@ import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -29,21 +25,14 @@ import java.util.Optional;
  */
 public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineAssemblyMachine> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_assembler.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_assembler.png");
 
     public GUIMachineAssemblyMachine(ContainerMachineAssemblyMachine menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 256);
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
@@ -111,23 +100,14 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             GUIScreenRecipeSelector.openSelector(AssemblyMachineRecipes.INSTANCE, te.getBlockPos(),
                     te.assemblerModule.recipe, 0, ItemBlueprints.grabPool(te.getItem(1)), this);
             return true;
         }
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 
     /** Draws a 3×6 status LED at GUI-relative x / topPos+121 from texture column {@code u} (192 = orange, 195 = green). */
@@ -136,16 +116,7 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         // Power bar hover region (GUI-relative): the full 16×61 bar at (152, 18)..(152, 79).
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
         if (te == null) return;

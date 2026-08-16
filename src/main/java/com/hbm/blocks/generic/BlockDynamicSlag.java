@@ -39,7 +39,7 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE; // the SlagRenderer draws the variable-height pile
     }
 
@@ -50,7 +50,7 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         if (world.getBlockEntity(pos) instanceof TileEntitySlag tile && tile.amount > 0) {
             double h = Math.max(0.0625D, (double) tile.amount / TileEntitySlag.maxAmount);
             return Shapes.box(0, 0, 0, 1, Math.min(h, 1), 1);
@@ -59,7 +59,7 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource rand) {
+    public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource rand) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
         if (!(world.getBlockEntity(pos) instanceof TileEntitySlag self)) {

@@ -89,16 +89,12 @@ public class EntityFalloutRain extends CompatEntity {
     }
 
     @Override
-    protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+    protected void defineData(dev.golem.core.data.SynchedData data) {
         // No synced data — server-driven and invisible (the old SCALE DataParameter fed a renderer we don't have).
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-    //?} else {
-    /*public boolean hurt(DamageSource source, float damage) {
-    *///?}
+    protected boolean onHurt(DamageSource source, float damage) {
         return false;
     }
 

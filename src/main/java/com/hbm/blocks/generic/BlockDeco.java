@@ -30,7 +30,7 @@ import java.util.Map;
  * {@code BEAM} = a central 2×2 post, {@code FULL} = a normal cube. The old easter-egg statue variants
  * ({@code DecoBlockAlt}) are intentionally not ported here.
  */
-public class BlockDeco extends Block {
+public class BlockDeco extends dev.golem.core.world.CompatBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -78,12 +78,12 @@ public class BlockDeco extends Block {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return shapeFor(state);
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return shapeFor(state);
     }
 
@@ -95,12 +95,12 @@ public class BlockDeco extends Block {
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 

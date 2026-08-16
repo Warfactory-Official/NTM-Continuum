@@ -13,17 +13,10 @@ import com.hbm.items.tool.ItemDosimeter;
 import com.hbm.items.tool.ItemGeigerCounter;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
-import java.util.function.UnaryOperator;
 import net.minecraft.world.item.Item;
-//? if >=26.1 {
-import net.minecraft.world.item.equipment.ArmorMaterial;
-import net.minecraft.world.item.equipment.ArmorType;
-//?} else {
-/*import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterial;
-import net.minecraft.core.Holder;
-*///?}
 import dev.golem.core.world.ArmorSlot;
+import dev.golem.core.world.CompatArmorItem;
+import dev.golem.core.world.GolemArmorMaterial;
 
 /**
  * Hand-registered gear: the radiation diagnostic tools (geiger counter / dosimeter) and the three hazmat
@@ -70,50 +63,15 @@ public final class ModGearItems {
     public static final RegistryObject<Item> gas_mask_filter = filter("gas_mask_filter", 18_000);
     public static final RegistryObject<Item> gas_mask_filter_combo = filter("gas_mask_filter_combo", 24_000);
 
-    //? if >=26.1 {
-    private static RegistryObject<Item> armor(String name, ArmorMaterial mat, ArmorSlot slot) {
-        RegistryObject<Item> ro = ITEMS.registerItem(name, Item::new,
-                (UnaryOperator<Item.Properties>) p -> p.humanoidArmor(mat, toVanilla(slot)));
+    private static RegistryObject<Item> armor(String name, GolemArmorMaterial material, ArmorSlot slot) {
+        RegistryObject<Item> ro = ITEMS.registerItem(name, p -> new CompatArmorItem(material, slot, p));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
-
-    private static ArmorType toVanilla(ArmorSlot slot) {
-        return switch (slot) {
-            case HELMET -> ArmorType.HELMET;
-            case CHESTPLATE -> ArmorType.CHESTPLATE;
-            case LEGGINGS -> ArmorType.LEGGINGS;
-            case BOOTS -> ArmorType.BOOTS;
-        };
-    }
-    //?} else {
-    /*private static RegistryObject<Item> armor(String name, RegistryObject<ArmorMaterial> mat, ArmorSlot slot) {
-        // Pre-26.1 armour is a dedicated Item subclass rather than a Properties modifier. The holder is
-        // resolved inside the factory, which runs after the ARMOR_MATERIAL flush.
-        RegistryObject<Item> ro = ITEMS.registerItem(name,
-                p -> new ArmorItem(HbmArmorMaterials.holder(mat), toVanilla(slot), p));
-        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
-        return ro;
-    }
-
-    private static ArmorItem.Type toVanilla(ArmorSlot slot) {
-        return switch (slot) {
-            case HELMET -> ArmorItem.Type.HELMET;
-            case CHESTPLATE -> ArmorItem.Type.CHESTPLATE;
-            case LEGGINGS -> ArmorItem.Type.LEGGINGS;
-            case BOOTS -> ArmorItem.Type.BOOTS;
-        };
-    }
-    *///?}
 
     private static RegistryObject<ItemGasMask> gasMask(String name, List<HazardClass> blacklist) {
-        //? if >=26.1 {
-        RegistryObject<ItemGasMask> ro = ITEMS.registerItem(name, p -> new ItemGasMask(p, blacklist),
-                p -> p.humanoidArmor(HbmArmorMaterials.HAZMAT, ArmorType.HELMET).stacksTo(1));
-        //?} else {
-        /*RegistryObject<ItemGasMask> ro = ITEMS.registerItem(name, p -> new ItemGasMask(p, blacklist),
-                p -> p.stacksTo(1));
-        *///?}
+        RegistryObject<ItemGasMask> ro = ITEMS.registerItem(name,
+                p -> new ItemGasMask(p, blacklist), p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }

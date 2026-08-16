@@ -69,11 +69,7 @@ public class ContainerAnvil extends AbstractContainerMenu {
             }
         });
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 140);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
 
         updateSmithing();
     }

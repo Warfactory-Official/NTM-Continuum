@@ -47,8 +47,8 @@ public class AnvilObjRenderer implements CompatBER<TileEntityAnvil, AnvilRenderS
         for (RegistryObject<NTMAnvil> anvil : ModAnvilBlocks.ANVILS) {
             String id = anvil.getId().getPath();
             configs.put(anvil.get(), new Cfg(
-                    WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/anvils/" + id + ".obj")),
-                    CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/anvils/" + id + ".png"))));
+                    WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/anvils/" + id + ".obj")),
+                    CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/anvils/" + id + ".png"))));
         }
     }
 

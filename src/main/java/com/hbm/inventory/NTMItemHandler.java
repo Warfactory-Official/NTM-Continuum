@@ -78,7 +78,7 @@ public class NTMItemHandler {
         int limit = getStackLimit(slot, stack);
 
         if (!existing.isEmpty()) {
-            if (!ItemStack.isSameItemSameComponents(stack, existing)) return stack;
+            if (!dev.golem.core.world.ItemStacks.sameItemAndData(stack, existing)) return stack;
             limit -= existing.getCount();
         }
         if (limit <= 0) return stack;
@@ -86,7 +86,7 @@ public class NTMItemHandler {
         int toInsert = Math.min(limit, stack.getCount());
         if (!simulate) {
             if (existing.isEmpty()) {
-                stacks.set(slot, stack.copyWithCount(toInsert));
+                stacks.set(slot, dev.golem.core.world.ItemStacks.copyWithCount(stack, toInsert));
             } else {
                 existing.grow(toInsert);
             }
@@ -94,7 +94,7 @@ public class NTMItemHandler {
         }
 
         int remainder = stack.getCount() - toInsert;
-        return remainder <= 0 ? ItemStack.EMPTY : stack.copyWithCount(remainder);
+        return remainder <= 0 ? ItemStack.EMPTY : dev.golem.core.world.ItemStacks.copyWithCount(stack, remainder);
     }
 
     /** Extracts up to {@code amount} from {@code slot}. Mirrors {@code ItemStackHandler.extractItem}. */
@@ -112,10 +112,10 @@ public class NTMItemHandler {
             return simulate ? existing.copy() : existing;
         } else {
             if (!simulate) {
-                stacks.set(slot, existing.copyWithCount(existing.getCount() - toExtract));
+                stacks.set(slot, dev.golem.core.world.ItemStacks.copyWithCount(existing, existing.getCount() - toExtract));
                 onContentsChanged(slot);
             }
-            return existing.copyWithCount(toExtract);
+            return dev.golem.core.world.ItemStacks.copyWithCount(existing, toExtract);
         }
     }
 

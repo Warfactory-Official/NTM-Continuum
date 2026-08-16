@@ -227,7 +227,7 @@ public final class FelGameTests {
         var clicked = new BlockPos(3, 1, 1);
         // NORTH facing with offset 2 -> the core sits two blocks +Z from the clicked cell.
         var core = clicked.offset(0, 0, 2);
-        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
@@ -258,7 +258,7 @@ public final class FelGameTests {
         var block = ModMachineBlocks.machine_fel.get();
         var clicked = new BlockPos(3, 1, 1);
         var core = clicked.offset(0, 0, 2);
-        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
@@ -320,7 +320,7 @@ public final class FelGameTests {
     public static void felMenu(GameTestHelper helper) {
         BlockPos pos = new BlockPos(2, 1, 8);
         TileEntityFEL te = placeFel(helper, pos);
-        var player = helper.makeMockPlayer(GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         ContainerFEL menu = new ContainerFEL(1, player.getInventory(), te);
 
         helper.assertTrue(menu.getSlot(0).x == 182 && menu.getSlot(0).y == 144,

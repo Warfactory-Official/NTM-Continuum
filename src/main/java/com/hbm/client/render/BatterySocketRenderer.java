@@ -29,8 +29,8 @@ import java.util.Map;
  */
 public class BatterySocketRenderer implements CompatBER<TileEntityBatterySocket, BatterySocketRenderState> {
 
-    private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/battery_socket.obj");
-    private static final Identifier SOCKET_TEX = Identifier.fromNamespaceAndPath("hbm", "textures/models/machines/battery_socket.png");
+    private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/battery_socket.obj");
+    private static final Identifier SOCKET_TEX = dev.golem.core.Ids.of("hbm", "textures/models/machines/battery_socket.png");
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
     private final RenderType socketType = CompatRenderTypes.entityCutout(SOCKET_TEX);

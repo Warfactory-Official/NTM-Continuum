@@ -43,7 +43,7 @@ public final class GuiUtil {
     }
 
     /** The shared HBM {@code gui_utility.png} icon sheet (info/warning glyphs) — the 1.12.2 {@code GuiInfoContainer.guiUtil}. */
-    private static final Identifier GUI_UTILITY = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_utility.png");
+    private static final Identifier GUI_UTILITY = dev.golem.core.Ids.of("hbm", "textures/gui/gui_utility.png");
 
     /** The 8×8 info-panel dimensions + a small-blue-"*" glyph, the hover target for the upgrade panel. */
     public static final int INFO_PANEL_SIZE = 8;

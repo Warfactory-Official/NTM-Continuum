@@ -1,6 +1,7 @@
 package com.hbm.client.render;
 
 import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.Vertexes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -179,11 +180,6 @@ public final class FoundryRenderHelper {
 
     private static void vertex(VertexConsumer buffer, PoseStack.Pose pose,
                                float x, float y, float z, float u, float v, int color) {
-        buffer.addVertex(pose, x, y, z)
-                .setColor(color)
-                .setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(FULLBRIGHT)
-                .setNormal(pose, 0F, 1F, 0F);
+        Vertexes.vertex(buffer, pose, x, y, z, color, u, v, OverlayTexture.NO_OVERLAY, FULLBRIGHT, 0F, 1F, 0F);
     }
 }

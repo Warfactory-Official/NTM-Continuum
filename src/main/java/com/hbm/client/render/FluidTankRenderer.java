@@ -30,9 +30,9 @@ import java.util.Map;
  */
 public class FluidTankRenderer implements CompatBER<TileEntityMachineFluidTank, FluidTankRenderState> {
 
-    private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/fluidtank.obj");
-    private static final Identifier FRAME_TEX = Identifier.fromNamespaceAndPath("hbm", "textures/models/machines/tank.png");
-    private static final Identifier TANK_NONE = Identifier.fromNamespaceAndPath("hbm", "textures/models/tank/tank_none.png");
+    private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/fluidtank.obj");
+    private static final Identifier FRAME_TEX = dev.golem.core.Ids.of("hbm", "textures/models/machines/tank.png");
+    private static final Identifier TANK_NONE = dev.golem.core.Ids.of("hbm", "textures/models/tank/tank_none.png");
     private static final float BASE_YAW = 180F;
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
@@ -49,7 +49,7 @@ public class FluidTankRenderer implements CompatBER<TileEntityMachineFluidTank, 
      */
     private static Identifier bodyTextureFor(String fluidName) {
         return BODY_TEX.computeIfAbsent(fluidName.toLowerCase(Locale.US), name -> {
-            Identifier tex = Identifier.fromNamespaceAndPath("hbm", "textures/models/tank/tank_" + name + ".png");
+            Identifier tex = dev.golem.core.Ids.of("hbm", "textures/models/tank/tank_" + name + ".png");
             return net.minecraft.client.Minecraft.getInstance().getResourceManager().getResource(tex).isPresent() ? tex : TANK_NONE;
         });
     }

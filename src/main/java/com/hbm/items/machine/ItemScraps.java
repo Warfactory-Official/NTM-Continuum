@@ -6,22 +6,17 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomModelData;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Foundry scraps — an arbitrary amount of a single molten {@link NTMMaterial}, solidified into an item
@@ -31,7 +26,7 @@ import java.util.function.Consumer;
  * components. Icon: the grayscale {@code scraps} sprite tinted by the material's solid colour via the
  * vanilla {@code custom_model_data} colour list (same trick as {@code ItemFluidId}).
  */
-public class ItemScraps extends Item {
+public class ItemScraps extends CompatItem {
 
     public ItemScraps(Properties properties) {
         super(properties);
@@ -40,11 +35,11 @@ public class ItemScraps extends Item {
     /** The contained material+amount, or null if the components are missing/unknown. */
     public static Mats.@Nullable MaterialStack getMats(ItemStack stack) {
         if (!(stack.getItem() instanceof ItemScraps)) return null;
-        String name = stack.get(ModDataComponents.MATERIAL.get());
+        String name = ModDataComponents.material(stack);
         if (name == null) return null;
         NTMMaterial mat = Mats.byName(name);
         if (mat == null) return null;
-        int amount = stack.getOrDefault(ModDataComponents.MAT_AMOUNT.get(), MaterialShapes.INGOT.quantity);
+        int amount = ModDataComponents.materialAmount(stack, MaterialShapes.INGOT.quantity);
         return new Mats.MaterialStack(mat, amount);
     }
 
@@ -60,8 +55,8 @@ public class ItemScraps extends Item {
     public static ItemStack create(Mats.MaterialStack mats, boolean liquid) {
         if (mats.material == null) return ItemStack.EMPTY;
         ItemStack scrap = new ItemStack(ModMachineItems.scraps.get());
-        scrap.set(ModDataComponents.MATERIAL.get(), mats.material.name);
-        scrap.set(ModDataComponents.MAT_AMOUNT.get(), mats.amount);
+        ModDataComponents.material(scrap, mats.material.name);
+        ModDataComponents.setMaterialAmount(scrap, mats.amount);
         ModelData.setColorAndFlag(scrap, mats.material.solidColorLight, liquid);
         return scrap;
     }
@@ -90,19 +85,14 @@ public class ItemScraps extends Item {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
         Mats.MaterialStack contents = getMats(stack);
         if (contents != null) {
-            adder.accept(Component.literal(Mats.formatAmount(contents.amount, false)).withStyle(ChatFormatting.GRAY));
-            adder.accept(Component.literal(Mats.formatAmount(contents.amount, true)).withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.literal(Mats.formatAmount(contents.amount, false)).withStyle(ChatFormatting.GRAY));
+            tooltip.add(Component.literal(Mats.formatAmount(contents.amount, true)).withStyle(ChatFormatting.DARK_GRAY));
             if (isLiquid(stack) && contents.material.smeltable == NTMMaterial.SmeltingBehavior.ADDITIVE) {
-                adder.accept(Component.literal("Additive, not castable!").withStyle(ChatFormatting.DARK_RED));
+                tooltip.add(Component.literal("Additive, not castable!").withStyle(ChatFormatting.DARK_RED));
             }
         }
     }

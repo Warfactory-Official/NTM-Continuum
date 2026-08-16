@@ -3,9 +3,7 @@ package com.hbm.blocks.generic;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.interfaces.IRadResistantBlock;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -14,32 +12,24 @@ import net.minecraft.world.level.block.state.BlockState;
  * section's pockets, so both edges call {@link RadiationSystemNT#markSectionForRebuild}. Ported from
  * 1.12.2's {@code BlockRadResistant}.
  */
-public class BlockRadResistant extends Block implements IRadResistantBlock {
+public class BlockRadResistant extends dev.golem.core.world.CompatBlock implements IRadResistantBlock {
 
     public BlockRadResistant(Properties props) {
         super(props);
     }
 
     @Override
-    protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
         super.onPlace(state, level, pos, oldState, movedByPiston);
-        if (level instanceof ServerLevel server && !state.is(oldState.getBlock())) {
-            RadiationSystemNT.markSectionForRebuild(server, pos);
+        if (!level.isClientSide() && !state.is(oldState.getBlock())) {
+            RadiationSystemNT.markSectionForRebuild((net.minecraft.server.level.ServerLevel) level, pos);
         }
     }
 
     @Override
-    //? if >=26.1 {
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-    //?} else {
-    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
-        if (!(hbm$level instanceof ServerLevel level)) return;
-    *///?}
-        //? if >=26.1 {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        //?} else {
-        /*super.onRemove(state, hbm$level, pos, hbm$newState, movedByPiston);
-        *///?}
-        RadiationSystemNT.markSectionForRebuild(level, pos);
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
+        if (!level.isClientSide()) {
+            RadiationSystemNT.markSectionForRebuild((net.minecraft.server.level.ServerLevel) level, pos);
+        }
     }
 }

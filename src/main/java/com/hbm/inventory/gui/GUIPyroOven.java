@@ -6,7 +6,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,7 +18,7 @@ import java.util.Optional;
  * The upgrade info panel (old drawCustomInfoStat) is deferred — §20. */
 public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<ContainerPyroOven> {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_pyrooven.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_pyrooven.png");
 
     public GUIPyroOven(ContainerPyroOven menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -34,14 +33,7 @@ public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<Contai
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachinePyroOven te = this.menu.getTile();
@@ -77,16 +69,7 @@ public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<Contai
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachinePyroOven te = this.menu.getTile();
         if (te == null) return;
 

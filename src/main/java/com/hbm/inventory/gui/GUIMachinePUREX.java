@@ -11,10 +11,6 @@ import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -33,7 +29,7 @@ import java.util.Optional;
  */
 public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePUREX> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_purex.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_purex.png");
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
     private static final int TANK_W = 16, TANK_H = 52;
     private static final int IN_TANK_TOP = 18, OUT_TANK_TOP = 36, OUT_TANK_X = 116;
@@ -50,14 +46,7 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachinePUREX te = this.menu.getPurex();
@@ -123,16 +112,7 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachinePUREX te = this.menu.getPurex();
         if (te == null) return;
 
@@ -171,22 +151,13 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachinePUREX te = this.menu.getPurex();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             GUIScreenRecipeSelector.openSelector(PUREXRecipes.INSTANCE, te.getBlockPos(),
                     te.purexModule.recipe, 0, ItemBlueprints.grabPool(te.getItem(1)), this);
             return true;
         }
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 }

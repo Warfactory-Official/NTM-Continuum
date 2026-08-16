@@ -28,8 +28,40 @@ stonecutter parameters {
 
     // Mechanical renames, declared 26.1 -> older because 26.1 is this port's source of truth.
     replacements {
+        // Id construction changed twice across the supported range. Keep it behind Golem Core so
+        // callers survive the Identifier -> ResourceLocation source rename without version branches.
+        string(true) {
+            replace("net.minecraft.resources.Identifier.fromNamespaceAndPath(", "dev.golem.core.Ids.of(")
+            replace("Identifier.fromNamespaceAndPath(", "dev.golem.core.Ids.of(")
+            replace("ResourceLocation.fromNamespaceAndPath(", "dev.golem.core.Ids.of(")
+            replace("Identifier.parse(", "dev.golem.core.Ids.parse(")
+            replace("ResourceLocation.parse(", "dev.golem.core.Ids.parse(")
+            replace("Identifier.withDefaultNamespace(", "dev.golem.core.Ids.minecraft(")
+            replace("ResourceLocation.withDefaultNamespace(", "dev.golem.core.Ids.minecraft(")
+        }
         string(current.parsed < "1.21.11") {
             replace("Identifier", "ResourceLocation")
+        }
+        string(current.parsed < "1.20.5") {
+            // 1.20.1 has no registry-aware buffer. HBM's sync payload only writes primitives and
+            // explicit ids, so the plain buffer is behaviorally equivalent for these call sites.
+            replace("RegistryFriendlyByteBuf", "FriendlyByteBuf")
+            // Vanilla renamed GRASS -> SHORT_GRASS in 1.20.5. The trailing `)` is load-bearing: a bare
+            // `Blocks.GRASS` rule would also rewrite the four `Blocks.GRASS_BLOCK` uses into
+            // `Blocks.SHORT_GRASS_BLOCK` on the way back up. Checked against the tree, not assumed.
+            replace("Blocks.SHORT_GRASS)", "Blocks.GRASS)")
+        }
+        string(current.parsed < "1.21.1") {
+            // Sound events became Holders. The trailing comma keeps the mapping injective — without it
+            // the older spelling is a strict prefix of the newer one, which is the shape that produced
+            // the `Identifier` mess.
+            replace("SoundEvents.GENERIC_EXPLODE.value(),", "SoundEvents.GENERIC_EXPLODE,")
+        }
+        string(current.parsed < "26.1") {
+            // 26.1 renamed the by-id registry lookup that returns the value itself; below it is `get`.
+            // Qualified by registry and closed by `(`, so it cannot touch getKey/getOptional/getTags,
+            // and `ITEM.get(` is not a substring of `ITEM.getValue(`.
+            replace("BuiltInRegistries.ITEM.getValue(", "BuiltInRegistries.ITEM.get(")
         }
         string(current.parsed < "26.1") {
             replace("GuiGraphicsExtractor", "GuiGraphics")

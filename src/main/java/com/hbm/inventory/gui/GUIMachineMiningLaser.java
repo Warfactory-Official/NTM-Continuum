@@ -3,13 +3,9 @@ package com.hbm.inventory.gui;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineMiningLaser;
 import com.hbm.packet.ControlEventPayload;
-import com.hbm.packet.HbmClientPackets;
+import dev.golem.core.net.GolemNetwork;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -28,7 +24,7 @@ import java.util.Optional;
  */
 public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineMiningLaser> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/machine/gui_laser_miner.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/machine/gui_laser_miner.png");
 
     // On/off button hot-zone (GUI-relative), matching the 1.12.2 click region.
     private static final int BTN_X = 61, BTN_Y = 17, BTN_W = 18, BTN_H = 18;
@@ -73,14 +69,7 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineMiningLaser te = this.menu.getLaser();
@@ -117,16 +106,7 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te == null) return;
 
@@ -142,25 +122,16 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             CompoundTag data = new CompoundTag();
             data.putBoolean("toggle", true);
-            HbmClientPackets.send(new ControlEventPayload(te.getBlockPos(), data));
+            GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(te.getBlockPos(), data));
             return true;
         }
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 
     @Override

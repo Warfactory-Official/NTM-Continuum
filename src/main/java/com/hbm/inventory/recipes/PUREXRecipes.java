@@ -165,7 +165,7 @@ public final class PUREXRecipes extends GenericRecipes {
 
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
-            return !stack.isEmpty() && stack.getItem() == waste && !stack.has(ModDataComponents.FUEL_WASTE_HOT.get())
+            return !stack.isEmpty() && stack.getItem() == waste && !ModDataComponents.hasWasteHot(stack)
                     && (ignoreSize || stack.getCount() >= stacksize);
         }
 

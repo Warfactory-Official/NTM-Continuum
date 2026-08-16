@@ -45,8 +45,8 @@ public class EntityZirnoxDebris extends CompatEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(TYPE, DebrisType.BLANK.ordinal());
+    protected void defineData(dev.golem.core.data.SynchedData data) {
+        data.define(TYPE, DebrisType.BLANK.ordinal());
     }
 
     @Override
@@ -60,11 +60,7 @@ public class EntityZirnoxDebris extends CompatEntity {
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-    //?} else {
-    /*public boolean hurt(DamageSource source, float damage) {
-    *///?}
+    protected boolean onHurt(DamageSource source, float damage) {
         return false;
     }
 
@@ -90,11 +86,7 @@ public class EntityZirnoxDebris extends CompatEntity {
     }
 
     @Override
-    //? if >=26.1 {
-    public InteractionResult interact(Player player, InteractionHand hand, Vec3 hitPosition) {
-    //?} else {
-    /*public InteractionResult interact(Player player, InteractionHand hand) {
-    *///?}
+    protected InteractionResult onInteract(Player player, InteractionHand hand) {
         if (level().isClientSide()) return InteractionResult.SUCCESS;
 
         ItemStack stack = new ItemStack(getDebrisType().item.get());

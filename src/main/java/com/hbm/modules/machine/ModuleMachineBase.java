@@ -141,7 +141,7 @@ public abstract class ModuleMachineBase {
                 ItemStack slot = inventory.getStackInSlot(outputSlots[i]);
                 if (slot.isEmpty()) continue;
                 ItemStack out = recipe.outputItem[i];
-                if (!ItemStack.isSameItemSameComponents(slot, out)) return false;
+                if (!dev.golem.core.world.ItemStacks.sameItemAndData(slot, out)) return false;
                 if (slot.getCount() + out.getCount() > slot.getMaxStackSize()) return false;
             }
         }

@@ -21,7 +21,7 @@ import net.minecraft.resources.Identifier;
 @JeiPlugin
 public class HbmJeiPluginFabric implements IModPlugin {
 
-    private static final Identifier UID = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "jei_plugin");
+    private static final Identifier UID = dev.golem.core.Ids.of(Constants.MOD_ID, "jei_plugin");
 
     @Override
     public Identifier getPluginUid() {

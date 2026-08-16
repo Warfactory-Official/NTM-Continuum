@@ -3,20 +3,22 @@ package com.hbm.items.gear;
 import com.hbm.api.item.IGasMask;
 import com.hbm.items.ModDataComponents;
 import com.hbm.util.ArmorRegistry.HazardClass;
+import dev.golem.core.world.ArmorSlot;
+import dev.golem.core.world.CompatArmorItem;
+import com.hbm.items.HbmArmorMaterials;
 import java.util.List;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 /** Component-backed, filterable helmet. Right-click with a filter in the other hand to install it; sneak to remove it. */
-public class ItemGasMask extends Item implements IGasMask {
+public class ItemGasMask extends CompatArmorItem implements IGasMask {
     private final List<HazardClass> blacklist;
 
     public ItemGasMask(Properties properties, List<HazardClass> blacklist) {
-        super(properties);
+        super(HbmArmorMaterials.HAZMAT, ArmorSlot.HELMET, properties);
         this.blacklist = List.copyOf(blacklist);
     }
 
@@ -27,7 +29,7 @@ public class ItemGasMask extends Item implements IGasMask {
 
     @Override
     public ItemStack getFilter(ItemStack stack) {
-        return stack.getOrDefault(ModDataComponents.GAS_MASK_FILTER.get(), ItemStack.EMPTY).copy();
+        return ModDataComponents.gasMaskFilter(stack);
     }
 
     @Override
@@ -37,12 +39,12 @@ public class ItemGasMask extends Item implements IGasMask {
 
     @Override
     public void installFilter(ItemStack stack, ItemStack filter) {
-        if (isFilterApplicable(stack, filter)) stack.set(ModDataComponents.GAS_MASK_FILTER.get(), filter.copyWithCount(1));
+        if (isFilterApplicable(stack, filter)) ModDataComponents.gasMaskFilter(stack, filter);
     }
 
     public ItemStack removeFilter(ItemStack stack) {
         ItemStack filter = getFilter(stack);
-        stack.remove(ModDataComponents.GAS_MASK_FILTER.get());
+        ModDataComponents.removeGasMaskFilter(stack);
         return filter;
     }
 
@@ -61,23 +63,10 @@ public class ItemGasMask extends Item implements IGasMask {
         }
     }
 
-    //? if >=26.1 {
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         return hbm$use(level, player, hand);
     }
-    //?} else {
-    /*@Override
-    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
-        InteractionResult hbm$r = hbm$use(level, player, hand);
-        net.minecraft.world.item.ItemStack hbm$held = player.getItemInHand(hand);
-        return hbm$r == InteractionResult.SUCCESS
-                ? net.minecraft.world.InteractionResultHolder.success(hbm$held)
-                : hbm$r == InteractionResult.CONSUME
-                ? net.minecraft.world.InteractionResultHolder.consume(hbm$held)
-                : net.minecraft.world.InteractionResultHolder.pass(hbm$held);
-    }
-    *///?}
 
     private InteractionResult hbm$use(Level level, Player player, InteractionHand hand) {
         ItemStack mask = player.getItemInHand(hand);

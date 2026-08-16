@@ -18,6 +18,10 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
 }
 
+sourceSets["main"].java {
+    exclude("com/hbm/platform/fabric/**", "com/hbm/platform/forge/**")
+}
+
 neoForge {
     version = prop("deps.neoforge")
 
@@ -140,6 +144,7 @@ tasks.processResources {
         "neoforge_version" to prop("deps.neoforge"),
         "neoforge_loader_range" to prop("deps.neoforge_loader_range"),
         "java_version" to javaVersion.toString(),
+        "mixin_compatibility" to if (javaVersion <= 17) "JAVA_17" else "JAVA_21",
         "pack_format" to prop("pack_format"),
         // pack.mcmeta's version field, whose very name changed: 26.1 declares a supported RANGE
         // (min_format/max_format) where older versions declare a single pack_format. Keep in step
@@ -151,7 +156,7 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching(listOf("META-INF/neoforge.mods.toml", "pack.mcmeta", "*.mixins.json")) { expand(props) }
-    exclude("fabric.mod.json", "$modId.fabric.mixins.json")
+    exclude("fabric.mod.json", "$modId.fabric.mixins.json", "data/$modId/forge/**")
 }
 
 tasks.jar {

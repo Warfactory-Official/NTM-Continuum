@@ -1,21 +1,18 @@
 package com.hbm.inventory.gui;
 
 import dev.golem.core.gui.GuiDraw;
+import dev.golem.core.gui.CompatScreen;
+import dev.golem.core.gui.KeyInput;
+import dev.golem.core.gui.MouseInput;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.packet.ControlEventPayload;
-import com.hbm.packet.HbmClientPackets;
+import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
-//? if >=26.1 {
-import net.minecraft.client.input.KeyEvent;
-//?}
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -33,9 +30,9 @@ import java.util.Optional;
  * server via a {@link ControlEventPayload} (the {@code index}/{@code selection} tag the machine's
  * {@link com.hbm.interfaces.IControlReceiver#receiveControl} expects) and returns to the previous screen.
  */
-public class GUIScreenRecipeSelector extends Screen {
+public class GUIScreenRecipeSelector extends CompatScreen {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_recipe_selector.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_recipe_selector.png");
     public static final String NULL_SELECTION = "null";
 
     private final int xSize = 176;
@@ -113,14 +110,7 @@ public class GUIScreenRecipeSelector extends Screen {
     }
 
     @Override
-    //? if >=26.1 {
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*public void renderBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
+    protected void extractBackgroundCompat(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         GuiDraw.blit(graphics, TEXTURE, guiLeft, guiTop, 0.0F, 0.0F, xSize, ySize, 256, 256);
 
         if (this.search.isFocused()) {
@@ -160,13 +150,7 @@ public class GUIScreenRecipeSelector extends Screen {
     }
 
     @Override
-    //? if >=26.1 {
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        super.extractRenderState(graphics, mouseX, mouseY, partialTick); // renders the search EditBox
-    //?} else {
-    /*public void render(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        super.render(graphics, mouseX, mouseY, partialTick); // renders the search EditBox
-    *///?}
+    protected void extractForegroundCompat(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
 
         // Recipe tooltips over the grid.
         if (isOver(mouseX, mouseY, 7, 17, 144, 90)) {
@@ -193,17 +177,7 @@ public class GUIScreenRecipeSelector extends Screen {
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
-        //? if >=26.1 {
-        if (super.mouseClicked(event, doubleClick)) return true; // EditBox focus etc.
-        //?} else {
-        /*if (super.mouseClicked(hbm$mx, hbm$my, hbm$btn)) return true; // EditBox focus etc.
-        *///?}
+    protected boolean mouseClickedAfterWidgets(MouseInput event, boolean doubleClick) {
         int x = (int) event.x(), y = (int) event.y();
 
         if (isOver(x, y, 152, 18, 16, 16)) { if (pageIndex > 0) pageIndex--; return true; }   // page up
@@ -236,37 +210,24 @@ public class GUIScreenRecipeSelector extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+    protected boolean mouseScrolledCompat(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (scrollY > 0 && pageIndex > 0) pageIndex--;
         if (scrollY < 0 && pageIndex < size) pageIndex++;
         return true;
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean keyPressed(KeyEvent event) {
-    //?} else {
-    /*public boolean keyPressed(int hbm$key, int hbm$scan, int hbm$mods) {
-        dev.golem.core.gui.KeyInput event = new dev.golem.core.gui.KeyInput(hbm$key, hbm$scan, hbm$mods);
-    *///?}
+    protected boolean keyPressedCompat(KeyInput event) {
         if (event.key() == 257 || event.key() == 335) { // ENTER / numpad enter toggles search focus
             this.search.setFocused(!this.search.isFocused());
             return true;
         }
         if (!this.search.isFocused() && this.minecraft != null
-                //? if >=26.1 {
-                && this.minecraft.options.keyInventory.matches(event)) {
-                //?} else {
-                /*&& this.minecraft.options.keyInventory.matches(hbm$key, hbm$scan)) {
-                *///?}
+                && event.matches(this.minecraft.options.keyInventory)) {
             onClose();
             return true;
         }
-        //? if >=26.1 {
-        return super.keyPressed(event);
-        //?} else {
-        /*return super.keyPressed(hbm$key, hbm$scan, hbm$mods);
-        *///?}
+        return false;
     }
 
     @Override
@@ -274,7 +235,7 @@ public class GUIScreenRecipeSelector extends Screen {
         CompoundTag data = new CompoundTag();
         data.putInt("index", this.index);
         data.putString("selection", this.selection);
-        HbmClientPackets.send(new ControlEventPayload(tilePos, data));
+        GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(tilePos, data));
         if (this.minecraft != null) this.minecraft.setScreen(previousScreen);
     }
 

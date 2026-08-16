@@ -7,11 +7,9 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.hazard.helper.HazardHelper;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.util.ArmorRegistry;
+import dev.golem.core.world.Effects;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,34 +41,30 @@ public class HazardTypeToxic implements IHazardType {
         final boolean isUnprotected = !(hasToxFilter || hasHazmat || reacher);
 
         if (isUnprotected) {
-            applyPotionEffect(target, MobEffects.WEAKNESS, 110, (int) (level - 1));
+            Effects.add(target, MobEffects.WEAKNESS, 110, (int) (level - 1));
 
             if (level > 2) {
-                applyPotionEffect(target, MobEffects.SLOWNESS, 110, (int) Math.min(4, level - 4));
+                Effects.add(target, MobEffects.SLOWNESS, 110, (int) Math.min(4, level - 4));
             }
 
             if (level > 4) {
-                applyPotionEffect(target, MobEffects.HUNGER, 110, (int) level);
+                Effects.add(target, MobEffects.HUNGER, 110, (int) level);
             }
 
             if (level > 6 && target.getRandom().nextInt((int) (2000 / level)) == 0) {
-                applyPotionEffect(target, MobEffects.POISON, 110, (int) (level - 4));
+                Effects.add(target, MobEffects.POISON, 110, (int) (level - 4));
             }
         }
 
         if (!hasHazmat || !hasToxFilter || !reacher) {
             if (level > 8) {
-                applyPotionEffect(target, MobEffects.MINING_FATIGUE, 110, (int) (level - 8));
+                Effects.add(target, MobEffects.MINING_FATIGUE, 110, (int) (level - 8));
             }
 
             if (level > 16) {
-                applyPotionEffect(target, MobEffects.INSTANT_DAMAGE, 110, (int) (level - 16));
+                Effects.add(target, MobEffects.INSTANT_DAMAGE, 110, (int) (level - 16));
             }
         }
-    }
-
-    private static void applyPotionEffect(LivingEntity target, Holder<MobEffect> effect, int duration, int amplifier) {
-        if (amplifier >= 0) target.addEffect(new MobEffectInstance(effect, duration, amplifier));
     }
 
     @Override

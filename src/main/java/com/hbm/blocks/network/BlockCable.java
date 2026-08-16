@@ -7,14 +7,11 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-//? if >=26.1 {
-import net.minecraft.world.level.ScheduledTickAccess;
-//?}
+import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -45,7 +42,7 @@ import java.util.Map;
  * <p>Ported from 1.12.2's {@code BlockCable} (which used an OBJ-baked model + {@code getActualState});
  * the 26.1 equivalent is connection properties + a multipart blockstate + {@code updateShape}.
  */
-public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedBlock {
+public class BlockCable extends dev.golem.core.world.CompatBlock implements EntityBlock, SimpleWaterloggedBlock {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -81,13 +78,13 @@ public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedB
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         // Drawn by CableObjRenderer (the real cable_neo.obj), so the block model itself is invisible.
         return RenderShape.INVISIBLE;
     }
 
     @Override
-    protected FluidState getFluidState(BlockState state) {
+    public FluidState getFluidState(BlockState state) {
         return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
     }
 
@@ -122,15 +119,8 @@ public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedB
     }
 
     @Override
-    //? if >=26.1 {
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos,
-                                     Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState,
-                                     RandomSource random) {
-    //?} else {
-    /*protected BlockState updateShape(BlockState state, Direction directionToNeighbour, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
-        net.minecraft.world.level.LevelAccessor ticks = level;
-        net.minecraft.util.RandomSource random = level.getRandom();
-    *///?}
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState) {
         if (state.getValue(WATERLOGGED)) {
             ticks.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
         }
@@ -139,7 +129,7 @@ public class BlockCable extends Block implements EntityBlock, SimpleWaterloggedB
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape shape = CORE;
         for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
             if (state.getValue(e.getValue())) shape = Shapes.or(shape, ARM.get(e.getKey()));

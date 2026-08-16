@@ -8,15 +8,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.datafix.DataFixTypes;
-import net.minecraft.world.level.saveddata.SavedData;
-//? if >=26.1 {
-import net.minecraft.world.level.saveddata.SavedDataType;
-//?}
-//? if >=26.1 {
-//?}
+import dev.golem.core.world.CompatSavedData;
 
 /**
  * Persists chunk radiation across save/load — the cross-loader replacement for the fork's per-chunk NBT
@@ -25,7 +18,7 @@ import net.minecraft.world.level.saveddata.SavedDataType;
  * On chunk load the entry is popped and re-applied by pocket index (deterministic flood-fill order → the
  * indices line up as long as the blocks didn't change, which they can't while a chunk is unloaded).
  */
-public final class RadiationSavedData extends SavedData {
+public final class RadiationSavedData extends CompatSavedData<RadiationSavedData> {
 
     private static final String ID = "hbm_radiation";
 
@@ -49,40 +42,16 @@ public final class RadiationSavedData extends SavedData {
     private static final Codec<RadiationSavedData> CODEC = CHUNK_CODEC.listOf().xmap(
             RadiationSavedData::fromRows, RadiationSavedData::toRows);
 
-    //? if >=26.1 {
-    public static final SavedDataType<RadiationSavedData> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(Constants.MOD_ID, ID),
-            RadiationSavedData::new, CODEC, DataFixTypes.SAVED_DATA_MAP_DATA);
-    //?}
-
     public RadiationSavedData() {}
 
     public static RadiationSavedData get(ServerLevel level) {
-        //? if >=26.1 {
-        return level.getDataStorage().computeIfAbsent(TYPE);
-        //?} else {
-        /*// Pre-26.1 SavedData is CompoundTag-based and keyed by a plain string; the Codec above is
-        // reused by hand so both versions persist an identical on-disk shape.
-        return level.getDataStorage().computeIfAbsent(
-                new net.minecraft.world.level.saveddata.SavedData.Factory<>(
-                        RadiationSavedData::new,
-                        (tag, registries) -> CODEC
-                                .parse(net.minecraft.nbt.NbtOps.INSTANCE, tag.get("rad"))
-                                .result().orElseGet(RadiationSavedData::new),
-                        DataFixTypes.SAVED_DATA_MAP_DATA),
-                ID);
-        *///?}
+        return CompatSavedData.get(level, Constants.MOD_ID + ":" + ID, RadiationSavedData::new, CODEC);
     }
 
-    //? if <26.1 {
-    /*@Override
-    public net.minecraft.nbt.CompoundTag save(net.minecraft.nbt.CompoundTag tag,
-                                              net.minecraft.core.HolderLookup.Provider registries) {
-        CODEC.encodeStart(net.minecraft.nbt.NbtOps.INSTANCE, this).result()
-                .ifPresent(encoded -> tag.put("rad", encoded));
-        return tag;
+    @Override
+    protected Codec<RadiationSavedData> codec() {
+        return CODEC;
     }
-    *///?}
 
     /** Pops (removes + returns) the stored densities for a chunk, or null. */
     public double[][] take(long chunkKey) {

@@ -43,7 +43,7 @@ public class FluidType {
         this.color = color;
         this.guiTint = color;
         this.unlocalized = "hbmfluid." + name.toLowerCase(Locale.US);
-        this.texture = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/fluids/" + name.toLowerCase(Locale.US) + ".png");
+        this.texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + name.toLowerCase(Locale.US) + ".png");
         this.id = Fluids.registerSelf(this);
     }
 

@@ -1,0 +1,6 @@
+{
+  "type": "forge:add_features",
+  "biomes": "#minecraft:is_nether",
+  "features": "hbm:nether_ores",
+  "step": "underground_ores"
+}

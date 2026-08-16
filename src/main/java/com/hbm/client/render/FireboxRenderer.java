@@ -28,8 +28,8 @@ public class FireboxRenderer<T extends TileEntityFireboxBase> implements CompatB
     private final RenderType baseType;
 
     public FireboxRenderer() {
-        Identifier obj = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/firebox.obj");
-        Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/firebox.png");
+        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/firebox.obj");
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/firebox.png");
         this.model = WavefrontObj.load(obj);
         this.baseType = CompatRenderTypes.entityCutout(tex);
     }

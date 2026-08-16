@@ -5,7 +5,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
@@ -36,7 +35,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Right-click opens the menu. It needs two {@link com.hbm.items.machine.ItemBlades blades} to run —
  * see {@link TileEntityMachineShredder}.
  */
-public class MachineShredder extends Block implements EntityBlock {
+public class MachineShredder extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -66,7 +65,7 @@ public class MachineShredder extends Block implements EntityBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
             Services.PLATFORM.openMenu(serverPlayer, provider, pos);
@@ -82,29 +81,19 @@ public class MachineShredder extends Block implements EntityBlock {
 
     /** Spill the 30-slot inventory when broken (the 1.12.2 {@code breakBlock} → {@code dropInventoryItems}). */
     @Override
-    //? if >=26.1 {
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-    //?} else {
-    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
-        if (!(hbm$level instanceof ServerLevel level)) return;
-    *///?}
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         if (level.getBlockEntity(pos) instanceof TileEntityMachineShredder shredder) {
             Containers.dropContents(level, pos, shredder);
         }
-        //? if >=26.1 {
-        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-        //?} else {
-        /*super.onRemove(state, hbm$level, pos, hbm$newState, movedByPiston);
-        *///?}
     }
 
     @Override
-    protected BlockState rotate(BlockState state, Rotation rotation) {
+    public BlockState rotate(BlockState state, Rotation rotation) {
         return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
     }
 
     @Override
-    protected BlockState mirror(BlockState state, Mirror mirror) {
+    public BlockState mirror(BlockState state, Mirror mirror) {
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 

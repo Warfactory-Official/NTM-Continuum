@@ -41,7 +41,7 @@ public final class MachineItemModels {
     private MachineItemModels() {}
 
     private static final Identifier DEFAULT_TEXTURE =
-            Identifier.fromNamespaceAndPath("hbm", "textures/models/machines/lava_gray.png");
+            dev.golem.core.Ids.of("hbm", "textures/models/machines/lava_gray.png");
 
     /^* Item id -> its OBJ model. Rebuilt on every resource reload; empty until the first one. ^/
     private static Map<Identifier, MachineItemModel> models = Map.of();
@@ -69,7 +69,7 @@ public final class MachineItemModels {
                 // "items/<name>.json" -> "<name>", the item's registry path.
                 String path = file.getPath();
                 String name = path.substring("items/".length(), path.length() - ".json".length());
-                built.put(Identifier.fromNamespaceAndPath(file.getNamespace(), name), parse(machine));
+                built.put(dev.golem.core.Ids.of(file.getNamespace(), name), parse(machine));
             } catch (Exception e) {
                 Constants.LOG.warn("Skipping OBJ item model {}: {}", file, e.toString());
             }
@@ -107,7 +107,7 @@ public final class MachineItemModels {
         if (bool(json, "mtl", false)) {
             // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
             Identifier objId = id(json, "obj", null);
-            Map<String, Identifier> lib = WavefrontObj.loadMtl(Identifier.fromNamespaceAndPath(
+            Map<String, Identifier> lib = WavefrontObj.loadMtl(dev.golem.core.Ids.of(
                     objId.getNamespace(), objId.getPath().replace(".obj", ".mtl")));
             Map<String, RenderType> resolved = new LinkedHashMap<>();
             for (String mat : obj.materialNames()) {
@@ -139,7 +139,7 @@ public final class MachineItemModels {
 
     private static Identifier id(JsonObject json, String key, Identifier fallback) {
         String value = string(json, key, null);
-        return value == null ? fallback : Identifier.parse(value);
+        return value == null ? fallback : dev.golem.core.Ids.parse(value);
     }
 
     private static float f(JsonObject json, String key, float fallback) {

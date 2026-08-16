@@ -31,9 +31,9 @@ public class CrystallizerRenderer implements CompatBER<TileEntityMachineCrystall
     private final RenderType fluidType;
 
     public CrystallizerRenderer() {
-        Identifier obj = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/crystallizer.obj");
-        Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/crystallizer.png");
-        Identifier fluidTex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/chemical_plant_fluid.png");
+        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/crystallizer.obj");
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/crystallizer.png");
+        Identifier fluidTex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/chemical_plant_fluid.png");
         this.model = WavefrontObj.load(obj);
         this.baseType = CompatRenderTypes.entityCutout(tex);
         this.fluidType = CompatRenderTypes.entityTranslucent(fluidTex, false);

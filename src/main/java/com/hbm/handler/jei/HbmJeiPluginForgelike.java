@@ -1,6 +1,6 @@
 package com.hbm.handler.jei;
 
-//? if jei && neoforge {
+//? if jei && forgelike {
 
 import com.hbm.Constants;
 import mezz.jei.api.IModPlugin;
@@ -13,15 +13,19 @@ import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.resources.Identifier;
 
 /**
- * NeoForge {@code @JeiPlugin} entrypoint. Thin by design — all category/recipe/catalyst logic lives in
- * {@link HbmJeiPluginCommon} (compiled against {@code jei-*-common-api}), so both loaders share it and only
- * the annotated entrypoint is per-module (JEI discovers {@code @JeiPlugin} by classpath annotation scan,
- * and the loader APIs differ). Mirrors the {@code HbmClient}/{@code HbmClientNeoForge} split.
+ * The Forge-like {@code @JeiPlugin} entrypoint, shared by NeoForge and Forge. Thin by design — all
+ * category/recipe/catalyst logic lives in {@link HbmJeiPluginCommon} (compiled against
+ * {@code jei-*-common-api}), so every loader shares it and only the annotated entrypoint is per-module.
+ *
+ * <p>Fabric needs its own copy ({@link HbmJeiPluginFabric}) because JEI discovers plugins differently
+ * there — a {@code jei_mod_plugin} entrypoint in {@code fabric.mod.json} rather than an annotation
+ * scan — but NeoForge and Forge discover this class the same way and need nothing loader-specific in
+ * it, so widening the guard beats keeping a third identical copy.
  */
 @JeiPlugin
-public class HbmJeiPluginNeoForge implements IModPlugin {
+public class HbmJeiPluginForgelike implements IModPlugin {
 
-    private static final Identifier UID = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "jei_plugin");
+    private static final Identifier UID = dev.golem.core.Ids.of(Constants.MOD_ID, "jei_plugin");
 
     @Override
     public Identifier getPluginUid() {

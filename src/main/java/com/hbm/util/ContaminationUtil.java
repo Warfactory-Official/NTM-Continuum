@@ -367,7 +367,7 @@ public class ContaminationUtil {
                 fireDmg /= (float) (dmgLen * dmgLen * res * res);
                 if (fireDmg > 0.025) {
                     Compat.hurt(e, serverLevel, serverLevel.damageSources().inFire(), fireDmg);
-                    e.igniteForSeconds(5);
+                    dev.golem.core.world.Effects.ignite(e, 5);
                 }
             }
 

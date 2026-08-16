@@ -23,6 +23,18 @@ versionRange = "[${neoforge_version},)"
 ordering = "NONE"
 side = "BOTH"
 
+# AFTER, not BEFORE: `ordering` describes THIS mod relative to the dependency, so BEFORE means
+# "hbm constructs before golemcore" — the exact opposite of what is needed. Golem Core's mod class
+# captures the mod event bus in its constructor, and this mod's client init grabs that bus during its
+# own construction (item tints subscribe to a mod-bus event). Getting this backwards fails at launch
+# with "Golem Core's mod bus is not available yet", not at build time.
+[[dependencies.${mod_id}]]
+modId = "golemcore"
+type = "required"
+versionRange = "[0.1.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
 [[dependencies.${mod_id}]]
 modId = "minecraft"
 type = "required"

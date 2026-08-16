@@ -9,17 +9,16 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Uranium ore that passively outgasses radon and leaves a gas pocket when mined. */
-public class BlockOutgas extends Block {
+public class BlockOutgas extends dev.golem.core.world.CompatBlock {
     public BlockOutgas(Properties properties) { super(properties); }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!GeneralConfig.enableRadon) return;
         Direction direction = Direction.getRandom(random);
         BlockPos target = pos.relative(direction);

@@ -148,7 +148,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
 
         ItemStack out = inventory.getStackInSlot(2);
         if (out.isEmpty()) return true;
-        if (!ItemStack.isSameItemSameComponents(out, recipe.output)) return false;
+        if (!dev.golem.core.world.ItemStacks.sameItemAndData(out, recipe.output)) return false;
         return out.getCount() + recipe.output.getCount() <= out.getMaxStackSize();
     }
 

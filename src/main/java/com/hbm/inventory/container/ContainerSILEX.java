@@ -63,11 +63,7 @@ public class ContainerSILEX extends AbstractContainerMenu {
         this.addSlot(takeOnly(9, 134, 108));
         this.addSlot(takeOnly(10, 152, 108));
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 140);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
     }
 
     private Slot validated(int index, int x, int y) {

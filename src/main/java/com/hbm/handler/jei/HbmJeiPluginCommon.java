@@ -72,7 +72,7 @@ public final class HbmJeiPluginCommon {
     /** Make each fluid-icon variant a distinct JEI ingredient, keyed on its {@code FLUID_ID} component
      * (so the droplet icons don't all collapse to one "fluid_icon" in the item list). */
     public static void registerItemSubtypes(ISubtypeRegistration reg) {
-        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_icon.get(), ModDataComponents.FLUID_ID.get());
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_icon.get(), ModDataComponents.FLUID_ID);
     }
 
     /** Add a droplet icon for every registered fluid to JEI's ingredient list / search — the fluid‑icon item

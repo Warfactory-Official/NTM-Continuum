@@ -5,7 +5,6 @@ import com.hbm.inventory.container.ContainerCrystallizer;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -22,7 +21,7 @@ import java.util.Optional;
  */
 public class GUICrystallizer extends dev.golem.core.gui.CompatContainerScreen<ContainerCrystallizer> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_crystallizer_alt.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_crystallizer_alt.png");
     // Acid gauge (GUI-relative): a 16×52 column at (35, 18)..(35, 70), matching the 1.12.2 layout.
     private static final int FLUID_X = 35, FLUID_TOP = 18, FLUID_W = 16, FLUID_H = 52;
 
@@ -31,14 +30,7 @@ public class GUICrystallizer extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineCrystallizer te = this.menu.getCrystallizer();
@@ -74,16 +66,7 @@ public class GUICrystallizer extends dev.golem.core.gui.CompatContainerScreen<Co
     private static final int INFO_X = 117, INFO_Y = 22;
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachineCrystallizer te = this.menu.getCrystallizer();
         if (te == null) return;
         if (this.isHovering(152, 18, 16, 52, mouseX, mouseY)) {

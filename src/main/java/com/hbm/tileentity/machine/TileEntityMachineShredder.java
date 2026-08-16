@@ -133,7 +133,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
 
             for (int out = 9; out < 27 && itemsLeft > 0; out++) {
                 ItemStack slotStack = inventory.getStackInSlot(out);
-                if (!slotStack.isEmpty() && ItemStack.isSameItemSameComponents(slotStack, output)) {
+                if (!slotStack.isEmpty() && dev.golem.core.world.ItemStacks.sameItemAndData(slotStack, output)) {
                     int space = slotStack.getMaxStackSize() - slotStack.getCount();
                     if (space > 0) {
                         int amount = Math.min(itemsLeft, space);
@@ -179,7 +179,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
             ItemStack slotStack = inventory.getStackInSlot(i);
             if (slotStack.isEmpty()) {
                 spaceLeft += result.getMaxStackSize();
-            } else if (ItemStack.isSameItemSameComponents(slotStack, result)) {
+            } else if (dev.golem.core.world.ItemStacks.sameItemAndData(slotStack, result)) {
                 spaceLeft += slotStack.getMaxStackSize() - slotStack.getCount();
             }
         }

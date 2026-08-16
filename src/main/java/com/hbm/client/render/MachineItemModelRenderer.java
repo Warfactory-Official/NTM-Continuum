@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
 
     /** Registration id of this special-model codec (referenced by {@code "type"} in the item JSON). */
-    public static final Identifier ID = Identifier.fromNamespaceAndPath("hbm", "machine_obj");
+    public static final Identifier ID = dev.golem.core.Ids.of("hbm", "machine_obj");
 
     private final MachineItemModel model;
 
@@ -60,7 +60,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
 
         public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Identifier.CODEC.fieldOf("obj").forGetter(Unbaked::obj),
-                Identifier.CODEC.optionalFieldOf("texture", Identifier.fromNamespaceAndPath("hbm", "textures/models/machines/lava_gray.png")).forGetter(Unbaked::texture),
+                Identifier.CODEC.optionalFieldOf("texture", dev.golem.core.Ids.of("hbm", "textures/models/machines/lava_gray.png")).forGetter(Unbaked::texture),
                 Codec.FLOAT.optionalFieldOf("scale", 0.28F).forGetter(Unbaked::scale),
                 Codec.FLOAT.optionalFieldOf("yaw", 90.0F).forGetter(Unbaked::yaw),
                 Codec.FLOAT.optionalFieldOf("ty", 0.0F).forGetter(Unbaked::ty),
@@ -88,7 +88,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
             java.util.Map<String, RenderType> types = java.util.Map.of();
             if (mtl) {
                 // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
-                var lib = WavefrontObj.loadMtl(Identifier.fromNamespaceAndPath(obj.getNamespace(), obj.getPath().replace(".obj", ".mtl")));
+                var lib = WavefrontObj.loadMtl(dev.golem.core.Ids.of(obj.getNamespace(), obj.getPath().replace(".obj", ".mtl")));
                 java.util.Map<String, RenderType> resolved = new java.util.LinkedHashMap<>();
                 for (String mat : loaded.materialNames()) {
                     Identifier tex = lib.get(mat);

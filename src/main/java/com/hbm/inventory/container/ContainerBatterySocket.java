@@ -49,11 +49,7 @@ public class ContainerBatterySocket extends AbstractContainerMenu {
         this.access = access;
 
         this.addSlot(new BatterySlot(this.machine, 0, 35, 35));
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 99);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 99);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 99);
     }
 
     private static @Nullable TileEntityBatterySocket resolve(Inventory playerInventory, BlockPos pos) {

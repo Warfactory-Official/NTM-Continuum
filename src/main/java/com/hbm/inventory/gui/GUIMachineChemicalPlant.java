@@ -11,10 +11,6 @@ import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -32,7 +28,7 @@ import java.util.Optional;
  */
 public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineChemicalPlant> implements IUpgradeInfoProviderSource {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/processing/gui_chemplant.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/processing/gui_chemplant.png");
     private static final int BTN_X = 7, BTN_Y = 125, BTN_W = 18, BTN_H = 18;
     // Tank bars: 16 wide × 34 tall, top at y=18 (so bottom at y=52).
     private static final int TANK_TOP = 18, TANK_W = 16, TANK_H = 34;
@@ -42,14 +38,7 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
@@ -121,16 +110,7 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
         if (te == null) return;
 
@@ -167,22 +147,13 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
             GUIScreenRecipeSelector.openSelector(ChemicalPlantRecipes.INSTANCE, te.getBlockPos(),
                     te.chemplantModule.recipe, 0, ItemBlueprints.grabPool(te.getItem(1)), this);
             return true;
         }
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 }

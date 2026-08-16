@@ -5,20 +5,14 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.CustomModelData;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 
-import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 /**
  * A full fluid bucket — 1000&nbsp;mB of one {@link FluidType}, used to fill a fluid tank for testing.
@@ -29,7 +23,7 @@ import java.util.function.Consumer;
  * Dropping it in a tank's fill-in slot adds 1000&nbsp;mB and returns an empty {@code Items.BUCKET} to the
  * fill-out slot (see {@code TileEntityMachineFluidTank.fillFromBucket}).
  */
-public class ItemFluidBucket extends Item {
+public class ItemFluidBucket extends CompatItem {
 
     public static final int VOLUME = 1000;
 
@@ -40,13 +34,13 @@ public class ItemFluidBucket extends Item {
     /** Builds a full bucket stack for {@code fluid} (FLUID_ID for logic + the tint colour for rendering). */
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModFluidItems.fluid_bucket.get());
-        stack.set(ModDataComponents.FLUID_ID.get(), fluid.getID());
+        ModDataComponents.fluidId(stack, fluid.getID());
         ModelData.setColor(stack, fluid.getColor());
         return stack;
     }
 
     public static FluidType getFluid(ItemStack stack) {
-        return Fluids.fromID(stack.getOrDefault(ModDataComponents.FLUID_ID.get(), 0));
+        return Fluids.fromID(ModDataComponents.fluidId(stack));
     }
 
     /** Title-cases the internal fluid name, e.g. {@code SCHRABIDIC_ACID} → {@code "Schrabidic Acid"}. */
@@ -65,13 +59,8 @@ public class ItemFluidBucket extends Item {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
-        adder.accept(Component.literal(VOLUME + " mB").withStyle(ChatFormatting.GRAY));
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.literal(VOLUME + " mB").withStyle(ChatFormatting.GRAY));
     }
 }

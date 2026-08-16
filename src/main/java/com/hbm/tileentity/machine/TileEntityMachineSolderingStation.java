@@ -142,7 +142,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         }
         ItemStack out = inventory.getStackInSlot(6);
         if (!out.isEmpty()) {
-            if (!ItemStack.isSameItemSameComponents(out, recipe.output)) return false;
+            if (!dev.golem.core.world.ItemStacks.sameItemAndData(out, recipe.output)) return false;
             if (out.getCount() + recipe.output.getCount() > out.getMaxStackSize()) return false;
         }
         return true;
@@ -208,7 +208,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
     private boolean validForGroup(int slot, int from, int to, java.util.Set<AStack> group, ItemStack stack) {
         for (int i = from; i < to; i++) {
             if (i != slot && !inventory.getStackInSlot(i).isEmpty()
-                    && ItemStack.isSameItem(inventory.getStackInSlot(i), stack)) return false;
+                    && dev.golem.core.world.ItemStacks.sameItemAndData(inventory.getStackInSlot(i), stack)) return false;
         }
         for (AStack t : group) if (t.matchesRecipe(stack, true)) return true;
         return false;
@@ -288,7 +288,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         buf.writeInt(progress);
         buf.writeInt(processTime);
         tank.serialize(buf);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, display);
+        dev.golem.core.world.ItemStacks.writeOptional(buf, display);
     }
 
     @Override
@@ -299,7 +299,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         progress = buf.readInt();
         processTime = buf.readInt();
         tank.deserialize(buf);
-        display = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        display = dev.golem.core.world.ItemStacks.readOptional(buf);
     }
 
     @Override

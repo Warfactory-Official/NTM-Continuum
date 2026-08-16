@@ -93,7 +93,7 @@ public final class NTMMaterial {
 
     /** The {@code c:<plural>/<name>} item tag for this material in the given shape. */
     public TagKey<Item> tag(MaterialShapes shape) {
-        return TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", shape.tagPlural + "/" + name));
+        return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", shape.tagPlural + "/" + name));
     }
 
     // --- tag-backed shapes (real items + cross-mod c: tags) ---

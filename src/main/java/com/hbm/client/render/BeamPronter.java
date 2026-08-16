@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.Vertexes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -88,7 +89,7 @@ public final class BeamPronter {
     }
 
     private static void vert(PoseStack.Pose pose, VertexConsumer buf, int argb, float x, float y, float z) {
-        buf.addVertex(pose, x, y, z).setColor(argb);
+        Vertexes.color(buf, pose, x, y, z, argb);
     }
 
     /** Per-channel linear colour interpolation (the old {@code BobMathUtil.interpolateColor}). */

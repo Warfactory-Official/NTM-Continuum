@@ -37,7 +37,7 @@ public abstract class HbmRecipeCategory<T> extends AbstractRecipeCategory<T> {
     }
 
     protected static Identifier tex(String name) {
-        return Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/jei/" + name);
+        return dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/jei/" + name);
     }
 
     @Override

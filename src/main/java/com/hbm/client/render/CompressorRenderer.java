@@ -32,8 +32,8 @@ public class CompressorRenderer implements CompatBER<TileEntityMachineCompressor
     private final RenderType renderType;
 
     public CompressorRenderer() {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/compressor.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/compressor.png"));
+        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/compressor.obj"));
+        this.renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/compressor.png"));
     }
 
     @Override public CompressorRenderState createRenderState() { return new CompressorRenderState(); }

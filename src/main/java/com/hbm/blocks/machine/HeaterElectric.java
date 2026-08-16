@@ -64,7 +64,7 @@ public class HeaterElectric extends BlockDummyable implements IEnergyConnectorBl
 
     /** Right-click cycles the heat setting up, sneak-right-click cycles it down (replaces IToolable). */
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
             if (findCoreTE(level, pos) instanceof TileEntityHeaterElectric te) {
                 if (player.isShiftKeyDown()) te.toggleSettingDown();

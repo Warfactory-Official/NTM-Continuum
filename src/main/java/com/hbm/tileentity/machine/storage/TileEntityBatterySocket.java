@@ -173,13 +173,13 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeLong(delta);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, inventory.getStackInSlot(0));
+        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(0));
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
         delta = buf.readLong();
-        syncStack = net.minecraft.world.item.ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        syncStack = dev.golem.core.world.ItemStacks.readOptional(buf);
     }
 }

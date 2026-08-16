@@ -4,7 +4,7 @@ import dev.golem.core.data.CompatBlockEntity;
 import com.hbm.api.tile.ILoadedTile;
 import com.hbm.lib.Library;
 import com.hbm.packet.BlockEntitySyncPayload;
-import com.hbm.platform.Services;
+import dev.golem.core.net.GolemNetwork;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -91,11 +91,10 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
 
     // --- chunk-load sync (vanilla NBT path) ---
 
+    /** Machines drive their GUI from persisted fields, so the whole tag goes out on chunk load. */
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        // Sync all persistent (saveAdditional) fields to the client on chunk load. Display-only fields
-        // that aren't persisted are handled by the per-tick buf packet instead.
-        return saveCustomOnly(registries);
+    protected boolean syncFullTagOnChunkLoad() {
+        return true;
     }
 
     @Override
@@ -117,7 +116,8 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
         if (hash == lastPackedBufHash) return;
         lastPackedBufHash = hash;
 
-        Services.PLATFORM.sendToTracking(serverLevel, worldPosition, new BlockEntitySyncPayload(worldPosition, data));
+        GolemNetwork.sendToTracking(serverLevel, worldPosition, BlockEntitySyncPayload.CODEC,
+                new BlockEntitySyncPayload(worldPosition, data));
     }
 
     /** As {@link #networkPackNT()} but skips compilation entirely unless {@link #dataChanged()} was set. */
@@ -126,12 +126,17 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
         if (!hasDataChanged) return;
 
         byte[] data = compilePayload();
-        Services.PLATFORM.sendToTracking(serverLevel, worldPosition, new BlockEntitySyncPayload(worldPosition, data));
+        GolemNetwork.sendToTracking(serverLevel, worldPosition, BlockEntitySyncPayload.CODEC,
+                new BlockEntitySyncPayload(worldPosition, data));
         hasDataChanged = false;
     }
 
     private byte[] compilePayload() {
+        //? if >=1.20.5 {
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), level.registryAccess());
+        //?} else {
+        /*RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer());
+        *///?}
         try {
             serialize(buf);
             byte[] data = new byte[buf.readableBytes()];

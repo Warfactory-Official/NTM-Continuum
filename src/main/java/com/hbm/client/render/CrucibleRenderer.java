@@ -33,10 +33,10 @@ public class CrucibleRenderer implements CompatBER<TileEntityCrucible, CrucibleR
     private final RenderType streamType;
 
     public CrucibleRenderer() {
-        Identifier obj = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/crucible.obj");
-        Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/crucible_heat.png");
-        Identifier lava = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava.png");
-        Identifier lavaGray = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png");
+        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/crucible.obj");
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/crucible_heat.png");
+        Identifier lava = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava.png");
+        Identifier lavaGray = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png");
         this.model = WavefrontObj.load(obj);
         this.baseType = CompatRenderTypes.entityCutout(tex);
         // Pool surface: flat single quad, no self-overlap → emissive (uniform fullbright) reads well.

@@ -216,10 +216,10 @@ public final class HbmBlockEntityRenderers {
     }
 
     private static Identifier obj(String path) {
-        return Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/" + path);
+        return dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + path);
     }
 
     private static Identifier tex(String path) {
-        return Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/" + path);
+        return dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/" + path);
     }
 }

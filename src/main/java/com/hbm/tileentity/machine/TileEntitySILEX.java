@@ -143,7 +143,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         // path 2 — dissolve one item, peroxide only
         ItemStack in = inventory.getStackInSlot(0);
         if (in.isEmpty() || tankType != Fluids.PEROXIDE) return;
-        ItemStack single = in.copyWithCount(1);
+        ItemStack single = dev.golem.core.world.ItemStacks.copyWithCount(in, 1);
         if (current != null && !sameSubstance(current, single)) return;
 
         SILEXRecipe recipe = SILEXRecipes.getOutput(in);
@@ -205,7 +205,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         for (int i = 5; i <= 10; i++) {
             ItemStack slot = inventory.getStackInSlot(i);
             if (slot.isEmpty()) continue;
-            if (!ItemStack.isSameItemSameComponents(slot, out)) continue;
+            if (!dev.golem.core.world.ItemStacks.sameItemAndData(slot, out)) continue;
             int space = slot.getMaxStackSize() - slot.getCount();
             if (space <= 0) continue;
             int moved = Math.min(space, out.getCount());
@@ -260,7 +260,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
             if (held <= 0 || heldType == Fluids.NONE) return;
             int addable = tank.fill(heldType, held, false);
             if (addable <= 0) return;
-            ItemStack work = in.copyWithCount(1);
+            ItemStack work = dev.golem.core.world.ItemStacks.copyWithCount(in, 1);
             int taken = fillable.tryEmpty(heldType, addable, work);
             if (taken <= 0 || !fits(3, work)) return;
             tank.fill(heldType, taken, true);
@@ -279,7 +279,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     private boolean fits(int slot, ItemStack stack) {
         ItemStack there = inventory.getStackInSlot(slot);
         if (there.isEmpty()) return true;
-        return ItemStack.isSameItemSameComponents(there, stack)
+        return dev.golem.core.world.ItemStacks.sameItemAndData(there, stack)
                 && there.getCount() + stack.getCount() <= there.getMaxStackSize();
     }
 
@@ -397,7 +397,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     }
 
     private static @Nullable ItemStack readSubstance(String itemId, int fluidId) {
-        Item item = BuiltInRegistries.ITEM.getOptional(Identifier.parse(itemId)).orElse(null);
+        Item item = BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(itemId)).orElse(null);
         if (item == null) return null;
         return fluidId >= 0 ? ItemFluidIcon.make(Fluids.fromID(fluidId)) : new ItemStack(item);
     }

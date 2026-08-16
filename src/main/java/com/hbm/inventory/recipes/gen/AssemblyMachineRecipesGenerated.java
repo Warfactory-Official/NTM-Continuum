@@ -26,8 +26,8 @@ import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
+import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -275,6 +275,6 @@ public final class AssemblyMachineRecipesGenerated {
 
     /** Ad-hoc c:/minecraft tag ingredient (materials without an NTMMaterial helper shape). */
     private static AStack tag(String ns, String path, int count) {
-        return new TagStack(TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(ns, path)), count);
+        return new TagStack(TagKey.create(Registries.ITEM, Ids.of(ns, path)), count);
     }
 }

@@ -21,7 +21,7 @@ public class FoundryBasin extends FoundryCastingBase {
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE; // OBJ drawn by the BER
     }
 

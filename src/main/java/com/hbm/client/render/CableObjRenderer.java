@@ -30,8 +30,8 @@ import java.util.Set;
  */
 public class CableObjRenderer<T extends BlockEntity> implements CompatBER<T, CableRenderState> {
 
-    private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/blocks/cable_neo.obj");
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/models/blocks/cable_neo.png");
+    private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/blocks/cable_neo.obj");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/models/blocks/cable_neo.png");
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
     private final RenderType renderType = CompatRenderTypes.entityCutout(TEXTURE);

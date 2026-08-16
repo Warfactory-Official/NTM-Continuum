@@ -1,7 +1,7 @@
 package com.hbm.blocks.generic;
 
 import net.minecraft.util.valueproviders.IntProvider;
-import net.minecraft.world.level.block.DropExperienceBlock;
+import dev.golem.core.world.CompatDropExperienceBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  * <p>Extends {@link DropExperienceBlock} so the sellafield gem ores (diamond/emerald/radgem) grant
  * their old 3–7 XP; plain terrain passes a zero provider.
  */
-public class BlockSellafieldSlaked extends DropExperienceBlock {
+public class BlockSellafieldSlaked extends CompatDropExperienceBlock {
 
     public static final IntegerProperty SHADE = IntegerProperty.create("shade", 0, 9);
 

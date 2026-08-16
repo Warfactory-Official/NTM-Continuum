@@ -4,6 +4,8 @@ import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.Poses;
+import dev.golem.core.Ids;
+import dev.golem.core.render.Vertexes;
 import com.hbm.Constants;
 import com.hbm.tileentity.machine.TileEntityZirnoxDestroyed;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -14,7 +16,7 @@ import net.minecraft.util.Mth;
 
 /** Draws the old RBMK flame quads directly, preserving their additive and vertical billboard appearance. */
 public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnoxDestroyed> {
-    private static final Identifier FLAME_TEXTURE = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/particle/rbmk_fire.png");
+    private static final Identifier FLAME_TEXTURE = Ids.of(Constants.MOD_ID, "textures/particle/rbmk_fire.png");
     /**
      * Vertical centre of the flame quads. The 1.12.2 renderer put them at 1.75; raised one block so the
      * fire sits on top of the wreck's upper shell instead of inside it.
@@ -23,8 +25,8 @@ public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnox
 
     public ZirnoxDestroyedRenderer() {
         super(90F, 1F, new ModelDef(
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/zirnox_destroyed.obj"),
-                Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/zirnox_destroyed.png")));
+                Ids.of(Constants.MOD_ID, "models/zirnox_destroyed.obj"),
+                Ids.of(Constants.MOD_ID, "textures/models/machines/zirnox_destroyed.png")));
         doubleSided();
     }
 
@@ -78,7 +80,7 @@ public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnox
     private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
                                float x, float y, float z, float u, float v, float alpha) {
         // energySwirl is additive; its blend ignores alpha, so fade is carried by RGB.
-        buffer.addVertex(pose, x, y, z).setColor(alpha, alpha, alpha, 1F).setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(0x00F000F0).setNormal(pose, 0F, 1F, 0F);
+        Vertexes.vertex(buffer, pose, x, y, z, alpha, alpha, alpha, 1F, u, v,
+                OverlayTexture.NO_OVERLAY, 0x00F000F0, 0F, 1F, 0F);
     }
 }

@@ -2,12 +2,9 @@ package com.hbm.blocks.generic;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelReader;
-//? if >=26.1 {
-import net.minecraft.world.level.ScheduledTickAccess;
-//?}
+import dev.golem.core.world.BlockTickScheduler;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -31,7 +28,7 @@ import java.util.function.Supplier;
  *
  * <p>Drops one {@code sulfur} or {@code powder_asbestos}; Silk Touch returns the spike itself.
  */
-public class BlockStalagmite extends Block {
+public class BlockStalagmite extends dev.golem.core.world.CompatBlock {
 
     /** Face the spike hangs from: {@code DOWN} for a stalagmite (stands on the floor), {@code UP} for a stalactite. */
     private final Direction anchor;
@@ -44,36 +41,29 @@ public class BlockStalagmite extends Block {
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.block();
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return Shapes.empty();   // old getCollisionBoundingBox -> NULL_AABB (passable)
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockPos support = pos.relative(anchor);
         return level.getBlockState(support).isFaceSturdy(level, support, anchor.getOpposite());
     }
 
     @Override
-    //? if >=26.1 {
-    protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks,
-                                     BlockPos pos, Direction direction, BlockPos neighbourPos, BlockState neighbourState,
-                                     RandomSource random) {
-    //?} else {
-    /*protected BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, net.minecraft.world.level.LevelAccessor level, BlockPos pos, BlockPos neighbourPos) {
-        net.minecraft.world.level.LevelAccessor ticks = level;
-        net.minecraft.util.RandomSource random = level.getRandom();
-    *///?}
+    protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
+                                       Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
         return canSurvive(state, level, pos) ? state : Blocks.AIR.defaultBlockState();
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         if (OreDrops.silkTouch(params)) return List.of(new ItemStack(this));
         ItemStack stack = drop.get();
         return stack.isEmpty() ? List.of() : List.of(stack);

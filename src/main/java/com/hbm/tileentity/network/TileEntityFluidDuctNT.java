@@ -72,9 +72,10 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
 
     // --- client sync of the carried type (for the colour-tinted overlay) ---
 
+    /** Machines drive their GUI from persisted fields, so the whole tag goes out on chunk load. */
     @Override
-    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
-        return saveCustomOnly(registries);
+    protected boolean syncFullTagOnChunkLoad() {
+        return true;
     }
 
     @Override

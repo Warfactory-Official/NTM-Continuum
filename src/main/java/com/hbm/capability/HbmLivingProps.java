@@ -14,7 +14,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 
 /**
@@ -28,7 +27,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 public class HbmLivingProps {
 
     /** Identifier-keyed replacement for the old digamma AttributeModifier UUID. */
-    public static final Identifier DIGAMMA_ID = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "digamma");
+    public static final Identifier DIGAMMA_ID = dev.golem.core.Ids.of(Constants.MOD_ID, "digamma");
     public static final int maxAsbestos = 60 * 60 * 20;
     public static final int maxBlacklung = 2 * 60 * 60 * 20;
 
@@ -99,9 +98,7 @@ public class HbmLivingProps {
 
         AttributeInstance attribute = entity.getAttribute(Attributes.MAX_HEALTH);
         if (attribute != null) {
-            attribute.removeModifier(DIGAMMA_ID);
-            attribute.addPermanentModifier(
-                    new AttributeModifier(DIGAMMA_ID, healthMod, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL));
+            dev.golem.core.world.Attributes.replacePermanent(attribute, DIGAMMA_ID.toString(), healthMod);
         }
 
         if (entity.getHealth() > entity.getMaxHealth()) {

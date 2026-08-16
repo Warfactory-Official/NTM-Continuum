@@ -33,7 +33,7 @@ public class FoundryChannelRenderer implements CompatBER<TileEntityFoundryChanne
 
     public FoundryChannelRenderer() {
         // Emissive = uniform fullbright, no per-face shading (the old lighting-off molten quads).
-        this.meltType = CompatRenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+        this.meltType = CompatRenderTypes.entityTranslucentEmissive(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

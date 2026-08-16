@@ -52,8 +52,8 @@ public class FoundryCastingRenderer<T extends TileEntityFoundryCastingBase> impl
     /** @param bodyObjPath OBJ body to draw (basin), or null for JSON-modelled blocks (mold caster). */
     public FoundryCastingRenderer(@Nullable String bodyObjPath) {
         if (bodyObjPath != null) {
-            this.body = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, bodyObjPath));
-            var mtl = WavefrontObj.loadMtl(Identifier.fromNamespaceAndPath(Constants.MOD_ID, bodyObjPath.replace(".obj", ".mtl")));
+            this.body = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, bodyObjPath));
+            var mtl = WavefrontObj.loadMtl(dev.golem.core.Ids.of(Constants.MOD_ID, bodyObjPath.replace(".obj", ".mtl")));
             for (String mat : body.materialNames()) {
                 Identifier tex = mtl.get(mat);
                 if (tex != null) materialTypes.put(mat, CompatRenderTypes.entityCutout(tex));
@@ -62,7 +62,7 @@ public class FoundryCastingRenderer<T extends TileEntityFoundryCastingBase> impl
             this.body = null;
         }
         // Emissive = uniform fullbright, no per-face shading (the old lighting-off molten quads).
-        this.meltType = CompatRenderTypes.entityTranslucentEmissive(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+        this.meltType = CompatRenderTypes.entityTranslucentEmissive(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
     }
 
     @Override public State createRenderState() { return new State(); }

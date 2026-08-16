@@ -23,15 +23,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.Recipes;
 
 /**
  * Electric Furnace — a functional powered smelter. It draws HE from adjacent power networks (and a
@@ -57,10 +53,6 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     private int cooldown = 0;
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
-
-    /** Server-side cached smelting-recipe lookup. */
-    private final RecipeManager.CachedCheck<SingleRecipeInput, SmeltingRecipe> quickCheck =
-            RecipeManager.createCheck(RecipeType.SMELTING);
 
     public TileEntityMachineElectricFurnace(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_ELECTRIC_FURNACE.get(), pos, state, 4);
@@ -136,38 +128,19 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         te.networkPackNT();
     }
 
-    private @org.jspecify.annotations.Nullable SmeltingRecipe getRecipe(ServerLevel level) {
-        ItemStack input = inventory.getStackInSlot(1);
-        if (input.isEmpty()) return null;
-        return quickCheck.getRecipeFor(new SingleRecipeInput(input), level)
-                .map(RecipeHolder::value).orElse(null);
-    }
-
     private boolean canProcess(ServerLevel level) {
         if (cooldown > 0) return false;
-        SmeltingRecipe recipe = getRecipe(level);
-        if (recipe == null) return false;
-        //? if >=26.1 {
-        ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)));
-        //?} else {
-        /*ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)), level.registryAccess());
-        *///?}
+        ItemStack result = Recipes.smeltingResult(level, inventory.getStackInSlot(1)).orElse(ItemStack.EMPTY);
         if (result.isEmpty()) return false;
 
         ItemStack outSlot = inventory.getStackInSlot(2);
         if (outSlot.isEmpty()) return true;
-        if (!ItemStack.isSameItemSameComponents(outSlot, result)) return false;
+        if (!dev.golem.core.world.ItemStacks.sameItemAndData(outSlot, result)) return false;
         return outSlot.getCount() + result.getCount() <= outSlot.getMaxStackSize();
     }
 
     private void processItem(ServerLevel level) {
-        SmeltingRecipe recipe = getRecipe(level);
-        if (recipe == null) return;
-        //? if >=26.1 {
-        ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)));
-        //?} else {
-        /*ItemStack result = recipe.assemble(new SingleRecipeInput(inventory.getStackInSlot(1)), level.registryAccess());
-        *///?}
+        ItemStack result = Recipes.smeltingResult(level, inventory.getStackInSlot(1)).orElse(ItemStack.EMPTY);
         if (result.isEmpty()) return;
 
         ItemStack outSlot = inventory.getStackInSlot(2);

@@ -54,11 +54,7 @@ public class ContainerCrystallizer extends AbstractContainerMenu {
         this.addSlot(validated(6, 98, 18));    // upgrade
         this.addSlot(validated(7, 35, 72));    // fluid identifier
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 122);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
     }
 
     private Slot validated(int index, int x, int y) {

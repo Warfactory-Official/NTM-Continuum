@@ -29,8 +29,8 @@ public class DieselGenRenderer implements CompatBER<TileEntityMachineDiesel, Die
     private final RenderType renderType;
 
     public DieselGenRenderer() {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/dieselgen.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/dieselgen.png"));
+        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/dieselgen.obj"));
+        this.renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/dieselgen.png"));
     }
 
     @Override public DieselGenRenderState createRenderState() { return new DieselGenRenderState(); }

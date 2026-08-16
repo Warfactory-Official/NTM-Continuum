@@ -39,8 +39,8 @@ public class SolderingStationRenderer implements CompatBER<TileEntityMachineSold
     private final RenderType renderType;
 
     public SolderingStationRenderer() {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/soldering_station.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/soldering_station.png"));
+        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/soldering_station.obj"));
+        this.renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/soldering_station.png"));
     }
 
     @Override

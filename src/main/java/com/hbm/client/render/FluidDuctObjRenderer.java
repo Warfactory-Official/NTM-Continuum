@@ -31,9 +31,9 @@ import java.util.Set;
  */
 public class FluidDuctObjRenderer implements CompatBER<TileEntityFluidDuctNT, FluidDuctRenderState> {
 
-    private static final Identifier OBJ = Identifier.fromNamespaceAndPath("hbm", "models/blocks/pipe_neo.obj");
-    private static final Identifier BASE = Identifier.fromNamespaceAndPath("hbm", "textures/models/blocks/fluid_duct_mk2.png");
-    private static final Identifier OVERLAY = Identifier.fromNamespaceAndPath("hbm", "textures/models/blocks/fluid_duct_mk2_overlay.png");
+    private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/blocks/pipe_neo.obj");
+    private static final Identifier BASE = dev.golem.core.Ids.of("hbm", "textures/models/blocks/fluid_duct_mk2.png");
+    private static final Identifier OVERLAY = dev.golem.core.Ids.of("hbm", "textures/models/blocks/fluid_duct_mk2_overlay.png");
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
     private final RenderType baseType = CompatRenderTypes.entityCutout(BASE);

@@ -3,8 +3,6 @@ package com.hbm.potion;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
@@ -24,14 +22,6 @@ public final class ModEffects {
     /** Colour = the old {@code HbmPotion.radiation} liquid colour (8700200). */
     public static final RegistryObject<MobEffect> RADIATION =
             EFFECTS.register("radiation", () -> new HbmEffectRadiation(MobEffectCategory.HARMFUL, 8700200));
-
-    /**
-     * {@code MobEffectInstance} wants a {@code Holder<MobEffect>}; wrap the registered effect. Only call
-     * after registration has flushed (i.e. from gameplay code, never class-init).
-     */
-    public static Holder<MobEffect> radiation() {
-        return BuiltInRegistries.MOB_EFFECT.wrapAsHolder(RADIATION.get());
-    }
 
     public static void init() {}
 }

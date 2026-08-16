@@ -27,7 +27,6 @@ import com.hbm.util.InventoryUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -42,18 +41,14 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.item.crafting.RecipeType;
-import net.minecraft.world.item.crafting.SingleRecipeInput;
-import net.minecraft.world.item.crafting.SmeltingRecipe;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import dev.golem.core.world.Recipes;
+import dev.golem.core.world.CompatEnchantments;
 import net.minecraft.world.phys.AABB;
 
 /**
@@ -96,10 +91,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
     private double clientBreakProgress = 0;
 
     public final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
-
-    /** Server-side cached vanilla smelting lookup (the smelter upgrade's processing recipe). */
-    private final RecipeManager.CachedCheck<SingleRecipeInput, SmeltingRecipe> smeltCheck =
-            RecipeManager.createCheck(RecipeType.SMELTING);
 
     public TileEntityMachineMiningLaser(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_MINING_LASER.get(), pos, state, 30);
@@ -287,14 +278,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
             } else if (hasUpgrade(ModUpgradeItems.upgrade_smelter.get())) {
 
                 if (level instanceof ServerLevel serverLevel) {
-                    ItemStack result = smeltCheck.getRecipeFor(new SingleRecipeInput(stack), serverLevel)
-                            .map(RecipeHolder::value)
-                            //? if >=26.1 {
-                            .map(r -> r.assemble(new SingleRecipeInput(stack)))
-                            //?} else {
-                            /*.map(r -> r.assemble(new SingleRecipeInput(stack), serverLevel.registryAccess()))
-                            *///?}
-                            .orElse(ItemStack.EMPTY);
+                    ItemStack result = Recipes.smeltingResult(serverLevel, stack).orElse(ItemStack.EMPTY);
                     if (!result.isEmpty()) {
                         spawnDrop(result.copy());
                         normal = false;
@@ -306,9 +290,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         if (normal && level instanceof ServerLevel serverLevel) {
             // The old dropBlockAsItem(world, pos, state, fortune): loot with the fortune level applied.
             ItemStack tool = new ItemStack(Items.NETHERITE_PICKAXE);
-            if (fortune > 0) {
-                tool.enchant(serverLevel.registryAccess().lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.FORTUNE), fortune);
-            }
+            CompatEnchantments.enchantFortune(serverLevel, tool, fortune);
             for (ItemStack drop : Block.getDrops(state, serverLevel, targetPos, level.getBlockEntity(targetPos), null, tool)) {
                 spawnDrop(drop);
             }
@@ -412,7 +394,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 container.setItem(i, rest);
                 return ItemStack.EMPTY;
             }
-            if (ItemStack.isSameItemSameComponents(existing, rest)) {
+            if (dev.golem.core.world.ItemStacks.sameItemAndData(existing, rest)) {
                 int move = Math.min(rest.getCount(), Math.min(container.getMaxStackSize(), existing.getMaxStackSize()) - existing.getCount());
                 if (move > 0) {
                     existing.grow(move);

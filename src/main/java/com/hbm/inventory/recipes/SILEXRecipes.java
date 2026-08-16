@@ -89,7 +89,7 @@ public final class SILEXRecipes {
                 pick -= o.weight();
                 if (pick < 0) return o.stack().copy();
             }
-            return outputs.getLast().stack().copy();
+            return outputs.get(outputs.size() - 1).stack().copy();
         }
     }
 

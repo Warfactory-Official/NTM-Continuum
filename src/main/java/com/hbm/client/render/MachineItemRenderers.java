@@ -79,7 +79,7 @@ public final class MachineItemRenderers {
         Vector3f centre = new Vector3f(0.5F, 0.5F, 0.5F).mulPosition(poseStack.last().pose());
         double guiScale = minecraft.getWindow().getGuiScale();
         // Framebuffer coordinates: origin bottom-left, so the top edge is measured from the window height.
-        // This is the same conversion GuiGraphics.applyScissor performs.
+        // This is the same conversion GuiGraphicsExtractor.applyScissor performs.
         int left = (int) ((centre.x() - HALF_SLOT) * guiScale);
         int bottom = (int) (minecraft.getWindow().getHeight() - (centre.y() + HALF_SLOT) * guiScale);
         int size = (int) (HALF_SLOT * 2 * guiScale);

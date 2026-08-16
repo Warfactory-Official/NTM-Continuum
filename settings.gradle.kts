@@ -32,7 +32,7 @@ stonecutter {
 
         match("26.1", "fabric", "neoforge")
         match("1.21.1", "fabric", "neoforge")
-        // Phase 2: match("1.20.1", "fabric", "forge")
+        match("1.20.1", "fabric", "forge")
 
         vcsVersion = "26.1-neoforge"
     }
@@ -50,7 +50,11 @@ rootProject.name = "hbm"
 // Keep in step with Golem-Core/settings.gradle.kts as nodes are added.
 includeBuild("../Golem-Core") {
     dependencySubstitution {
-        listOf("26.1-fabric", "26.1-neoforge", "1.21.1-fabric", "1.21.1-neoforge").forEach { node ->
+        listOf(
+            "26.1-fabric", "26.1-neoforge",
+            "1.21.1-fabric", "1.21.1-neoforge",
+            "1.20.1-fabric", "1.20.1-forge",
+        ).forEach { node ->
             val (mc, loader) = node.split('-', limit = 2)
             substitute(module("dev.golem:golemcore-$loader-$mc")).using(project(":$node"))
         }

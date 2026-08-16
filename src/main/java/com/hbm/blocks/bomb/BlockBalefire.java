@@ -1,20 +1,19 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.potion.ModEffects;
+//? if >=1.21.1 {
 import com.mojang.serialization.MapCodec;
+//?}
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.BaseFireBlock;
+import dev.golem.core.world.CompatFireBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,9 +34,11 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  * <p>Standing in it sets you on fire for 10 seconds <i>and</i> applies radiation X (5 s), which is what
  * makes it lethal rather than merely damaging.
  */
-public class BlockBalefire extends BaseFireBlock {
+public class BlockBalefire extends CompatFireBlock {
 
+    //? if >=1.21.1 {
     public static final MapCodec<BlockBalefire> CODEC = simpleCodec(BlockBalefire::new);
+    //?}
     public static final IntegerProperty AGE = BlockStateProperties.AGE_15;
 
     public BlockBalefire(Properties properties) {
@@ -45,10 +46,12 @@ public class BlockBalefire extends BaseFireBlock {
         this.registerDefaultState(this.stateDefinition.any().setValue(AGE, 0));
     }
 
+    //? if >=1.21.1 {
     @Override
-    protected MapCodec<? extends BaseFireBlock> codec() {
+    protected MapCodec<? extends net.minecraft.world.level.block.BaseFireBlock> codec() {
         return CODEC;
     }
+    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
@@ -62,7 +65,7 @@ public class BlockBalefire extends BaseFireBlock {
     }
 
     @Override
-    protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         return true; // upstream had no placement restriction; the tick decides whether it lives
     }
 
@@ -72,7 +75,7 @@ public class BlockBalefire extends BaseFireBlock {
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         // 26.1 folds the old `doFireTick` gamerule check and the area-loaded guard into one helper,
         // which is exactly what vanilla FireBlock.tick now calls.
         //? if >=26.1 {
@@ -185,15 +188,10 @@ public class BlockBalefire extends BaseFireBlock {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
-                                InsideBlockEffectApplier effects, boolean precise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
-        entity.igniteForSeconds(10);
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        Effects.ignite(entity, 10);
         if (!level.isClientSide() && entity instanceof LivingEntity living) {
-            living.addEffect(new MobEffectInstance(ModEffects.radiation(), 5 * 20, 9));
+            Effects.addRegistered(living, ModEffects.RADIATION.get(), 5 * 20, 9);
         }
     }
 }

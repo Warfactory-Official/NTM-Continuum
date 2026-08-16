@@ -52,11 +52,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
             @Override public boolean mayPlace(ItemStack stack) { return false; }
         });
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 174);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
     }
 
     private Slot validated(int index, int x, int y) {

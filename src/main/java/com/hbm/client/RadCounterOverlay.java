@@ -23,7 +23,7 @@ public final class RadCounterOverlay {
 
     private RadCounterOverlay() {}
 
-    private static final Identifier MISC = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/misc/overlay_misc.png");
+    private static final Identifier MISC = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_misc.png");
 
     private static float lastRadResult, prevRadResult;
     private static long lastRadSurvey;

@@ -330,12 +330,8 @@ public class HazardRegistry {
      * auto-generated {@code ModItems}.
      */
     private static void regItem(String id, HazardData data) {
-        Identifier loc = Identifier.fromNamespaceAndPath(Constants.MOD_ID, id);
-        //? if >=26.1 {
+        Identifier loc = dev.golem.core.Ids.of(Constants.MOD_ID, id);
         Item item = BuiltInRegistries.ITEM.getValue(loc);
-        //?} else {
-        /*Item item = BuiltInRegistries.ITEM.get(loc);
-        *///?}
         if (item != null && item != net.minecraft.world.item.Items.AIR) {
             HazardSystem.register(item, data);
         }

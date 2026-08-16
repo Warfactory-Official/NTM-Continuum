@@ -7,10 +7,6 @@ import com.hbm.items.machine.ItemPistons;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -25,7 +21,7 @@ import java.util.Optional;
  * power bar x=143, tank bar x=35 (bottom y=69). */
 public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScreen<ContainerCombustionEngine> {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_combustion.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_combustion.png");
 
     public GUICombustionEngine(ContainerCombustionEngine menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 203);
@@ -46,14 +42,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         // Old: the locked slider re-reads mouseX every frame (so holding still off-axis still tracks).
@@ -99,16 +88,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachineCombustionEngine te = this.menu.getTile();
         if (te == null) return;
 
@@ -141,12 +121,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
     private boolean isMouseLocked = false;
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         double mx = event.x(), my = event.y();
 
@@ -168,29 +143,16 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
             return true;
         }
 
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseReleased(MouseButtonEvent event) {
-    //?} else {
-    /*public boolean mouseReleased(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseReleased(dev.golem.core.gui.MouseInput event) {
         // Old mouseReleased: any left/right release drops the lock.
         if (this.isMouseLocked && (event.button() == 0 || event.button() == 1)) {
             this.isMouseLocked = false;
         }
-        //? if >=26.1 {
-        return super.mouseReleased(event);
-        //?} else {
-        /*return super.mouseReleased(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 
     /** While locked the setting tracks mouseX only — no Y test (old: the drag runs in the render loop). */

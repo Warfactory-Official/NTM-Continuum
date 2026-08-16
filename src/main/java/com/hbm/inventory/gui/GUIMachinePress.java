@@ -4,7 +4,6 @@ import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -20,21 +19,14 @@ import java.util.Optional;
  */
 public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<ContainerMachinePress> {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_press.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_press.png");
 
     public GUIMachinePress(ContainerMachinePress menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 202);
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachinePress press = this.menu.getPress();
@@ -90,16 +82,7 @@ public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachinePress press = this.menu.getPress();
         if (press == null) return;
         if (this.isHovering(25, 16, 18, 18, mouseX, mouseY)) {

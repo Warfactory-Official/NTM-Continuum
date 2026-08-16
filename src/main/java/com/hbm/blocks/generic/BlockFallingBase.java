@@ -1,6 +1,8 @@
 package com.hbm.blocks.generic;
 
+//? if >=1.21.1 {
 import com.mojang.serialization.MapCodec;
+//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.FallingBlock;
@@ -16,16 +18,20 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class BlockFallingBase extends FallingBlock {
 
+    //? if >=1.21.1 {
     public static final MapCodec<BlockFallingBase> CODEC = simpleCodec(BlockFallingBase::new);
+    //?}
 
     public BlockFallingBase(BlockBehaviour.Properties properties) {
         super(properties);
     }
 
+    //? if >=1.21.1 {
     @Override
-    protected MapCodec<? extends FallingBlock> codec() {
+    public MapCodec<? extends FallingBlock> codec() {
         return CODEC;
     }
+    //?}
 
     /**
      * The falling-dust particle tint. 26.1 made this abstract; 1.12.2's {@code BlockFalling} had a

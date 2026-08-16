@@ -6,9 +6,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,18 +29,13 @@ public class BlockNetherCoal extends BlockOutgas {
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         return List.of(new ItemStack(ModFuelItems.coal_infernal.get()));
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
-                                InsideBlockEffectApplier effects, boolean precise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
-        if (!level.isClientSide()) entity.igniteForSeconds(3);
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
+        if (!level.isClientSide()) dev.golem.core.world.Effects.ignite(entity, 3);
     }
 
     @Override

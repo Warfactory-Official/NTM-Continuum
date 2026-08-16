@@ -4,7 +4,6 @@ import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCrate;
 import com.hbm.tileentity.machine.storage.CrateType;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -24,14 +23,7 @@ public class GUICrate extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, type.texture, this.leftPos, this.topPos, 0.0F, 0.0F,
                 this.imageWidth, this.imageHeight, 256, 256);
     }

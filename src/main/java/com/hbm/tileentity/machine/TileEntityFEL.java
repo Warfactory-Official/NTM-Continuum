@@ -23,7 +23,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -137,8 +136,8 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         for (LivingEntity entity : list) {
             switch (mode) {
                 case IR -> { }                                          // infrared does nothing at all
-                case VISIBLE -> entity.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60 * 60 * 65536, 0));
-                case UV -> entity.igniteForSeconds(10);
+                case VISIBLE -> dev.golem.core.world.Effects.add(entity, MobEffects.BLINDNESS, 60 * 60 * 65536, 0);
+                case UV -> dev.golem.core.world.Effects.ignite(entity, 10);
                 case GAMMA -> ContaminationUtil.contaminate(entity, ContaminationUtil.HazardType.RADIATION,
                         ContaminationUtil.ContaminationType.CREATIVE, 25);
                 case DRX -> ContaminationUtil.applyDigammaData(entity, 0.1F);

@@ -19,8 +19,8 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
 /**
  * HBM worldgen features (the port's first worldgen). Each feature is referenced by data-driven
  * {@code worldgen/configured_feature} + {@code worldgen/placed_feature} JSONs and injected into
- * biomes per loader (NeoForge {@code neoforge/biome_modifier} JSON, Fabric {@code BiomeModifications}
- * in the entrypoint).
+ * biomes per loader (NeoForge and Forge use their native {@code biome_modifier} JSON types; Fabric
+ * uses {@code BiomeModifications} in the entrypoint).
  */
 public final class ModFeatures {
 

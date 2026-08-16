@@ -12,7 +12,7 @@ import net.minecraft.world.level.block.Block;
  * rock and every {@link BlockDepthOre} on top of it are currently explosion-only — which is exactly
  * how the original behaves without that tool. Wire the hardness override in when the drill lands.
  */
-public class BlockDepth extends Block {
+public class BlockDepth extends dev.golem.core.world.CompatBlock {
 
     public BlockDepth(Properties properties) {
         super(properties);

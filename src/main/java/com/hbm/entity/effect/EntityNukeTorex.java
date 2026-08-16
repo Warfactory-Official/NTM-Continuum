@@ -78,9 +78,9 @@ public class EntityNukeTorex extends CompatEntity {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(SCALE, 1.0F);
-        builder.define(TYPE, (byte) 0);
+    protected void defineData(dev.golem.core.data.SynchedData data) {
+        data.define(SCALE, 1.0F);
+        data.define(TYPE, (byte) 0);
     }
 
     @Override
@@ -102,11 +102,7 @@ public class EntityNukeTorex extends CompatEntity {
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-    //?} else {
-    /*public boolean hurt(DamageSource source, float damage) {
-    *///?}
+    protected boolean onHurt(DamageSource source, float damage) {
         return false;
     }
 

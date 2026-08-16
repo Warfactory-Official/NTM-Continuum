@@ -33,8 +33,8 @@ public class PUREXRenderer implements CompatBER<TileEntityMachinePUREX, PurexRen
     private final RenderType baseType;
 
     public PUREXRenderer() {
-        Identifier obj = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/purex.obj");
-        Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/purex.png");
+        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/purex.obj");
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/purex.png");
         this.model = WavefrontObj.load(obj);
         this.baseType = CompatRenderTypes.entityCutout(tex);
     }

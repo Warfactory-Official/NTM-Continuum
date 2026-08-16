@@ -333,11 +333,17 @@ public final class ModMachineBlocks {
                                                 net.minecraft.world.item.component.TooltipDisplay display,
                                                 java.util.function.Consumer<net.minecraft.network.chat.Component> adder,
                                                 net.minecraft.world.item.TooltipFlag flag) {
-                    //?} else {
+                    //?} else if >=1.21.1 {
                     /*public void appendHoverText(net.minecraft.world.item.ItemStack stack,
                                                 net.minecraft.world.item.Item.TooltipContext context,
                                                 java.util.List<net.minecraft.network.chat.Component> hbm$lines,
                                                 net.minecraft.world.item.TooltipFlag flag) {
+                        java.util.function.Consumer<net.minecraft.network.chat.Component> adder = hbm$lines::add;
+                    *///?} else {
+                    /*public void appendHoverText(net.minecraft.world.item.ItemStack stack,
+                                                 net.minecraft.world.level.Level level,
+                                                 java.util.List<net.minecraft.network.chat.Component> hbm$lines,
+                                                 net.minecraft.world.item.TooltipFlag flag) {
                         java.util.function.Consumer<net.minecraft.network.chat.Component> adder = hbm$lines::add;
                     *///?}
                         adder.accept(net.minecraft.network.chat.Component.translatable("desc.mininglaser1"));

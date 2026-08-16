@@ -131,7 +131,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
                             pos.getX() + 0.5, pos.getY() + 0.5 + poolLevel, pos.getZ() + 0.5).inflate(1, 0, 1));
             for (LivingEntity entity : living) {
                 entity.hurt(level.damageSources().lava(), 5F);
-                entity.igniteForSeconds(5);
+                dev.golem.core.world.Effects.ignite(entity, 5);
             }
         }
 

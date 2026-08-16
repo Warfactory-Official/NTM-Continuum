@@ -44,11 +44,7 @@ public class ContainerMachineTurbine extends AbstractContainerMenu {
         this.addSlot(validated(5, 152, 17));  // output tank: container in
         this.addSlot(takeOnly(6, 152, 53));   // output tank: container out
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 84);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
     private Slot validated(int index, int x, int y) {

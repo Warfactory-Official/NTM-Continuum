@@ -3,33 +3,29 @@ package com.hbm.blocks.generic;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.potion.ModEffects;
+import dev.golem.core.world.Effects;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ContaminationUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Short-lived radioactive gas released by a burning ZIRNOX wreck. */
-public class BlockGasMeltdown extends Block {
+public class BlockGasMeltdown extends dev.golem.core.world.CompatBlock {
 
     public BlockGasMeltdown(Properties properties) {
         super(properties);
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextInt(10) == 0) {
             level.removeBlock(pos, false);
             return;
@@ -43,12 +39,7 @@ public class BlockGasMeltdown extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity,
-                                InsideBlockEffectApplier effects, boolean precise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level.isClientSide() || !(entity instanceof LivingEntity living)) return;
         boolean filtered = ArmorRegistry.hasProtection(living, EquipmentSlot.HEAD,
                 ArmorRegistry.HazardClass.PARTICLE_FINE);
@@ -60,6 +51,6 @@ public class BlockGasMeltdown extends Block {
         ContaminationUtil.contaminate(living, ContaminationUtil.HazardType.RADIATION,
                 filtered ? ContaminationUtil.ContaminationType.CREATIVE
                         : ContaminationUtil.ContaminationType.RAD_BYPASS, 0.5F);
-        living.addEffect(new MobEffectInstance(ModEffects.radiation(), 60 * 20, 2));
+        Effects.addRegistered(living, ModEffects.RADIATION.get(), 60 * 20, 2);
     }
 }

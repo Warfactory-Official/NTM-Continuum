@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ContaminationUtil;
+import dev.golem.core.world.CompatItem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -12,7 +13,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
@@ -23,19 +23,15 @@ import org.jetbrains.annotations.Nullable;
  * chat on right-click. Ported from 1.12.2's {@code ItemGeigerCounter} (the Baubles/FSB integration is
  * dropped; the click ladder + thresholds are copied verbatim).
  */
-public class ItemGeigerCounter extends Item {
+public class ItemGeigerCounter extends CompatItem {
 
     public ItemGeigerCounter(Properties props) {
         super(props);
     }
 
     @Override
-    //? if >=26.1 {
-    public void inventoryTick(ItemStack stack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot) {
-    //?} else {
-    /*public void inventoryTick(ItemStack stack, net.minecraft.world.level.Level hbm$lvl, Entity owner, int hbm$slotIndex, boolean hbm$selected) {
-        if (!(hbm$lvl instanceof ServerLevel level)) return;
-    *///?}
+    protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity owner,
+                                       @Nullable EquipmentSlot slot) {
         if (owner instanceof Player player) {
             playGeiger(level, player);
         }
@@ -68,23 +64,10 @@ public class ItemGeigerCounter extends Item {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 
-    //? if >=26.1 {
     @Override
-    public InteractionResult use(Level level, Player player, InteractionHand hand) {
+    protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         return hbm$use(level, player, hand);
     }
-    //?} else {
-    /*@Override
-    public net.minecraft.world.InteractionResultHolder<net.minecraft.world.item.ItemStack> use(Level level, Player player, InteractionHand hand) {
-        InteractionResult hbm$r = hbm$use(level, player, hand);
-        net.minecraft.world.item.ItemStack hbm$held = player.getItemInHand(hand);
-        return hbm$r == InteractionResult.SUCCESS
-                ? net.minecraft.world.InteractionResultHolder.success(hbm$held)
-                : hbm$r == InteractionResult.CONSUME
-                ? net.minecraft.world.InteractionResultHolder.consume(hbm$held)
-                : net.minecraft.world.InteractionResultHolder.pass(hbm$held);
-    }
-    *///?}
 
     private InteractionResult hbm$use(Level level, Player player, InteractionHand hand) {
         if (!level.isClientSide()) {

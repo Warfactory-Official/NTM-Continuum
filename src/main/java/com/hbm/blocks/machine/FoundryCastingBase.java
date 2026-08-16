@@ -43,7 +43,7 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
     protected abstract TileEntityFoundryCastingBase getTE(Level level, BlockPos pos);
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         TileEntityFoundryCastingBase cast = getTE(level, pos);
@@ -68,22 +68,8 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
         return InteractionResult.SUCCESS;
     }
 
-    //? if >=26.1 {
     @Override
-    protected InteractionResult useItemOn(ItemStack heldItem, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return hbm$useItemOn(heldItem, state, level, pos, player, hand, hit);
-    }
-    //?} else {
-    /*@Override
-    protected net.minecraft.world.ItemInteractionResult useItemOn(ItemStack heldItem, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        InteractionResult hbm$r = hbm$useItemOn(heldItem, state, level, pos, player, hand, hit);
-        return hbm$r == InteractionResult.SUCCESS ? net.minecraft.world.ItemInteractionResult.SUCCESS
-             : hbm$r == InteractionResult.CONSUME ? net.minecraft.world.ItemInteractionResult.CONSUME
-             : net.minecraft.world.ItemInteractionResult.TRY_WITH_EMPTY_HAND_TO_DEFAULT_BLOCK_INTERACTION;
-    }
-    *///?}
-
-    private InteractionResult hbm$useItemOn(ItemStack heldItem, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack heldItem, BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         TileEntityFoundryCastingBase cast = getTE(level, pos);
@@ -93,6 +79,13 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
         if (!cast.inventory.getStackInSlot(1).isEmpty()) {
             TileEntityFoundryCastingBase.giveOrDrop(level, pos, player, cast.inventory.getStackInSlot(1).copy());
             cast.inventory.setStackInSlot(1, ItemStack.EMPTY);
+            cast.setChanged();
+            return InteractionResult.SUCCESS;
+        }
+
+        if (heldItem.isEmpty() && player.isShiftKeyDown() && !cast.inventory.getStackInSlot(0).isEmpty() && cast.amount == 0) {
+            TileEntityFoundryCastingBase.giveOrDrop(level, pos, player, cast.inventory.getStackInSlot(0).copy());
+            cast.inventory.setStackInSlot(0, ItemStack.EMPTY);
             cast.setChanged();
             return InteractionResult.SUCCESS;
         }
@@ -128,12 +121,7 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
             return InteractionResult.SUCCESS;
         }
 
-        //? if >=26.1 {
-        return super.useItemOn(heldItem, state, level, pos, player, hand, hit);
-        //?} else {
-        /*return super.useItemOn(heldItem, state, level, pos, player, hand, hit) == net.minecraft.world.ItemInteractionResult.SUCCESS
-                ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
-        *///?}
+        return super.onUseItem(state, level, pos, player, hand, heldItem, hit);
     }
 
     // --- ICrucibleAcceptor: delegate to the TE ---

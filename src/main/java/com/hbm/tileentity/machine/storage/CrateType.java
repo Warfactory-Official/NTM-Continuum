@@ -55,7 +55,7 @@ public enum CrateType {
         this.inventoryLabelX = inventoryLabelX;
         this.titleColor = titleColor;
         this.inventoryLabelColor = inventoryLabelColor;
-        this.texture = Identifier.fromNamespaceAndPath("hbm", "textures/gui/storage/gui_" + id + ".png");
+        this.texture = dev.golem.core.Ids.of("hbm", "textures/gui/storage/gui_" + id + ".png");
     }
 
     public void setTypeSupplier(Supplier<BlockEntityType<TileEntityCrate>> typeSupplier) {

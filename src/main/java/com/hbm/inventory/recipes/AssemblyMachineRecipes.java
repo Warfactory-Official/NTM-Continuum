@@ -191,7 +191,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         if (shape == MaterialShapes.INGOT
                 && (mat.name.equals("iron") || mat.name.equals("gold") || mat.name.equals("copper"))) return true;
         return BuiltInRegistries.ITEM.containsKey(
-                Identifier.fromNamespaceAndPath("hbm", shape.itemPrefix + "_" + mat.name));
+                dev.golem.core.Ids.of("hbm", shape.itemPrefix + "_" + mat.name));
     }
 
     private void plate(String name, NTMMaterial mat, Item plate) {

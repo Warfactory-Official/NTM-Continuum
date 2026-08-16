@@ -35,7 +35,7 @@ public final class PyroOvenRecipes {
     private PyroOvenRecipes() {}
 
     /** The coke aggregate (old OreDict ANY_COKE) — the 3 coke items, hand-tagged in data/c/tags/item/cokes.json. */
-    public static final TagKey<Item> COKES = TagKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath("c", "cokes"));
+    public static final TagKey<Item> COKES = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "cokes"));
 
     public static final class PyroOvenRecipe {
         public FluidStack inputFluid;

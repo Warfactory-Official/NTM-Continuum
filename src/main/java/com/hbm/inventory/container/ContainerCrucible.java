@@ -42,11 +42,7 @@ public class ContainerCrucible extends AbstractContainerMenu {
             }
         }
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 132);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 132);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 132);
     }
 
     /** A grid slot: stack limit 1, gated by the machine's smeltability check. */

@@ -50,11 +50,7 @@ public class ContainerFEL extends AbstractContainerMenu {
         this.addSlot(validated(0, 182, 144));   // battery
         this.addSlot(validated(1, 141, 23));    // laser crystal
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 83);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 83);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 83);
     }
 
     private Slot validated(int index, int x, int y) {

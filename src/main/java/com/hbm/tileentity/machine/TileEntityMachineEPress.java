@@ -122,7 +122,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
 
         ItemStack outSlot = inventory.getStackInSlot(3);
         if (outSlot.isEmpty()) return true;
-        if (!ItemStack.isSameItemSameComponents(outSlot, output)) return false;
+        if (!dev.golem.core.world.ItemStacks.sameItemAndData(outSlot, output)) return false;
         return outSlot.getCount() + output.getCount() <= outSlot.getMaxStackSize();
     }
 
@@ -239,7 +239,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         super.serialize(buf);
         buf.writeLong(power);
         buf.writeInt(progress);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, inventory.getStackInSlot(2));
+        dev.golem.core.world.ItemStacks.writeOptional(buf, inventory.getStackInSlot(2));
     }
 
     @Override
@@ -247,7 +247,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
         super.deserialize(buf);
         power = buf.readLong();
         progress = buf.readInt();
-        syncStack = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        syncStack = dev.golem.core.world.ItemStacks.readOptional(buf);
     }
 
     @Override

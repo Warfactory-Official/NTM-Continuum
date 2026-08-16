@@ -6,10 +6,6 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineCompressorBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-//? if >=26.1 {
-import net.minecraft.client.input.MouseButtonEvent;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -25,7 +21,7 @@ import java.util.Optional;
  */
 public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<ContainerCompressor> {
 
-    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("hbm", "textures/gui/gui_compressor.png");
+    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/gui_compressor.png");
 
     public GUICompressor(ContainerCompressor menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 204);
@@ -40,14 +36,7 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    //? if >=26.1 {
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-    //?} else {
-    /*protected void renderBg(GuiGraphicsExtractor graphics, float partialTick, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractBackground(graphics, mouseX, mouseY, partialTick);
-        //?}
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
         TileEntityMachineCompressorBase te = this.menu.getTile();
@@ -91,16 +80,7 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    //? if >=26.1 {
     protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    //?} else {
-    /*protected void renderTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-    *///?}
-        //? if >=26.1 {
-        super.extractTooltip(graphics, mouseX, mouseY);
-        //?} else {
-        /*super.renderTooltip(graphics, mouseX, mouseY);
-        *///?}
         TileEntityMachineCompressorBase te = this.menu.getTile();
         if (te == null) return;
 
@@ -129,12 +109,7 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    //? if >=26.1 {
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-    //?} else {
-    /*public boolean mouseClicked(double hbm$mx, double hbm$my, int hbm$btn) {
-        dev.golem.core.gui.MouseInput event = new dev.golem.core.gui.MouseInput(hbm$mx, hbm$my, hbm$btn);
-    *///?}
+    protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         Minecraft mc = Minecraft.getInstance();
         double mx = event.x(), my = event.y();
 
@@ -149,10 +124,6 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
                 return true;
             }
         }
-        //? if >=26.1 {
-        return super.mouseClicked(event, doubleClick);
-        //?} else {
-        /*return super.mouseClicked(hbm$mx, hbm$my, hbm$btn);
-        *///?}
+        return false;
     }
 }

@@ -18,6 +18,10 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(javaVersion)
 }
 
+sourceSets["main"].java {
+    exclude("com/hbm/platform/neoforge/**", "com/hbm/platform/forge/**")
+}
+
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
@@ -46,9 +50,73 @@ val packFormatEntry = if (modernRendering)
     "\"min_format\": ${prop("pack_format")}, \"max_format\": ${prop("pack_format")}"
 else
     "\"pack_format\": ${prop("pack_format")}"
+/**
+ * Pins LWJGL to the version Minecraft itself ships, undoing a Loom upgrade this project does not need.
+ *
+ * Loom's `LWJGL3UpgradeLibraryProcessor` force-upgrades LWJGL when the **Gradle JVM** is Java 19+ and
+ * the target Minecraft's own library list predates Java 19 support. On 1.20.1 that is true — vanilla
+ * ships LWJGL 3.3.1 — so Loom silently substitutes 3.3.2 (`3.3.1 -> 3.3.2` by conflict resolution).
+ * It returns MUST_APPLY, so `fabric.loom.libraryProcessors` cannot switch it off: that property is an
+ * opt-IN list consulted only for CAN_APPLY processors.
+ *
+ * The upgrade exists so a dev client can launch on Java 19+. Ours never does — `run-toolchain.gradle.kts`
+ * pins every run to the node's own toolchain, Java 17 here — so Loom is solving a problem this project
+ * does not have, at the cost of a dev client running a different native stack than any player. Sodium
+ * refuses to start on the mismatch outright (its early driver scanner demands exactly 3.3.1 on 1.20.1),
+ * which is how this surfaced; the deeper objection is that testing 3.3.2 tests something we never ship.
+ *
+ * Leave `deps.lwjgl` blank on any node where Loom's choice should stand.
+ */
+propOrNull("deps.lwjgl")?.let { pinned ->
+    configurations.configureEach {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.lwjgl") useVersion(pinned)
+        }
+    }
+}
+
 val modCfg = if (obfuscated) "modImplementation" else "implementation"
 // Loom's `localRuntime` is not remapped either way; with obfuscation off the plain config is correct.
 val devRuntime = if (obfuscated) "modLocalRuntime" else "localRuntime"
+
+/**
+ * Drops Loom's cached remap of Golem Core when the upstream jar is newer than it.
+ *
+ * Loom caches remapped mod jars under `.gradle/loom-cache/remapped_mods/remapped/<group>/<artifact>/
+ * <version>/`, keyed by the *coordinates* — content is never hashed. Golem Core arrives through a
+ * composite build whose version string (`0.1.0+<mc>`) is constant, so editing it produces a
+ * byte-different jar under an identical cache key and Loom keeps serving the old remap. HBM then
+ * compiles against a stale Golem Core with no error, no warning, and a green build.
+ *
+ * This was not hypothetical: the cached 1.21.1 remap was found two days old, missing methods that had
+ * since been added, while `chiseledBuild` reported success. Only the obfuscated Fabric nodes are
+ * affected — NeoForge does not remap, and 26.1-fabric is unobfuscated, so both see the real jar. That
+ * asymmetry is what makes it dangerous: five nodes agree and the two quiet ones are wrong.
+ *
+ * Runs at configuration time because Loom resolves remapped mods before any task executes.
+ */
+fun invalidateStaleGolemRemap() {
+    if (!obfuscated) return
+    val cacheRoot = rootProject.file(".gradle/loom-cache/remapped_mods/remapped/dev/golem")
+    if (!cacheRoot.isDirectory) return
+
+    val upstream = rootProject.file("../Golem-Core/versions/$mcVersion-fabric/build/libs")
+        .listFiles { file -> file.name.endsWith(".jar") && !file.name.endsWith("-sources.jar") }
+        ?.maxOfOrNull { it.lastModified() }
+
+    cacheRoot.listFiles { file -> file.isDirectory && file.name.startsWith("$mcVersion-fabric-") }
+        ?.forEach { entry ->
+            val cachedAt = entry.walkTopDown().filter { it.isFile }.maxOfOrNull { it.lastModified() }
+            // No upstream jar yet (clean checkout, Golem not built): leave the cache alone rather than
+            // forcing a remap of something that is about to be rebuilt anyway.
+            if (cachedAt != null && upstream != null && upstream > cachedAt) {
+                logger.lifecycle("Golem Core changed since its cached remap; invalidating ${entry.name}.")
+                entry.deleteRecursively()
+            }
+        }
+}
+
+invalidateStaleGolemRemap()
 
 dependencies {
     "minecraft"("com.mojang:minecraft:${prop("deps.minecraft")}")
@@ -82,6 +150,9 @@ loom {
             configName = "Fabric Client ($mcVersion)"
             ideConfigGenerated(true)
             runDir = "runs/client"
+            // See the Forge buildscript for why: JEI only builds its categories on world join, so
+            // `-PquickPlayWorld=<save name>` is what turns runClient into a real check of the plugin.
+            propOrNull("quickPlayWorld")?.let { programArgs("--quickPlaySingleplayer", it) }
         }
         named("server") {
             server()
@@ -104,6 +175,7 @@ tasks.processResources {
         "minecraft_range" to prop("deps.minecraft_range"),
         "fabric_loader" to prop("deps.fabric_loader"),
         "java_version" to javaVersion.toString(),
+        "mixin_compatibility" to if (javaVersion <= 17) "JAVA_17" else "JAVA_21",
         "pack_format" to prop("pack_format"),
         "pack_format_entry" to packFormatEntry,
         // MixinSpecialModelRenderers targets a class that only exists on 26.1, and is compiled out
@@ -113,8 +185,11 @@ tasks.processResources {
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "pack.mcmeta", "*.mixins.json")) { expand(props) }
-    // NeoForge-only metadata and the NeoForge biome_modifier data pack, which Fabric injects in code.
-    exclude("META-INF/neoforge.mods.toml", "META-INF/accesstransformer.cfg", "data/$modId/neoforge/**")
+    // Forge-like biome modifiers are loader-specific; Fabric injects the same feature list in code.
+    // `data/neoforge/**` is the NeoForge-namespaced data maps (furnace fuels), which Fabric supplies
+    // through FuelRegistry/FuelValueEvents instead — excluded so the jar carries no inert files.
+    exclude("META-INF/mods.toml", "META-INF/neoforge.mods.toml", "META-INF/accesstransformer.cfg",
+        "data/$modId/neoforge/**", "data/$modId/forge/**", "data/neoforge/**")
 }
 
 tasks.jar {
@@ -123,7 +198,11 @@ tasks.jar {
 
 // Stonecutter rewrites the shared src/ tree in place for the active node. Both compilation and
 // resource processing must wait for that rewrite, or they consume the previous node's source state.
-tasks.compileJava { dependsOn(tasks.named("stonecutterGenerate")) }
+tasks.compileJava {
+    dependsOn(tasks.named("stonecutterGenerate"))
+    options.release = javaVersion
+    options.compilerArgs.addAll(listOf("-Xmaxerrs", "2000"))
+}
 tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 
 // Recipe ingredients are written in the 26.1 shape and converted downward for older nodes.

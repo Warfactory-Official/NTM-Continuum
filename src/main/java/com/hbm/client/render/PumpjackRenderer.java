@@ -4,6 +4,8 @@ import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CameraInfo;
+import dev.golem.core.Ids;
+import dev.golem.core.render.Vertexes;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -38,13 +40,13 @@ public class PumpjackRenderer implements CompatBER<TileEntityMachinePumpjack, Pu
     private final RenderType colorType;
 
     public PumpjackRenderer() {
-        this.model = WavefrontObj.load(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/pumpjack.obj"));
-        this.baseType = CompatRenderTypes.entityCutout(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/pumpjack.png"));
+        this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/pumpjack.obj"));
+        this.baseType = CompatRenderTypes.entityCutout(Ids.of(Constants.MOD_ID, "textures/models/machines/pumpjack.png"));
         // The untextured crank/rope geometry is drawn on entitySolid (opaque, depth-writing, culls) —
         // its faces are double-wound below so the cull keeps exactly the outward copy, giving the flat
         // uniform shading the old disableCull+disableLighting POSITION_COLOR pass had. entityCutout would
         // draw both windings (no cull) and PER_FACE_LIGHTING would darken the back copy → the odd look.
-        this.colorType = CompatRenderTypes.entitySolid(Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/misc/white.png"));
+        this.colorType = CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png"));
     }
 
     @Override public PumpjackRenderState createRenderState() { return new PumpjackRenderState(); }
@@ -217,12 +219,8 @@ public class PumpjackRenderer implements CompatBER<TileEntityMachinePumpjack, Pu
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer buf, float r, float g, float b, float a,
                                double x, double y, double z) {
-        buf.addVertex(pose, (float) x, (float) y, (float) z)
-                .setColor(r, g, b, a)
-                .setUv(0.5F, 0.5F)
-                .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(FULLBRIGHT)
-                .setNormal(pose, 0F, 1F, 0F);
+        Vertexes.vertex(buf, pose, (float) x, (float) y, (float) z, r, g, b, a, 0.5F, 0.5F,
+                OverlayTexture.NO_OVERLAY, FULLBRIGHT, 0F, 1F, 0F);
     }
 
     /**

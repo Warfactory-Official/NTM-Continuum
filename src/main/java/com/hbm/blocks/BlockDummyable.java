@@ -4,7 +4,6 @@ import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.platform.Services;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
@@ -46,7 +45,7 @@ import java.util.ArrayDeque;
  * real space. Deferred vs the 1.12.2 original: detailed rotated hitboxes, NBT copy/transform, and the
  * advanced "extra"-meta core routing (see IMPLEMENTATION.md §18).
  */
-public abstract class BlockDummyable extends Block implements EntityBlock {
+public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
@@ -75,7 +74,7 @@ public abstract class BlockDummyable extends Block implements EntityBlock {
     }
 
     @Override
-    protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos,
+    public net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos,
                                                                   net.minecraft.world.phys.shapes.CollisionContext context) {
         if (bounding.isEmpty()) return super.getShape(state, world, pos, context);
         BlockPos core = findCore(world, pos);
@@ -157,13 +156,14 @@ public abstract class BlockDummyable extends Block implements EntityBlock {
     protected abstract BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state);
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE; // the BlockEntityRenderer draws the machine; the block itself is invisible
     }
 
     /** Right-clicking any part of the multiblock opens the core BlockEntity's menu (if it provides one). */
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                 BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             BlockPos core = findCore(level, pos);
             if (core != null && level.getBlockEntity(core) instanceof MenuProvider provider) {
@@ -244,17 +244,8 @@ public abstract class BlockDummyable extends Block implements EntityBlock {
     // --- breaking: removing any part tears down the whole structure ---
 
     @Override
-    //? if >=26.1 {
-    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-    //?} else {
-    /*protected void onRemove(BlockState state, net.minecraft.world.level.Level hbm$level, BlockPos pos, BlockState hbm$newState, boolean movedByPiston) {
-        if (!(hbm$level instanceof ServerLevel level)) return;
-    *///?}
-        // The machine's own inventory. 26.1's BlockEntity.preRemoveSideEffects drops a Container's
-        // contents automatically; below it nothing does, so every dummyable machine silently voided its
-        // inventory when broken. No-op on 26.1, where vanilla has already run it.
-        dev.golem.core.world.Compat.preRemoveSideEffects(level, pos, state);
-
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
+        if (level.isClientSide()) return;
         if (safeRem) return;
         int meta = state.getValue(META);
         safeRem = true;

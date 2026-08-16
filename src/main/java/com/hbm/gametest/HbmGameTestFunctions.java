@@ -11,112 +11,113 @@ import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import dev.golem.core.gametest.GameTests;
-import java.util.function.Consumer;
 import net.minecraft.gametest.framework.GameTestHelper;
 
-/** Shared, server-only GameTest functions. NeoForge registers their test instances in its loader module. */
+/** Shared, server-only GameTest functions and execution budgets. */
 public final class HbmGameTestFunctions {
 
     private HbmGameTestFunctions() {}
 
-        public static final GameTests.Function COOLING_RECIPES =
-            GameTests.function(Constants.MOD_ID, "cooling_recipes", () -> HbmGameTestFunctions::coolingRecipes);
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
+
+    public static final GameTests.Function COOLING_RECIPES =
+            TESTS.function("cooling_recipes", 20, () -> HbmGameTestFunctions::coolingRecipes);
     public static final GameTests.Function TURBINE_CONVERSION =
-            GameTests.function(Constants.MOD_ID, "turbine_conversion", () -> HbmGameTestFunctions::turbineConversion);
+            TESTS.function("turbine_conversion", 20, () -> HbmGameTestFunctions::turbineConversion);
     public static final GameTests.Function TURBINE_IDENTIFIER =
-            GameTests.function(Constants.MOD_ID, "turbine_identifier", () -> HbmGameTestFunctions::turbineFluidId);
+            TESTS.function("turbine_identifier", 20, () -> HbmGameTestFunctions::turbineFluidId);
     public static final GameTests.Function TURBINE_SLOTS =
-            GameTests.function(Constants.MOD_ID, "turbine_slots", () -> HbmGameTestFunctions::turbineSlots);
+            TESTS.function("turbine_slots", 20, () -> HbmGameTestFunctions::turbineSlots);
     public static final GameTests.Function TURBINE_MENU =
-            GameTests.function(Constants.MOD_ID, "turbine_menu", () -> HbmGameTestFunctions::turbineMenu);
+            TESTS.function("turbine_menu", 20, () -> HbmGameTestFunctions::turbineMenu);
     public static final GameTests.Function CONDENSER_CONVERSION =
-            GameTests.function(Constants.MOD_ID, "condenser_conversion", () -> HbmGameTestFunctions::condenserConversion);
+            TESTS.function("condenser_conversion", 20, () -> HbmGameTestFunctions::condenserConversion);
     public static final GameTests.Function PUREX_RECIPE_CYCLE =
-            GameTests.function(Constants.MOD_ID, "purex_recipe_cycle", () -> HbmGameTestFunctions::purexRecipeCycle);
+            TESTS.function("purex_recipe_cycle", 20, () -> HbmGameTestFunctions::purexRecipeCycle);
     public static final GameTests.Function PUREX_HOT_WASTE_REJECTED =
-            GameTests.function(Constants.MOD_ID, "purex_hot_waste_rejected", () -> HbmGameTestFunctions::purexHotWasteRejected);
+            TESTS.function("purex_hot_waste_rejected", 20, () -> HbmGameTestFunctions::purexHotWasteRejected);
     public static final GameTests.Function PUREX_UPGRADES =
-            GameTests.function(Constants.MOD_ID, "purex_upgrades", () -> HbmGameTestFunctions::purexUpgrades);
+            TESTS.function("purex_upgrades", 20, () -> HbmGameTestFunctions::purexUpgrades);
     public static final GameTests.Function PUREX_MAX_POWER =
-            GameTests.function(Constants.MOD_ID, "purex_max_power", () -> HbmGameTestFunctions::purexMaxPower);
+            TESTS.function("purex_max_power", 20, () -> HbmGameTestFunctions::purexMaxPower);
     public static final GameTests.Function PUREX_OUTPUT_FLUID =
-            GameTests.function(Constants.MOD_ID, "purex_output_fluid", () -> HbmGameTestFunctions::purexOutputFluid);
+            TESTS.function("purex_output_fluid", 20, () -> HbmGameTestFunctions::purexOutputFluid);
     public static final GameTests.Function PUREX_SLOTS =
-            GameTests.function(Constants.MOD_ID, "purex_slots", () -> HbmGameTestFunctions::purexSlots);
+            TESTS.function("purex_slots", 20, () -> HbmGameTestFunctions::purexSlots);
     public static final GameTests.Function PUREX_MENU =
-            GameTests.function(Constants.MOD_ID, "purex_menu", () -> HbmGameTestFunctions::purexMenu);
+            TESTS.function("purex_menu", 20, () -> HbmGameTestFunctions::purexMenu);
     public static final GameTests.Function PUREX_LAYOUT =
-            GameTests.function(Constants.MOD_ID, "purex_layout", () -> HbmGameTestFunctions::purexLayout);
+            TESTS.function("purex_layout", 100, () -> HbmGameTestFunctions::purexLayout);
     public static final GameTests.Function ZIRNOX_GOLDEN_TICK =
-            GameTests.function(Constants.MOD_ID, "zirnox_golden_tick", () -> HbmGameTestFunctions::zirnoxGoldenTick);
+            TESTS.function("zirnox_golden_tick", 20, () -> HbmGameTestFunctions::zirnoxGoldenTick);
     public static final GameTests.Function ZIRNOX_LAYOUT =
-            GameTests.function(Constants.MOD_ID, "zirnox_layout", () -> HbmGameTestFunctions::zirnoxLayout);
+            TESTS.function("zirnox_layout", 100, () -> HbmGameTestFunctions::zirnoxLayout);
     public static final GameTests.Function ZIRNOX_WORLD_TICK =
-            GameTests.function(Constants.MOD_ID, "zirnox_world_tick", () -> HbmGameTestFunctions::zirnoxWorldTick);
+            TESTS.function("zirnox_world_tick", 100, () -> HbmGameTestFunctions::zirnoxWorldTick);
     public static final GameTests.Function ZIRNOX_STEAM_OUTPUT =
-            GameTests.function(Constants.MOD_ID, "zirnox_steam_output", () -> HbmGameTestFunctions::zirnoxSteamOutput);
+            TESTS.function("zirnox_steam_output", 300, () -> HbmGameTestFunctions::zirnoxSteamOutput);
     public static final GameTests.Function ZIRNOX_MELTDOWN =
-            GameTests.function(Constants.MOD_ID, "zirnox_meltdown", () -> HbmGameTestFunctions::zirnoxMeltdown);
+            TESTS.function("zirnox_meltdown", 100, () -> HbmGameTestFunctions::zirnoxMeltdown);
     public static final GameTests.Function ZIRNOX_WRECK_HAZARDS =
-            GameTests.function(Constants.MOD_ID, "zirnox_wreck_hazards", () -> HbmGameTestFunctions::zirnoxWreckHazards);
+            TESTS.function("zirnox_wreck_hazards", 100, () -> HbmGameTestFunctions::zirnoxWreckHazards);
 
     // --- ore worldgen (implementations live in OreWorldgenGameTests) ---
     public static final GameTests.Function ORE_VEIN_SHAPE =
-            GameTests.function(Constants.MOD_ID, "ore_vein_shape", () -> OreWorldgenGameTests::oreVeinShape);
+            TESTS.function("ore_vein_shape", 200, () -> OreWorldgenGameTests::oreVeinShape);
     public static final GameTests.Function ORE_VEIN_OFFSET =
-            GameTests.function(Constants.MOD_ID, "ore_vein_offset", () -> OreWorldgenGameTests::oreVeinOffset);
+            TESTS.function("ore_vein_offset", 200, () -> OreWorldgenGameTests::oreVeinOffset);
     public static final GameTests.Function ORE_VEIN_PREDICATE =
-            GameTests.function(Constants.MOD_ID, "ore_vein_predicate", () -> OreWorldgenGameTests::oreVeinPredicate);
+            TESTS.function("ore_vein_predicate", 200, () -> OreWorldgenGameTests::oreVeinPredicate);
     public static final GameTests.Function ORE_TARGETS =
-            GameTests.function(Constants.MOD_ID, "ore_targets", () -> OreWorldgenGameTests::oreTargets);
+            TESTS.function("ore_targets", 200, () -> OreWorldgenGameTests::oreTargets);
     public static final GameTests.Function ORE_DEPTH_DEPOSIT =
-            GameTests.function(Constants.MOD_ID, "ore_depth_deposit", () -> OreWorldgenGameTests::oreDepthDeposit);
+            TESTS.function("ore_depth_deposit", 200, () -> OreWorldgenGameTests::oreDepthDeposit);
     public static final GameTests.Function ORE_COUNTS =
-            GameTests.function(Constants.MOD_ID, "ore_counts", () -> OreWorldgenGameTests::oreCounts);
+            TESTS.function("ore_counts", 200, () -> OreWorldgenGameTests::oreCounts);
     public static final GameTests.Function ORE_SMOLDERING =
-            GameTests.function(Constants.MOD_ID, "ore_smoldering", () -> OreWorldgenGameTests::oreSmoldering);
+            TESTS.function("ore_smoldering", 300, () -> OreWorldgenGameTests::oreSmoldering);
 
     // --- SILEX (implementations live in SilexGameTests) ---
     public static final GameTests.Function SILEX_PROCESS =
-            GameTests.function(Constants.MOD_ID, "silex_process", () -> SilexGameTests::silexProcess);
+            TESTS.function("silex_process", 100, () -> SilexGameTests::silexProcess);
     public static final GameTests.Function SILEX_LOAD =
-            GameTests.function(Constants.MOD_ID, "silex_load", () -> SilexGameTests::silexLoad);
+            TESTS.function("silex_load", 100, () -> SilexGameTests::silexLoad);
     public static final GameTests.Function SILEX_LOAD_FLUID =
-            GameTests.function(Constants.MOD_ID, "silex_load_fluid", () -> SilexGameTests::silexLoadFluid);
+            TESTS.function("silex_load_fluid", 100, () -> SilexGameTests::silexLoadFluid);
     public static final GameTests.Function SILEX_OUTPUT_WEIGHTS =
-            GameTests.function(Constants.MOD_ID, "silex_output_weights", () -> SilexGameTests::silexOutputWeights);
+            TESTS.function("silex_output_weights", 100, () -> SilexGameTests::silexOutputWeights);
     public static final GameTests.Function SILEX_QUEUE =
-            GameTests.function(Constants.MOD_ID, "silex_queue", () -> SilexGameTests::silexQueue);
+            TESTS.function("silex_queue", 100, () -> SilexGameTests::silexQueue);
     public static final GameTests.Function SILEX_SLOTS =
-            GameTests.function(Constants.MOD_ID, "silex_slots", () -> SilexGameTests::silexSlots);
+            TESTS.function("silex_slots", 100, () -> SilexGameTests::silexSlots);
     public static final GameTests.Function SILEX_MENU =
-            GameTests.function(Constants.MOD_ID, "silex_menu", () -> SilexGameTests::silexMenu);
+            TESTS.function("silex_menu", 100, () -> SilexGameTests::silexMenu);
     public static final GameTests.Function SILEX_LAYOUT =
-            GameTests.function(Constants.MOD_ID, "silex_layout", () -> SilexGameTests::silexLayout);
+            TESTS.function("silex_layout", 100, () -> SilexGameTests::silexLayout);
     public static final GameTests.Function SILEX_MODE_RESET =
-            GameTests.function(Constants.MOD_ID, "silex_mode_reset", () -> SilexGameTests::silexModeReset);
+            TESTS.function("silex_mode_reset", 100, () -> SilexGameTests::silexModeReset);
 
     // --- FEL (implementations live in FelGameTests) ---
     public static final GameTests.Function FEL_BEAM =
-            GameTests.function(Constants.MOD_ID, "fel_beam", () -> FelGameTests::felBeam);
+            TESTS.function("fel_beam", 100, () -> FelGameTests::felBeam);
     public static final GameTests.Function FEL_BEAM_ILLEGAL =
-            GameTests.function(Constants.MOD_ID, "fel_beam_illegal", () -> FelGameTests::felBeamIllegal);
+            TESTS.function("fel_beam_illegal", 100, () -> FelGameTests::felBeamIllegal);
     public static final GameTests.Function FEL_ROTATION =
-            GameTests.function(Constants.MOD_ID, "fel_rotation", () -> FelGameTests::felRotation);
+            TESTS.function("fel_rotation", 100, () -> FelGameTests::felRotation);
     public static final GameTests.Function FEL_POWER =
-            GameTests.function(Constants.MOD_ID, "fel_power", () -> FelGameTests::felPower);
+            TESTS.function("fel_power", 100, () -> FelGameTests::felPower);
     public static final GameTests.Function FEL_BURN =
-            GameTests.function(Constants.MOD_ID, "fel_burn", () -> FelGameTests::felBurn);
+            TESTS.function("fel_burn", 200, () -> FelGameTests::felBurn);
     public static final GameTests.Function FEL_BURN_INFRARED =
-            GameTests.function(Constants.MOD_ID, "fel_burn_infrared", () -> FelGameTests::felBurnInfrared);
+            TESTS.function("fel_burn_infrared", 200, () -> FelGameTests::felBurnInfrared);
     public static final GameTests.Function FEL_POWER_PORT =
-            GameTests.function(Constants.MOD_ID, "fel_power_port", () -> FelGameTests::felPowerPort);
+            TESTS.function("fel_power_port", 100, () -> FelGameTests::felPowerPort);
     public static final GameTests.Function FEL_LAYOUT =
-            GameTests.function(Constants.MOD_ID, "fel_layout", () -> FelGameTests::felLayout);
+            TESTS.function("fel_layout", 100, () -> FelGameTests::felLayout);
     public static final GameTests.Function FEL_SLOTS =
-            GameTests.function(Constants.MOD_ID, "fel_slots", () -> FelGameTests::felSlots);
+            TESTS.function("fel_slots", 100, () -> FelGameTests::felSlots);
     public static final GameTests.Function FEL_MENU =
-            GameTests.function(Constants.MOD_ID, "fel_menu", () -> FelGameTests::felMenu);
+            TESTS.function("fel_menu", 100, () -> FelGameTests::felMenu);
 
     public static void init() {}
 
@@ -250,7 +251,7 @@ public final class HbmGameTestFunctions {
         TileEntityMachineTurbine turbine = placeTurbine(helper, pos);
         helper.assertTrue(turbine instanceof net.minecraft.world.MenuProvider, "The turbine must open a menu");
 
-        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var menu = new com.hbm.inventory.container.ContainerMachineTurbine(0, player.getInventory(), turbine);
         helper.assertTrue(menu.slots.size() == 7 + 36, "Turbine menu must have 7 machine slots + the player inventory");
         assertSlot(helper, menu, 0, 8, 17);
@@ -339,7 +340,7 @@ public final class HbmGameTestFunctions {
 
         var cold = new net.minecraft.world.item.ItemStack(com.hbm.items.ModZirnoxItems.waste(ZirnoxFuel.NATURAL_URANIUM));
         var hot = cold.copy();
-        hot.set(com.hbm.items.ModDataComponents.FUEL_WASTE_HOT.get(), true);
+        com.hbm.items.ModDataComponents.wasteHot(hot, true);
 
         helper.assertTrue(com.hbm.inventory.recipes.PUREXRecipes.INSTANCE.matchesInput(cold), "Cold waste must match a PUREX recipe");
         helper.assertFalse(com.hbm.inventory.recipes.PUREXRecipes.INSTANCE.matchesInput(hot), "Hot waste must not match any PUREX recipe");
@@ -472,7 +473,7 @@ public final class HbmGameTestFunctions {
         Fluids.init();
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         TileEntityMachinePUREX purex = placePurex(helper, pos);
-        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var menu = new com.hbm.inventory.container.ContainerMachinePUREX(0, player.getInventory(), purex);
 
         helper.assertTrue(menu.slots.size() == 13 + 36, "PUREX menu must have 13 machine slots + the player inventory");
@@ -497,7 +498,7 @@ public final class HbmGameTestFunctions {
         // setPlacedBy resolves the facing from the placer's yaw (0 → NORTH) and puts the core `offset`
         // blocks along it: NORTH with offset 2 → two blocks +Z from the clicked cell.
         var core = clicked.offset(0, 0, 2);
-        var player = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         player.setYRot(0F);
         helper.setBlock(clicked, block.defaultBlockState());
         block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,

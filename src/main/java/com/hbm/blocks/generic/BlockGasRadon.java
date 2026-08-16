@@ -9,17 +9,13 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Invisible, slowly settling radon gas emitted by uranium ore and ZIRNOX accidents. */
-public class BlockGasRadon extends Block {
+public class BlockGasRadon extends dev.golem.core.world.CompatBlock {
     private final float dose;
     private final boolean dense;
 
@@ -30,7 +26,7 @@ public class BlockGasRadon extends Block {
     }
 
     @Override
-    protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+    public void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (!GeneralConfig.enableRadon) {
             level.removeBlock(pos, false);
             return;
@@ -59,11 +55,7 @@ public class BlockGasRadon extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean precise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!level.isClientSide() && GeneralConfig.enableRadon && entity instanceof LivingEntity living) {
             boolean protectedByFilter = ArmorRegistry.hasProtection(living, net.minecraft.world.entity.EquipmentSlot.HEAD,
                     ArmorRegistry.HazardClass.PARTICLE_FINE);

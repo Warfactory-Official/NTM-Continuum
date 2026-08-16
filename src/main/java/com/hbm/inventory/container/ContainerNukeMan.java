@@ -54,11 +54,7 @@ public class ContainerNukeMan extends AbstractContainerMenu {
         this.addSlot(new ValidatedSlot(this.machine, 4, 44, 53));
         this.addSlot(new ValidatedSlot(this.machine, 5, 98, 35));
 
-        //? if >=26.1 {
-        this.addStandardInventorySlots(playerInventory, 8, 84);
-        //?} else {
-        /*Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
-        *///?}
+        Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }
 
     private static @Nullable TileEntityNukeMan resolve(Inventory playerInventory, BlockPos pos) {

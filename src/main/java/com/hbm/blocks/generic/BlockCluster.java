@@ -28,7 +28,7 @@ import java.util.function.Supplier;
  * <p><b>Deferred:</b> {@code IDrillInteraction} (mining drills of rating &ge; 30 extract the crystal
  * without breaking the block) — no such drill is ported.
  */
-public class BlockCluster extends net.minecraft.world.level.block.DropExperienceBlock {
+public class BlockCluster extends dev.golem.core.world.CompatDropExperienceBlock {
 
     private final Supplier<ItemStack> drop;
 
@@ -38,7 +38,7 @@ public class BlockCluster extends net.minecraft.world.level.block.DropExperience
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         ItemStack stack = drop.get();
         return stack.isEmpty() ? List.of() : List.of(stack);
     }

@@ -4,6 +4,8 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModAutogenItems;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -11,9 +13,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
@@ -28,7 +27,7 @@ import java.util.function.Supplier;
  * resolution moves from the ore dictionary to the {@code c:<plural>/<material>} item tags (HBM items
  * preferred), with autogen shapes resolved directly via {@link ModAutogenItems}.
  */
-public class ItemMold extends Item {
+public class ItemMold extends CompatItem {
 
     public final Mold mold;
 
@@ -43,17 +42,12 @@ public class ItemMold extends Item {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                java.util.function.Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
-        adder.accept(Component.literal(mold.getTitle()).withStyle(ChatFormatting.YELLOW));
-        adder.accept(Component.literal(Mats.formatAmount(mold.getCost(), false)).withStyle(ChatFormatting.GRAY));
-        if (mold.size == 0) adder.accept(Component.translatable("block.hbm.foundry_mold").withStyle(ChatFormatting.GOLD));
-        if (mold.size == 1) adder.accept(Component.translatable("block.hbm.foundry_basin").withStyle(ChatFormatting.RED));
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.literal(mold.getTitle()).withStyle(ChatFormatting.YELLOW));
+        tooltip.add(Component.literal(Mats.formatAmount(mold.getCost(), false)).withStyle(ChatFormatting.GRAY));
+        if (mold.size == 0) tooltip.add(Component.translatable("block.hbm.foundry_mold").withStyle(ChatFormatting.GOLD));
+        if (mold.size == 1) tooltip.add(Component.translatable("block.hbm.foundry_basin").withStyle(ChatFormatting.RED));
     }
 
     // ------------------------------------------------------------------------------------------------

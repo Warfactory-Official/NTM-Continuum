@@ -1,18 +1,15 @@
 package com.hbm.items.machine;
 
 import com.hbm.items.ModDataComponents;
-import java.util.function.Consumer;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-//? if >=26.1 {
-import net.minecraft.world.item.component.TooltipDisplay;
-//?}
 
 /** A single active, component-backed ZIRNOX fuel variant. */
-public class ItemZirnoxRod extends Item {
+public class ItemZirnoxRod extends CompatItem {
 
     private final ZirnoxFuel fuel;
 
@@ -26,11 +23,11 @@ public class ItemZirnoxRod extends Item {
     }
 
     public int getLife(ItemStack stack) {
-        return stack.getOrDefault(ModDataComponents.ZIRNOX_LIFE.get(), 0);
+        return ModDataComponents.zirnoxLife(stack);
     }
 
     public void setLife(ItemStack stack, int life) {
-        stack.set(ModDataComponents.ZIRNOX_LIFE.get(), Math.max(0, life));
+        ModDataComponents.zirnoxLife(stack, Math.max(0, life));
     }
 
     @Override
@@ -49,17 +46,12 @@ public class ItemZirnoxRod extends Item {
     }
 
     @Override
-    //? if >=26.1 {
-    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
-                                Consumer<Component> adder, TooltipFlag flag) {
-    //?} else {
-    /*public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> hbm$lines, TooltipFlag flag) {
-        java.util.function.Consumer<Component> adder = hbm$lines::add;
-    *///?}
-        adder.accept(Component.translatable("item.hbm.zirnox_rod.life", getLife(stack), fuel.maxLife)
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         java.util.List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("item.hbm.zirnox_rod.life", getLife(stack), fuel.maxLife)
                 .withStyle(ChatFormatting.GRAY));
         if (fuel.breeding) {
-            adder.accept(Component.translatable("desc.item.zirnoxBreedingRod").withStyle(ChatFormatting.GOLD));
+            tooltip.add(Component.translatable("desc.item.zirnoxBreedingRod").withStyle(ChatFormatting.GOLD));
         }
     }
 }

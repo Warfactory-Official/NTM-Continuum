@@ -42,8 +42,8 @@ public class AssemblyMachineRenderer implements CompatBER<TileEntityMachineAssem
     private final RenderType renderType;
 
     public AssemblyMachineRenderer() {
-        Identifier ns = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "models/machines/assembly_machine.obj");
-        Identifier tex = Identifier.fromNamespaceAndPath(Constants.MOD_ID, "textures/models/machines/assembly_machine.png");
+        Identifier ns = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/assembly_machine.obj");
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/assembly_machine.png");
         this.model = WavefrontObj.load(ns);
         this.renderType = CompatRenderTypes.entityCutout(tex);
     }

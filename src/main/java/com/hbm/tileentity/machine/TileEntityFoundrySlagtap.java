@@ -36,7 +36,7 @@ public class TileEntityFoundrySlagtap extends TileEntityFoundryOutlet {
     private @Nullable BlockHitResult trace(Level world, BlockPos p) {
         Vec3 start = new Vec3(p.getX() + 0.5, p.getY() - 0.125, p.getZ() + 0.5);
         Vec3 end = new Vec3(p.getX() + 0.5, p.getY() + 0.125 - getDropRange(), p.getZ() + 0.5);
-        BlockHitResult mop = world.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, CollisionContext.empty()));
+        BlockHitResult mop = dev.golem.core.world.Compat.clip(world, start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY);
         return mop.getType() == HitResult.Type.BLOCK ? mop : null;
     }
 

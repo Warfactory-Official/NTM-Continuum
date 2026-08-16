@@ -1,17 +1,13 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.potion.ModEffects;
+import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-//? if >=26.1 {
-import net.minecraft.world.entity.InsideBlockEffectApplier;
-//?}
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -20,7 +16,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * Only the mycelium had an {@code onEntityWalk} effect in the original (amp 29 ≙ 30 RAD/s for 30 s);
  * the frozen/burning variants and the auto-cleanup decay tick are not ported (config default off).
  */
-public class BlockWasteEarth extends Block {
+public class BlockWasteEarth extends dev.golem.core.world.CompatBlock {
 
     private final boolean mycelium;
 
@@ -36,22 +32,13 @@ public class BlockWasteEarth extends Block {
     }
 
     @Override
-    //? if >=26.1 {
-    protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean isPrecise) {
-    //?} else {
-    /*protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
-    *///?}
-        //? if >=26.1 {
-super.entityInside(state, level, pos, entity, effects, isPrecise);
-        //?} else {
-        /*super.entityInside(state, level, pos, entity);
-        *///?}
+    protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         irradiate(level, entity);
     }
 
     private void irradiate(Level level, Entity entity) {
         if (mycelium && !level.isClientSide() && entity instanceof LivingEntity living) {
-            living.addEffect(new MobEffectInstance(ModEffects.radiation(), 30 * 20, 29));
+            Effects.addRegistered(living, ModEffects.RADIATION.get(), 30 * 20, 29);
         }
     }
 
