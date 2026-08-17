@@ -4,27 +4,12 @@ package com.hbm.platform.fabric;
 
 /*import com.hbm.platform.services.BlockEntityFactory;
 import com.hbm.platform.services.IPlatformHelper;
-import com.hbm.platform.services.MenuPosFactory;
-// Fabric API's extended-menu types, renamed with the rest of the screen-handler package on the 26.1
-// line. Same shape either way: a menu type carrying a stream codec for extra open-time data, and a
-// provider that supplies that data per player.
-//? if >=26.1 {
-import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
-import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
-//?} else {
- /^import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
-import net.minecraft.network.RegistryFriendlyByteBuf;
- ^///?}
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-//? if >=1.20.5 {
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-//?}
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
@@ -54,65 +39,11 @@ public class FabricPlatformHelper implements IPlatformHelper {
         return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
 
-    @Override
-    public <T extends AbstractContainerMenu> MenuType<T> menuTypeWithPos(MenuPosFactory<T> factory) {
-        //? if >=26.1 {
-        return new ExtendedMenuType<>(factory::create, BlockPos.STREAM_CODEC);
-        //?} elif >=1.20.5 {
-        /^return new ExtendedScreenHandlerType<>(factory::create, BlockPos.STREAM_CODEC);
-        ^///?} else {
-        /^return new ExtendedScreenHandlerType<>((containerId, inventory, buffer) ->
-                factory.create(containerId, inventory, buffer.readBlockPos()));
-        ^///?}
-    }
-
-    @Override
-    public void openMenu(ServerPlayer player, MenuProvider provider, BlockPos pos) {
-        //? if >=26.1 {
-        player.openMenu(new ExtendedMenuProvider<BlockPos>() {
-        //?} else {
-        /^player.openMenu(new ExtendedScreenHandlerFactory() {
-        ^///?}
-            @Override
-            //? if >=1.20.5 {
-            public BlockPos getScreenOpeningData(ServerPlayer p) {
-                return pos;
-            }
-            //?} else {
-            /^public void writeScreenOpeningData(ServerPlayer p, RegistryFriendlyByteBuf buffer) {
-                buffer.writeBlockPos(pos);
-            }
-            ^///?}
-
-            @Override
-            public Component getDisplayName() {
-                return provider.getDisplayName();
-            }
-
-            @Override
-            public AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player p) {
-                return provider.createMenu(containerId, inventory, p);
-            }
-        });
-    }
 
     @Override
     public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BlockEntityFactory<T> factory, Block... blocks) {
         return FabricBlockEntityTypeBuilder.<T>create(factory::create, blocks).build();
     }
 
-    //? if >=1.20.5 {
-    @Override
-    public void sendToTracking(ServerLevel level, BlockPos pos, CustomPacketPayload payload) {
-        for (ServerPlayer player : PlayerLookup.tracking(level, pos)) {
-            ServerPlayNetworking.send(player, payload);
-        }
-    }
-
-    @Override
-    public void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
-        ServerPlayNetworking.send(player, payload);
-    }
-    //?}
 }
 *///?}

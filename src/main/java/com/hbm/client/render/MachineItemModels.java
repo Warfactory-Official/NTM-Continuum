@@ -58,6 +58,9 @@ public final class MachineItemModels {
 
     /^* Reparses every item definition. Call from a client resource-reload listener. ^/
     public static void reload(ResourceManager resources) {
+        // One reload listener drives both parsers: guns read the same item definitions for the weapon
+        // renderer they name.
+        com.hbm.client.render.weapon.GunLegacyModels.reload(resources);
         Map<Identifier, MachineItemModel> built = new HashMap<>();
         for (Map.Entry<Identifier, Resource> entry :
                 resources.listResources("items", path -> path.getPath().endsWith(".json")).entrySet()) {

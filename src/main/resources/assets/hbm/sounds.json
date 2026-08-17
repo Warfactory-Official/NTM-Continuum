@@ -216,5 +216,32 @@
         "stream": false
       }
     ]
+  },
+  "weapon.fire.pistol": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/fire/pistol",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.reload.dryfireclick": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/reload/dryfireclick",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.revolverreload": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/revolverreload",
+        "stream": false
+      }
+    ]
   }
 }

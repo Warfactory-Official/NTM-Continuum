@@ -68,11 +68,7 @@ public class NeoForgeInit {
                 com.hbm.gametest.HbmGameTestFunctions.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
-        //? if >=26.1 {
-        if (FMLLoader.getCurrent().getDist() == Dist.CLIENT) {
-        //?} else {
-        /*if (FMLLoader.getDist() == Dist.CLIENT) {
-        *///?}
+        if (dev.golem.core.platform.Platform.isClient()) {
             NeoForgeClientInit.init(eventBus);
         }
 

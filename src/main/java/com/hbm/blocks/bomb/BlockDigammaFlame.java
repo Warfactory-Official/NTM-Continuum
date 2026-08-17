@@ -1,9 +1,6 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.util.ContaminationUtil;
-//? if >=1.21.1 {
-import com.mojang.serialization.MapCodec;
-//?}
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -27,20 +24,9 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class BlockDigammaFlame extends CompatFireBlock {
 
-    //? if >=1.21.1 {
-    public static final MapCodec<BlockDigammaFlame> CODEC = simpleCodec(BlockDigammaFlame::new);
-    //?}
-
     public BlockDigammaFlame(Properties properties) {
-        super(properties, 1.0F);
+        super(properties, 1.0F, BlockDigammaFlame::new);
     }
-
-    //? if >=1.21.1 {
-    @Override
-    protected MapCodec<? extends net.minecraft.world.level.block.BaseFireBlock> codec() {
-        return CODEC;
-    }
-    //?}
 
     /** Nothing is flammable to a digamma flame — it does not propagate. */
     @Override

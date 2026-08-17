@@ -31,7 +31,7 @@ public class ItemGeigerCounter extends CompatItem {
 
     @Override
     protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity owner,
-                                       @Nullable EquipmentSlot slot) {
+                                       @Nullable EquipmentSlot slot, boolean held) {
         if (owner instanceof Player player) {
             playGeiger(level, player);
         }

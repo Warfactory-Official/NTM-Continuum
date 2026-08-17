@@ -9,17 +9,9 @@ import com.hbm.packet.HbmPackets;
 import dev.golem.core.net.GolemNetwork;
 import com.hbm.hazard.HazardSystem;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-// The HUD hook. 26.1's fabric-api models the HUD as an ordered list of named elements; 1.21.1 has a
-// single "after the vanilla HUD" callback, which is where all three of ours would land anyway.
-//? if >=26.1 {
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-//?} else {
-/^import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-^///?}
 import net.minecraft.resources.Identifier;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -41,19 +33,13 @@ public class FabricClientInit implements ClientModInitializer {
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         HbmClientRegistrations.installTints();
+        HbmClientRegistrations.installKeybinds();
+        HbmClientRegistrations.installGunAnimations();
         HbmClientRegistrations.registerScreens(MenuScreens::register);
 
         // Look-overlay HUD (battery charge / duct type / ...) — drawn after the vanilla HUD each frame.
-        //? if >=26.1 {
         HbmClientRegistrations.registerHud((id, renderer) ->
-                HudElementRegistry.addLast(dev.golem.core.Ids.of("hbm", id),
-                        (graphics, deltaTracker) -> renderer.accept(graphics)));
-        //?} else {
-        /^// One callback, three draws, in the same order the named elements would run in.
-        HudRenderCallback.EVENT.register((graphics, deltaTracker) -> {
-            HbmClientRegistrations.registerHud((id, renderer) -> renderer.accept(graphics));
-        });
-        ^///?}
+                dev.golem.core.client.Hud.addLast("hbm", id, renderer::accept));
 
         HbmClientRegistrations.registerRenderers(new com.hbm.client.render.HbmBlockEntityRenderers.Sink() {
             @Override
@@ -99,13 +85,8 @@ public class FabricClientInit implements ClientModInitializer {
         ^///?}
 
         // Hazard tooltips (radioactive/hot/etc. traits on items).
-        //? if >=1.20.5 {
-        ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
+        dev.golem.core.client.Tooltips.onItemTooltip((stack, lines) ->
                 HazardSystem.addHazardInfo(stack, net.minecraft.client.Minecraft.getInstance().player, lines));
-        //?} else {
-        /^ItemTooltipCallback.EVENT.register((stack, tooltipContext, lines) ->
-                HazardSystem.addHazardInfo(stack, net.minecraft.client.Minecraft.getInstance().player, lines));
-        ^///?}
     }
 }
 *///?}

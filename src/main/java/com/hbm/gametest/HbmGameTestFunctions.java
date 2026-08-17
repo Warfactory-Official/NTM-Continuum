@@ -119,6 +119,36 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function FEL_MENU =
             TESTS.function("fel_menu", 100, () -> FelGameTests::felMenu);
 
+    // --- Sedna guns (implementations live in GunGameTests) ---
+    public static final GameTests.Function GUN_RELOAD =
+            TESTS.function("gun_reload", 200, () -> GunGameTests::gunReload);
+    public static final GameTests.Function GUN_RELOAD_KEEPS_TYPE =
+            TESTS.function("gun_reload_keeps_type", 300, () -> GunGameTests::gunReloadKeepsType);
+    public static final GameTests.Function GUN_FIRE =
+            TESTS.function("gun_fire", 200, () -> GunGameTests::gunFire);
+    public static final GameTests.Function GUN_DRY_FIRE =
+            TESTS.function("gun_dry_fire", 100, () -> GunGameTests::gunDryFire);
+    public static final GameTests.Function GUN_AMMO_STATS =
+            TESTS.function("gun_ammo_stats", 20, () -> GunGameTests::ammoStats);
+    public static final GameTests.Function GUN_AMMO_REGISTRY =
+            TESTS.function("gun_ammo_registry", 20, () -> GunGameTests::ammoRegistry);
+    public static final GameTests.Function GUN_WEAR_CURVES =
+            TESTS.function("gun_wear_curves", 20, () -> GunGameTests::gunWearCurves);
+    public static final GameTests.Function GUN_WEAR_ACCUMULATES =
+            TESTS.function("gun_wear_accumulates", 200, () -> GunGameTests::gunWearAccumulates);
+    public static final GameTests.Function GUN_STATE_PERSISTS =
+            TESTS.function("gun_state_persists", 200, () -> GunGameTests::gunStatePersists);
+    public static final GameTests.Function GUN_RESETS_WHEN_STOWED =
+            TESTS.function("gun_resets_when_stowed", 100, () -> GunGameTests::gunResetsWhenStowed);
+    public static final GameTests.Function GUN_DOES_NOT_MINE =
+            TESTS.function("gun_does_not_mine", 20, () -> GunGameTests::gunDoesNotMine);
+    public static final GameTests.Function BULLET_DAMAGES_MOB =
+            TESTS.function("bullet_damages_mob", 100, () -> GunGameTests::bulletDamagesMob);
+    public static final GameTests.Function BULLET_ARMOR_PIERCING =
+            TESTS.function("bullet_armor_piercing", 100, () -> GunGameTests::bulletArmorPiercing);
+    public static final GameTests.Function BULLET_BREAKS_GLASS =
+            TESTS.function("bullet_breaks_glass", 100, () -> GunGameTests::bulletBreaksGlass);
+
     public static void init() {}
 
     private static void coolingRecipes(GameTestHelper helper) {

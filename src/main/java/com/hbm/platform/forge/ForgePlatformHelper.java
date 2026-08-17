@@ -4,7 +4,6 @@ package com.hbm.platform.forge;
 
 /*import com.hbm.platform.services.BlockEntityFactory;
 import com.hbm.platform.services.IPlatformHelper;
-import com.hbm.platform.services.MenuPosFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
@@ -33,17 +32,6 @@ public final class ForgePlatformHelper implements IPlatformHelper {
     @Override
     public boolean isDevelopmentEnvironment() {
         return !FMLLoader.isProduction();
-    }
-
-    @Override
-    public <T extends AbstractContainerMenu> MenuType<T> menuTypeWithPos(MenuPosFactory<T> factory) {
-        return IForgeMenuType.create((containerId, inventory, buf) ->
-                factory.create(containerId, inventory, buf.readBlockPos()));
-    }
-
-    @Override
-    public void openMenu(ServerPlayer player, MenuProvider provider, BlockPos pos) {
-        NetworkHooks.openScreen(player, provider, pos);
     }
 
     @Override

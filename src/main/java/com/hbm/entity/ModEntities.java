@@ -27,29 +27,19 @@ public final class ModEntities {
 
     /** The invisible logic entity driving a Fat Man / mk5 nuclear blast. */
     public static final RegistryObject<EntityType<EntityNukeExplosionMK5>> NUKE_EXPLOSION_MK5 =
-            ENTITY_TYPES.register("entity_nuke_mk5", key ->
+            ENTITY_TYPES.register("entity_nuke_mk5", key -> dev.golem.core.registry.Entities.build(
                     EntityType.Builder.of(EntityNukeExplosionMK5::new, MobCategory.MISC)
                             .sized(1.0F, 1.0F)
                             .clientTrackingRange(8)
-                            .updateInterval(Integer.MAX_VALUE)
-                            //? if >=26.1 {
-                            .build((ResourceKey<EntityType<?>>) key));
-                            //?} else {
-                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
-                            *///?}
+                            .updateInterval(Integer.MAX_VALUE), key));
 
     /** The invisible fallout sweep spawned when the crater completes (old {@code entity_fallout_rain}). */
     public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityFalloutRain>> FALLOUT_RAIN =
-            ENTITY_TYPES.register("entity_fallout_rain", key ->
+            ENTITY_TYPES.register("entity_fallout_rain", key -> dev.golem.core.registry.Entities.build(
                     EntityType.Builder.of(com.hbm.entity.effect.EntityFalloutRain::new, MobCategory.MISC)
                             .sized(4.0F, 20.0F)
                             .clientTrackingRange(8)
-                            .updateInterval(Integer.MAX_VALUE)
-                            //? if >=26.1 {
-                            .build((ResourceKey<EntityType<?>>) key));
-                            //?} else {
-                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
-                            *///?}
+                            .updateInterval(Integer.MAX_VALUE), key));
 
     /**
      * The toroidal-convection mushroom cloud spawned alongside a nuke blast (old {@code entity_effect_torex}).
@@ -58,30 +48,33 @@ public final class ModEntities {
      * client simulates cloudlets locally, so it only needs the SCALE/TYPE synched data occasionally.
      */
     public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityNukeTorex>> NUKE_TOREX =
-            ENTITY_TYPES.register("entity_effect_torex", key ->
+            ENTITY_TYPES.register("entity_effect_torex", key -> dev.golem.core.registry.Entities.build(
                     EntityType.Builder.of(com.hbm.entity.effect.EntityNukeTorex::new, MobCategory.MISC)
                             .sized(20.0F, 40.0F)
                             .fireImmune()
                             .clientTrackingRange(64)
-                            .updateInterval(20)
-                            //? if >=26.1 {
-                            .build((ResourceKey<EntityType<?>>) key));
-                            //?} else {
-                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
-                            *///?}
+                            .updateInterval(20), key));
 
     /** Collectable debris thrown from a ZIRNOX reactor meltdown. */
     public static final RegistryObject<EntityType<EntityZirnoxDebris>> ZIRNOX_DEBRIS =
-            ENTITY_TYPES.register("entity_zirnox_debris", key ->
+            ENTITY_TYPES.register("entity_zirnox_debris", key -> dev.golem.core.registry.Entities.build(
                     EntityType.Builder.<EntityZirnoxDebris>of(EntityZirnoxDebris::new, MobCategory.MISC)
                             .sized(1.0F, 0.5F)
                             .clientTrackingRange(64)
-                            .updateInterval(1)
-                            //? if >=26.1 {
-                            .build((ResourceKey<EntityType<?>>) key));
-                            //?} else {
-                            /*.build(dev.golem.core.Ids.keyId(key).getPath()));
-                            *///?}
+                            .updateInterval(1), key));
+
+    /**
+     * A bullet in flight. {@code updateInterval(1)} because a round covers its whole velocity in one
+     * tick and often lives only a handful of them — anything slower and the client never sees it move.
+     */
+    public static final RegistryObject<EntityType<com.hbm.entity.projectile.EntityBulletBaseMK4>> BULLET_MK4 =
+            ENTITY_TYPES.register("entity_bullet_mk4", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.projectile.EntityBulletBaseMK4>of(
+                                    com.hbm.entity.projectile.EntityBulletBaseMK4::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(1), key));
 
     public static void init() {}
 }

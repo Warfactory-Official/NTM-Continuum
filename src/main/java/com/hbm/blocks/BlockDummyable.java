@@ -167,7 +167,7 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             BlockPos core = findCore(level, pos);
             if (core != null && level.getBlockEntity(core) instanceof MenuProvider provider) {
-                Services.PLATFORM.openMenu(serverPlayer, provider, core);
+                dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, core);
             }
         }
         return InteractionResult.SUCCESS;

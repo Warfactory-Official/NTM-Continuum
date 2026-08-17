@@ -75,7 +75,7 @@ public class BlockCrate extends dev.golem.core.world.CompatBlock implements Enti
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
-                Services.PLATFORM.openMenu(serverPlayer, provider, pos);
+                dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
             }
         }
         return InteractionResult.SUCCESS;

@@ -1,9 +1,6 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.potion.ModEffects;
-//? if >=1.21.1 {
-import com.mojang.serialization.MapCodec;
-//?}
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,22 +33,12 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
  */
 public class BlockBalefire extends CompatFireBlock {
 
-    //? if >=1.21.1 {
-    public static final MapCodec<BlockBalefire> CODEC = simpleCodec(BlockBalefire::new);
-    //?}
     public static final IntegerProperty AGE = BlockStateProperties.AGE_15;
 
     public BlockBalefire(Properties properties) {
-        super(properties, 1.0F);
+        super(properties, 1.0F, BlockBalefire::new);
         this.registerDefaultState(this.stateDefinition.any().setValue(AGE, 0));
     }
-
-    //? if >=1.21.1 {
-    @Override
-    protected MapCodec<? extends net.minecraft.world.level.block.BaseFireBlock> codec() {
-        return CODEC;
-    }
-    //?}
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {

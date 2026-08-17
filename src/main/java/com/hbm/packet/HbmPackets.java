@@ -29,6 +29,17 @@ public final class HbmPackets {
                 (payload, player) -> handleControl(player, payload));
         GolemNetwork.registerPlayToServer(AnvilCraftPayload.CODEC,
                 (payload, player) -> handleAnvilCraft(player, payload));
+        GolemNetwork.declarePlayToClient(GunAnimationPayload.CODEC);
+        GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
+                (payload, player) -> com.hbm.handler.HbmKeybindsServer.onPressedServer(player,
+                        com.hbm.handler.HbmKeybinds.EnumKeybind.byOrdinal(payload.keybind()), payload.state()));
+    }
+
+    /** Tells one player's client that their gun played an animation cue. */
+    public static void sendGunAnimation(ServerPlayer player, com.hbm.items.weapon.sedna.GunAnimation animation,
+            int configIndex) {
+        GolemNetwork.sendToPlayer(player, GunAnimationPayload.CODEC,
+                new GunAnimationPayload(animation.ordinal(), 0, configIndex));
     }
 
     /** Attaches client handlers only after the physical client is available. */
@@ -37,6 +48,8 @@ public final class HbmPackets {
                 (payload, context) -> handleSync(context.level(), payload));
         GolemNetwork.registerPlayToClient(EntityPropsSyncPayload.CODEC,
                 (payload, context) -> handlePropsSync(context.player(), payload));
+        GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
+                (payload, context) -> com.hbm.client.anim.GunAnimationHandler.handle(payload));
     }
 
     /**

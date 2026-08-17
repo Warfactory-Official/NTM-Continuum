@@ -54,6 +54,12 @@ public final class ModSounds {
     /** Original RBMK/ZIRNOX reactor accident sound; used only by the vanilla ZIRNOX meltdown blast. */
     public static final RegistryObject<SoundEvent> RBMK_EXPLOSION = register("block.rbmk_explosion");
 
+    /** Weapons. Old ids {@code weapon.fire.pistol}, {@code weapon.reload.dryFireClick} and
+     * {@code weapon.revolverReload}, lowercased to satisfy 26.1's id charset. */
+    public static final RegistryObject<SoundEvent> FIRE_PISTOL = register("weapon.fire.pistol");
+    public static final RegistryObject<SoundEvent> DRY_FIRE_CLICK = register("weapon.reload.dryfireclick");
+    public static final RegistryObject<SoundEvent> RELOAD_REVOLVER = register("weapon.revolverreload");
+
     /** Geiger click ladder, index 0..5 = old {@code geigerSounds}. */
     @SuppressWarnings("unchecked")
     public static final RegistryObject<SoundEvent>[] GEIGER_SOUNDS =

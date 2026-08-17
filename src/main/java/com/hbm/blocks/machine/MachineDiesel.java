@@ -71,7 +71,7 @@ public class MachineDiesel extends dev.golem.core.world.CompatBlock implements E
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof MenuProvider provider) {
-            Services.PLATFORM.openMenu(serverPlayer, provider, pos);
+            dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
     }

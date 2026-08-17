@@ -34,6 +34,9 @@ public final class MachineItemRenderers {
     /^* Renders {@code stack} if it is an OBJ machine; does nothing otherwise. ^/
     public static void render(ItemStack stack, ItemDisplayContext context, PoseStack poseStack,
                               MultiBufferSource buffers, int light, int overlay) {
+        // Guns share this hook: it is the one place below 26.1 that is handed the display context, which
+        // a weapon needs in order to tell a held body from an inventory icon.
+        if (com.hbm.client.render.weapon.GunLegacyModels.render(stack, context, poseStack, buffers, light, overlay)) return;
         if (MachineItemModels.isEmpty()) return;
         Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         MachineItemModel model = MachineItemModels.get(id);

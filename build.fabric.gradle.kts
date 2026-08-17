@@ -181,7 +181,7 @@ tasks.processResources {
         // MixinSpecialModelRenderers targets a class that only exists on 26.1, and is compiled out
         // below it. A mixin config may not name a class that is absent from the jar — Mixin fails the
         // whole config at PREPARE — so the entry is filtered here in step with the Stonecutter guard.
-        "fabric_client_mixins" to if (modernRendering) "\"MixinSpecialModelRenderers\"" else "",
+        "fabric_client_mixins" to if (modernRendering) "\"MixinSpecialModelRenderers\", \"MixinItemModels\"" else "",
     )
     inputs.properties(props)
     filesMatching(listOf("fabric.mod.json", "pack.mcmeta", "*.mixins.json")) { expand(props) }

@@ -38,6 +38,8 @@ public final class NeoForgeClientInit {
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         HbmClientRegistrations.installTints();
+        HbmClientRegistrations.installKeybinds();
+        HbmClientRegistrations.installGunAnimations();
 
         // Look-overlay HUD (battery charge / duct type / ...) — a GUI layer drawn above the vanilla HUD,
         // so its text is extracted/submitted in the same pass (mirrors Fabric's HudElementRegistry).
@@ -75,6 +77,11 @@ public final class NeoForgeClientInit {
         //? if >=26.1 {
         modBus.addListener((RegisterSpecialModelRendererEvent event) ->
                 event.register(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC));
+        // Guns are a whole item model rather than a special model: only ItemModel.update is handed the
+        // display context, and a first-person weapon body is drawn in camera space, not in an item slot.
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
+                event.register(dev.golem.core.Ids.of("hbm", "gun"),
+                        com.hbm.client.render.weapon.GunItemModel.Unbaked.MAP_CODEC));
         //?} else {
         /*modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent event) ->
                 event.registerReloadListener(

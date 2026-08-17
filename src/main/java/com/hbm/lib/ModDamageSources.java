@@ -33,6 +33,39 @@ public final class ModDamageSources {
     /** absolute + bypasses armor */
     public static final ResourceKey<DamageType> BLACKLUNG = key("blacklung");
 
+    /**
+     * The damage categories a bullet can belong to, ported from 1.12.2's
+     * {@code DamageResistanceHandler.DamageClass}. Upstream turns the enum's name into a damage-source
+     * string at hit time and then sets projectile/fire/explosion flags on it; here each class is a real
+     * {@code hbm:bullet_<name>} damage type, and those three flags are the vanilla {@code is_projectile}
+     * / {@code is_fire} / {@code is_explosion} type tags.
+     *
+     * <p>The classes carry no resistance behaviour yet — the damage-resistance system they exist to feed
+     * is not ported — so today they differ only in death message and vanilla flags.
+     */
+    public enum DamageClass {
+        PHYSICAL, FIRE, EXPLOSIVE, ELECTRIC, PLASMA, LASER, MICROWAVE, SUBATOMIC, OTHER;
+
+        private final ResourceKey<DamageType> type = key("bullet_" + name().toLowerCase(java.util.Locale.ROOT));
+
+        public ResourceKey<DamageType> type() { return type; }
+    }
+
+    /**
+     * The armour-bypassing counterpart used for the armour-piercing fraction of a bullet's damage.
+     * A round with {@code armorPiercingPercent} of 0.4 lands 40% of its damage through this type and the
+     * rest through its own class, which is what "40% of the damage ignores armour" means once there is
+     * no damage-resistance layer to express it in.
+     */
+    public static final ResourceKey<DamageType> BULLET_PIERCING = key("bullet_piercing");
+
+    /** A bullet hit: {@code direct} is the projectile, {@code attacker} whoever fired it (may be null). */
+    public static DamageSource bullet(Level level, ResourceKey<DamageType> key,
+            net.minecraft.world.entity.Entity direct, net.minecraft.world.entity.Entity attacker) {
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key),
+                direct, attacker);
+    }
+
     private static ResourceKey<DamageType> key(String name) {
         return ResourceKey.create(Registries.DAMAGE_TYPE, dev.golem.core.Ids.of(Constants.MOD_ID, name));
     }

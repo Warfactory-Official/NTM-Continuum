@@ -86,7 +86,7 @@ public class NTMAnvil extends dev.golem.core.world.CompatBlock implements Entity
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
-            Services.PLATFORM.openMenu(serverPlayer, new SimpleMenuProvider(
+            dev.golem.core.gui.Menus.openWithPos(serverPlayer, new SimpleMenuProvider(
                     (id, inventory, p) -> new ContainerAnvil(id, inventory, pos),
                     Component.translatable("container.anvil", this.tier)), pos);
         }

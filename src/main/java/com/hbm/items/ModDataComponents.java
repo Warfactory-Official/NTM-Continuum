@@ -21,6 +21,23 @@ public final class ModDataComponents {
     public static final GolemComponent<Boolean> FUEL_WASTE_HOT = GolemComponent.of(Constants.MOD_ID, "fuel_waste_hot", Codec.BOOL);
     public static final GolemComponent<ItemStack> GAS_MASK_FILTER = GolemComponent.itemStack(Constants.MOD_ID, "gas_mask_filter");
 
+    /**
+     * A gun's state-machine scratch space — timer, state, animation timer, button flags. Rewritten
+     * constantly while a gun is held, and worth nothing once it is dropped.
+     *
+     * <p>Kept as a raw tag rather than a typed record because the keys are dynamic: every field is
+     * suffixed with a config index, so an akimbo gun carries two of each. That is upstream's own layout
+     * ({@code timer_0}, {@code state_1}, …) and keeping it means the port of each accessor stayed a
+     * one-liner. See {@code ItemGunBaseNT} for the write-only-on-change guard that makes per-tick
+     * updates affordable.
+     */
+    public static final GolemComponent<net.minecraft.nbt.CompoundTag> GUN_STATE =
+            GolemComponent.compound(Constants.MOD_ID, "gun_state");
+
+    /** A gun's durable state: wear, fire mode, and its magazines' contents. */
+    public static final GolemComponent<net.minecraft.nbt.CompoundTag> GUN_DATA =
+            GolemComponent.compound(Constants.MOD_ID, "gun_data");
+
     public static int fluidId(ItemStack stack) { return FLUID_ID.getOr(stack, 0); }
     public static void fluidId(ItemStack stack, int value) { FLUID_ID.set(stack, value); }
     public static void removeFluidId(ItemStack stack) { FLUID_ID.remove(stack); }

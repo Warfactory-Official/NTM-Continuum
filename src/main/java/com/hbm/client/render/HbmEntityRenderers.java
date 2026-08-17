@@ -29,5 +29,9 @@ public final class HbmEntityRenderers {
         sink.register(ModEntities.FALLOUT_RAIN.get(), NoopRenderer::new);
         sink.register(ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
         sink.register(ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
+        // Bullets are invisible for now: upstream draws them through ~30 per-ammo tracer styles in
+        // LegoClient, which is a follow-up. A renderer must still be registered or the client throws
+        // the moment one spawns.
+        sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
     }
 }

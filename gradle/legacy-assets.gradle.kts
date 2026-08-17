@@ -29,6 +29,14 @@ import groovy.json.JsonSlurper
  */
 val MACHINE_OBJ_LEGACY_MODEL = "hbm:item/machine_obj_legacy"
 
+/**
+ * The same marker for a Sedna gun. `hbm:gun` is a whole item MODEL on 26.1 (only that layer is handed the
+ * display context a weapon needs); below it the equivalent is the same per-loader BEWLR the machines use,
+ * so the item needs the `builtin/entity` parent to be routed there — and this model carries the weapon
+ * display transforms rather than the block ones.
+ */
+val GUN_OBJ_LEGACY_MODEL = "hbm:item/gun_obj_legacy"
+
 fun Project.applyLegacyItemAssets() {
     tasks.named<ProcessResources>("processResources").configure {
         doLast {
@@ -45,11 +53,13 @@ fun Project.applyLegacyItemAssets() {
                 definitions.listFiles()?.filter { it.extension == "json" }?.forEach { definition ->
                     val target = File(itemModels, definition.name)
                     val parent = parentModelOf(definition) ?: return@forEach
-                    // An OBJ machine's item model MUST be the builtin/entity marker, so it overwrites any
-                    // existing file: a couple of ducts still carry a flat sprite model that 26.1 no longer
-                    // references (their definitions point at the OBJ renderer), and leaving it in place
-                    // would render them flat here and 3D there. Every other item defers to what ships.
-                    if (target.exists() && parent != MACHINE_OBJ_LEGACY_MODEL) return@forEach
+                    // A self-rendered item's model MUST be the builtin/entity marker, so it overwrites
+                    // any existing file: a couple of ducts still carry a flat sprite model that 26.1 no
+                    // longer references (their definitions point at the OBJ renderer), and leaving it in
+                    // place would render them flat here and 3D there. The same applies to a gun, whose
+                    // placeholder sprite predates its OBJ renderer. Every other item defers to what ships.
+                    val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent == GUN_OBJ_LEGACY_MODEL
+                    if (target.exists() && !selfRendered) return@forEach
                     itemModels.mkdirs()
                     target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mapOf("parent" to parent))))
                     generated++
@@ -142,6 +152,8 @@ fun parentModelOf(definition: File): String? {
     val model = json["model"] as? Map<String, Any?> ?: return null
     return when (model["type"]) {
         "minecraft:model" -> model["model"] as? String
+        // A gun's item model is HBM's own type, not a vanilla wrapper: it needs the builtin/entity marker.
+        "hbm:gun" -> GUN_OBJ_LEGACY_MODEL
         "minecraft:special" -> {
             @Suppress("UNCHECKED_CAST")
             val inner = model["model"] as? Map<String, Any?>

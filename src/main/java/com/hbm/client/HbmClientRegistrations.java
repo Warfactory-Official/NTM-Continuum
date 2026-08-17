@@ -107,6 +107,7 @@ public final class HbmClientRegistrations {
         sink.register("look_overlay", HbmLookOverlay::render);
         sink.register("rad_counter", RadCounterOverlay::render);
         sink.register("nuke_flash", NukeScreenEffects::render);
+        sink.register("gun_hud", GunHudOverlay::render);
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
@@ -121,5 +122,18 @@ public final class HbmClientRegistrations {
 
     public static void registerBlockColors() {
         HbmBlockColors.registerAll();
+    }
+
+    /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */
+    public static void installKeybinds() {
+        HbmKeybindsClient.register();
+    }
+
+    /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */
+    public static void installGunAnimations() {
+        com.hbm.client.anim.GunAnimations.init();
+        // The weapon renderers a gun item definition can name. Both eras read the same definitions:
+        // 26.1 through its item-model system, older versions through GunLegacyModels' own parse.
+        com.hbm.client.render.weapon.WeaponRenderers.init();
     }
 }

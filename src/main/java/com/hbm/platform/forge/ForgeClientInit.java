@@ -31,6 +31,8 @@ final class ForgeClientInit {
         GolemNetwork.flushClientRegistrations();
 
         HbmClientRegistrations.installTints();
+        HbmClientRegistrations.installKeybinds();
+        HbmClientRegistrations.installGunAnimations();
         dev.golem.core.render.ForgeItemRenderers.install(com.hbm.client.render.MachineItemRenderers::render);
         modBus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent event) ->
                 event.registerReloadListener(
