@@ -19,6 +19,16 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial HAZMAT_RED = hazmat("hazmat_red", "hazmat_cloth_red");
     public static final GolemArmorMaterial HAZMAT_GREY = hazmat("hazmat_grey", "hazmat_cloth_grey");
 
+    /**
+     * T-51b power armour (1.12.2 {@code enumArmorMaterialT51}): durability 150, defense {3, 8, 6, 3} in
+     * [boots, legs, chest, helmet] order, enchantability 0, toughness 2.0.
+     *
+     * <p>The repair tag is the same armour plate the suit is built from. Enchantability is zero because
+     * upstream refuses enchantments on power armour outright — see {@code ArmorFSBPowered}.
+     */
+    public static final GolemArmorMaterial T51 = new GolemArmorMaterial(
+            Constants.MOD_ID, "t51", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/t51");
+
     private static GolemArmorMaterial hazmat(String name, String repairIngredient) {
         return new GolemArmorMaterial(Constants.MOD_ID, name, 15, 2, 5, 4, 1, 5,
                 0.0F, 0.0F, "repairs/" + repairIngredient);

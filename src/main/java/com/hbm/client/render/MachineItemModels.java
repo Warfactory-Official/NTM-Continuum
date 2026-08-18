@@ -125,6 +125,7 @@ public final class MachineItemModels {
                 CompatRenderTypes.entityCutout(texture),
                 f(json, "scale", 0.28F),
                 f(json, "yaw", 90.0F),
+                f(json, "pitch", 0.0F),
                 f(json, "ty", 0.0F),
                 Set.copyOf(strings(json, "exclude")),
                 overlayTexture == null ? null : CompatRenderTypes.entityCutout(overlayTexture),

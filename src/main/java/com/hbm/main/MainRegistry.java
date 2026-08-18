@@ -80,6 +80,7 @@ public final class MainRegistry {
         ModFluidItems.init();      // fluid-container items (fluid_bucket, one per fluid)
         ModBombItems.init();       // hand-registered bomb components
         com.hbm.items.ModGearItems.init(); // radiation gear (geiger/dosimeter + hazmat armor)
+        com.hbm.items.ModArmorItems.init(); // modelled power armour (T-51b)
         com.hbm.items.ModAmmoItems.init();  // Sedna ammunition (one item per old ammo_standard variant)
         // The bullet configs must exist before a gun's magazine names them; the gun items themselves are
         // built lazily at registration, well after this.

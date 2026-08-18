@@ -39,8 +39,16 @@ public final class MachineItemModel {
     private final RenderType renderType;
     private final float scale;
     private final float yaw;
+    /**
+     * Rotation about X, applied before {@link #yaw}. Zero for machines; the armour suits need 180
+     * because their OBJs are authored in the biped's flipped space (the helmet sits at negative Y),
+     * which is the same {@code rotate(180, 1, 0, 0)} 1.12's {@code setupRenderInv} opened with.
+     */
+    private final float pitch;
     private final float ty;
     private final Set<String> exclude;
+    /** The caller's exclusions only — what the icon is framed on. See the constructor. */
+    private final Set<String> userExclude;
     /** Optional second texture + the parts drawn with it (e.g. a tank body vs its frame); may be null. */
     private final @Nullable RenderType overlayType;
     private final List<String> overlayParts;
@@ -52,7 +60,7 @@ public final class MachineItemModel {
     /** Multi-texture mode ({@code "mtl": true}): material name → its render type, from the OBJ's .mtl. */
     private final Map<String, RenderType> materialTypes;
 
-    public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, float yaw, float ty,
+    public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, float yaw, float pitch, float ty,
                             Set<String> exclude, @Nullable RenderType overlayType, List<String> overlayParts,
                             List<String> rotateParts, float rotateX, Vector3f rotatePivot,
                             Map<String, RenderType> materialTypes) {
@@ -60,6 +68,7 @@ public final class MachineItemModel {
         this.renderType = renderType;
         this.scale = scale;
         this.yaw = yaw;
+        this.pitch = pitch;
         this.ty = ty;
         this.overlayType = overlayType;
         this.overlayParts = overlayParts;
@@ -67,6 +76,9 @@ public final class MachineItemModel {
         this.rotateX = rotateX;
         this.rotatePivot = rotatePivot;
         this.materialTypes = materialTypes;
+        // Framing is centred on what is actually drawn, which is everything except the caller's own
+        // exclusions — not the merged set below, since overlay and rotated parts are still on screen.
+        this.userExclude = Set.copyOf(exclude);
         // The overlay parts are textured separately, so the base pass must skip them. Rotated parts are
         // also drawn in their own pass, so exclude them from both static passes.
         Set<String> merged = new HashSet<>(exclude);
@@ -136,13 +148,15 @@ public final class MachineItemModel {
         // OBJ has an arbitrary origin (often a corner), so: move its bounding-box centre to the block
         // centre (0.5,0.5,0.5), then rotate/scale, then re-centre the model on its own bounds. Without
         // the final translate the model's corner — not its middle — sits at the slot centre.
-        float[] mn = model.boundsMin();
-        float[] mx = model.boundsMax();
+        float[][] bounds = model.boundsExcluding(userExclude);
+        float[] mn = bounds[0];
+        float[] mx = bounds[1];
         float cx = (mn[0] + mx[0]) * 0.5F;
         float cy = (mn[1] + mx[1]) * 0.5F;
         float cz = (mn[2] + mx[2]) * 0.5F;
         poseStack.translate(0.5F, 0.5F + ty, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+        if (pitch != 0F) poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
         poseStack.scale(scale, scale, scale);
         poseStack.translate(-cx, -cy, -cz);
     }

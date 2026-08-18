@@ -22,6 +22,14 @@ public final class ModDataComponents {
     public static final GolemComponent<ItemStack> GAS_MASK_FILTER = GolemComponent.itemStack(Constants.MOD_ID, "gas_mask_filter");
 
     /**
+     * A powered armour piece's stored HE (the old NBT {@code "charge"} long).
+     *
+     * <p>Kept separate from {@link #BATTERY_CHARGE} deliberately: absence means "full" here (a suit
+     * spawns charged) and "empty" there, so one component cannot serve both without a flag.
+     */
+    public static final GolemComponent<Long> ARMOR_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "armor_charge");
+
+    /**
      * A gun's state-machine scratch space — timer, state, animation timer, button flags. Rewritten
      * constantly while a gun is held, and worth nothing once it is dropped.
      *

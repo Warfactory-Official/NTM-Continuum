@@ -68,6 +68,37 @@ public final class WavefrontObj {
     /** Model-space maximum corner [x,y,z]. */
     public float[] boundsMax() { return max; }
 
+    /**
+     * The bounding box of everything except the named parts, as {@code {min, max}}.
+     *
+     * <p>Needed when a model is drawn in pieces: an armour suit's OBJ holds all eight body parts, but a
+     * helmet's inventory icon draws one of them. Framing that icon by the <em>whole</em> model's bounds
+     * centres the slot on the suit's waist and leaves the helmet somewhere above the frame. An empty
+     * exclusion set gives the whole-model bounds, so callers can pass one unconditionally.
+     */
+    public float[][] boundsExcluding(java.util.Set<String> excluded) {
+        if (excluded.isEmpty()) return new float[][] {min, max};
+
+        float[] mn = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
+        float[] mx = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
+        boolean any = false;
+
+        for (Group group : groups) {
+            if (excluded.contains(group.name)) continue;
+            for (int[][] face : group.faces) {
+                for (int[] vertex : face) {
+                    float[] p = positions[vertex[0]];
+                    any = true;
+                    for (int i = 0; i < 3; i++) {
+                        mn[i] = Math.min(mn[i], p[i]);
+                        mx[i] = Math.max(mx[i], p[i]);
+                    }
+                }
+            }
+        }
+        return any ? new float[][] {mn, mx} : new float[][] {min, max};
+    }
+
     /** Loads and parses an OBJ from the client resource pack at {@code location}. */
     public static WavefrontObj load(Identifier location) {
         List<float[]> pos = new ArrayList<>();

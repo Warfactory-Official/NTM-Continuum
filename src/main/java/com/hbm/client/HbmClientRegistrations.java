@@ -108,6 +108,7 @@ public final class HbmClientRegistrations {
         sink.register("rad_counter", RadCounterOverlay::render);
         sink.register("nuke_flash", NukeScreenEffects::render);
         sink.register("gun_hud", GunHudOverlay::render);
+        sink.register("armor_hud", ArmorHudOverlay::render);
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
@@ -122,6 +123,20 @@ public final class HbmClientRegistrations {
 
     public static void registerBlockColors() {
         HbmBlockColors.registerAll();
+    }
+
+    /**
+     * Attaches the worn-armour layer to every humanoid renderer, and declares the suits' part trees.
+     *
+     * <p>Golem Core owns the attaching: the hook is a mod-bus event on NeoForge/Forge and a per-renderer
+     * callback on Fabric, and the callback's class was renamed at 26.x. Read the layer count it reports
+     * (see {@code HumanoidLayers.attachedCount}) — a layer attached to nothing draws nothing and throws
+     * nothing.
+     */
+    public static void installArmorLayers() {
+        com.hbm.client.render.armor.ArmorRenderers.init();
+        dev.golem.core.render.HumanoidLayers.register(
+                com.hbm.client.render.armor.ArmorRenderLayer::new);
     }
 
     /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */

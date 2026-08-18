@@ -27,6 +27,7 @@ public class FabricClientInit implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         HbmPackets.registerClientHandlers();
+        com.hbm.client.particle.HbmParticleHandlers.register();
         GolemNetwork.flushClientRegistrations();
 
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
@@ -35,6 +36,7 @@ public class FabricClientInit implements ClientModInitializer {
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installArmorLayers();
         HbmClientRegistrations.registerScreens(MenuScreens::register);
 
         // Look-overlay HUD (battery charge / duct type / ...) — drawn after the vanilla HUD each frame.

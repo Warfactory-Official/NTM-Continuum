@@ -34,12 +34,14 @@ public final class NeoForgeClientInit {
 
     public static void init(IEventBus modBus) {
         HbmPackets.registerClientHandlers();
+        com.hbm.client.particle.HbmParticleHandlers.register();
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installArmorLayers();
 
         // Look-overlay HUD (battery charge / duct type / ...) — a GUI layer drawn above the vanilla HUD,
         // so its text is extracted/submitted in the same pass (mirrors Fabric's HudElementRegistry).

@@ -12,6 +12,9 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.entity.EntityHbmProps;
 import com.hbm.entity.EntityHbmProps.ContaminationEffect;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.items.gear.ArmorFSB;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.item.ItemStack;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.packet.EntityPropsSyncPayload;
 import dev.golem.core.net.GolemNetwork;
@@ -58,6 +61,10 @@ public class EntityEffectHandler {
         // Placed first to prevent picking up transient radiation from the handlers below.
         handleRadiationEffect(entity);
 
+        // Full-set armour. Runs on both sides because the footstep sound is client-side and the charge
+        // drain is server-side; this is the port's stand-in for 1.12's PlayerTickEvent + onArmorTick.
+        if (entity instanceof Player player) handleArmor(player);
+
         if (!entity.level().isClientSide()) {
 
             if (entity.tickCount % 20 == 0) {
@@ -77,6 +84,29 @@ public class EntityEffectHandler {
             }
         }
     }
+
+    /**
+     * The full-set-bonus tick: the chestplate's effects and footsteps, then each worn piece's own tick
+     * (a powered suit's idle drain, an unpowered one's geiger click).
+     *
+     * <p>1.12.2 split this across {@code TickEvent.PlayerTickEvent} (the set bonus) and
+     * {@code Item.onArmorTick} (per piece). Neither has a cross-loader equivalent here — 26.1's
+     * {@code inventoryTick} is server-only — so both ride the {@code MixinLivingEntity} tick, which runs
+     * on both sides exactly as the two Forge hooks did.
+     */
+    private static void handleArmor(Player player) {
+        ArmorFSB.handleTick(player);
+
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            ItemStack stack = player.getItemBySlot(slot);
+            if (stack.getItem() instanceof ArmorFSB piece) {
+                piece.armorTick(player.level(), player, stack);
+            }
+        }
+    }
+
+    private static final EquipmentSlot[] ARMOR_SLOTS = {
+            EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
     private static void handleContamination(LivingEntity entity) {
         Iterator<ContaminationEffect> iterator = HbmLivingProps.getCont(entity).iterator();

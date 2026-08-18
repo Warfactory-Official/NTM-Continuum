@@ -18,6 +18,7 @@ public final class Hazards {
         HazardRegistry.registerTrafos();
         HazardRegistry.registerItems();
         com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership
+        com.hbm.items.ModArmorItems.configure();      // power-armour set bonuses, rad resistance, hazard classes
         com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
     }
 }

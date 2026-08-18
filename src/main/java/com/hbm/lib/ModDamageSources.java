@@ -32,6 +32,12 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> ASBESTOS = key("asbestos");
     /** absolute + bypasses armor */
     public static final ResourceKey<DamageType> BLACKLUNG = key("blacklung");
+    /**
+     * The shockwave a power-armour wearer makes on landing hard (old {@code ArmorFSB.handleFall}).
+     * Upstream built this as {@code causePlayerDamage(player).setDamageBypassesArmor()}, so it is
+     * attributed to the wearer and carries the {@code bypasses_armor} tag.
+     */
+    public static final ResourceKey<DamageType> HARD_LANDING = key("hard_landing");
 
     /**
      * The damage categories a bullet can belong to, ported from 1.12.2's
@@ -72,6 +78,12 @@ public final class ModDamageSources {
 
     public static DamageSource source(Level level, ResourceKey<DamageType> key) {
         return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key));
+    }
+
+    /** The hard-landing shockwave, credited to the wearer whose suit made it. */
+    public static DamageSource hardLanding(Level level, net.minecraft.world.entity.Entity wearer) {
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE)
+                .getOrThrow(HARD_LANDING), null, wearer);
     }
 
     public static DamageSource radiation(Level level) { return source(level, RADIATION); }

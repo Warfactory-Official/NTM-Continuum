@@ -54,7 +54,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
     }
 
     /** The data-driven, codec-backed factory for this renderer (one entry per machine in the item JSON). */
-    public record Unbaked(Identifier obj, Identifier texture, float scale, float yaw, float ty, List<String> exclude,
+    public record Unbaked(Identifier obj, Identifier texture, float scale, float yaw, float pitch, float ty, List<String> exclude,
                           Optional<Identifier> overlayTexture, List<String> overlayParts, boolean mtl,
                           List<String> rotateParts, float rotateX, List<Float> rotatePivot) implements NoDataSpecialModelRenderer.Unbaked {
 
@@ -63,6 +63,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                 Identifier.CODEC.optionalFieldOf("texture", dev.golem.core.Ids.of("hbm", "textures/models/machines/lava_gray.png")).forGetter(Unbaked::texture),
                 Codec.FLOAT.optionalFieldOf("scale", 0.28F).forGetter(Unbaked::scale),
                 Codec.FLOAT.optionalFieldOf("yaw", 90.0F).forGetter(Unbaked::yaw),
+                Codec.FLOAT.optionalFieldOf("pitch", 0.0F).forGetter(Unbaked::pitch),
                 Codec.FLOAT.optionalFieldOf("ty", 0.0F).forGetter(Unbaked::ty),
                 Codec.STRING.listOf().optionalFieldOf("exclude", List.of()).forGetter(Unbaked::exclude),
                 Identifier.CODEC.optionalFieldOf("overlayTexture").forGetter(Unbaked::overlayTexture),
@@ -97,7 +98,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                 types = resolved;
             }
             return new MachineItemModelRenderer(new MachineItemModel(loaded, CompatRenderTypes.entityCutout(texture),
-                    scale, yaw, ty, Set.copyOf(exclude), overlay, List.copyOf(overlayParts),
+                    scale, yaw, pitch, ty, Set.copyOf(exclude), overlay, List.copyOf(overlayParts),
                     List.copyOf(rotateParts), rotateX, pivot, types));
         }
     }

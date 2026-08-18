@@ -149,6 +149,38 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function BULLET_BREAKS_GLASS =
             TESTS.function("bullet_breaks_glass", 100, () -> GunGameTests::bulletBreaksGlass);
 
+    // --- particles (implementations live in ParticleGameTests) ---
+    public static final GameTests.Function PARTICLE_PAYLOAD_ROUND_TRIP =
+            TESTS.function("particle_payload_round_trip", 20, () -> ParticleGameTests::payloadRoundTrip);
+    public static final GameTests.Function PARTICLE_EFFECT_NAMES =
+            TESTS.function("particle_effect_names", 20, () -> ParticleGameTests::effectNamesResolve);
+    public static final GameTests.Function PARTICLE_UNHANDLED_IS_SILENT =
+            TESTS.function("particle_unhandled_is_silent", 20, () -> ParticleGameTests::unhandledEffectIsSilent);
+    public static final GameTests.Function PARTICLE_SEND =
+            TESTS.function("particle_send", 20, () -> ParticleGameTests::sendDoesNotThrow);
+
+    // --- power armour (implementations live in ArmorGameTests) ---
+    public static final GameTests.Function ARMOR_CONFIGURED =
+            TESTS.function("armor_configured", 20, () -> ArmorGameTests::configured);
+    public static final GameTests.Function ARMOR_SET_DETECTION =
+            TESTS.function("armor_set_detection", 20, () -> ArmorGameTests::setDetection);
+    public static final GameTests.Function ARMOR_SET_BONUS =
+            TESTS.function("armor_set_bonus", 20, () -> ArmorGameTests::setBonusApplies);
+    public static final GameTests.Function ARMOR_CHARGE_DRAINS =
+            TESTS.function("armor_charge_drains", 20, () -> ArmorGameTests::chargeDrains);
+    public static final GameTests.Function ARMOR_FLAT_DISABLES =
+            TESTS.function("armor_flat_disables", 20, () -> ArmorGameTests::flatSuitDisablesBonuses);
+    public static final GameTests.Function ARMOR_PROTECTION =
+            TESTS.function("armor_protection", 20, () -> ArmorGameTests::protectionRegistered);
+    public static final GameTests.Function ARMOR_HIDES_HAT =
+            TESTS.function("armor_hides_hat", 20, () -> ArmorGameTests::hidesHatLayer);
+    public static final GameTests.Function ARMOR_EFFECT_VISIBLE =
+            TESTS.function("armor_effect_visible", 20, () -> ArmorGameTests::setBonusEffectIsVisible);
+    public static final GameTests.Function ARMOR_HARD_LANDING =
+            TESTS.function("armor_hard_landing", 40, () -> ArmorGameTests::hardLandingThrowsEntities);
+    public static final GameTests.Function ARMOR_SHORT_FALL =
+            TESTS.function("armor_short_fall", 40, () -> ArmorGameTests::shortFallDoesNothing);
+
     public static void init() {}
 
     private static void coolingRecipes(GameTestHelper helper) {

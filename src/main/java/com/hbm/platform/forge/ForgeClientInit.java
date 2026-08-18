@@ -26,6 +26,7 @@ final class ForgeClientInit {
 
     static void init(IEventBus modBus) {
         HbmPackets.registerClientHandlers();
+        com.hbm.client.particle.HbmParticleHandlers.register();
         GolemNetwork.setClientContextSupplier(() -> new GolemNetwork.ClientContext(
                 Minecraft.getInstance().level, Minecraft.getInstance().player));
         GolemNetwork.flushClientRegistrations();
@@ -33,6 +34,7 @@ final class ForgeClientInit {
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installArmorLayers();
         dev.golem.core.render.ForgeItemRenderers.install(com.hbm.client.render.MachineItemRenderers::render);
         modBus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent event) ->
                 event.registerReloadListener(

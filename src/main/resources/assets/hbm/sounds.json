@@ -243,5 +243,35 @@
         "stream": false
       }
     ]
+  },
+  "step.metal": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:footsteps/metal",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.step.metal"
+  },
+  "step.iron_jump": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:footsteps/iron_jump",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.step.iron_jump"
+  },
+  "step.iron_land": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:footsteps/iron_land",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.step.iron_land"
   }
 }

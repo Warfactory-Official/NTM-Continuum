@@ -87,4 +87,12 @@ public class MixinLivingEntity implements IHbmLivingDuck {
     private void hbm$tick(CallbackInfo ci) {
         EntityEffectHandler.onUpdate((LivingEntity) (Object) this);
     }
+
+    /** Power armour's jump sound — the stand-in for 1.12's {@code LivingJumpEvent}. */
+    @Inject(method = "jumpFromGround", at = @At("TAIL"))
+    private void hbm$jump(CallbackInfo ci) {
+        if ((Object) this instanceof net.minecraft.world.entity.player.Player player) {
+            com.hbm.items.gear.ArmorFSB.handleJump(player);
+        }
+    }
 }

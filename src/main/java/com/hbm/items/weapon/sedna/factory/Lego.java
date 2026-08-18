@@ -156,8 +156,21 @@ public class Lego {
             float spread = calcSpread(ctx, stack, primary, config, calcWear, index, aim);
 
             if (config.pType == BulletConfig.ProjectileType.BULLET) {
-                level.addFreshEntity(new EntityBulletBaseMK4(entity, config, damage, spread,
-                        sideOffset, heightOffset, forwardOffset));
+                EntityBulletBaseMK4 bullet = new EntityBulletBaseMK4(entity, config, damage, spread,
+                        sideOffset, heightOffset, forwardOffset);
+
+                // Muzzle discharge, on the first pellet only: one puff per shot, not one per pellet.
+                // Position and heading come from the spawned bullet rather than the shooter, so the
+                // smoke sits at the barrel and points where the round actually went.
+                if (i == 0 && config.blackPowder) {
+                    com.hbm.particle.helper.ParticleEffects.blackPowder(level,
+                            bullet.getX(), bullet.getY(), bullet.getZ(),
+                            bullet.getDeltaMovement().x, bullet.getDeltaMovement().y,
+                            bullet.getDeltaMovement().z,
+                            10, 0.25F, 0.5F, 10, 0.25F);
+                }
+
+                level.addFreshEntity(bullet);
             }
         }
 

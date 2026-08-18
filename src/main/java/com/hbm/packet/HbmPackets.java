@@ -30,6 +30,7 @@ public final class HbmPackets {
         GolemNetwork.registerPlayToServer(AnvilCraftPayload.CODEC,
                 (payload, player) -> handleAnvilCraft(player, payload));
         GolemNetwork.declarePlayToClient(GunAnimationPayload.CODEC);
+        GolemNetwork.declarePlayToClient(ParticlePayload.CODEC);
         GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
                 (payload, player) -> com.hbm.handler.HbmKeybindsServer.onPressedServer(player,
                         com.hbm.handler.HbmKeybinds.EnumKeybind.byOrdinal(payload.keybind()), payload.state()));
@@ -50,6 +51,8 @@ public final class HbmPackets {
                 (payload, context) -> handlePropsSync(context.player(), payload));
         GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
                 (payload, context) -> com.hbm.client.anim.GunAnimationHandler.handle(payload));
+        GolemNetwork.registerPlayToClient(ParticlePayload.CODEC,
+                (payload, context) -> handleParticle(context.level(), payload));
     }
 
     /**
@@ -72,6 +75,27 @@ public final class HbmPackets {
             } catch (Exception e) {
                 Constants.LOG.warn("Failed to apply BlockEntitySyncPayload at {}: {}", pos, e.toString());
             }
+        }
+    }
+
+    /**
+     * Applies a received {@link ParticlePayload}: resolves the named effect and runs its client
+     * handler. Must run on the main client thread (each loader's receiver is responsible for that).
+     *
+     * <p>An unknown effect name is ignored rather than logged — a server running a build with more
+     * effects than this client knows about is a version skew, not a bug worth spamming the log for.
+     * A handler that throws is caught and warned about: a bad particle must never tear down the netty
+     * pipeline, which is the same rule {@link #handleSync} follows.
+     */
+    public static void handleParticle(Level level, ParticlePayload payload) {
+        if (level == null) return;
+        com.hbm.particle.helper.HbmEffectNT effect =
+                com.hbm.particle.helper.HbmEffectNT.byName(payload.effect());
+        if (effect == null) return;
+        try {
+            effect.summonParticle(level, payload.x(), payload.y(), payload.z(), payload.data());
+        } catch (Exception e) {
+            Constants.LOG.warn("Failed to play particle effect {}: {}", payload.effect(), e.toString());
         }
     }
 

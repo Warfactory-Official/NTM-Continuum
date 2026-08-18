@@ -60,6 +60,15 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> DRY_FIRE_CLICK = register("weapon.reload.dryfireclick");
     public static final RegistryObject<SoundEvent> RELOAD_REVOLVER = register("weapon.revolverreload");
 
+    /**
+     * Power-armour footsteps (old {@code metalStep}, {@code ironJump}, {@code ironLand}). Played by
+     * {@code ArmorFSB} on top of the vanilla step, which is why the step one is a single clank rather
+     * than a variant set.
+     */
+    public static final RegistryObject<SoundEvent> METAL_STEP = register("step.metal");
+    public static final RegistryObject<SoundEvent> IRON_JUMP = register("step.iron_jump");
+    public static final RegistryObject<SoundEvent> IRON_LAND = register("step.iron_land");
+
     /** Geiger click ladder, index 0..5 = old {@code geigerSounds}. */
     @SuppressWarnings("unchecked")
     public static final RegistryObject<SoundEvent>[] GEIGER_SOUNDS =
