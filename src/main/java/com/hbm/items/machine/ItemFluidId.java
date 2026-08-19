@@ -15,7 +15,6 @@ import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * A fluid identifier: stamps a tank/duct with one fixed {@link FluidType} (right-click a duct or drop it
@@ -52,25 +51,15 @@ public class ItemFluidId extends CompatItem implements IItemFluidId {
         return getFluid(stack);
     }
 
-    /** Title-cases the internal fluid name, e.g. {@code HEAVY_OIL} → {@code "Heavy Oil"}. */
-    private static String prettify(String name) {
-        StringBuilder sb = new StringBuilder();
-        for (String part : name.toLowerCase(Locale.US).split("_")) {
-            if (part.isEmpty()) continue;
-            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
-        }
-        return sb.toString().trim();
-    }
-
     @Override
     public Component getName(ItemStack stack) {
-        return Component.translatable("item.hbm.fluid_identifier", prettify(getFluid(stack).getName()));
+        return Component.translatable("item.hbm.fluid_identifier", getFluid(stack).getDisplayName());
     }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
         tooltip.add(Component.translatable("item.hbm.fluid_identifier.info").withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.literal("   " + prettify(getFluid(stack).getName())).withStyle(ChatFormatting.AQUA));
+        tooltip.add(Component.literal("   ").append(getFluid(stack).getDisplayName()).withStyle(ChatFormatting.AQUA));
     }
 }

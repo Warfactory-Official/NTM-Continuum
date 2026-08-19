@@ -46,12 +46,8 @@ public class MachineZirnox extends BlockDummyable implements IFluidConnectorBloc
                 && MultiblockHandlerXR.checkSpace(level, coreX, coreY, coreZ, new int[]{4, -2, 0, 0, 2, -2}, x, y, z, direction)
                 && MultiblockHandlerXR.checkSpace(level, coreX, coreY, coreZ, new int[]{4, -2, 0, 0, -2, 2}, x, y, z, direction);
     }
-    @Override protected void fillSpace(Level level, int x, int y, int z, ForgeDirection direction, int offset) {
-        BlockPos core = new BlockPos(x + direction.offsetX * offset, y + direction.offsetY * offset, z + direction.offsetZ * offset);
-        formStructure(level, core, direction);
-    }
     /** Forms the live dummy shell around an existing controller. Used by normal placement and structure tests. */
-    public void formStructure(Level level, BlockPos core, ForgeDirection direction) {
+    @Override public void formStructure(Level level, BlockPos core, ForgeDirection direction) {
         MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), getDimensions(), this, direction);
         MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), new int[]{4, -2, 1, 1, 1, 1}, this, direction);
         MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), new int[]{4, -2, 0, 0, 2, -2}, this, direction);

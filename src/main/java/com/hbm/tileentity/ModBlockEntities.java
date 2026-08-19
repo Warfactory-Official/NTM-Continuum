@@ -59,6 +59,42 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_condenser",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityCondenser::new, ModMachineBlocks.machine_condenser.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionCoupler>> FUSION_COUPLER =
+            BLOCK_ENTITIES.register("fusion_coupler",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionCoupler::new, ModMachineBlocks.fusion_coupler.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionCollector>> FUSION_COLLECTOR =
+            BLOCK_ENTITIES.register("fusion_collector",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionCollector::new, ModMachineBlocks.fusion_collector.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron>> FUSION_KLYSTRON =
+            BLOCK_ENTITIES.register("fusion_klystron",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron::new, ModMachineBlocks.fusion_klystron.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionKlystronCreative>> FUSION_KLYSTRON_CREATIVE =
+            BLOCK_ENTITIES.register("fusion_klystron_creative",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionKlystronCreative::new, ModMachineBlocks.fusion_klystron_creative.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler>> FUSION_BOILER =
+            BLOCK_ENTITIES.register("fusion_boiler",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler::new, ModMachineBlocks.fusion_boiler.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT>> FUSION_MHDT =
+            BLOCK_ENTITIES.register("fusion_mhdt",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT::new, ModMachineBlocks.fusion_mhdt.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionTorus>> FUSION_TORUS =
+            BLOCK_ENTITIES.register("fusion_torus",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionTorus::new, ModMachineBlocks.fusion_torus.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct>> STRUCT_TORUS_CORE =
+            BLOCK_ENTITIES.register("struct_torus_core",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct::new, ModMachineBlocks.struct_torus_core.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityWatz>> WATZ =
+            BLOCK_ENTITIES.register("watz",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityWatz::new, ModMachineBlocks.watz.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityWatzPump>> WATZ_PUMP =
+            BLOCK_ENTITIES.register("watz_pump",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityWatzPump::new, ModMachineBlocks.watz_pump.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.struct.TileEntityWatzStruct>> STRUCT_WATZ_CORE =
+            BLOCK_ENTITIES.register("struct_watz_core",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.struct.TileEntityWatzStruct::new, ModMachineBlocks.struct_watz_core.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityReactorZirnox>> MACHINE_ZIRNOX =
             BLOCK_ENTITIES.register("machine_zirnox",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityReactorZirnox::new, ModMachineBlocks.machine_zirnox.get()));

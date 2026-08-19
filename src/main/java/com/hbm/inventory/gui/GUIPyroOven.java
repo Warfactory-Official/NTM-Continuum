@@ -82,7 +82,7 @@ public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<Contai
             if (this.isHovering(xs[k], 18, 16, 52, mouseX, mouseY)) {
                 FluidTankNTM tank = te.tanks[k];
                 GuiDraw.tooltip(graphics, this.font, List.of(
-                        Component.literal(tank.getTankType().getName()),
+                        tank.getTankType().getDisplayName(),
                         Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
                 return;
             }

@@ -114,7 +114,7 @@ public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
-        GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(tank.getTankType().getName()),
+        GuiDraw.tooltip(graphics, this.font, List.of(tank.getTankType().getDisplayName(),
                 Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
     }
 

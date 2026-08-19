@@ -117,7 +117,7 @@ public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
         GuiDraw.tooltip(graphics, this.font, java.util.List.of(
-                Component.literal(tank.getTankType().getName()),
+                tank.getTankType().getDisplayName(),
                 Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")
         ), Optional.empty(), mouseX, mouseY);
     }

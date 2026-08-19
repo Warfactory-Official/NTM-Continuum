@@ -71,7 +71,7 @@ public class ContainerFEL extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_fel.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_fel.get());
     }
 
     /** The GUI's power switch. Upstream's {@code AuxButtonPacket(pos, 0, 2)} carried meta 2. */

@@ -36,6 +36,7 @@ public final class ModSounds {
 
     /** Handheld-gadget confirmation bleep (old {@code item.techBleep}) — oil detector etc. */
     public static final RegistryObject<SoundEvent> TECH_BLEEP = register("item.tech_bleep");
+    public static final RegistryObject<SoundEvent> BOLTGUN = register("item.boltgun");
 
     /** The Scream upgrade's screaming-scientist sound (old {@code block.screm}). */
     public static final RegistryObject<SoundEvent> SCREM = register("block.screm");

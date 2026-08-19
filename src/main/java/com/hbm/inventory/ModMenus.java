@@ -122,6 +122,15 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerReactorZirnox>> REACTOR_ZIRNOX =
             MENUS.register("reactor_zirnox", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerReactorZirnox::new));
 
+    public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerWatz>> WATZ =
+            MENUS.register("watz", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerWatz::new));
+
+    public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerFusionTorus>> FUSION_TORUS =
+            MENUS.register("fusion_torus", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionTorus::new));
+
+    public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerFusionKlystron>> FUSION_KLYSTRON =
+            MENUS.register("fusion_klystron", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionKlystron::new));
+
     public static final RegistryObject<MenuType<ContainerMachinePress>> MACHINE_PRESS =
             MENUS.register("machine_press", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePress::new));
 

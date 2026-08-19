@@ -58,17 +58,16 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
     }
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
+    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
+        super.formStructure(world, core, dir);
 
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{4, -1, 3, -1, 1, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{13, 0, 0, 3, 2, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{14, -13, -1, 2, 1, 0}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{3, -1, 2, 3, -1, 3}, this, dir);
+        int cx = core.getX(), cy = core.getY(), cz = core.getZ();
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{4, -1, 3, -1, 1, 1}, this, dir);
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{13, 0, 0, 3, 2, 1}, this, dir);
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{14, -13, -1, 2, 1, 0}, this, dir);
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{3, -1, 2, 3, -1, 3}, this, dir);
 
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int cx = x + dir.offsetX * o, cy = y + dir.offsetY * o, cz = z + dir.offsetZ * o;
-
         this.makeExtra(world, cx + dir.offsetX * 3 + rot.offsetX, cy, cz + dir.offsetZ * 3 + rot.offsetZ);
         this.makeExtra(world, cx + dir.offsetX * 3 - rot.offsetX * 2, cy, cz + dir.offsetZ * 3 - rot.offsetZ * 2);
         this.makeExtra(world, cx - dir.offsetX * 3 + rot.offsetX, cy, cz - dir.offsetZ * 3 + rot.offsetZ);
@@ -91,7 +90,7 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
                 cracker.tanks[0].setTankType(type);
                 cracker.setChanged();
                 player.sendSystemMessage(Component.translatable("chat.fractioning.changedto",
-                        Component.translatable(type.getTranslationKey())).withStyle(ChatFormatting.YELLOW));
+                        type.getDisplayName()).withStyle(ChatFormatting.YELLOW));
             }
             return InteractionResult.SUCCESS;
         }
@@ -118,7 +117,7 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
 
         List<String> text = new ArrayList<>();
         for (FluidTankNTM tank : cracker.tanks) {
-            text.add(tank.getTankType().getName() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
+            text.add(tank.getTankType().getDisplayNameString() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
         }
         ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
     }

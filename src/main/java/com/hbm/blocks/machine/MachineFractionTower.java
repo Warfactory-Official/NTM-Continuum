@@ -85,7 +85,7 @@ public class MachineFractionTower extends BlockDummyable implements IFluidConnec
                     frac.tanks[0].setTankType(type);
                     frac.setChanged();
                     player.sendSystemMessage(Component.translatable("chat.fractioning.changedto",
-                            Component.translatable(type.getTranslationKey())).withStyle(ChatFormatting.YELLOW));
+                            type.getDisplayName()).withStyle(ChatFormatting.YELLOW));
                 }
             }
             return InteractionResult.SUCCESS;
@@ -120,7 +120,7 @@ public class MachineFractionTower extends BlockDummyable implements IFluidConnec
 
         List<String> text = new ArrayList<>();
         for (FluidTankNTM tank : frac.tanks) {
-            text.add(tank.getTankType().getName() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
+            text.add(tank.getTankType().getDisplayNameString() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
         }
         ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
     }

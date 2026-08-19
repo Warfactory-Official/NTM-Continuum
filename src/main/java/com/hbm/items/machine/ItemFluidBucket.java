@@ -12,8 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
-import java.util.Locale;
-
 /**
  * A full fluid bucket — 1000&nbsp;mB of one {@link FluidType}, used to fill a fluid tank for testing.
  * A single registered item carries the fluid in the {@link ModDataComponents#FLUID_ID} component; its
@@ -43,19 +41,9 @@ public class ItemFluidBucket extends CompatItem {
         return Fluids.fromID(ModDataComponents.fluidId(stack));
     }
 
-    /** Title-cases the internal fluid name, e.g. {@code SCHRABIDIC_ACID} → {@code "Schrabidic Acid"}. */
-    private static String prettify(String name) {
-        StringBuilder sb = new StringBuilder();
-        for (String part : name.toLowerCase(Locale.US).split("_")) {
-            if (part.isEmpty()) continue;
-            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
-        }
-        return sb.toString().trim();
-    }
-
     @Override
     public Component getName(ItemStack stack) {
-        return Component.translatable("item.hbm.fluid_bucket", prettify(getFluid(stack).getName()));
+        return Component.translatable("item.hbm.fluid_bucket", getFluid(stack).getDisplayName());
     }
 
     @Override

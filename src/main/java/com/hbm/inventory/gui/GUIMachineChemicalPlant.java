@@ -141,7 +141,7 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
 
     private void tankTooltip(GuiGraphicsExtractor graphics, FluidTankNTM tank, int mouseX, int mouseY) {
         GuiDraw.tooltip(graphics, this.font, List.of(
-                Component.literal(tank.getTankType().getName()),
+                tank.getTankType().getDisplayName(),
                 Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")
         ), Optional.empty(), mouseX, mouseY);
     }

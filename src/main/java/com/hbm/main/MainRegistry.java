@@ -76,6 +76,8 @@ public final class MainRegistry {
         com.hbm.items.ModUpgradeItems.init(); // machine upgrade modules (speed/effect/power/overdrive)
         com.hbm.items.ModFuelItems.init();  // the ItemFuel family (furnace-burnable; burn times wired per loader)
         com.hbm.items.ModOilItems.init();   // oil-chain items (oil_tar variants + oil_detector)
+        com.hbm.items.ModToolItems.init();  // in-world construction tools (blowtorch, boltgun)
+        com.hbm.items.ModWatzItems.init();  // Watz fuel pellets (one item per type, fresh + depleted)
         com.hbm.blocks.ModFallingBlocks.init(); // the BlockFallingBase family (gravity blocks)
         ModFluidItems.init();      // fluid-container items (fluid_bucket, one per fluid)
         ModBombItems.init();       // hand-registered bomb components
@@ -93,5 +95,7 @@ public final class MainRegistry {
         com.hbm.potion.ModEffects.init(); // status effects (radiation)
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)
         ModTabs.init();
+        // Needs both the tool items and the convertible blocks, so it runs after every registry.
+        com.hbm.handler.NTMToolHandler.register();
     }
 }

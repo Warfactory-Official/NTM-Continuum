@@ -73,7 +73,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_assembly_machine.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_assembly_machine.get());
     }
 
     @Override

@@ -60,6 +60,49 @@ public final class HbmBlockEntityRenderers {
         // Ore acidizer: static Body + rotating Spinner + the tinted acid overlay while processing.
         regCustom(sink, ModBlockEntities.MACHINE_CRYSTALLIZER.get(), ctx -> new CrystallizerRenderer());
         regCustom(sink, ModBlockEntities.MACHINE_MINING_LASER.get(), ctx -> new MiningLaserRenderer());
+
+        // Watz: upstream had no TESR for it at all — it was a StaticTesrBakedModels entry whose yaw map
+        // is all zeros, i.e. the model does not turn with the machine's facing.
+        regCustom(sink, ModBlockEntities.WATZ.get(),
+                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityWatz>(0F, 1F,
+                        new ModelDef(obj("reactors/watz.obj"), tex("machines/watz.png"))).ignoreFacing());
+        regCustom(sink, ModBlockEntities.WATZ_PUMP.get(),
+                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityWatzPump>(0F, 1F,
+                        new ModelDef(obj("machines/watz_pump.obj"), tex("machines/watz_pump.png"))).ignoreFacing());
+        // The struct seed draws a translucent ghost of whatever its pattern still needs.
+        regCustom(sink, ModBlockEntities.STRUCT_WATZ_CORE.get(),
+                ctx -> new StructPreviewRenderer<com.hbm.tileentity.machine.struct.TileEntityWatzStruct>());
+
+        // Fusion torus: spinning magnet ring, per-arm bolt covers and the tinted plasma glow.
+        regCustom(sink, ModBlockEntities.FUSION_TORUS.get(), ctx -> new FusionTorusRenderer());
+
+        // The rest of the fusion family. Base yaw 90 for all but the coupler, whose static yaw map
+        // upstream is a flat 180 offset instead.
+        reg(sink, ModBlockEntities.FUSION_COUPLER.get(), 180F, 1F,
+                new ModelDef(obj("fusion/coupler.obj"), tex("fusion/coupler.png")));
+        reg(sink, ModBlockEntities.FUSION_COLLECTOR.get(), 90F, 1F,
+                new ModelDef(obj("fusion/collector.obj"), tex("fusion/collector.png")));
+        reg(sink, ModBlockEntities.FUSION_BOILER.get(), 90F, 1F,
+                new ModelDef(obj("fusion/boiler.obj"), tex("fusion/boiler.png")));
+
+        // The klystron's model is authored one block off its core, and its fan spins about the machine
+        // axis at a pivot 2.5 up. The "Pipes" group is deliberately not drawn, as upstream does not.
+        regCustom(sink, ModBlockEntities.FUSION_KLYSTRON.get(),
+                ctx -> new FusionSpinRenderer<com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron>(
+                        "fusion/klystron.obj", "fusion/klystron.png", "Klystron", "Rotor", 2.5F, -1F, 90F,
+                        (te, partial) -> te.prevFan + (te.fan - te.prevFan) * partial));
+        regCustom(sink, ModBlockEntities.FUSION_KLYSTRON_CREATIVE.get(),
+                ctx -> new FusionSpinRenderer<com.hbm.tileentity.machine.fusion.TileEntityFusionKlystronCreative>(
+                        "fusion/klystron.obj", "fusion/klystron_creative.png", "Klystron", "Rotor", 2.5F, -1F, 90F,
+                        (te, partial) -> te.prevFan + (te.fan - te.prevFan) * partial));
+        // The turbine's coils rock at a pivot 1.5 up, wrapped to 15 degrees as upstream does - they are
+        // a partial arc, and a full rotation swings them clear of the housing.
+        regCustom(sink, ModBlockEntities.FUSION_MHDT.get(),
+                ctx -> new FusionSpinRenderer<com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT>(
+                        "fusion/mhdt.obj", "fusion/mhdt.png", "Turbine", "Coils", 1.5F, 0F, 90F, 15F,
+                        (te, partial) -> te.prevRotor + (te.rotor - te.prevRotor) * partial));
+        regCustom(sink, ModBlockEntities.STRUCT_TORUS_CORE.get(),
+                ctx -> new StructPreviewRenderer<com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct>());
         // SILEX: fully static upstream (it had no TESR at all — it was a StaticTesrBakedModels entry).
         // Old yaw map N90/S270/W180/E0 = base yaw 90 + the standard map, same as the compressor's.
         reg(sink, ModBlockEntities.MACHINE_SILEX.get(), 90F, 1F,

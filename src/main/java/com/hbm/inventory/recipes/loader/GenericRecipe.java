@@ -172,7 +172,7 @@ public class GenericRecipe {
     }
 
     private static Component fluidLine(FluidStack fluid) {
-        String text = "  " + fluid.fill + " mB " + fluid.type.getName()
+        String text = "  " + fluid.fill + " mB " + fluid.type.getDisplayNameString()
                 + (fluid.pressure != 0 ? " @ " + fluid.pressure + " PU" : "");
         return Component.literal(text).withStyle(ChatFormatting.BLUE);
     }

@@ -62,7 +62,9 @@ public class MachineFrackingTower extends BlockDummyable implements IEnergyConne
     }
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
+    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
+        int x = core.getX(), y = core.getY(), z = core.getZ();
+
         MultiblockHandlerXR.fillSpace(world, x, y, z, getDimensions(), this, dir);
         MultiblockHandlerXR.fillSpace(world, x, y + 2, z, new int[]{1, 0, 3, 3, 3, 3}, this, dir);
 

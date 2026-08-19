@@ -73,7 +73,7 @@ public class ContainerMachinePress extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_press.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_press.get());
     }
 
     @Override

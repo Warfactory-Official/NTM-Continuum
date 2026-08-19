@@ -100,7 +100,7 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
             if (this.isHovering(xs[k], 18, 16, 52, mouseX, mouseY)) {
                 FluidTankNTM tank = te.tanks[k];
                 GuiDraw.tooltip(graphics, this.font, List.of(
-                        Component.literal(tank.getTankType().getName()),
+                        tank.getTankType().getDisplayName(),
                         Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB"),
                         Component.literal(tank.getPressure() + " PU")), Optional.empty(), mouseX, mouseY);
                 return;

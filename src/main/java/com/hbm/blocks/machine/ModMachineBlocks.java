@@ -2,6 +2,10 @@ package com.hbm.blocks.machine;
 
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
+import com.hbm.blocks.generic.BlockToolConvertible;
+import com.hbm.blocks.machine.struct.BlockStruct;
+import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.machine.struct.TileEntityWatzStruct;
 import com.hbm.blocks.network.BlockCable;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.creativetabs.HbmTab;
@@ -53,6 +57,74 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineWasteDrum> machine_waste_drum = BLOCKS.registerBlock(
             "machine_waste_drum", MachineWasteDrum::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
+    // --- Multiblock structure components (hand-built machines: Watz, fusion torus) ---
+    // The plain forms are craftable; the upgraded forms exist only as the output of an in-world tool
+    // conversion (NTMToolHandler), and the reactors' structure patterns only accept the upgraded ones.
+
+    public static final RegistryObject<BlockToolConvertible> watz_casing = BLOCKS.registerBlock(
+            "watz_casing", BlockToolConvertible::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<Block> watz_casing_tooled = BLOCKS.registerBlock(
+            "watz_casing_tooled", Block::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
+    public static final RegistryObject<BlockToolConvertible> fusion_component = BLOCKS.registerBlock(
+            "fusion_component", BlockToolConvertible::new,
+            p -> p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<Block> fusion_component_bscco_welded = BLOCKS.registerBlock(
+            "fusion_component_bscco_welded", Block::new,
+            p -> p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<Block> fusion_component_blanket = BLOCKS.registerBlock(
+            "fusion_component_blanket", Block::new,
+            p -> p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<Block> fusion_component_motor = BLOCKS.registerBlock(
+            "fusion_component_motor", Block::new,
+            p -> p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
+    /** The Watz reactor itself has no block item: it only ever assembles from a struct core. */
+    public static final RegistryObject<Watz> watz = BLOCKS.registerBlock(
+            "watz", Watz::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<WatzPump> watz_pump = BLOCKS.registerBlock(
+            "watz_pump", WatzPump::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    /** The fusion torus, like the Watz, exists only by assembling its struct core. */
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionTorus> fusion_torus = BLOCKS.registerBlock(
+            "fusion_torus", com.hbm.blocks.machine.fusion.MachineFusionTorus::new,
+            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    // --- The fusion family: what feeds the torus and what consumes its plasma. ---
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionCoupler> fusion_coupler = BLOCKS.registerBlock(
+            "fusion_coupler", com.hbm.blocks.machine.fusion.MachineFusionCoupler::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionCollector> fusion_collector = BLOCKS.registerBlock(
+            "fusion_collector", com.hbm.blocks.machine.fusion.MachineFusionCollector::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionKlystron> fusion_klystron = BLOCKS.registerBlock(
+            "fusion_klystron", com.hbm.blocks.machine.fusion.MachineFusionKlystron::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionKlystronCreative> fusion_klystron_creative = BLOCKS.registerBlock(
+            "fusion_klystron_creative", com.hbm.blocks.machine.fusion.MachineFusionKlystronCreative::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionBoiler> fusion_boiler = BLOCKS.registerBlock(
+            "fusion_boiler", com.hbm.blocks.machine.fusion.MachineFusionBoiler::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionMHDT> fusion_mhdt = BLOCKS.registerBlock(
+            "fusion_mhdt", com.hbm.blocks.machine.fusion.MachineFusionMHDT::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    /** Seed blocks for the hand-built multiblocks. */
+    public static final RegistryObject<BlockStruct> struct_watz_core = BLOCKS.registerBlock(
+            "struct_watz_core",
+            p -> new BlockStruct(p, TileEntityWatzStruct::new, () -> ModBlockEntities.STRUCT_WATZ_CORE.get()),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).lightLevel(state -> 15));
+    public static final RegistryObject<BlockStruct> struct_torus_core = BLOCKS.registerBlock(
+            "struct_torus_core",
+            p -> new BlockStruct(p, com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct::new,
+                    () -> ModBlockEntities.STRUCT_TORUS_CORE.get()),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).lightLevel(state -> 15));
 
     // --- Phase C: fluid network demo (duct conductor + infinite source + receiving tank) ---
 
@@ -278,6 +350,26 @@ public final class ModMachineBlocks {
         tabItem("machine_turbine", machine_turbine);
         tabItem("machine_condenser", machine_condenser);
         tabItem("machine_zirnox", machine_zirnox);
+        tabItem("struct_watz_core", struct_watz_core);
+        tabItem("struct_torus_core", struct_torus_core);
+        // Upstream puts the assembled reactors in the creative tab alongside their struct cores: the
+        // struct core is the survival route (build the shape, then transmute), these two place the
+        // finished multiblock in one go. Every other fusion machine was already here.
+        tabItem("watz", watz);
+        tabItem("fusion_torus", fusion_torus);
+        tabItem("fusion_coupler", fusion_coupler);
+        tabItem("fusion_collector", fusion_collector);
+        tabItem("fusion_klystron", fusion_klystron);
+        tabItem("fusion_klystron_creative", fusion_klystron_creative);
+        tabItem("fusion_boiler", fusion_boiler);
+        tabItem("fusion_mhdt", fusion_mhdt);
+        tabItem("watz_pump", watz_pump);
+        tabItem("watz_casing", watz_casing);
+        tabItem("watz_casing_tooled", watz_casing_tooled);
+        tabItem("fusion_component", fusion_component);
+        tabItem("fusion_component_bscco_welded", fusion_component_bscco_welded);
+        tabItem("fusion_component_blanket", fusion_component_blanket);
+        tabItem("fusion_component_motor", fusion_component_motor);
         tabItem("machine_waste_drum", machine_waste_drum);
         tabItem("fluid_duct_mk2", fluid_duct_mk2);
         tabItem("creative_fluid_source", creative_fluid_source);

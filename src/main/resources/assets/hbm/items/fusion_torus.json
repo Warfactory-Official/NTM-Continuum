@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/fusion/torus.obj",
+      "texture": "hbm:textures/models/fusion/torus.png",
+      "scale": 0.085,
+      "yaw": 180,
+      "ty": 0.0
+    }
+  }
+}

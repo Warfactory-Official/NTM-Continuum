@@ -42,19 +42,17 @@ public class MachineCompressor extends BlockDummyable implements IEnergyConnecto
     }
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
+    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
+        super.formStructure(world, core, dir);
 
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{3, -3, 1, 1, 1, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{8, -4, 0, 0, 1, 1}, this, dir);
-
-        x += dir.offsetX * o;
-        z += dir.offsetZ * o;
+        int cx = core.getX(), cy = core.getY(), cz = core.getZ();
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{3, -3, 1, 1, 1, 1}, this, dir);
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{8, -4, 0, 0, 1, 1}, this, dir);
 
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        this.makeExtra(world, x - dir.offsetX, y, z - dir.offsetZ);
-        this.makeExtra(world, x + rot.offsetX, y, z + rot.offsetZ);
-        this.makeExtra(world, x - rot.offsetX, y, z - rot.offsetZ);
+        this.makeExtra(world, cx - dir.offsetX, cy, cz - dir.offsetZ);
+        this.makeExtra(world, cx + rot.offsetX, cy, cz + rot.offsetZ);
+        this.makeExtra(world, cx - rot.offsetX, cy, cz - rot.offsetZ);
     }
 
     @Override

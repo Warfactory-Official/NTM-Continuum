@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/fusion/mhdt.obj",
+      "texture": "hbm:textures/models/fusion/mhdt.png",
+      "scale": 0.1,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

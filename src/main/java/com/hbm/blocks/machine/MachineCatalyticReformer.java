@@ -44,18 +44,21 @@ public class MachineCatalyticReformer extends BlockDummyable implements IEnergyC
     }
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{3, -3, 1, 0, -1, 2}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{6, -3, 1, 1, 2, 0}, this, dir);
+    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
+        super.formStructure(world, core, dir);
 
+        int cx = core.getX(), cy = core.getY(), cz = core.getZ();
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{3, -3, 1, 0, -1, 2}, this, dir);
+        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{6, -3, 1, 1, 2, 0}, this, dir);
+
+        // Upstream wrote these against the CLICKED position; with offset 1 that is exactly the core.
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        this.makeExtra(world, x - dir.offsetX + 1, y, z - dir.offsetZ + 1);
-        this.makeExtra(world, x - dir.offsetX + 1, y, z - dir.offsetZ - 1);
-        this.makeExtra(world, x - dir.offsetX - 1, y, z - dir.offsetZ + 1);
-        this.makeExtra(world, x - dir.offsetX - 1, y, z - dir.offsetZ - 1);
-        this.makeExtra(world, x - dir.offsetX + rot.offsetX * 2, y, z - dir.offsetZ + rot.offsetZ * 2);
-        this.makeExtra(world, x - dir.offsetX - rot.offsetX * 2, y, z - dir.offsetZ - rot.offsetZ * 2);
+        this.makeExtra(world, cx + 1, cy, cz + 1);
+        this.makeExtra(world, cx + 1, cy, cz - 1);
+        this.makeExtra(world, cx - 1, cy, cz + 1);
+        this.makeExtra(world, cx - 1, cy, cz - 1);
+        this.makeExtra(world, cx + rot.offsetX * 2, cy, cz + rot.offsetZ * 2);
+        this.makeExtra(world, cx - rot.offsetX * 2, cy, cz - rot.offsetZ * 2);
     }
 
     @Override

@@ -23,7 +23,19 @@ public final class HeatRecipes {
     public record HeatStep(int heatReq, int amountReq, FluidType output, int amountProduced) {}
 
     private static final Map<FluidType, HeatStep> BOILER = new LinkedHashMap<>();
+    /**
+     * The reactor/heat-exchanger heatable fluids, which the boiler deliberately cannot heat. These are
+     * the {@code FT_Heatable} entries whose efficiency map has no BOILER key — a reactor reads the raw
+     * first step with no efficiency factor, which is how {@code TileEntityWatz.updateCoolant} used it.
+     */
+    private static final Map<FluidType, HeatStep> REACTOR = new LinkedHashMap<>();
     private static boolean initialized = false;
+
+    /** The reactor-coolant heating step for this input fluid, or null if it isn't reactor-heatable. */
+    public static HeatStep getReactorStep(FluidType input) {
+        init();
+        return REACTOR.get(input);
+    }
 
     /** The boiler conversion for this input fluid, or null if the boiler can't heat it. */
     public static HeatStep getBoilerStep(FluidType input) {
@@ -55,5 +67,7 @@ public final class HeatRecipes {
         BOILER.put(Fluids.OIL_DS, new HeatStep(10, 1, Fluids.HOTOIL_DS, 1));
         BOILER.put(Fluids.CRACKOIL, new HeatStep(10, 1, Fluids.HOTCRACKOIL, 1));
         BOILER.put(Fluids.CRACKOIL_DS, new HeatStep(10, 1, Fluids.HOTCRACKOIL_DS, 1));
+
+        REACTOR.put(Fluids.COOLANT, new HeatStep(300, 1, Fluids.COOLANT_HOT, 1));
     }
 }

@@ -82,7 +82,7 @@ public class GUIMachineDiesel extends dev.golem.core.gui.CompatContainerScreen<C
         }
         if (this.isHovering(80, 17, 16, 52, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal(te.tank.getTankType().getName()),
+                    te.tank.getTankType().getDisplayName(),
                     Component.literal(te.tank.getFill() + " / " + te.tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
         }
     }

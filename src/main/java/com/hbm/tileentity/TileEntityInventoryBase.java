@@ -125,14 +125,16 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
         return isItemValidForSlot(slot, stack);
     }
 
+    /**
+     * Upstream's {@code isUseableByPlayer}. The radius comes from the block rather than being a flat
+     * constant, so a multiblock's is measured against its footprint and not just its core cell — see
+     * {@link com.hbm.blocks.BlockDummyable#isWithinInteractionRange}.
+     */
     @Override
     public boolean stillValid(Player player) {
         return this.level != null
                 && this.level.getBlockEntity(this.worldPosition) == this
-                && player.distanceToSqr(
-                        this.worldPosition.getX() + 0.5,
-                        this.worldPosition.getY() + 0.5,
-                        this.worldPosition.getZ() + 0.5) <= 128.0;
+                && com.hbm.blocks.BlockDummyable.isWithinInteractionRange(this.level, this.worldPosition, player);
     }
 
     @Override

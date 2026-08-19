@@ -36,6 +36,11 @@ public final class ModHazardBlocks {
     /** Every hazard block (for the initHazards radiation‑value pass). */
     public static final List<RegistryObject<? extends Block>> HAZARD_BLOCKS = new ArrayList<>();
 
+    /** Watz meltdown sludge — placed by the reactor, never crafted, so it has no block item. */
+    public static final RegistryObject<com.hbm.blocks.generic.BlockMud> mud_block = BLOCKS.registerBlock(
+            "mud_block", com.hbm.blocks.generic.BlockMud::new,
+            p -> p.strength(1.0F, 500.0F).sound(SoundType.SLIME_BLOCK).noOcclusion());
+
     // ---- radioactive metal storage blocks ----
     public static final RegistryObject<BlockHazard> block_uranium = hazard("block_uranium");
     public static final RegistryObject<BlockHazard> block_u233 = hazard("block_u233");

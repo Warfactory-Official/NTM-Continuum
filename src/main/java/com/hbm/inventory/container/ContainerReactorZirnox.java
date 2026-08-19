@@ -109,7 +109,7 @@ public class ContainerReactorZirnox extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_zirnox.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_zirnox.get());
     }
 
     @Override

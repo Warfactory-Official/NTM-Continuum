@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/reactors/watz.obj",
+      "texture": "hbm:textures/models/machines/watz.png",
+      "scale": 0.16,
+      "yaw": 180,
+      "ty": 0.0
+    }
+  }
+}

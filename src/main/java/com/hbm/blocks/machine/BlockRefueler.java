@@ -88,7 +88,7 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements E
                 FluidType type = identifier.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
                 te.setTankType(type);
                 player.sendSystemMessage(Component.translatable("chat.fractioning.changedto",
-                        Component.translatable(type.getTranslationKey())).withStyle(ChatFormatting.YELLOW));
+                        type.getDisplayName()).withStyle(ChatFormatting.YELLOW));
             }
             return InteractionResult.SUCCESS;
         }

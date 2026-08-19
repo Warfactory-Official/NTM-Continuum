@@ -89,7 +89,7 @@ public class HeaterOilburner extends BlockDummyable implements IFluidConnectorBl
 
         List<String> text = new ArrayList<>();
         text.add("§a-> §r" + heater.setting + " mB/t");
-        text.add(heater.tank.getTankType().getName() + ": " + String.format("%,d", heater.tank.getFill()) + "/" + String.format("%,d", heater.tank.getMaxFill()) + " mB");
+        text.add(heater.tank.getTankType().getDisplayNameString() + ": " + String.format("%,d", heater.tank.getFill()) + "/" + String.format("%,d", heater.tank.getMaxFill()) + " mB");
         text.add(String.format("%,d", heater.heatEnergy) + " TU");
         ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
     }

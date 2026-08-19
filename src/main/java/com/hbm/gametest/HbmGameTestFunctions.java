@@ -47,19 +47,43 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function PUREX_MENU =
             TESTS.function("purex_menu", 20, () -> HbmGameTestFunctions::purexMenu);
     public static final GameTests.Function PUREX_LAYOUT =
-            TESTS.function("purex_layout", 100, () -> HbmGameTestFunctions::purexLayout);
+            TESTS.function("purex_layout", 100, 8, () -> HbmGameTestFunctions::purexLayout);
     public static final GameTests.Function ZIRNOX_GOLDEN_TICK =
-            TESTS.function("zirnox_golden_tick", 20, () -> HbmGameTestFunctions::zirnoxGoldenTick);
+            TESTS.function("zirnox_golden_tick", 20, 8, () -> HbmGameTestFunctions::zirnoxGoldenTick);
     public static final GameTests.Function ZIRNOX_LAYOUT =
-            TESTS.function("zirnox_layout", 100, () -> HbmGameTestFunctions::zirnoxLayout);
+            TESTS.function("zirnox_layout", 100, 8, () -> HbmGameTestFunctions::zirnoxLayout);
+    public static final GameTests.Function WATZ_LAYOUT =
+            TESTS.function("watz_layout", 100, 8, () -> HbmGameTestFunctions::watzLayout);
+    public static final GameTests.Function WATZ_STRUCT_ASSEMBLY =
+            TESTS.function("watz_struct_assembly", 200, 8, () -> HbmGameTestFunctions::watzStructAssembly);
+    public static final GameTests.Function STRUCT_PARTIAL_NO_ASSEMBLY =
+            TESTS.function("struct_partial_no_assembly", 200, 8, () -> HbmGameTestFunctions::structPartialNoAssembly);
+    public static final GameTests.Function BLOWTORCH_FUEL =
+            TESTS.function("blowtorch_fuel", 20, () -> HbmGameTestFunctions::blowtorchFuel);
+    public static final GameTests.Function MULTIBLOCK_INTERACTION_RANGE =
+            TESTS.function("multiblock_interaction_range", 40, 26, () -> HbmGameTestFunctions::multiblockInteractionRange);
+    public static final GameTests.Function FUSION_TORUS_LAYOUT =
+            TESTS.function("fusion_torus_layout", 200, 20, () -> HbmGameTestFunctions::fusionTorusLayout);
+    public static final GameTests.Function FUSION_STRUCT_ASSEMBLY =
+            TESTS.function("fusion_struct_assembly", 300, 20, () -> HbmGameTestFunctions::fusionStructAssembly);
+    public static final GameTests.Function FUSION_RECIPES =
+            TESTS.function("fusion_recipes", 20, () -> HbmGameTestFunctions::fusionRecipes);
+    public static final GameTests.Function FUSION_CHAIN =
+            TESTS.function("fusion_chain", 100, 24, () -> HbmGameTestFunctions::fusionChain);
+    public static final GameTests.Function FUSION_PORTS =
+            TESTS.function("fusion_ports", 100, 24, () -> HbmGameTestFunctions::fusionPorts);
+    public static final GameTests.Function FLUID_DISPLAY_NAMES =
+            TESTS.function("fluid_display_names", 20, () -> HbmGameTestFunctions::fluidDisplayNames);
+    public static final GameTests.Function LANG_COVERAGE =
+            TESTS.function("lang_coverage", 20, () -> HbmGameTestFunctions::langCoverage);
     public static final GameTests.Function ZIRNOX_WORLD_TICK =
-            TESTS.function("zirnox_world_tick", 100, () -> HbmGameTestFunctions::zirnoxWorldTick);
+            TESTS.function("zirnox_world_tick", 100, 8, () -> HbmGameTestFunctions::zirnoxWorldTick);
     public static final GameTests.Function ZIRNOX_STEAM_OUTPUT =
-            TESTS.function("zirnox_steam_output", 300, () -> HbmGameTestFunctions::zirnoxSteamOutput);
+            TESTS.function("zirnox_steam_output", 300, 8, () -> HbmGameTestFunctions::zirnoxSteamOutput);
     public static final GameTests.Function ZIRNOX_MELTDOWN =
-            TESTS.function("zirnox_meltdown", 100, () -> HbmGameTestFunctions::zirnoxMeltdown);
+            TESTS.function("zirnox_meltdown", 100, 8, () -> HbmGameTestFunctions::zirnoxMeltdown);
     public static final GameTests.Function ZIRNOX_WRECK_HAZARDS =
-            TESTS.function("zirnox_wreck_hazards", 100, () -> HbmGameTestFunctions::zirnoxWreckHazards);
+            TESTS.function("zirnox_wreck_hazards", 100, 8, () -> HbmGameTestFunctions::zirnoxWreckHazards);
 
     // --- ore worldgen (implementations live in OreWorldgenGameTests) ---
     public static final GameTests.Function ORE_VEIN_SHAPE =
@@ -618,6 +642,481 @@ public final class HbmGameTestFunctions {
                 "ZIRNOX steam conversion regressed");
         helper.assertTrue(reactor.heat == 46_440, "ZIRNOX cooling order regressed");
         helper.succeed();
+    }
+
+    /**
+     * The blowtorch's fuel contract: a pristine torch is FULL (upstream filled its NBT lazily on first
+     * read), a weld costs gas even in creative, and an emptied torch stays empty rather than reading as
+     * full again through the absent component.
+     */
+    /**
+     * Every fluid must have a real {@code hbmfluid.*} name, not the title-cased id.
+     *
+     * <p>The two are indistinguishable for the 39 fluids whose name happens to match their id, which is
+     * exactly why this rotted unnoticed: a spot check on {@code DEUTERIUM} passes either way. The guard
+     * is that the key <b>resolves at all</b>, plus a handful of fluids whose real name is nothing like
+     * the id, so a regression cannot hide behind the coincidental matches.
+     */
+    /**
+     * Every registered {@code hbm:} item must have a lang entry — an item whose name renders as
+     * {@code item.hbm.foo} is shipped-looking but unfinished, and nothing else catches it.
+     */
+    private static void langCoverage(GameTestHelper helper) {
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            net.minecraft.resources.Identifier id =
+                    net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);
+            if (id == null || !com.hbm.Constants.MOD_ID.equals(id.getNamespace())) continue;
+            // The EFFECTIVE name, not the key: the autogen material items and the fluid containers
+            // build their name in getName() and legitimately have no lang entry of their own.
+            String shown = item.getName(item.getDefaultInstance()).getString();
+            if (shown.equals(item.getDescriptionId())) missing.add(id.getPath());
+        }
+        java.util.Collections.sort(missing);
+        helper.assertTrue(missing.isEmpty(),
+                missing.size() + " hbm items have no lang entry: " + missing);
+        helper.succeed();
+    }
+
+    private static void fluidDisplayNames(GameTestHelper helper) {
+        for (com.hbm.inventory.fluid.FluidType type : com.hbm.inventory.fluid.Fluids.getAll()) {
+            String key = type.getTranslationKey();
+            String shown = type.getDisplayNameString();
+            helper.assertTrue(!shown.equals(key),
+                    "Fluid " + type.getName() + " has no lang entry - shows the raw key " + key);
+            helper.assertTrue(!shown.isEmpty(), "Fluid " + type.getName() + " has an empty display name");
+        }
+
+        // Fluids whose real name is not a title-cased id. If a call site ever falls back to the id
+        // again, these are the ones that catch it.
+        record Named(com.hbm.inventory.fluid.FluidType type, String expected) {}
+        Named[] cases = {
+                new Named(com.hbm.inventory.fluid.Fluids.OIL, "Crude Oil"),
+                new Named(com.hbm.inventory.fluid.Fluids.HEAVYOIL, "Heavy Oil"),
+                new Named(com.hbm.inventory.fluid.Fluids.SMEAR, "Industrial Oil"),
+                new Named(com.hbm.inventory.fluid.Fluids.GAS, "Natural Gas"),
+                new Named(com.hbm.inventory.fluid.Fluids.WATZ, "Poisonous Mud"),
+                new Named(com.hbm.inventory.fluid.Fluids.UF6, "Uranium Hexafluoride"),
+                new Named(com.hbm.inventory.fluid.Fluids.HOTSTEAM, "Dense Steam"),
+        };
+        for (Named c : cases) {
+            helper.assertTrue(c.expected().equals(c.type().getDisplayNameString()),
+                    "Fluid " + c.type().getName() + " should display as '" + c.expected()
+                            + "' but shows '" + c.type().getDisplayNameString() + "'");
+        }
+        helper.succeed();
+    }
+
+    private static void blowtorchFuel(GameTestHelper helper) {
+        var torch = com.hbm.items.ModToolItems.blowtorch.get();
+        var stack = new net.minecraft.world.item.ItemStack(torch);
+        helper.assertTrue(torch.getFill(stack) == com.hbm.items.tool.ItemBlowtorch.MAX_FILL,
+                "A fresh blowtorch must be full, was " + torch.getFill(stack));
+
+        torch.setFill(stack, com.hbm.items.tool.ItemBlowtorch.COST);
+        helper.assertTrue(torch.getFill(stack) == com.hbm.items.tool.ItemBlowtorch.COST,
+                "Blowtorch fill did not round-trip");
+
+        torch.setFill(stack, 0);
+        helper.assertTrue(torch.getFill(stack) == 0,
+                "An emptied blowtorch must stay empty, read " + torch.getFill(stack));
+
+        // Welding a raw fusion component consumes exactly one charge and swaps the block.
+        var cell = new net.minecraft.core.BlockPos(1, 1, 1);
+        helper.setBlock(cell, ModMachineBlocks.fusion_component.get().defaultBlockState());
+        var full = new net.minecraft.world.item.ItemStack(torch);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.CREATIVE);
+        // The conversion also wants a steel cast plate; hand the player one.
+        player.getInventory().add(new net.minecraft.world.item.ItemStack(
+                com.hbm.items.ModAutogenItems.get(com.hbm.inventory.material.MaterialShapes.CASTPLATE,
+                        com.hbm.inventory.material.Mats.MAT_STEEL)));
+
+        boolean welded = ModMachineBlocks.fusion_component.get().onScrew(helper.getLevel(), player,
+                helper.absolutePos(cell), net.minecraft.core.Direction.UP,
+                net.minecraft.world.phys.Vec3.ZERO, net.minecraft.world.InteractionHand.MAIN_HAND,
+                com.hbm.api.block.IToolable.ToolType.TORCH);
+        helper.assertTrue(welded, "Blowtorch failed to weld a raw fusion component");
+        helper.assertTrue(helper.getBlockState(cell).getBlock() == ModMachineBlocks.fusion_component_bscco_welded.get(),
+                "Welded component did not become the BSCCO coil");
+
+        torch.setFill(full, torch.getFill(full) - com.hbm.items.tool.ItemBlowtorch.COST);
+        helper.assertTrue(torch.getFill(full) == com.hbm.items.tool.ItemBlowtorch.MAX_FILL
+                        - com.hbm.items.tool.ItemBlowtorch.COST,
+                "A weld must cost exactly one charge, left " + torch.getFill(full));
+        helper.succeed();
+    }
+
+    /**
+     * A multiblock's menu range must reach every cell of its own structure. The menu binds to the CORE,
+     * but the player stands at whatever cell they clicked — so measuring vanilla's interaction range to
+     * the core locks you out of a big machine while you are pressed against it.
+     *
+     * <p>Checks all three axes deliberately: the first version of this fix used the horizontal footprint
+     * only, which left the tall machines (coker 22 high over a 1-block footprint, gas flare, oil well)
+     * just as broken as before.
+     */
+    private static void multiblockInteractionRange(GameTestHelper helper) {
+        // Every multiblock must be usable from any cell it occupies, plus a player's reach.
+        record Case(String name, BlockDummyable block) {}
+        var cases = new Case[]{
+                new Case("fusion_torus", ModMachineBlocks.fusion_torus.get()),
+                new Case("watz", ModMachineBlocks.watz.get()),
+                new Case("coker", ModMachineBlocks.machine_coker.get()),
+                new Case("gas flare", ModMachineBlocks.machine_flare.get()),
+                new Case("oil well", ModMachineBlocks.machine_well.get()),
+                new Case("fracking tower", ModMachineBlocks.machine_fracking_tower.get()),
+                new Case("assembly machine", ModMachineBlocks.machine_assembly_machine.get()),
+        };
+        for (Case c : cases) {
+            int[] dim = c.block().getDimensions();
+            double y = Math.max(dim[0], dim[1]);
+            double z = Math.max(dim[2], dim[3]);
+            double x = Math.max(dim[4], dim[5]);
+            double corner = Math.sqrt(x * x + y * y + z * z);
+            double range = Math.sqrt(c.block().getInteractionRangeSq());
+            helper.assertTrue(range >= corner + 4D,
+                    c.name() + " range " + Math.round(range) + " must clear its furthest cell ("
+                            + Math.round(corner) + ") plus reach");
+        }
+
+        // The tall machines are the ones a horizontal-only radius silently misses.
+        double coker = Math.sqrt(ModMachineBlocks.machine_coker.get().getInteractionRangeSq());
+        helper.assertTrue(coker > 22D,
+                "The coker is 22 blocks tall; its range must exceed that, was " + Math.round(coker));
+
+        // And the live predicate must agree, at the torus's edge and at the top of a tall machine.
+        var core = new net.minecraft.core.BlockPos(8, 1, 8);
+        var torus = ModMachineBlocks.fusion_torus.get();
+        helper.setBlock(core, torus.defaultBlockState().setValue(BlockDummyable.META, 12));
+        torus.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var absCore = helper.absolutePos(core);
+        player.setPos(absCore.getX() + 8.5D, absCore.getY(), absCore.getZ() + 0.5D);
+        helper.assertTrue(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absCore, player),
+                "A player at the torus's edge must be able to use it");
+
+        player.setPos(absCore.getX() + 64.5D, absCore.getY(), absCore.getZ() + 0.5D);
+        helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absCore, player),
+                "The range must still cut off at distance");
+
+        // The fracking tower is the case a dimensions-derived radius CANNOT cover: it declares a radius
+        // of 3 and then erects a derrick 24 blocks tall. A player at the top is standing on the machine
+        // and must be able to use it, which only the cell fallback can establish.
+        var towerCore = new net.minecraft.core.BlockPos(2, 1, 2);
+        var tower = ModMachineBlocks.machine_fracking_tower.get();
+        helper.setBlock(towerCore, tower.defaultBlockState().setValue(BlockDummyable.META, 12));
+        tower.formStructure(helper.getLevel(), helper.absolutePos(towerCore), com.hbm.lib.ForgeDirection.NORTH);
+        var absTower = helper.absolutePos(towerCore);
+
+        helper.assertTrue(Math.sqrt(tower.getInteractionRangeSq()) < 24D,
+                "This test is only meaningful while the tower's declared radius is too small");
+
+        // Standing at the crown, 20 blocks up the derrick.
+        player.setPos(absTower.getX() + 0.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
+        helper.assertTrue(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
+                "A player on top of the fracking tower must be able to use it");
+
+        // But standing 20 blocks up in open air well to the side must not count.
+        player.setPos(absTower.getX() + 40.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
+        helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
+                "Being high up near nothing must not grant access");
+        helper.succeed();
+    }
+
+    /** The fuel cycles must actually be registered - they were dead data until the torus asked for them. */
+    private static void fusionRecipes(GameTestHelper helper) {
+        var set = com.hbm.inventory.recipes.FusionRecipes.INSTANCE;
+        set.registerRecipes();
+        helper.assertTrue(set.recipeOrderedList.size() == 10,
+                "Expected 10 fusion fuel cycles, found " + set.recipeOrderedList.size());
+
+        var dd = set.getRecipe("fus.dd");
+        helper.assertTrue(dd instanceof com.hbm.inventory.recipes.FusionRecipe, "fus.dd must be a FusionRecipe");
+        var fusion = (com.hbm.inventory.recipes.FusionRecipe) dd;
+        helper.assertTrue(fusion.ignitionTemp == 750_000L, "D-D ignition must be 750k, was " + fusion.ignitionTemp);
+        helper.assertTrue(fusion.outputTemp == 1_000_000L, "D-D output must be 1M, was " + fusion.outputTemp);
+
+        // maxInput drives the creative klystron, so it must be the largest ignition of the set.
+        long highest = 0;
+        for (var recipe : set.recipeOrderedList) {
+            if (recipe instanceof com.hbm.inventory.recipes.FusionRecipe f) highest = Math.max(highest, f.ignitionTemp);
+        }
+        helper.assertTrue(set.maxInput == highest && highest == 10_000_000L,
+                "maxInput must be the highest ignition (10M), was " + set.maxInput);
+        helper.succeed();
+    }
+
+    /**
+     * The chain end to end: a creative klystron lights a torus, and the torus pushes plasma into a
+     * boiler that turns water into superheated steam. This is the whole point of the fusion family -
+     * each machine on its own proves nothing.
+     */
+    private static void fusionChain(GameTestHelper helper) {
+        var torusCore = new net.minecraft.core.BlockPos(9, 1, 9);
+        var torus = ModMachineBlocks.fusion_torus.get();
+        helper.setBlock(torusCore, torus.defaultBlockState().setValue(BlockDummyable.META, 12));
+        torus.formStructure(helper.getLevel(), helper.absolutePos(torusCore), com.hbm.lib.ForgeDirection.NORTH);
+        var torusTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, torusCore,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class);
+        helper.assertTrue(torusTe != null, "Torus setup failed");
+
+        // Pick a cycle and stock it: D-D burns deuterium alone.
+        com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes();
+        torusTe.fusionModule.recipe = "fus.dd";
+        torusTe.fusionModule.setupTanks(torusTe.fusionModule.getRecipe());
+        torusTe.tanks[0].setFill(torusTe.tanks[0].getMaxFill());
+        torusTe.power = torusTe.getMaxPower();
+        torusTe.coolantTanks[0].setFill(torusTe.coolantTanks[0].getMaxFill());
+        // Chill it below the operating threshold; otherwise it spends the test warming up.
+        torusTe.temperature = com.hbm.tileentity.machine.albion.TileEntityCooledBase.temperature_target;
+
+        // The klystron beam is delivered straight into the torus, exactly as the network does it.
+        torusTe.receiveKlystronEnergy(com.hbm.inventory.recipes.FusionRecipes.INSTANCE.maxInput);
+
+        var boilerCore = new net.minecraft.core.BlockPos(2, 1, 2);
+        var boiler = ModMachineBlocks.fusion_boiler.get();
+        helper.setBlock(boilerCore, boiler.defaultBlockState().setValue(BlockDummyable.META, 12));
+        boiler.formStructure(helper.getLevel(), helper.absolutePos(boilerCore), com.hbm.lib.ForgeDirection.NORTH);
+        var boilerTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, boilerCore,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler.class);
+        helper.assertTrue(boilerTe != null, "Boiler setup failed");
+        boilerTe.tanks[0].setFill(boilerTe.tanks[0].getMaxFill());
+
+        helper.assertTrue(boilerTe.receivesFusionPower(), "The boiler must take a share of the plasma");
+        // One tick of a lit D-D cycle, handed over the way the torus hands it over.
+        boilerTe.receiveFusionPower(1_000_000L, 0D, 1F, 0.2F, 0.2F);
+
+        helper.assertTrue(boilerTe.tanks[1].getFill() > 0,
+                "The boiler must have made superheated steam from plasma");
+        helper.assertTrue(boilerTe.tanks[0].getFill() < boilerTe.tanks[0].getMaxFill(),
+                "The boiler must have consumed water");
+
+        // The collector boosts without consuming; the coupler consumes like any other receiver.
+        var collector = new com.hbm.tileentity.machine.fusion.TileEntityFusionCollector(
+                net.minecraft.core.BlockPos.ZERO, ModMachineBlocks.fusion_collector.get().defaultBlockState());
+        helper.assertFalse(collector.receivesFusionPower(), "The collector must not take a share of the output");
+        helper.assertTrue(collector.providesCollectorBonus(), "The collector must grant the reactor its bonus");
+        helper.succeed();
+    }
+
+    /**
+     * Every port a fusion machine advertises must be reachable: the cell beside it has to belong to
+     * that machine and accept a connection on that face. A port whose cell is buried inside the
+     * machine's own mass is worse than no port, because the machine looks connectable and is not.
+     */
+    private static void fusionPorts(GameTestHelper helper) {
+        checkPorts(helper, new net.minecraft.core.BlockPos(9, 1, 9), ModMachineBlocks.fusion_torus.get(),
+                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionTorus) te).getConPos());
+        checkPorts(helper, new net.minecraft.core.BlockPos(2, 1, 2), ModMachineBlocks.fusion_klystron.get(),
+                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron) te).getConPos());
+        checkPorts(helper, new net.minecraft.core.BlockPos(2, 1, 16), ModMachineBlocks.fusion_boiler.get(),
+                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler) te).getConPos());
+        checkPorts(helper, new net.minecraft.core.BlockPos(20, 1, 2), ModMachineBlocks.fusion_mhdt.get(),
+                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT) te).getConPos());
+        helper.succeed();
+    }
+
+    private static void checkPorts(GameTestHelper helper, net.minecraft.core.BlockPos core, BlockDummyable block,
+                                   java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity,
+                                           java.util.List<com.hbm.lib.DirPos>> ports) {
+        String name = block.getName().getString();
+        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        var te = helper.getLevel().getBlockEntity(helper.absolutePos(core));
+        helper.assertTrue(te != null, name + " controller setup failed");
+        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+
+        var declared = ports.apply(te);
+        helper.assertFalse(declared.isEmpty(), name + " declares no ports at all");
+
+        for (com.hbm.lib.DirPos port : declared) {
+            var dir = port.getDir();
+            // The cell that hosts this connection is the one the pipe would touch.
+            var cell = port.getPos().offset(-dir.offsetX, -dir.offsetY, -dir.offsetZ);
+            var state = helper.getLevel().getBlockState(cell);
+            helper.assertTrue(state.getBlock() == block,
+                    name + " port at " + port.getPos() + " has no machine cell beside it");
+
+            // And the pipe's own position must NOT be part of the machine, or nothing can sit there.
+            helper.assertFalse(helper.getLevel().getBlockState(port.getPos()).getBlock() == block,
+                    name + " port at " + port.getPos() + " is buried inside the machine");
+
+            if (block instanceof com.hbm.api.fluidmk2.IFluidConnectorBlockMK2 fluid) {
+                helper.assertTrue(fluid.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
+                                cell.getX(), cell.getY(), cell.getZ(), dir),
+                        name + " refuses a fluid connection at its own port " + port.getPos());
+            }
+            if (block instanceof com.hbm.api.energymk2.IEnergyConnectorBlock energy) {
+                helper.assertTrue(energy.canConnect(helper.getLevel(), cell, dir),
+                        name + " refuses an energy connection at its own port " + port.getPos());
+            }
+        }
+    }
+
+    // --- Fusion torus ---
+
+    private static void fusionTorusLayout(GameTestHelper helper) {
+        var core = new net.minecraft.core.BlockPos(8, 1, 8);
+        var block = ModMachineBlocks.fusion_torus.get();
+        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null, "Torus controller setup failed");
+        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+
+        helper.assertBlockProperty(core, BlockDummyable.META, 12);
+
+        // Every non-zero mask cell must be filled, and every zero one must not be — that hollow centre
+        // is what makes it a torus rather than a cylinder.
+        int occupied = 0;
+        for (int iy = 0; iy < com.hbm.blocks.machine.fusion.MachineFusionTorus.HEIGHT; iy++) {
+            int[][] layer = com.hbm.blocks.machine.fusion.MachineFusionTorus.layerFor(iy);
+            int half = layer.length / 2;
+            for (int ix = 0; ix < layer.length; ix++) {
+                for (int iz = 0; iz < layer[ix].length; iz++) {
+                    boolean expected = layer[ix][iz] > 0;
+                    var cell = core.offset(ix - half, iy, iz - half);
+                    boolean present = helper.getBlockState(cell).getBlock() == block;
+                    helper.assertTrue(present == expected,
+                            "Incorrect torus cell at " + (ix - half) + "," + iy + "," + (iz - half));
+                    if (present) occupied++;
+                }
+            }
+        }
+        helper.assertTrue(occupied == 925, "Torus must contain exactly 925 cells, found " + occupied);
+
+        // The centre-top port plus the twenty-four ring ports.
+        helper.assertBlockProperty(core.above(4), BlockDummyable.META, 7);
+        for (int dy : new int[]{0, 4}) {
+            for (int off : new int[]{-2, 0, 2}) {
+                for (int[] p : new int[][]{{6, dy, off}, {-6, dy, off}, {off, dy, 6}, {off, dy, -6}}) {
+                    int meta = helper.getBlockState(core.offset(p[0], p[1], p[2])).getValue(BlockDummyable.META);
+                    helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
+                            "Torus port " + p[0] + "," + p[1] + "," + p[2] + " must be an extra dummy, was " + meta);
+                }
+            }
+        }
+
+        var torus = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class);
+        helper.assertTrue(torus.getConPos().size() == 26,
+                "Torus must expose 26 ports, found " + torus.getConPos().size());
+        helper.succeed();
+    }
+
+    private static void fusionStructAssembly(GameTestHelper helper) {
+        var seed = new net.minecraft.core.BlockPos(8, 1, 8);
+        helper.setBlock(seed, ModMachineBlocks.struct_torus_core.get().defaultBlockState());
+        var struct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
+                com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct.class);
+        helper.assertTrue(struct != null, "Torus struct core setup failed");
+        // 924 component blocks: the whole mask except the seed's own cell.
+        helper.assertTrue(struct.pattern().cells().size() == 924,
+                "Torus pattern must ask for 924 components, asks for " + struct.pattern().cells().size());
+        for (var cell : struct.pattern().cells()) {
+            helper.setBlock(seed.offset(cell.offset()), cell.block().get().defaultBlockState());
+        }
+
+        helper.runAfterDelay(45, () -> {
+            var block = ModMachineBlocks.fusion_torus.get();
+            helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
+                    "Torus struct core did not become a fusion reactor");
+            helper.assertBlockProperty(seed, BlockDummyable.META, 12);
+            helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
+                    com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null,
+                    "Assembled torus has no controller");
+            helper.assertTrue(helper.getBlockState(seed.offset(7, 0, 0)).getBlock() == block,
+                    "Assembled torus did not fill its outer ring");
+            helper.succeed();
+        });
+    }
+
+    // --- Watz power plant + the struct-core assembly framework ---
+
+    /** Builds the reactor's component shape around {@code seed}, which must be a struct core. */
+    private static void buildWatzShape(GameTestHelper helper, net.minecraft.core.BlockPos seed) {
+        var struct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
+                com.hbm.tileentity.machine.struct.TileEntityWatzStruct.class);
+        helper.assertTrue(struct != null, "Watz struct core setup failed");
+        for (var cell : struct.pattern().cells()) {
+            helper.setBlock(seed.offset(cell.offset()), cell.block().get().defaultBlockState());
+        }
+    }
+
+    private static void watzLayout(GameTestHelper helper) {
+        var core = new net.minecraft.core.BlockPos(4, 1, 4);
+        var block = ModMachineBlocks.watz.get();
+        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
+                com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Watz controller setup failed");
+        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+
+        helper.assertBlockProperty(core, BlockDummyable.META, 12);
+        // The cross: |x| + |z| reaches 3 along the axes and 2 on the diagonals, three blocks tall.
+        int occupied = 0;
+        for (int dx = -3; dx <= 3; dx++) {
+            for (int dy = 0; dy <= 2; dy++) {
+                for (int dz = -3; dz <= 3; dz++) {
+                    if (helper.getBlockState(core.offset(dx, dy, dz)).getBlock() == block) occupied++;
+                }
+            }
+        }
+        // 63 (the 3x3x7 core box) + 15 + 15 (the x = +/-2 arms, 1x3x5) + 9 + 9 (the x = +/-3 tips, 1x3x3).
+        helper.assertTrue(occupied == 111, "Watz must contain exactly 111 cells, found " + occupied);
+
+        // The nine promoted port cells.
+        for (int[] p : new int[][]{{2, 0, 0}, {-2, 0, 0}, {0, 0, 2}, {0, 0, -2},
+                {2, 2, 0}, {-2, 2, 0}, {0, 2, 2}, {0, 2, -2}, {0, 2, 0}}) {
+            var cell = core.offset(p[0], p[1], p[2]);
+            int meta = helper.getBlockState(cell).getValue(BlockDummyable.META);
+            helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
+                    "Watz port cell " + p[0] + "," + p[1] + "," + p[2] + " must be an extra dummy, was meta " + meta);
+        }
+
+        var watz = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
+                com.hbm.tileentity.machine.TileEntityWatz.class);
+        var ports = watz.getConPos();
+        helper.assertTrue(ports.size() == 10, "Watz must expose five intake and five outlet ports, found " + ports.size());
+        helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.above(3)))
+                && p.getDir() == com.hbm.lib.ForgeDirection.UP), "Missing centre coolant intake");
+        helper.assertTrue(ports.stream().anyMatch(p -> p.getPos().equals(helper.absolutePos(core.below()))
+                && p.getDir() == com.hbm.lib.ForgeDirection.DOWN), "Missing centre outlet");
+        helper.succeed();
+    }
+
+    /** The whole struct ritual: build the shape, wait a second, get a reactor. */
+    private static void watzStructAssembly(GameTestHelper helper) {
+        var seed = new net.minecraft.core.BlockPos(4, 1, 4);
+        helper.setBlock(seed, ModMachineBlocks.struct_watz_core.get().defaultBlockState());
+        buildWatzShape(helper, seed);
+
+        // The scan runs on the 20-tick boundary, so allow a full cycle plus slack.
+        helper.runAfterDelay(45, () -> {
+            var block = ModMachineBlocks.watz.get();
+            helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
+                    "Struct core did not become a Watz reactor");
+            helper.assertBlockProperty(seed, BlockDummyable.META, 12);
+            helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
+                    com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Assembled Watz has no controller");
+            // The shell must have formed too, not just the core.
+            helper.assertTrue(helper.getBlockState(seed.offset(3, 0, 0)).getBlock() == block,
+                    "Assembled Watz did not fill its dummy shell");
+            helper.succeed();
+        });
+    }
+
+    /** One wrong block must keep the seed a seed, however long it waits. */
+    private static void structPartialNoAssembly(GameTestHelper helper) {
+        var seed = new net.minecraft.core.BlockPos(4, 1, 4);
+        helper.setBlock(seed, ModMachineBlocks.struct_watz_core.get().defaultBlockState());
+        buildWatzShape(helper, seed);
+        // Swap one riveted casing cell for the un-riveted kind: correct block family, wrong variant.
+        helper.setBlock(seed.offset(3, 0, 0), ModMachineBlocks.watz_casing.get().defaultBlockState());
+
+        helper.runAfterDelay(45, () -> {
+            helper.assertTrue(helper.getBlockState(seed).getBlock() == ModMachineBlocks.struct_watz_core.get(),
+                    "Struct core assembled despite an incomplete shape");
+            helper.succeed();
+        });
     }
 
     private static void zirnoxLayout(GameTestHelper helper) {

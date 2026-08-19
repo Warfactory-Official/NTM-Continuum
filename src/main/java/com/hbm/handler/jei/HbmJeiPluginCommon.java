@@ -47,6 +47,7 @@ public final class HbmJeiPluginCommon {
     private static JEIGenericRecipeHandler assembly;
     private static JEIGenericRecipeHandler chemplant;
     private static JEIGenericRecipeHandler purex;
+    private static JEIGenericRecipeHandler fusion;
     private static PressRecipeHandler press;
     private static SolderingStationRecipeHandler soldering;
     private static CrystallizerRecipeHandler crystallizer;
@@ -97,6 +98,9 @@ public final class HbmJeiPluginCommon {
                 title("chemical_plant"), ChemicalPlantRecipes.INSTANCE, stack(ModMachineBlocks.machine_chemical_plant.get()));
         purex = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.PUREX,
                 title("purex"), PUREXRecipes.INSTANCE, stack(ModMachineBlocks.machine_purex.get()));
+        fusion = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.FUSION,
+                title("fusion"), com.hbm.inventory.recipes.FusionRecipes.INSTANCE,
+                stack(ModMachineBlocks.fusion_torus.get()));
         press = new PressRecipeHandler(helper, HbmJeiRecipeTypes.PRESS, title("press"),
                 stack(ModMachineBlocks.machine_press.get()));
         soldering = new SolderingStationRecipeHandler(helper, HbmJeiRecipeTypes.SOLDERING_STATION,
@@ -142,7 +146,7 @@ public final class HbmJeiPluginCommon {
         compressor = new CompressorRecipeHandler(helper, HbmJeiRecipeTypes.COMPRESSOR,
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
 
-        reg.addRecipeCategories(assembly, chemplant, purex, press, soldering, crystallizer, silex, shredder, crucible, anvilCon, anvilSmith,
+        reg.addRecipeCategories(assembly, chemplant, purex, fusion, press, soldering, crystallizer, silex, shredder, crucible, anvilCon, anvilSmith,
                 refinery, fractioning, liquefaction, solidification, boiling, cooling,
                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor);
     }
@@ -151,6 +155,7 @@ public final class HbmJeiPluginCommon {
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
         PUREXRecipes.INSTANCE.registerRecipes();
+        com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes();
         PressRecipes.register();
         SolderingRecipes.register();
         CrystallizerRecipes.register();
@@ -158,6 +163,7 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, assembly.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, chemplant.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PUREX, purex.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.FUSION, fusion.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRYSTALLIZER, CrystallizerRecipes.recipes);
@@ -187,6 +193,7 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, stack(ModMachineBlocks.machine_chemical_plant.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.FUSION, stack(ModMachineBlocks.fusion_torus.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SOLDERING_STATION, stack(ModMachineBlocks.machine_soldering_station.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRYSTALLIZER, stack(ModMachineBlocks.machine_crystallizer.get()));

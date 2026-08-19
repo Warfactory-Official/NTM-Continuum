@@ -231,6 +231,23 @@ public final class WavefrontObj {
         for (Group g : groups) if (g.name.equals(name)) drawGroup(g, pose, buffer, light, overlay, color);
     }
 
+    /**
+     * Draws a named part with the texture scrolled by {@code (uOffset, vOffset)} and, optionally, both
+     * faces emitted.
+     *
+     * <p>The scroll is baked into the vertices rather than set on the render type. A 1.12 renderer would
+     * translate the GL texture matrix, and 26.1's nearest equivalent ({@code energySwirl}) folds the
+     * offset into the {@code RenderType} itself — which means a continuously animated offset mints a new
+     * RenderType every frame, and vanilla memoizes those forever. Baking keeps one stable, cached type
+     * per texture. The texture wraps, so offsets outside 0..1 tile exactly as they did before.
+     */
+    public void renderPart(String name, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
+                           int color, float uOffset, float vOffset, boolean doubleSided) {
+        for (Group g : groups) {
+            if (g.name.equals(name)) drawGroup(g, pose, buffer, light, overlay, color, doubleSided, uOffset, vOffset);
+        }
+    }
+
     private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay) {
         drawGroup(g, pose, buffer, light, overlay, -1, false);
     }
@@ -241,18 +258,23 @@ public final class WavefrontObj {
 
     private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
                            int color, boolean doubleSided) {
+        drawGroup(g, pose, buffer, light, overlay, color, doubleSided, 0F, 0F);
+    }
+
+    private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
+                           int color, boolean doubleSided, float uOffset, float vOffset) {
         for (int[][] face : g.faces) {
             // Fan-triangulate; emit each triangle as a quad (4th vertex duplicates the 3rd) for QUADS mode.
             for (int i = 1; i + 1 < face.length; i++) {
-                emit(face[0], pose, buffer, light, overlay, color);
-                emit(face[i], pose, buffer, light, overlay, color);
-                emit(face[i + 1], pose, buffer, light, overlay, color);
-                emit(face[i + 1], pose, buffer, light, overlay, color);
+                emit(face[0], pose, buffer, light, overlay, color, false, uOffset, vOffset);
+                emit(face[i], pose, buffer, light, overlay, color, false, uOffset, vOffset);
+                emit(face[i + 1], pose, buffer, light, overlay, color, false, uOffset, vOffset);
+                emit(face[i + 1], pose, buffer, light, overlay, color, false, uOffset, vOffset);
                 if (doubleSided) {
-                    emit(face[i + 1], pose, buffer, light, overlay, color, true);
-                    emit(face[i + 1], pose, buffer, light, overlay, color, true);
-                    emit(face[i], pose, buffer, light, overlay, color, true);
-                    emit(face[0], pose, buffer, light, overlay, color, true);
+                    emit(face[i + 1], pose, buffer, light, overlay, color, true, uOffset, vOffset);
+                    emit(face[i + 1], pose, buffer, light, overlay, color, true, uOffset, vOffset);
+                    emit(face[i], pose, buffer, light, overlay, color, true, uOffset, vOffset);
+                    emit(face[0], pose, buffer, light, overlay, color, true, uOffset, vOffset);
                 }
             }
         }
@@ -264,9 +286,14 @@ public final class WavefrontObj {
 
     private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
                       boolean reverseNormal) {
+        emit(ref, pose, buffer, light, overlay, color, reverseNormal, 0F, 0F);
+    }
+
+    private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
+                      boolean reverseNormal, float uOffset, float vOffset) {
         float[] p = positions[ref[0]];
-        float u = ref[1] >= 0 ? uvs[ref[1]][0] : 0F;
-        float v = ref[1] >= 0 ? uvs[ref[1]][1] : 0F;
+        float u = (ref[1] >= 0 ? uvs[ref[1]][0] : 0F) + uOffset;
+        float v = (ref[1] >= 0 ? uvs[ref[1]][1] : 0F) + vOffset;
         float nx = 0F, ny = 1F, nz = 0F;
         if (ref[2] >= 0) {
             float[] nrm = normals[ref[2]];

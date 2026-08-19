@@ -186,7 +186,8 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             duct.setFluidType(type);
             level.setBlock(pos, recomputeConnections(state, level, pos), 3); // refresh this duct + notify neighbours
-            player.sendSystemMessage(Component.literal("Duct fluid: " + type.getName()).withStyle(ChatFormatting.AQUA));
+            player.sendSystemMessage(Component.literal("Duct fluid: ").append(type.getDisplayName())
+                    .withStyle(ChatFormatting.AQUA));
         }
         return InteractionResult.SUCCESS;
     }
@@ -217,7 +218,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct)) return;
         FluidType type = duct.getFluidType();
         List<String> text = new ArrayList<>();
-        text.add("&[" + type.getColor() + "&]" + type.getDisplayName());
+        text.add("&[" + type.getColor() + "&]" + type.getDisplayNameString());
         ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
     }
 }

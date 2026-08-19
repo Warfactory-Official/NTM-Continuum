@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/fusion/coupler.obj",
+      "texture": "hbm:textures/models/fusion/coupler.png",
+      "scale": 0.3,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

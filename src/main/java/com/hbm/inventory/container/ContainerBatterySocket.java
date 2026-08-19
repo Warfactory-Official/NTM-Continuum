@@ -82,7 +82,7 @@ public class ContainerBatterySocket extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModBatteryBlocks.machine_battery_socket.get());
+        return Containers.stillValidMultiblock(access, player, ModBatteryBlocks.machine_battery_socket.get());
     }
 
     @Override

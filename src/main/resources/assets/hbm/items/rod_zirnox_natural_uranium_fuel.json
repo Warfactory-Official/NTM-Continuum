@@ -1,1 +1,6 @@
-{ "model": { "type": "minecraft:model", "model": "hbm:item/zirnox_rod" } }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hbm:item/rod_zirnox_natural_uranium_fuel"
+  }
+}

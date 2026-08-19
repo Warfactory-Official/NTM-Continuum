@@ -82,7 +82,7 @@ public class GUIMachineFluidTank extends dev.golem.core.gui.CompatContainerScree
         if (this.isHovering(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
             FluidTankNTM ft = tank.tank;
             GuiDraw.tooltip(graphics, this.font, List.of(
-                    Component.literal(ft.getTankType().getName()),
+                    ft.getTankType().getDisplayName(),
                     Component.literal(ft.getFill() + " / " + ft.getMaxFill() + " mB")
             ), Optional.empty(), mouseX, mouseY);
         } else if (this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {

@@ -3,6 +3,7 @@ package com.hbm.inventory.fluid;
 import com.hbm.Constants;
 import com.hbm.api.fluidmk2.FluidNetMK2;
 import com.hbm.uninos.INetworkProvider;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 import java.util.Locale;
@@ -30,6 +31,8 @@ public class FluidType {
     private final int color;
     /** Unlocalized translation key. */
     private final String unlocalized;
+    /** Title-cased id, used only when a fluid has no {@code hbmfluid.*} entry. */
+    private final String fallbackName;
     /** GUI tint (defaults to the colour; overridable for custom fluids). */
     private int guiTint;
     private final Identifier texture;
@@ -43,6 +46,7 @@ public class FluidType {
         this.color = color;
         this.guiTint = color;
         this.unlocalized = "hbmfluid." + name.toLowerCase(Locale.US);
+        this.fallbackName = titleCase(name);
         this.texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + name.toLowerCase(Locale.US) + ".png");
         this.id = Fluids.registerSelf(this);
     }
@@ -73,10 +77,28 @@ public class FluidType {
     /** The unique mapping name for this fluid, usually matching the unlocalized name minus the prefix. */
     public String getName() { return this.stringId; }
 
-    /** A human-readable, title-cased name for display, e.g. {@code HEAVY_OIL → "Heavy Oil"}. */
-    public String getDisplayName() {
+    /**
+     * The fluid's name as the player should see it — the localised {@code hbmfluid.*} entry.
+     *
+     * <p>Every display of a fluid name must come through here. Title-casing the internal id is
+     * <b>not</b> a substitute: it agrees with the real name for only 39 of the 157 fluids, and
+     * silently disagrees for the rest ({@code HEAVYOIL} is "Heavy Oil", {@code OIL} is "Crude Oil",
+     * {@code SMEAR} is "Industrial Oil", {@code WATZ} is "Poisonous Mud"). The title-cased id survives
+     * only as the fallback for a fluid that has no lang entry yet.
+     */
+    public Component getDisplayName() {
+        return Component.translatableWithFallback(this.unlocalized, this.fallbackName);
+    }
+
+    /** {@link #getDisplayName()} flattened, for the {@code &[colour]&]} look-overlay strings. */
+    public String getDisplayNameString() {
+        return getDisplayName().getString();
+    }
+
+    /** {@code HEAVY_OIL → "Heavy Oil"}. The fallback only; see {@link #getDisplayName()}. */
+    private static String titleCase(String id) {
         StringBuilder sb = new StringBuilder();
-        for (String part : this.stringId.toLowerCase(java.util.Locale.US).split("_")) {
+        for (String part : id.toLowerCase(Locale.US).split("_")) {
             if (part.isEmpty()) continue;
             sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
         }

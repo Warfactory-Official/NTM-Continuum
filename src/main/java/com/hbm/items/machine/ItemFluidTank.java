@@ -12,8 +12,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
-import java.util.Locale;
-
 /**
  * A portable universal fluid container — the 1.12.2 {@code ItemFluidTankV2}. One registered item holds
  * any single {@link FluidType} up to {@link #capacity} mB; the fluid id rides {@link ModDataComponents#FLUID_ID}
@@ -111,7 +109,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
     public Component getName(ItemStack stack) {
         int fill = getFill(stack);
         if (fill <= 0) return Component.translatable("item.hbm." + base + ".empty");
-        return Component.translatable("item.hbm." + base + ".not_empty", prettify(getType(stack).getName()));
+        return Component.translatable("item.hbm." + base + ".not_empty", getType(stack).getDisplayName());
     }
 
     @Override
@@ -137,13 +135,4 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
         tooltip.add(Component.literal(getFill(stack) + " / " + capacity + " mB").withStyle(ChatFormatting.GRAY));
     }
 
-    /** Title-cases the internal fluid name, e.g. {@code HEAVY_OIL} → {@code "Heavy Oil"}. */
-    private static String prettify(String name) {
-        StringBuilder sb = new StringBuilder();
-        for (String part : name.toLowerCase(Locale.US).split("_")) {
-            if (part.isEmpty()) continue;
-            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
-        }
-        return sb.toString().trim();
-    }
 }

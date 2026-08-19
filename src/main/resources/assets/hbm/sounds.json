@@ -273,5 +273,14 @@
       }
     ],
     "subtitle": "subtitles.step.iron_land"
+  },
+  "item.boltgun": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/boltgun",
+        "stream": false
+      }
+    ]
   }
 }

@@ -85,7 +85,7 @@ public class MachineHeatBoiler extends BlockDummyable implements IFluidConnector
                 boiler.tanks[0].setTankType(type);
                 boiler.setChanged();
                 player.sendSystemMessage(Component.literal("Changed type to ").withStyle(ChatFormatting.YELLOW)
-                        .append(Component.translatable(type.getTranslationKey()))
+                        .append(type.getDisplayName())
                         .append(Component.literal("!")));
             }
             return InteractionResult.SUCCESS;
@@ -120,7 +120,7 @@ public class MachineHeatBoiler extends BlockDummyable implements IFluidConnector
         List<String> text = new ArrayList<>();
         text.add(String.format("%,d", boiler.heat) + " TU");
         for (FluidTankNTM tank : boiler.tanks) {
-            text.add(tank.getTankType().getName() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
+            text.add(tank.getTankType().getDisplayNameString() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
         }
         ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
     }

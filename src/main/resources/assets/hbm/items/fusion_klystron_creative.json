@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/fusion/klystron.obj",
+      "texture": "hbm:textures/models/fusion/klystron_creative.png",
+      "scale": 0.18,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

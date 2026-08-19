@@ -76,7 +76,7 @@ public class GUIMachineCoker extends dev.golem.core.gui.CompatContainerScreen<Co
             if (this.isHovering(xs[i], 18, 16, 52, mouseX, mouseY)) {
                 FluidTankNTM tank = te.tanks[i];
                 GuiDraw.tooltip(graphics, this.font, List.of(
-                        Component.literal(tank.getTankType().getName()),
+                        tank.getTankType().getDisplayName(),
                         Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
                 return;
             }

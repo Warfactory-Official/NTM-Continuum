@@ -164,8 +164,10 @@ public final class HbmPackets {
         if (player == null) return;
         Level level = player.level();
         BlockEntity be = level.getBlockEntity(pos);
+        // The range is the machine's, not a flat 8 blocks: `pos` is a multiblock's CORE, which on a big
+        // machine is far from whatever cell the player is standing at (see BlockDummyable).
         if (be instanceof IControlReceiver receiver
-                && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5) <= 64.0
+                && com.hbm.blocks.BlockDummyable.isWithinInteractionRange(level, pos, player)
                 && receiver.hasPermission(player)) {
             try {
                 receiver.receiveControl(data);

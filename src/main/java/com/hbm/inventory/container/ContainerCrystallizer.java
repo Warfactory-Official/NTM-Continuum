@@ -81,7 +81,7 @@ public class ContainerCrystallizer extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_crystallizer.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_crystallizer.get());
     }
 
     @Override

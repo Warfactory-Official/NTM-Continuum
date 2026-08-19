@@ -90,7 +90,7 @@ public class ContainerSILEX extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_silex.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_silex.get());
     }
 
     /** The GUI's single "void contents" button, routed through the vanilla button path. */

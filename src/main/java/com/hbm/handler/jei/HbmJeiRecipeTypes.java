@@ -35,6 +35,7 @@ public final class HbmJeiRecipeTypes {
     public static final JeiRecipeType<GenericRecipe> ASSEMBLY_MACHINE = type("assembly_machine", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> CHEMICAL_PLANT = type("chemical_plant", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> PUREX = type("purex", GenericRecipe.class);
+    public static final JeiRecipeType<GenericRecipe> FUSION = type("fusion", GenericRecipe.class);
 
     public static final JeiRecipeType<PressRecipes.PressRecipe> PRESS = type("press", PressRecipes.PressRecipe.class);
     public static final JeiRecipeType<SolderingRecipes.SolderingRecipe> SOLDERING_STATION = type("soldering_station", SolderingRecipes.SolderingRecipe.class);

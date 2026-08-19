@@ -11,7 +11,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
-import java.util.Locale;
 
 /**
  * The fluid "droplet" icon — a single item that visually <b>represents</b> any {@link FluidType} (the
@@ -48,18 +47,8 @@ public class ItemFluidIcon extends Item {
         return Fluids.fromID(ModDataComponents.fluidId(stack));
     }
 
-    /** Title-cases the internal fluid name, e.g. {@code SULFURIC_ACID} → {@code "Sulfuric Acid"}. */
-    private static String prettify(String name) {
-        StringBuilder sb = new StringBuilder();
-        for (String part : name.toLowerCase(Locale.US).split("_")) {
-            if (part.isEmpty()) continue;
-            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
-        }
-        return sb.toString().trim();
-    }
-
     @Override
     public Component getName(ItemStack stack) {
-        return Component.literal(prettify(getFluid(stack).getName()));
+        return getFluid(stack).getDisplayName();
     }
 }

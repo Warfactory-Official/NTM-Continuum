@@ -81,7 +81,7 @@ public class ContainerMachineMiningLaser extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_mining_laser.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_mining_laser.get());
     }
 
     @Override

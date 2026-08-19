@@ -38,7 +38,7 @@ public class MachineCondenser extends dev.golem.core.world.CompatBlock implement
     }
 
     private static String tankLine(FluidTankNTM tank) {
-        return tank.getTankType().getDisplayName() + ": " + tank.getFill() + "/" + tank.getMaxFill() + "mB";
+        return tank.getTankType().getDisplayNameString() + ": " + tank.getFill() + "/" + tank.getMaxFill() + "mB";
     }
 
     @SuppressWarnings("unchecked")

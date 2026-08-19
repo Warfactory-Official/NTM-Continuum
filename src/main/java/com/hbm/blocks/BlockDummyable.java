@@ -106,6 +106,96 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
         return 0;
     }
 
+    /**
+     * Upstream's machine-base interaction range, squared: {@code getDistanceSq(...) <= 128}, twice
+     * vanilla's, which HBM widened precisely because its machines are multiblocks.
+     */
+    public static final double BASE_INTERACTION_RANGE_SQ = 128D;
+
+    /**
+     * How far from the <b>core</b> a player may be and still keep this machine's menu open, squared.
+     *
+     * <p>This exists because a multiblock's menu is bound to its core cell, but the player interacts
+     * with whatever cell they are standing next to — and on a big machine those are nowhere near each
+     * other. Vanilla's {@code stillValid} measures interaction range to the bound position, so on the
+     * fusion torus (core seven blocks from the footprint edge) the menu is out of range before you can
+     * even touch the structure.
+     *
+     * <p>The radius is upstream's flat range widened by the half-diagonal of the machine's declared
+     * bounding box — all three axes, because HBM's multiblocks are as often tall-and-thin (the coker is
+     * 22 high over a 1-block footprint) as wide-and-flat.
+     *
+     * <p><b>This is a fast path, not the whole answer.</b> {@link #getDimensions()} is what a machine
+     * declares for <i>placement</i>, and several build far more than that in {@code fillSpace} — the
+     * fracking tower declares a radius of 3 and erects a derrick 24 blocks tall. So a machine can be
+     * outside this radius and still be the machine the player is standing on; see
+     * {@link #isWithinInteractionRange}, which falls back to asking the world.
+     */
+    public double getInteractionRangeSq() {
+        int[] dim = getDimensions();
+        double range = Math.sqrt(BASE_INTERACTION_RANGE_SQ);
+        if (dim != null && dim.length == 6) {
+            double y = Math.max(dim[0], dim[1]);
+            double z = Math.max(dim[2], dim[3]);
+            double x = Math.max(dim[4], dim[5]);
+            range += Math.sqrt(x * x + y * y + z * z);
+        }
+        return range * range;
+    }
+
+    /** How far around the player the cell fallback looks for a piece of the machine. */
+    private static final int CELL_SCAN_RADIUS = 5;
+
+    /**
+     * Whether {@code player} is close enough to interact with the machine whose <b>core</b> sits at
+     * {@code corePos}. Use this anywhere a server-side check gates on "is the player still at the
+     * machine" — menu validity, control packets, button presses — so all of them agree, and so none of
+     * them measures a big machine's range from a cell the player is nowhere near.
+     *
+     * <p>Two steps. The cheap one is a radius around the core ({@link #getInteractionRangeSq}), which
+     * settles the common case in a few arithmetic ops. When that fails we ask the question that is
+     * actually being asked — <i>is the player standing at a piece of this machine?</i> — by looking for
+     * a cell of the same block within reach that chains back to this same core. That is correct however
+     * badly a machine's declared dimensions understate what it actually builds, which matters because
+     * five of them already do.
+     *
+     * <p>The fallback only runs when the player is beyond the radius, i.e. rarely, and stops at the
+     * first matching cell — normally immediately, since the player is pressed against the structure.
+     */
+    public static boolean isWithinInteractionRange(net.minecraft.world.level.BlockGetter level,
+                                                   BlockPos corePos, Player player) {
+        Block block = level.getBlockState(corePos).getBlock();
+        if (!(block instanceof BlockDummyable dummyable)) {
+            return distanceSqTo(corePos, player) <= BASE_INTERACTION_RANGE_SQ;
+        }
+        if (distanceSqTo(corePos, player) <= dummyable.getInteractionRangeSq()) return true;
+        return isStandingAtMachine(level, corePos, dummyable, player);
+    }
+
+    private static double distanceSqTo(BlockPos pos, Player player) {
+        double dx = pos.getX() + 0.5D - player.getX();
+        double dy = pos.getY() + 0.5D - player.getY();
+        double dz = pos.getZ() + 0.5D - player.getZ();
+        return dx * dx + dy * dy + dz * dz;
+    }
+
+    /** True if any cell within reach of the player belongs to the multiblock cored at {@code corePos}. */
+    private static boolean isStandingAtMachine(net.minecraft.world.level.BlockGetter level, BlockPos corePos,
+                                               BlockDummyable block, Player player) {
+        BlockPos at = player.blockPosition();
+        BlockPos.MutableBlockPos scratch = new BlockPos.MutableBlockPos();
+        for (int dx = -CELL_SCAN_RADIUS; dx <= CELL_SCAN_RADIUS; dx++) {
+            for (int dy = -CELL_SCAN_RADIUS; dy <= CELL_SCAN_RADIUS; dy++) {
+                for (int dz = -CELL_SCAN_RADIUS; dz <= CELL_SCAN_RADIUS; dz++) {
+                    scratch.set(at.getX() + dx, at.getY() + dy, at.getZ() + dz);
+                    if (level.getBlockState(scratch).getBlock() != block) continue;
+                    if (corePos.equals(block.findCore(level, scratch))) return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public ForgeDirection getDirModified(ForgeDirection dir) {
         return dir;
     }
@@ -226,7 +316,19 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
     }
 
     protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        MultiblockHandlerXR.fillSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, getDimensions(), this, dir);
+        formStructure(world, new BlockPos(x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o), dir);
+    }
+
+    /**
+     * Forms the live dummy shell around an <b>existing</b> core block. Split out of {@link #fillSpace}
+     * so callers that already hold the core position can build the structure without going through
+     * placement: struct-core assembly ({@link com.hbm.tileentity.machine.struct.TileEntityStructBase})
+     * and the layout GameTests. Machines with an irregular footprint override <b>this</b> — stacking
+     * further {@link MultiblockHandlerXR#fillSpace} passes and {@link #makeExtra} port cells — rather
+     * than {@code fillSpace}, so both entry points agree.
+     */
+    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
+        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), getDimensions(), this, dir);
     }
 
     /** Upgrades an adjacent plain dummy (meta 0–5) to an "extra" dummy (meta 6–11). */

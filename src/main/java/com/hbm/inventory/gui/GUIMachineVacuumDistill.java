@@ -77,7 +77,7 @@ public class GUIMachineVacuumDistill extends dev.golem.core.gui.CompatContainerS
             if (this.isHovering(TANK_X[i], 18, 16, 52, mouseX, mouseY)) {
                 FluidTankNTM tank = te.tanks[i];
                 GuiDraw.tooltip(graphics, this.font, List.of(
-                        Component.literal(tank.getTankType().getName()),
+                        tank.getTankType().getDisplayName(),
                         Component.literal(tank.getFill() + " / " + tank.getMaxFill() + " mB")), Optional.empty(), mouseX, mouseY);
                 return;
             }

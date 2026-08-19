@@ -87,7 +87,7 @@ public class ContainerMachinePUREX extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, ModMachineBlocks.machine_purex.get());
+        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_purex.get());
     }
 
     /** The 1.12.2 routing: batteries → 0, blueprints → 1, upgrades → 2–3, everything else → the inputs. */
