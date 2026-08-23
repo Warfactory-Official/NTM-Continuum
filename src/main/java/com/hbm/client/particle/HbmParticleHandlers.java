@@ -1,6 +1,7 @@
 package com.hbm.client.particle;
 
 import com.hbm.particle.helper.HbmEffectNT;
+import dev.golem.core.data.Tags;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 
@@ -25,6 +26,18 @@ public final class HbmParticleHandlers {
                 if (!(level instanceof ClientLevel clientLevel)) return;
                 creator.makeParticle(clientLevel, minecraft.player, clientLevel.getRandom(), x, y, z, data);
             });
+        }
+        HbmEffectNT.RBMKMush.setHandler((level, x, y, z, data) -> spawnRBMKMush(level, x, y, z,
+                Tags.getFloatOr(data, "scale", 20F)));
+        HbmEffectNT.RBMKMushSmall.setHandler((level, x, y, z, data) -> spawnRBMKMush(level, x, y, z,
+                Tags.getFloatOr(data, "scale", 5F)));
+    }
+
+    private static void spawnRBMKMush(net.minecraft.world.level.Level level, double x, double y, double z, float scale) {
+        if (level instanceof ClientLevel clientLevel) {
+            ParticleRBMKMush.spawn(clientLevel, x, y, z, scale);
+            clientLevel.addParticle(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,
+                    x, y, z, 0D, 0D, 0D);
         }
     }
 

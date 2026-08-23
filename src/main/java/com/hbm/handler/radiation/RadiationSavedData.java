@@ -39,7 +39,8 @@ public final class RadiationSavedData extends CompatSavedData<RadiationSavedData
             SEC_CODEC.listOf().fieldOf("s").forGetter(ChunkRow::secs)
     ).apply(i, ChunkRow::new));
 
-    private static final Codec<RadiationSavedData> CODEC = CHUNK_CODEC.listOf().xmap(
+    /** A named field keeps the legacy SavedData representation a CompoundTag root. */
+    private static final Codec<RadiationSavedData> CODEC = CHUNK_CODEC.listOf().fieldOf("chunks").codec().xmap(
             RadiationSavedData::fromRows, RadiationSavedData::toRows);
 
     public RadiationSavedData() {}

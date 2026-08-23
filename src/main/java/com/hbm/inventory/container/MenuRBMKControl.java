@@ -1,0 +1,3 @@
+package com.hbm.inventory.container;
+import com.hbm.inventory.ModRBMKMenus; import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControlManual; import net.minecraft.core.BlockPos; import net.minecraft.world.entity.player.*; import net.minecraft.world.item.ItemStack;
+public final class MenuRBMKControl extends RBMKMenu<BlockEntityRBMKControlManual>{public MenuRBMKControl(int i,Inventory p,BlockPos x){super(ModRBMKMenus.RBMK_CONTROL.get(),i,p,x,BlockEntityRBMKControlManual.class,0);addPlayer();}public MenuRBMKControl(int i,Inventory p,BlockEntityRBMKControlManual b){super(ModRBMKMenus.RBMK_CONTROL.get(),i,p,b,0);addPlayer();}@Override public ItemStack quickMoveStack(Player p,int i){return ItemStack.EMPTY;}}

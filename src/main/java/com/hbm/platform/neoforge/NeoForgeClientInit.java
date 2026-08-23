@@ -39,6 +39,7 @@ public final class NeoForgeClientInit {
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         HbmClientRegistrations.installTints();
+        HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
         HbmClientRegistrations.installArmorLayers();
@@ -79,6 +80,12 @@ public final class NeoForgeClientInit {
         //? if >=26.1 {
         modBus.addListener((RegisterSpecialModelRendererEvent event) ->
                 event.register(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC));
+        modBus.addListener((RegisterSpecialModelRendererEvent event) ->
+                event.register(com.hbm.client.render.RBMKColumnItemModelRenderer.ID,
+                        com.hbm.client.render.RBMKColumnItemModelRenderer.Unbaked.MAP_CODEC));
+        modBus.addListener((RegisterSpecialModelRendererEvent event) ->
+                event.register(com.hbm.client.render.RBMKBlockColumnItemModelRenderer.ID,
+                        com.hbm.client.render.RBMKBlockColumnItemModelRenderer.Unbaked.MAP_CODEC));
         // Guns are a whole item model rather than a special model: only ItemModel.update is handed the
         // display context, and a first-person weapon body is drawn in camera space, not in an item slot.
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CPC",
+    "CRC",
+    "CPC"
+  ],
+  "key": {
+    "C": "#c:pipes/copper",
+    "P": "#c:shells/copper",
+    "R": "hbm:rbmk_blank"
+  },
+  "result": {
+    "id": "hbm:rbmk_boiler"
+  }
+}

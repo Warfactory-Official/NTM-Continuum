@@ -66,7 +66,6 @@ public class Receiver {
     protected BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> onFire_DNA;
     protected BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> onRecoil_DNA;
 
-    /* GETTERS */
     public float getBaseDamage(ItemStack stack) { return baseDamage_DNA; }
     public int getDelayAfterFire(ItemStack stack) { return delayAfterFire_DNA; }
     public int getDelayAfterDryFire(ItemStack stack) { return delayAfterDryFire_DNA; }
@@ -98,7 +97,6 @@ public class Receiver {
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getOnFire(ItemStack stack) { return onFire_DNA; }
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getRecoil(ItemStack stack) { return onRecoil_DNA; }
 
-    /* SETTERS */
     public Receiver dmg(float dmg) { this.baseDamage_DNA = dmg; return this; }
     public Receiver delay(int delay) { this.delayAfterFire_DNA = this.delayAfterDryFire_DNA = delay; return this; }
     public Receiver dry(int delay) { this.delayAfterDryFire_DNA = delay; return this; }

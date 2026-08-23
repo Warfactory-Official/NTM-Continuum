@@ -7,17 +7,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A single fluid kind in HBM's own fluid system (NOT a vanilla/Forge {@code Fluid}). Each FluidType
  * owns its own {@link INetworkProvider} so that, in UNINOS, every fluid kind has a wholly separate
  * nodespace — fluid networks are segregated by type (water pipes never mix with oil pipes).
  *
- * <p>26.1 slim port: the 1.12.2 original carried Forge {@code Fluid}/{@code FluidRegistry} interop, a
- * trait subsystem (corrosive/flammable/…), pollution/potion hooks, and client-side tooltip/render
- * code. None of that is needed by the fluid <em>network</em>, so this port keeps only the identity
- * (id/name/color/temperature/texture) and the network provider. Traits etc. can be layered back on
- * later when the fluid-consuming machines that need them are ported.
+ * <p>The original also carried Forge-fluid interop, pollution/potion hooks, and client-side tooltip/render
+ * code. Those remain outside this type; its trait map retains the thermal conversion data used by machines.
  *
  * @author hbm, mlbv
  */
@@ -36,6 +35,7 @@ public class FluidType {
     /** GUI tint (defaults to the colour; overridable for custom fluids). */
     private int guiTint;
     private final Identifier texture;
+    private final Map<Class<?>, Object> traits = new HashMap<>();
 
     public static final int ROOM_TEMPERATURE = 20;
     /** How hot this fluid is, in °C. */
@@ -114,6 +114,15 @@ public class FluidType {
     public String getTranslationKey() { return this.unlocalized; }
 
     public boolean isHot() { return this.temperature >= 100; }
+
+    public FluidType addTraits(Object... traits) {
+        for (Object trait : traits) this.traits.put(trait.getClass(), trait);
+        return this;
+    }
+
+    public boolean hasTrait(Class<?> trait) { return traits.containsKey(trait); }
+
+    public <T> T getTrait(Class<T> trait) { return trait.cast(traits.get(trait)); }
 
     protected INetworkProvider<FluidNetMK2> NETWORK_PROVIDER = () -> new FluidNetMK2(this);
 

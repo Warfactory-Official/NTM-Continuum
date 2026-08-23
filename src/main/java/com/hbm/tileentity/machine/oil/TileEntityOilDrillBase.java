@@ -261,18 +261,12 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         return new int[]{5, 7};
     }
 
-    // --- IEnergyReceiverMK2 ---
-
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
-
-    // --- IFluidStandardTransceiverMK2 ---
 
     @Override public FluidTankNTM[] getSendingTanks() { return tanks; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[0]; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
-
-    // --- IUpgradeInfoProvider ---
 
     @Override
     public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
@@ -289,8 +283,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         upgrades.put(UpgradeType.OVERDRIVE, 3);
         return upgrades;
     }
-
-    // --- sync + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

@@ -59,6 +59,10 @@ public final class ModDecoBlocks {
     public static final RegistryObject<Block> boxcar = decoObj("boxcar", Shape.FULL, p -> p.strength(10.0F, 10.0F).sound(SoundType.METAL));
     public static final RegistryObject<Block> boat   = decoObj("boat", Shape.FULL, p -> p.strength(10.0F, 10.0F).sound(SoundType.METAL));
 
+    // Current ntm-next DecoBlock registrations: ordinary stone-sounding full cubes, hardness 5, resistance 100.
+    public static final RegistryObject<Block> deco_rbmk = solidDeco("deco_rbmk", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE));
+    public static final RegistryObject<Block> deco_rbmk_smooth = solidDeco("deco_rbmk_smooth", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE));
+
     /** A JSON-modelled deco block (steel pieces). */
     private static RegistryObject<Block> deco(String id, Shape shape, UnaryOperator<BlockBehaviour.Properties> props) {
         RegistryObject<Block> block = BLOCKS.registerBlock(id, p -> new BlockDeco(p, shape),
@@ -73,6 +77,12 @@ public final class ModDecoBlocks {
                 p -> props.apply(p.noOcclusion()));
         blockItem(id, block);
         OBJ_BLOCKS.add(block);
+        return block;
+    }
+
+    private static RegistryObject<Block> solidDeco(String id, UnaryOperator<BlockBehaviour.Properties> props) {
+        RegistryObject<Block> block = BLOCKS.registerBlock(id, Block::new, props);
+        blockItem(id, block);
         return block;
     }
 

@@ -131,8 +131,6 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
         return level != null && getModule().getBurnTime(level, stack) > 0;
     }
 
-    // --- IHeatSource ---
-
     @Override
     public int getHeatStored() {
         return heatEnergy;

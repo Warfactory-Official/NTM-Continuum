@@ -34,6 +34,8 @@ public final class HbmPackets {
         GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
                 (payload, player) -> com.hbm.handler.HbmKeybindsServer.onPressedServer(player,
                         com.hbm.handler.HbmKeybinds.EnumKeybind.byOrdinal(payload.keybind()), payload.state()));
+        GolemNetwork.registerPlayToServer(CraneKeyPayload.CODEC,
+                (payload, player) -> handleCraneKey(player, payload));
     }
 
     /** Tells one player's client that their gun played an animation cue. */
@@ -100,12 +102,6 @@ public final class HbmPackets {
     }
 
     /**
-     * Applies a received {@link ControlEventPayload} server-side: resolves the tile, checks the sender is
-     * within reach (and the tile's own {@link IControlReceiver#hasPermission permission}), then hands it
-     * the control tag. Must run on the server main thread (each loader enqueues it there). The 64-block
-     * reach gate mirrors the 1.12.2 {@code isUseableByPlayer} check so a client can't poke distant tiles.
-     */
-    /**
      * Applies a received {@link EntityPropsSyncPayload} to the local (client) player's duck props.
      * Must run on the client main thread. {@code player} is the client player handed over by the
      * loader's receiver context.
@@ -156,21 +152,29 @@ public final class HbmPackets {
         player.containerMenu.broadcastChanges();
     }
 
+    /**
+     * Applies a received {@link ControlEventPayload} server-side: first enforces the 24-block absolute
+     * envelope, then lets the receiver apply its own permission policy and marks accepted changes dirty.
+     */
     public static void handleControl(ServerPlayer player, ControlEventPayload payload) {
         handleControl(player, payload.pos(), payload.data());
     }
 
+    public static void handleCraneKey(ServerPlayer player, CraneKeyPayload payload) {
+        if (player == null || payload.key() < 0 || payload.key() >= com.hbm.handler.EnumCraneKey.VALUES.length) return;
+        com.hbm.extprop.HbmPlayerProps.getData(player).setCraneKeyPressed(
+                com.hbm.handler.EnumCraneKey.VALUES[payload.key()], payload.pressed());
+    }
+
     public static void handleControl(ServerPlayer player, net.minecraft.core.BlockPos pos, net.minecraft.nbt.CompoundTag data) {
         if (player == null) return;
+        if (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) > 24D * 24D) return;
         Level level = player.level();
         BlockEntity be = level.getBlockEntity(pos);
-        // The range is the machine's, not a flat 8 blocks: `pos` is a multiblock's CORE, which on a big
-        // machine is far from whatever cell the player is standing at (see BlockDummyable).
-        if (be instanceof IControlReceiver receiver
-                && com.hbm.blocks.BlockDummyable.isWithinInteractionRange(level, pos, player)
-                && receiver.hasPermission(player)) {
+        if (be instanceof IControlReceiver receiver && receiver.hasPermission(player)) {
             try {
                 receiver.receiveControl(data);
+                be.setChanged();
             } catch (Exception e) {
                 Constants.LOG.warn("Failed to apply ControlEventPayload at {}: {}", pos, e.toString());
             }

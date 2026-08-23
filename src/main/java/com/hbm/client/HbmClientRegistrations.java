@@ -3,6 +3,7 @@ package com.hbm.client;
 import com.hbm.client.render.HbmBlockColors;
 import com.hbm.client.render.HbmBlockEntityRenderers;
 import com.hbm.client.render.HbmEntityRenderers;
+import com.hbm.blocks.machine.rbmk.RBMKGauge;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.gui.GUIAnvil;
 import com.hbm.inventory.gui.GUIBatterySocket;
@@ -107,6 +108,8 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_PYROOVEN.get(), GUIPyroOven::new);
         sink.register(ModMenus.MACHINE_COMBUSTION_ENGINE.get(), GUICombustionEngine::new);
         sink.register(ModMenus.MACHINE_COMPRESSOR.get(), GUICompressor::new);
+        RBMKClientScreens.register(sink);
+        RBMKGauge.OPEN_SCREEN = com.hbm.inventory.gui.ScreenRBMKGauge::new;
     }
 
     public static void registerHud(HudSink sink) {
@@ -125,6 +128,12 @@ public final class HbmClientRegistrations {
 
     public static void installTints() {
         dev.golem.core.client.Tints.install(com.hbm.Constants.MOD_ID);
+    }
+
+    /** The component-backed replacement for legacy item metadata in generated model selects. */
+    public static void installItemModelProperties() {
+        dev.golem.core.client.ItemModelProperties.register(com.hbm.Constants.MOD_ID, "item_variant",
+                stack -> com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
     }
 
     public static void registerBlockColors() {
@@ -148,6 +157,7 @@ public final class HbmClientRegistrations {
     /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */
     public static void installKeybinds() {
         HbmKeybindsClient.register();
+        CraneKeybindHandler.register();
     }
 
     /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */

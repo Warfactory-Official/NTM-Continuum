@@ -15,6 +15,7 @@ public final class Hazards {
     public static void init() {
         if (done) return;
         done = true;
+        com.hbm.items.ModRBMKItems.linkPellets();
         HazardRegistry.registerTrafos();
         HazardRegistry.registerItems();
         com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership

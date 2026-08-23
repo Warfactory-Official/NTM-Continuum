@@ -16,7 +16,12 @@ import com.hbm.hazard.type.HazardTypeToxic;
 import com.hbm.hazard.type.IHazardType;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.hazard.transformer.HazardTransformerZirnox;
+import com.hbm.hazard.modifier.HazardModifierRBMKHot;
+import com.hbm.hazard.modifier.HazardModifierRBMKRadiation;
 import com.hbm.Constants;
+import com.hbm.items.ModRBMKItems;
+import com.hbm.items.machine.ItemRBMKPellet;
+import com.hbm.items.machine.ItemRBMKRod;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -107,6 +112,7 @@ public class HazardRegistry {
         regItem("trinitite", makeData(RADIATION, trn * ingot).addEntry(CONTAMINATING, 5));
 
         registerZirnoxFuel();
+        registerRBMKFuel();
 
         // ---- debris ----
         regItem("debris_graphite", makeData().addEntry(RADIATION, 70F).addEntry(HOT, 5F));
@@ -312,6 +318,116 @@ public class HazardRegistry {
             HazardSystem.register(com.hbm.items.ModZirnoxItems.waste(fuel), waste);
         }
         regItem("rod_zirnox_tritium", makeData(RADIATION, 0.001F));
+    }
+
+    /** Current ntm-next RBMK rod and pellet hazards, including depletion, heat, and DRX digamma. */
+    private static void registerRBMKFuel() {
+        RBMKBuilder b = new RBMKBuilder();
+        b.rod(ModRBMKItems.rbmk_fuel_ueu, u * rod_rbmk, wst * rod_rbmk * 20D);
+        b.rod(ModRBMKItems.rbmk_fuel_meu, uf * rod_rbmk, wst * rod_rbmk * 21.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_heu233, u233 * rod_rbmk, wst * rod_rbmk * 31D);
+        b.rod(ModRBMKItems.rbmk_fuel_heu235, u235 * rod_rbmk, wst * rod_rbmk * 30D);
+        b.rod(ModRBMKItems.rbmk_fuel_uzh, uzh * rod_rbmk, wst * rod_rbmk * 20D);
+        b.rod(ModRBMKItems.rbmk_fuel_thmeu, thf * rod_rbmk, wst * rod_rbmk * 17.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_lep, puf * rod_rbmk, wst * rod_rbmk * 25D);
+        b.rod(ModRBMKItems.rbmk_fuel_mep, purg * rod_rbmk, wst * rod_rbmk * 30D);
+        b.rod(ModRBMKItems.rbmk_fuel_hep, pu239 * rod_rbmk, wst * rod_rbmk * 32.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_hep241, pu241 * rod_rbmk, wst * rod_rbmk * 35D);
+        b.rod(ModRBMKItems.rbmk_fuel_lea, amf * rod_rbmk, wst * rod_rbmk * 26D);
+        b.rod(ModRBMKItems.rbmk_fuel_mea, amrg * rod_rbmk, wst * rod_rbmk * 30.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_hea241, am241 * rod_rbmk, wst * rod_rbmk * 33.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_hea242, am242 * rod_rbmk, wst * rod_rbmk * 34D);
+        b.rod(ModRBMKItems.rbmk_fuel_men, npf * rod_rbmk, wst * rod_rbmk * 22.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_hen, np237 * rod_rbmk, wst * rod_rbmk * 30D);
+        b.rod(ModRBMKItems.rbmk_fuel_mox, mox * rod_rbmk, wst * rod_rbmk * 25.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_les, saf * rod_rbmk, wst * rod_rbmk * 24.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_mes, saf * rod_rbmk, wst * rod_rbmk * 30D);
+        b.rod(ModRBMKItems.rbmk_fuel_hes, saf * rod_rbmk, wst * rod_rbmk * 50D);
+        b.rod(ModRBMKItems.rbmk_fuel_leaus, 0D, wst * rod_rbmk * 37.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_heaus, 0D, wst * rod_rbmk * 32.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_po210be, pobe * rod_rbmk, pobe * rod_rbmk * 0.1D, true);
+        b.rod(ModRBMKItems.rbmk_fuel_ra226be, rabe * rod_rbmk, rabe * rod_rbmk * 0.4D, true);
+        b.rod(ModRBMKItems.rbmk_fuel_pu238be, pube * rod_rbmk, wst * rod_rbmk * 2.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_balefire_gold, au198 * rod_rbmk, bf * rod_rbmk * 0.5D, true);
+        b.rod(ModRBMKItems.rbmk_fuel_flashlead, pb209 * 1.25D * rod_rbmk, pb209 * nugget * 0.05D * rod_rbmk, true);
+        b.rod(ModRBMKItems.rbmk_fuel_balefire, bf * rod_rbmk, bf * rod_rbmk * 100D, true);
+        b.rod(ModRBMKItems.rbmk_fuel_zfb_bismuth, pu241 * rod_rbmk * 0.1D, wst * rod_rbmk * 5D);
+        b.rod(ModRBMKItems.rbmk_fuel_zfb_pu241, pu239 * rod_rbmk * 0.1D, wst * rod_rbmk * 7.5D);
+        b.rod(ModRBMKItems.rbmk_fuel_zfb_am_mix, pu241 * rod_rbmk * 0.1D, wst * rod_rbmk * 10D);
+        b.rbmk(ModRBMKItems.rbmk_fuel_drx, bf * rod_rbmk, bf * rod_rbmk * 100D, true, true, 0D, 1D / 3D);
+
+        b.pellet(ModRBMKItems.rbmk_fuel_ueu, u * billet, wst * billet * 20D);
+        b.pellet(ModRBMKItems.rbmk_fuel_meu, uf * billet, wst * billet * 21.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_heu233, u233 * billet, wst * billet * 31D);
+        b.pellet(ModRBMKItems.rbmk_fuel_heu235, u235 * billet, wst * billet * 30D);
+        b.pellet(ModRBMKItems.rbmk_fuel_uzh, uzh * billet, wst * billet * 20D);
+        b.pellet(ModRBMKItems.rbmk_fuel_thmeu, thf * billet, wst * billet * 17.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_lep, puf * billet, wst * billet * 25D);
+        b.pellet(ModRBMKItems.rbmk_fuel_mep, purg * billet, wst * billet * 30D);
+        b.pellet(ModRBMKItems.rbmk_fuel_hep, pu239 * billet, wst * billet * 32.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_hep241, pu241 * billet, wst * billet * 35D);
+        b.pellet(ModRBMKItems.rbmk_fuel_lea, amf * billet, wst * billet * 26D);
+        b.pellet(ModRBMKItems.rbmk_fuel_mea, amrg * billet, wst * billet * 30.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_hea241, am241 * billet, wst * billet * 33.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_hea242, am242 * billet, wst * billet * 34D);
+        b.pellet(ModRBMKItems.rbmk_fuel_men, npf * billet, wst * billet * 22.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_hen, np237 * billet, wst * billet * 30D);
+        b.pellet(ModRBMKItems.rbmk_fuel_mox, mox * billet, wst * billet * 25.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_les, saf * billet, wst * billet * 24.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_mes, saf * billet, wst * billet * 30D);
+        b.pellet(ModRBMKItems.rbmk_fuel_hes, saf * billet, wst * billet * 50D);
+        b.pellet(ModRBMKItems.rbmk_fuel_leaus, 0D, wst * billet * 37.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_heaus, 0D, wst * billet * 32.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_po210be, pobe * billet, pobe * billet * 0.1D, true);
+        b.pellet(ModRBMKItems.rbmk_fuel_ra226be, rabe * billet, rabe * billet * 0.4D, true);
+        b.pellet(ModRBMKItems.rbmk_fuel_pu238be, pube * billet, wst * 1.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_balefire_gold, au198 * billet, bf * billet * 0.5D, true);
+        b.pellet(ModRBMKItems.rbmk_fuel_flashlead, pb209 * 1.25D * billet, pb209 * nugget * 0.05D, true);
+        b.pellet(ModRBMKItems.rbmk_fuel_balefire, bf * billet, bf * billet * 100D, true);
+        b.pellet(ModRBMKItems.rbmk_fuel_zfb_bismuth, pu241 * billet * 0.1D, wst * billet * 5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_zfb_pu241, pu239 * billet * 0.1D, wst * billet * 7.5D);
+        b.pellet(ModRBMKItems.rbmk_fuel_zfb_am_mix, pu241 * billet * 0.1D, wst * billet * 10D);
+        b.pellet(ModRBMKItems.rbmk_fuel_drx, bf * billet, bf * billet * 100D, true, 0D, 1D / 24D);
+    }
+
+    private static final class RBMKBuilder {
+        void rod(dev.golem.core.registry.RegistryObject<ItemRBMKRod> rod, double base, double depleted) {
+            rbmk(rod, base, depleted, true, false, 0D, 0D);
+        }
+
+        void rod(dev.golem.core.registry.RegistryObject<ItemRBMKRod> rod, double base, double depleted, boolean linear) {
+            rbmk(rod, base, depleted, true, linear, 0D, 0D);
+        }
+
+        void rbmk(dev.golem.core.registry.RegistryObject<ItemRBMKRod> rod, double base, double depleted, boolean hot,
+                  boolean linear, double blinding, double digamma) {
+            HazardData hazard = data(base, depleted, hot, linear, blinding, digamma);
+            HazardSystem.register(rod.get(), hazard);
+        }
+
+        void pellet(dev.golem.core.registry.RegistryObject<ItemRBMKRod> rod, double base, double depleted) {
+            pellet(rod, base, depleted, false, 0D, 0D);
+        }
+
+        void pellet(dev.golem.core.registry.RegistryObject<ItemRBMKRod> rod, double base, double depleted, boolean linear) {
+            pellet(rod, base, depleted, linear, 0D, 0D);
+        }
+
+        void pellet(dev.golem.core.registry.RegistryObject<ItemRBMKRod> rod, double base, double depleted, boolean linear,
+                    double blinding, double digamma) {
+            dev.golem.core.registry.RegistryObject<ItemRBMKPellet> pellet = ModRBMKItems.PELLETS.get(rod);
+            if (pellet == null) throw new IllegalStateException("no RBMK pellet registered for " + rod.getId());
+            HazardSystem.register(pellet.get(), data(base, depleted, false, linear, blinding, digamma));
+        }
+
+        private HazardData data(double base, double depleted, boolean hot, boolean linear, double blinding, double digamma) {
+            HazardData hazard = new HazardData().addEntry(new HazardEntry(RADIATION, (float) base)
+                    .addMod(new HazardModifierRBMKRadiation(depleted, linear)));
+            if (hot) hazard.addEntry(new HazardEntry(HOT, 0F).addMod(new HazardModifierRBMKHot()));
+            if (blinding > 0D) hazard.addEntry(BLINDING, (float) blinding);
+            if (digamma > 0D) hazard.addEntry(DIGAMMA, (float) digamma);
+            return hazard;
+        }
     }
 
     // ---- helpers ----

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GGG",
+    "GRG",
+    "GGG"
+  ],
+  "key": {
+    "G": "#c:ingots/boron",
+    "R": "hbm:rbmk_blank"
+  },
+  "result": {
+    "id": "hbm:rbmk_absorber"
+  }
+}

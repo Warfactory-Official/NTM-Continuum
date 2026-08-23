@@ -130,16 +130,6 @@
       }
     ]
   },
-  "block.rbmk_explosion": {
-    "subtitle": "subtitles.block.rbmk_explosion",
-    "category": "block",
-    "sounds": [
-      {
-        "name": "hbm:block/rbmk_explosion",
-        "stream": false
-      }
-    ]
-  },
   "block.electric_hum": {
     "category": "block",
     "sounds": [
@@ -282,5 +272,35 @@
         "stream": false
       }
     ]
+  },
+  "rbmk_explosion": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/rbmk_explosion",
+        "stream": true
+      }
+    ]
+  },
+  "steam_engine_operate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/steamengineoperate",
+        "stream": false
+      }
+    ]
+  },
+  "rbmk_az5_cover": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/rbmk_az5_cover"
+      }
+    ]
+  },
+  "rbmk_shutdown": {
+    "category": "block",
+    "sounds": []
   }
 }

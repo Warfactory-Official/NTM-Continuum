@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BCD",
+    "DDD"
+  ],
+  "key": {
+    "B": "#c:ingots/boron",
+    "C": "hbm:circuit_chip",
+    "D": "hbm:deco_rbmk"
+  },
+  "result": {
+    "id": "hbm:rbmk_crane_console"
+  }
+}

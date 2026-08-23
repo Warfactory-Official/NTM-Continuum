@@ -1,0 +1,36 @@
+{
+  "textures": {
+    "top": "hbm:blocks/rbmk/rbmk_element_mod_top",
+    "side": "hbm:blocks/rbmk/rbmk_element_mod_side",
+    "bottom": "hbm:blocks/rbmk/rbmk_element_mod_top",
+    "particle": "hbm:blocks/rbmk/rbmk_element_mod_side"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#side"
+        },
+        "south": {
+          "texture": "#side"
+        },
+        "west": {
+          "texture": "#side"
+        },
+        "east": {
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}

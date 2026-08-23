@@ -17,6 +17,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import com.hbm.packet.BlockEntitySyncPayload;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.packet.EntityPropsSyncPayload;
@@ -33,10 +34,6 @@ public class FabricInit implements ModInitializer {
 
     @Override
     public void onInitialize() {
-
-        // This method is invoked by the Fabric mod loader when it is ready
-        // to load your mod. You can access Fabric and Common code in this
-        // project.
 
         Constants.LOG.info("Hello Fabric world!");
 
@@ -55,6 +52,8 @@ public class FabricInit implements ModInitializer {
         GolemNetwork.flushCommonRegistrations();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> Constants.LOG.info(
                 "[HBM] Loaded {} total recipes", server.getRecipeManager().getRecipes().size()));
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) ->
+                com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(entity));
 
         // Worldgen: inject the oil bubble placed feature into all overworld biomes (the NeoForge side
         // does this with a data-driven neoforge:add_features biome modifier; Fabric uses the biome API).
@@ -88,6 +87,8 @@ public class FabricInit implements ModInitializer {
 
         // Power/network engine driver: tick the nodespace each server tick, clear it on level unload.
         // The radiation engine ticks on the same hook.
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.START_SERVER_TICK.register(
+                com.hbm.tileentity.network.RTTYSystem::updateBroadcastQueue);
         dev.golem.core.platform.Lifecycle.onServerTick(server -> {
             UniNodespace.updateNodespace(server);
             RadiationSystemNT.tickServer(server);
@@ -95,6 +96,7 @@ public class FabricInit implements ModInitializer {
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> {
             UniNodespace.clearLevel(level);
             RadiationSystemNT.clearWorld(level);
+            com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
         });
 
         // Radiation chunk lifecycle: (re)build pockets on load, persist on unload. Unload is 2-arg on

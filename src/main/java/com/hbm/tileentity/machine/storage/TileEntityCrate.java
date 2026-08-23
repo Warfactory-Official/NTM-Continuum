@@ -95,7 +95,6 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
                 net.minecraft.world.item.component.ItemContainerContents.fromItems(getItems()));
     }
     *///?}
-    // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {

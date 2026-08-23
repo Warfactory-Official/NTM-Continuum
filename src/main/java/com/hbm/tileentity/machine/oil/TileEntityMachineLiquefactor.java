@@ -140,18 +140,12 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 0 && isItemValidForSlot(0, stack); }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return false; }
 
-    // --- IEnergyReceiverMK2 ---
-
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
 
-    // --- IFluidStandardSenderMK2 ---
-
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
-
-    // --- IUpgradeInfoProvider ---
 
     @Override
     public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
@@ -178,8 +172,6 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
         return upgrades;
     }
 
-    // --- MenuProvider ---
-
     @Override
     public Component getDisplayName() {
         return Component.translatable("container.machineLiquefactor");
@@ -189,8 +181,6 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerLiquefactor(containerId, playerInventory, this);
     }
-
-    // --- sync + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

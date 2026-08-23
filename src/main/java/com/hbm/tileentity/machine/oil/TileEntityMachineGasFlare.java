@@ -122,7 +122,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
 
                 te.power = Math.min(te.power + powerProd, maxPower);
 
-                // entities in the flame get burned
                 AABB flameBox = new AABB(pos.getX() - 1, pos.getY() + 12, pos.getZ() - 2, pos.getX() + 2, pos.getY() + 17, pos.getZ() + 2);
                 List<Entity> list = level.getEntitiesOfClass(Entity.class, flameBox);
                 for (Entity e : list) {
@@ -229,18 +228,12 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         return new int[]{4, 5};
     }
 
-    // --- IEnergyProviderMK2 ---
-
     @Override public long getPower() { return power; }
     @Override public void setPower(long i) { power = i; }
     @Override public long getMaxPower() { return maxPower; }
 
-    // --- IFluidStandardReceiverMK2 ---
-
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
-
-    // --- IUpgradeInfoProvider ---
 
     @Override
     public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
@@ -266,8 +259,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         return upgrades;
     }
 
-    // --- MenuProvider ---
-
     @Override
     public Component getDisplayName() {
         return Component.translatable("container.gasFlare");
@@ -277,8 +268,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineGasFlare(containerId, playerInventory, this);
     }
-
-    // --- sync + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

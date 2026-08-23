@@ -1,1 +1,6 @@
-{ "model": { "type": "minecraft:model", "model": "hbm:block/ore_uranium" } }
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "hbm:item/ore_uranium"
+  }
+}

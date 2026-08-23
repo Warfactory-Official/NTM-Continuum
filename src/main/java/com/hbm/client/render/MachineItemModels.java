@@ -45,6 +45,8 @@ public final class MachineItemModels {
 
     /^* Item id -> its OBJ model. Rebuilt on every resource reload; empty until the first one. ^/
     private static Map<Identifier, MachineItemModel> models = Map.of();
+    private static Map<Identifier, RBMKColumnItemModel> rbmkColumns = Map.of();
+    private static Map<Identifier, RBMKBlockColumnItemModel> blockColumns = Map.of();
 
     /^* The model for an item, or null if that item is not an OBJ machine. ^/
     public static MachineItemModel get(Identifier item) {
@@ -53,8 +55,14 @@ public final class MachineItemModels {
 
     /^* Whether any OBJ item models are loaded (used to skip work when a pack removes them all). ^/
     public static boolean isEmpty() {
-        return models.isEmpty();
+        return models.isEmpty() && rbmkColumns.isEmpty() && blockColumns.isEmpty();
     }
+
+    /^ The dedicated four-section fuel-channel model, or null for every other item. ^/
+    public static RBMKColumnItemModel rbmkColumn(Identifier item) { return rbmkColumns.get(item); }
+
+    /^ The plain/piped/lidded column preview, or null for every other item. ^/
+    public static RBMKBlockColumnItemModel blockColumn(Identifier item) { return blockColumns.get(item); }
 
     /^* Reparses every item definition. Call from a client resource-reload listener. ^/
     public static void reload(ResourceManager resources) {
@@ -62,25 +70,33 @@ public final class MachineItemModels {
         // renderer they name.
         com.hbm.client.render.weapon.GunLegacyModels.reload(resources);
         Map<Identifier, MachineItemModel> built = new HashMap<>();
+        Map<Identifier, RBMKColumnItemModel> columns = new HashMap<>();
+        Map<Identifier, RBMKBlockColumnItemModel> blocks = new HashMap<>();
         for (Map.Entry<Identifier, Resource> entry :
                 resources.listResources("items", path -> path.getPath().endsWith(".json")).entrySet()) {
             Identifier file = entry.getKey();
             try (BufferedReader reader = entry.getValue().openAsReader()) {
                 JsonElement root = JsonParser.parseReader(reader);
                 JsonObject machine = machineObjOf(root);
-                if (machine == null) continue;
                 // "items/<name>.json" -> "<name>", the item's registry path.
                 String path = file.getPath();
                 String name = path.substring("items/".length(), path.length() - ".json".length());
-                built.put(dev.golem.core.Ids.of(file.getNamespace(), name), parse(machine));
+                Identifier item = dev.golem.core.Ids.of(file.getNamespace(), name);
+                if (machine != null) built.put(item, parse(machine));
+                JsonObject column = rbmkColumnOf(root);
+                if (column != null) columns.put(item, parseColumn(column));
+                JsonObject block = blockColumnOf(root);
+                if (block != null) blocks.put(item, parseBlockColumn(block));
             } catch (Exception e) {
                 Constants.LOG.warn("Skipping OBJ item model {}: {}", file, e.toString());
             }
         }
         models = Map.copyOf(built);
+        rbmkColumns = Map.copyOf(columns);
+        blockColumns = Map.copyOf(blocks);
         // Logged at info, not debug: a silently-empty map renders every machine as an invisible item and
         // produces no warning anywhere, so the count is the only positive signal that this worked.
-        Constants.LOG.info("Loaded {} OBJ item model(s)", models.size());
+        Constants.LOG.info("Loaded {} OBJ item model(s) and {} RBMK fuel-column item model(s)", models.size(), rbmkColumns.size());
     }
 
     /^*
@@ -98,6 +114,45 @@ public final class MachineItemModels {
         JsonObject machine = inner.getAsJsonObject();
         // Same id as MachineItemModelRenderer.ID on 26.1; spelled out because that class does not exist here.
         return "hbm:machine_obj".equals(string(machine, "type", "")) ? machine : null;
+    }
+
+    private static JsonObject rbmkColumnOf(JsonElement root) {
+        if (!root.isJsonObject()) return null;
+        JsonElement model = root.getAsJsonObject().get("model");
+        if (model == null || !model.isJsonObject()) return null;
+        JsonObject special = model.getAsJsonObject();
+        if (!"minecraft:special".equals(string(special, "type", ""))) return null;
+        JsonElement inner = special.get("model");
+        if (inner == null || !inner.isJsonObject()) return null;
+        JsonObject column = inner.getAsJsonObject();
+        return "hbm:rbmk_fuel_column".equals(string(column, "type", "")) ? column : null;
+    }
+
+    /^*
+     * The `hbm:rbmk_block_column` object inside an item definition, or null if this definition is not
+     * one. Same shape as {@link #rbmkColumnOf} — only the type id differs.
+     ^/
+    private static JsonObject blockColumnOf(JsonElement root) {
+        if (!root.isJsonObject()) return null;
+        JsonElement model = root.getAsJsonObject().get("model");
+        if (model == null || !model.isJsonObject()) return null;
+        JsonObject special = model.getAsJsonObject();
+        if (!"minecraft:special".equals(string(special, "type", ""))) return null;
+        JsonElement inner = special.get("model");
+        if (inner == null || !inner.isJsonObject()) return null;
+        JsonObject column = inner.getAsJsonObject();
+        return "hbm:rbmk_block_column".equals(string(column, "type", "")) ? column : null;
+    }
+
+    private static RBMKColumnItemModel parseColumn(JsonObject json) {
+        return new RBMKColumnItemModel(id(json, "side", null), id(json, "top", null), id(json, "inner", null),
+                f(json, "scale", .35F), f(json, "yaw", 0F), f(json, "lift", -.675F));
+    }
+
+    private static RBMKBlockColumnItemModel parseBlockColumn(JsonObject json) {
+        return new RBMKBlockColumnItemModel(id(json, "side", null), id(json, "top", null), id(json, "bottom", null),
+                id(json, "pipe_side", null), id(json, "pipe_top", null), id(json, "lid_texture", null),
+                f(json, "scale", 1F), f(json, "yaw", 0F), f(json, "lift", -0.5F));
     }
 
     private static MachineItemModel parse(JsonObject json) {

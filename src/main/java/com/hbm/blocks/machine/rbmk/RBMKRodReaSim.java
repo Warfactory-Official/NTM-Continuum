@@ -1,0 +1,3 @@
+package com.hbm.blocks.machine.rbmk;
+import com.hbm.tileentity.ModRBMKBlockEntities; import com.hbm.tileentity.machine.rbmk.*; import net.minecraft.core.BlockPos; import net.minecraft.world.level.block.entity.BlockEntityType; import net.minecraft.world.level.block.state.BlockState;
+public class RBMKRodReaSim extends RBMKRod { public RBMKRodReaSim(Properties properties, boolean moderated) { super(properties, moderated); } @Override protected BlockEntityType<? extends BlockEntityRBMKBase> beType() { return ModRBMKBlockEntities.RBMK_ROD_REASIM.get(); } @Override protected BlockEntityRBMKBase createCore(BlockPos pos, BlockState state) { return new BlockEntityRBMKRodReaSim(pos, state); } }

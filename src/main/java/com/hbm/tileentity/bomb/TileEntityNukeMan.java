@@ -81,8 +81,6 @@ public class TileEntityNukeMan extends TileEntityMachineBase implements MenuProv
         placerID = input.read("placer", UUIDUtil.CODEC).orElse(null);
     }
 
-    // --- MenuProvider ---
-
     @Override
     public Component getDisplayName() {
         return Component.translatable(getDefaultName());

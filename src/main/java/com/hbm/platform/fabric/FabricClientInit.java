@@ -34,6 +34,7 @@ public class FabricClientInit implements ClientModInitializer {
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         HbmClientRegistrations.installTints();
+        HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
         HbmClientRegistrations.installArmorLayers();

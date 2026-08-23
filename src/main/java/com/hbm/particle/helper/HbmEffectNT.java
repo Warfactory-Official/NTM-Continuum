@@ -36,7 +36,11 @@ public enum HbmEffectNT {
     /** Muzzle smoke and sparks from a gunpowder discharge. */
     BlackPowder,
     /** Drifting embers and ash, for things that are burning down rather than exploding. */
-    Ashes;
+    Ashes,
+    /** The full-size RBMK meltdown cloud. */
+    RBMKMush,
+    /** The smaller Watz/RBMK cloud. */
+    RBMKMushSmall;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

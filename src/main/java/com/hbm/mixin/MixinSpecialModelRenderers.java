@@ -6,6 +6,8 @@ package com.hbm.mixin;
 //? if fabric && >=26.1 {
 
 /*import com.hbm.client.render.MachineItemModelRenderer;
+import com.hbm.client.render.RBMKBlockColumnItemModelRenderer;
+import com.hbm.client.render.RBMKColumnItemModelRenderer;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderers;
@@ -35,6 +37,8 @@ public class MixinSpecialModelRenderers {
     @Inject(method = "bootstrap", at = @At("TAIL"))
     private static void hbm$registerMachineRenderer(CallbackInfo ci) {
         ID_MAPPER.put(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC);
+        ID_MAPPER.put(RBMKColumnItemModelRenderer.ID, RBMKColumnItemModelRenderer.Unbaked.MAP_CODEC);
+        ID_MAPPER.put(RBMKBlockColumnItemModelRenderer.ID, RBMKBlockColumnItemModelRenderer.Unbaked.MAP_CODEC);
     }
 }
 *///?}

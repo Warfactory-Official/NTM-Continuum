@@ -30,7 +30,7 @@ public abstract class ParticleRotating extends CompatParticle {
      * {@code hbm:particle_base}. Getting this wrong does not throw: the atlas returns its missing
      * sprite and the particle renders as a checkerboard.
      */
-    public static final Identifier PARTICLE_BASE = Identifier.fromNamespaceAndPath("hbm", "particle_base");
+    public static final Identifier PARTICLE_BASE = dev.golem.core.Ids.of("hbm", "particle_base");
 
     protected ParticleRotating(ClientLevel level, double x, double y, double z) {
         this(level, x, y, z, Particles.sprite(PARTICLE_BASE));

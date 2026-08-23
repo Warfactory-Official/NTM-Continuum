@@ -71,4 +71,11 @@ public final class ParticleEffects {
         data.putFloat("ashesScale", ashesScale);
         HbmEffectNT.Ashes.send(level, entity.getX(), entity.getY(), entity.getZ(), data);
     }
+
+    /** RBMK's 250-block melt cloud. Scale is sent explicitly because the vanilla particle payload has no scale field. */
+    public static void rbmkMush(Level level, double x, double y, double z, float scale) {
+        CompoundTag data = new CompoundTag();
+        data.putFloat("scale", scale);
+        HbmEffectNT.RBMKMush.send(level, x, y, z, data);
+    }
 }

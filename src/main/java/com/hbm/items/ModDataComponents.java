@@ -1,6 +1,7 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
+import com.hbm.items.machine.RBMKFuelData;
 import com.mojang.serialization.Codec;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ModelData;
@@ -18,6 +19,9 @@ public final class ModDataComponents {
     public static final GolemComponent<Long> BATTERY_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "battery_charge");
     public static final GolemComponent<Float> HAZARD_RADIATION = GolemComponent.floatValue(Constants.MOD_ID, "hazard_radiation");
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
+    public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
+    public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
+    public static final GolemComponent<Long> RBMK_TOOL_TARGET = GolemComponent.longValue(Constants.MOD_ID, "rbmk_tool_target");
     /** A Watz fuel pellet's remaining yield (the old NBT double {@code "yield"}). */
     public static final GolemComponent<Double> WATZ_YIELD = GolemComponent.of(Constants.MOD_ID, "watz_yield", Codec.DOUBLE);
     public static final GolemComponent<Boolean> FUEL_WASTE_HOT = GolemComponent.of(Constants.MOD_ID, "fuel_waste_hot", Codec.BOOL);

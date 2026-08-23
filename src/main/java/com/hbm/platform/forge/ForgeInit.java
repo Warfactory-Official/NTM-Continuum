@@ -32,6 +32,7 @@ import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.RegisterGameTestsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.level.ChunkEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
@@ -66,6 +67,9 @@ public final class ForgeInit {
         }
 
         MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent event) -> {
+            if (event.phase == TickEvent.Phase.START) {
+                com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer());
+            }
             if (event.phase == TickEvent.Phase.END) {
                 UniNodespace.updateNodespace(event.getServer());
                 RadiationSystemNT.tickServer(event.getServer());
@@ -75,6 +79,7 @@ public final class ForgeInit {
             if (event.getLevel() instanceof ServerLevel level) {
                 UniNodespace.clearLevel(level);
                 RadiationSystemNT.clearWorld(level);
+                com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }
         });
         MinecraftForge.EVENT_BUS.addListener((ChunkEvent.Load event) -> {
@@ -89,6 +94,8 @@ public final class ForgeInit {
         });
         MinecraftForge.EVENT_BUS.addListener((ItemTooltipEvent event) ->
                 HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
+        MinecraftForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) ->
+                com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent event) ->
                 com.hbm.command.HbmCommands.register(event.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {

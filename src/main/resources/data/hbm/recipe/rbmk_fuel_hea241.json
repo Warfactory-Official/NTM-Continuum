@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rbmk_fuel_empty",
+    "#c:billets/am241",
+    "#c:billets/am241",
+    "#c:billets/am241",
+    "#c:billets/am241",
+    "#c:billets/am241",
+    "#c:billets/am241",
+    "#c:billets/am241",
+    "#c:billets/am241"
+  ],
+  "result": {
+    "id": "hbm:rbmk_fuel_hea241"
+  }
+}

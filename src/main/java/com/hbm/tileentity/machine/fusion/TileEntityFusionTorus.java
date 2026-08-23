@@ -310,8 +310,6 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         return ports;
     }
 
-    // --- GUI control ---
-
     @Override public boolean hasPermission(Player player) { return stillValid(player); }
 
     @Override
@@ -331,8 +329,6 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         if (slot == SLOT_BLUEPRINT) return true;
         return false;
     }
-
-    // --- persistence + sync ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

@@ -1,0 +1,3 @@
+package com.hbm.blocks.machine.rbmk;
+import com.hbm.tileentity.ModRBMKBlockEntities; import com.hbm.tileentity.machine.rbmk.*; import net.minecraft.core.BlockPos; import net.minecraft.world.level.block.entity.BlockEntityType; import net.minecraft.world.level.block.state.BlockState;
+public class RBMKOutgasser extends RBMKBase { public RBMKOutgasser(Properties properties) { super(properties); } @Override public int coreMask() { return MASK_DOWN; } @Override protected int topMask() { return MASK_UP; } @Override protected BlockEntityType<? extends BlockEntityRBMKBase> beType() { return ModRBMKBlockEntities.RBMK_OUTGASSER.get(); } @Override protected BlockEntityRBMKBase createCore(BlockPos pos, BlockState state) { return new BlockEntityRBMKOutgasser(pos, state); } }

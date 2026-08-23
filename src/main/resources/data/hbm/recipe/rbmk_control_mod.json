@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BGB",
+    "GRG",
+    "BGB"
+  ],
+  "key": {
+    "G": "#c:storage_blocks/graphite",
+    "B": "#c:nuggets/bismuth",
+    "R": "hbm:rbmk_control"
+  },
+  "result": {
+    "id": "hbm:rbmk_control_mod"
+  }
+}

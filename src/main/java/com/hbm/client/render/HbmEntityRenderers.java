@@ -1,6 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.entity.ModEntities;
+import com.hbm.entity.ModRBMKEntities;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.world.entity.Entity;
@@ -33,5 +34,7 @@ public final class HbmEntityRenderers {
         // LegoClient, which is a follow-up. A renderer must still be registered or the client throws
         // the moment one spawns.
         sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
+        sink.register(ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
+        sink.register(ModRBMKEntities.SPEAR.get(), RenderSpear::new);
     }
 }

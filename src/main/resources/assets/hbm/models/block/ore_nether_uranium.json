@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "hbm:blocks/block_uranium"
+    "all": "hbm:blocks/ore_nether_uranium"
   }
 }

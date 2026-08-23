@@ -5,6 +5,7 @@ import dev.golem.core.render.CompatRenderState;
 import com.hbm.Constants;
 import com.hbm.client.render.MachineObjRenderer.ModelDef;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.ModRBMKBlockEntities;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -35,6 +36,24 @@ public final class HbmBlockEntityRenderers {
     private static final Set<String> FRAME = Set.of("Frame");
 
     public static void registerAll(Sink sink) {
+        // RBMK columns render their dynamic fuel bundle separately from the baked column shell.
+        regCustom(sink, ModRBMKBlockEntities.RBMK_ROD.get(), ctx -> new RBMKFuelRodRenderer<>(false));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_ROD_REASIM.get(), ctx -> new RBMKFuelRodRenderer<>(true));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_CONTROL.get(), ctx -> new RBMKControlRodRenderer<>("rbmk_control"));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_CONTROL_AUTO.get(), ctx -> new RBMKControlRodRenderer<>("rbmk_control_auto"));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_BOILER.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_boiler", RBMKColumnShellRenderer.Kind.BOILER));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_MODERATOR.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_moderator", RBMKColumnShellRenderer.Kind.PLAIN));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_REFLECTOR.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_reflector", RBMKColumnShellRenderer.Kind.PLAIN));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_ABSORBER.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_absorber", RBMKColumnShellRenderer.Kind.PLAIN));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_BLANK.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_blank", RBMKColumnShellRenderer.Kind.PLAIN));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_COOLER.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_cooler", RBMKColumnShellRenderer.Kind.PLAIN));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_STORAGE.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_storage", RBMKColumnShellRenderer.Kind.PLAIN));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_HEATER.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_heater", RBMKColumnShellRenderer.Kind.BOILER));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_OUTGASSER.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_outgasser", RBMKColumnShellRenderer.Kind.PLAIN));
+        regCustom(sink, ModRBMKBlockEntities.RBMK_CONSOLE.get(), RBMKConsoleRenderer::new);
+        regCustom(sink, ModRBMKBlockEntities.RBMK_GAUGE.get(), RBMKGaugeRenderer::new);
+        regCustom(sink, ModRBMKBlockEntities.RBMK_CRANE_CONSOLE.get(), ctx -> new RBMKCraneConsoleRenderer());
+        regCustom(sink, ModRBMKBlockEntities.RBMK_DEBRIS.get(), ctx -> new RBMKDebrisBlockRenderer());
         // The assembly machine has its own animated renderer (spinning ring + two robotic arms).
         regCustom(sink, ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), ctx -> new AssemblyMachineRenderer());
         // The chemical plant has its own animated renderer too: a sliding Slider + rotating Spinner + the

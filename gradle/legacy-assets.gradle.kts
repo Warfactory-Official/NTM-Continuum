@@ -58,7 +58,7 @@ fun Project.applyLegacyItemAssets() {
                     // longer references (their definitions point at the OBJ renderer), and leaving it in
                     // place would render them flat here and 3D there. The same applies to a gun, whose
                     // placeholder sprite predates its OBJ renderer. Every other item defers to what ships.
-                    val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent == GUN_OBJ_LEGACY_MODEL
+            val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent == GUN_OBJ_LEGACY_MODEL
                     if (target.exists() && !selfRendered) return@forEach
                     itemModels.mkdirs()
                     target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mapOf("parent" to parent))))
@@ -87,6 +87,27 @@ fun Project.applyLegacyItemAssets() {
                 }
             }
 
+            // RBMK pellets use the registered hbm:item_variant property. The modern item definition selects
+            // its ten visual-state models; older clients express the same selection as ordered overrides.
+            var selected = 0
+            assets.listFiles()?.filter { it.isDirectory }?.forEach { namespace ->
+                val definitions = File(namespace, "items")
+                if (!definitions.isDirectory) return@forEach
+                definitions.listFiles()?.filter { it.extension == "json" }?.forEach { definition ->
+                    val branches = itemVariantSelectOf(definition) ?: return@forEach
+                    val (fallback, cases) = branches
+                    val target = File(namespace, "models/item/" + fallback.substringAfter("item/") + ".json")
+                    if (!target.isFile) return@forEach
+                    @Suppress("UNCHECKED_CAST")
+                    val model = JsonSlurper().parse(target) as MutableMap<String, Any?>
+                    model["overrides"] = cases.map { (value, selectedModel) ->
+                        mapOf("predicate" to mapOf("hbm:item_variant" to value), "model" to selectedModel)
+                    }
+                    target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(model)))
+                    selected++
+                }
+            }
+
             val atlases = File(assets, "minecraft/atlases")
             val items = File(atlases, "items.json")
             val blocks = File(atlases, "blocks.json")
@@ -107,7 +128,7 @@ fun Project.applyLegacyItemAssets() {
             }
 
             logger.lifecycle(
-                "legacyItemAssets: generated $generated item model(s); rewrote $conditioned conditional model(s); " +
+                "legacyItemAssets: generated $generated item model(s); rewrote $conditioned conditional model(s); selected $selected item-variant model(s); " +
                     "folded $folded item atlas source(s) into blocks.json.")
         }
     }
@@ -145,6 +166,25 @@ fun customModelDataConditionOf(definition: File): Pair<String, String>? {
     return onFalse to onTrue
 }
 
+fun itemVariantSelectOf(definition: File): Pair<String, List<Pair<Float, String>>>? {
+    @Suppress("UNCHECKED_CAST")
+    val json = JsonSlurper().parse(definition) as? Map<String, Any?> ?: return null
+    @Suppress("UNCHECKED_CAST")
+    val model = json["model"] as? Map<String, Any?> ?: return null
+    if (model["type"] != "minecraft:select" || model["property"] != "hbm:item_variant") return null
+    @Suppress("UNCHECKED_CAST")
+    val fallback = (model["fallback"] as? Map<String, Any?>)?.get("model") as? String ?: return null
+    @Suppress("UNCHECKED_CAST")
+    val cases = model["cases"] as? List<Map<String, Any?>> ?: return null
+    val parsed = cases.mapNotNull { entry ->
+        val value = (entry["when"] as? String)?.toFloatOrNull() ?: return@mapNotNull null
+        @Suppress("UNCHECKED_CAST")
+        val selected = (entry["model"] as? Map<String, Any?>)?.get("model") as? String ?: return@mapNotNull null
+        value to selected
+    }
+    return fallback to (parsed.takeIf { it.isNotEmpty() } ?: return null)
+}
+
 fun parentModelOf(definition: File): String? {
     @Suppress("UNCHECKED_CAST")
     val json = JsonSlurper().parse(definition) as? Map<String, Any?> ?: return null
@@ -157,7 +197,8 @@ fun parentModelOf(definition: File): String? {
         "minecraft:special" -> {
             @Suppress("UNCHECKED_CAST")
             val inner = model["model"] as? Map<String, Any?>
-            if (inner?.get("type") == "hbm:machine_obj") MACHINE_OBJ_LEGACY_MODEL
+            if (inner?.get("type") == "hbm:machine_obj" || inner?.get("type") == "hbm:rbmk_fuel_column"
+                || inner?.get("type") == "hbm:rbmk_block_column") MACHINE_OBJ_LEGACY_MODEL
             else model["base"] as? String
         }
         else -> null

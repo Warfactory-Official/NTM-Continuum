@@ -485,7 +485,6 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     }
     //?}
 
-    // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {

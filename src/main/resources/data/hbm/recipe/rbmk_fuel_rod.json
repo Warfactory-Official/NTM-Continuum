@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "C",
+    "R",
+    "C"
+  ],
+  "key": {
+    "C": "#c:shells/steel",
+    "R": "hbm:rbmk_blank"
+  },
+  "result": {
+    "id": "hbm:rbmk_fuel_rod"
+  }
+}

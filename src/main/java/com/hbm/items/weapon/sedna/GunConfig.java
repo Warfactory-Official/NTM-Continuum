@@ -22,8 +22,6 @@ import net.minecraft.world.item.ItemStack;
  */
 public class GunConfig {
 
-    /* FIELDS */
-
     public int index;
     /** Receivers in use, primary first; index 1 is conventionally an underbarrel. */
     protected Receiver[] receivers_DNA;
@@ -48,8 +46,6 @@ public class GunConfig {
     /** The state machine driving the gun's overall behaviour. */
     protected BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> decider_DNA;
 
-    /* GETTERS */
-
     public Receiver[] getReceivers(ItemStack stack) { return receivers_DNA; }
     public float getDurability(ItemStack stack) { return durability_DNA; }
     public int getDrawDuration(ItemStack stack) { return drawDuration_DNA; }
@@ -68,8 +64,6 @@ public class GunConfig {
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getReleaseTertiary(ItemStack stack) { return onReleaseTertiary_DNA; }
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getReleaseReload(ItemStack stack) { return onReleaseReload_DNA; }
     public BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> getDecider(ItemStack stack) { return decider_DNA; }
-
-    /* SETTERS */
 
     public GunConfig rec(Receiver... receivers) {
         this.receivers_DNA = receivers;

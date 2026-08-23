@@ -64,8 +64,11 @@ public final class MainRegistry {
         com.hbm.blocks.ModNuclearBlocks.init(); // uranium outgassing ores and radon gases
         com.hbm.blocks.ModOreBlocks.init();     // clusters, depth rock/ores, resource stone, cave spikes, gas pockets
         com.hbm.blocks.ModGlassBlocks.init();   // the BlockNTMGlass family (glass_quartz so far)
+        com.hbm.blocks.machine.rbmk.ModRBMKBlocks.init(); // reactor columns/peripherals before their block items and BE types
         ModDataComponents.init();  // custom item data components (referenced by hand items below)
+        com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModRBMKItems.init(); // RBMK rods/pellets and reactor tools
         com.hbm.items.ModZirnoxItems.init(); // component-backed reactor fuel and spent fuel
         ModMachineItems.init();    // hand-registered machine items (templates)
         com.hbm.items.machine.ModStampItems.init(); // press stamps (dies)
@@ -90,11 +93,16 @@ public final class MainRegistry {
         com.hbm.items.ModGunItems.init();   // the Sedna guns
         com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)
         ModBlockEntities.init();
+        com.hbm.tileentity.ModRBMKBlockEntities.init();
         ModMenus.init();
+        com.hbm.inventory.ModRBMKMenus.init();
         ModEntities.init();        // entity types (the explosion + fallout entities)
+        com.hbm.entity.ModRBMKEntities.init();
+        com.hbm.particle.HbmParticles.init();
         com.hbm.potion.ModEffects.init(); // status effects (radiation)
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)
         ModTabs.init();
+        com.hbm.handler.neutron.NeutronLifecycle.init();
         // Needs both the tool items and the convertible blocks, so it runs after every registry.
         com.hbm.handler.NTMToolHandler.register();
     }

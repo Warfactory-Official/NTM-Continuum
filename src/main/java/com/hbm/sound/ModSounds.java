@@ -53,7 +53,10 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> NUCLEAR_EXPLOSION = register("weapon.nuclear_explosion");
 
     /** Original RBMK/ZIRNOX reactor accident sound; used only by the vanilla ZIRNOX meltdown blast. */
-    public static final RegistryObject<SoundEvent> RBMK_EXPLOSION = register("block.rbmk_explosion");
+    public static final RegistryObject<SoundEvent> RBMK_EXPLOSION = register("rbmk_explosion");
+    public static final RegistryObject<SoundEvent> RBMK_AZ5_COVER = register("rbmk_az5_cover");
+    public static final RegistryObject<SoundEvent> RBMK_SHUTDOWN = register("rbmk_shutdown");
+    public static final RegistryObject<SoundEvent> STEAM_ENGINE_OPERATE = register("steam_engine_operate");
 
     /** Weapons. Old ids {@code weapon.fire.pistol}, {@code weapon.reload.dryFireClick} and
      * {@code weapon.revolverReload}, lowercased to satisfy 26.1's id charset. */

@@ -47,10 +47,10 @@ public class ItemBlowtorch extends CompatItem implements IFillableItem {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         Block block = level.getBlockState(pos).getBlock();
-        if (!(block instanceof IToolable toolable)) return InteractionResult.PASS;
+        if (!(block instanceof IToolable toolable)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         Player player = context.getPlayer();
-        if (player == null) return InteractionResult.PASS;
+        if (player == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
         // The torch always reports SUCCESS so vanilla doesn't fall through to placing/using something
         // else on a block it clearly meant to weld (the original's "minecraft is stupid" comment).
         if (level.isClientSide()) return InteractionResult.SUCCESS;

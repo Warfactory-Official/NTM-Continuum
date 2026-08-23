@@ -254,19 +254,13 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         return slot == 2 || slot == 4 || slot == 6 || slot == 8 || slot == 10 || slot == 11;
     }
 
-    // --- IEnergyReceiverMK2 ---
-
     @Override public long getPower() { return power; }
     @Override public void setPower(long i) { power = i; }
     @Override public long getMaxPower() { return maxPower; }
 
-    // --- IFluidStandardTransceiverMK2 ---
-
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2], tanks[3], tanks[4]}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
-
-    // --- MenuProvider ---
 
     @Override
     public Component getDisplayName() {
@@ -277,8 +271,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineRefinery(containerId, playerInventory, this);
     }
-
-    // --- sync + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

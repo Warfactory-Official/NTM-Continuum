@@ -196,6 +196,8 @@ public final class Mats {
             .colors(0xDCE5F6, 0x4927B4, 0x96A7E6).setAutogen(FRAGMENT, GEM);
     public static final NTMMaterial MAT_CARBON         = mat(699, "carbon")
             .colors(0x363636, 0x030303, 0x404040).setAutogen(WIRE, BLOCK);
+    public static final NTMMaterial MAT_GRAPHITE       = mat(620, "graphite")
+            .colors(0x363636, 0x030303, 0x404040).conv(MAT_CARBON, 1, 1);
 
     // --- batch 3: alloys (id + colours + autogen ported verbatim from the
     //     1.12.2 Mats; names verified against old-hbm ModItems) ---
@@ -340,7 +342,7 @@ public final class Mats {
         entry(items, com.hbm.items.ModFuelItems.powder_lignite.get(), MAT_LIGNITE, DUST.quantity);
         entry(items, com.hbm.items.ModFuelItems.powder_coal.get(), MAT_COAL, DUST.quantity);
         entry(items, com.hbm.items.ModFuelItems.powder_coal_tiny.get(), MAT_COAL, TINY.quantity);
-        entry(items, com.hbm.items.ModFuelItems.ingot_graphite.get(), MAT_CARBON, i);
+        entry(items, com.hbm.items.ModFuelItems.ingot_graphite.get(), MAT_GRAPHITE, i);
         entry(items, com.hbm.items.ModItems.powder_flux.get(), MAT_FLUX, DUST.quantity);
 
         // castables (melt back to their mold cost, per the old MatDistribution)

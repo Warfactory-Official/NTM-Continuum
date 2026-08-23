@@ -42,6 +42,7 @@ final class ForgeClientInit {
                                 com.hbm.client.render.MachineItemModels::reload));
         HbmClientRegistrations.registerBlockColors();
         modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(() -> {
+            HbmClientRegistrations.installItemModelProperties();
             HbmClientRegistrations.registerScreens(MenuScreens::register);
         }));
         modBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> {

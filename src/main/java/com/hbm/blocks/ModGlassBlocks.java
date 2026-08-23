@@ -3,6 +3,7 @@ package com.hbm.blocks;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockNTMGlass;
+import com.hbm.blocks.generic.BlockRadResistant;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
@@ -33,9 +34,26 @@ public final class ModGlassBlocks {
             p -> p.strength(1.0F, 40.0F).sound(SoundType.GLASS).noOcclusion().isSuffocating((s, l, pos) -> false)
                     .isViewBlocking((s, l, pos) -> false).noLootTable());
 
+    /** Boron and lead glass are radiation-sealing, silk-touch-only panes in current ntm-next. */
+    public static final RegistryObject<BlockRadResistant> glass_boron = resistantGlass("glass_boron");
+    public static final RegistryObject<BlockRadResistant> glass_lead = resistantGlass("glass_lead");
+
     static {
         RegistryObject<BlockItem> item = ITEMS.registerBlockItem("glass_quartz", glass_quartz,
                 p -> Compat.blockDescription(p));
+        ModTabs.addTo(HbmTab.BLOCKS, item);
+        blockItem("glass_boron", glass_boron);
+        blockItem("glass_lead", glass_lead);
+    }
+
+    private static RegistryObject<BlockRadResistant> resistantGlass(String id) {
+        return BLOCKS.registerBlock(id, BlockRadResistant::new,
+                p -> p.strength(0.3F).sound(SoundType.GLASS).noOcclusion()
+                        .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false));
+    }
+
+    private static void blockItem(String id, RegistryObject<? extends net.minecraft.world.level.block.Block> block) {
+        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block::get, p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.BLOCKS, item);
     }
 

@@ -117,13 +117,9 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         return tanks[1].getFill() + left <= tanks[1].getMaxFill() && tanks[2].getFill() + right <= tanks[2].getMaxFill();
     }
 
-    // --- IFluidStandardTransceiverMK2 ---
-
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2]}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
-
-    // --- sync + persistence ---
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

@@ -123,8 +123,6 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
     // Destruction drops: the vanilla preRemoveSideEffects default spills a Container's slots (the BE
     // now implements WorldlyContainer), and the FoundryBase override adds the molten content as scraps.
 
-    // --- sync + persistence ---
-
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);

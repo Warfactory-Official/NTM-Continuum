@@ -21,6 +21,7 @@ import com.hbm.uninos.UniNodespace;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -42,10 +43,6 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 public class NeoForgeInit {
 
     public NeoForgeInit(IEventBus eventBus) {
-
-        // This method is invoked by the NeoForge mod loader when it is ready
-        // to load your mod. You can access NeoForge and Common code in this
-        // project.
 
         Constants.LOG.info("Hello NeoForge world!");
 
@@ -74,6 +71,8 @@ public class NeoForgeInit {
 
         // Power/network engine driver: tick the nodespace each server tick, clear it on level unload.
         // The radiation engine ticks on the same hook (both are server-thread, end-of-tick).
+        NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) ->
+                com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
             UniNodespace.updateNodespace(event.getServer());
             RadiationSystemNT.tickServer(event.getServer());
@@ -82,6 +81,7 @@ public class NeoForgeInit {
             if (event.getLevel() instanceof ServerLevel level) {
                 UniNodespace.clearLevel(level);
                 RadiationSystemNT.clearWorld(level);
+                com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }
         });
 
@@ -101,6 +101,8 @@ public class NeoForgeInit {
         // Hazard tooltips (radioactive/hot/etc. traits on items).
         NeoForge.EVENT_BUS.addListener((ItemTooltipEvent event) ->
                 HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
+        NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) ->
+                com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
 
         // Debug commands (/hbm rad ...).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) ->

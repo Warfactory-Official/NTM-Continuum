@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rbmk_fuel_empty",
+    "hbm:billet_neptunium",
+    "hbm:billet_neptunium",
+    "hbm:billet_neptunium",
+    "hbm:billet_neptunium",
+    "hbm:billet_neptunium",
+    "hbm:billet_neptunium",
+    "hbm:billet_neptunium",
+    "hbm:billet_neptunium"
+  ],
+  "result": {
+    "id": "hbm:rbmk_fuel_hen"
+  }
+}

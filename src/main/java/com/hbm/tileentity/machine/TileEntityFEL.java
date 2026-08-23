@@ -92,8 +92,6 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         return "container.machineFEL";
     }
 
-    // ---------------------------------------------------------------- server
-
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFEL te) {
         ForgeDirection dir = te.facing();
         // Subscribe through getConPos so the tick and the block-level connector can never disagree
@@ -315,8 +313,6 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
                 worldPosition.getZ() + dir.offsetZ * -5, dir.getOpposite())};
     }
 
-    // ---------------------------------------------------------------- client
-
     /**
      * The audio ramp: it climbs by 2 per tick while firing and falls by 3 when not, clamped 0–60, and
      * the loop only plays above 10 — so the laser winds up and down instead of clicking on and off.
@@ -337,8 +333,6 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
     public boolean isAudioPlaying() { return audioDuration > 10; }
     public float audioPitch() { return (audioDuration - 10) / 100F + 0.5F; }
-
-    // ---------------------------------------------------------------- inventory + menu
 
     /** Slot 0 is the battery bay, slot 1 the laser crystal. */
     @Override
@@ -376,13 +370,9 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
         return new ContainerFEL(containerId, playerInventory, worldPosition);
     }
 
-    // ---------------------------------------------------------------- energy
-
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
-
-    // ---------------------------------------------------------------- sync + persistence
 
     /**
      * NOTE: upstream's {@code serialize} deliberately does <b>not</b> call {@code super.serialize}

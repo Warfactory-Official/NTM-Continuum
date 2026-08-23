@@ -155,8 +155,6 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
                 new DirPos(x - rot.offsetX - dir.offsetX, y, z - rot.offsetZ - dir.offsetZ, rot.getOpposite())};
     }
 
-    // --- MenuProvider ---
-
     @Override
     public Component getDisplayName() {
         return Component.translatable("block.hbm.machine_battery_socket");

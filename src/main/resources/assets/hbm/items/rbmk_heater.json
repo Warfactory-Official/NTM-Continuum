@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:rbmk_block_column",
+      "side": "hbm:blocks/rbmk/rbmk_heater_side",
+      "top": "hbm:blocks/rbmk/rbmk_heater_top",
+      "scale": 0.35,
+      "yaw": 0,
+      "lift": -0.675,
+      "pipe_side": "hbm:blocks/rbmk/rbmk_heater_pipe_side",
+      "pipe_top": "hbm:blocks/rbmk/rbmk_heater_pipe_top"
+    }
+  }
+}

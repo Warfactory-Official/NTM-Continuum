@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
+import com.hbm.handler.EnumCraneKey;
 import net.minecraft.util.Mth;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -38,6 +39,8 @@ public class EntityHbmProps {
     public int fire = 0;
     public int balefire = 0;
     private final List<ContaminationEffect> contamination = new ArrayList<>();
+    /** Live crane input only; deliberately excluded from persistence and entity sync. */
+    private final boolean[] craneKeysPressed = new boolean[EnumCraneKey.VALUES.length];
 
     public double getRads() { return rads; }
     /** Clamped to [0, 2500] exactly like the old capability setter. */
@@ -80,6 +83,10 @@ public class EntityHbmProps {
     public void setBalefire(int time) { this.balefire = time; }
 
     public List<ContaminationEffect> getContaminationEffectList() { return contamination; }
+
+    public boolean isCraneKeyPressed(EnumCraneKey key) { return craneKeysPressed[key.ordinal()]; }
+
+    public void setCraneKeyPressed(EnumCraneKey key, boolean pressed) { craneKeysPressed[key.ordinal()] = pressed; }
 
     // ---- persistence (entity NBT child "HbmLivingProps") ----
 

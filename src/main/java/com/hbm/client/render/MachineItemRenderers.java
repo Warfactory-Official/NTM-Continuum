@@ -40,13 +40,17 @@ public final class MachineItemRenderers {
         if (MachineItemModels.isEmpty()) return;
         Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         MachineItemModel model = MachineItemModels.get(id);
-        if (model == null) return;
+        RBMKColumnItemModel column = MachineItemModels.rbmkColumn(id);
+        RBMKBlockColumnItemModel block = MachineItemModels.blockColumn(id);
+        if (model == null && column == null && block == null) return;
 
         // In a GUI these models must not paint outside their slot; see clipToSlot.
         boolean clipped = context == ItemDisplayContext.GUI && clipToSlot(poseStack);
 
         RecordingSubmitSink sink = new RecordingSubmitSink();
-        model.submit(poseStack, sink, light, overlay);
+        if (column != null) column.submit(poseStack, sink, light, overlay);
+        else if (block != null) block.submit(poseStack, sink, light, overlay);
+        else model.submit(poseStack, sink, light, overlay);
         // No level: these draws happen in inventory/hand space, and the sink only needs one for item
         // sub-draws, which an OBJ machine never makes.
         sink.flush(buffers, null);

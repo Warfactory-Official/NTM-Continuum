@@ -1,0 +1,25 @@
+{
+  "display": {
+    "icon": {
+      "id": "hbm:rbmk_fuel_ueu"
+    },
+    "title": {
+      "translate": "achievement.RBMK"
+    },
+    "description": {
+      "translate": "achievement.RBMK.desc"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "produced": {
+      "trigger": "minecraft:recipe_crafted",
+      "conditions": {
+        "recipe_id": "hbm:rbmk_fuel_empty"
+      }
+    }
+  }
+}

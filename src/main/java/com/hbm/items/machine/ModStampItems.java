@@ -27,27 +27,22 @@ public final class ModStampItems {
     /** Every registered stamp, in registration order — used by the press recipe display/JEI later. */
     public static final List<RegistryObject<Item>> ALL = new ArrayList<>();
 
-    // stone
     public static final RegistryObject<Item> stamp_stone_flat = stamp("stamp_stone_flat", 32, StampType.FLAT);
     public static final RegistryObject<Item> stamp_stone_plate = stamp("stamp_stone_plate", 32, StampType.PLATE);
     public static final RegistryObject<Item> stamp_stone_wire = stamp("stamp_stone_wire", 32, StampType.WIRE);
     public static final RegistryObject<Item> stamp_stone_circuit = stamp("stamp_stone_circuit", 32, StampType.CIRCUIT);
-    // iron
     public static final RegistryObject<Item> stamp_iron_flat = stamp("stamp_iron_flat", 64, StampType.FLAT);
     public static final RegistryObject<Item> stamp_iron_plate = stamp("stamp_iron_plate", 64, StampType.PLATE);
     public static final RegistryObject<Item> stamp_iron_wire = stamp("stamp_iron_wire", 64, StampType.WIRE);
     public static final RegistryObject<Item> stamp_iron_circuit = stamp("stamp_iron_circuit", 64, StampType.CIRCUIT);
-    // steel
     public static final RegistryObject<Item> stamp_steel_flat = stamp("stamp_steel_flat", 192, StampType.FLAT);
     public static final RegistryObject<Item> stamp_steel_plate = stamp("stamp_steel_plate", 192, StampType.PLATE);
     public static final RegistryObject<Item> stamp_steel_wire = stamp("stamp_steel_wire", 192, StampType.WIRE);
     public static final RegistryObject<Item> stamp_steel_circuit = stamp("stamp_steel_circuit", 192, StampType.CIRCUIT);
-    // titanium
     public static final RegistryObject<Item> stamp_titanium_flat = stamp("stamp_titanium_flat", 256, StampType.FLAT);
     public static final RegistryObject<Item> stamp_titanium_plate = stamp("stamp_titanium_plate", 256, StampType.PLATE);
     public static final RegistryObject<Item> stamp_titanium_wire = stamp("stamp_titanium_wire", 256, StampType.WIRE);
     public static final RegistryObject<Item> stamp_titanium_circuit = stamp("stamp_titanium_circuit", 256, StampType.CIRCUIT);
-    // obsidian
     public static final RegistryObject<Item> stamp_obsidian_flat = stamp("stamp_obsidian_flat", 512, StampType.FLAT);
     public static final RegistryObject<Item> stamp_obsidian_plate = stamp("stamp_obsidian_plate", 512, StampType.PLATE);
     public static final RegistryObject<Item> stamp_obsidian_wire = stamp("stamp_obsidian_wire", 512, StampType.WIRE);

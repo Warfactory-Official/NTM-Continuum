@@ -205,6 +205,22 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function ARMOR_SHORT_FALL =
             TESTS.function("armor_short_fall", 40, () -> ArmorGameTests::shortFallDoesNothing);
 
+    // --- RBMK (implementations live in RBMKGameTests) ---
+    public static final GameTests.Function RBMK_REGISTRY =
+            TESTS.function("rbmk_registry", 40, () -> RBMKGameTests::registry);
+    public static final GameTests.Function RBMK_FOLDED_COLUMN =
+            TESTS.function("rbmk_folded_column", 100, () -> RBMKGameTests::foldedColumn);
+    public static final GameTests.Function RBMK_FUEL =
+            TESTS.function("rbmk_fuel", 40, () -> RBMKGameTests::fuel);
+    public static final GameTests.Function RBMK_CONTROL =
+            TESTS.function("rbmk_control", 40, () -> RBMKGameTests::control);
+    public static final GameTests.Function RBMK_NEUTRONS =
+            TESTS.function("rbmk_neutrons", 100, () -> RBMKGameTests::neutrons);
+    public static final GameTests.Function RBMK_BOILER =
+            TESTS.function("rbmk_boiler", 40, () -> RBMKGameTests::boiler);
+    public static final GameTests.Function RBMK_DEBRIS =
+            TESTS.function("rbmk_debris", 40, () -> RBMKGameTests::debris);
+
     public static void init() {}
 
     private static void coolingRecipes(GameTestHelper helper) {
