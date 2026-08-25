@@ -2,6 +2,7 @@ package com.hbm.client.particle;
 
 import com.hbm.particle.helper.HbmEffectNT;
 import dev.golem.core.data.Tags;
+import dev.golem.core.render.Particles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 
@@ -31,6 +32,32 @@ public final class HbmParticleHandlers {
                 Tags.getFloatOr(data, "scale", 20F)));
         HbmEffectNT.RBMKMushSmall.setHandler((level, x, y, z, data) -> spawnRBMKMush(level, x, y, z,
                 Tags.getFloatOr(data, "scale", 5F)));
+        HbmEffectNT.MissileContrail.setHandler(HbmParticleHandlers::spawnContrail);
+    }
+
+    /**
+     * One exhaust puff. A missile spawns these itself, client-side, so there is no packet to gate —
+     * upstream's 350-block cut-off is the gate, and it matters: an ICBM's trail is spawned every tick
+     * for the whole flight, and without it a player would be building particles for a missile several
+     * thousand blocks away that they cannot see.
+     */
+    private static void spawnContrail(net.minecraft.world.level.Level level, double x, double y, double z,
+            net.minecraft.nbt.CompoundTag data) {
+        if (!(level instanceof ClientLevel clientLevel)) return;
+
+        net.minecraft.world.entity.player.Player player = Minecraft.getInstance().player;
+        if (player == null || player.distanceToSqr(x, y, z) > 350D * 350D) return;
+
+        ParticleRocketFlame flame = new ParticleRocketFlame(clientLevel, x, y, z)
+                .setScale(Tags.getFloatOr(data, "scale", 1F))
+                .setMotion(Tags.getDoubleOr(data, "moX", 0D),
+                        Tags.getDoubleOr(data, "moY", 0D),
+                        Tags.getDoubleOr(data, "moZ", 0D));
+
+        int maxAge = Tags.getIntOr(data, "maxAge", -1);
+        if (maxAge > 0) flame.setMaxAge(maxAge);
+
+        Particles.add(flame);
     }
 
     private static void spawnRBMKMush(net.minecraft.world.level.Level level, double x, double y, double z, float scale) {

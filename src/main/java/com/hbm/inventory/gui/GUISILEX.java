@@ -145,7 +145,7 @@ public class GUISILEX extends dev.golem.core.gui.CompatContainerScreen<Container
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntitySILEX te = this.menu.getSilex();
         if (te == null) return;
 

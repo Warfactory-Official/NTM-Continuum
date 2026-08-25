@@ -69,7 +69,7 @@ public class GUIPyroOven extends dev.golem.core.gui.CompatContainerScreen<Contai
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachinePyroOven te = this.menu.getTile();
         if (te == null) return;
 

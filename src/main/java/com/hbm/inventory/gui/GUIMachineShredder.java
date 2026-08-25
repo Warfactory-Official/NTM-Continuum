@@ -61,7 +61,7 @@ public class GUIMachineShredder extends dev.golem.core.gui.CompatContainerScreen
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineShredder shredder = this.menu.getShredder();
         if (shredder == null) return;
 

@@ -67,7 +67,7 @@ public class GUIMachineCoker extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineCoker te = this.menu.getTile();
         if (te == null) return;
 

@@ -112,7 +112,7 @@ public class GUIMachinePUREX extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachinePUREX te = this.menu.getPurex();
         if (te == null) return;
 

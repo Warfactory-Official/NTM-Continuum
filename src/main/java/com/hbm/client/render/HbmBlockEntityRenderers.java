@@ -69,8 +69,9 @@ public final class HbmBlockEntityRenderers {
                 obj("press_body.obj"), tex("machines/press_body.png"),
                 obj("press_head.obj"), tex("machines/press_head.png"),
                 180F, false, 0.875F, 0.95F, 200, te -> te.progress));
-        reg(sink, ModBlockEntities.LAUNCH_PAD.get(), 90F, 1F,
-                new ModelDef(obj("weapons/launch_pad_silo.obj"), tex("launchpad/silo.png")));
+        // The launch pad draws the missile it is holding on top of the silo, so it needs its own
+        // renderer rather than the generic static-OBJ one.
+        regCustom(sink, ModBlockEntities.LAUNCH_PAD.get(), ctx -> new LaunchPadRenderer());
 
         // Soldering station: its own renderer — the static OBJ (with the asymmetric-footprint offset) plus
         // the current recipe's output item floating above (the 1.12.2 product display).

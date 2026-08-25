@@ -65,7 +65,7 @@ public class GUIMachineCatalyticReformer extends dev.golem.core.gui.CompatContai
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineCatalyticReformer te = this.menu.getTile();
         if (te == null) return;
 

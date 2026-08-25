@@ -72,7 +72,7 @@ public class GUIMachineDiesel extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineDiesel te = this.menu.getDiesel();
         if (te == null) return;
 

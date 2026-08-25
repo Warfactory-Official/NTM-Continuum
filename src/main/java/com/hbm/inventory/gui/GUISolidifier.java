@@ -70,7 +70,7 @@ public class GUISolidifier extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineSolidifier te = this.menu.getSolidifier();
         if (te == null) return;
 

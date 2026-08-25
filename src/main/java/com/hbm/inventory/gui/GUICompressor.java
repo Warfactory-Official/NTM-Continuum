@@ -80,7 +80,7 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineCompressorBase te = this.menu.getTile();
         if (te == null) return;
 

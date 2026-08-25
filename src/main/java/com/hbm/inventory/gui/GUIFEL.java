@@ -97,7 +97,7 @@ public class GUIFEL extends dev.golem.core.gui.CompatContainerScreen<ContainerFE
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityFEL te = this.menu.getFel();
         if (te == null) return;
 

@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModRBMKEntities;
+import com.hbm.entity.missile.ModMissileEntities;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.world.entity.Entity;
@@ -36,5 +37,30 @@ public final class HbmEntityRenderers {
         sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
         sink.register(ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
         sink.register(ModRBMKEntities.SPEAR.get(), RenderSpear::new);
+
+        // The missiles. Model, texture and scale per airframe, exactly as upstream's 24 one-off
+        // renderer classes: V2 and strong at 1.0, huge at 0.8, atlas at 1.5, stealth at 2.0.
+        missile(sink, ModMissileEntities.MISSILE_GENERIC.get(), "missile_v2.obj", "missile_v2.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_DECOY.get(), "missile_v2.obj", "missile_v2_decoy.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_INCENDIARY.get(), "missile_v2.obj", "missile_v2_inc.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_BUSTER.get(), "missile_v2.obj", "missile_v2_bu.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_STRONG.get(), "missile_strong.obj", "missile_strong.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_INCENDIARY_STRONG.get(), "missile_strong.obj", "missile_strong_inc.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_BUSTER_STRONG.get(), "missile_strong.obj", "missile_strong_bu.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_BURST.get(), "missile_huge.obj", "missile_huge.png", 0.8F);
+        missile(sink, ModMissileEntities.MISSILE_INFERNO.get(), "missile_huge.obj", "missile_huge_inc.png", 0.8F);
+        missile(sink, ModMissileEntities.MISSILE_NUCLEAR.get(), "missile_atlas.obj", "missile_atlas_nuclear.png", 1.5F);
+        missile(sink, ModMissileEntities.MISSILE_MIRV.get(), "missile_atlas.obj", "missile_atlas_thermo.png", 1.5F);
+        missile(sink, ModMissileEntities.MISSILE_DOOMSDAY.get(), "missile_atlas.obj", "missile_atlas_doomsday.png", 1.5F);
+        missile(sink, ModMissileEntities.MISSILE_DOOMSDAY_RUSTED.get(), "missile_atlas.obj", "missile_atlas_doomsday_weathered.png", 1.5F);
+        // Upstream's file is camelCase (missileN2.png); modern Identifiers reject uppercase, so the copy
+        // in this tree is renamed to missile_n2.png.
+        missile(sink, ModMissileEntities.MISSILE_N2.get(), "missile_atlas.obj", "missile_n2.png", 1.5F);
+        missile(sink, ModMissileEntities.MISSILE_STEALTH.get(), "missile_stealth.obj", "missile_stealth.png", 2.0F);
+        missile(sink, ModMissileEntities.MISSILE_ANTI_BALLISTIC.get(), "missile_abm.obj", "missile_abm.png", 1.0F);
+    }
+
+    private static <T extends Entity & com.hbm.entity.missile.IMissilePitch> void missile(Sink sink, EntityType<T> type, String model, String texture, float scale) {
+        sink.register(type, context -> new MissileRenderer<>(context, model, texture, scale));
     }
 }

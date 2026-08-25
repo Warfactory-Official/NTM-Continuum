@@ -35,7 +35,7 @@ public final class ScreenRBMKBoiler extends RBMKContainerScreen<MenuRBMKBoiler> 
         GuiDraw.blit(graphics, TEX, leftPos + 36, topPos + 24, steamTypeU(boiler.steam.getTankType()), 0, 14, 58, 256, 256);
     }
 
-    @Override protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKBoiler boiler = menu.blockEntity();
         if (boiler == null) return;
         fluidTooltip(graphics, boiler.feed, 126, 24, 16, 58, mouseX, mouseY);

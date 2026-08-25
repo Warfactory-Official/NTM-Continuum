@@ -31,7 +31,7 @@ public final class ScreenRBMKRod extends RBMKContainerScreen<MenuRBMKRod> {
         if (hullHeat > 200D) GuiUtil.drawWarningPanel(graphics, leftPos - 16, topPos + 36);
     }
 
-    @Override protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         ItemStack fuel = menu.getSlot(0).getItem();
         if (!(fuel.getItem() instanceof ItemRBMKRod)) return;
         if (region(34, 21, 18, 67, mouseX, mouseY)) {

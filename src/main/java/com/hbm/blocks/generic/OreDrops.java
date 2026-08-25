@@ -38,15 +38,11 @@ public final class OreDrops {
 
     // --- the old quantity functions, verbatim ---------------------------------------------------
 
-    /** {@code 2 + rand.nextInt(3) + fortune} */
     public static int base2Rand3Fortune(int fortune, RandomSource rand) { return 2 + rand.nextInt(3) + fortune; }
-    /** {@code 2 + rand.nextInt(2) + fortune} */
     public static int base2Rand2Fortune(int fortune, RandomSource rand) { return 2 + rand.nextInt(2) + fortune; }
-    /** {@code 1 + rand.nextInt(2) + fortune} */
     public static int base1Rand2Fortune(int fortune, RandomSource rand) { return 1 + rand.nextInt(2) + fortune; }
-    /** {@code 1 + rand.nextInt(3)} — fortune deliberately ignored upstream. */
+    /** Fortune deliberately ignored upstream. */
     public static int base1Rand3(int fortune, RandomSource rand) { return 1 + rand.nextInt(3); }
-    /** Always 1. */
     public static int const1(int fortune, RandomSource rand) { return 1; }
     /** {@code 1 + (fortune <= 0 ? 0 : rand.nextInt(fortune))} — note {@code nextInt(fortune)}, not {@code fortune+1}. */
     public static int vanillaFortune(int fortune, RandomSource rand) {

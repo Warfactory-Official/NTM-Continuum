@@ -65,7 +65,7 @@ public class GUIMachineSolderingStation extends dev.golem.core.gui.CompatContain
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineSolderingStation te = this.menu.getStation();
         if (te == null) return;
         if (this.isHovering(152, 18, 16, 52, mouseX, mouseY)) {

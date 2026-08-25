@@ -99,7 +99,7 @@ public class GUIMachineRefinery extends dev.golem.core.gui.CompatContainerScreen
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineRefinery te = this.menu.getRefinery();
         if (te == null) return;
 

@@ -116,7 +116,7 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         // Power bar hover region (GUI-relative): the full 16×61 bar at (152, 18)..(152, 79).
         TileEntityMachineAssemblyMachine te = this.menu.getAssembler();
         if (te == null) return;

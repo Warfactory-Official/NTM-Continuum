@@ -99,7 +99,7 @@ public class GUIMachineOilWell extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityOilDrillBase te = this.menu.getDrill();
         if (te == null) return;
 

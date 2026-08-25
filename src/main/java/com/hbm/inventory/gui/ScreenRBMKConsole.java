@@ -130,7 +130,7 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
         if (fill > 0) GuiDraw.blit(graphics, TEX, x, y + 9 - fill, u, 191 - fill, u == 41 || u == 46 || u == 131 || u == 136 ? 3 : 2, fill, 256, 256);
     }
 
-    @Override protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKConsole console = menu.blockEntity();
         if (console != null && region(86, 11, 150, 150, mouseX, mouseY)) {
             int index = (mouseX - leftPos - 86) / 10 + (mouseY - topPos - 11) / 10 * 15;

@@ -37,7 +37,7 @@ public final class ScreenRBMKControl extends RBMKContainerScreen<MenuRBMKControl
         }
     }
 
-    @Override protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKControl control = menu.blockEntity();
         if (control == null) return;
         if (region(71, 29, 16, 56, mouseX, mouseY)) {

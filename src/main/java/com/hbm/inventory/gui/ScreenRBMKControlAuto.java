@@ -55,7 +55,7 @@ public final class ScreenRBMKControlAuto extends RBMKContainerScreen<MenuRBMKCon
         }
     }
 
-    @Override protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKControlAuto control = menu.blockEntity();
         if (control == null) return;
         if (region(58, 26, 28, 19, mouseX, mouseY)) {

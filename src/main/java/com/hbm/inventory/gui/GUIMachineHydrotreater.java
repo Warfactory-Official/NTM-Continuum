@@ -65,7 +65,7 @@ public class GUIMachineHydrotreater extends dev.golem.core.gui.CompatContainerSc
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineHydrotreater te = this.menu.getTile();
         if (te == null) return;
 

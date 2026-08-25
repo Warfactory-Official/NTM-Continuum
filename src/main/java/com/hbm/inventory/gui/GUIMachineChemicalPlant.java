@@ -110,7 +110,7 @@ public class GUIMachineChemicalPlant extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineChemicalPlant te = this.menu.getChemplant();
         if (te == null) return;
 

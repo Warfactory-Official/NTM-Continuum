@@ -65,7 +65,7 @@ public class GUIMachineVacuumDistill extends dev.golem.core.gui.CompatContainerS
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineVacuumDistill te = this.menu.getTile();
         if (te == null) return;
 

@@ -1,0 +1,713 @@
+package com.hbm.gametest;
+
+import com.hbm.entity.missile.EntityMissileBaseNT;
+import com.hbm.entity.missile.EntityMissileTier1;
+import com.hbm.entity.missile.ModMissileEntities;
+import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModMissileItems;
+import com.hbm.inventory.container.ContainerLaunchPad;
+import com.hbm.items.tool.ItemDesignator;
+import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.bomb.LaunchPad;
+import com.hbm.items.weapon.ItemMissileStandard;
+import com.hbm.tileentity.bomb.TileEntityLaunchPad;
+import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
+import com.hbm.world.chunk.ChunkLoaderTicket;
+import com.hbm.world.chunk.ChunkLoadingManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
+
+/**
+ * GameTests for the chunk-loading layer and the missile system.
+ *
+ * <p>Both are systems where "it looks fine" proves nothing: a chunk claim that leaks is invisible until
+ * a save is inspected, and a missile that fails to launch is indistinguishable from one that was never
+ * fuelled. Each test pins one link — the refcount, the ticket lifecycle, the fuel gate, the launch
+ * cost — so a break localises itself.
+ */
+public final class MissileGameTests {
+
+    private MissileGameTests() {}
+
+    // ------------------------------------------------------------------ chunk loading
+
+    /**
+     * Two claims on one chunk, released one at a time. This is the whole reason the manager exists:
+     * vanilla's forced set is a boolean, so without refcounting the first release would unforce a chunk
+     * the second holder still needs — and the second missile would fall out of the world.
+     */
+    public static void chunkRefcounting(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        // Plain ints, not ChunkPos: its field/accessor spelling differs by era and the manager's own
+        // API is int-based anyway. Far from the test plot so no real chunk is disturbed.
+        int cx = (helper.absolutePos(BlockPos.ZERO).getX() >> 4) + 64;
+        int cz = (helper.absolutePos(BlockPos.ZERO).getZ() >> 4) + 64;
+
+        ChunkLoaderTicket first = ChunkLoadingManager.requestTicket(level, "test-a");
+        ChunkLoaderTicket second = ChunkLoadingManager.requestTicket(level, "test-b");
+        try {
+            first.force(cx, cz);
+            second.force(cx, cz);
+            helper.assertTrue(ChunkLoadingManager.isForced(level, cx, cz),
+                    "the chunk was not forced after two claims");
+
+            first.release();
+            helper.assertTrue(ChunkLoadingManager.isForced(level, cx, cz),
+                    "releasing one of two claims unforced the chunk");
+
+            second.release();
+            helper.assertFalse(ChunkLoadingManager.isForced(level, cx, cz),
+                    "releasing the last claim left the chunk forced — this is the leak case");
+        } finally {
+            first.release();
+            second.release();
+        }
+        helper.succeed();
+    }
+
+    /**
+     * A ticket following a moving entity claims the new chunk and drops the old one. Upstream unforced
+     * everything and re-forced each tick; the port diffs the set instead, so this also checks the diff
+     * does not lose the chunk it is supposed to keep.
+     */
+    public static void chunkFollowsMovement(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        int cx = (helper.absolutePos(BlockPos.ZERO).getX() >> 4) + 80;
+        int cz = (helper.absolutePos(BlockPos.ZERO).getZ() >> 4) + 80;
+
+        ChunkLoaderTicket ticket = ChunkLoadingManager.requestTicket(level, "test-move");
+        try {
+            ticket.force(cx, cz);
+            it.unimi.dsi.fastutil.longs.LongOpenHashSet next = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+            next.add(ChunkPos.pack(cx + 1, cz));
+            ticket.setChunks(next);
+
+            helper.assertFalse(ChunkLoadingManager.isForced(level, cx, cz),
+                    "the chunk the ticket left is still forced");
+            helper.assertTrue(ChunkLoadingManager.isForced(level, cx + 1, cz),
+                    "the chunk the ticket moved to was not forced");
+        } finally {
+            ticket.release();
+        }
+        helper.succeed();
+    }
+
+    /** A released ticket must be inert: a late force() from a dead entity would pin a chunk forever. */
+    public static void releasedTicketIsInert(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        int cx = (helper.absolutePos(BlockPos.ZERO).getX() >> 4) + 96;
+        int cz = (helper.absolutePos(BlockPos.ZERO).getZ() >> 4) + 96;
+
+        ChunkLoaderTicket ticket = ChunkLoadingManager.requestTicket(level, "test-dead");
+        ticket.force(cx, cz);
+        ticket.release();
+        ticket.force(cx, cz);
+
+        helper.assertFalse(ChunkLoadingManager.isForced(level, cx, cz),
+                "a released ticket still forced a chunk");
+        helper.succeed();
+    }
+
+    /** A live missile holds its own chunk, and gives it back when it is removed. */
+    public static void missileHoldsItsChunk(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(new BlockPos(1, 2, 1));
+
+        EntityMissileTier1.EntityMissileGeneric missile = new EntityMissileTier1.EntityMissileGeneric(
+                level, origin.getX(), origin.getY(), origin.getZ(), origin.getX() + 200, origin.getZ() + 200);
+        level.addFreshEntity(missile);
+        missile.tick();
+
+        int cx = origin.getX() >> 4;
+        int cz = origin.getZ() >> 4;
+        helper.assertTrue(ChunkLoadingManager.isForced(level, cx, cz),
+                "a flying missile did not force the chunk it is over");
+
+        missile.discard();
+        helper.assertFalse(ChunkLoadingManager.isForced(level, cx, cz),
+                "a removed missile left its chunk claim behind");
+        helper.succeed();
+    }
+
+    /**
+     * A missile's pitch must pass −90° on the way down.
+     *
+     * <p>This is the regression guard for a bug no build could catch: upstream's pitch convention runs
+     * 0° up, −90° horizontal, −180° down, and {@code Entity.setXRot} silently clamps to [−90, 90] — so
+     * a missile that stored its pitch in the vanilla field levelled out at the top of its arc and
+     * flew the rest of the way flat. The test asserts both halves: the real angle noses over, and
+     * {@code xRot} does not, which is exactly why the real angle needs its own field.
+     */
+    public static void missilePitchNosesOver(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        // Well clear of the test plots and well above the ground: a missile spawned on the floor
+        // impacts on its first step and never gets an arc at all.
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(2000, 120, 2000);
+
+        EntityMissileTier1.EntityMissileGeneric missile = new EntityMissileTier1.EntityMissileGeneric(
+                level, origin.getX(), origin.getY(), origin.getZ(), origin.getX() + 60, origin.getZ());
+        level.addFreshEntity(missile);
+
+        float steepest = 0F;
+        // Long enough for the arc to pass its apex and dive; the missile is removed on impact, and a
+        // missile that hit something never got to nose over, so that is a failure too.
+        for (int i = 0; i < 400 && !missile.isRemoved(); i++) {
+            // The level's entity tick does this before calling tick(), and the missile's speed ramp
+            // reads it — drive the entity by hand without it and velocity stays 0 forever, so the
+            // missile hangs at its launch attitude and this test measures nothing.
+            missile.tickCount++;
+            missile.tick();
+            steepest = Math.min(steepest, missile.getEntityData().get(EntityMissileBaseNT.PITCH));
+        }
+
+        helper.assertTrue(steepest < -90F,
+                "missile pitch never passed horizontal on the way down (steepest was " + steepest + ")");
+        helper.assertTrue(missile.getXRot() >= -90F,
+                "xRot held a value outside vanilla's clamp, so this test is no longer testing anything");
+
+        missile.discard();
+        helper.succeed();
+    }
+
+    // ------------------------------------------------------------------ missiles
+
+    /** Every launchable missile item must have an entity, and every entity a factory that runs. */
+    public static void launchTableResolves(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+
+        helper.assertTrue(!TileEntityLaunchPadBase.missiles.isEmpty(),
+                "the missile launch table is empty: registerLaunchables() did not run");
+        helper.assertTrue(TileEntityLaunchPadBase.missiles.containsKey(ModMissileItems.missile_generic.get()),
+                "the HE missile is missing from the launch table");
+        helper.assertTrue(ModMissileEntities.MISSILE_NUCLEAR.get() != null,
+                "the nuclear missile entity type did not register");
+        helper.succeed();
+    }
+
+    /**
+     * The aim maths. A missile fired at a target 200 blocks away must derive {@code accelXZ = 1/d} and
+     * {@code decelY = 2/d} — the two constants that make the arc land where it was pointed. Getting
+     * these wrong produces a missile that flies beautifully and misses by miles.
+     */
+    public static void missileAimConstants(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(new BlockPos(1, 2, 1));
+        int targetX = origin.getX() + 200;
+        int targetZ = origin.getZ();
+
+        EntityMissileBaseNT missile = new EntityMissileTier1.EntityMissileGeneric(
+                level, origin.getX(), origin.getY(), origin.getZ(), targetX, targetZ);
+
+        helper.assertTrue(Math.abs(missile.accelXZ - 1D / 200D) < 1.0E-6D,
+                "accelXZ is " + missile.accelXZ + ", expected 1/200");
+        helper.assertTrue(Math.abs(missile.decelY - 2D / 200D) < 1.0E-6D,
+                "decelY is " + missile.decelY + ", expected 2/200");
+        helper.assertTrue(missile.getDeltaMovement().y == 2D,
+                "a missile must leave the pad at motionY 2, was " + missile.getDeltaMovement().y);
+        missile.discard();
+        helper.succeed();
+    }
+
+    /** A pad conforms both tanks to the loaded missile's fuel pair — the player never picks them. */
+    public static void padConformsTanks(GameTestHelper helper) {
+        TileEntityLaunchPad pad = pad(helper);
+        pad.inventory.setStackInSlot(0, new ItemStack(ModMissileItems.missile_generic.get()));
+        pad.setFuel((ItemMissileStandard) ModMissileItems.missile_generic.get());
+
+        helper.assertTrue(pad.tanks[0].getTankType() == com.hbm.inventory.fluid.Fluids.ETHANOL,
+                "a V2 missile should conform tank 0 to ethanol, got " + pad.tanks[0].getTankType().getName());
+        helper.assertTrue(pad.tanks[1].getTankType() == com.hbm.inventory.fluid.Fluids.PEROXIDE,
+                "a V2 missile should conform tank 1 to peroxide, got " + pad.tanks[1].getTankType().getName());
+        helper.succeed();
+    }
+
+    /** The launch gate: no power, no fuel, no launch — checked one condition at a time. */
+    public static void padLaunchGate(GameTestHelper helper) {
+        TileEntityLaunchPad pad = pad(helper);
+        ItemStack missile = new ItemStack(ModMissileItems.missile_generic.get());
+        pad.inventory.setStackInSlot(0, missile);
+        pad.setFuel((ItemMissileStandard) missile.getItem());
+
+        helper.assertFalse(pad.hasFuel(), "an empty pad reported itself fuelled");
+
+        pad.power = TileEntityLaunchPadBase.launchCost;
+        helper.assertFalse(pad.hasFuel(), "power alone counted as fuelled");
+
+        int cap = ((ItemMissileStandard) missile.getItem()).fuelCap;
+        pad.tanks[0].setFill(cap);
+        pad.tanks[1].setFill(cap);
+        helper.assertTrue(pad.hasFuel(), "a fully fuelled, powered pad still reports no fuel");
+
+        pad.delay = 100;
+        helper.assertFalse(pad.canLaunch(), "the pad launched while still reloading");
+        pad.delay = 0;
+        helper.assertTrue(pad.canLaunch(), "a ready pad refuses to launch");
+        helper.succeed();
+    }
+
+    /**
+     * The full launch, end to end: a fuelled pad with a designator fires, spends exactly one launch's
+     * worth of power and fuel, and eats the missile item.
+     */
+    public static void padLaunches(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+        TileEntityLaunchPad pad = pad(helper);
+
+        ItemStack missile = new ItemStack(ModMissileItems.missile_generic.get());
+        int cap = ((ItemMissileStandard) missile.getItem()).fuelCap;
+        pad.inventory.setStackInSlot(0, missile);
+        pad.setFuel((ItemMissileStandard) missile.getItem());
+        pad.tanks[0].setFill(cap * 2);
+        pad.tanks[1].setFill(cap * 2);
+        pad.power = TileEntityLaunchPadBase.maxPower;
+
+        ItemStack designator = new ItemStack(ModMissileItems.designator.get());
+        ModDataComponents.DESIGNATOR_X.set(designator, helper.absolutePos(BlockPos.ZERO).getX() + 300);
+        ModDataComponents.DESIGNATOR_Z.set(designator, helper.absolutePos(BlockPos.ZERO).getZ());
+        pad.inventory.setStackInSlot(1, designator);
+
+        helper.assertTrue(pad.launchFromDesignator().wasSuccessful(), "the pad refused to launch");
+
+        helper.assertTrue(pad.power == TileEntityLaunchPadBase.maxPower - TileEntityLaunchPadBase.launchCost,
+                "the launch did not cost exactly 75 kHE, power is " + pad.power);
+        helper.assertTrue(pad.tanks[0].getFill() == cap, "the launch did not spend one fuelCap of fuel");
+        helper.assertTrue(pad.tanks[1].getFill() == cap, "the launch did not spend one fuelCap of oxidiser");
+        helper.assertTrue(pad.inventory.getStackInSlot(0).isEmpty(), "the missile item survived the launch");
+
+        java.util.List<EntityMissileBaseNT> flying = helper.getLevel().getEntitiesOfClass(
+                EntityMissileBaseNT.class, new net.minecraft.world.phys.AABB(pad.getBlockPos()).inflate(32));
+        helper.assertTrue(!flying.isEmpty(), "no missile entity was spawned");
+        flying.forEach(net.minecraft.world.entity.Entity::discard);
+        helper.succeed();
+    }
+
+    /** A missile with no ported warhead sits in the pad and refuses to fly, rather than crashing. */
+    public static void unlaunchableMissileIsRefused(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+        TileEntityLaunchPad pad = pad(helper);
+
+        ItemStack rusted = new ItemStack(ModMissileItems.missile_doomsday_rusted.get());
+        pad.inventory.setStackInSlot(0, rusted);
+        pad.power = TileEntityLaunchPadBase.maxPower;
+
+        helper.assertFalse(pad.isMissileValid(), "the rusted doomsday missile reported itself launchable");
+        helper.assertFalse(pad.launchFromDesignator().wasSuccessful(),
+                "an unlaunchable missile was launched anyway");
+        helper.succeed();
+    }
+
+    /** A designator records what it was pointed at, and reads it back as the target. */
+    public static void designatorRecordsTarget(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(ModMissileItems.designator.get());
+        ItemDesignator designator = (ItemDesignator) stack.getItem();
+        BlockPos pad = helper.absolutePos(new BlockPos(1, 1, 1));
+
+        helper.assertFalse(designator.isReady(helper.getLevel(), stack, pad),
+                "a fresh designator claims to have a target");
+
+        ModDataComponents.DESIGNATOR_X.set(stack, 1234);
+        ModDataComponents.DESIGNATOR_Z.set(stack, -567);
+
+        helper.assertTrue(designator.isReady(helper.getLevel(), stack, pad), "a set designator is not ready");
+        helper.assertTrue(designator.getCoords(helper.getLevel(), stack, pad).x == 1234
+                        && designator.getCoords(helper.getLevel(), stack, pad).z == -567,
+                "the designator read back the wrong target");
+        helper.succeed();
+    }
+
+    /**
+     * The pad's power/fluid ports, through the real placement path.
+     *
+     * <p>This test exists because the first cut of the launch pad shipped without
+     * {@link com.hbm.api.energymk2.IEnergyConnectorBlock}: the block entity subscribed to the network
+     * fine, so nothing failed, but a cable asks the neighbouring <em>block</em> whether that face is a
+     * port and the pad had no answer — cables simply refused to attach, and no build, test or log said
+     * a word. Upstream got this for free from the {@code TileEntityProxyCombo} on its corner cells.
+     *
+     * <p>What is pinned: the 3x3 fills, the four corners are flagged extra, every one of the eight
+     * {@code getConPos} entries is a live port on the cell that faces it, and a cell face that is not a
+     * port refuses — including facing back into the machine.
+     */
+    public static void padPorts(GameTestHelper helper) {
+        LaunchPad block = (LaunchPad) com.hbm.blocks.machine.ModMachineBlocks.launch_pad.get();
+        BlockPos clicked = new BlockPos(3, 1, 2);
+        // setPlacedBy resolves facing from the placer's yaw (0 -> NORTH) and puts the core `offset`
+        // blocks along it: NORTH with offset 1 -> one block +Z from the clicked cell.
+        BlockPos core = clicked.offset(0, 0, 1);
+
+        net.minecraft.world.entity.player.Player player =
+                dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        player.setYRot(0F);
+        helper.setBlock(clicked, block.defaultBlockState());
+        block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
+                new ItemStack(block));
+
+        TileEntityLaunchPad pad = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityLaunchPad.class);
+        helper.assertTrue(pad != null, "the launch pad core did not form");
+
+        int cells = 0;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (helper.getBlockState(core.offset(dx, 0, dz)).getBlock() == block) cells++;
+            }
+        }
+        helper.assertTrue(cells == 9, "the pad footprint must fill 3x3 cells, found " + cells);
+
+        // The four corners carry the "extra" flag (meta 6-11) — upstream's proxy cells.
+        for (int dx = -1; dx <= 1; dx += 2) {
+            for (int dz = -1; dz <= 1; dz += 2) {
+                int meta = helper.getBlockState(core.offset(dx, 0, dz)).getValue(BlockDummyable.META);
+                helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
+                        "the corner at " + dx + "/" + dz + " was not flagged extra (meta " + meta + ")");
+            }
+        }
+
+        // Every declared port must answer on the cell that faces it. getConPos is in absolute
+        // coordinates, so the cell is the port position stepped back along its own direction.
+        for (com.hbm.lib.DirPos dp : pad.getConPos()) {
+            BlockPos cell = dp.getPos().offset(-dp.getDir().offsetX, -dp.getDir().offsetY, -dp.getDir().offsetZ);
+            helper.assertTrue(block.canConnect(helper.getLevel(), cell, dp.getDir()),
+                    "no power port at " + dp.getPos() + " facing " + dp.getDir());
+            helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.KEROSENE, helper.getLevel(),
+                            cell.getX(), cell.getY(), cell.getZ(), dp.getDir()),
+                    "no fluid port at " + dp.getPos() + " facing " + dp.getDir());
+        }
+
+        // A face that is not a port refuses — the mid-edge cell, and any cell looking inward.
+        BlockPos eastEdge = helper.absolutePos(core.offset(1, 0, 0));
+        helper.assertFalse(block.canConnect(helper.getLevel(), eastEdge, com.hbm.lib.ForgeDirection.EAST),
+                "the middle of an edge is not a port, but it accepted a connection");
+        BlockPos corner = helper.absolutePos(core.offset(1, 0, 1));
+        helper.assertFalse(block.canConnect(helper.getLevel(), corner, com.hbm.lib.ForgeDirection.WEST),
+                "a corner cell accepted a connection pointing back into the pad");
+        helper.succeed();
+    }
+
+    /**
+     * The redstone launch, end to end and in the world — the way a player actually fires a pad.
+     *
+     * <p>Deliberately not the unit-ish {@link #padLaunches}: that one calls {@code launchFromDesignator}
+     * directly and so cannot see anything wrong with how the signal reaches it. This places a real pad,
+     * fuels it, arms it, drops a redstone block against one of its cells and ticks — which is the path
+     * the playtest found broken.
+     */
+    public static void padRedstoneLaunch(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+
+        LaunchPad block = (LaunchPad) com.hbm.blocks.machine.ModMachineBlocks.launch_pad.get();
+        BlockPos clicked = new BlockPos(3, 1, 2);
+        BlockPos core = clicked.offset(0, 0, 1);
+
+        net.minecraft.world.entity.player.Player player =
+                dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        player.setYRot(0F);
+        helper.setBlock(clicked, block.defaultBlockState());
+        block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
+                new ItemStack(block));
+
+        TileEntityLaunchPad pad = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityLaunchPad.class);
+        helper.assertTrue(pad != null, "the launch pad core did not form");
+
+        ItemStack missile = new ItemStack(ModMissileItems.missile_generic.get());
+        int cap = ((ItemMissileStandard) missile.getItem()).fuelCap;
+        pad.inventory.setStackInSlot(0, missile);
+        pad.setFuel((ItemMissileStandard) missile.getItem());
+        pad.tanks[0].setFill(cap);
+        pad.tanks[1].setFill(cap);
+        pad.power = TileEntityLaunchPadBase.maxPower;
+        pad.delay = 0;
+
+        ItemStack designator = new ItemStack(ModMissileItems.designator.get());
+        ModDataComponents.DESIGNATOR_X.set(designator, helper.absolutePos(BlockPos.ZERO).getX() + 300);
+        ModDataComponents.DESIGNATOR_Z.set(designator, helper.absolutePos(BlockPos.ZERO).getZ());
+        pad.inventory.setStackInSlot(1, designator);
+
+        // One tick to settle: this is what sets STATE_READY, i.e. what the player sees before flipping
+        // the lever. It must not consume the launch.
+        TileEntityLaunchPad.serverTick(helper.getLevel(), helper.absolutePos(core), pad.getBlockState(), pad);
+        helper.assertTrue(pad.state == TileEntityLaunchPadBase.STATE_READY,
+                "the pad did not reach STATE_READY with a fuelled missile and full power");
+
+        // A redstone block against the pad's east edge cell — vanilla notifies that cell, which is where
+        // the block hook has to pick the signal up and hand it to the core.
+        helper.setBlock(core.offset(2, 0, 0), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState());
+
+        helper.assertTrue(pad.redstonePower > 0,
+                "the pad never saw the redstone signal (redstonePower is " + pad.redstonePower + ")");
+
+        TileEntityLaunchPad.serverTick(helper.getLevel(), helper.absolutePos(core), pad.getBlockState(), pad);
+
+        java.util.List<EntityMissileBaseNT> flying = helper.getLevel().getEntitiesOfClass(
+                EntityMissileBaseNT.class, new net.minecraft.world.phys.AABB(helper.absolutePos(core)).inflate(48));
+        helper.assertTrue(!flying.isEmpty(), "the redstone edge did not launch the missile");
+        flying.forEach(net.minecraft.world.entity.Entity::discard);
+        helper.succeed();
+    }
+
+    /**
+     * The whole player-facing path, gate by gate: aim a designator by right-clicking a block, put it and
+     * a missile into the pad <em>through the menu slots</em>, fuel it, and flip redstone.
+     *
+     * <p>{@link #padRedstoneLaunch} places the items directly into the inventory and so cannot see a
+     * rejecting slot; {@link #designatorRecordsTarget} writes the components directly and so cannot see
+     * a broken {@code useOn}. This one walks the path the playtest actually walked.
+     */
+    public static void padPlayerPath(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+
+        LaunchPad block = (LaunchPad) com.hbm.blocks.machine.ModMachineBlocks.launch_pad.get();
+        BlockPos clicked = new BlockPos(3, 1, 2);
+        BlockPos core = clicked.offset(0, 0, 1);
+
+        net.minecraft.world.entity.player.Player player =
+                dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        player.setYRot(0F);
+        helper.setBlock(clicked, block.defaultBlockState());
+        block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
+                new ItemStack(block));
+        TileEntityLaunchPad pad = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityLaunchPad.class);
+        helper.assertTrue(pad != null, "the launch pad core did not form");
+
+        // 1. Aim the designator the way a player does: right-click a block with it.
+        ItemStack designator = new ItemStack(ModMissileItems.designator.get());
+        BlockPos target = helper.absolutePos(new BlockPos(0, 1, 0));
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, designator);
+        designator.getItem().useOn(new net.minecraft.world.item.context.UseOnContext(
+                helper.getLevel(), player, net.minecraft.world.InteractionHand.MAIN_HAND, designator,
+                new net.minecraft.world.phys.BlockHitResult(
+                        net.minecraft.world.phys.Vec3.atCenterOf(target), net.minecraft.core.Direction.UP,
+                        target, false)));
+        helper.assertTrue(ModDataComponents.DESIGNATOR_X.has(designator),
+                "right-clicking a block with the designator did not record a target");
+
+        // 2. Load the pad through the MENU, which is the only route a player has.
+        ContainerLaunchPad menu = new ContainerLaunchPad(1, player.getInventory(), pad);
+        ItemStack missile = new ItemStack(ModMissileItems.missile_generic.get());
+
+        helper.assertTrue(menu.getSlot(0).mayPlace(missile), "the missile slot refused a launchable missile");
+        helper.assertTrue(menu.getSlot(1).mayPlace(designator), "the designator slot refused a designator");
+        menu.getSlot(0).set(missile);
+        menu.getSlot(1).set(designator);
+        helper.assertTrue(!pad.inventory.getStackInSlot(0).isEmpty(),
+                "the missile did not reach the block entity through the menu slot");
+        helper.assertTrue(!pad.inventory.getStackInSlot(1).isEmpty(),
+                "the designator did not reach the block entity through the menu slot");
+
+        // 3. Fuel and power it.
+        int cap = ((ItemMissileStandard) missile.getItem()).fuelCap;
+        pad.setFuel((ItemMissileStandard) missile.getItem());
+        pad.tanks[0].setFill(cap);
+        pad.tanks[1].setFill(cap);
+        pad.power = TileEntityLaunchPadBase.maxPower;
+
+        TileEntityLaunchPad.serverTick(helper.getLevel(), helper.absolutePos(core), pad.getBlockState(), pad);
+        helper.assertTrue(pad.state == TileEntityLaunchPadBase.STATE_READY, "the pad did not reach STATE_READY");
+        helper.assertTrue(pad.canLaunch(), "the pad reports READY but canLaunch() is false");
+
+        // 4. Redstone.
+        helper.setBlock(core.offset(2, 0, 0), net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState());
+        helper.assertTrue(pad.redstonePower > 0, "the pad never saw the redstone signal");
+        TileEntityLaunchPad.serverTick(helper.getLevel(), helper.absolutePos(core), pad.getBlockState(), pad);
+
+        java.util.List<EntityMissileBaseNT> flying = helper.getLevel().getEntitiesOfClass(
+                EntityMissileBaseNT.class, new net.minecraft.world.phys.AABB(helper.absolutePos(core)).inflate(48));
+        helper.assertTrue(!flying.isEmpty(), "the full player path did not launch a missile");
+        flying.forEach(net.minecraft.world.entity.Entity::discard);
+        helper.succeed();
+    }
+
+    /**
+     * The detonator: bind a pad, then fire it by hand.
+     *
+     * <p>This is the manual launch path, and its absence is what made the first playtest report "no way
+     * to launch it". Redstone is covered separately; this pins the other half.
+     */
+    public static void detonatorLaunch(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+
+        LaunchPad block = (LaunchPad) com.hbm.blocks.machine.ModMachineBlocks.launch_pad.get();
+        BlockPos clicked = new BlockPos(3, 1, 2);
+        BlockPos core = clicked.offset(0, 0, 1);
+
+        net.minecraft.world.entity.player.Player player =
+                dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        player.setYRot(0F);
+        helper.setBlock(clicked, block.defaultBlockState());
+        block.setPlacedBy(helper.getLevel(), helper.absolutePos(clicked), block.defaultBlockState(), player,
+                new ItemStack(block));
+        TileEntityLaunchPad pad = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityLaunchPad.class);
+
+        ItemStack missile = new ItemStack(ModMissileItems.missile_generic.get());
+        int cap = ((ItemMissileStandard) missile.getItem()).fuelCap;
+        pad.inventory.setStackInSlot(0, missile);
+        pad.setFuel((ItemMissileStandard) missile.getItem());
+        pad.tanks[0].setFill(cap);
+        pad.tanks[1].setFill(cap);
+        pad.power = TileEntityLaunchPadBase.maxPower;
+
+        ItemStack designator = new ItemStack(ModMissileItems.designator.get());
+        ModDataComponents.DESIGNATOR_X.set(designator, helper.absolutePos(BlockPos.ZERO).getX() + 300);
+        ModDataComponents.DESIGNATOR_Z.set(designator, helper.absolutePos(BlockPos.ZERO).getZ());
+        pad.inventory.setStackInSlot(1, designator);
+        TileEntityLaunchPad.serverTick(helper.getLevel(), helper.absolutePos(core), pad.getBlockState(), pad);
+
+        // Bind: shift right-click any cell of the pad.
+        ItemStack det = new ItemStack(ModMissileItems.detonator.get());
+        player.setShiftKeyDown(true);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, det);
+        BlockPos cell = helper.absolutePos(core.offset(1, 0, 0));
+        det.getItem().useOn(new net.minecraft.world.item.context.UseOnContext(
+                helper.getLevel(), player, net.minecraft.world.InteractionHand.MAIN_HAND, det,
+                new net.minecraft.world.phys.BlockHitResult(
+                        net.minecraft.world.phys.Vec3.atCenterOf(cell), net.minecraft.core.Direction.UP, cell, false)));
+        helper.assertTrue(ModDataComponents.DETONATOR_TARGET.get(det).isPresent(),
+                "shift right-clicking the pad did not bind the detonator");
+
+        // Fire: right-click in the air.
+        player.setShiftKeyDown(false);
+        det.getItem().use(helper.getLevel(), player, net.minecraft.world.InteractionHand.MAIN_HAND);
+
+        java.util.List<EntityMissileBaseNT> flying = helper.getLevel().getEntitiesOfClass(
+                EntityMissileBaseNT.class, new net.minecraft.world.phys.AABB(helper.absolutePos(core)).inflate(48));
+        helper.assertTrue(!flying.isEmpty(), "the detonator did not launch the missile");
+        flying.forEach(net.minecraft.world.entity.Entity::discard);
+        helper.succeed();
+    }
+
+    /**
+     * A missile whose warhead is not ported must be refused by the slot, not accepted and then silently
+     * un-launchable. Half the missile items are in that state, and the playtest hit exactly this.
+     */
+    public static void unportedMissileRefused(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+        TileEntityLaunchPad pad = pad(helper);
+
+        // missile_micro exists as an item but has no entity (ExplosionNukeSmall is not ported).
+        ItemStack micro = new ItemStack(ModMissileItems.missile_micro.get());
+        helper.assertFalse(pad.isMissileValid(micro),
+                "a missile with no flying entity was accepted as valid");
+        helper.assertFalse(pad.isItemValidForSlot(0, micro),
+                "the missile slot accepted a missile this build cannot launch");
+
+        // The ones that DO fly must still be accepted, including the ABM, which is built directly and
+        // never appears in the launch table.
+        helper.assertTrue(pad.isMissileValid(new ItemStack(ModMissileItems.missile_generic.get())),
+                "a launchable missile was refused");
+        helper.assertTrue(pad.isMissileValid(new ItemStack(ModMissileItems.missile_anti_ballistic.get())),
+                "the ABM was refused — it is instantiated directly, not through the launch table");
+        helper.succeed();
+    }
+
+    /**
+     * The pad tells the client which missile it is holding.
+     *
+     * <p>The pad's renderer draws that missile standing on the silo, and it can only know about it from
+     * this field: the client never sees a block entity's inventory. If the sync breaks, every pad in the
+     * world silently renders empty — which is what the playtest saw, and no server-side test would
+     * notice.
+     */
+    public static void padSyncsLoadedMissile(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+        TileEntityLaunchPad pad = pad(helper);
+        pad.inventory.setStackInSlot(0, new ItemStack(ModMissileItems.missile_nuclear.get()));
+
+        TileEntityLaunchPad copy = pad(helper);
+        roundTrip(helper, pad, copy);
+        helper.assertTrue(copy.toRender != null && copy.toRender.getItem() == ModMissileItems.missile_nuclear.get(),
+                "the loaded missile did not reach the client: toRender is "
+                        + (copy.toRender == null ? "null" : copy.toRender.getItem().toString()));
+
+        pad.inventory.setStackInSlot(0, ItemStack.EMPTY);
+        roundTrip(helper, pad, copy);
+        helper.assertTrue(copy.toRender == null, "an emptied pad still reports a missile to the client");
+
+        // The other source: the chunk-load tag. networkPackNT only sends on CHANGE, so a player logging
+        // in beside an idle loaded pad gets no pack at all and the renderer would have nothing. The
+        // load path derives it from slot 0 instead. (This exercises the derivation, not the transport —
+        // the tag plumbing itself is vanilla's and differs by era.)
+        TileEntityLaunchPad loaded = pad(helper);
+        loaded.inventory.setStackInSlot(0, new ItemStack(ModMissileItems.missile_strong.get()));
+        loaded.toRender = null;
+        loaded.refreshRenderMissile();
+        helper.assertTrue(loaded.toRender != null && loaded.toRender.getItem() == ModMissileItems.missile_strong.get(),
+                "a pad loaded from disk did not derive its render missile from slot 0");
+        helper.succeed();
+    }
+
+    /** Runs one network pack from {@code from} into {@code to}, as the real sync does. */
+    private static void roundTrip(GameTestHelper helper, TileEntityLaunchPad from, TileEntityLaunchPad to) {
+        // GolemBuffers.wrap, not a direct constructor: the registry-aware buffer type only exists from
+        // 1.20.5, and below that the plain FriendlyByteBuf takes no registry argument.
+        var buf = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
+        from.serialize(buf);
+        to.deserialize(buf);
+    }
+
+    /**
+     * Exactly which missiles a pad accepts — pinned as a list, because it is the answer to "why will it
+     * not take this one" and because the two halves that decide it can drift apart silently.
+     *
+     * <p>A missile is launchable when it has an entity in {@code TileEntityLaunchPadBase.missiles} (or is
+     * the ABM, built directly). Registering an entity type in {@code ModMissileEntities} without adding
+     * it here leaves a missile that flies in code and is refused in game; the reverse crashes on launch.
+     * Update this list deliberately when a warhead's subsystem lands.
+     */
+    public static void launchableSet(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+        TileEntityLaunchPad pad = pad(helper);
+
+        java.util.List<net.minecraft.world.item.Item> launchable = java.util.List.of(
+                ModMissileItems.missile_generic.get(), ModMissileItems.missile_decoy.get(),
+                ModMissileItems.missile_incendiary.get(), ModMissileItems.missile_buster.get(),
+                ModMissileItems.missile_anti_ballistic.get(),
+                ModMissileItems.missile_strong.get(), ModMissileItems.missile_incendiary_strong.get(),
+                ModMissileItems.missile_buster_strong.get(), ModMissileItems.missile_stealth.get(),
+                ModMissileItems.missile_burst.get(), ModMissileItems.missile_inferno.get(),
+                ModMissileItems.missile_nuclear.get(), ModMissileItems.missile_nuclear_cluster.get(),
+                ModMissileItems.missile_doomsday.get(), ModMissileItems.missile_n2.get());
+
+        for (net.minecraft.world.item.Item item : launchable) {
+            helper.assertTrue(pad.isMissileValid(new ItemStack(item)),
+                    "the pad refuses " + item + ", which is supposed to be launchable");
+        }
+
+        // Everything blocked on an unported warhead, one per reason.
+        java.util.List<net.minecraft.world.item.Item> refused = java.util.List.of(
+                ModMissileItems.missile_micro.get(),          // ExplosionNukeSmall
+                ModMissileItems.missile_bhole.get(),          // EntityBlackHole
+                ModMissileItems.missile_cluster.get(),        // EntityRocket
+                ModMissileItems.missile_emp_strong.get(),     // EntityEMP
+                ModMissileItems.missile_drill.get(),          // ExplosionNT ERRODE + jolt
+                ModMissileItems.missile_endo.get(),           // ExplosionThermo
+                ModMissileItems.missile_volcano.get(),        // the volcano blocks
+                ModMissileItems.missile_shuttle.get(),        // the Soyuz chain
+                ModMissileItems.missile_doomsday_rusted.get() // notLaunchable upstream too
+        );
+
+        for (net.minecraft.world.item.Item item : refused) {
+            helper.assertFalse(pad.isMissileValid(new ItemStack(item)),
+                    item + " is accepted by the pad but has no flying entity");
+        }
+
+        helper.assertTrue(TileEntityLaunchPadBase.missiles.size() == launchable.size() - 1,
+                "the launch table holds " + TileEntityLaunchPadBase.missiles.size()
+                        + " entries; the expected launchable list (minus the ABM) has " + (launchable.size() - 1));
+        helper.succeed();
+    }
+
+    /**
+     * A launch pad block entity bound to the test level. It is constructed directly rather than placed:
+     * the pad is a {@code BlockDummyable} multiblock and building the 3×3 would test the placement code,
+     * not the launch code. {@code setLevel} is what makes {@code finalizeLaunch} able to spawn.
+     */
+    private static TileEntityLaunchPad pad(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
+        TileEntityLaunchPad pad = new TileEntityLaunchPad(pos,
+                com.hbm.blocks.machine.ModMachineBlocks.launch_pad.get().defaultBlockState());
+        pad.setLevel(helper.getLevel());
+        return pad;
+    }
+}

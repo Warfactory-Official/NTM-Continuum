@@ -50,7 +50,7 @@ public class GUIMachineElectricFurnace extends dev.golem.core.gui.CompatContaine
     private static final int INFO_X = 151, INFO_Y = 19;
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineElectricFurnace furnace = this.menu.getFurnace();
         if (furnace == null) return;
         if (this.isHovering(20, 17, 16, 52, mouseX, mouseY)) {

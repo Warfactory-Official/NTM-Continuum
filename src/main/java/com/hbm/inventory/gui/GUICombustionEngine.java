@@ -88,7 +88,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineCombustionEngine te = this.menu.getTile();
         if (te == null) return;
 

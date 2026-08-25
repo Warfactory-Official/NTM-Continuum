@@ -94,7 +94,7 @@ public class GUIWatz extends dev.golem.core.gui.CompatContainerScreen<ContainerW
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityWatz watz = this.menu.getWatz();
         if (watz == null) return;
 

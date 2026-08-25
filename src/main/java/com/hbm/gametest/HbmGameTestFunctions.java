@@ -205,6 +205,83 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function ARMOR_SHORT_FALL =
             TESTS.function("armor_short_fall", 40, () -> ArmorGameTests::shortFallDoesNothing);
 
+    // --- chunk loading + missiles (implementations live in MissileGameTests) ---
+    public static final GameTests.Function CHUNK_REFCOUNTING =
+            TESTS.function("chunk_refcounting", 40, () -> MissileGameTests::chunkRefcounting);
+    public static final GameTests.Function CHUNK_FOLLOWS_MOVEMENT =
+            TESTS.function("chunk_follows_movement", 40, () -> MissileGameTests::chunkFollowsMovement);
+    public static final GameTests.Function CHUNK_RELEASED_TICKET_INERT =
+            TESTS.function("chunk_released_ticket_inert", 40, () -> MissileGameTests::releasedTicketIsInert);
+    public static final GameTests.Function MISSILE_HOLDS_CHUNK =
+            TESTS.function("missile_holds_chunk", 60, () -> MissileGameTests::missileHoldsItsChunk);
+    public static final GameTests.Function MISSILE_PITCH_NOSES_OVER =
+            TESTS.function("missile_pitch_noses_over", 60, () -> MissileGameTests::missilePitchNosesOver);
+    public static final GameTests.Function MISSILE_LAUNCH_TABLE =
+            TESTS.function("missile_launch_table", 20, () -> MissileGameTests::launchTableResolves);
+    public static final GameTests.Function MISSILE_AIM_CONSTANTS =
+            TESTS.function("missile_aim_constants", 20, () -> MissileGameTests::missileAimConstants);
+    public static final GameTests.Function MISSILE_PAD_TANKS =
+            TESTS.function("missile_pad_tanks", 20, () -> MissileGameTests::padConformsTanks);
+    public static final GameTests.Function MISSILE_PAD_GATE =
+            TESTS.function("missile_pad_gate", 20, () -> MissileGameTests::padLaunchGate);
+    public static final GameTests.Function MISSILE_PAD_LAUNCHES =
+            TESTS.function("missile_pad_launches", 60, () -> MissileGameTests::padLaunches);
+    public static final GameTests.Function MISSILE_UNLAUNCHABLE =
+            TESTS.function("missile_unlaunchable", 20, () -> MissileGameTests::unlaunchableMissileIsRefused);
+    public static final GameTests.Function MISSILE_PAD_PORTS =
+            TESTS.function("missile_pad_ports", 60, 8, () -> MissileGameTests::padPorts);
+    public static final GameTests.Function MISSILE_REDSTONE_LAUNCH =
+            TESTS.function("missile_redstone_launch", 60, 8, () -> MissileGameTests::padRedstoneLaunch);
+    public static final GameTests.Function MISSILE_PLAYER_PATH =
+            TESTS.function("missile_player_path", 60, 8, () -> MissileGameTests::padPlayerPath);
+    public static final GameTests.Function MISSILE_DETONATOR_LAUNCH =
+            TESTS.function("missile_detonator_launch", 60, 8, () -> MissileGameTests::detonatorLaunch);
+    public static final GameTests.Function MISSILE_UNPORTED_REFUSED =
+            TESTS.function("missile_unported_refused", 20, () -> MissileGameTests::unportedMissileRefused);
+    public static final GameTests.Function MISSILE_PAD_SYNC =
+            TESTS.function("missile_pad_sync", 20, () -> MissileGameTests::padSyncsLoadedMissile);
+    public static final GameTests.Function MISSILE_LAUNCHABLE_SET =
+            TESTS.function("missile_launchable_set", 20, () -> MissileGameTests::launchableSet);
+    public static final GameTests.Function MISSILE_DESIGNATOR =
+            TESTS.function("missile_designator", 20, () -> MissileGameTests::designatorRecordsTarget);
+
+    /** A real crater, timed. See {@link NukePerfGameTests}; it logs the phase split. */
+    public static final GameTests.Function NUKE_CRATER_BENCHMARK =
+            TESTS.function("nuke_crater_benchmark", 20 * 90, () -> NukePerfGameTests::craterBenchmark);
+
+    /** setBlock vs direct section write — the number behind the destruction-phase design. */
+    public static final GameTests.Function NUKE_WRITE_THROUGHPUT =
+            TESTS.function("nuke_write_throughput", 20 * 90, () -> NukePerfGameTests::writeThroughput);
+
+    /** The section carve against the setBlock path it replaces: states, block entities, heightmaps. */
+    public static final GameTests.Function NUKE_CARVE_EQUIVALENCE =
+            TESTS.function("nuke_carve_equivalence", 20 * 90, () -> NukePerfGameTests::carveEquivalence);
+
+    /** Does a carved pocket actually relight? The one thing a block-state comparison cannot see. */
+    public static final GameTests.Function NUKE_CARVE_LIGHTING =
+            TESTS.function("nuke_carve_lighting", 20 * 400, () -> NukePerfGameTests::carveLighting);
+
+    /** The same question asked of a real blast: whole sections emptied across many chunks. */
+    public static final GameTests.Function NUKE_CRATER_LIGHTING =
+            TESTS.function("nuke_crater_lighting", 20 * 400, () -> NukePerfGameTests::craterLighting);
+
+    /** The phase after the crater: the fallout sweep's ash, fire and sellafite conversions, timed. */
+    public static final GameTests.Function NUKE_FALLOUT_BENCHMARK =
+            TESTS.function("nuke_fallout_benchmark", 20 * 900, () -> NukePerfGameTests::falloutBenchmark);
+
+    /** How a fallout conversion reaches the world: setBlock vs the references' section write. */
+    public static final GameTests.Function NUKE_FALLOUT_WRITE_THROUGHPUT =
+            TESTS.function("nuke_fallout_write_throughput", 20 * 180,
+                    () -> NukePerfGameTests::falloutWriteThroughput);
+
+    /** What the ash layer's self-rescheduling block tick costs, during and after the sweep. */
+    public static final GameTests.Function NUKE_FALLOUT_ASH_LOAD =
+            TESTS.function("nuke_fallout_ash_load", 20 * 180, () -> NukePerfGameTests::falloutAshLoad);
+
+    /** Where the sweep's notify pass actually goes: neighbour updates vs the shape pass, by terrain. */
+    public static final GameTests.Function NUKE_FALLOUT_NOTIFY_COST =
+            TESTS.function("nuke_fallout_notify_cost", 20 * 300, () -> NukePerfGameTests::falloutNotifyCost);
+
     // --- RBMK (implementations live in RBMKGameTests) ---
     public static final GameTests.Function RBMK_REGISTRY =
             TESTS.function("rbmk_registry", 40, () -> RBMKGameTests::registry);

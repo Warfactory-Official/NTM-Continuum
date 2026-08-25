@@ -23,7 +23,7 @@ public final class ScreenRBMKHeater extends RBMKContainerScreen<MenuRBMKHeater> 
         drawFluidBar(graphics, heater.steam, 126, 24);
     }
 
-    @Override protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKHeater heater = menu.blockEntity();
         if (heater == null) return;
         fluidTooltip(graphics, heater.feed, 68, 24, 16, 58, mouseX, mouseY);

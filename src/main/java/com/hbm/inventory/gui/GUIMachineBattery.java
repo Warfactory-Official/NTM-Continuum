@@ -55,7 +55,7 @@ public class GUIMachineBattery extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (this.isHovering(71, 17, 34, 52, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(this.menu.getPower(), this.menu.getMaxPower(), this.menu.getDelta()),

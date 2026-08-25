@@ -66,7 +66,7 @@ public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityReactorZirnox reactor = this.menu.getReactor();
         if (reactor == null) return;
         if (this.isHovering(TOGGLE_X, TOGGLE_Y, TOGGLE_SIZE, TOGGLE_SIZE, mouseX, mouseY)) {

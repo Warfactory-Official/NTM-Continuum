@@ -71,7 +71,7 @@ public class GUILiquefactor extends dev.golem.core.gui.CompatContainerScreen<Con
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineLiquefactor te = this.menu.getLiquefactor();
         if (te == null) return;
 

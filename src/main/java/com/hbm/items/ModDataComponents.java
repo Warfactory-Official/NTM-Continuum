@@ -28,6 +28,21 @@ public final class ModDataComponents {
     public static final GolemComponent<ItemStack> GAS_MASK_FILTER = GolemComponent.itemStack(Constants.MOD_ID, "gas_mask_filter");
 
     /**
+     * A designator's recorded target, X and Z (the old NBT {@code xCoord}/{@code zCoord}). Their
+     * <em>presence</em> is the "has a target" flag — upstream tested {@code hasTagCompound}, so a
+     * designator aimed at (0, 0) counts as aimed and one never used does not.
+     */
+    /**
+     * The block a detonator is bound to (the old NBT {@code x}/{@code y}/{@code z} triple). Absent means
+     * unbound, which the detonator reports rather than silently doing nothing.
+     */
+    public static final GolemComponent<net.minecraft.core.BlockPos> DETONATOR_TARGET =
+            GolemComponent.of(Constants.MOD_ID, "detonator_target", net.minecraft.core.BlockPos.CODEC);
+
+    public static final GolemComponent<Integer> DESIGNATOR_X = GolemComponent.integer(Constants.MOD_ID, "designator_x");
+    public static final GolemComponent<Integer> DESIGNATOR_Z = GolemComponent.integer(Constants.MOD_ID, "designator_z");
+
+    /**
      * A powered armour piece's stored HE (the old NBT {@code "charge"} long).
      *
      * <p>Kept separate from {@link #BATTERY_CHARGE} deliberately: absence means "full" here (a suit

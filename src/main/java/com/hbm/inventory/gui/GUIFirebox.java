@@ -58,7 +58,7 @@ public class GUIFirebox extends dev.golem.core.gui.CompatContainerScreen<Contain
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityFireboxBase te = this.menu.getFirebox();
         if (te == null) return;
         if (this.isHovering(80, 27, 71, 7, mouseX, mouseY)) {

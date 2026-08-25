@@ -91,6 +91,7 @@ public final class MainRegistry {
         // built lazily at registration, well after this.
         com.hbm.items.weapon.sedna.factory.GunFactory.init();
         com.hbm.items.ModGunItems.init();   // the Sedna guns
+        com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them
         com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)
         ModBlockEntities.init();
         com.hbm.tileentity.ModRBMKBlockEntities.init();
@@ -98,11 +99,13 @@ public final class MainRegistry {
         com.hbm.inventory.ModRBMKMenus.init();
         ModEntities.init();        // entity types (the explosion + fallout entities)
         com.hbm.entity.ModRBMKEntities.init();
+        com.hbm.entity.missile.ModMissileEntities.init(); // the missiles
         com.hbm.particle.HbmParticles.init();
         com.hbm.potion.ModEffects.init(); // status effects (radiation)
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)
         ModTabs.init();
         com.hbm.handler.neutron.NeutronLifecycle.init();
+        com.hbm.world.chunk.ChunkLoadingManager.init();   // forced-chunk bookkeeping + restart reconciliation
         // Needs both the tool items and the convertible blocks, so it runs after every registry.
         com.hbm.handler.NTMToolHandler.register();
     }

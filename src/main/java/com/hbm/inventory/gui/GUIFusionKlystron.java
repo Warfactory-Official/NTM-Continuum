@@ -102,7 +102,7 @@ public class GUIFusionKlystron extends dev.golem.core.gui.CompatContainerScreen<
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityFusionKlystron klystron = this.menu.getKlystron();
         if (klystron == null) return;
 

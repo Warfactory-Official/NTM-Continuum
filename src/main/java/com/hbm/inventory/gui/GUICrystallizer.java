@@ -66,7 +66,7 @@ public class GUICrystallizer extends dev.golem.core.gui.CompatContainerScreen<Co
     private static final int INFO_X = 117, INFO_Y = 22;
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineCrystallizer te = this.menu.getCrystallizer();
         if (te == null) return;
         if (this.isHovering(152, 18, 16, 52, mouseX, mouseY)) {

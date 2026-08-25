@@ -302,5 +302,23 @@
   "rbmk_shutdown": {
     "category": "block",
     "sounds": []
+  },
+  "weapon.missile_takeoff": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/missiletakeoff",
+        "stream": false
+      }
+    ]
+  },
+  "item.tech_boop": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/techboop",
+        "stream": false
+      }
+    ]
   }
 }

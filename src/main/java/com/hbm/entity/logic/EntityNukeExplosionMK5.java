@@ -5,6 +5,7 @@ import com.hbm.config.BombConfig;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityFalloutRain;
 import com.hbm.explosion.ExplosionNukeGeneric;
+import com.hbm.entity.logic.EntityChunkLoader;
 import com.hbm.explosion.ExplosionNukeRayBatched;
 import com.hbm.interfaces.IExplosionRay;
 import com.hbm.util.ContaminationUtil;
@@ -39,9 +40,11 @@ import java.util.UUID;
  * {@link EntityFalloutRain} sweep (scale {@code radius·2.5 + falloutAdd}, scaled by
  * {@code BombConfig.falloutRange}%).
  *
+ * <p>Like 1.12.2's {@code EntityExplosionChunkloading}, it holds its own chunk forced for as long as
+ * the crater is running: a blast that outlives the player walking away must keep carving.
+ *
  * <p><b>Deferred vs 1.12.2:</b> the Torex mushroom cloud, the glowing-one conversion (tick-42 seam
- * below — the mob isn't ported), the Manhattan advancement, the forced chunk-loading
- * ({@code EntityExplosionChunkloading}), and the threaded explosion algorithms. The detonator is
+ * below — the mob isn't ported), the Manhattan advancement, and the threaded explosion algorithms. The detonator is
  * tracked for those future hooks but otherwise unused.
  */
 public class EntityNukeExplosionMK5 extends CompatEntity {
@@ -55,6 +58,9 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     private boolean initialized = false;
 
     public UUID detonator;
+
+    /** Radius 0: upstream's explosion base claims only the chunk it sits in. */
+    private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 0);
 
     public EntityNukeExplosionMK5(EntityType<?> type, Level level) {
         super(type, level);
@@ -101,6 +107,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         super.tick();
         if (level().isClientSide()) return;
 
+        chunkLoader.tick();
+
         if (strength == 0) {
             discard();
             return;
@@ -132,6 +140,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         if (!explosion.isComplete()) {
             explosion.update(BombConfig.mk5);
         } else {
+            com.hbm.Constants.LOG.info("[NUKE] blast entity finished at tick {}", tickCount);
             if (fallout) {
                 EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level());
                 rain.setPos(getX(), getY(), getZ());
@@ -186,11 +195,13 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     @Override
     public void remove(RemovalReason reason) {
         if (explosion != null) explosion.cancel();
+        chunkLoader.clearChunkLoader();
         super.remove(reason);
     }
 
     @Override
     protected void loadData(DataIn input) {
+        chunkLoader.markRestoredFromNbt();
         radius = input.getIntOr("radius", 0);
         strength = input.getIntOr("strength", 0);
         fallout = input.getBooleanOr("fallout", true);

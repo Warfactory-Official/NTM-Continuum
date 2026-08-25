@@ -97,7 +97,7 @@ public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<Contai
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityCrucible te = this.menu.getCrucible();
         if (te == null) return;
 

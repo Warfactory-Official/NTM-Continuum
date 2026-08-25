@@ -36,6 +36,11 @@ neoForge {
         register("client") {
             client()
             gameDirectory = file("runs/client")
+            // Set HBM_QUICKPLAY to a save name to have runClient load straight into that world.
+            // Joining a world is where several faults only appear — the registry-sync failure fixed in
+            // §19z-e was invisible to every headless check — and clicking through the menu by hand is
+            // not something an automated verification pass can do.
+            System.getenv("HBM_QUICKPLAY")?.let { programArguments.addAll("--quickPlaySingleplayer", it) }
         }
         register("data") {
             // 26.1 splits datagen into clientData/serverData; NeoForge 21.1 has only the combined

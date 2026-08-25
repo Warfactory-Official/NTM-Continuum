@@ -28,38 +28,27 @@ public final class WorldConfig {
     private WorldConfig() {}
 
     // ---------------------------------------------------------------- overworld veins (count/chunk)
+    // Field names mirror upstream's CompatibilityConfig keys (thoriumSpawn = 01.11_thoriumSpawnrate);
+    // only the ones that do something extra carry a note.
 
     /** Vein attempts per chunk, plain stone host. Old {@code 01.01_uraniumSpawnrate}. */
     public static int uraniumSpawn = 7;
-    /** Old {@code 01.11_thoriumSpawnrate}. */
     public static int thoriumSpawn = 7;
-    /** Old {@code 01.02_titaniumSpawnrate}. */
     public static int titaniumSpawn = 8;
-    /** Old {@code 01.03_sulfurSpawnrate}. */
     public static int sulfurSpawn = 5;
-    /** Old {@code 01.04_aluminiumSpawnrate}. */
     public static int aluminiumSpawn = 7;
-    /** Old {@code 01.05_copperSpawnrate}. */
     public static int copperSpawn = 12;
-    /** Old {@code 01.06_fluoriteSpawnrate}. */
     public static int fluoriteSpawn = 6;
-    /** Old {@code 01.07_niterSpawnrate}. */
     public static int niterSpawn = 6;
-    /** Old {@code 01.08_tungstenSpawnrate}. */
     public static int tungstenSpawn = 10;
-    /** Old {@code 01.09_leadSpawnrate}. */
     public static int leadSpawn = 6;
-    /** Old {@code 01.10_berylliumSpawnrate}. */
     public static int berylliumSpawn = 6;
     /** Old {@code 01.15_rareEarthSpawnRate}. Also drives the gneiss "rare" slot — see the feature. */
     public static int rareSpawn = 6;
-    /** Old {@code 01.12_ligniteSpawnrate}. */
     public static int ligniteSpawn = 2;
     /** Old {@code 01.13_asbestosSpawnRate}. Multiplied by 3 for the gneiss variant. */
     public static int asbestosSpawn = 2;
-    /** Old {@code 01.20_cinnabarSpawnRate}. */
     public static int cinnabarSpawn = 1;
-    /** Old {@code 01.21_cobaltSpawnRate}. */
     public static int cobaltSpawn = 2;
     /** Old {@code 01.14_lithiumSpawnRate}. Gneiss host, NOT multiplied by 3. */
     public static int lithiumSpawn = 6;
@@ -68,11 +57,8 @@ public final class WorldConfig {
 
     // ---------------------------------------------------------------- clusters (count/chunk)
 
-    /** Old {@code 01.22_ironClusterSpawn}. */
     public static int ironClusterSpawn = 4;
-    /** Old {@code 01.23_titaniumClusterSpawn}. */
     public static int titaniumClusterSpawn = 2;
-    /** Old {@code 01.24_aluminiumClusterSpawn}. */
     public static int aluminiumClusterSpawn = 3;
     /**
      * Old {@code 01.24_copperClusterSpawn}. Note upstream's own two config classes disagreed here
@@ -100,26 +86,19 @@ public final class WorldConfig {
 
     /** Old {@code WorldConfig.enableSulfurCave} — the sulfur cave-wall Perlin feature. */
     public static boolean enableSulfurCave = true;
-    /** Old {@code WorldConfig.enableAsbestosCave}. */
     public static boolean enableAsbestosCave = true;
     /** Old {@code WorldConfig.enableHematite} — the 3D-noise ore layer. */
     public static boolean enableHematite = true;
-    /** Old {@code WorldConfig.enableMalachite}. */
     public static boolean enableMalachite = true;
-    /** Old {@code WorldConfig.enableBauxite}. */
     public static boolean enableBauxite = true;
 
     // ---------------------------------------------------------------- nether (count/chunk)
 
-    /** Old {@code 02.N00_uraniumSpawnrate}. */
     public static int netherUraniumSpawn = 8;
-    /** Old {@code 02.N01_tungstenSpawnrate}. */
     public static int netherTungstenSpawn = 10;
-    /** Old {@code 02.N02_sulfurSpawnrate}. */
     public static int netherSulfurSpawn = 26;
     /** Old {@code 02.N03_phosphorusSpawnrate} — places {@code ore_nether_fire}. */
     public static int netherPhosphorusSpawn = 24;
-    /** Old {@code 02.N04_coalSpawnrate}. */
     public static int netherCoalSpawn = 24;
     /** Old {@code 02.N06_cobaltSpawnrate}. Generates near the nether ROOF — see the feature. */
     public static int netherCobaltSpawn = 2;

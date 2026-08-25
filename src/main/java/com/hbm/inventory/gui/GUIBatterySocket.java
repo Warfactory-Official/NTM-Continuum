@@ -66,7 +66,7 @@ public class GUIBatterySocket extends dev.golem.core.gui.CompatContainerScreen<C
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (!this.menu.getBattery().isEmpty() && this.isHovering(BAR_X, BAR_TOP, BAR_W, BAR_H, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font,
                     GuiUtil.energyTooltip(this.menu.getPower(), this.menu.getMaxPower(), this.menu.getDelta()),

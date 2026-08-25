@@ -108,7 +108,7 @@ public class GUIFusionTorus extends dev.golem.core.gui.CompatContainerScreen<Con
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityFusionTorus torus = this.menu.getTorus();
         if (torus == null) return;
         FusionRecipe recipe = recipe(torus);

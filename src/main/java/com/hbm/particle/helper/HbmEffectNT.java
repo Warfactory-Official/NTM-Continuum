@@ -40,7 +40,9 @@ public enum HbmEffectNT {
     /** The full-size RBMK meltdown cloud. */
     RBMKMush,
     /** The smaller Watz/RBMK cloud. */
-    RBMKMushSmall;
+    RBMKMushSmall,
+    /** One puff of a missile's exhaust trail. Spawned client-side, once per tick per nozzle. */
+    MissileContrail;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

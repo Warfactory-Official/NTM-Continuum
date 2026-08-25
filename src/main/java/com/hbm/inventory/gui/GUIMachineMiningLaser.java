@@ -106,7 +106,7 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te == null) return;
 

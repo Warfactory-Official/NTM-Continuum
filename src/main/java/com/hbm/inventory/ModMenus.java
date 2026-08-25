@@ -157,5 +157,9 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerCrate>> CRATE =
             MENUS.register("crate", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrate::new));
 
+    /** Shared by every launch pad type (only the small silo pad exists so far). */
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerLaunchPad>> LAUNCH_PAD =
+            MENUS.register("launch_pad", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerLaunchPad::new));
+
     public static void init() {}
 }

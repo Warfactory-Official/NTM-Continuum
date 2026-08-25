@@ -82,7 +82,7 @@ public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<Co
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachinePress press = this.menu.getPress();
         if (press == null) return;
         if (this.isHovering(25, 16, 18, 18, mouseX, mouseY)) {

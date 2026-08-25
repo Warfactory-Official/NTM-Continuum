@@ -36,6 +36,8 @@ public final class ModSounds {
 
     /** Handheld-gadget confirmation bleep (old {@code item.techBleep}) — oil detector etc. */
     public static final RegistryObject<SoundEvent> TECH_BLEEP = register("item.tech_bleep");
+    /** The detonator's bind confirmation. Old id {@code hbm:item.techBoop}. */
+    public static final RegistryObject<SoundEvent> TECH_BOOP = register("item.tech_boop");
     public static final RegistryObject<SoundEvent> BOLTGUN = register("item.boltgun");
 
     /** The Scream upgrade's screaming-scientist sound (old {@code block.screm}). */
@@ -51,6 +53,8 @@ public final class ModSounds {
 
     /** The nuclear detonation roar played by the Torex cloud when its shockwave reaches the player. */
     public static final RegistryObject<SoundEvent> NUCLEAR_EXPLOSION = register("weapon.nuclear_explosion");
+    /** A missile leaving the pad. Old id {@code hbm:weapon.missileTakeoff}. */
+    public static final RegistryObject<SoundEvent> MISSILE_TAKEOFF = register("weapon.missile_takeoff");
 
     /** Original RBMK/ZIRNOX reactor accident sound; used only by the vanilla ZIRNOX meltdown blast. */
     public static final RegistryObject<SoundEvent> RBMK_EXPLOSION = register("rbmk_explosion");

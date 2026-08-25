@@ -1,10 +1,13 @@
 package com.hbm.explosion;
 
 import com.hbm.Constants;
+import com.hbm.config.BombConfig;
 import com.hbm.interfaces.IExplosionRay;
+import com.hbm.util.ChunkCarver;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -64,9 +67,15 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /** Directions per pool task in the ray phase. */
     private static final int RAY_BATCH = 4096;
 
-    private final HashMap<ChunkPos, BitSet> perChunk = new HashMap<>();
-    private final List<ChunkPos> orderedChunks = new ArrayList<>();
-    private final CoordComparator comparator = new CoordComparator();
+    /**
+     * Destroyed blocks, as one bitset per chunk keyed by packed chunk position.
+     *
+     * <p>Long-keyed, not {@code ChunkPos}-keyed: {@link #setBit} runs once per destroyed block — millions
+     * of times for a Fat Man — and a {@code ChunkPos} key allocates on every one of them.
+     */
+    private final Long2ObjectOpenHashMap<BitSet> perChunk = new Long2ObjectOpenHashMap<>();
+    private long[] orderedChunks = new long[0];
+    private int orderedIndex = 0;
     private volatile boolean isContained = true;
     private final int posX;
     private final int posY;
@@ -89,9 +98,45 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     // --- prefetch state (server thread only) ---
     private final Long2ObjectOpenHashMap<LevelChunk> chunkCache;
     private final int chunkMinX, chunkMinZ, chunkSpan;
-    private int prefetchIndex = 0;
+
+    /**
+     * How many rounds of "march, park on a missing chunk, load it, march again" are allowed.
+     *
+     * <p>Scaled to the blast, not a flat number: a ray stops at the <em>first</em> chunk it cannot read,
+     * so a radial line of un-generated chunks costs one round per chunk. A Fat Man reaches eleven chunks
+     * out, and a fixed cap of 8 would clip its crater short in ungenerated terrain. Extra rounds are
+     * cheap — only parked rays re-march, and they resume where they stopped.
+     */
+    private final int maxRayRounds;
+    /**
+     * Rays stopped at an unloaded chunk, as {@code (vx, vy, vz, strength, r)} quintuples.
+     *
+     * <p>The strength and step index travel with the direction so a resumed ray continues from where it
+     * stopped instead of re-walking its prefix. Re-walking is correct (the hit bitsets are a set) but at
+     * Fat Man scale, with up to {@link #maxRayRounds} rounds, it would multiply the most expensive
+     * phase by the number of rounds.
+     */
+    private final it.unimi.dsi.fastutil.doubles.DoubleArrayList parkedDirs =
+            new it.unimi.dsi.fastutil.doubles.DoubleArrayList();
+
+    /** Doubles per parked ray: direction (3) + accumulated strength + the step it stopped at. */
+    private static final int PARK_STRIDE = 5;
+    /** Chunk keys the parked rays need. Server thread loads these between rounds. */
+    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet missedChunks =
+            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    private int rayRound = 0;
+    private int chunksLoadedOnDemand = 0;
 
     private CompletableFuture<Void> rayJob;
+
+    // --- instrumentation: where the wall-clock actually goes (see IMPLEMENTATION-HISTORY §19z-f) ---
+    private final long createdAt = System.currentTimeMillis();
+    private long prefetchMs;
+    private long rayWallMs;
+    private long rayStartedAt;
+    private long destructionMs;
+    private int blocksDestroyed;
+    private int destructionTicks;
 
     public ExplosionNukeRayBatched(Level world, int x, int y, int z, int strength, int radius) {
         this.world = world;
@@ -112,6 +157,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         this.chunkMinZ = (posZ >> 4) - chunkRadius;
         this.chunkSpan = chunkRadius * 2 + 1;
         this.chunkCache = new Long2ObjectOpenHashMap<>(chunkSpan * chunkSpan);
+        this.maxRayRounds = chunkRadius + 4;
     }
 
     // ------------------------------------------------------------------ phases
@@ -126,39 +172,95 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         }
 
         if (rayJob == null) {
-            if (!prefetchTick(processTimeMs)) return; // still resolving chunks
+            // Round 1. Only chunks already resident are seeded — see seedResidentChunks.
+            long t0 = System.currentTimeMillis();
+            seedResidentChunks();
+            prefetchMs += System.currentTimeMillis() - t0;
             seedOriginClear();
-            rayJob = CompletableFuture.runAsync(this::computeRays, ForkJoinPool.commonPool());
+            rayStartedAt = System.currentTimeMillis();
+            startRayRound();
             return;
         }
 
-        if (rayJob.isDone() && !isAusf3Complete) {
-            // The coordinator sets isAusf3Complete itself on success — reaching this means it died.
-            try {
-                rayJob.join();
-            } catch (Exception e) {
-                Constants.LOG.error("[NUKE] crater ray phase failed; destroying what was gathered", e);
-            }
+        if (!rayJob.isDone()) return;
+
+        try {
+            rayJob.join();
+        } catch (Exception e) {
+            Constants.LOG.error("[NUKE] crater ray phase failed; destroying what was gathered", e);
             finishRayPhase();
+            return;
+        }
+
+        // Rays that ran into a chunk nobody had loaded parked instead of pretending it was vacuum.
+        // Resolve what they asked for — on this thread, within the budget — and re-march just those rays.
+        if (!parkedDirs.isEmpty() && rayRound < maxRayRounds) {
+            long t0 = System.currentTimeMillis();
+            boolean resolved = resolveMissesTick(processTimeMs);
+            prefetchMs += System.currentTimeMillis() - t0;
+            if (!resolved) return; // more chunks to fetch; stay in this phase
+            startRayRound();
+            return;
+        }
+
+        finishRayPhase();
+    }
+
+    /**
+     * Seeds {@link #chunkCache} with the chunks that are <b>already in memory</b>, and nothing else.
+     *
+     * <p>This used to walk the whole blast square calling {@code world.getChunk}, which loads and, past
+     * the edge of what is loaded, <b>generates</b> — up to 625 chunks for a Fat Man, on the server
+     * thread, before a single block was destroyed. It was 76% of the crater's wall time even in a
+     * benchmark where every chunk was already resident, and it is unbounded when terrain has to be
+     * generated. Neither 1.12.2 nor the fork does this: they touch chunks as rays reach them.
+     *
+     * <p>{@code getChunkNow} never loads or generates, so this is a few hundred map lookups. Chunks the
+     * rays actually need but nobody has loaded are discovered during the march and fetched by
+     * {@link #resolveMissesTick}.
+     */
+    private void seedResidentChunks() {
+        if (!(world instanceof net.minecraft.server.level.ServerLevel server)) return;
+        int total = chunkSpan * chunkSpan;
+        for (int i = 0; i < total; i++) {
+            int cx = chunkMinX + i % chunkSpan;
+            int cz = chunkMinZ + i / chunkSpan;
+            LevelChunk chunk = server.getChunkSource().getChunkNow(cx, cz);
+            if (chunk != null) chunkCache.put(ChunkPos.pack(cx, cz), chunk);
         }
     }
 
     /**
-     * Server-thread, time-sliced sync resolution of the blast square into {@link #chunkCache} (workers
-     * must never touch {@code Level}). Chunks near the blast are almost always already loaded; the cold
-     * edge of a big blast may need loading/generation, hence the budget. Returns true when done.
+     * Server-thread, time-sliced loading of the chunks the last ray round asked for. Returns true when
+     * every requested chunk is in the cache.
      */
-    private boolean prefetchTick(int processTimeMs) {
+    private boolean resolveMissesTick(int processTimeMs) {
         long deadline = System.currentTimeMillis() + processTimeMs;
-        int total = chunkSpan * chunkSpan;
-        while (prefetchIndex < total) {
-            int cx = chunkMinX + prefetchIndex % chunkSpan;
-            int cz = chunkMinZ + prefetchIndex / chunkSpan;
-            chunkCache.put(ChunkPos.pack(cx, cz), world.getChunk(cx, cz));
-            prefetchIndex++;
-            if ((prefetchIndex & 7) == 0 && System.currentTimeMillis() >= deadline) return false;
+        int handled = 0;
+        while (!missedChunks.isEmpty()) {
+            long key = missedChunks.iterator().nextLong();
+            missedChunks.remove(key);
+            int cx = ChunkPos.getX(key);
+            int cz = ChunkPos.getZ(key);
+            if (!chunkCache.containsKey(key)) {
+                chunkCache.put(key, world.getChunk(cx, cz)); // loads/generates — the expensive call
+                chunksLoadedOnDemand++;
+            }
+            if ((++handled & 3) == 0 && System.currentTimeMillis() >= deadline) return false;
         }
         return true;
+    }
+
+    /** Fires off one round of ray work: round 1 streams the spiral, later rounds re-march parked rays. */
+    private void startRayRound() {
+        rayRound++;
+        double[] parked = parkedDirs.isEmpty() ? null : parkedDirs.toDoubleArray();
+        parkedDirs.clear();
+        rayJob = CompletableFuture.runAsync(() -> {
+            long t0 = System.currentTimeMillis();
+            computeRays(parked);
+            rayWallMs += System.currentTimeMillis() - t0; // compute only; the resolve waits are separate
+        }, ForkJoinPool.commonPool());
     }
 
     /**
@@ -187,14 +289,28 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * merging their worker-local hit maps into {@link #perChunk}. Sets {@link #isAusf3Complete} last —
      * the volatile write publishes the maps to the server thread.
      */
-    private void computeRays() {
+    private void computeRays(double[] parked) {
+        ForkJoinPool pool = ForkJoinPool.commonPool();
+        int maxPending = pool.getParallelism() * 2 + 1;
+        ArrayDeque<ForkJoinTask<BatchResult>> pending = new ArrayDeque<>();
+
+        if (parked != null) {
+            // A later round: only the rays that stopped at a chunk nobody had loaded. They restart from
+            // r = 0, which re-records the hits they already found — the bitsets are a set, so that is
+            // free — and then continue past the chunk that is now resident.
+            for (int off = 0; off < parked.length; off += RAY_BATCH * PARK_STRIDE) {
+                int len = Math.min(RAY_BATCH * PARK_STRIDE, parked.length - off);
+                double[] batch = java.util.Arrays.copyOfRange(parked, off, off + len);
+                pending.addLast(pool.submit(() -> marchResumed(batch, len / PARK_STRIDE)));
+                if (pending.size() >= maxPending) mergeResult(pending.removeFirst().join());
+            }
+            while (!pending.isEmpty()) mergeResult(pending.removeFirst().join());
+            return;
+        }
+
         double gspX = Math.PI;
         double gspY = 0.0;
         int gspNum = 1;
-
-        ForkJoinPool pool = ForkJoinPool.commonPool();
-        int maxPending = pool.getParallelism() * 2 + 1;
-        ArrayDeque<ForkJoinTask<HashMap<ChunkPos, BitSet>>> pending = new ArrayDeque<>();
 
         while (gspNum <= gspNumMax && !cancelled) {
             int count = Math.min(RAY_BATCH, gspNumMax - gspNum + 1);
@@ -223,44 +339,94 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             pending.addLast(pool.submit(() -> marchBatch(batch, batchCount)));
 
             if (pending.size() >= maxPending) {
-                mergeHits(pending.removeFirst().join());
+                mergeResult(pending.removeFirst().join());
             }
         }
 
         while (!pending.isEmpty()) {
-            mergeHits(pending.removeFirst().join());
+            mergeResult(pending.removeFirst().join());
         }
-
-        finishRayPhase();
     }
 
-    private void mergeHits(Map<ChunkPos, BitSet> local) {
-        for (Map.Entry<ChunkPos, BitSet> e : local.entrySet()) {
-            perChunk.merge(e.getKey(), e.getValue(), (a, b) -> { a.or(b); return a; });
+    /** One batch's findings: blocks to destroy, rays that parked, and the chunks they are waiting on. */
+    private record BatchResult(Long2ObjectOpenHashMap<BitSet> hits,
+                               it.unimi.dsi.fastutil.doubles.DoubleArrayList parked,
+                               it.unimi.dsi.fastutil.longs.LongOpenHashSet misses) {}
+
+    private void mergeResult(BatchResult result) {
+        for (it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<BitSet> e : result.hits().long2ObjectEntrySet()) {
+            perChunk.merge(e.getLongKey(), e.getValue(), (a, b) -> { a.or(b); return a; });
         }
+        parkedDirs.addAll(result.parked());
+        missedChunks.addAll(result.misses());
     }
 
     private synchronized void finishRayPhase() {
         if (isAusf3Complete) return;
-        orderedChunks.addAll(perChunk.keySet());
-        orderedChunks.sort(comparator);
+        orderChunks();
         isAusf3Complete = true;
     }
 
+    /** Nearest-chunk-first, so the crater opens from the middle outwards like the original. */
+    private void orderChunks() {
+        int chunkX = posX >> 4;
+        int chunkZ = posZ >> 4;
+        long[] keys = perChunk.keySet().toLongArray();
+        // Sort by (distance, index) packed into one long: no comparator object, no boxing.
+        long[] sortKeys = new long[keys.length];
+        for (int i = 0; i < keys.length; i++) {
+            int dist = Math.abs(chunkX - ChunkPos.getX(keys[i])) + Math.abs(chunkZ - ChunkPos.getZ(keys[i]));
+            sortKeys[i] = ((long) dist << 32) | i;
+        }
+        java.util.Arrays.sort(sortKeys);
+        orderedChunks = new long[keys.length];
+        for (int i = 0; i < keys.length; i++) orderedChunks[i] = keys[(int) sortKeys[i]];
+        orderedIndex = 0;
+    }
+
     /** Marches one batch of ray directions against the read-only chunk cache. Pool-thread only. */
-    private HashMap<ChunkPos, BitSet> marchBatch(double[] dirs, int count) {
-        HashMap<ChunkPos, BitSet> hits = new HashMap<>();
+    private BatchResult marchBatch(double[] dirs, int count) {
+        Long2ObjectOpenHashMap<BitSet> hits = new Long2ObjectOpenHashMap<>();
+        it.unimi.dsi.fastutil.doubles.DoubleArrayList parked = new it.unimi.dsi.fastutil.doubles.DoubleArrayList();
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet misses = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
         MutableBlockPos pos = new MutableBlockPos();
 
         for (int i = 0; i < count && !cancelled; i++) {
-            double vx = dirs[i * 3];
-            double vy = dirs[i * 3 + 1];
-            double vz = dirs[i * 3 + 2];
+            marchOne(dirs[i * 3], dirs[i * 3 + 1], dirs[i * 3 + 2], strength * 0.3F, 0, hits, parked, misses, pos);
+        }
+        return new BatchResult(hits, parked, misses);
+    }
 
-            float rayStrength = strength * 0.3F;
+    /** Re-marches rays that parked, each resuming from its own stored strength and step. */
+    private BatchResult marchResumed(double[] rays, int count) {
+        Long2ObjectOpenHashMap<BitSet> hits = new Long2ObjectOpenHashMap<>();
+        it.unimi.dsi.fastutil.doubles.DoubleArrayList parked = new it.unimi.dsi.fastutil.doubles.DoubleArrayList();
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet misses = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        MutableBlockPos pos = new MutableBlockPos();
+
+        for (int i = 0; i < count && !cancelled; i++) {
+            int base = i * PARK_STRIDE;
+            marchOne(rays[base], rays[base + 1], rays[base + 2],
+                    (float) rays[base + 3], (int) rays[base + 4], hits, parked, misses, pos);
+        }
+        return new BatchResult(hits, parked, misses);
+    }
+
+    /** One ray, from step {@code startR} with {@code startStrength} left. Pool-thread only. */
+    private void marchOne(double vx, double vy, double vz, float startStrength, int startR,
+                          Long2ObjectOpenHashMap<BitSet> hits,
+                          it.unimi.dsi.fastutil.doubles.DoubleArrayList parked,
+                          it.unimi.dsi.fastutil.longs.LongOpenHashSet misses,
+                          MutableBlockPos pos) {
+        {
+            float rayStrength = startStrength;
+            // A ray crosses ~16 cells per chunk, so the lookup is the same one over and over. Holding the
+            // last (key, chunk) turns a hash probe per sampled block into a long compare.
+            long lastKey = Long.MIN_VALUE;
+            LevelChunk lastChunk = null;
 
             // Find the end of the ray (verbatim old march, including the r = 0,2,3,… sampling).
-            for (int r = 0; r < radius + 1; r++) {
+            for (int r = startR; r < radius + 1; r++) {
 
                 int iY = (int) Math.floor(posY + (vy * r));
                 if (iY < minY || iY > maxY) {
@@ -271,15 +437,49 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                 int iX = (int) Math.floor(posX + (vx * r));
                 int iZ = (int) Math.floor(posZ + (vz * r));
 
-                LevelChunk chunk = chunkCache.get(ChunkPos.pack(iX >> 4, iZ >> 4));
-                BlockState blockState = chunk != null ? chunk.getBlockState(pos.set(iX, iY, iZ)) : AIR;
-                if (blockState.getBlock().getExplosionResistance() >= 2_000_000)
+                long chunkKey = ChunkPos.pack(iX >> 4, iZ >> 4);
+                LevelChunk chunk;
+                if (chunkKey == lastKey) {
+                    chunk = lastChunk;
+                } else {
+                    chunk = chunkCache.get(chunkKey);
+                    lastKey = chunkKey;
+                    lastChunk = chunk;
+                }
+                if (chunk == null) {
+                    // Nobody has this chunk in memory. Park the ray rather than treat unloaded terrain as
+                    // vacuum (which is what the old code did, letting a blast punch through un-generated
+                    // ground); the server thread loads it and this ray is re-marched next round.
+                    misses.add(chunkKey);
+                    parked.add(vx);
+                    parked.add(vy);
+                    parked.add(vz);
+                    parked.add(rayStrength);
+                    parked.add(r);
                     break;
+                }
+                BlockState blockState = chunk.getBlockState(pos.set(iX, iY, iZ));
 
-                rayStrength -= (float) (Math.pow(getNukeResistance(blockState) + 1, 3 * ((float) (r = (r > 0) ? r : 1)) / ((float) radius)) - 1);
+                // The r = 0 -> 1 rewrite, hoisted out of the attenuation expression it used to hide in.
+                // It has to happen on EVERY step, air included: it is what produces upstream's r = 0, 2,
+                // 3, ... sampling, so skipping it below would change which cells a ray visits.
+                if (r == 0) r = 1;
+
+                boolean air = blockState.isAir();
+                if (!air) {
+                    // One resistance read, used for both the indestructible test and the attenuation.
+                    float resistance = blockState.getBlock().getExplosionResistance();
+                    if (resistance >= 2_000_000) break;
+
+                    rayStrength -= (float) (Math.pow(nukeResistance(blockState, resistance) + 1,
+                            3 * ((float) r) / ((float) radius)) - 1);
+                }
+                // Air is skipped above rather than run through the maths: its resistance is 0, so the
+                // attenuation term is pow(1, k) - 1 = 0 exactly. Most cells a big blast samples are air,
+                // and this is a Math.pow plus two virtual calls per cell.
 
                 if (rayStrength > 0) {
-                    if (!blockState.isAir()) {
+                    if (!air) {
                         // All-air chunks don't need to be buffered at all.
                         setBit(hits, iX, iY, iZ);
                     }
@@ -291,13 +491,16 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                 }
             }
         }
-        return hits;
     }
 
-    private void setBit(Map<ChunkPos, BitSet> map, int x, int y, int z) {
-        ChunkPos chunk = new ChunkPos(x >> 4, z >> 4);
-        BitSet hitPositions = map.computeIfAbsent(chunk, k -> new BitSet((maxY - minY + 1) << 8));
-        hitPositions.set(((maxY - y) << 8) + ((x - chunk.getMinBlockX()) << 4) + (z - chunk.getMinBlockZ()));
+    private void setBit(Long2ObjectOpenHashMap<BitSet> map, int x, int y, int z) {
+        long key = ChunkPos.pack(x >> 4, z >> 4);
+        BitSet hitPositions = map.get(key);
+        if (hitPositions == null) {
+            hitPositions = new BitSet((maxY - minY + 1) << 8);
+            map.put(key, hitPositions);
+        }
+        hitPositions.set(((maxY - y) << 8) + ((x & 15) << 4) + (z & 15));
     }
 
     /**
@@ -306,11 +509,16 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * without this, obsidian blast-bunkers survive a direct nuke, which the old mod did not allow).
      */
     public static float getNukeResistance(BlockState blockState) {
+        return nukeResistance(blockState, blockState.getBlock().getExplosionResistance());
+    }
+
+    /** As above, for callers that already read the block's resistance and should not read it twice. */
+    private static float nukeResistance(BlockState blockState, float resistance) {
         if (blockState.liquid()) return 0.1F;
         Block b = blockState.getBlock();
         if (b == Blocks.SANDSTONE) return 4F;
         if (b == Blocks.OBSIDIAN) return 18F;
-        return b.getExplosionResistance();
+        return resistance;
     }
 
     // ------------------------------------------------------------------ lifecycle
@@ -319,8 +527,13 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     public void cancel() {
         cancelled = true;
         isAusf3Complete = true;
-        orderedChunks.clear();
+        orderedChunks = new long[0];
+        orderedIndex = 0;
         perChunk.clear();
+        // A half-carved chunk is left as it is: the blocks already cleared stay cleared, and the
+        // per-chunk repair is skipped along with the rest of the blast. Dropping the reference is what
+        // stops the next tick from calling finish() against a bitset that is no longer there.
+        carver = null;
     }
 
     @Override
@@ -338,47 +551,67 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         this.detonator = detonator;
     }
 
-    /** Little comparator for roughly sorting chunks by distance to the centre. */
-    public class CoordComparator implements Comparator<ChunkPos> {
-
-        @Override
-        public int compare(ChunkPos o1, ChunkPos o2) {
-            int chunkX = ExplosionNukeRayBatched.this.posX >> 4;
-            int chunkZ = ExplosionNukeRayBatched.this.posZ >> 4;
-
-            int diff1 = Math.abs((chunkX - (o1.getMinBlockX() >> 4))) + Math.abs((chunkZ - (o1.getMinBlockZ() >> 4)));
-            int diff2 = Math.abs((chunkX - (o2.getMinBlockX() >> 4))) + Math.abs((chunkZ - (o2.getMinBlockZ() >> 4)));
-
-            return Integer.compare(diff1, diff2);
-        }
-    }
-
     // ------------------------------------------------------------------ destruction (server thread)
 
     public void destructionTick(int time) {
         long start = System.currentTimeMillis();
+        destructionTicks++;
         while (System.currentTimeMillis() < start + time) {
-            if (perChunk.isEmpty()) return;
+            if (perChunk.isEmpty()) break;
             processChunkBlocks(start, time);
         }
+        destructionMs += System.currentTimeMillis() - start;
+        if (perChunk.isEmpty()) logSummary();
+    }
+
+    private boolean logged = false;
+
+    /**
+     * One line per blast, with the phase split. This is the only way to tell a slow crater apart from a
+     * slow ray phase after the fact, and the numbers are what any performance change has to move.
+     */
+    private void logSummary() {
+        if (logged) return;
+        logged = true;
+        long total = System.currentTimeMillis() - createdAt;
+        Constants.LOG.info("[NUKE] r={} done in {} ms wall: chunks {} ms ({} cached, {} loaded on demand, "
+                        + "{} ray rounds), rays {} ms, destruction {} ms over {} ticks ({} blocks, {} blocks/ms)",
+                radius, total, prefetchMs, chunkCache.size(), chunksLoadedOnDemand, rayRound,
+                rayWallMs, destructionMs, destructionTicks,
+                blocksDestroyed, destructionMs > 0 ? blocksDestroyed / destructionMs : blocksDestroyed);
     }
 
     private BitSet hitArray;
-    private ChunkPos destChunk;
+    private long destChunk;
     private boolean needsNewHitArray = true;
     private int index = 0;
 
+    /**
+     * The section carve for the chunk currently being cleared, or null between chunks.
+     *
+     * <p>Null also whenever the carve path is unavailable (see {@link #processChunkBlocks}); the
+     * per-block loop below is then used instead, so this field is the only thing distinguishing the
+     * two paths at runtime.
+     */
+    private ChunkCarver carver;
+
     public void processChunkBlocks(long start, int time) {
-        if (this.perChunk.isEmpty()) return;
+        if (this.perChunk.isEmpty() || orderedIndex >= orderedChunks.length) return;
+
+        if (BombConfig.craterSectionCarve && world instanceof ServerLevel server) {
+            carveChunk(server, start, time);
+            return;
+        }
+
         if (needsNewHitArray) {
-            destChunk = orderedChunks.get(0);
+            destChunk = orderedChunks[orderedIndex];
             hitArray = perChunk.get(destChunk);
             index = hitArray.nextSetBit(0);
             needsNewHitArray = false;
         }
 
-        int chunkX = destChunk.getMinBlockX();
-        int chunkZ = destChunk.getMinBlockZ();
+        int chunkX = ChunkPos.getX(destChunk) << 4;
+        int chunkZ = ChunkPos.getZ(destChunk) << 4;
 
         MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int blocksRemoved = 0;
@@ -391,6 +624,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             world.setBlock(pos, AIR, CLEAR_FLAGS);
             index = hitArray.nextSetBit(index + 1);
             blocksRemoved++;
+            blocksDestroyed++;
             if (blocksRemoved % 256 == 0 && System.currentTimeMillis() + 1 > start + time) {
                 break;
             }
@@ -398,8 +632,35 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
         if (index < 0) {
             perChunk.remove(destChunk);
-            orderedChunks.remove(0);
+            orderedIndex++;
             needsNewHitArray = true;
         }
+    }
+
+    /**
+     * The fast destruction path: clear the chunk's blocks straight into its sections and repair the
+     * per-chunk state once, instead of paying vanilla's per-block bookkeeping millions of times. See
+     * {@link ChunkCarver} for what that bookkeeping is and why doing it per chunk is equivalent.
+     *
+     * <p>The chunk, not the tick, is the unit that has to complete: the heightmap, light and resend
+     * pass in {@link ChunkCarver#finish()} only makes sense against a finished shape. The carve itself
+     * is still time-sliced, so a single chunk spanning several ticks is fine — {@code finish()} simply
+     * runs on the tick that exhausts its bitset.
+     */
+    private void carveChunk(ServerLevel server, long start, int time) {
+        if (carver == null) {
+            destChunk = orderedChunks[orderedIndex];
+            int cx = ChunkPos.getX(destChunk);
+            int cz = ChunkPos.getZ(destChunk);
+            carver = new ChunkCarver(server, world.getChunk(cx, cz), perChunk.get(destChunk), cx, cz, maxY);
+        }
+
+        if (!carver.carveUntil(start + time)) return;
+
+        carver.finish();
+        blocksDestroyed += carver.carved();
+        carver = null;
+        perChunk.remove(destChunk);
+        orderedIndex++;
     }
 }

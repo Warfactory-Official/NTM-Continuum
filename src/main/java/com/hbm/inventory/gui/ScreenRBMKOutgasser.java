@@ -26,7 +26,7 @@ public final class ScreenRBMKOutgasser extends RBMKContainerScreen<MenuRBMKOutga
         if (gas > 0) GuiDraw.blit(graphics, TEX, leftPos + 143, topPos + 82 - gas, 176, 58 - gas, 14, gas, 256, 256);
     }
 
-    @Override protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    @Override protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         BlockEntityRBMKOutgasser outgasser = menu.blockEntity();
         if (outgasser == null) return;
         fluidTooltip(graphics, outgasser.gas, 143, 24, 14, 58, mouseX, mouseY);

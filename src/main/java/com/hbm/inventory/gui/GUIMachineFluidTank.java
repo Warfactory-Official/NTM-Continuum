@@ -75,7 +75,7 @@ public class GUIMachineFluidTank extends dev.golem.core.gui.CompatContainerScree
     }
 
     @Override
-    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void extractOwnTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         TileEntityMachineFluidTank tank = this.menu.getTank();
         if (tank == null) return;
 
