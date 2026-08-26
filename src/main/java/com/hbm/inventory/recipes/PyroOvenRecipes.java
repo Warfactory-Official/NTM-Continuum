@@ -9,7 +9,9 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModFuelItems;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.ItemEnums.EnumAshType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -27,8 +29,8 @@ import java.util.List;
  * "solid fuel" auto-computation replicates the old math (1_440_000 TU per SF, ×0.5 bonus, magnitude-round).
  *
  * <p>Deviations (IMPLEMENTATION.md §20): the bedrock-ore roast loops are skipped ({@code ItemBedrockOreNew}
- * unported); the {@code ANY_TAR}→{@code powder_ash[SOOT]} recipe is skipped ({@code powder_ash} unported).
- * The {@code ANY_COKE} ingredient resolves to the {@code c:cokes} tag (the 3 coke items).
+ * unported). The {@code ANY_COKE} and {@code ANY_TAR} ingredients resolve to the {@code c:cokes} and
+ * {@code c:tars} tags respectively.
  */
 public final class PyroOvenRecipes {
 
@@ -36,6 +38,8 @@ public final class PyroOvenRecipes {
 
     /** The coke aggregate (old OreDict ANY_COKE) — the 3 coke items, hand-tagged in data/c/tags/item/cokes.json. */
     public static final TagKey<Item> COKES = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "cokes"));
+    /** The tar aggregate (old OreDict ANY_TAR), hand-tagged in data/c/tags/item/tars.json. */
+    public static final TagKey<Item> TARS = TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", "tars"));
 
     public static final class PyroOvenRecipe {
         public FluidStack inputFluid;
@@ -100,7 +104,10 @@ public final class PyroOvenRecipes {
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 250)).in(new TagStack(COKES)).out(new FluidStack(Fluids.SYNGAS, 1_000)));
         // syngas from biomass
         recipes.add(new PyroOvenRecipe(100).in(new ComparableStack(ModFuelItems.biomass.get(), 4)).out(new FluidStack(Fluids.SYNGAS, 1_000)).out(new ItemStack(Items.CHARCOAL, 1)));
-        // soot from tar: skipped (powder_ash unported) — §20
+        // soot from tar
+        recipes.add(new PyroOvenRecipe(40).in(new FluidStack(Fluids.HYDROGEN, 250))
+                .in(new TagStack(TARS, 4)).out(new FluidStack(Fluids.CARBONDIOXIDE, 1_000))
+                .out(new ItemStack(ModIngredientItems.ash(EnumAshType.SOOT))));
         // heavyoil from coal
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.HYDROGEN, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.HEAVYOIL, 1_000)));
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.HYDROGEN, 500)).in(Mats.MAT_COAL.dust()).out(new FluidStack(Fluids.HEAVYOIL, 1_000)));

@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Short-lived radioactive gas released by a burning ZIRNOX wreck. */
-public class BlockGasMeltdown extends dev.golem.core.world.CompatBlock {
+public class BlockGasMeltdown extends BlockGasBase {
 
     public BlockGasMeltdown(Properties properties) {
         super(properties);

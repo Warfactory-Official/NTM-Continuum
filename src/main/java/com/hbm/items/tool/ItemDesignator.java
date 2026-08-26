@@ -69,8 +69,8 @@ public class ItemDesignator extends CompatItem implements IDesignatorItem {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
 
-        if (level.getBlockState(pos).getBlock() instanceof LaunchPad) return InteractionResult.PASS;
-        if (context.getPlayer() == null) return InteractionResult.PASS;
+        if (level.getBlockState(pos).getBlock() instanceof LaunchPad) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (context.getPlayer() == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         setTarget(level, context.getPlayer(), context.getItemInHand(), pos.getX(), pos.getZ(),
                 Component.translatable("chat.posset").withStyle(ChatFormatting.GREEN));

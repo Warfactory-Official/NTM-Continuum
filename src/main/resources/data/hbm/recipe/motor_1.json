@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "R": "hbm:wire_fine_red_copper",
+    "R": "#c:wires/red_copper",
     "T": "hbm:coil_copper_torus",
     "I": "#c:plates/steel",
     "C": "hbm:coil_copper"

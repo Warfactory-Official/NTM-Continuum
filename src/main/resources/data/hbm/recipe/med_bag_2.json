@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "#c:ingots/any_rubber",
+    "S": "hbm:syringe_metal_stimpak",
+    "I": "hbm:syringe_antidote"
+  },
+  "pattern": [
+    "LLL",
+    "SIS",
+    "LLL"
+  ],
+  "result": {
+    "id": "hbm:med_bag"
+  }
+}

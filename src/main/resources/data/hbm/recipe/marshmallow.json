@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:stick",
+    "minecraft:sugar",
+    "minecraft:wheat_seeds"
+  ],
+  "result": {
+    "id": "hbm:marshmallow"
+  }
+}

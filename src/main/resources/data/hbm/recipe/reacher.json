@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": "hbm:bolt_tungsten",
+    "B": "#c:bolts/tungsten",
     "I": "#c:ingots/tungsten",
     "P": "#c:ingots/any_rubber"
   },

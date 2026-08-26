@@ -58,7 +58,7 @@ public class ItemDetonator extends CompatItem {
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Player player = context.getPlayer();
-        if (player == null || !player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (player == null || !player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
@@ -82,14 +82,14 @@ public class ItemDetonator extends CompatItem {
             if (!level.isClientSide()) {
                 player.sendSystemMessage(Component.translatable("chat.posnoseterror").withStyle(ChatFormatting.RED));
             }
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         if (!(level.getBlockState(bound).getBlock() instanceof IBomb bomb)) {
             if (!level.isClientSide()) {
                 player.sendSystemMessage(Component.translatable("chat.postoofarerror").withStyle(ChatFormatting.RED));
             }
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),

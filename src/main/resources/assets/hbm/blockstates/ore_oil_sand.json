@@ -1,3 +1,7 @@
 {
-  "variants": { "": { "model": "hbm:block/ore_oil_sand" } }
+  "variants": {
+    "": {
+      "model": "hbm:block/ore_oil_sand"
+    }
+  }
 }

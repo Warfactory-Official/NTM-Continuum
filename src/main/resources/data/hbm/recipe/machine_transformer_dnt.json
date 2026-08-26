@@ -4,7 +4,7 @@
   "key": {
     "S": "#c:ingots/starmetal",
     "D": "#c:ingots/desh",
-    "M": "hbm:wire_dense_magnetized_tungsten",
+    "M": "#c:wires_dense/magnetized_tungsten",
     "C": "hbm:circuit_bismoid"
   },
   "pattern": [

@@ -1,3 +1,7 @@
 {
-  "variants": { "": { "model": "hbm:block/dirt_oily" } }
+  "variants": {
+    "": {
+      "model": "hbm:block/dirt_oily"
+    }
+  }
 }

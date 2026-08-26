@@ -4,7 +4,7 @@
   "key": {
     "M": "hbm:meteor_polished",
     "S": "#c:storage_blocks/starmetal",
-    "W": "hbm:wire_fine_schrabidium"
+    "W": "#c:wires/schrabidium"
   },
   "pattern": [
     "MSM",

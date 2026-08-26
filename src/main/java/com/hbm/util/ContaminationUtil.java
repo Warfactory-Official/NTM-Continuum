@@ -12,6 +12,7 @@ import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.potion.ModEffects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -51,7 +52,7 @@ public class ContaminationUtil {
      * Calculates how much radiation can be applied to this entity by calculating resistance.
      */
     public static double calculateRadiationMod(LivingEntity entity) {
-        // TODO(potions): mutation potion -> full immunity
+        if (dev.golem.core.world.Effects.hasRegistered(entity, ModEffects.MUTATION.get())) return 0D;
         double mult = 1D;
         // TODO(compat): per-entity RAD_MULT_KEY persistent-data multiplier
 
@@ -214,7 +215,8 @@ public class ContaminationUtil {
     }
 
     public static boolean isRadImmune(Entity e) {
-        // TODO(potions): mutation potion immunity
+        if (e instanceof LivingEntity living &&
+                dev.golem.core.world.Effects.hasRegistered(living, ModEffects.MUTATION.get())) return true;
         // Old list minus un-ported HBM mobs (nuclear creeper, quackos)
         return e instanceof MushroomCow
                 || e instanceof Zombie
@@ -297,7 +299,7 @@ public class ContaminationUtil {
         if (e instanceof Player && e.tickCount < 200)
             return;
 
-        // TODO(potions): stability potion immunity
+        if (dev.golem.core.world.Effects.hasRegistered(entity, ModEffects.STABILITY.get())) return;
 
         if (!(entity instanceof Player player && ArmorUtil.checkForDigamma(player)))
             HbmLivingProps.incrementDigamma(entity, f);

@@ -49,6 +49,9 @@ public class NeoForgeInit {
         // Test functions are a NeoForge-only dev registry. Do not initialize this common class on Fabric.
         //? if >=26.1 {
         com.hbm.gametest.HbmGameTestFunctions.init();
+        com.hbm.gametest.FoodCatalystGameTests.init();
+        com.hbm.gametest.OutgasGameTests.init();
+        com.hbm.gametest.SteelStructureGameTests.init();
         //?}
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
@@ -63,6 +66,12 @@ public class NeoForgeInit {
         eventBus.addListener(this::onRegisterPayloads);
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.HbmGameTestFunctions.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FoodCatalystGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.OutgasGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.SteelStructureGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {

@@ -1,4 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
-  "textures": { "all": "hbm:blocks/gravel_obsidian" }
+  "textures": {
+    "all": "hbm:blocks/gravel_obsidian"
+  }
 }

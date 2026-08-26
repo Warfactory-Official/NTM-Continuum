@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
-/^*
+ /^ 
  * Draws an OBJ machine item below 26.1, where there is no special-model system and the equivalent hook
  * is a per-loader "render this item yourself" callback (NeoForge's BEWLR, Fabric's DynamicItemRenderer).
  * Both hand over a {@code MultiBufferSource}, so the model is submitted into a {@link RecordingSubmitSink}
@@ -28,10 +28,10 @@ public final class MachineItemRenderers {
 
     private MachineItemRenderers() {}
 
-    /^* Half a slot, in GUI pixels — vanilla renders an inventory item into a 16x16 box centred on it. ^/
+    /^ Half a slot, in GUI pixels — vanilla renders an inventory item into a 16x16 box centred on it. ^/
     private static final float HALF_SLOT = 8.0F;
 
-    /^* Renders {@code stack} if it is an OBJ machine; does nothing otherwise. ^/
+    /^ Renders {@code stack} if it is an OBJ machine; does nothing otherwise. ^/
     public static void render(ItemStack stack, ItemDisplayContext context, PoseStack poseStack,
                               MultiBufferSource buffers, int light, int overlay) {
         // Guns share this hook: it is the one place below 26.1 that is handed the display context, which
@@ -39,7 +39,7 @@ public final class MachineItemRenderers {
         if (com.hbm.client.render.weapon.GunLegacyModels.render(stack, context, poseStack, buffers, light, overlay)) return;
         if (MachineItemModels.isEmpty()) return;
         Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
-        MachineItemModel model = MachineItemModels.get(id);
+        MachineItemModel model = MachineItemModels.get(id, stack);
         RBMKColumnItemModel column = MachineItemModels.rbmkColumn(id);
         RBMKBlockColumnItemModel block = MachineItemModels.blockColumn(id);
         if (model == null && column == null && block == null) return;
@@ -63,7 +63,7 @@ public final class MachineItemRenderers {
         }
     }
 
-    /^*
+    /^ 
      * Clips drawing to the 16x16 slot this item is being rendered into, returning whether a scissor was
      * actually set.
      *

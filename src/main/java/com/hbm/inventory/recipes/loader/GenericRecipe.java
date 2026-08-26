@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * One machine recipe, ported (item-only) from HBM's {@code GenericRecipe}. Inputs are {@link AStack}s
- * (exact item or tag); outputs are plain {@link ItemStack}s (the original's chance/multi-output and
- * fluid I/O are deferred — see IMPLEMENTATION.md §18). A recipe may belong to one or more
+ * One machine recipe, ported from HBM's {@code GenericRecipe}. Inputs are {@link AStack}s
+ * (exact item or tag); outputs are plain {@link ItemStack}s with optional per-item chances, alongside
+ * typed fluid inputs and outputs. A recipe may belong to one or more
  * <b>blueprint pools</b> (which template unlocks it) and an <b>auto-switch group</b> (machines pick the
  * matching recipe in the group from the inserted ingredient).
  */
@@ -26,8 +26,8 @@ public class GenericRecipe {
     public FluidStack[] inputFluid;
     public FluidStack[] outputFluid;
     /**
-     * Per-output drop chance, index-aligned with {@link #outputItem}; a missing entry or {@code 0} means
-     * guaranteed. This is the port's stand-in for the original's {@code ChanceOutput} wrapper — a parallel
+     * Per-output drop chance, index-aligned with {@link #outputItem}; a missing entry means guaranteed.
+     * An explicit {@code 0} means the output never drops, matching the original {@code ChanceOutput} — a parallel
      * array keeps every existing {@code outputItems(ItemStack...)} call site untouched. As in the original,
      * the roll happens per <i>item</i> in the stack, so a 50% ×4 output averages two items.
      */
@@ -100,8 +100,8 @@ public class GenericRecipe {
 
     /** The chance of output {@code index} dropping, 1 when no chance table applies. */
     public float getChance(int index) {
-        if (outputChance == null || index >= outputChance.length || outputChance[index] <= 0F) return 1F;
-        return Math.min(outputChance[index], 1F);
+        if (outputChance == null || index >= outputChance.length) return 1F;
+        return Math.max(0F, Math.min(outputChance[index], 1F));
     }
 
     public boolean isPooled() { return blueprintPools != null; }
@@ -134,8 +134,8 @@ public class GenericRecipe {
     }
 
     /**
-     * Multi-line recipe description for the GUI tooltip (name, duration, power, inputs, outputs). Ported
-     * from HBM's {@code GenericRecipe.print()} — item-only (fluids/chance outputs are deferred).
+     * Multi-line recipe description for the GUI tooltip (name, duration, power, item/fluid inputs and
+     * outputs). Ported from HBM's {@code GenericRecipe.print()}.
      */
     public List<Component> print() {
         List<Component> list = new ArrayList<>();

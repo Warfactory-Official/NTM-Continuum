@@ -4,7 +4,7 @@
   "key": {
     "S": "#c:ingots/steel",
     "I": "#c:plates/iron",
-    "C": "hbm:plate_cast_copper"
+    "C": "#c:plates_cast/copper"
   },
   "pattern": [
     "SIS",

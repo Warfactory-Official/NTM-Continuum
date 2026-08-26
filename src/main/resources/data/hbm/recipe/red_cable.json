@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "W": "hbm:plate_polymer",
-    "R": "hbm:wire_fine_red_copper"
+    "R": "#c:wires/red_copper"
   },
   "pattern": [
     " W ",

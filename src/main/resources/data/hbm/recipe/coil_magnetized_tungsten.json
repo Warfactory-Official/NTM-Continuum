@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "W": "hbm:wire_fine_magnetized_tungsten",
+    "W": "#c:wires/magnetized_tungsten",
     "I": "#c:ingots/iron"
   },
   "pattern": [

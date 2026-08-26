@@ -48,14 +48,35 @@ public final class ModFallingBlocks {
     /** Lead-mixed sand — the PUREX vitrification medium (old {@code ModBlocks.sand_lead}, hardness 0.5). */
     public static final RegistryObject<BlockFallingBase> sand_lead = falling("sand_lead", 0.5F, 0.5F, SoundType.SAND);
 
+    // --- remaining plain BlockFallingBase registrations ---
+    public static final RegistryObject<BlockFallingBase> block_scrap =
+            falling("block_scrap", 2.5F, 5.0F, SoundType.GRAVEL, HbmTab.BLOCKS);
+    public static final RegistryObject<BlockFallingBase> block_electrical_scrap =
+            falling("block_electrical_scrap", 2.5F, 5.0F, SoundType.METAL, HbmTab.BLOCKS);
+    public static final RegistryObject<BlockFallingBase> moon_turf =
+            falling("moon_turf", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+    public static final RegistryObject<BlockFallingBase> block_red_phosphorus =
+            falling("block_red_phosphorus", 5.0F, 10.0F, SoundType.SAND, HbmTab.BLOCKS);
+    public static final RegistryObject<BlockFallingBase> sand_boron =
+            falling("sand_boron", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+    public static final RegistryObject<BlockFallingBase> sand_gold =
+            falling("sand_gold", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+    public static final RegistryObject<BlockFallingBase> sand_quartz =
+            falling("sand_quartz", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+
     /** Digamma ash — laid under every cell a DRX laser burns through (old {@code BlockHazardFalling}). */
     public static final RegistryObject<BlockFallingBase> ash_digamma = falling("ash_digamma", 0.5F, 150.0F, SoundType.SAND);
 
     private static RegistryObject<BlockFallingBase> falling(String id, float hardness, float resistance, SoundType sound) {
+        return falling(id, hardness, resistance, sound, HbmTab.RESOURCES);
+    }
+
+    private static RegistryObject<BlockFallingBase> falling(String id, float hardness, float resistance,
+                                                             SoundType sound, HbmTab tab) {
         RegistryObject<BlockFallingBase> block = BLOCKS.registerBlock(id, BlockFallingBase::new,
                 p -> p.strength(hardness, resistance).sound(sound));
         RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
-        ModTabs.addTo(HbmTab.RESOURCES, item);
+        ModTabs.addTo(tab, item);
         return block;
     }
 

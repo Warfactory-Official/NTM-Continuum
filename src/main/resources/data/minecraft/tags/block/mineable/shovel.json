@@ -13,6 +13,14 @@
     "hbm:sand_dirty",
     "hbm:sand_dirty_red",
     "hbm:ore_oil_sand",
-    "hbm:ash_digamma"
+    "hbm:ash_digamma",
+    "hbm:sand_lead",
+    "hbm:block_scrap",
+    "hbm:block_electrical_scrap",
+    "hbm:moon_turf",
+    "hbm:block_red_phosphorus",
+    "hbm:sand_boron",
+    "hbm:sand_gold",
+    "hbm:sand_quartz"
   ]
 }

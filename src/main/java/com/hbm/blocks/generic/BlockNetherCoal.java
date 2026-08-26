@@ -25,7 +25,7 @@ import java.util.List;
 public class BlockNetherCoal extends BlockOutgas {
 
     public BlockNetherCoal(Properties properties) {
-        super(properties);
+        super(properties, false, 5, true);
     }
 
     @Override

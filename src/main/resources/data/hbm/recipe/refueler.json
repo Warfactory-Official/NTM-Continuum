@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "#c:plates/titanium",
+    "H": "hbm:part_generic_piston_hydraulic",
+    "C": "hbm:circuit_basic"
+  },
+  "pattern": [
+    "SS",
+    "HC",
+    "SS"
+  ],
+  "result": {
+    "id": "hbm:refueler"
+  }
+}

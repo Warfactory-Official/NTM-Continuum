@@ -59,6 +59,11 @@ public final class HbmBlockEntityRenderers {
         // The chemical plant has its own animated renderer too: a sliding Slider + rotating Spinner + the
         // Fluid mixer overlay (its own texture, tinted by the recipe fluid, only while processing).
         regCustom(sink, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), ctx -> new ChemicalPlantRenderer());
+        // Blast furnace: static body, with the legacy yaw map (base 90° + the standard facing map).
+        regCustom(sink, ModBlockEntities.MACHINE_BLAST_FURNACE.get(), ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityMachineBlastFurnace>(90F, 1F,
+                new ModelDef(obj("machines/blast_furnace.obj"), tex("machines/blast_furnace.png"))).doubleSided());
+        regCustom(sink, ModBlockEntities.MACHINE_INDUSTRIAL_TURBINE.get(), ctx -> new IndustrialTurbineRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_LARGE_TURBINE.get(), ctx -> new LargeTurbineRenderer());
         regCustom(sink, ModBlockEntities.MACHINE_PUREX.get(), ctx -> new PUREXRenderer());
         // Presses: a static body + a head that descends with the machine's progress.
         regCustom(sink, ModBlockEntities.MACHINE_EPRESS.get(), ctx -> new PressRenderer<>(
@@ -177,6 +182,7 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModBlockEntities.MACHINE_COKER.get(),
                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachineCoker>(0F, 1F,
                         new ModelDef(obj("machines/coker.obj"), tex("machines/coker.png"))).ignoreFacing());
+        regCustom(sink, ModBlockEntities.FURNACE_COMBINATION.get(), ctx -> new CombinationFurnaceRenderer());
         // Pyro oven: old RenderPyroOven yaw map N180/W270/S0/E90 = the built-in map + 180. (The animated
         // "Slider"/"Fan" sub-parts render at their model origin — the Slider's rest transform is a −0.5 X
         // translate, so it sits half a block off until a custom animated renderer lands. §20)

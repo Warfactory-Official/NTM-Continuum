@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:glowstone_dust",
+    "S": "hbm:syringe_metal_empty"
+  },
+  "pattern": [
+    " N ",
+    "NSN",
+    " N "
+  ],
+  "result": {
+    "id": "hbm:syringe_metal_psycho"
+  }
+}

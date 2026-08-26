@@ -2,8 +2,7 @@ package com.hbm.items;
 
 /**
  * The metadata-subtype enums from the 1.12.2 {@code ItemEnums} — in 1.21 each variant becomes its own
- * registered item (see {@link ModIntermediateItems}). <b>Partial port:</b> only the enums whose items are
- * ported so far (the recipe intermediates); grow it as more {@code ItemEnumMulti} items land.
+ * registered item (see the hand-registered family classes alongside {@link ModIntermediateItems}).
  */
 public final class ItemEnums {
 
@@ -40,5 +39,28 @@ public final class ItemEnums {
         STEEL_PLATING, HEAVY_FRAME, CIRCUIT, LEAD_PLATING, FERRO_PLATING, COMPUTER, BRONZE_TUBES, PLASTIC,
         GOLD_DUST, DEGENERATE_MATTER;
         public static final EnumExpensiveType[] VALUES = values();
+    }
+
+    /** Ash products from fireboxes, pyrolysis, and SILEX. */
+    public enum EnumAshType {
+        WOOD, COAL, MISC, FLY, SOOT, FULLERENE;
+        public static final EnumAshType[] VALUES = values();
+    }
+
+    /** Generic machine parts from the old metadata item. */
+    public enum EnumPartType {
+        PISTON_PNEUMATIC("piston_pneumatic"),
+        PISTON_HYDRAULIC("piston_hydraulic"),
+        PISTON_ELECTRIC("piston_electric"),
+        LDE("low_density_element"),
+        HDE("heavy_duty_element"),
+        GLASS_POLARIZED("glass_polarized");
+
+        public static final EnumPartType[] VALUES = values();
+        public final String textureName;
+
+        EnumPartType(String textureName) {
+            this.textureName = textureName;
+        }
     }
 }

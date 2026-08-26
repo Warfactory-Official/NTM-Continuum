@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:brick_asbestos_slab",
+    "hbm:brick_asbestos_slab"
+  ],
+  "result": {
+    "id": "hbm:brick_asbestos"
+  }
+}

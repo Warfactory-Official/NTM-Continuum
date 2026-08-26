@@ -4,7 +4,7 @@
   "key": {
     "B": "#c:ingots/beryllium",
     "R": "hbm:coil_tungsten",
-    "W": "hbm:plate_cast_copper",
+    "W": "#c:plates_cast/copper",
     "F": "minecraft:furnace"
   },
   "pattern": [

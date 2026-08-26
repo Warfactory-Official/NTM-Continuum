@@ -16,6 +16,8 @@ import com.hbm.items.ModBombItems;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModIngredientItems;
+import com.hbm.items.ModMedicineItems;
 import com.hbm.tileentity.ModBlockEntities;
 
 /**
@@ -52,22 +54,29 @@ public final class MainRegistry {
         com.hbm.inventory.material.Mats.init(); // material registry (tag-based ore-dict replacement)
         // Order matters: blocks before items (block items reference blocks), tabs last.
         ModBlocks.init();
+        com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)
         ModStorageBlocks.init();   // storage crates (iron / steel / desh)
         ModBombBlocks.init();      // bomb blocks (also precede block entities)
         com.hbm.blocks.ModHazardBlocks.init(); // radioactive / rad-resistant blocks (radiation emitters)
         com.hbm.blocks.ModFalloutBlocks.init(); // fallout layer + waste/sellafite terrain (nuke aftermath)
+        com.hbm.blocks.ModSteelBlocks.init();   // stateful steel grate + OBJ scaffold
         com.hbm.blocks.ModDecoBlocks.init();    // decorative DecoBlock set (steel structures, sat dishes, boxcar/boat)
         com.hbm.blocks.ModAnvilBlocks.init();   // the 12 tiered anvils (must precede block entities)
         com.hbm.blocks.ModOilBlocks.init();     // special oil blocks (ore_oil deposit / oil_pipe / oil_spill)
         com.hbm.blocks.ModNuclearBlocks.init(); // uranium outgassing ores and radon gases
+        com.hbm.blocks.ModOutgasBlocks.init(); // asbestos, corium cobble, tomb scrap, and lab outgas blocks
         com.hbm.blocks.ModOreBlocks.init();     // clusters, depth rock/ores, resource stone, cave spikes, gas pockets
         com.hbm.blocks.ModGlassBlocks.init();   // the BlockNTMGlass family (glass_quartz so far)
+        com.hbm.blocks.ModLadderBlocks.init();  // vanilla LadderBlock family, including ladder_red_top
         com.hbm.blocks.machine.rbmk.ModRBMKBlocks.init(); // reactor columns/peripherals before their block items and BE types
         ModDataComponents.init();  // custom item data components (referenced by hand items below)
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModFoodItems.init();
+        com.hbm.items.ModCatalystItems.init();
+        ModMedicineItems.init();
         com.hbm.items.ModRBMKItems.init(); // RBMK rods/pellets and reactor tools
         com.hbm.items.ModZirnoxItems.init(); // component-backed reactor fuel and spent fuel
         ModMachineItems.init();    // hand-registered machine items (templates)
@@ -75,6 +84,7 @@ public final class MainRegistry {
         com.hbm.items.machine.ModMoldItems.init();  // casting molds (foundry mold/basin) + mold_base
         com.hbm.items.ModAutogenItems.init();        // auto-generated metal-shape items (cast plate, shell, …)
         com.hbm.items.ModIntermediateItems.init();   // recipe intermediates (circuit / item_expensive / chunk_ore)
+        ModIngredientItems.init(); // escaped metadata families: generic parts, ash, and plate fuel
         ModBatteryItems.init();    // modern battery / capacitor items (the socket's storage medium)
         com.hbm.items.ModUpgradeItems.init(); // machine upgrade modules (speed/effect/power/overdrive)
         com.hbm.items.ModFuelItems.init();  // the ItemFuel family (furnace-burnable; burn times wired per loader)

@@ -5,6 +5,8 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.ItemEnums.EnumAshType;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidIcon;
@@ -217,9 +219,8 @@ public final class SILEXRecipes {
                 .out(ModItems.powder_titanium.get(), 15)
                 .out(ModItems.powder_sodium.get(), 10);
 
-        // NOTE: the FULLERENE recipe (fluid_icon[FULLERENE] -> powder_ash[FULLERENE], 1000/1000,
-        // VISIBLE) is the one non-pellet recipe still blocked: powder_ash and its EnumAshType are not
-        // ported. Add it here once ModIntermediateItems grows an ash family.
+        add(fluidIcon(Fluids.FULLERENE), 1_000, 1_000, EnumWavelengths.VISIBLE)
+                .out(ModIngredientItems.ash(EnumAshType.FULLERENE), 1);
     }
 
     // ---------------------------------------------------------------- helpers

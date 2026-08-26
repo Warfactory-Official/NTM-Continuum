@@ -38,6 +38,12 @@ public final class ModDamageSources {
      * attributed to the wearer and carries the {@code bypasses_armor} tag.
      */
     public static final ResourceKey<DamageType> HARD_LANDING = key("hard_landing");
+    public static final ResourceKey<DamageType> TAINT = key("taint");
+    public static final ResourceKey<DamageType> BANG = key("bang");
+    public static final ResourceKey<DamageType> LEAD = key("lead");
+    public static final ResourceKey<DamageType> EUTHANIZED_SELF = key("euthanized_self");
+    public static final ResourceKey<DamageType> EUTHANIZED_SELF2 = key("euthanized_self2");
+    public static final ResourceKey<DamageType> OVERDOSE = key("overdose");
 
     /**
      * The damage categories a bullet can belong to, ported from 1.12.2's
@@ -91,4 +97,10 @@ public final class ModDamageSources {
     public static DamageSource monoxide(Level level) { return source(level, MONOXIDE); }
     public static DamageSource asbestos(Level level) { return source(level, ASBESTOS); }
     public static DamageSource blacklung(Level level) { return source(level, BLACKLUNG); }
+    public static DamageSource taint(Level level) { return source(level, TAINT); }
+    public static DamageSource bang(Level level) { return source(level, BANG); }
+    public static DamageSource lead(Level level) { return source(level, LEAD); }
+    public static DamageSource euthanizedSelf(Level level) { return source(level, EUTHANIZED_SELF); }
+    public static DamageSource euthanizedSelf2(Level level) { return source(level, EUTHANIZED_SELF2); }
+    public static DamageSource overdose(Level level) { return source(level, OVERDOSE); }
 }

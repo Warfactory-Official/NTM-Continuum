@@ -16,10 +16,10 @@ import dev.golem.core.data.DataOut;
 import java.util.List;
 
 /**
- * Item-only processing core, ported from HBM's {@code ModuleMachineBase}. Drives one recipe at a time:
- * checks power + inputs + output space ({@link #canProcess}), drains power and advances
- * {@link #progress} ({@link #process}), then on completion consumes inputs and produces outputs. The
- * fluid I/O of the original is deferred (see IMPLEMENTATION.md §18); this version handles items only.
+ * Processing core, ported from HBM's {@code ModuleMachineBase}. Drives one recipe at a time: checks power
+ * + inputs + output space ({@link #canProcess}), drains power and advances {@link #progress}
+ * ({@link #process}), then on completion consumes inputs and produces outputs. Item and fluid inputs and
+ * outputs are validated before a completed operation mutates either buffer.
  *
  * <p><b>Auto-switch:</b> recipes can share an auto-switch group; if the recipe has one and the first
  * input slot holds an item matching another group recipe, the module switches to it. Combined with
@@ -87,11 +87,15 @@ public abstract class ModuleMachineBase {
         return matchInputs(recipe) != null && hasInputFluid(recipe);
     }
 
-    /** Whether the input tanks hold enough of each of the recipe's input fluids (true for item-only machines). */
+    /** Whether the input tanks hold enough of each requested fluid, in the requested type/pressure slot. */
     private boolean hasInputFluid(GenericRecipe recipe) {
-        if (recipe.inputFluid == null || inputTanks == null) return true;
-        for (int i = 0; i < Math.min(recipe.inputFluid.length, inputTanks.length); i++) {
-            if (inputTanks[i].getFill() < recipe.inputFluid[i].fill) return false;
+        if (recipe.inputFluid == null || recipe.inputFluid.length == 0) return true;
+        if (inputTanks == null || inputTanks.length < recipe.inputFluid.length) return false;
+        for (int i = 0; i < recipe.inputFluid.length; i++) {
+            com.hbm.inventory.fluid.FluidStack required = recipe.inputFluid[i];
+            FluidTankNTM tank = inputTanks[i];
+            if (required == null || tank == null || tank.getTankType() != required.type
+                    || tank.getPressure() != required.pressure || tank.getFill() < required.fill) return false;
         }
         return true;
     }
@@ -136,18 +140,34 @@ public abstract class ModuleMachineBase {
     }
 
     protected boolean canFitOutput(GenericRecipe recipe) {
+        return canFitOutput(recipe, recipe.outputItem);
+    }
+
+    /** Validates a concrete item result before completion consumes any inputs. */
+    private boolean canFitOutput(GenericRecipe recipe, ItemStack[] itemOutputs) {
         if (recipe.outputItem != null) {
-            for (int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
-                ItemStack slot = inventory.getStackInSlot(outputSlots[i]);
+            if (outputSlots == null || outputSlots.length < recipe.outputItem.length
+                    || itemOutputs == null || itemOutputs.length < recipe.outputItem.length) return false;
+            for (int i = 0; i < recipe.outputItem.length; i++) {
+                ItemStack out = itemOutputs[i];
+                if (out == null || out.isEmpty()) continue;
+                int idx = outputSlots[i];
+                ItemStack slot = inventory.getStackInSlot(idx);
+                int limit = Math.min(inventory.getSlotLimit(idx), out.getMaxStackSize());
+                if (out.getCount() > limit) return false;
                 if (slot.isEmpty()) continue;
-                ItemStack out = recipe.outputItem[i];
-                if (!dev.golem.core.world.ItemStacks.sameItemAndData(slot, out)) return false;
-                if (slot.getCount() + out.getCount() > slot.getMaxStackSize()) return false;
+                if (!dev.golem.core.world.ItemStacks.sameItemAndData(slot, out)
+                        || slot.getCount() + out.getCount() > limit) return false;
             }
         }
-        if (recipe.outputFluid != null && outputTanks != null) {
-            for (int i = 0; i < Math.min(recipe.outputFluid.length, outputTanks.length); i++) {
-                if (recipe.outputFluid[i].fill + outputTanks[i].getFill() > outputTanks[i].getMaxFill()) return false;
+        if (recipe.outputFluid != null) {
+            if (outputTanks == null || outputTanks.length < recipe.outputFluid.length) return false;
+            for (int i = 0; i < recipe.outputFluid.length; i++) {
+                com.hbm.inventory.fluid.FluidStack fluid = recipe.outputFluid[i];
+                FluidTankNTM tank = outputTanks[i];
+                if (fluid == null || tank == null || tank.getTankType() != fluid.type
+                        || tank.getPressure() != fluid.pressure
+                        || fluid.fill > tank.getMaxFill() - tank.getFill()) return false;
             }
         }
         return true;
@@ -159,16 +179,28 @@ public abstract class ModuleMachineBase {
         this.progress += step;
 
         if (this.progress >= 1D) {
-            consumeInput(recipe);
-            produceItem(recipe);
+            ItemStack[] outputs = rollOutputs(recipe);
+            if (!complete(recipe, outputs)) {
+                // The preflight above normally makes this unreachable. Keep the operation atomic if a
+                // caller changes a buffer between canProcess() and completion.
+                this.progress = 0D;
+                return;
+            }
             if (canProcess(recipe, speed, power)) this.progress -= 1D;
             else this.progress = 0D;
         }
     }
 
-    protected void consumeInput(GenericRecipe recipe) {
+    /** Completes one operation only after all item/fluid inputs and concrete outputs pass preflight. */
+    private boolean complete(GenericRecipe recipe, ItemStack[] outputs) {
         int[] assigned = matchInputs(recipe);
-        if (assigned == null) return;
+        if (assigned == null || !hasInputFluid(recipe) || !canFitOutput(recipe, outputs)) return false;
+        consumeInput(recipe, assigned);
+        produceItem(recipe, outputs);
+        return true;
+    }
+
+    private void consumeInput(GenericRecipe recipe, int[] assigned) {
         for (int i = 0; i < assigned.length; i++) {
             int idx = inputSlots[assigned[i]];
             ItemStack in = inventory.getStackInSlot(idx).copy();
@@ -183,15 +215,21 @@ public abstract class ModuleMachineBase {
         }
     }
 
+    /** Compatibility entry point for the fusion module's deliberate non-rolled, continuous output path. */
     protected void produceItem(GenericRecipe recipe) {
+        produceItem(recipe, recipe.outputItem);
+    }
+
+    private void produceItem(GenericRecipe recipe, ItemStack[] outputs) {
         if (recipe.outputItem != null) {
-            for (int i = 0; i < Math.min(recipe.outputItem.length, outputSlots.length); i++) {
-                ItemStack out = rollOutput(recipe, i);
+            for (int i = 0; i < recipe.outputItem.length; i++) {
+                ItemStack out = outputs[i];
                 if (out.isEmpty()) continue;
                 int idx = outputSlots[i];
                 ItemStack slot = inventory.getStackInSlot(idx);
                 if (slot.isEmpty()) {
-                    inventory.setStackInSlot(idx, out);
+                    // Never place the recipe's shared ItemStack instance into a machine inventory.
+                    inventory.setStackInSlot(idx, out.copy());
                 } else {
                     ItemStack grown = slot.copy();
                     grown.grow(out.getCount());
@@ -199,8 +237,8 @@ public abstract class ModuleMachineBase {
                 }
             }
         }
-        if (recipe.outputFluid != null && outputTanks != null) {
-            for (int i = 0; i < Math.min(recipe.outputFluid.length, outputTanks.length); i++) {
+        if (recipe.outputFluid != null) {
+            for (int i = 0; i < recipe.outputFluid.length; i++) {
                 outputTanks[i].setFill(outputTanks[i].getFill() + recipe.outputFluid[i].fill);
             }
         }
@@ -212,15 +250,23 @@ public abstract class ModuleMachineBase {
      * a chance output rolls once <b>per item</b> in the stack, so a 25% ×4 output averages one item (the
      * original {@code ChanceOutput.collapse}). May return an empty stack when every roll fails.
      */
-    private ItemStack rollOutput(GenericRecipe recipe, int index) {
-        ItemStack out = recipe.outputItem[index].copy();
-        float chance = recipe.getChance(index);
-        if (chance >= 1F) return out;
-        int kept = 0;
-        for (int i = 0; i < out.getCount(); i++) if (random.nextFloat() < chance) kept++;
-        if (kept <= 0) return ItemStack.EMPTY;
-        out.setCount(kept);
-        return out;
+    private ItemStack[] rollOutputs(GenericRecipe recipe) {
+        if (recipe.outputItem == null) return new ItemStack[0];
+        ItemStack[] outputs = new ItemStack[recipe.outputItem.length];
+        for (int i = 0; i < outputs.length; i++) {
+            ItemStack out = recipe.outputItem[i].copy();
+            float chance = recipe.getChance(i);
+            if (chance <= 0F) {
+                out = ItemStack.EMPTY;
+            } else if (chance < 1F) {
+                int kept = 0;
+                for (int j = 0; j < out.getCount(); j++) if (random.nextFloat() <= chance) kept++;
+                if (kept <= 0) out = ItemStack.EMPTY;
+                else out.setCount(kept);
+            }
+            outputs[i] = out;
+        }
+        return outputs;
     }
 
     public void update(double speed, double power, boolean extraCondition, ItemStack blueprint) {

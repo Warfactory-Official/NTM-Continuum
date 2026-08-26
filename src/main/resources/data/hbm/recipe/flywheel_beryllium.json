@@ -3,8 +3,8 @@
   "category": "misc",
   "key": {
     "B": "#c:storage_blocks/beryllium",
-    "I": "hbm:plate_cast_iron",
-    "T": "hbm:pipe_dura_steel"
+    "I": "#c:plates_cast/iron",
+    "T": "#c:pipes/dura_steel"
   },
   "pattern": [
     "IBI",

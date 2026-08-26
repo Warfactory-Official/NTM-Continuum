@@ -4,7 +4,7 @@
   "key": {
     "S": "#c:plates/steel",
     "T": "#c:ingots/tungsten",
-    "D": "hbm:bolt_dura_steel"
+    "D": "#c:bolts/dura_steel"
   },
   "pattern": [
     "SSS",

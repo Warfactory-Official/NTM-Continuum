@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import com.hbm.Constants;
 import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.blocks.ModOutgasBlocks;
 import com.hbm.blocks.generic.HbmStairBlock;
 import com.hbm.creativetabs.HbmTab;
 import dev.golem.core.registry.DeferredRegister;
@@ -27,7 +28,7 @@ public final class ModBlocks {
     // factory resolves base.get().defaultBlockState() at BLOCK-registry flush time, so those bases
     // must flush FIRST. Registers flush in creation order, so force ModHazardBlocks's DeferredRegister
     // to be created (join the flush list) before this class's BLOCKS below.
-    static { ModHazardBlocks.init(); }
+    static { ModHazardBlocks.init(); ModOutgasBlocks.init(); }
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
 
@@ -237,6 +238,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> brick_concrete_broken_stairs = stairs("brick_concrete_broken_stairs", HbmTab.BLOCKS, brick_concrete_broken, p -> p.strength(15.0F, 30.0F));
     public static final RegistryObject<Block> reinforced_brick_stairs = stairs("reinforced_brick_stairs", HbmTab.BLOCKS, ModHazardBlocks.reinforced_brick, p -> p.strength(15.0F, 240.0F));
     public static final RegistryObject<Block> brick_compound_stairs = stairs("brick_compound_stairs", HbmTab.BLOCKS, ModHazardBlocks.brick_compound, p -> p.strength(15.0F, 320.0F));
+    public static final RegistryObject<Block> brick_asbestos_stairs = stairs("brick_asbestos_stairs", HbmTab.BLOCKS, ModOutgasBlocks.brick_asbestos, p -> p);
     public static final RegistryObject<Block> brick_light_stairs = stairs("brick_light_stairs", HbmTab.BLOCKS, brick_light, p -> p.strength(15.0F, 20.0F));
     public static final RegistryObject<Block> reinforced_sand_stairs = stairs("reinforced_sand_stairs", HbmTab.BLOCKS, reinforced_sand, p -> p.strength(15.0F, 32.0F));
     public static final RegistryObject<Block> brick_obsidian_stairs = stairs("brick_obsidian_stairs", HbmTab.BLOCKS, brick_obsidian, p -> p.strength(15.0F, 96.0F));
@@ -248,6 +250,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> ducrete_stairs = stairs("ducrete_stairs", HbmTab.BLOCKS, ModHazardBlocks.ducrete, p -> p.strength(20.0F, 360.0F));
     public static final RegistryObject<Block> tile_lab_stairs = stairs("tile_lab_stairs", HbmTab.BLOCKS, tile_lab, p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS));
     public static final RegistryObject<Block> tile_lab_cracked_stairs = stairs("tile_lab_cracked_stairs", HbmTab.BLOCKS, tile_lab_cracked, p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS));
+    public static final RegistryObject<Block> tile_lab_broken_stairs = stairs("tile_lab_broken_stairs", HbmTab.BLOCKS, ModOutgasBlocks.tile_lab_broken, p -> p.strength(1.0F, 15.0F).sound(SoundType.GLASS));
     public static final RegistryObject<Block> brick_fire_stairs = stairs("brick_fire_stairs", HbmTab.BLOCKS, brick_fire, p -> p.strength(15.0F, 35.0F));
     public static final RegistryObject<Block> pink_stairs = stairs("pink_stairs", null, pink_planks, p -> p.sound(SoundType.WOOD));
 

@@ -4,7 +4,7 @@
   "key": {
     "I": "hbm:plate_polymer",
     "N": "#c:nuggets/tantalium",
-    "W": "hbm:wire_fine_aluminium"
+    "W": "#c:wires/aluminium"
   },
   "pattern": [
     "I",

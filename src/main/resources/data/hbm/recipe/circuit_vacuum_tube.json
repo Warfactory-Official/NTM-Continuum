@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "G": "minecraft:glass_pane",
-    "W": "hbm:wire_fine_tungsten",
+    "W": "#c:wires/tungsten",
     "I": "hbm:plate_polymer"
   },
   "pattern": [

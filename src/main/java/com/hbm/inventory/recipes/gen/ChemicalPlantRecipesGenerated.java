@@ -17,10 +17,13 @@ import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ItemEnums.EnumExpensiveType;
+import com.hbm.items.ItemEnums.EnumPartType;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModFuelItems;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModMedicineItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
@@ -45,6 +48,9 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.AIR, 8_000), new FluidStack(Fluids.OXYGEN, 250))
                 .outputFluids(new FluidStack(Fluids.XENON, 50))
                 .setPools("alt..xenonoxy"));
+        reg.registerGenerated(new GenericRecipe("chem.helium3").setup(200, 2_000)
+                .inputItems(new ComparableStack(ModFallingBlocks.moon_turf.get().asItem(), 8))
+                .outputFluids(new FluidStack(Fluids.HELIUM3, 1_000)));
         reg.registerGenerated(new GenericRecipe("chem.perfluoromethyl").setup(20, 100)
                 .inputItems(F.dust())
                 .inputFluids(new FluidStack(Fluids.PETROLEUM, 1_000), new FluidStack(Fluids.UNSATURATEDS, 500))
@@ -53,6 +59,10 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputItems(new ComparableStack(ModFuelItems.biomass.get(), 16))
                 .inputFluids(new FluidStack(Fluids.AIR, 4_000))
                 .outputFluids(new FluidStack(Fluids.BIOGAS, 2_000)));
+        reg.registerGenerated(new GenericRecipe("chem.tarsand").setup(200, 100)
+                .inputItems(new ComparableStack(ModFallingBlocks.ore_oil_sand.get().asItem(), 16), tag("c", "tars", 1))
+                .outputItems(new ItemStack(Items.SAND, 16))
+                .outputFluids(new FluidStack(Fluids.BITUMEN, 1_000)));
         reg.registerGenerated(new GenericRecipe("chem.stone").setup(60, 500)
                 .inputFluids(new FluidStack(Fluids.WATER, 1_000), new FluidStack(Fluids.LAVA, 25), new FluidStack(Fluids.AIR, 4_000))
                 .outputItems(new ItemStack(Items.STONE))
@@ -126,6 +136,10 @@ public final class ChemicalPlantRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("chem.kevlar").setup(60, 300)
                 .inputFluids(new FluidStack(Fluids.AROMATICS, 200), new FluidStack(Fluids.NITRIC_ACID, 100), new FluidStack(Fluids.CHLORINE, 100))
                 .outputItems(new ItemStack(ModItems.plate_kevlar.get(), 4)));
+        reg.registerGenerated(new GenericRecipe("chem.meth").setup(60, 300)
+                .inputItems(new ComparableStack(Items.WHEAT), new ComparableStack(Items.BROWN_DYE, 2))
+                .inputFluids(new FluidStack(Fluids.LUBRICANT, 400), new FluidStack(Fluids.PEROXIDE, 500))
+                .outputItems(new ItemStack(ModMedicineItems.chocolate.get(), 4)));
         reg.registerGenerated(new GenericRecipe("chem.epearl").setup(100, 300)
                 .inputItems(tag("c", "dusts/diamond", 1))
                 .inputFluids(new FluidStack(Fluids.XPJUICE, 500))
@@ -178,10 +192,17 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputItems(new ComparableStack(ModItems.canister_empty.get()))
                 .inputFluids(new FluidStack(Fluids.GASOLINE, 100), new FluidStack(Fluids.AROMATICS, 50))
                 .outputItems(new ItemStack(ModItems.canister_napalm.get())));
+        reg.registerGenerated(new GenericRecipe("chem.polarized").setup(100, 500)
+                .inputItems(new ComparableStack(Items.GLASS_PANE))
+                .inputFluids(new FluidStack(Fluids.PETROLEUM, 1_000))
+                .outputItems(new ItemStack(ModIngredientItems.part(EnumPartType.GLASS_POLARIZED), 16)));
         reg.registerGenerated(new GenericRecipe("chem.yellowcake").setup(250, 500)
                 .inputItems(U.billet().count(2), S.dust().count(2))
                 .inputFluids(new FluidStack(Fluids.PEROXIDE, 500))
                 .outputItems(new ItemStack(ModItems.powder_yellowcake.get())));
+    }
+
+    private static void register1(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("chem.uf6").setup(100, 500)
                 .inputItems(new ComparableStack(ModItems.powder_yellowcake.get()), F.dust().count(4))
                 .inputFluids(new FluidStack(Fluids.WATER, 1_000))
@@ -200,9 +221,6 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.KEROSENE, 6_000))
                 .outputItems(new ItemStack(ModItems.powder_balefire.get()))
                 .outputFluids(new FluidStack(Fluids.BALEFIRE, 8_000)));
-    }
-
-    private static void register1(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("chem.dhc").setup(400, 500)
                 .inputFluids(new FluidStack(Fluids.DEUTERIUM, 500), new FluidStack(Fluids.REFORMGAS, 250), new FluidStack(Fluids.SYNGAS, 250))
                 .outputFluids(new FluidStack(Fluids.DHC, 500)));

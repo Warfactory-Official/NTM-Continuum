@@ -1,0 +1,23 @@
+{
+  "parent": "hbm:item/machine_obj_legacy",
+  "overrides": [
+    {
+      "predicate": {
+        "hbm:item_variant": 1
+      },
+      "model": "hbm:item/steel_scaffold_red"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 2
+      },
+      "model": "hbm:item/steel_scaffold_white"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 3
+      },
+      "model": "hbm:item/steel_scaffold_yellow"
+    }
+  ]
+}

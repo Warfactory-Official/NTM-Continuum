@@ -1,4 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
-  "textures": { "all": "hbm:blocks/ore_oil_sand" }
+  "textures": {
+    "all": "hbm:blocks/ore_oil_sand"
+  }
 }

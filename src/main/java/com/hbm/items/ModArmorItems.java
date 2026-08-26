@@ -15,8 +15,9 @@ import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
 
 /**
- * The modelled power-armour suits. Hand-registered and kept out of the generated {@link ModItems} so
- * codegen never clobbers them — the same arrangement {@link ModGearItems} and {@code ModGunItems} use.
+ * Hand-registered armour. Kept out of the generated {@link ModItems} so codegen never clobbers these
+ * stateful {@link ArmorFSB} items — the same arrangement {@link ModGearItems} and {@code ModGunItems}
+ * use.
  *
  * <p>Every suit follows upstream's shape: the <b>helmet</b> carries the whole set's configuration and
  * the other three pieces {@code cloneStats} it, so the numbers exist in exactly one place. Statics are
@@ -28,6 +29,26 @@ public final class ModArmorItems {
     private ModArmorItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+
+    // ---- regular steel and titanium armour ----
+    // 1.12.2 ModItems.java:484-491. ArmorFSB has no custom set flags for either set.
+    public static final RegistryObject<ArmorFSB> steel_helmet =
+            plain("steel_helmet", HbmArmorMaterials.STEEL, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> steel_plate =
+            plain("steel_plate", HbmArmorMaterials.STEEL, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> steel_legs =
+            plain("steel_legs", HbmArmorMaterials.STEEL, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> steel_boots =
+            plain("steel_boots", HbmArmorMaterials.STEEL, ArmorSlot.BOOTS);
+
+    public static final RegistryObject<ArmorFSB> titanium_helmet =
+            plain("titanium_helmet", HbmArmorMaterials.TITANIUM, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> titanium_plate =
+            plain("titanium_plate", HbmArmorMaterials.TITANIUM, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> titanium_legs =
+            plain("titanium_legs", HbmArmorMaterials.TITANIUM, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> titanium_boots =
+            plain("titanium_boots", HbmArmorMaterials.TITANIUM, ArmorSlot.BOOTS);
 
     // ---- T-51b power armour ----
     // 1.12.2 ModItems.java:532-544. maxPower 1,000,000 / chargeRate 10,000 / consumption 1,000 / drain 5.
@@ -55,6 +76,15 @@ public final class ModArmorItems {
         return ro;
     }
 
+    private static RegistryObject<ArmorFSB> plain(String name, GolemArmorMaterial material, ArmorSlot slot) {
+        RegistryObject<ArmorFSB> ro = ITEMS.registerItem(name,
+                p -> new ArmorFSB(material, slot, p), p -> p.stacksTo(1));
+        // ArmorFSB itself did not assign a tab in 1.12.2. The port has no combat tab, so regular armour
+        // uses CONTROL rather than disappearing from the creative inventory.
+        ModTabs.addTo(HbmTab.CONTROL, ro);
+        return ro;
+    }
+
     /**
      * Applies each suit's configuration, after registration so the items exist.
      *
@@ -63,6 +93,9 @@ public final class ModArmorItems {
      * {@code Hazards.init} calls this alongside {@link ModGearItems#registerHazards()}.
      */
     public static void configure() {
+        configurePlainSet(steel_helmet.get(), steel_plate.get(), steel_legs.get(), steel_boots.get(), 0.045D);
+        configurePlainSet(titanium_helmet.get(), titanium_plate.get(), titanium_legs.get(), titanium_boots.get(), 0.045D);
+
         ArmorFSB helmet = t51_helmet.get();
 
         helmet.enableVATS(true)
@@ -84,6 +117,15 @@ public final class ModArmorItems {
         t51_plate.get().cloneStats(helmet);
         t51_legs.get().cloneStats(helmet);
         t51_boots.get().cloneStats(helmet);
+    }
+
+    private static void configurePlainSet(ArmorFSB helmet, ArmorFSB plate, ArmorFSB legs, ArmorFSB boots,
+            double radiationResistance) {
+        // Old HazmatRegistry registered 0.045 * the four slot weights for both metal sets.
+        helmet.setRadResist(radiationResistance);
+        plate.cloneStats(helmet);
+        legs.cloneStats(helmet);
+        boots.cloneStats(helmet);
     }
 
     /**

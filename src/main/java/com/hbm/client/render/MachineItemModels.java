@@ -6,12 +6,14 @@ package com.hbm.client.render;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hbm.Constants;
+import com.hbm.items.ModDataComponents;
 import com.hbm.client.model.WavefrontObj;
 import dev.golem.core.render.CompatRenderTypes;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
 import java.io.BufferedReader;
@@ -22,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/^*
+ /^ 
  * The pre-26.1 half of the OBJ item renderer: reads the same `assets/<ns>/items/<name>.json` item
  * definitions 26.1 uses, and builds a {@link MachineItemModel} for every one that names the
  * `hbm:machine_obj` special renderer.
@@ -43,17 +45,26 @@ public final class MachineItemModels {
     private static final Identifier DEFAULT_TEXTURE =
             dev.golem.core.Ids.of("hbm", "textures/models/machines/lava_gray.png");
 
-    /^* Item id -> its OBJ model. Rebuilt on every resource reload; empty until the first one. ^/
-    private static Map<Identifier, MachineItemModel> models = Map.of();
+    /^ Item id -> its OBJ model. Rebuilt on every resource reload; empty until the first one. ^/
+private static Map<Identifier, MachineItemModel> models = Map.of();
+private static Map<Identifier, Map<Integer, MachineItemModel>> variantModels = Map.of();
     private static Map<Identifier, RBMKColumnItemModel> rbmkColumns = Map.of();
     private static Map<Identifier, RBMKBlockColumnItemModel> blockColumns = Map.of();
 
-    /^* The model for an item, or null if that item is not an OBJ machine. ^/
-    public static MachineItemModel get(Identifier item) {
-        return models.get(item);
-    }
+    /^ The model for an item, or null if that item is not an OBJ machine. ^/
+public static MachineItemModel get(Identifier item) {
+    return models.get(item);
+}
 
-    /^* Whether any OBJ item models are loaded (used to skip work when a pack removes them all). ^/
+ /^ The selected OBJ model for an item-definition variant, falling back to its default branch. ^/
+public static MachineItemModel get(Identifier item, ItemStack stack) {
+    Map<Integer, MachineItemModel> choices = variantModels.get(item);
+    if (choices == null) return models.get(item);
+    int variant = ModDataComponents.ITEM_VARIANT.getOr(stack, 0);
+    return choices.getOrDefault(variant, choices.get(-1));
+}
+
+    /^ Whether any OBJ item models are loaded (used to skip work when a pack removes them all). ^/
     public static boolean isEmpty() {
         return models.isEmpty() && rbmkColumns.isEmpty() && blockColumns.isEmpty();
     }
@@ -64,12 +75,13 @@ public final class MachineItemModels {
     /^ The plain/piped/lidded column preview, or null for every other item. ^/
     public static RBMKBlockColumnItemModel blockColumn(Identifier item) { return blockColumns.get(item); }
 
-    /^* Reparses every item definition. Call from a client resource-reload listener. ^/
+    /^ Reparses every item definition. Call from a client resource-reload listener. ^/
     public static void reload(ResourceManager resources) {
         // One reload listener drives both parsers: guns read the same item definitions for the weapon
         // renderer they name.
         com.hbm.client.render.weapon.GunLegacyModels.reload(resources);
         Map<Identifier, MachineItemModel> built = new HashMap<>();
+        Map<Identifier, Map<Integer, MachineItemModel>> builtVariants = new HashMap<>();
         Map<Identifier, RBMKColumnItemModel> columns = new HashMap<>();
         Map<Identifier, RBMKBlockColumnItemModel> blocks = new HashMap<>();
         for (Map.Entry<Identifier, Resource> entry :
@@ -83,6 +95,14 @@ public final class MachineItemModels {
                 String name = path.substring("items/".length(), path.length() - ".json".length());
                 Identifier item = dev.golem.core.Ids.of(file.getNamespace(), name);
                 if (machine != null) built.put(item, parse(machine));
+                Map<Integer, JsonObject> variantJson = machineObjVariantsOf(root);
+                if (!variantJson.isEmpty()) {
+                    Map<Integer, MachineItemModel> parsed = new HashMap<>();
+                    variantJson.forEach((variant, value) -> parsed.put(variant, parse(value)));
+                    builtVariants.put(item, Map.copyOf(parsed));
+                    MachineItemModel fallback = parsed.get(-1);
+                    if (fallback != null) built.put(item, fallback);
+                }
                 JsonObject column = rbmkColumnOf(root);
                 if (column != null) columns.put(item, parseColumn(column));
                 JsonObject block = blockColumnOf(root);
@@ -92,6 +112,7 @@ public final class MachineItemModels {
             }
         }
         models = Map.copyOf(built);
+        variantModels = Map.copyOf(builtVariants);
         rbmkColumns = Map.copyOf(columns);
         blockColumns = Map.copyOf(blocks);
         // Logged at info, not debug: a silently-empty map renders every machine as an invisible item and
@@ -99,7 +120,7 @@ public final class MachineItemModels {
         Constants.LOG.info("Loaded {} OBJ item model(s) and {} RBMK fuel-column item model(s)", models.size(), rbmkColumns.size());
     }
 
-    /^*
+     /^ 
      * The `hbm:machine_obj` object inside an item definition, or null if this definition is not one.
      * Shape: `{"model": {"type": "minecraft:special", "base": ..., "model": {"type": "hbm:machine_obj", ...}}}`.
      ^/
@@ -116,6 +137,52 @@ public final class MachineItemModels {
         return "hbm:machine_obj".equals(string(machine, "type", "")) ? machine : null;
     }
 
+     /^ Reads both direct special models and the component-select form used by metadata-backed items. ^/
+    private static Map<Integer, JsonObject> machineObjVariantsOf(JsonElement root) {
+        Map<Integer, JsonObject> out = new LinkedHashMap<>();
+        if (!root.isJsonObject()) return out;
+        JsonElement model = root.getAsJsonObject().get("model");
+        if (model == null || !model.isJsonObject()) return out;
+        JsonObject modelObject = model.getAsJsonObject();
+        if ("minecraft:special".equals(string(modelObject, "type", ""))) {
+            JsonObject machine = machineObjFromSpecial(modelObject);
+            if (machine != null) out.put(-1, machine);
+            return out;
+        }
+        if (!"minecraft:select".equals(string(modelObject, "type", ""))
+                || !"hbm:item_variant".equals(string(modelObject, "property", ""))) return out;
+        JsonElement fallback = modelObject.get("fallback");
+        if (fallback != null && fallback.isJsonObject()) {
+            JsonObject machine = machineObjFromSpecial(fallback.getAsJsonObject());
+            if (machine != null) out.put(-1, machine);
+        }
+        JsonElement cases = modelObject.get("cases");
+        if (cases != null && cases.isJsonArray()) {
+            for (JsonElement entry : cases.getAsJsonArray()) {
+                if (!entry.isJsonObject()) continue;
+                JsonObject caseObject = entry.getAsJsonObject();
+                JsonElement when = caseObject.get("when");
+                JsonElement selected = caseObject.get("model");
+                if (when == null || selected == null || !selected.isJsonObject()) continue;
+                try {
+                    JsonObject machine = machineObjFromSpecial(selected.getAsJsonObject());
+                    if (machine != null) out.put(when.getAsInt(), machine);
+                } catch (RuntimeException ignored) {
+                    // A malformed optional branch should not make every legacy OBJ item disappear.
+                }
+            }
+        }
+        return out;
+    }
+
+    private static JsonObject machineObjFromSpecial(JsonObject special) {
+        if (!"minecraft:special".equals(string(special, "type", ""))) return null;
+        JsonElement inner = special.get("model");
+        if (inner == null || !inner.isJsonObject()) return null;
+        JsonObject machine = inner.getAsJsonObject();
+        return "hbm:machine_obj".equals(string(machine, "type", "")) ? machine : null;
+    }
+
     private static JsonObject rbmkColumnOf(JsonElement root) {
         if (!root.isJsonObject()) return null;
         JsonElement model = root.getAsJsonObject().get("model");
@@ -128,7 +195,7 @@ public final class MachineItemModels {
         return "hbm:rbmk_fuel_column".equals(string(column, "type", "")) ? column : null;
     }
 
-    /^*
+     /^ 
      * The `hbm:rbmk_block_column` object inside an item definition, or null if this definition is not
      * one. Same shape as {@link #rbmkColumnOf} — only the type id differs.
      ^/

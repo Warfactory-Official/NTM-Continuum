@@ -7,6 +7,12 @@
     "hbm:asbestos",
     "hbm:blacklung",
     "hbm:bullet_piercing",
-    "hbm:hard_landing"
+    "hbm:hard_landing",
+    "hbm:taint",
+    "hbm:bang",
+    "hbm:lead",
+    "hbm:euthanized_self",
+    "hbm:euthanized_self2",
+    "hbm:overdose"
   ]
 }

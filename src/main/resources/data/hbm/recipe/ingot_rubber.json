@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:block_rubber"
+  ],
+  "result": {
+    "id": "hbm:ingot_rubber",
+    "count": 9
+  }
+}

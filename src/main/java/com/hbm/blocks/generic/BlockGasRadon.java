@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Invisible, slowly settling radon gas emitted by uranium ore and ZIRNOX accidents. */
-public class BlockGasRadon extends dev.golem.core.world.CompatBlock {
+public class BlockGasRadon extends BlockGasBase {
     private final float dose;
     private final boolean dense;
 
@@ -43,15 +43,8 @@ public class BlockGasRadon extends dev.golem.core.world.CompatBlock {
             }
             return;
         }
-        if (random.nextBoolean()) {
-            Direction primary = random.nextInt(5) == 0 ? Direction.UP : Direction.DOWN;
-            BlockPos target = pos.relative(primary);
-            if (!level.getBlockState(target).isAir()) target = pos.relative(Direction.Plane.HORIZONTAL.getRandomDirection(random));
-            if (level.getBlockState(target).isAir()) {
-                level.setBlock(target, state, 2);
-                level.removeBlock(pos, false);
-            }
-        }
+        Direction primary = random.nextInt(5) == 0 ? Direction.UP : Direction.DOWN;
+        drift(level, state, pos, random, primary, randomHorizontal(random));
     }
 
     @Override

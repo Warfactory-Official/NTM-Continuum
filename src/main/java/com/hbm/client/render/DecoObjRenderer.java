@@ -6,6 +6,8 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoBlocks;
+import com.hbm.blocks.ModSteelBlocks;
+import com.hbm.blocks.generic.BlockScaffold;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.deco.TileEntityDeco;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -37,11 +39,12 @@ import java.util.Map;
  */
 public class DecoObjRenderer implements CompatBER<TileEntityDeco, DecoRenderState> {
 
-    private enum Style { BOXCAR, BOAT, SAT, STEEL }
+    private enum Style { BOXCAR, BOAT, SAT, STEEL, SCAFFOLD }
 
     private record Part(WavefrontObj model, RenderType renderType) {}
 
-    private record Config(List<Part> parts, Style style, Map<Direction, Float> yaw) {}
+    private record Config(List<Part> parts, Style style, Map<Direction, Float> yaw,
+                          Map<BlockScaffold.Variant, Part> variants) {}
 
     private final Map<Block, Config> configs = new HashMap<>();
 
@@ -58,6 +61,14 @@ public class DecoObjRenderer implements CompatBER<TileEntityDeco, DecoRenderStat
         put(ModDecoBlocks.steel_corner.get(), Style.STEEL, legacyYaw, part("models/deco/steel_corner.obj", "deco/steelcorner"));
         // steel_roof has no per-facing rotation in the old bake (only rotateZ 180); noYaw keeps it fixed.
         put(ModDecoBlocks.steel_roof.get(), Style.STEEL, noYaw, part("models/deco/steel_roof.obj", "deco/steelroof"));
+
+        WavefrontObj scaffold = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/blocks/scaffold.obj"));
+        Map<BlockScaffold.Variant, Part> scaffoldParts = new java.util.EnumMap<>(BlockScaffold.Variant.class);
+        for (BlockScaffold.Variant variant : BlockScaffold.Variant.values()) {
+            scaffoldParts.put(variant, new Part(scaffold, CompatRenderTypes.entityCutout(
+                    dev.golem.core.Ids.of(Constants.MOD_ID, "textures/blocks/" + variant.texture + ".png"))));
+        }
+        putScaffold(ModSteelBlocks.steel_scaffold.get(), scaffoldParts);
 
         put(ModDecoBlocks.boxcar.get(), Style.BOXCAR, boxcarYaw,
                 part("models/boxcar.obj", "misc/boxcar"));
@@ -89,7 +100,11 @@ public class DecoObjRenderer implements CompatBER<TileEntityDeco, DecoRenderStat
     }
 
     private void put(Block block, Style style, Map<Direction, Float> yaw, Part... parts) {
-        configs.put(block, new Config(List.of(parts), style, yaw));
+        configs.put(block, new Config(List.of(parts), style, yaw, Map.of()));
+    }
+
+    private void putScaffold(Block block, Map<BlockScaffold.Variant, Part> variants) {
+        configs.put(block, new Config(List.of(), Style.SCAFFOLD, Map.of(), variants));
     }
 
     @Override
@@ -112,9 +127,15 @@ public class DecoObjRenderer implements CompatBER<TileEntityDeco, DecoRenderStat
         BlockState bs = blockEntity.getBlockState();
         state.block = bs.getBlock();
         state.yaw = 0F;
+        state.scaffoldOrient = null;
+        state.scaffoldVariant = null;
         Config cfg = configs.get(state.block);
         if (cfg != null && bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
             state.yaw = cfg.yaw.getOrDefault(bs.getValue(BlockStateProperties.HORIZONTAL_FACING), 0F);
+        }
+        if (state.block == ModSteelBlocks.steel_scaffold.get()) {
+            state.scaffoldOrient = bs.getValue(BlockScaffold.ORIENT);
+            state.scaffoldVariant = bs.getValue(BlockScaffold.VARIANT);
         }
     }
 
@@ -143,8 +164,37 @@ public class DecoObjRenderer implements CompatBER<TileEntityDeco, DecoRenderStat
                 poseStack.mulPose(Axis.YP.rotationDegrees(90F));
                 poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
             }
+            case SCAFFOLD -> {
+                poseStack.translate(0.5F, 0.5F, 0.5F);
+                switch (state.scaffoldOrient == null
+                        ? BlockScaffold.Orientation.HORIZONTAL_NS : state.scaffoldOrient) {
+                    case HORIZONTAL_NS -> {
+                        poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
+                        poseStack.translate(0F, -0.5F, 0F);
+                    }
+                    case HORIZONTAL_EW -> {
+                        poseStack.mulPose(Axis.YP.rotationDegrees(-180F));
+                        poseStack.translate(0F, -0.5F, 0F);
+                    }
+                    case VERTICAL_NS -> {
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(-90F));
+                        poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
+                        poseStack.translate(0F, 0F, 0.5F);
+                    }
+                    case VERTICAL_EW -> {
+                        poseStack.mulPose(Axis.ZP.rotationDegrees(-90F));
+                        poseStack.mulPose(Axis.YP.rotationDegrees(-180F));
+                        poseStack.translate(-0.5F, 0F, 0F);
+                    }
+                }
+            }
         }
-        for (Part p : cfg.parts) {
+        List<Part> parts = cfg.style == Style.SCAFFOLD
+                ? List.of(cfg.variants.getOrDefault(
+                        state.scaffoldVariant == null ? BlockScaffold.Variant.STEEL : state.scaffoldVariant,
+                        cfg.variants.get(BlockScaffold.Variant.STEEL)))
+                : cfg.parts;
+        for (Part p : parts) {
             collector.submitCustomGeometry(poseStack, p.renderType,
                     (pose, buffer) -> p.model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
         }

@@ -2,8 +2,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "Z": "hbm:wire_fine_zirconium",
-    "L": "hbm:wire_fine_lead"
+    "Z": "#c:wires/zirconium",
+    "L": "#c:wires/lead"
   },
   "pattern": [
     "ZLZ",

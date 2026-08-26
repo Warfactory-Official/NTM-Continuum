@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "W": "hbm:wire_fine_copper",
+    "W": "#c:wires/copper",
     "I": "#c:ingots/any_plastic",
     "C": "hbm:circuit_basic",
     "P": "hbm:plate_polymer"

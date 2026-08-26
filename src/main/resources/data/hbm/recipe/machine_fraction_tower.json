@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "H": "#c:plates_welded/steel",
+    "G": "hbm:steel_grate"
+  },
+  "pattern": [
+    "H",
+    "G",
+    "H"
+  ],
+  "result": {
+    "id": "hbm:machine_fraction_tower"
+  }
+}

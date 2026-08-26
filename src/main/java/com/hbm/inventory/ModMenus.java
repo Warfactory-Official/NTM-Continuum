@@ -7,6 +7,7 @@ import com.hbm.inventory.container.ContainerMachineAssemblyMachine;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.inventory.container.ContainerCrystallizer;
 import com.hbm.inventory.container.ContainerMachineChemicalPlant;
+import com.hbm.inventory.container.ContainerBlastFurnace;
 import com.hbm.inventory.container.ContainerMachinePUREX;
 import com.hbm.inventory.container.ContainerMachineElectricFurnace;
 import com.hbm.inventory.container.ContainerMachineEPress;
@@ -44,6 +45,9 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerMachineChemicalPlant>> MACHINE_CHEMICAL_PLANT =
             MENUS.register("machine_chemical_plant", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineChemicalPlant::new));
 
+    public static final RegistryObject<MenuType<ContainerBlastFurnace>> MACHINE_BLAST_FURNACE =
+            MENUS.register("machine_blast_furnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBlastFurnace::new));
+
     public static final RegistryObject<MenuType<ContainerMachinePUREX>> MACHINE_PUREX =
             MENUS.register("machine_purex", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePUREX::new));
 
@@ -61,6 +65,9 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineTurbine>> MACHINE_TURBINE =
             MENUS.register("machine_turbine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineTurbine::new));
+
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineLargeTurbine>> MACHINE_LARGE_TURBINE =
+            MENUS.register("machine_large_turbine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineLargeTurbine::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineDiesel>> MACHINE_DIESEL =
             MENUS.register("machine_diesel", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineDiesel::new));
@@ -100,6 +107,9 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineCoker>> MACHINE_COKER =
             MENUS.register("machine_coker", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineCoker::new));
+
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerFurnaceCombination>> FURNACE_COMBINATION =
+            MENUS.register("machine_furnace_combination", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFurnaceCombination::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPyroOven>> MACHINE_PYROOVEN =
             MENUS.register("machine_pyrooven", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPyroOven::new));

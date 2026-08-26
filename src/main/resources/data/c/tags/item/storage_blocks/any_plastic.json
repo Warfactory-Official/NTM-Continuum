@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#c:storage_blocks/bakelite",
+    "#c:storage_blocks/polymer"
+  ]
+}

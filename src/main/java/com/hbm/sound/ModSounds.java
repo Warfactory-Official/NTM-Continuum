@@ -39,6 +39,10 @@ public final class ModSounds {
     /** The detonator's bind confirmation. Old id {@code hbm:item.techBoop}. */
     public static final RegistryObject<SoundEvent> TECH_BOOP = register("item.tech_boop");
     public static final RegistryObject<SoundEvent> BOLTGUN = register("item.boltgun");
+    public static final RegistryObject<SoundEvent> SYRINGE = register("item.syringe");
+    public static final RegistryObject<SoundEvent> RADAWAY = register("item.radaway");
+    public static final RegistryObject<SoundEvent> JETPACK_TANK = register("item.jetpack_tank");
+    public static final RegistryObject<SoundEvent> VICE = register("item.vice");
 
     /** The Scream upgrade's screaming-scientist sound (old {@code block.screm}). */
     public static final RegistryObject<SoundEvent> SCREM = register("block.screm");
@@ -61,12 +65,16 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> RBMK_AZ5_COVER = register("rbmk_az5_cover");
     public static final RegistryObject<SoundEvent> RBMK_SHUTDOWN = register("rbmk_shutdown");
     public static final RegistryObject<SoundEvent> STEAM_ENGINE_OPERATE = register("steam_engine_operate");
+    public static final RegistryObject<SoundEvent> TURBOFAN_OPERATE = register("block.turbofan_operate");
+    public static final RegistryObject<SoundEvent> INDUSTRIAL_TURBINE = register("block.industrial_turbine");
+    public static final RegistryObject<SoundEvent> CHUNGUS_LEVER = register("block.chungus_lever");
 
     /** Weapons. Old ids {@code weapon.fire.pistol}, {@code weapon.reload.dryFireClick} and
      * {@code weapon.revolverReload}, lowercased to satisfy 26.1's id charset. */
     public static final RegistryObject<SoundEvent> FIRE_PISTOL = register("weapon.fire.pistol");
     public static final RegistryObject<SoundEvent> DRY_FIRE_CLICK = register("weapon.reload.dryfireclick");
     public static final RegistryObject<SoundEvent> RELOAD_REVOLVER = register("weapon.revolverreload");
+    public static final RegistryObject<SoundEvent> LASER_BANG = register("weapon.laser_bang");
 
     /**
      * Power-armour footsteps (old {@code metalStep}, {@code ironJump}, {@code ironLand}). Played by
@@ -74,6 +82,11 @@ public final class ModSounds {
      * than a variant set.
      */
     public static final RegistryObject<SoundEvent> METAL_STEP = register("step.metal");
+    /** The four-variant step sound used by the old steel grate's custom SoundType. */
+    public static final SoundEvent METAL_BLOCK_EVENT = SoundEvent.createVariableRangeEvent(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "step.metal_block"));
+    public static final RegistryObject<SoundEvent> METAL_BLOCK = SOUNDS.register("step.metal_block",
+            () -> METAL_BLOCK_EVENT);
     public static final RegistryObject<SoundEvent> IRON_JUMP = register("step.iron_jump");
     public static final RegistryObject<SoundEvent> IRON_LAND = register("step.iron_land");
 

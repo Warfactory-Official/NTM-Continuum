@@ -26,6 +26,10 @@ public abstract class GenericRecipes {
     public abstract void registerRecipes();
 
     protected void register(GenericRecipe recipe) {
+        if (recipeNameMap.containsKey(recipe.getInternalName())) {
+            throw new IllegalStateException("Recipe " + recipe.getInternalName()
+                    + " has been registered with a duplicate ID!");
+        }
         recipeOrderedList.add(recipe);
         recipeNameMap.put(recipe.getInternalName(), recipe);
     }

@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "W": "hbm:wire_fine_gold",
+    "W": "#c:wires/gold",
     "P": "#c:plates/steel",
-    "S": "hbm:shell_steel",
+    "S": "#c:shells/steel",
     "E": "hbm:ball_tatb"
   },
   "pattern": [

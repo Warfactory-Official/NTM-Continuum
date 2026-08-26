@@ -16,9 +16,11 @@ import com.hbm.hazard.type.HazardTypeToxic;
 import com.hbm.hazard.type.IHazardType;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.hazard.transformer.HazardTransformerZirnox;
+import com.hbm.hazard.modifier.HazardModifierFuelRadiation;
 import com.hbm.hazard.modifier.HazardModifierRBMKHot;
 import com.hbm.hazard.modifier.HazardModifierRBMKRadiation;
 import com.hbm.Constants;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModRBMKItems;
 import com.hbm.items.machine.ItemRBMKPellet;
 import com.hbm.items.machine.ItemRBMKRod;
@@ -112,6 +114,7 @@ public class HazardRegistry {
         regItem("trinitite", makeData(RADIATION, trn * ingot).addEntry(CONTAMINATING, 5));
 
         registerZirnoxFuel();
+        registerResearchPlateFuel();
         registerRBMKFuel();
 
         // ---- debris ----
@@ -155,6 +158,8 @@ public class HazardRegistry {
         regItem("powder_caesium", makeData().addEntry(HYDROACTIVE, 1F).addEntry(HOT, 3F));
 
         // ---- asbestos / coltan ----
+        regItem("brick_asbestos", makeData(ASBESTOS, 1F));
+        regItem("tile_lab_broken", makeData(ASBESTOS, 1F));
         regItem("powder_coltan_ore", makeData(ASBESTOS, 3F));
 
         // ---- crystals ----
@@ -320,6 +325,23 @@ public class HazardRegistry {
         regItem("rod_zirnox_tritium", makeData(RADIATION, 0.001F));
     }
 
+    private static void registerResearchPlateFuel() {
+        registerOtherFuel(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.U233),
+                u233 * ingot, wst * ingot * 13F, false);
+        registerOtherFuel(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.U235),
+                u235 * ingot, wst * ingot * 10F, false);
+        registerOtherFuel(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.MOX),
+                mox * ingot, wst * ingot * 16F, false);
+        registerOtherFuel(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.PU239),
+                pu239 * ingot, wst * ingot * 13.5F, false);
+        registerOtherFuel(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.SA326),
+                sa326 * ingot, wst * ingot * 10F, true);
+        registerOtherFuel(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.RA226BE),
+                rabe * billet, pobe * nugget * 3F, false);
+        registerOtherFuel(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.PU238BE),
+                pube * billet, pube * nugget, false);
+    }
+
     /** Current ntm-next RBMK rod and pellet hazards, including depletion, heat, and DRX digamma. */
     private static void registerRBMKFuel() {
         RBMKBuilder b = new RBMKBuilder();
@@ -451,5 +473,12 @@ public class HazardRegistry {
         if (item != null && item != net.minecraft.world.item.Items.AIR) {
             HazardSystem.register(item, data);
         }
+    }
+
+    private static void registerOtherFuel(Item fuel, float base, float target, boolean blinding) {
+        HazardData data = new HazardData();
+        data.addEntry(new HazardEntry(RADIATION, base).addMod(new HazardModifierFuelRadiation(target)));
+        if (blinding) data.addEntry(BLINDING, 20F);
+        HazardSystem.register(fuel, data);
     }
 }

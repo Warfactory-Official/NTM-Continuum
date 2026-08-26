@@ -30,6 +30,20 @@ public final class HbmGameTestFunctions {
             TESTS.function("turbine_slots", 20, () -> HbmGameTestFunctions::turbineSlots);
     public static final GameTests.Function TURBINE_MENU =
             TESTS.function("turbine_menu", 20, () -> HbmGameTestFunctions::turbineMenu);
+    public static final GameTests.Function INDUSTRIAL_TURBINE_LAYOUT =
+            TESTS.function("industrial_turbine_layout", 100, 8, () -> IndustrialTurbineGameTests::layout);
+    public static final GameTests.Function INDUSTRIAL_TURBINE_PORTS =
+            TESTS.function("industrial_turbine_ports", 100, 8, () -> IndustrialTurbineGameTests::ports);
+    public static final GameTests.Function INDUSTRIAL_TURBINE_CONVERSION =
+            TESTS.function("industrial_turbine_conversion", 100, 8, () -> IndustrialTurbineGameTests::conversion);
+    public static final GameTests.Function LARGE_TURBINE_LAYOUT =
+            TESTS.function("large_turbine_layout", 100, 8, () -> LargeTurbineGameTests::layout);
+    public static final GameTests.Function LARGE_TURBINE_PORTS =
+            TESTS.function("large_turbine_ports", 100, 8, () -> LargeTurbineGameTests::ports);
+    public static final GameTests.Function LARGE_TURBINE_CONVERSION =
+            TESTS.function("large_turbine_conversion", 100, 8, () -> LargeTurbineGameTests::conversion);
+    public static final GameTests.Function LARGE_TURBINE_MENU =
+            TESTS.function("large_turbine_menu", 40, () -> LargeTurbineGameTests::menu);
     public static final GameTests.Function CONDENSER_CONVERSION =
             TESTS.function("condenser_conversion", 20, () -> HbmGameTestFunctions::condenserConversion);
     public static final GameTests.Function PUREX_RECIPE_CYCLE =
@@ -48,6 +62,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("purex_menu", 20, () -> HbmGameTestFunctions::purexMenu);
     public static final GameTests.Function PUREX_LAYOUT =
             TESTS.function("purex_layout", 100, 8, () -> HbmGameTestFunctions::purexLayout);
+    public static final GameTests.Function BLAST_FURNACE_RECIPES =
+            TESTS.function("blast_furnace_recipes", 20, () -> BlastFurnaceGameTests::recipes);
+    public static final GameTests.Function BLAST_FURNACE_LAYOUT =
+            TESTS.function("blast_furnace_layout", 100, 8, () -> BlastFurnaceGameTests::layout);
+    public static final GameTests.Function BLAST_FURNACE_SLOTS =
+            TESTS.function("blast_furnace_slots", 20, () -> BlastFurnaceGameTests::slotsAndMenu);
+    public static final GameTests.Function BLAST_FURNACE_PROCESSING =
+            TESTS.function("blast_furnace_processing", 300, 8, () -> BlastFurnaceGameTests::processing);
+    public static final GameTests.Function GENERIC_FLUID_ATOMICITY =
+            TESTS.function("generic_fluid_atomicity", 20, () -> BlastFurnaceGameTests::genericFluidAtomicity);
+    public static final GameTests.Function GENERIC_CHANCE_SEMANTICS =
+            TESTS.function("generic_chance_semantics", 20, () -> BlastFurnaceGameTests::genericChanceSemantics);
     public static final GameTests.Function ZIRNOX_GOLDEN_TICK =
             TESTS.function("zirnox_golden_tick", 20, 8, () -> HbmGameTestFunctions::zirnoxGoldenTick);
     public static final GameTests.Function ZIRNOX_LAYOUT =
@@ -120,6 +146,20 @@ public final class HbmGameTestFunctions {
             TESTS.function("silex_layout", 100, () -> SilexGameTests::silexLayout);
     public static final GameTests.Function SILEX_MODE_RESET =
             TESTS.function("silex_mode_reset", 100, () -> SilexGameTests::silexModeReset);
+
+    // --- ingredient item wave (implementations live in IngredientGameTests) ---
+    public static final GameTests.Function INGREDIENT_REGISTRY =
+            TESTS.function("ingredient_registry", 20, () -> IngredientGameTests::registry);
+    public static final GameTests.Function INGREDIENT_PLATE_FUEL =
+            TESTS.function("ingredient_plate_fuel", 20, () -> IngredientGameTests::plateFuelBehavior);
+    public static final GameTests.Function INGREDIENT_TAGS_RECIPES =
+            TESTS.function("ingredient_tags_recipes", 20, () -> IngredientGameTests::tagsAndRecipes);
+    public static final GameTests.Function INGREDIENT_ANVIL =
+            TESTS.function("ingredient_anvil", 20, () -> IngredientGameTests::plateFuelAnvilRecipes);
+
+    // --- medicine (implementations live in MedicineGameTests) ---
+    public static final GameTests.Function MEDICINE =
+            TESTS.function("medicine", 40, () -> MedicineGameTests::medicine);
 
     // --- FEL (implementations live in FelGameTests) ---
     public static final GameTests.Function FEL_BEAM =
@@ -204,6 +244,14 @@ public final class HbmGameTestFunctions {
             TESTS.function("armor_hard_landing", 40, () -> ArmorGameTests::hardLandingThrowsEntities);
     public static final GameTests.Function ARMOR_SHORT_FALL =
             TESTS.function("armor_short_fall", 40, () -> ArmorGameTests::shortFallDoesNothing);
+    public static final GameTests.Function ARMOR_STEEL_TITANIUM =
+            TESTS.function("armor_steel_titanium", 40, () -> SteelTitaniumArmorGameTests::registryAndStats);
+
+    // --- hand-registered block families ---
+    public static final GameTests.Function BLOCK_FAMILY_REGISTRY =
+            TESTS.function("block_family_registry", 40, () -> BlockFamilyGameTests::registryAndTags);
+    public static final GameTests.Function BLOCK_FAMILY_BEHAVIOUR =
+            TESTS.function("block_family_behaviour", 40, () -> BlockFamilyGameTests::familyBehaviour);
 
     // --- chunk loading + missiles (implementations live in MissileGameTests) ---
     public static final GameTests.Function CHUNK_REFCOUNTING =
@@ -914,6 +962,64 @@ public final class HbmGameTestFunctions {
         player.setPos(absTower.getX() + 40.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
         helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "Being high up near nothing must not grant access");
+        helper.succeed();
+    }
+
+    private static void combinationRecipes(GameTestHelper helper) {
+        var recipes = com.hbm.inventory.recipes.CombinationRecipes.getRecipes();
+        helper.assertTrue(recipes.size() == 20, "Expected 20 feasible combination recipes, found " + recipes.size());
+        var coal = com.hbm.inventory.recipes.CombinationRecipes.getOutput(
+                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COAL));
+        helper.assertTrue(coal != null && coal.itemOutput().is(com.hbm.items.ModOilItems.coke(
+                        com.hbm.items.ItemEnums.EnumCokeType.COAL))
+                        && coal.fluidOutput().type == com.hbm.inventory.fluid.Fluids.COALCREOSOTE
+                        && coal.fluidOutput().fill == 100,
+                "Coal must produce coal coke and 100 mB of coal creosote");
+        helper.assertTrue(com.hbm.inventory.recipes.CombinationRecipes.getOutput(
+                new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND)) == null,
+                "Unregistered items must not match a combination recipe");
+        helper.succeed();
+    }
+
+    private static void combinationTick(GameTestHelper helper) {
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var block = ModMachineBlocks.machine_furnace_combination.get();
+        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
+        furnace.inventory.setStackInSlot(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COAL));
+        furnace.heat = 200;
+        furnace.progress = com.hbm.tileentity.machine.TileEntityFurnaceCombination.processTime - 1;
+        com.hbm.tileentity.machine.TileEntityFurnaceCombination.serverTick(helper.getLevel(),
+                helper.absolutePos(pos), furnace.getBlockState(), furnace);
+        helper.assertTrue(furnace.inventory.getStackInSlot(0).isEmpty(), "A completed cycle must consume one input");
+        helper.assertTrue(furnace.inventory.getStackInSlot(1).is(com.hbm.items.ModOilItems.coke(
+                com.hbm.items.ItemEnums.EnumCokeType.COAL)), "A completed cycle must write the item output");
+        helper.assertTrue(furnace.tank.getTankType() == com.hbm.inventory.fluid.Fluids.COALCREOSOTE
+                        && furnace.tank.getFill() == 100, "A completed cycle must write its fluid byproduct");
+        helper.succeed();
+    }
+
+    private static void combinationMenu(GameTestHelper helper) {
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var block = ModMachineBlocks.machine_furnace_combination.get();
+        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var menu = new com.hbm.inventory.container.ContainerFurnaceCombination(0, player.getInventory(), furnace);
+        helper.assertTrue(menu.slots.size() == 40, "Combination furnace menu must have 4 machine slots + 36 player slots");
+        assertSlot(helper, menu, 0, 26, 36);
+        assertSlot(helper, menu, 1, 89, 36);
+        assertSlot(helper, menu, 2, 136, 18);
+        assertSlot(helper, menu, 3, 136, 54);
+        helper.assertFalse(menu.slots.get(1).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE)),
+                "The item output must be take-only");
+        helper.assertFalse(menu.slots.get(3).mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BUCKET)),
+                "The filled-container output must be take-only");
+        helper.assertFalse(furnace.isItemValidForSlot(3,
+                        new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STONE)),
+                "The filled-container output must reject direct insertion");
         helper.succeed();
     }
 

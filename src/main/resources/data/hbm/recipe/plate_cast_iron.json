@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": "hbm:bolt_steel",
+    "B": "#c:bolts/steel",
     "P": "#c:plates/iron"
   },
   "pattern": [

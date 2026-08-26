@@ -115,7 +115,7 @@ public final class ModOreBlocks {
 
     // ---------------------------------------------------------------- burning nether blocks
 
-    /** Light 10/15, hardness 0.4 — an outgas block upstream, so mining it in the nether leaves radon. */
+    /** Light 10/15, hardness 0.4 — an outgas block upstream, so mining it in the nether leaves CO. */
     public static final RegistryObject<BlockNetherCoal> ore_nether_coal = reg("ore_nether_coal",
             BlockNetherCoal::new, p -> p.strength(0.4F, 10.0F).sound(SoundType.STONE).lightLevel(s -> 10)
                     .requiresCorrectToolForDrops().randomTicks().noLootTable());

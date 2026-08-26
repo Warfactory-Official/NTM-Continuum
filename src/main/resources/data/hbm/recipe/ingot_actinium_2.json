@@ -1,11 +1,15 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    "hbm:billet_actinium"
+  "key": {
+    "#": "hbm:nugget_actinium"
+  },
+  "pattern": [
+    "###",
+    "###",
+    "###"
   ],
   "result": {
-    "id": "hbm:ingot_actinium",
-    "count": 6
+    "id": "hbm:ingot_actinium"
   }
 }

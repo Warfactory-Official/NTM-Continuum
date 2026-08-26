@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "#": "hbm:wire_fine_gold"
+    "#": "#c:wires/gold"
   },
   "pattern": [
     "###",

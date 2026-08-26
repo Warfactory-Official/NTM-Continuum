@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.blocks.generic.BlockScaffold;
 import dev.golem.core.render.CompatRenderState;
 import net.minecraft.world.level.block.Block;
 import org.jspecify.annotations.Nullable;
@@ -8,4 +9,6 @@ import org.jspecify.annotations.Nullable;
 public class DecoRenderState extends CompatRenderState {
     public @Nullable Block block;
     public float yaw;
+    public BlockScaffold.Orientation scaffoldOrient;
+    public BlockScaffold.Variant scaffoldVariant;
 }

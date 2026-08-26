@@ -4,7 +4,7 @@
   "ingredients": [
     "#c:plates/steel",
     "hbm:plate_polymer",
-    "hbm:wire_fine_tungsten"
+    "#c:wires/tungsten"
   ],
   "result": {
     "id": "hbm:fuse"

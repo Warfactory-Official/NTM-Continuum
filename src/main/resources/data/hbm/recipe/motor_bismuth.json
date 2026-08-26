@@ -3,8 +3,8 @@
   "category": "misc",
   "key": {
     "B": "#c:nuggets/bismuth",
-    "C": "hbm:wire_dense_neodymium",
-    "S": "hbm:plate_cast_steel",
+    "C": "#c:wires_dense/neodymium",
+    "S": "#c:plates_cast/steel",
     "D": "#c:ingots/dura_steel"
   },
   "pattern": [

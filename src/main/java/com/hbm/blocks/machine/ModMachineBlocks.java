@@ -44,6 +44,12 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineTurbine> machine_turbine = BLOCKS.registerBlock(
             "machine_turbine", MachineTurbine::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<MachineLargeTurbine> machine_large_turbine = BLOCKS.registerBlock(
+            "machine_large_turbine", MachineLargeTurbine::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineIndustrialTurbine> machine_industrial_turbine = BLOCKS.registerBlock(
+            "machine_industrial_turbine", MachineIndustrialTurbine::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineCondenser> machine_condenser = BLOCKS.registerBlock(
             "machine_condenser", MachineCondenser::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
@@ -167,6 +173,9 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineChemicalPlant> machine_chemical_plant = BLOCKS.registerBlock(
             "machine_chemical_plant", MachineChemicalPlant::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineBlastFurnace> machine_blast_furnace = BLOCKS.registerBlock(
+            "machine_blast_furnace", MachineBlastFurnace::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachinePUREX> machine_purex = BLOCKS.registerBlock(
             "machine_purex", MachinePUREX::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
@@ -250,6 +259,10 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineCoker> machine_coker = BLOCKS.registerBlock(
             "machine_coker", MachineCoker::new,
             p -> dummyable(p.strength(5.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final RegistryObject<MachineFurnaceCombination> machine_furnace_combination = BLOCKS.registerBlock(
+            "machine_furnace_combination", MachineFurnaceCombination::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion()));
 
     public static final RegistryObject<MachinePyroOven> machine_pyrooven = BLOCKS.registerBlock(
             "machine_pyrooven", MachinePyroOven::new,
@@ -348,6 +361,8 @@ public final class ModMachineBlocks {
         tabItem("red_cable", red_cable);
         tabItem("creative_generator", creative_generator);
         tabItem("machine_turbine", machine_turbine);
+        tabItem("machine_large_turbine", machine_large_turbine);
+        tabItem("machine_industrial_turbine", machine_industrial_turbine);
         tabItem("machine_condenser", machine_condenser);
         tabItem("machine_zirnox", machine_zirnox);
         tabItem("struct_watz_core", struct_watz_core);
@@ -380,6 +395,7 @@ public final class ModMachineBlocks {
         tabItem("machine_press", machine_press);
         tabItem("machine_assembly_machine", machine_assembly_machine);
         tabItem("machine_chemical_plant", machine_chemical_plant);
+        tabItem("machine_blast_furnace", machine_blast_furnace);
         tabItem("machine_purex", machine_purex);
         tabItem("machine_well", machine_well);
         tabItem("machine_pumpjack", machine_pumpjack);
@@ -389,6 +405,7 @@ public final class ModMachineBlocks {
         tabItem("machine_catalytic_cracker", machine_catalytic_cracker);
         tabItem("machine_hydrotreater", machine_hydrotreater);
         tabItem("machine_coker", machine_coker);
+        tabItem("machine_furnace_combination", machine_furnace_combination);
         tabItem("machine_pyrooven", machine_pyrooven);
         tabItem("machine_combustion_engine", machine_combustion_engine);
         tabItem("refueler", refueler);

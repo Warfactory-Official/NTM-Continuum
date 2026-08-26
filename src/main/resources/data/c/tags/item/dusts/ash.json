@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:powder_ash_wood",
+    "hbm:powder_ash_coal",
+    "hbm:powder_ash_misc",
+    "hbm:powder_ash_fly",
+    "hbm:powder_ash_soot"
+  ]
+}

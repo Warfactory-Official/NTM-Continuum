@@ -4,9 +4,9 @@ import com.hbm.Constants;
 import dev.golem.core.world.GolemArmorMaterial;
 
 /**
- * The hazmat armour materials — the FIRST armor of the port. Physical-defense values are copied from
- * 1.12.2's {@code aMatHaz}/{@code aMatHaz2}/{@code aMatHaz3} (all identical: a low-armor suit whose
- * value is radiation resistance, registered separately in {@code HazmatRegistry}).
+ * HBM armour materials. Physical-defense values and material properties are copied from the matching
+ * 1.12.2 {@code ArmorMaterial} declarations; radiation resistance is registered separately because it
+ * is not a vanilla armour-material property.
  *
  * <p>Golem Core owns native material construction. HBM declares each material exactly once.
  */
@@ -18,6 +18,14 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial HAZMAT = hazmat("hazmat", "hazmat_cloth");
     public static final GolemArmorMaterial HAZMAT_RED = hazmat("hazmat_red", "hazmat_cloth_red");
     public static final GolemArmorMaterial HAZMAT_GREY = hazmat("hazmat_grey", "hazmat_cloth_grey");
+
+    /** 1.12.2 {@code aMatSteel}: multiplier 30, defense {3, 6, 8, 3}, enchantability 5. */
+    public static final GolemArmorMaterial STEEL = new GolemArmorMaterial(
+            Constants.MOD_ID, "steel", 30, 3, 8, 6, 3, 5, 0.0F, 0.0F, "repairs/steel");
+
+    /** 1.12.2 {@code aMatTitan}: multiplier 25, defense {3, 6, 8, 3}, enchantability 9. */
+    public static final GolemArmorMaterial TITANIUM = new GolemArmorMaterial(
+            Constants.MOD_ID, "titanium", 25, 3, 8, 6, 3, 9, 2.0F, 0.0F, "repairs/titanium");
 
     /**
      * T-51b power armour (1.12.2 {@code enumArmorMaterialT51}): durability 150, defense {3, 8, 6, 3} in

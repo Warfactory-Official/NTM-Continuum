@@ -2,7 +2,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "H": "hbm:shell_steel",
+    "H": "#c:shells/steel",
     "B": "minecraft:iron_bars"
   },
   "pattern": [

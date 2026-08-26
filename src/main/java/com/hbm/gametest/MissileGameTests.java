@@ -640,7 +640,7 @@ public final class MissileGameTests {
     /** Runs one network pack from {@code from} into {@code to}, as the real sync does. */
     private static void roundTrip(GameTestHelper helper, TileEntityLaunchPad from, TileEntityLaunchPad to) {
         // GolemBuffers.wrap, not a direct constructor: the registry-aware buffer type only exists from
-        // 1.20.5, and below that the plain FriendlyByteBuf takes no registry argument.
+        // 1.20.5, and below that the plain RegistryFriendlyByteBuf takes no registry argument.
         var buf = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         from.serialize(buf);
         to.deserialize(buf);

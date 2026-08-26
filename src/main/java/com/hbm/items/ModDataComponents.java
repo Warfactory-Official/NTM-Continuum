@@ -17,6 +17,7 @@ public final class ModDataComponents {
     public static final GolemComponent<String> MATERIAL = GolemComponent.string(Constants.MOD_ID, "material");
     public static final GolemComponent<Integer> MAT_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "mat_amount");
     public static final GolemComponent<Long> BATTERY_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "battery_charge");
+    public static final GolemComponent<Integer> PLATE_FUEL_LIFE = GolemComponent.integer(Constants.MOD_ID, "plate_fuel_life");
     public static final GolemComponent<Float> HAZARD_RADIATION = GolemComponent.floatValue(Constants.MOD_ID, "hazard_radiation");
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
@@ -79,6 +80,8 @@ public final class ModDataComponents {
     public static void setMaterialAmount(ItemStack stack, int value) { MAT_AMOUNT.set(stack, value); }
     public static long batteryCharge(ItemStack stack) { return BATTERY_CHARGE.getOr(stack, 0L); }
     public static void batteryCharge(ItemStack stack, long value) { BATTERY_CHARGE.set(stack, value); }
+    public static int plateFuelLife(ItemStack stack) { return PLATE_FUEL_LIFE.getOr(stack, 0); }
+    public static void plateFuelLife(ItemStack stack, int value) { PLATE_FUEL_LIFE.set(stack, value); }
     public static Float hazardRadiation(ItemStack stack) { return HAZARD_RADIATION.get(stack).orElse(null); }
     public static int zirnoxLife(ItemStack stack) { return ZIRNOX_LIFE.getOr(stack, 0); }
     public static void zirnoxLife(ItemStack stack, int value) { ZIRNOX_LIFE.set(stack, value); }

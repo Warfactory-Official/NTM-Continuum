@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "G": "minecraft:glass_pane",
-    "W": "hbm:wire_fine_carbon",
+    "W": "#c:wires/carbon",
     "I": "hbm:plate_polymer"
   },
   "pattern": [

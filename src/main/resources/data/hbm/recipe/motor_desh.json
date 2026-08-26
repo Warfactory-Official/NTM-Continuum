@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "P": "#c:ingots/any_plastic",
-    "C": "hbm:wire_dense_gold",
+    "C": "#c:wires_dense/gold",
     "D": "#c:ingots/desh",
     "M": "hbm:motor"
   },

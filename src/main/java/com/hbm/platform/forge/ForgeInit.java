@@ -52,12 +52,21 @@ public final class ForgeInit {
 
         CommonClass.init();
         com.hbm.gametest.HbmGameTestFunctions.init();
+        com.hbm.gametest.FoodCatalystGameTests.init();
+        com.hbm.gametest.OutgasGameTests.init();
+        com.hbm.gametest.SteelStructureGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
         modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(Hazards::init));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.HbmGameTestFunctions.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FoodCatalystGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.OutgasGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.SteelStructureGameTests.TESTS));
 
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();

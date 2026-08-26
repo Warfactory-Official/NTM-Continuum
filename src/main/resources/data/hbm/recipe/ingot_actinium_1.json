@@ -1,15 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "key": {
-    "#": "hbm:nugget_actinium"
-  },
-  "pattern": [
-    "###",
-    "###",
-    "###"
+  "ingredients": [
+    "hbm:block_actinium"
   ],
   "result": {
-    "id": "hbm:ingot_actinium"
+    "id": "hbm:ingot_actinium",
+    "count": 9
   }
 }

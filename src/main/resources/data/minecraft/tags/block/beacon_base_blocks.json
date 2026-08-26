@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:block_actinium",
+    "hbm:block_bakelite",
+    "hbm:block_bismuth",
+    "hbm:block_cadmium",
+    "hbm:block_coltan",
+    "hbm:block_lanthanium",
+    "hbm:block_niobium",
+    "hbm:block_polymer",
+    "hbm:block_rubber",
+    "hbm:block_tantalium",
+    "hbm:block_zirconium"
+  ]
+}

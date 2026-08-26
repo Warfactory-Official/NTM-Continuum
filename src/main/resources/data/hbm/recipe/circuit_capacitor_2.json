@@ -4,7 +4,7 @@
   "key": {
     "I": "hbm:plate_polymer",
     "A": "#c:dusts/aluminium",
-    "W": "hbm:wire_fine_aluminium"
+    "W": "#c:wires/aluminium"
   },
   "pattern": [
     "IAI",

@@ -55,6 +55,16 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_turbine",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineTurbine::new, ModMachineBlocks.machine_turbine.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineLargeTurbine>> MACHINE_LARGE_TURBINE =
+            BLOCK_ENTITIES.register("machine_large_turbine",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineLargeTurbine::new,
+                            ModMachineBlocks.machine_large_turbine.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine>> MACHINE_INDUSTRIAL_TURBINE =
+            BLOCK_ENTITIES.register("machine_industrial_turbine",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine::new,
+                            ModMachineBlocks.machine_industrial_turbine.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCondenser>> MACHINE_CONDENSER =
             BLOCK_ENTITIES.register("machine_condenser",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityCondenser::new, ModMachineBlocks.machine_condenser.get()));
@@ -171,6 +181,11 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_chemical_plant",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineChemicalPlant::new, ModMachineBlocks.machine_chemical_plant.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineBlastFurnace>> MACHINE_BLAST_FURNACE =
+            BLOCK_ENTITIES.register("machine_blast_furnace",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineBlastFurnace::new,
+                            ModMachineBlocks.machine_blast_furnace.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachinePUREX>> MACHINE_PUREX =
             BLOCK_ENTITIES.register("machine_purex",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachinePUREX::new, ModMachineBlocks.machine_purex.get()));
@@ -228,6 +243,11 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineCoker>> MACHINE_COKER =
             BLOCK_ENTITIES.register("machine_coker",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.oil.TileEntityMachineCoker::new, ModMachineBlocks.machine_coker.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityFurnaceCombination>> FURNACE_COMBINATION =
+            BLOCK_ENTITIES.register("machine_furnace_combination",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityFurnaceCombination::new,
+                            ModMachineBlocks.machine_furnace_combination.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven>> MACHINE_PYROOVEN =
             BLOCK_ENTITIES.register("machine_pyrooven",
@@ -342,7 +362,8 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityDeco>> DECO =
             BLOCK_ENTITIES.register("deco",
-                    () -> Services.PLATFORM.blockEntityType(TileEntityDeco::new, com.hbm.blocks.ModDecoBlocks.OBJ_BLOCKS.stream()
+                    () -> Services.PLATFORM.blockEntityType(TileEntityDeco::new, java.util.stream.Stream.concat(
+                            com.hbm.blocks.ModDecoBlocks.OBJ_BLOCKS.stream(), com.hbm.blocks.ModSteelBlocks.OBJ_BLOCKS.stream())
                             .map(RegistryObject::get).toArray(net.minecraft.world.level.block.Block[]::new)));
 
     public static void init() {}

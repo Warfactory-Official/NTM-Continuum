@@ -9,13 +9,19 @@ import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ModAutogenItems;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ModStampItems;
+import dev.golem.core.Ids;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -223,6 +229,22 @@ public final class AnvilRecipes {
                 new AStack[] {new ComparableStack(ModItems.nugget_bismuth.get(), 2), U238.billet().count(2), NB.dust()},
                 new AnvilOutput(new ItemStack(ModItems.plate_bismuth.get()))).setTier(4));
 
+        // -------- research-reactor plate fuel (old AnvilRecipes L543-549) --------
+        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_u233.get()),
+                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.U233))).setTier(4));
+        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_u235.get()),
+                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.U235))).setTier(4));
+        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_mox_fuel.get()),
+                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.MOX))).setTier(4));
+        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_pu239.get()),
+                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.PU239))).setTier(4));
+        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.ingot_schrabidium.get()),
+                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.SA326))).setTier(4));
+        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.billet_ra226be.get()),
+                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.RA226BE))).setTier(4));
+        add(new AnvilConstructionRecipe(new ComparableStack(ModItems.billet_pu238be.get()),
+                out(ModIngredientItems.plateFuel(ModIngredientItems.PlateFuelType.PU238BE))).setTier(4));
+
         // -------- stamp conversions (flat -> plate/wire/circuit) --------
         stampSet(ModStampItems.stamp_stone_flat.get(), 1, ModStampItems.stamp_stone_plate.get(), ModStampItems.stamp_stone_wire.get(), ModStampItems.stamp_stone_circuit.get());
         stampSet(ModStampItems.stamp_iron_flat.get(), 1, ModStampItems.stamp_iron_plate.get(), ModStampItems.stamp_iron_wire.get(), ModStampItems.stamp_iron_circuit.get());
@@ -238,6 +260,14 @@ public final class AnvilRecipes {
                         STEEL.plate().count(8),
                         CU.ingot().count(8)
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.heater_firebox.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        new ComparableStack(Blocks.STONE_BRICKS.asItem(), 8),
+                        new TagStack(ItemTags.LOGS, 16),
+                        CU.plateCast().count(2),
+                        new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "ingots/firebrick")), 16)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_furnace_combination.get()))).setTier(2));
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {

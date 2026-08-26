@@ -4,7 +4,7 @@
   "key": {
     "I": "hbm:plate_polymer",
     "N": "#c:nuggets/niobium",
-    "W": "hbm:wire_fine_copper"
+    "W": "#c:wires/copper"
   },
   "pattern": [
     "I",

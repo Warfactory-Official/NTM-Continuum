@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "hbm:blocks/hadron_analysis_glass"
+  },
+  "render_type": "minecraft:cutout"
+}

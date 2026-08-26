@@ -4,6 +4,12 @@
     "hbm:digamma",
     "hbm:monoxide",
     "hbm:asbestos",
-    "hbm:blacklung"
+    "hbm:blacklung",
+    "hbm:taint",
+    "hbm:bang",
+    "hbm:lead",
+    "hbm:euthanized_self",
+    "hbm:euthanized_self2",
+    "hbm:overdose"
   ]
 }

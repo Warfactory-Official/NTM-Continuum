@@ -17,6 +17,12 @@ public final class GeneralConfig {
     /** Matches the old default: uranium ores emit radon unless a pack disables it. */
     public static boolean enableRadon = true;
 
+    /** Old {@code 1.26_enableAsbestosDust}. */
+    public static boolean enableAsbestosDust = true;
+
+    /** Old {@code 1.26_enableCarbonMonoxide}. */
+    public static boolean enableCarbonMonoxide = true;
+
     /** One-in-N random ticks before radon dissipates; dense radon deposits fallout when it expires. */
     public static int radonDecayChance = 20;
 

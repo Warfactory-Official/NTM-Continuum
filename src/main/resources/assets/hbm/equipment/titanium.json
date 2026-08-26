@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "hbm:titanium"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "hbm:titanium"
+      }
+    ]
+  }
+}

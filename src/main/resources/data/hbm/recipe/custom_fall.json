@@ -5,7 +5,7 @@
     "I": "#c:ingots/any_rubber",
     "P": "#c:plates/saturnite",
     "C": "hbm:circuit_advanced",
-    "H": "hbm:shell_steel",
+    "H": "#c:shells/steel",
     "W": "hbm:coil_copper"
   },
   "pattern": [

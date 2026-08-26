@@ -291,6 +291,33 @@
       }
     ]
   },
+  "block.turbofan_operate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/turbofanoperate",
+        "stream": false
+      }
+    ]
+  },
+  "block.industrial_turbine": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/chungusturbine",
+        "stream": false
+      }
+    ]
+  },
+  "block.chungus_lever": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/chunguslever",
+        "stream": false
+      }
+    ]
+  },
   "rbmk_az5_cover": {
     "category": "block",
     "sounds": [
@@ -319,6 +346,63 @@
         "name": "hbm:tool/techboop",
         "stream": false
       }
+    ]
+  },
+  "step.metal_block": {
+    "category": "block",
+    "sounds": [
+      "hbm:footsteps/metalstep1",
+      "hbm:footsteps/metalstep2",
+      "hbm:footsteps/metalstep3",
+      "hbm:footsteps/metalstep4"
+    ]
+  },
+  "item.syringe": {
+    "subtitle": "subtitles.item.syringe",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/stim",
+        "stream": false
+      }
+    ]
+  },
+  "item.radaway": {
+    "subtitle": "subtitles.item.radaway",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/radaway",
+        "stream": false
+      }
+    ]
+  },
+  "item.jetpack_tank": {
+    "subtitle": "subtitles.item.jetpackTank",
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/jetpacktank",
+        "stream": false
+      }
+    ]
+  },
+  "item.vice": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/vice",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.laser_bang": {
+    "category": "player",
+    "sounds": [
+      "hbm:weapon/laserbang1",
+      "hbm:weapon/laserbang2",
+      "hbm:weapon/laserbang3",
+      "hbm:weapon/laserbang4"
     ]
   }
 }

@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/turbine.obj",
+      "texture": "hbm:textures/models/machines/turbine.png",
+      "overlayTexture": "hbm:textures/models/machines/turbofan_blades.png",
+      "scale": 0.2,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

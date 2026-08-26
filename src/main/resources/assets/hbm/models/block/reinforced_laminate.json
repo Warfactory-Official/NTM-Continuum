@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "hbm:blocks/reinforced_laminate"
+  },
+  "render_type": "minecraft:translucent"
+}

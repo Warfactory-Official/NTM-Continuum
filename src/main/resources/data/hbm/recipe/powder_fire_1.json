@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:block_red_phosphorus"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:powder_fire",
+    "count": 9
+  }
+}
