@@ -6,9 +6,11 @@ import com.hbm.creativetabs.ModTabs;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.gear.ItemGasMask;
+import com.hbm.items.machine.ItemGear;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ArmorRegistry.HazardClass;
 import java.util.List;
+import java.util.stream.IntStream;
 import com.hbm.items.tool.ItemDosimeter;
 import com.hbm.items.tool.ItemGeigerCounter;
 import dev.golem.core.registry.DeferredRegister;
@@ -35,6 +37,8 @@ public final class ModGearItems {
             ITEMS.registerItem("geiger_counter", ItemGeigerCounter::new, p -> p.stacksTo(1));
     public static final RegistryObject<ItemDosimeter> dosimeter =
             ITEMS.registerItem("dosimeter", ItemDosimeter::new, p -> p.stacksTo(1));
+    public static final RegistryObject<ItemGear> gear_large =
+            ITEMS.registerItem("gear_large", ItemGear::new);
 
     // ---- hazmat suits (yellow / red / grey) ----
     public static final RegistryObject<Item> hazmat_helmet = armor("hazmat_helmet", HbmArmorMaterials.HAZMAT, ArmorSlot.HELMET);
@@ -85,6 +89,8 @@ public final class ModGearItems {
     static {
         ModTabs.addTo(HbmTab.CONSUMABLES, geiger_counter);
         ModTabs.addTo(HbmTab.CONSUMABLES, dosimeter);
+        ModTabs.addStacksTo(HbmTab.MATERIALS, () -> IntStream.range(0, 2)
+                .mapToObj(gear_large.get()::of).toList());
     }
 
     /** Wires the radiation-resistance coefficients + full-set membership (post-registration). */

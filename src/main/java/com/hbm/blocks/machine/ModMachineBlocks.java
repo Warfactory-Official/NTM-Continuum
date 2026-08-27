@@ -47,6 +47,9 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineLargeTurbine> machine_large_turbine = BLOCKS.registerBlock(
             "machine_large_turbine", MachineLargeTurbine::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineSteamEngine> machine_steam_engine = BLOCKS.registerBlock(
+            "machine_steam_engine", MachineSteamEngine::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineIndustrialTurbine> machine_industrial_turbine = BLOCKS.registerBlock(
             "machine_industrial_turbine", MachineIndustrialTurbine::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
@@ -164,6 +167,10 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachinePress> machine_press = BLOCKS.registerBlock(
             "machine_press", MachinePress::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final RegistryObject<MachineSawmill> machine_sawmill = BLOCKS.registerBlock(
+            "machine_sawmill", MachineSawmill::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     public static final RegistryObject<MachineAssemblyMachine> machine_assembly_machine = BLOCKS.registerBlock(
@@ -362,6 +369,7 @@ public final class ModMachineBlocks {
         tabItem("creative_generator", creative_generator);
         tabItem("machine_turbine", machine_turbine);
         tabItem("machine_large_turbine", machine_large_turbine);
+        tabItem("machine_steam_engine", machine_steam_engine);
         tabItem("machine_industrial_turbine", machine_industrial_turbine);
         tabItem("machine_condenser", machine_condenser);
         tabItem("machine_zirnox", machine_zirnox);
@@ -393,6 +401,7 @@ public final class ModMachineBlocks {
         tabItem("machine_shredder", machine_shredder);
         tabItem("machine_epress", machine_epress);
         tabItem("machine_press", machine_press);
+        tabItem("machine_sawmill", machine_sawmill);
         tabItem("machine_assembly_machine", machine_assembly_machine);
         tabItem("machine_chemical_plant", machine_chemical_plant);
         tabItem("machine_blast_furnace", machine_blast_furnace);

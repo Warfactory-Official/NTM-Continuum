@@ -225,6 +225,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
     private static MachineItemModel parse(JsonObject json) {
         WavefrontObj obj = WavefrontObj.load(id(json, "obj", null));
         Identifier texture = id(json, "texture", DEFAULT_TEXTURE);
+        boolean noCull = bool(json, "noCull", false);
         Identifier overlayTexture = id(json, "overlayTexture", null);
         List<Float> pivot = floats(json, "rotatePivot");
 
@@ -237,25 +238,30 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
             Map<String, RenderType> resolved = new LinkedHashMap<>();
             for (String mat : obj.materialNames()) {
                 Identifier tex = lib.get(mat);
-                if (tex != null) resolved.put(mat, CompatRenderTypes.entityCutout(tex));
+                if (tex != null) resolved.put(mat, cutout(tex, noCull));
             }
             materialTypes = resolved;
         }
 
         return new MachineItemModel(
                 obj,
-                CompatRenderTypes.entityCutout(texture),
+                cutout(texture, noCull),
                 f(json, "scale", 0.28F),
                 f(json, "yaw", 90.0F),
                 f(json, "pitch", 0.0F),
                 f(json, "ty", 0.0F),
                 Set.copyOf(strings(json, "exclude")),
-                overlayTexture == null ? null : CompatRenderTypes.entityCutout(overlayTexture),
+                overlayTexture == null ? null : cutout(overlayTexture, noCull),
                 strings(json, "overlayParts"),
                 strings(json, "rotateParts"),
                 f(json, "rotateX", 0.0F),
                 pivot.size() == 3 ? new Vector3f(pivot.get(0), pivot.get(1), pivot.get(2)) : new Vector3f(),
-                materialTypes);
+                materialTypes,
+                bool(json, "spin", false));
+    }
+
+    private static RenderType cutout(Identifier texture, boolean noCull) {
+        return noCull ? CompatRenderTypes.entityCutoutNoCull(texture) : CompatRenderTypes.entityCutout(texture);
     }
 
     private static String string(JsonObject json, String key, String fallback) {

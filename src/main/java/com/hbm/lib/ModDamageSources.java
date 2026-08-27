@@ -32,6 +32,8 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> ASBESTOS = key("asbestos");
     /** absolute + bypasses armor */
     public static final ResourceKey<DamageType> BLACKLUNG = key("blacklung");
+    /** The sawmill's operating blade: absolute and bypasses armor (old damage id: {@code blender}). */
+    public static final ResourceKey<DamageType> TURBOFAN = key("blender");
     /**
      * The shockwave a power-armour wearer makes on landing hard (old {@code ArmorFSB.handleFall}).
      * Upstream built this as {@code causePlayerDamage(player).setDamageBypassesArmor()}, so it is
@@ -97,6 +99,7 @@ public final class ModDamageSources {
     public static DamageSource monoxide(Level level) { return source(level, MONOXIDE); }
     public static DamageSource asbestos(Level level) { return source(level, ASBESTOS); }
     public static DamageSource blacklung(Level level) { return source(level, BLACKLUNG); }
+    public static DamageSource turbofan(Level level) { return source(level, TURBOFAN); }
     public static DamageSource taint(Level level) { return source(level, TAINT); }
     public static DamageSource bang(Level level) { return source(level, BANG); }
     public static DamageSource lead(Level level) { return source(level, LEAD); }

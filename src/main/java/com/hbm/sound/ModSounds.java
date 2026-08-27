@@ -26,6 +26,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> ASSEMBLER_STOP = register("block.assembler_stop");
     public static final RegistryObject<SoundEvent> CHEMICAL_PLANT = register("block.chemical_plant");
     public static final RegistryObject<SoundEvent> PRESS_OPERATE = register("block.pressoperate");
+    public static final RegistryObject<SoundEvent> WARN_OVERSPEED = register("block.warnoverspeed");
     /** The electric heater's hum loop (old {@code block.electricHum}). */
     public static final RegistryObject<SoundEvent> ELECTRIC_HUM = register("block.electric_hum");
     /** The FEL's looping laser hum; its volume and pitch ramp with the machine's audioDuration. */

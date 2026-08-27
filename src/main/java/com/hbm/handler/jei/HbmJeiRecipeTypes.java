@@ -41,6 +41,8 @@ public final class HbmJeiRecipeTypes {
     public static final JeiRecipeType<SolderingRecipes.SolderingRecipe> SOLDERING_STATION = type("soldering_station", SolderingRecipes.SolderingRecipe.class);
     public static final JeiRecipeType<CrystallizerRecipes.CrystallizerRecipe> CRYSTALLIZER = type("crystallizer", CrystallizerRecipes.CrystallizerRecipe.class);
     public static final JeiRecipeType<ShredderRecipeHandler.ShredderPair> SHREDDER = type("shredder", ShredderRecipeHandler.ShredderPair.class);
+    public static final JeiRecipeType<com.hbm.inventory.recipes.SawmillRecipes.SawmillRecipe> SAWMILL =
+            type("sawmill", com.hbm.inventory.recipes.SawmillRecipes.SawmillRecipe.class);
     public static final JeiRecipeType<com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe> SILEX = type("silex", com.hbm.inventory.recipes.SILEXRecipes.SILEXRecipe.class);
 
     public static final JeiRecipeType<CrucibleRecipes.CrucibleRecipe> CRUCIBLE_ALLOY = type("crucible_alloy", CrucibleRecipes.CrucibleRecipe.class);

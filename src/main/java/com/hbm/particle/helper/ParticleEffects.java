@@ -78,4 +78,12 @@ public final class ParticleEffects {
         data.putFloat("scale", scale);
         HbmEffectNT.RBMKMush.send(level, x, y, z, data);
     }
+
+    /** Redstone block dust burst emitted when the sawmill blade damages a living entity. */
+    public static void sawmillDamage(Level level, Entity entity, int count) {
+        CompoundTag data = new CompoundTag();
+        data.putInt("count", count);
+        HbmEffectNT.SawmillDamage.send(level, entity.getX(), entity.getY() + entity.getBbHeight() * 0.5D,
+                entity.getZ(), data);
+    }
 }

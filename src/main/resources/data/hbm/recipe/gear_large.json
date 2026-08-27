@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:plates/iron",
+    "C": "#c:ingots/copper"
+  },
+  "pattern": [
+    "III",
+    "ICI",
+    "III"
+  ],
+  "result": {
+    "id": "hbm:gear_large",
+    "components": {
+      "hbm:item_variant": 0
+    }
+  }
+}

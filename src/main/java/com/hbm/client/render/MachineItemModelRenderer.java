@@ -54,13 +54,14 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
     }
 
     /** The data-driven, codec-backed factory for this renderer (one entry per machine in the item JSON). */
-    public record Unbaked(Identifier obj, Identifier texture, float scale, float yaw, float pitch, float ty, List<String> exclude,
+    public record Unbaked(Identifier obj, Identifier texture, boolean noCull, float scale, float yaw, float pitch, float ty, List<String> exclude,
                           Optional<Identifier> overlayTexture, List<String> overlayParts, boolean mtl,
-                          List<String> rotateParts, float rotateX, List<Float> rotatePivot) implements NoDataSpecialModelRenderer.Unbaked {
+                          List<String> rotateParts, float rotateX, List<Float> rotatePivot, boolean spin) implements NoDataSpecialModelRenderer.Unbaked {
 
         public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Identifier.CODEC.fieldOf("obj").forGetter(Unbaked::obj),
                 Identifier.CODEC.optionalFieldOf("texture", dev.golem.core.Ids.of("hbm", "textures/models/machines/lava_gray.png")).forGetter(Unbaked::texture),
+                Codec.BOOL.optionalFieldOf("noCull", false).forGetter(Unbaked::noCull),
                 Codec.FLOAT.optionalFieldOf("scale", 0.28F).forGetter(Unbaked::scale),
                 Codec.FLOAT.optionalFieldOf("yaw", 90.0F).forGetter(Unbaked::yaw),
                 Codec.FLOAT.optionalFieldOf("pitch", 0.0F).forGetter(Unbaked::pitch),
@@ -71,7 +72,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                 Codec.BOOL.optionalFieldOf("mtl", false).forGetter(Unbaked::mtl),
                 Codec.STRING.listOf().optionalFieldOf("rotateParts", List.of()).forGetter(Unbaked::rotateParts),
                 Codec.FLOAT.optionalFieldOf("rotateX", 0.0F).forGetter(Unbaked::rotateX),
-                Codec.FLOAT.listOf().optionalFieldOf("rotatePivot", List.of()).forGetter(Unbaked::rotatePivot)
+                Codec.FLOAT.listOf().optionalFieldOf("rotatePivot", List.of()).forGetter(Unbaked::rotatePivot),
+                Codec.BOOL.optionalFieldOf("spin", false).forGetter(Unbaked::spin)
         ).apply(i, Unbaked::new));
 
         @Override
@@ -81,7 +83,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
 
         @Override
         public SpecialModelRenderer<Void> bake(SpecialModelRenderer.BakingContext context) {
-            RenderType overlay = overlayTexture.map(CompatRenderTypes::entityCutout).orElse(null);
+            RenderType overlay = overlayTexture.map(texture -> cutout(texture, noCull)).orElse(null);
             WavefrontObj loaded = WavefrontObj.load(obj);
             Vector3f pivot = rotatePivot.size() == 3
                     ? new Vector3f(rotatePivot.get(0), rotatePivot.get(1), rotatePivot.get(2))
@@ -93,14 +95,18 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                 java.util.Map<String, RenderType> resolved = new java.util.LinkedHashMap<>();
                 for (String mat : loaded.materialNames()) {
                     Identifier tex = lib.get(mat);
-                    if (tex != null) resolved.put(mat, CompatRenderTypes.entityCutout(tex));
+                    if (tex != null) resolved.put(mat, cutout(tex, noCull));
                 }
                 types = resolved;
             }
-            return new MachineItemModelRenderer(new MachineItemModel(loaded, CompatRenderTypes.entityCutout(texture),
+            return new MachineItemModelRenderer(new MachineItemModel(loaded, cutout(texture, noCull),
                     scale, yaw, pitch, ty, Set.copyOf(exclude), overlay, List.copyOf(overlayParts),
-                    List.copyOf(rotateParts), rotateX, pivot, types));
+                    List.copyOf(rotateParts), rotateX, pivot, types, spin));
         }
+    }
+
+    private static RenderType cutout(Identifier texture, boolean noCull) {
+        return noCull ? CompatRenderTypes.entityCutoutNoCull(texture) : CompatRenderTypes.entityCutout(texture);
     }
 }
 //?}

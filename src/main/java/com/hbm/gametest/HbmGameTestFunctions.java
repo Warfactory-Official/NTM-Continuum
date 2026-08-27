@@ -48,6 +48,14 @@ public final class HbmGameTestFunctions {
             TESTS.function("large_turbine_conversion", 100, 8, () -> LargeTurbineGameTests::conversion);
     public static final GameTests.Function LARGE_TURBINE_MENU =
             TESTS.function("large_turbine_menu", 40, () -> LargeTurbineGameTests::menu);
+    public static final GameTests.Function STEAM_ENGINE_LAYOUT =
+            TESTS.function("steam_engine_layout", 100, 8, () -> SteamEngineGameTests::layout);
+    public static final GameTests.Function STEAM_ENGINE_PORTS =
+            TESTS.function("steam_engine_ports", 100, 8, () -> SteamEngineGameTests::ports);
+    public static final GameTests.Function STEAM_ENGINE_CONVERSION =
+            TESTS.function("steam_engine_conversion", 40, 8, () -> SteamEngineGameTests::conversion);
+    public static final GameTests.Function STEAM_ENGINE_GEAR_RECIPE =
+            TESTS.function("steam_engine_gear_recipe", 40, () -> SteamEngineGameTests::gearAndRecipe);
     public static final GameTests.Function CONDENSER_CONVERSION =
             TESTS.function("condenser_conversion", 20, () -> HbmGameTestFunctions::condenserConversion);
     public static final GameTests.Function PUREX_RECIPE_CYCLE =
@@ -160,6 +168,24 @@ public final class HbmGameTestFunctions {
             TESTS.function("ingredient_tags_recipes", 20, () -> IngredientGameTests::tagsAndRecipes);
     public static final GameTests.Function INGREDIENT_ANVIL =
             TESTS.function("ingredient_anvil", 20, () -> IngredientGameTests::plateFuelAnvilRecipes);
+
+    // --- press recipes (implementations live in PressGameTests) ---
+    public static final GameTests.Function PRESS_CASING =
+            TESTS.function("press_casing", 20, () -> PressGameTests::casingRecipes);
+
+    // --- sawmill ---
+    public static final GameTests.Function SAWMILL_RECIPES =
+            TESTS.function("sawmill_recipes", 20, () -> SawmillGameTests::recipes);
+    public static final GameTests.Function SAWMILL_LAYOUT =
+            TESTS.function("sawmill_layout", 100, 8, () -> SawmillGameTests::layout);
+    public static final GameTests.Function SAWMILL_PROCESSING =
+            TESTS.function("sawmill_processing", 100, 8, () -> SawmillGameTests::processing);
+    public static final GameTests.Function SAWMILL_CONTRACTS =
+            TESTS.function("sawmill_contracts", 40, 8, () -> SawmillGameTests::contracts);
+    public static final GameTests.Function SAWMILL_BLADE_STATE =
+            TESTS.function("sawmill_blade_state", 100, 8, () -> SawmillGameTests::bladeState);
+    public static final GameTests.Function SAWMILL_BLADE_COLLISION =
+            TESTS.function("sawmill_blade_collision", 40, 8, () -> SawmillGameTests::bladeCollision);
 
     // --- medicine (implementations live in MedicineGameTests) ---
     public static final GameTests.Function MEDICINE =

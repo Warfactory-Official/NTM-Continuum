@@ -1,0 +1,36 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "hbm:item_variant",
+    "cases": [
+      {
+        "when": "1",
+        "model": {
+          "type": "minecraft:special",
+          "base": "hbm:item/machine_obj_base",
+          "model": {
+            "type": "hbm:machine_obj",
+            "obj": "hbm:models/machines/sawmill.obj",
+            "texture": "hbm:textures/models/machines/sawmill.png",
+            "scale": 0.48,
+            "yaw": 180,
+            "ty": 0.0,
+            "exclude": ["Blade"]
+          }
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:special",
+      "base": "hbm:item/machine_obj_base",
+      "model": {
+        "type": "hbm:machine_obj",
+        "obj": "hbm:models/machines/sawmill.obj",
+        "texture": "hbm:textures/models/machines/sawmill.png",
+        "scale": 0.48,
+        "yaw": 180,
+        "ty": 0.0
+      }
+    }
+  }
+}

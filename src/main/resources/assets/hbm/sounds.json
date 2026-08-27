@@ -291,6 +291,15 @@
       }
     ]
   },
+  "block.warnoverspeed": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/warnoverspeed",
+        "stream": false
+      }
+    ]
+  },
   "block.turbofan_operate": {
     "category": "block",
     "sounds": [

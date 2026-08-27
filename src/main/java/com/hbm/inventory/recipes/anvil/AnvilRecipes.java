@@ -221,6 +221,24 @@ public final class AnvilRecipes {
                         cir(EnumCircuitType.VACUUM_TUBE, 2)
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_soldering_station.get()))).setTier(2));
 
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        new TagStack(ItemTags.PLANKS, 16),
+                        STEEL.plate().count(6),
+                        CU.ingot().count(8),
+                        IRON.ingot().count(4),
+                        new ComparableStack(ModItems.sawblade.get())
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_sawmill.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        new ComparableStack(com.hbm.blocks.ModBlocks.reinforced_stone.get().asItem(), 16),
+                        STEEL.plate().count(12),
+                        STEEL.shell().count(2),
+                        new ComparableStack(ModItems.coil_copper.get(), 4),
+                        new ComparableStack(com.hbm.items.ModGearItems.gear_large.get().of(0))
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_steam_engine.get()))).setTier(2));
+
         // -------- special plates whose items exist --------
         add(new AnvilConstructionRecipe(
                 new AStack[] {DESH.ingot().count(4), ANY_PLASTIC.dust().count(2), DURA.ingot()},

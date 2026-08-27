@@ -59,11 +59,13 @@ public final class MachineItemModel {
     private final Vector3f rotatePivot;
     /** Multi-texture mode ({@code "mtl": true}): material name → its render type, from the OBJ's .mtl. */
     private final Map<String, RenderType> materialTypes;
+    /** Whether this item has the old continuously rotating inventory pose. */
+    private final boolean spin;
 
     public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, float yaw, float pitch, float ty,
                             Set<String> exclude, @Nullable RenderType overlayType, List<String> overlayParts,
                             List<String> rotateParts, float rotateX, Vector3f rotatePivot,
-                            Map<String, RenderType> materialTypes) {
+                            Map<String, RenderType> materialTypes, boolean spin) {
         this.model = model;
         this.renderType = renderType;
         this.scale = scale;
@@ -76,6 +78,7 @@ public final class MachineItemModel {
         this.rotateX = rotateX;
         this.rotatePivot = rotatePivot;
         this.materialTypes = materialTypes;
+        this.spin = spin;
         // Framing is centred on what is actually drawn, which is everything except the caller's own
         // exclusions — not the merged set below, since overlay and rotated parts are still on screen.
         this.userExclude = Set.copyOf(exclude);
@@ -96,6 +99,7 @@ public final class MachineItemModel {
     public void submit(PoseStack poseStack, SubmitSink sink, int lightCoords, int overlayCoords) {
         poseStack.pushPose();
         applyTransform(poseStack);
+        if (spin) poseStack.mulPose(Axis.ZP.rotationDegrees(System.currentTimeMillis() % 3600L * 0.1F));
         if (!materialTypes.isEmpty()) {
             for (Map.Entry<String, RenderType> e : materialTypes.entrySet()) {
                 String mat = e.getKey();

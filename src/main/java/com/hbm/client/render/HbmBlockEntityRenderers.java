@@ -64,6 +64,7 @@ public final class HbmBlockEntityRenderers {
                 new ModelDef(obj("machines/blast_furnace.obj"), tex("machines/blast_furnace.png"))).doubleSided());
         regCustom(sink, ModBlockEntities.MACHINE_INDUSTRIAL_TURBINE.get(), ctx -> new IndustrialTurbineRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_LARGE_TURBINE.get(), ctx -> new LargeTurbineRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_STEAM_ENGINE.get(), ctx -> new SteamEngineRenderer());
         regCustom(sink, ModBlockEntities.MACHINE_PUREX.get(), ctx -> new PUREXRenderer());
         // Presses: a static body + a head that descends with the machine's progress.
         regCustom(sink, ModBlockEntities.MACHINE_EPRESS.get(), ctx -> new PressRenderer<>(
@@ -73,7 +74,8 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModBlockEntities.MACHINE_PRESS.get(), ctx -> new PressRenderer<>(
                 obj("press_body.obj"), tex("machines/press_body.png"),
                 obj("press_head.obj"), tex("machines/press_head.png"),
-                180F, false, 0.875F, 0.95F, 200, te -> te.progress));
+                 180F, false, 0.875F, 0.95F, 200, te -> te.progress));
+        regCustom(sink, ModBlockEntities.MACHINE_SAWMILL.get(), ctx -> new SawmillRenderer());
         // The launch pad draws the missile it is holding on top of the silo, so it needs its own
         // renderer rather than the generic static-OBJ one.
         regCustom(sink, ModBlockEntities.LAUNCH_PAD.get(), ctx -> new LaunchPadRenderer());

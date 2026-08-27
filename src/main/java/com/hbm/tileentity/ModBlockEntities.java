@@ -25,6 +25,7 @@ import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
+import com.hbm.tileentity.machine.TileEntitySawmill;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
@@ -59,6 +60,11 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_large_turbine",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineLargeTurbine::new,
                             ModMachineBlocks.machine_large_turbine.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineSteamEngine>> MACHINE_STEAM_ENGINE =
+            BLOCK_ENTITIES.register("machine_steam_engine",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineSteamEngine::new,
+                            ModMachineBlocks.machine_steam_engine.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine>> MACHINE_INDUSTRIAL_TURBINE =
             BLOCK_ENTITIES.register("machine_industrial_turbine",
@@ -172,6 +178,10 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityMachinePress>> MACHINE_PRESS =
             BLOCK_ENTITIES.register("machine_press",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachinePress::new, ModMachineBlocks.machine_press.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntitySawmill>> MACHINE_SAWMILL =
+            BLOCK_ENTITIES.register("machine_sawmill",
+                    () -> Services.PLATFORM.blockEntityType(TileEntitySawmill::new, ModMachineBlocks.machine_sawmill.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineAssemblyMachine>> MACHINE_ASSEMBLY_MACHINE =
             BLOCK_ENTITIES.register("machine_assembly_machine",

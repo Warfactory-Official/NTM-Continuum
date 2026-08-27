@@ -3,6 +3,7 @@ package com.hbm.entity;
 import com.hbm.Constants;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
+import com.hbm.entity.projectile.EntitySawblade;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -60,6 +61,13 @@ public final class ModEntities {
             ENTITY_TYPES.register("entity_zirnox_debris", key -> dev.golem.core.registry.Entities.build(
                     EntityType.Builder.<EntityZirnoxDebris>of(EntityZirnoxDebris::new, MobCategory.MISC)
                             .sized(1.0F, 0.5F)
+                            .clientTrackingRange(64)
+                            .updateInterval(1), key));
+
+    public static final RegistryObject<EntityType<EntitySawblade>> SAWBLADE =
+            ENTITY_TYPES.register("entity_sawblade", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntitySawblade>of(EntitySawblade::new, MobCategory.MISC)
+                            .sized(1.0F, 1.0F)
                             .clientTrackingRange(64)
                             .updateInterval(1), key));
 

@@ -57,6 +57,17 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
                         if (new !== old) { json["ingredient"] = new; changed = true }
                     }
                     (json["result"] as? MutableMap<String, Any?>)?.let { result ->
+                        if (needsLegacyItemStacks(mcVersion)) {
+                            @Suppress("UNCHECKED_CAST")
+                            val components = result.remove("components") as? Map<String, Any?>
+                            if (components != null) {
+                                @Suppress("UNCHECKED_CAST")
+                                val tag = (result["tag"] as? MutableMap<String, Any?>) ?: mutableMapOf()
+                                components.forEach { (key, value) -> tag[key] = value }
+                                result["tag"] = tag
+                                changed = true
+                            }
+                        }
                         val id = result["id"] as? String
                         if (json["type"] in legacyCookingRecipeTypes && id != null) {
                             // Cooking recipes had a bare result id before 1.21.2.

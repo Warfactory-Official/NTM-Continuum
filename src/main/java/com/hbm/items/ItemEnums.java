@@ -41,6 +41,12 @@ public final class ItemEnums {
         public static final EnumExpensiveType[] VALUES = values();
     }
 
+    /** The old casing metadata family; only the four metal casing variants are currently registered. */
+    public enum EnumCasingType {
+        SMALL, LARGE, SMALL_STEEL, LARGE_STEEL, SHOTSHELL, BUCKSHOT, BUCKSHOT_ADVANCED;
+        public static final EnumCasingType[] VALUES = values();
+    }
+
     /** Ash products from fireboxes, pyrolysis, and SILEX. */
     public enum EnumAshType {
         WOOD, COAL, MISC, FLY, SOOT, FULLERENE;

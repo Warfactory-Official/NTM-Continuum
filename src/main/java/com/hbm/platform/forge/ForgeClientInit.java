@@ -32,6 +32,7 @@ final class ForgeClientInit {
         GolemNetwork.flushClientRegistrations();
 
         HbmClientRegistrations.installTints();
+        HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
         HbmClientRegistrations.installArmorLayers();
@@ -42,7 +43,6 @@ final class ForgeClientInit {
                                 com.hbm.client.render.MachineItemModels::reload));
         HbmClientRegistrations.registerBlockColors();
         modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(() -> {
-            HbmClientRegistrations.installItemModelProperties();
             HbmClientRegistrations.registerScreens(MenuScreens::register);
         }));
         modBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> {

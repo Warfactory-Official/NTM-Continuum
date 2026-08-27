@@ -80,6 +80,7 @@ public final class MainRegistry {
         com.hbm.items.ModRBMKItems.init(); // RBMK rods/pellets and reactor tools
         com.hbm.items.ModZirnoxItems.init(); // component-backed reactor fuel and spent fuel
         ModMachineItems.init();    // hand-registered machine items (templates)
+        com.hbm.items.ModCasingItems.init(); // metal variants of the old metadata casing item
         com.hbm.items.machine.ModStampItems.init(); // press stamps (dies)
         com.hbm.items.machine.ModMoldItems.init();  // casting molds (foundry mold/basin) + mold_base
         com.hbm.items.ModAutogenItems.init();        // auto-generated metal-shape items (cast plate, shell, …)

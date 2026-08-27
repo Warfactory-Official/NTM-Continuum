@@ -5,6 +5,7 @@
     "hbm:monoxide",
     "hbm:asbestos",
     "hbm:blacklung",
+    "hbm:blender",
     "hbm:taint",
     "hbm:bang",
     "hbm:lead",

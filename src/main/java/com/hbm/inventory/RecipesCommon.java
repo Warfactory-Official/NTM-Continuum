@@ -4,6 +4,7 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.special.ItemAutogen;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
@@ -16,8 +17,8 @@ import java.util.List;
  * Recipe ingredient matching, ported (and trimmed for 26.1) from HBM's {@code RecipesCommon}. An
  * {@link AStack} is an abstract "ingredient stack" the recipe system matches against real
  * {@link ItemStack}s. The 1.12.2 ore dictionary is replaced by item {@link TagKey tags}
- * ({@link TagStack}); {@link ComparableStack} matches an exact item. (NBT/meta variants and the JEI
- * helpers from the original are deferred.)
+ * ({@link TagStack}); {@link ComparableStack} matches an exact item and can retain its component/NBT
+ * data for metadata variants. (The JEI helpers from the original are deferred.)
  */
 public class RecipesCommon {
 
@@ -61,22 +62,40 @@ public class RecipesCommon {
         private static final long CYCLE_MS = 1000L;
     }
 
-    /** Matches one exact {@link Item}. */
+    /** Matches one exact {@link Item}, optionally including its component/NBT data. */
     public static class ComparableStack extends AStack {
         public final Item item;
+        private final ItemStack matchStack;
 
-        public ComparableStack(Item item) { this(item, 1); }
-        public ComparableStack(Item item, int stacksize) { this.item = item; this.stacksize = stacksize; }
+        public ComparableStack(Item item) {
+            this(item, 1);
+        }
+
+        public ComparableStack(Item item, int stacksize) {
+            this.item = item;
+            this.stacksize = stacksize;
+            this.matchStack = null;
+        }
+
+        /** Matches an exact stack, retaining the old item-data distinction for metadata variants. */
+        public ComparableStack(ItemStack stack) {
+            this.item = stack.getItem();
+            this.stacksize = stack.getCount();
+            this.matchStack = stack.copy();
+        }
 
         @Override
         public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
             if (stack.isEmpty() || stack.getItem() != item) return false;
+            if (matchStack != null && !ItemStacks.sameItemAndData(matchStack, stack)) return false;
             return ignoreSize || stack.getCount() >= stacksize;
         }
 
         @Override
         public List<ItemStack> getDisplayStacks() {
-            return List.of(new ItemStack(item, stacksize));
+            return List.of(matchStack == null
+                    ? new ItemStack(item, stacksize)
+                    : ItemStacks.copyWithCount(matchStack, stacksize));
         }
     }
 

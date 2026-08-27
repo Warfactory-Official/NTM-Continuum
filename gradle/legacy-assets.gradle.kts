@@ -185,6 +185,15 @@ fun itemVariantSelectOf(definition: File): Pair<String, List<Pair<Float, String>
     return fallback to (parsed.takeIf { it.isNotEmpty() } ?: return null)
 }
 
+fun isMachineObjSpecial(model: Any?): Boolean {
+    @Suppress("UNCHECKED_CAST")
+    val json = model as? Map<String, Any?> ?: return false
+    if (json["type"] != "minecraft:special") return false
+    @Suppress("UNCHECKED_CAST")
+    val inner = json["model"] as? Map<String, Any?> ?: return false
+    return inner["type"] == "hbm:machine_obj"
+}
+
 fun parentModelOf(definition: File): String? {
     @Suppress("UNCHECKED_CAST")
     val json = JsonSlurper().parse(definition) as? Map<String, Any?> ?: return null
@@ -197,9 +206,18 @@ fun parentModelOf(definition: File): String? {
         "minecraft:special" -> {
             @Suppress("UNCHECKED_CAST")
             val inner = model["model"] as? Map<String, Any?>
-            if (inner?.get("type") == "hbm:machine_obj" || inner?.get("type") == "hbm:rbmk_fuel_column"
-                || inner?.get("type") == "hbm:rbmk_block_column") MACHINE_OBJ_LEGACY_MODEL
-            else model["base"] as? String
+             if (inner?.get("type") == "hbm:machine_obj" || inner?.get("type") == "hbm:rbmk_fuel_column"
+                 || inner?.get("type") == "hbm:rbmk_block_column") MACHINE_OBJ_LEGACY_MODEL
+             else model["base"] as? String
+         }
+        "minecraft:select" -> {
+            @Suppress("UNCHECKED_CAST")
+            val fallback = model["fallback"]
+            @Suppress("UNCHECKED_CAST")
+            val cases = model["cases"] as? List<Map<String, Any?>> ?: emptyList()
+            if (isMachineObjSpecial(fallback) || cases.any { isMachineObjSpecial(it["model"]) }) {
+                MACHINE_OBJ_LEGACY_MODEL
+            } else null
         }
         else -> null
     }

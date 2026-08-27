@@ -351,8 +351,14 @@ public final class Mats {
         entry(items, com.hbm.items.ModMachineItems.blades_steel.get(), MAT_STEEL, i * 4);
         entry(items, com.hbm.items.ModMachineItems.blades_titanium.get(), MAT_TITANIUM, i * 4);
         entry(items, com.hbm.items.ModItems.pipes_steel.get(), MAT_STEEL, b * 3);
-        entry(items, com.hbm.items.ModItems.casing_9.get(), MAT_GUNMETAL, PLATE.quantity / 4);
-        entry(items, com.hbm.items.ModItems.casing_50.get(), MAT_GUNMETAL, PLATE.quantity / 2);
+        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.SMALL),
+                MAT_GUNMETAL, PLATE.quantity / 4);
+        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.SMALL_STEEL),
+                MAT_WEAPONSTEEL, PLATE.quantity / 4);
+        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.LARGE),
+                MAT_GUNMETAL, PLATE.quantity / 2);
+        entry(items, com.hbm.items.ModCasingItems.casing(com.hbm.items.ItemEnums.EnumCasingType.LARGE_STEEL),
+                MAT_WEAPONSTEEL, PLATE.quantity / 2);
 
         // ores (double yield + trace byproducts + molten stone, per the old MatDistribution)
         tagEntry(tags, "c:ores/iron", MAT_IRON, i * 2, MAT_TITANIUM, n * 3, MAT_STONE, quart);

@@ -53,6 +53,7 @@ public final class HbmJeiPluginCommon {
     private static CrystallizerRecipeHandler crystallizer;
     private static SILEXRecipeHandler silex;
     private static ShredderRecipeHandler shredder;
+    private static SawmillRecipeHandler sawmill;
     private static CrucibleAlloyingHandler crucible;
     private static AnvilConstructionRecipeHandler anvilCon;
     private static AnvilSmithingRecipeHandler anvilSmith;
@@ -111,6 +112,8 @@ public final class HbmJeiPluginCommon {
                 title("silex"), stack(ModMachineBlocks.machine_silex.get()));
         shredder = new ShredderRecipeHandler(helper, HbmJeiRecipeTypes.SHREDDER,
                 title("shredder"), stack(ModMachineBlocks.machine_shredder.get()));
+        sawmill = new SawmillRecipeHandler(helper, HbmJeiRecipeTypes.SAWMILL,
+                title("sawmill"), stack(ModMachineBlocks.machine_sawmill.get()));
         crucible = new CrucibleAlloyingHandler(helper, HbmJeiRecipeTypes.CRUCIBLE_ALLOY,
                 title("crucible_alloy"), stack(ModMachineBlocks.machine_crucible.get()));
         anvilCon = new AnvilConstructionRecipeHandler(helper, HbmJeiRecipeTypes.ANVIL_CON,
@@ -146,7 +149,7 @@ public final class HbmJeiPluginCommon {
         compressor = new CompressorRecipeHandler(helper, HbmJeiRecipeTypes.COMPRESSOR,
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
 
-        reg.addRecipeCategories(assembly, chemplant, purex, fusion, press, soldering, crystallizer, silex, shredder, crucible, anvilCon, anvilSmith,
+        reg.addRecipeCategories(assembly, chemplant, purex, fusion, press, soldering, crystallizer, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                 refinery, fractioning, liquefaction, solidification, boiling, cooling,
                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor);
     }
@@ -170,6 +173,7 @@ public final class HbmJeiPluginCommon {
         SILEXRecipes.register();
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SILEX, SILEXRecipes.recipes);
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SHREDDER, ShredderRecipeHandler.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SAWMILL, SawmillRecipeHandler.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRUCIBLE_ALLOY, CrucibleAlloyingHandler.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ANVIL_CON, AnvilConstructionRecipeHandler.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ANVIL_SMITH, AnvilSmithingRecipeHandler.buildRecipes());
@@ -207,6 +211,7 @@ public final class HbmJeiPluginCommon {
                 new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_bale.get()),
                 new net.minecraft.world.item.ItemStack(com.hbm.items.ModMachineItems.laser_crystal_digamma.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SHREDDER, stack(ModMachineBlocks.machine_shredder.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SAWMILL, stack(ModMachineBlocks.machine_sawmill.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRUCIBLE_ALLOY, stack(ModMachineBlocks.machine_crucible.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ANVIL_CON, anvilIcon());
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ANVIL_SMITH, anvilIcon());

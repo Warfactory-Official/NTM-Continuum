@@ -5,6 +5,8 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
+import com.hbm.items.ItemEnums.EnumCasingType;
+import com.hbm.items.ModCasingItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemMold.Mold;
@@ -24,7 +26,7 @@ import java.util.List;
 /**
  * The casting molds — the 1.12.2 {@code ItemMold} metadata table as one registered item per mold
  * (registry id {@code mold_<name>}), plus the {@code mold_base} crafting blank. Sizes/costs verbatim;
- * the two weaponsteel casing entries are dropped (their enum-casing items aren't ported).
+ * the casing mold entries use the ported metal casing family.
  */
 public final class ModMoldItems {
 
@@ -85,9 +87,11 @@ public final class ModMoldItems {
 
     // --- more small molds ---
     public static final RegistryObject<ItemMold> mold_c9 = mold(new MoldMulti(16, S, "c9", MaterialShapes.PLATE.quantity / 4)
-            .add(Mats.MAT_GUNMETAL, () -> new ItemStack(ModItems.casing_9.get())));
+            .add(Mats.MAT_GUNMETAL, () -> new ItemStack(ModCasingItems.casing(EnumCasingType.SMALL)))
+            .add(Mats.MAT_WEAPONSTEEL, () -> new ItemStack(ModCasingItems.casing(EnumCasingType.SMALL_STEEL))));
     public static final RegistryObject<ItemMold> mold_c50 = mold(new MoldMulti(17, S, "c50", MaterialShapes.PLATE.quantity / 2)
-            .add(Mats.MAT_GUNMETAL, () -> new ItemStack(ModItems.casing_50.get())));
+            .add(Mats.MAT_GUNMETAL, () -> new ItemStack(ModCasingItems.casing(EnumCasingType.LARGE)))
+            .add(Mats.MAT_WEAPONSTEEL, () -> new ItemStack(ModCasingItems.casing(EnumCasingType.LARGE_STEEL))));
 
     public static final RegistryObject<ItemMold> mold_plate_cast = mold(new MoldShape(19, S, "plate_cast", MaterialShapes.CASTPLATE));
     public static final RegistryObject<ItemMold> mold_wire_dense = mold(new MoldShape(20, S, "wire_dense", MaterialShapes.DENSEWIRE));

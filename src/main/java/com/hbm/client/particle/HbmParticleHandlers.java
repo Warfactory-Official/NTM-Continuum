@@ -5,6 +5,8 @@ import dev.golem.core.data.Tags;
 import dev.golem.core.render.Particles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.Blocks;
 
 /**
  * Binds each {@link HbmEffectNT} to the code that builds its particles.
@@ -33,6 +35,7 @@ public final class HbmParticleHandlers {
         HbmEffectNT.RBMKMushSmall.setHandler((level, x, y, z, data) -> spawnRBMKMush(level, x, y, z,
                 Tags.getFloatOr(data, "scale", 5F)));
         HbmEffectNT.MissileContrail.setHandler(HbmParticleHandlers::spawnContrail);
+        HbmEffectNT.SawmillDamage.setHandler(HbmParticleHandlers::spawnSawmillDamage);
     }
 
     /**
@@ -65,6 +68,21 @@ public final class HbmParticleHandlers {
             ParticleRBMKMush.spawn(clientLevel, x, y, z, scale);
             clientLevel.addParticle(net.minecraft.core.particles.ParticleTypes.EXPLOSION_EMITTER,
                     x, y, z, 0D, 0D, 0D);
+        }
+    }
+
+    private static void spawnSawmillDamage(net.minecraft.world.level.Level level, double x, double y, double z,
+                                           CompoundTag data) {
+        if (!(level instanceof ClientLevel clientLevel)) return;
+        int count = Tags.getIntOr(data, "count", 0);
+        var random = clientLevel.getRandom();
+        for (int i = 0; i < count; i++) {
+            Particles.add(new ParticleLargeBlockDebris(clientLevel, x, y, z,
+                    random.nextGaussian() * 0.1D,
+                    random.nextGaussian() * 0.1D + 0.2D,
+                    random.nextGaussian() * 0.1D,
+                    Blocks.REDSTONE_BLOCK.defaultBlockState(),
+                    50 + random.nextInt(50)));
         }
     }
 

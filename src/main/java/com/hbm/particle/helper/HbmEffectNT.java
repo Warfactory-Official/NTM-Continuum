@@ -42,7 +42,9 @@ public enum HbmEffectNT {
     /** The smaller Watz/RBMK cloud. */
     RBMKMushSmall,
     /** One puff of a missile's exhaust trail. Spawned client-side, once per tick per nozzle. */
-    MissileContrail;
+    MissileContrail,
+    /** Redstone block debris thrown from a living entity hit by a running sawmill blade. */
+    SawmillDamage;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

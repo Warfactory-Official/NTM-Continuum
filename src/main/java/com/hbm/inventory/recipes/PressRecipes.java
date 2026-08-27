@@ -5,7 +5,9 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModAutogenItems;
+import com.hbm.items.ModCasingItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.items.machine.ItemStamp.StampType;
 import net.minecraft.world.item.Item;
@@ -20,9 +22,10 @@ import static com.hbm.inventory.OreDictManager.*;
  * Press recipes — shared by the burner press and the electric press. A recipe is keyed by
  * (ingredient, {@link StampType}): inserting an ingredient plus a stamp of the matching type yields the
  * output. Faithful but <b>feasibility-limited</b> port of the 1.12.2 {@code PressRecipes} (see
- * IMPLEMENTATION.md §18): only the metal-<b>plate</b> family is registered here, since every other
- * original recipe needs an un-ported intermediate (dusts, gems, casings, wires, circuits, pages). The
- * plate set matches {@link AssemblyMachineRecipes} (ingot → plate) so the two machines stay consistent.
+ * IMPLEMENTATION.md §18): the metal-<b>plate</b> family and the metal casing family are registered here.
+ * Other original recipes need an un-ported intermediate (dusts, gems, briquettes, shotshell casings,
+ * circuits, pages). The plate set matches {@link AssemblyMachineRecipes} (ingot → plate) so the two
+ * machines stay consistent.
  */
 public final class PressRecipes {
 
@@ -79,6 +82,12 @@ public final class PressRecipes {
         plate(DURA, ModItems.plate_dura_steel.get());
         plate(BIGMT, ModItems.plate_saturnite.get());
         plate(SA326, ModItems.plate_schrabidium.get());
+
+        // --- casings (plate -> casing), verbatim old EnumCasingType variants and counts.
+        makeRecipe(StampType.C9, GUNMETAL.plate(), ModCasingItems.casing(EnumCasingType.SMALL, 4));
+        makeRecipe(StampType.C50, GUNMETAL.plate(), ModCasingItems.casing(EnumCasingType.LARGE, 2));
+        makeRecipe(StampType.C9, WEAPONSTEEL.plate(), ModCasingItems.casing(EnumCasingType.SMALL_STEEL, 4));
+        makeRecipe(StampType.C50, WEAPONSTEEL.plate(), ModCasingItems.casing(EnumCasingType.LARGE_STEEL, 2));
 
         // --- fine wire (ingot -> 8 wire) with the WIRE stamp, for every material that auto-generates WIRE
         // and has a ported ingot — a faithful port of the 1.12.2 PressRecipes Mats.orderedList loop. The
