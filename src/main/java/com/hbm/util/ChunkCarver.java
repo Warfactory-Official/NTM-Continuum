@@ -217,7 +217,8 @@ public final class ChunkCarver {
         Heightmap.primeHeightmaps(chunk, CARVED_HEIGHTMAPS);
         // The lowest sky-light source per column moves wherever a roof opened or closed. This is what the
         // sky-light seeding below reads, so it has to be current before the relight is queued.
-        chunk.getSkyLightSources().fillFrom(chunk);
+        // Replacement light engines can intentionally discard vanilla's source map and intercept this hook.
+        chunk.initializeLightSources();
 
         ThreadedLevelLightEngine lightEngine = level.getChunkSource().getLightEngine();
         ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);

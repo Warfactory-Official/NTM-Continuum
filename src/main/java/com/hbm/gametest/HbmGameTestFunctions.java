@@ -56,6 +56,24 @@ public final class HbmGameTestFunctions {
             TESTS.function("steam_engine_conversion", 40, 8, () -> SteamEngineGameTests::conversion);
     public static final GameTests.Function STEAM_ENGINE_GEAR_RECIPE =
             TESTS.function("steam_engine_gear_recipe", 40, () -> SteamEngineGameTests::gearAndRecipe);
+    public static final GameTests.Function PUMP_LAYOUT =
+            TESTS.function("pump_layout", 100, 8, () -> PumpGameTests::layout);
+    public static final GameTests.Function PUMP_PORTS =
+            TESTS.function("pump_ports", 40, 8, () -> PumpGameTests::ports);
+    public static final GameTests.Function PUMP_CONVERSION =
+            TESTS.function("pump_conversion", 40, 8, () -> PumpGameTests::conversion);
+    public static final GameTests.Function PUMP_RECIPE =
+            TESTS.function("pump_recipe", 40, () -> PumpGameTests::recipe);
+    public static final GameTests.Function STIRLING_LAYOUT =
+            TESTS.function("stirling_layout", 100, 8, () -> StirlingGameTests::layout);
+    public static final GameTests.Function STIRLING_PORTS =
+            TESTS.function("stirling_ports", 40, 8, () -> StirlingGameTests::ports);
+    public static final GameTests.Function STIRLING_CONVERSION =
+            TESTS.function("stirling_conversion", 40, 8, () -> StirlingGameTests::conversion);
+    public static final GameTests.Function STIRLING_VARIANTS_RECIPES =
+            TESTS.function("stirling_variants_recipes", 40, () -> StirlingGameTests::variantsAndRecipes);
+    public static final GameTests.Function STIRLING_MISSING_GEAR =
+            TESTS.function("stirling_missing_gear", 100, 8, () -> StirlingGameTests::missingGearPlacement);
     public static final GameTests.Function CONDENSER_CONVERSION =
             TESTS.function("condenser_conversion", 20, () -> HbmGameTestFunctions::condenserConversion);
     public static final GameTests.Function PUREX_RECIPE_CYCLE =

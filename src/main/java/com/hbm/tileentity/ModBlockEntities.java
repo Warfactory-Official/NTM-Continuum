@@ -26,6 +26,8 @@ import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
 import com.hbm.tileentity.machine.TileEntitySawmill;
+import com.hbm.tileentity.machine.TileEntityStirling;
+import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
@@ -65,6 +67,18 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_steam_engine",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineSteamEngine::new,
                             ModMachineBlocks.machine_steam_engine.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityMachinePumpElectric>> MACHINE_PUMP_ELECTRIC =
+            BLOCK_ENTITIES.register("machine_pump_electric",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityMachinePumpElectric::new,
+                            ModMachineBlocks.machine_pump_electric.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityStirling>> MACHINE_STIRLING =
+            BLOCK_ENTITIES.register("machine_stirling",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityStirling::new,
+                            ModMachineBlocks.machine_stirling.get(),
+                            ModMachineBlocks.machine_stirling_steel.get(),
+                            ModMachineBlocks.machine_stirling_creative.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine>> MACHINE_INDUSTRIAL_TURBINE =
             BLOCK_ENTITIES.register("machine_industrial_turbine",

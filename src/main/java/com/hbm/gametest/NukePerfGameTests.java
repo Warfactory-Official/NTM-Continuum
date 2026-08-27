@@ -741,7 +741,7 @@ public final class NukePerfGameTests {
                     net.minecraft.world.level.ChunkPos.getZ(packed));
             net.minecraft.world.level.levelgen.Heightmap.primeHeightmaps(chunk,
                     java.util.EnumSet.allOf(net.minecraft.world.level.levelgen.Heightmap.Types.class));
-            chunk.getSkyLightSources().fillFrom(chunk);
+            chunk.initializeLightSources();
             var sections = chunk.getSections();
             for (int index = 0; index < sections.length; index++) {
                 lightEngine.updateSectionStatus(

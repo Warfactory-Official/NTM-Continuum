@@ -50,6 +50,18 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineSteamEngine> machine_steam_engine = BLOCKS.registerBlock(
             "machine_steam_engine", MachineSteamEngine::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachinePump> machine_pump_electric = BLOCKS.registerBlock(
+            "machine_pump_electric", MachinePump::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineStirling> machine_stirling = BLOCKS.registerBlock(
+            "machine_stirling", MachineStirling::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineStirling> machine_stirling_steel = BLOCKS.registerBlock(
+            "machine_stirling_steel", MachineStirling::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineStirling> machine_stirling_creative = BLOCKS.registerBlock(
+            "machine_stirling_creative", MachineStirling::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineIndustrialTurbine> machine_industrial_turbine = BLOCKS.registerBlock(
             "machine_industrial_turbine", MachineIndustrialTurbine::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
@@ -370,6 +382,10 @@ public final class ModMachineBlocks {
         tabItem("machine_turbine", machine_turbine);
         tabItem("machine_large_turbine", machine_large_turbine);
         tabItem("machine_steam_engine", machine_steam_engine);
+        tabItem("machine_pump_electric", machine_pump_electric);
+        tabItem("machine_stirling", machine_stirling);
+        tabItem("machine_stirling_steel", machine_stirling_steel);
+        tabItem("machine_stirling_creative", machine_stirling_creative);
         tabItem("machine_industrial_turbine", machine_industrial_turbine);
         tabItem("machine_condenser", machine_condenser);
         tabItem("machine_zirnox", machine_zirnox);

@@ -65,7 +65,9 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModBlockEntities.MACHINE_INDUSTRIAL_TURBINE.get(), ctx -> new IndustrialTurbineRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_LARGE_TURBINE.get(), ctx -> new LargeTurbineRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_STEAM_ENGINE.get(), ctx -> new SteamEngineRenderer());
-        regCustom(sink, ModBlockEntities.MACHINE_PUREX.get(), ctx -> new PUREXRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_PUMP_ELECTRIC.get(), ctx -> new PumpRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_STIRLING.get(), ctx -> new StirlingRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_PUREX.get(), ctx -> new PUREXRenderer());
         // Presses: a static body + a head that descends with the machine's progress.
         regCustom(sink, ModBlockEntities.MACHINE_EPRESS.get(), ctx -> new PressRenderer<>(
                 obj("epress_body.obj"), tex("machines/epress_body.png"),

@@ -1748,6 +1748,9 @@
   "block.hbm.machine_turbine": "Steam Turbine",
   "block.hbm.machine_large_turbine": "Large Steam Turbine",
   "block.hbm.machine_steam_engine": "Steam Engine",
+  "block.hbm.machine_stirling": "Stirling Engine",
+  "block.hbm.machine_stirling_steel": "Heavy Stirling Engine",
+  "block.hbm.machine_stirling_creative": "Creative Stirling Engine",
   "block.hbm.machine_sawmill": "Sawmill",
   "item.hbm.machine_sawmill": "Sawmill",
   "block.hbm.machine_industrial_turbine": "Industrial Steam Turbine",
@@ -2348,5 +2351,6 @@
   "item.hbm.casing_small": "Small Gunmetal Casing",
   "item.hbm.casing_large": "Large Gunmetal Casing",
   "item.hbm.casing_small_steel": "Small Weapon Steel Casing",
-  "item.hbm.casing_large_steel": "Large Weapon Steel Casing"
+  "item.hbm.casing_large_steel": "Large Weapon Steel Casing",
+  "block.hbm.machine_pump_electric": "Electric Groundwater Pump"
 }

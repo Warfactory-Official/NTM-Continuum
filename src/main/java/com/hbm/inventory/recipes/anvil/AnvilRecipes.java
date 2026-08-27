@@ -215,6 +215,15 @@ public final class AnvilRecipes {
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {
+                        new ComparableStack(Blocks.STONE_BRICKS.asItem(), 8),
+                        STEEL.plate().count(16),
+                        PB.pipe().count(4),
+                        new ComparableStack(ModItems.motor.get(), 2),
+                        cir(EnumCircuitType.VACUUM_TUBE, 4)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_pump_electric.get()))).setTier(3));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
                         STEEL.plateCast().count(2),
                         new ComparableStack(ModItems.coil_copper.get(), 4),
                         W.bolt().count(4),
@@ -232,12 +241,66 @@ public final class AnvilRecipes {
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {
+                        new TagStack(ItemTags.PLANKS, 16),
+                        STEEL.plate().count(6),
+                        CU.ingot().count(8),
+                        new ComparableStack(ModItems.coil_copper.get(), 4),
+                        new ComparableStack(com.hbm.items.ModGearItems.gear_large.get().of(0))
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        STEEL.plate().count(16),
+                        BE.ingot().count(6),
+                        CU.ingot().count(8),
+                        new ComparableStack(ModItems.coil_gold.get(), 16),
+                        new ComparableStack(com.hbm.items.ModGearItems.gear_large.get().of(1))
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
                         new ComparableStack(com.hbm.blocks.ModBlocks.reinforced_stone.get().asItem(), 16),
                         STEEL.plate().count(12),
                         STEEL.shell().count(2),
                         new ComparableStack(ModItems.coil_copper.get(), 4),
                         new ComparableStack(com.hbm.items.ModGearItems.gear_large.get().of(0))
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_steam_engine.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new ComparableStack(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling.get().asItem()),
+                new AnvilOutput[]{
+                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 6)),
+                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
+                        new AnvilOutput(new ItemStack(ModItems.coil_copper.get(), 4)),
+                        new AnvilOutput(com.hbm.items.ModGearItems.gear_large.get().of(0))
+                }).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new ComparableStack(stirlingItemVariant(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling.get(), 1)),
+                new AnvilOutput[]{
+                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 6)),
+                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
+                        new AnvilOutput(new ItemStack(ModItems.coil_copper.get(), 4))
+                }).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new ComparableStack(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel.get().asItem()),
+                new AnvilOutput[]{
+                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16)),
+                        new AnvilOutput(new ItemStack(ModItems.ingot_beryllium.get(), 6)),
+                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
+                        new AnvilOutput(new ItemStack(ModItems.coil_gold.get(), 16)),
+                        new AnvilOutput(com.hbm.items.ModGearItems.gear_large.get().of(1))
+                }).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new ComparableStack(stirlingItemVariant(com.hbm.blocks.machine.ModMachineBlocks.machine_stirling_steel.get(), 1)),
+                new AnvilOutput[]{
+                        new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16)),
+                        new AnvilOutput(new ItemStack(ModItems.ingot_beryllium.get(), 6)),
+                        new AnvilOutput(new ItemStack(ModItems.ingot_copper.get(), 8)),
+                        new AnvilOutput(new ItemStack(ModItems.coil_gold.get(), 16))
+                }).setTier(2));
 
         // -------- special plates whose items exist --------
         add(new AnvilConstructionRecipe(
@@ -356,6 +419,12 @@ public final class AnvilRecipes {
 
     private static ComparableStack cir(EnumCircuitType type, int count) {
         return new ComparableStack(ModIntermediateItems.circuit(type), count);
+    }
+
+    private static ItemStack stirlingItemVariant(Block block, int variant) {
+        ItemStack stack = new ItemStack(block.asItem());
+        com.hbm.items.ModDataComponents.ITEM_VARIANT.set(stack, variant);
+        return stack;
     }
 
     /** A construction recipe: consume the {@link AStack} inputs from the player's inventory, give the

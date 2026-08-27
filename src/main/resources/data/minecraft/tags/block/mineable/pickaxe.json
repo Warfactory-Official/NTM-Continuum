@@ -54,6 +54,7 @@
     "hbm:machine_epress",
     "hbm:machine_press",
     "hbm:machine_large_turbine",
+    "hbm:machine_pump_electric",
     "hbm:machine_shredder",
     "hbm:machine_assembly_machine",
     "hbm:machine_chemical_plant",
