@@ -12,6 +12,8 @@ import com.hbm.config.FalloutConfig;
 import com.hbm.config.FalloutConfig.FalloutEntry;
 import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.util.ChunkCarver;
+import com.hbm.world.biome.ModBiomes;
+import dev.golem.core.world.Biomes;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -53,8 +55,8 @@ import dev.golem.core.data.DataOut;
  * back on the server thread under the budget. A fully single-threaded version processed 1–3 chunks
  * per tick and took minutes over a Fat Man's disc; the fork finished in tens of seconds.
  *
- * <p>Deferred vs the fork: the crater biome rewrite ({@code getBiomeChange}) and the post-fallout
- * thunderstorm.
+     * <p>Deferred vs the fork: the post-fallout thunderstorm. Biome coordinates are collected on the worker;
+     * biome state is resolved and rewritten on the server thread.
  *
  * <p>The chunk lists survive save/reload via NBT ({@code chunks}/{@code outerChunks} int-pair arrays);
  * chunks leave the lists only once their writes are fully applied, so an interrupted sweep resumes
@@ -331,6 +333,7 @@ public class EntityFalloutRain extends CompatEntity {
             } catch (RuntimeException | Error e) {
                 com.hbm.Constants.LOG.error("[FALLOUT] chunk scan failed; skipping that chunk", e);
                 scan.writes.clear();
+                scan.biomes.clear();
             } finally {
                 completedScans.add(scan);
             }
@@ -433,6 +436,7 @@ public class EntityFalloutRain extends CompatEntity {
     private static final class ChunkScan {
         final long chunkPos;
         final List<BlockWrite> writes = new ArrayList<>();
+        final List<BiomeWrite> biomes = new ArrayList<>();
         int appliedUpTo = 0;
 
         /** Cells the write pass actually changed, and what they were, for the notify pass. */
@@ -441,6 +445,8 @@ public class EntityFalloutRain extends CompatEntity {
         int notifiedUpTo = 0;
         boolean[] touched;
         boolean writesDone = false;
+        boolean biomesDone = false;
+        boolean biomesChanged = false;
         /** Ticks spent waiting for the neighbourhood to arrive before the notify pass. */
         int notifyWaits = 0;
 
@@ -450,6 +456,8 @@ public class EntityFalloutRain extends CompatEntity {
     }
 
     private record BlockWrite(long pos, BlockState state) {}
+
+    private record BiomeWrite(int x, int z, double distancePercent, int scale) {}
 
     /**
      * Applies one chunk's writes, <b>through its sections</b>, and repairs the chunk once at the end.
@@ -485,6 +493,11 @@ public class EntityFalloutRain extends CompatEntity {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
 
         if (!scan.writesDone && !writePass(server, chunk, scan, pos, deadline)) return false;
+
+        if (!scan.biomesDone) {
+            scan.biomesChanged = applyBiomeWrites(server, chunk, scan.biomes);
+            scan.biomesDone = true;
+        }
 
         // Park rather than read through a chunk nobody has.
         //
@@ -655,6 +668,14 @@ public class EntityFalloutRain extends CompatEntity {
         }
         scan.notifiedUpTo = scan.changedPos.size();
 
+        if (scan.changedPos.isEmpty() && scan.biomesChanged) {
+            // No block write will produce a packet for this chunk, but clients still need the new biome
+            // container. This is the same logical-main-thread handoff as the full repair path below.
+            dev.golem.core.world.Compat.markUnsaved(chunk);
+            Biomes.resend(server, chunk);
+            return true;
+        }
+
         ChunkCarver.repairAndResend(server, chunk, cx, cz, scan.touched);
         return true;
     }
@@ -729,7 +750,7 @@ public class EntityFalloutRain extends CompatEntity {
      * Scans one chunk into an ordered write list. Runs on a pool thread: every read is confined to the
      * given {@link LevelChunk} (block states, the chunk-local heightmap, chunk-as-BlockGetter shape
      * queries) — never {@code Level}/{@code ServerLevel}, whose chunk access is main-thread-guarded.
-     * Decisions are made against pre-write state, exactly like the fork's off-thread scan.
+     * Biome decisions are deferred because biome containers are not worker-safe.
      */
     private void scanChunk(ChunkScan scan, LevelChunk chunk, boolean clampToRadius, double ex, double ez, int scale) {
         int minX = chunk.getPos().getMinBlockX();
@@ -741,9 +762,25 @@ public class EntityFalloutRain extends CompatEntity {
                 double distance = Math.hypot(x - ex, z - ez);
                 if (clampToRadius && distance > scale) continue;
                 double percent = distance * 100.0 / scale;
+                if (scale >= 25) scan.biomes.add(new BiomeWrite(x, z, percent, scale));
                 stompColumn(scan, chunk, x, z, percent, rand);
             }
         }
+    }
+
+    /** Resolves original biome holders and mutates biome containers only from the server-thread apply phase. */
+    private static boolean applyBiomeWrites(ServerLevel server, LevelChunk chunk, List<BiomeWrite> writes) {
+        if (writes.isEmpty()) return false;
+        List<Biomes.Change> changes = new ArrayList<>(writes.size());
+        for (BiomeWrite write : writes) {
+            var original = chunk.getNoiseBiome(write.x() >> 2, 0, write.z() >> 2);
+            ModBiomes.Type type = ModBiomes.changeFor(write.distancePercent(), write.scale(), original);
+            if (type != null) {
+                changes.add(new Biomes.Change(write.x(), write.z(), ModBiomes.holder(server.registryAccess(), type),
+                        ModBiomes.preserve(type)));
+            }
+        }
+        return Biomes.apply(chunk, changes);
     }
 
     /**

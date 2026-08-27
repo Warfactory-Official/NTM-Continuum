@@ -92,6 +92,11 @@ public final class WorldConfig {
     public static boolean enableMalachite = true;
     public static boolean enableBauxite = true;
 
+    // ---------------------------------------------------------------- crater fallout biomes
+
+    /** Whether fallout sweeps may replace overworld biome columns with the crater biomes. */
+    public static boolean enableCraterBiomes = true;
+
     // ---------------------------------------------------------------- nether (count/chunk)
 
     public static int netherUraniumSpawn = 8;

@@ -12,7 +12,8 @@
   ],
   "client": [
     "MixinGui",
-    "MixinHumanoidModel"
+    "MixinHumanoidModel",
+    "MixinBiome"
   ],
   "server": [],
   "injectors": {

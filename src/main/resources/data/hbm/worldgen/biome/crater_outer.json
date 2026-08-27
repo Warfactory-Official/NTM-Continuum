@@ -1,0 +1,37 @@
+{
+  "attributes": {
+    "minecraft:visual/fog_color": "#6b9189",
+    "minecraft:visual/sky_color": "#6b9189",
+    "minecraft:visual/water_fog_color": "#050533"
+  },
+  "carvers": [],
+  "downfall": 0.0,
+  "effects": {
+    "foliage_color": "#6a7039",
+    "grass_color": "#6f6752",
+    "water_color": "#e0ffae"
+  },
+  "features": [[], [], [], [], [], [], [], [], [], [], []],
+  "has_precipitation": false,
+  "spawn_costs": {},
+  "spawners": {
+    "ambient": [],
+    "axolotls": [],
+    "creature": [],
+    "misc": [],
+    "monster": [
+      {"type": "minecraft:spider", "weight": 100, "minCount": 4, "maxCount": 4},
+      {"type": "minecraft:zombie", "weight": 95, "minCount": 4, "maxCount": 4},
+      {"type": "minecraft:zombie_villager", "weight": 5, "minCount": 1, "maxCount": 1},
+      {"type": "minecraft:skeleton", "weight": 100, "minCount": 4, "maxCount": 4},
+      {"type": "minecraft:creeper", "weight": 100, "minCount": 4, "maxCount": 4},
+      {"type": "minecraft:slime", "weight": 100, "minCount": 4, "maxCount": 4},
+      {"type": "minecraft:enderman", "weight": 10, "minCount": 1, "maxCount": 4},
+      {"type": "minecraft:witch", "weight": 5, "minCount": 1, "maxCount": 1}
+    ],
+    "underground_water_creature": [],
+    "water_ambient": [],
+    "water_creature": []
+  },
+  "temperature": 0.5
+}

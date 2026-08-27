@@ -10,7 +10,9 @@ import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
+import com.hbm.world.biome.ModBiomes;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.Biomes;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 /** Shared, server-only GameTest functions and execution budgets. */
@@ -30,6 +32,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("turbine_slots", 20, () -> HbmGameTestFunctions::turbineSlots);
     public static final GameTests.Function TURBINE_MENU =
             TESTS.function("turbine_menu", 20, () -> HbmGameTestFunctions::turbineMenu);
+    public static final GameTests.Function CRATER_BIOME_REGISTRY =
+            TESTS.function("crater_biome_registry", 20, () -> HbmGameTestFunctions::craterBiomeRegistry);
     public static final GameTests.Function INDUSTRIAL_TURBINE_LAYOUT =
             TESTS.function("industrial_turbine_layout", 100, 8, () -> IndustrialTurbineGameTests::layout);
     public static final GameTests.Function INDUSTRIAL_TURBINE_PORTS =
@@ -1464,6 +1468,50 @@ public final class HbmGameTestFunctions {
         helper.assertFalse(wreck.isOnFire(), "ZIRNOX wreck extinguish did not persist");
         helper.setBlock(core.above(), com.hbm.blocks.ModNuclearBlocks.gas_meltdown.get().defaultBlockState());
         helper.assertBlockPresent(com.hbm.blocks.ModNuclearBlocks.gas_meltdown.get(), core.above());
+        helper.succeed();
+    }
+
+    private static void craterBiomeRegistry(GameTestHelper helper) {
+        var registries = helper.getLevel().registryAccess();
+        for (ModBiomes.Type type : ModBiomes.Type.values()) {
+            var holder = ModBiomes.holder(registries, type);
+            helper.assertTrue(holder.value() != null, "Missing crater biome holder for " + type);
+        }
+
+        var plains = Biomes.holder(registries, Biomes.key("minecraft", "plains"));
+        helper.assertTrue(ModBiomes.changeFor(14.99, 150, plains) == ModBiomes.Type.INNER,
+                "Inner crater threshold is incorrect");
+        helper.assertTrue(ModBiomes.changeFor(54.99, 100, plains) == ModBiomes.Type.CRATER,
+                "Crater threshold is incorrect");
+        helper.assertTrue(ModBiomes.changeFor(99.0, 25, plains) == ModBiomes.Type.OUTER,
+                "Outer crater threshold is incorrect");
+        helper.assertTrue(ModBiomes.changeFor(10.0, 100, ModBiomes.holder(registries, ModBiomes.Type.INNER)) == null,
+                "Inner crater must be preserved");
+
+        var position = helper.absolutePos(new net.minecraft.core.BlockPos(1, 1, 1));
+        var chunk = helper.getLevel().getChunk(position.getX() >> 4, position.getZ() >> 4);
+        var target = ModBiomes.holder(registries, ModBiomes.Type.INNER);
+        boolean changed = Biomes.apply(chunk, java.util.List.of(new Biomes.Change(
+                position.getX(), position.getZ(), target, holder -> false)));
+        helper.assertTrue(changed, "Biome section mutation did not report a change");
+        helper.assertTrue(chunk.getNoiseBiome(position.getX() >> 2, position.getY() >> 2, position.getZ() >> 2)
+                        .is(ModBiomes.crater_inner),
+                "Biome section mutation did not write the requested holder");
+
+        boolean preserved = Biomes.apply(chunk, java.util.List.of(new Biomes.Change(
+                position.getX(), position.getZ(), ModBiomes.holder(registries, ModBiomes.Type.OUTER),
+                ModBiomes.preserve(ModBiomes.Type.OUTER))));
+        helper.assertFalse(preserved, "Outer crater must preserve an existing inner crater cell");
+
+        var secondColumn = position.offset(1, 0, 1);
+        boolean sameQuartCell = Biomes.apply(chunk, java.util.List.of(
+                new Biomes.Change(position.getX(), position.getZ(), ModBiomes.holder(registries, ModBiomes.Type.OUTER),
+                        holder -> false),
+                new Biomes.Change(secondColumn.getX(), secondColumn.getZ(), target, holder -> false)));
+        helper.assertTrue(sameQuartCell, "Multiple columns in one quart cell did not produce one replacement");
+        helper.assertTrue(chunk.getNoiseBiome(secondColumn.getX() >> 2, secondColumn.getY() >> 2,
+                        secondColumn.getZ() >> 2).is(ModBiomes.crater_inner),
+                "Last replacement did not win within one quart cell");
         helper.succeed();
     }
 

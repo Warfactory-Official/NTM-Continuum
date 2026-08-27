@@ -103,6 +103,7 @@ public final class MainRegistry {
         com.hbm.items.ModGunItems.init();   // the Sedna guns
         com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them
         com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)
+        com.hbm.world.biome.ModBiomes.init(); // crater biome keys, backed by worldgen biome JSON
         ModBlockEntities.init();
         com.hbm.tileentity.ModRBMKBlockEntities.init();
         ModMenus.init();

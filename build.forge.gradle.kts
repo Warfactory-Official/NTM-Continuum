@@ -137,6 +137,7 @@ extra["java_version"] = javaVersion.toString()
 extra["convention_namespace"] = "forge"
 apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
+apply(from = rootProject.file("gradle/legacy-biomes.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
 apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
 
