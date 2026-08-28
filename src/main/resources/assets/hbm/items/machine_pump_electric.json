@@ -1,6 +1,15 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "hbm:item/machine_pump_electric"
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/pump.obj",
+      "texture": "hbm:textures/models/machines/pump_electric.png",
+      "noCull": true,
+      "scale": 0.2,
+      "yaw": 90,
+      "ty": 0.0
+    }
   }
 }

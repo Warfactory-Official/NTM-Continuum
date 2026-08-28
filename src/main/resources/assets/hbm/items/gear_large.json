@@ -13,13 +13,14 @@
             "obj": "hbm:models/machines/stirling.obj",
             "texture": "hbm:textures/models/machines/stirling_steel.png",
             "scale": 0.372,
-            "yaw": -45.0,
-            "pitch": 30.0,
+            "yaw": 90.0,
             "exclude": [
               "Base",
               "CogSmall",
               "Piston"
             ],
+            "spinParts": ["Cog"],
+            "spinPivot": [0.0, 1.375, 0.0],
             "spin": true
           }
         }
@@ -33,13 +34,14 @@
         "obj": "hbm:models/machines/stirling.obj",
         "texture": "hbm:textures/models/machines/stirling.png",
         "scale": 0.372,
-        "yaw": -45.0,
-        "pitch": 30.0,
+        "yaw": 90.0,
         "exclude": [
           "Base",
           "CogSmall",
           "Piston"
         ],
+        "spinParts": ["Cog"],
+        "spinPivot": [0.0, 1.375, 0.0],
         "spin": true
       }
     }

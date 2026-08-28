@@ -55,8 +55,9 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
 
     /** The data-driven, codec-backed factory for this renderer (one entry per machine in the item JSON). */
     public record Unbaked(Identifier obj, Identifier texture, boolean noCull, float scale, float yaw, float pitch, float ty, List<String> exclude,
-                          Optional<Identifier> overlayTexture, List<String> overlayParts, boolean mtl,
-                          List<String> rotateParts, float rotateX, List<Float> rotatePivot, boolean spin) implements NoDataSpecialModelRenderer.Unbaked {
+                           Optional<Identifier> overlayTexture, List<String> overlayParts, boolean mtl,
+                           List<String> rotateParts, float rotateX, List<Float> rotatePivot,
+                           List<String> spinParts, List<Float> spinPivot) implements NoDataSpecialModelRenderer.Unbaked {
 
         public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Identifier.CODEC.fieldOf("obj").forGetter(Unbaked::obj),
@@ -73,7 +74,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                 Codec.STRING.listOf().optionalFieldOf("rotateParts", List.of()).forGetter(Unbaked::rotateParts),
                 Codec.FLOAT.optionalFieldOf("rotateX", 0.0F).forGetter(Unbaked::rotateX),
                 Codec.FLOAT.listOf().optionalFieldOf("rotatePivot", List.of()).forGetter(Unbaked::rotatePivot),
-                Codec.BOOL.optionalFieldOf("spin", false).forGetter(Unbaked::spin)
+                Codec.STRING.listOf().optionalFieldOf("spinParts", List.of()).forGetter(Unbaked::spinParts),
+                Codec.FLOAT.listOf().optionalFieldOf("spinPivot", List.of()).forGetter(Unbaked::spinPivot)
         ).apply(i, Unbaked::new));
 
         @Override
@@ -88,6 +90,9 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
             Vector3f pivot = rotatePivot.size() == 3
                     ? new Vector3f(rotatePivot.get(0), rotatePivot.get(1), rotatePivot.get(2))
                     : new Vector3f();
+            Vector3f spinningPivot = spinPivot.size() == 3
+                    ? new Vector3f(spinPivot.get(0), spinPivot.get(1), spinPivot.get(2))
+                    : new Vector3f();
             java.util.Map<String, RenderType> types = java.util.Map.of();
             if (mtl) {
                 // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
@@ -101,7 +106,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
             }
             return new MachineItemModelRenderer(new MachineItemModel(loaded, cutout(texture, noCull),
                     scale, yaw, pitch, ty, Set.copyOf(exclude), overlay, List.copyOf(overlayParts),
-                    List.copyOf(rotateParts), rotateX, pivot, types, spin));
+                    List.copyOf(rotateParts), rotateX, pivot, List.copyOf(spinParts), spinningPivot, types,
+                    !spinParts.isEmpty()));
         }
     }
 

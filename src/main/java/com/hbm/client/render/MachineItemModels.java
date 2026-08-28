@@ -228,6 +228,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         boolean noCull = bool(json, "noCull", false);
         Identifier overlayTexture = id(json, "overlayTexture", null);
         List<Float> pivot = floats(json, "rotatePivot");
+        List<Float> spinPivot = floats(json, "spinPivot");
 
         Map<String, RenderType> materialTypes = Map.of();
         if (bool(json, "mtl", false)) {
@@ -256,6 +257,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 strings(json, "rotateParts"),
                 f(json, "rotateX", 0.0F),
                 pivot.size() == 3 ? new Vector3f(pivot.get(0), pivot.get(1), pivot.get(2)) : new Vector3f(),
+                strings(json, "spinParts"),
+                spinPivot.size() == 3 ? new Vector3f(spinPivot.get(0), spinPivot.get(1), spinPivot.get(2)) : new Vector3f(),
                 materialTypes,
                 bool(json, "spin", false));
     }

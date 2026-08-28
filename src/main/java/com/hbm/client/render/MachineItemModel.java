@@ -57,6 +57,9 @@ public final class MachineItemModel {
     private final List<String> rotateParts;
     private final float rotateX;
     private final Vector3f rotatePivot;
+    /** Parts that use the legacy inventory spin around {@link #spinPivot}. */
+    private final List<String> spinParts;
+    private final Vector3f spinPivot;
     /** Multi-texture mode ({@code "mtl": true}): material name → its render type, from the OBJ's .mtl. */
     private final Map<String, RenderType> materialTypes;
     /** Whether this item has the old continuously rotating inventory pose. */
@@ -65,7 +68,8 @@ public final class MachineItemModel {
     public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, float yaw, float pitch, float ty,
                             Set<String> exclude, @Nullable RenderType overlayType, List<String> overlayParts,
                             List<String> rotateParts, float rotateX, Vector3f rotatePivot,
-                            Map<String, RenderType> materialTypes, boolean spin) {
+                            List<String> spinParts, Vector3f spinPivot, Map<String, RenderType> materialTypes,
+                            boolean spin) {
         this.model = model;
         this.renderType = renderType;
         this.scale = scale;
@@ -77,6 +81,8 @@ public final class MachineItemModel {
         this.rotateParts = rotateParts;
         this.rotateX = rotateX;
         this.rotatePivot = rotatePivot;
+        this.spinParts = spinParts;
+        this.spinPivot = spinPivot;
         this.materialTypes = materialTypes;
         this.spin = spin;
         // Framing is centred on what is actually drawn, which is everything except the caller's own
@@ -87,6 +93,8 @@ public final class MachineItemModel {
         Set<String> merged = new HashSet<>(exclude);
         if (overlayType != null && !overlayParts.isEmpty()) merged.addAll(overlayParts);
         merged.addAll(rotateParts);
+        merged.addAll(spinParts);
+        if (spinParts.contains("Stirling")) merged.addAll(List.of("Cog", "CogSmall", "Piston"));
         this.exclude = merged;
     }
 
@@ -99,7 +107,6 @@ public final class MachineItemModel {
     public void submit(PoseStack poseStack, SubmitSink sink, int lightCoords, int overlayCoords) {
         poseStack.pushPose();
         applyTransform(poseStack);
-        if (spin) poseStack.mulPose(Axis.ZP.rotationDegrees(System.currentTimeMillis() % 3600L * 0.1F));
         if (!materialTypes.isEmpty()) {
             for (Map.Entry<String, RenderType> e : materialTypes.entrySet()) {
                 String mat = e.getKey();
@@ -127,6 +134,18 @@ public final class MachineItemModel {
             poseStack.translate(-rotatePivot.x, -rotatePivot.y, -rotatePivot.z);
             sink.submitCustomGeometry(poseStack, type, (pose, buffer) -> {
                 for (String part : rotateParts) model.renderPart(part, pose, buffer, lightCoords, overlayCoords);
+            });
+            poseStack.popPose();
+        }
+        if (spin && spinParts.contains("Stirling")) {
+            submitStirlingAnimation(poseStack, sink, lightCoords, overlayCoords);
+        } else if (spin && !spinParts.isEmpty()) {
+            poseStack.pushPose();
+            spinAround(poseStack, spinPivot, System.currentTimeMillis() % 3600L * 0.1F);
+            sink.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
+                for (String part : spinParts) if (!userExclude.contains(part)) {
+                    model.renderPart(part, pose, buffer, lightCoords, overlayCoords);
+                }
             });
             poseStack.popPose();
         }
@@ -163,5 +182,39 @@ public final class MachineItemModel {
         if (pitch != 0F) poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
         poseStack.scale(scale, scale, scale);
         poseStack.translate(-cx, -cy, -cz);
+    }
+
+    private void spinAround(PoseStack poseStack, Vector3f pivot, float angle) {
+        // applyTransform has already centred the OBJ. Pivots remain in its original local coordinates.
+        poseStack.translate(pivot.x, pivot.y, pivot.z);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(angle));
+        poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
+    }
+
+    /** The legacy Stirling inventory icon animates its three moving parts independently. */
+    private void submitStirlingAnimation(PoseStack poseStack, SubmitSink sink, int lightCoords, int overlayCoords) {
+        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
+        if (!userExclude.contains("Cog")) {
+            poseStack.pushPose();
+            spinAround(poseStack, new Vector3f(0F, 1.375F, 0F), -rotation);
+            submitPart(poseStack, sink, "Cog", lightCoords, overlayCoords);
+            poseStack.popPose();
+        }
+        poseStack.pushPose();
+        poseStack.translate(0F, 1.375F, 0.25F);
+        poseStack.mulPose(Axis.XP.rotationDegrees(rotation * 2F + 3F));
+        poseStack.translate(0F, -1.375F, -0.25F);
+        submitPart(poseStack, sink, "CogSmall", lightCoords, overlayCoords);
+        poseStack.popPose();
+
+        poseStack.pushPose();
+        poseStack.translate(Math.sin(rotation * Math.PI / 90D) * 0.25D + 0.125D, 0F, 0F);
+        submitPart(poseStack, sink, "Piston", lightCoords, overlayCoords);
+        poseStack.popPose();
+    }
+
+    private void submitPart(PoseStack poseStack, SubmitSink sink, String part, int lightCoords, int overlayCoords) {
+        sink.submitCustomGeometry(poseStack, renderType,
+                (pose, buffer) -> model.renderPart(part, pose, buffer, lightCoords, overlayCoords));
     }
 }
