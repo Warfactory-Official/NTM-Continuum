@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:barrels_light/steel",
+    "R": "#c:receivers_light/steel",
+    "M": "#c:mechanisms/gunmetal",
+    "G": "#c:grips/wood"
+  },
+  "pattern": [
+    "BRM",
+    "  G"
+  ],
+  "result": {
+    "id": "hbm:gun_light_revolver"
+  }
+}

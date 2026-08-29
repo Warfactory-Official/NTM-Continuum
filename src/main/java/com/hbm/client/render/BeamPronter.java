@@ -6,8 +6,9 @@ import dev.golem.core.render.Vertexes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.Random;
 
 /**
  * The 1.12.2 {@code BeamPronter} SOLID/STRAIGHT beam, ported to the 26.1 submit API. The original drew
@@ -16,8 +17,8 @@ import net.minecraft.world.phys.Vec3;
  * (POSITION_COLOR triangles, {@code BlendFunction.LIGHTNING} additive, depth-write OFF) — each quad is
  * emitted as two triangles, double-wound to reproduce the original's cull-off visibility.
  *
- * <p>Layer colours interpolate inner→outer ({@code BobMathUtil.interpolateColor}), so a 3-layer beam is a
- * white core wrapped in progressively outer-coloured shells whose additive overlap forms the hot centre.
+ * <p>The legacy helper also emitted randomized/spiral line beams. Those use the same thin crossed-prism
+ * geometry here because the modern lightning pipeline does not expose the old immediate-mode line width.
  */
 public final class BeamPronter {
 
@@ -29,6 +30,14 @@ public final class BeamPronter {
      */
     public static void prontBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
                                  int outerColor, int innerColor, int layers, float thickness) {
+        prontBeam(ps, collector, skeleton, EnumWaveType.STRAIGHT, EnumBeamType.SOLID,
+                0, 1, 0F, outerColor, innerColor, layers, thickness);
+    }
+
+    /** Full legacy beam contract used by the Exposure Chamber's animated line effects. */
+    public static void prontBeam(PoseStack ps, SubmitSink collector, Vec3 skeleton,
+                                 EnumWaveType wave, EnumBeamType beam, int start, int segments,
+                                 float size, int outerColor, int innerColor, int layers, float thickness) {
 
         ps.pushPose();
 
@@ -41,38 +50,91 @@ public final class BeamPronter {
         ps.mulPose(Axis.YP.rotationDegrees(sYaw));
         ps.mulPose(Axis.XP.rotationDegrees(sPitch - 90));
 
-        float length = (float) skeleton.length();
-        float radius = thickness / layers;
+        int segmentCount = Math.max(1, segments);
+        float segmentLength = (float) skeleton.length() / segmentCount;
 
-        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(), (pose, buffer) -> {
-            for (int j = 1; j <= layers; j++) {
-                int color = layers == 1 ? outerColor
-                        : interpolateColor(innerColor, outerColor, (float) (j - 1) / (layers - 1));
-                float radJ = radius * j;
-
-                // The 4 axis-plane quads of the old SOLID beam (single segment: 0 → length along +Y).
-                quad(pose, buffer, color, +radJ, +radJ, +radJ, -radJ, length);   // x = +radJ plane
-                quad(pose, buffer, color, -radJ, +radJ, -radJ, -radJ, length);   // x = -radJ plane
-                quadZ(pose, buffer, color, +radJ, length);                        // z = +radJ plane
-                quadZ(pose, buffer, color, -radJ, length);                        // z = -radJ plane
-            }
-        });
+        if (beam == EnumBeamType.LINE) {
+            collector.submitCustomGeometry(ps, CompatRenderTypes.lightning(),
+                    (pose, buffer) -> drawLineBeam(pose, buffer, wave, start, size, segmentCount, segmentLength,
+                            outerColor, innerColor));
+        } else {
+            collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+                    (pose, buffer) -> drawSolidBeam(pose, buffer, wave, start, size, layers, thickness,
+                            segmentCount, segmentLength, outerColor, innerColor));
+        }
 
         ps.popPose();
     }
 
-    /** A vertical quad in the x=const plane between z0/z1 from y=0 to y=len (both windings). */
-    private static void quad(PoseStack.Pose pose, VertexConsumer buf, int color,
-                             float x0, float z0, float x1, float z1, float len) {
-        tris(pose, buf, color,
-                x0, 0, z0, x1, 0, z1, x1, len, z1, x0, len, z0);
+    private static void drawSolidBeam(PoseStack.Pose pose, VertexConsumer buffer, EnumWaveType wave, int start,
+                                      float size, int layers, float thickness, int segments, float segmentLength,
+                                      int outerColor, int innerColor) {
+        Random random = new Random(start);
+        float lastX = 0F, lastY = 0F, lastZ = 0F;
+        float radius = layers <= 0 ? 0F : thickness / layers;
+        for (int i = 0; i <= segments; i++) {
+            float[] offset = waveOffset(wave, size, start, i, random);
+            float x = offset[0];
+            float y = segmentLength * i;
+            float z = offset[1];
+            if (i > 0) {
+                for (int layer = 1; layer <= layers; layer++) {
+                    float inter = layers <= 1 ? 0F : (float) (layer - 1) / (layers - 1);
+                    int color = layers == 1 ? outerColor : interpolateColor(innerColor, outerColor, inter);
+                    segmentPrism(pose, buffer, color, lastX, lastY, lastZ, x, y, z, radius * layer);
+                }
+            }
+            lastX = x;
+            lastY = y;
+            lastZ = z;
+        }
     }
 
-    /** A vertical quad in the z=const plane spanning x=-|z| .. +|z| from y=0 to y=len (both windings). */
-    private static void quadZ(PoseStack.Pose pose, VertexConsumer buf, int color, float z, float len) {
-        float r = Math.abs(z);
-        tris(pose, buf, color,
-                +r, 0, z, -r, 0, z, -r, len, z, +r, len, z);
+    private static void drawLineBeam(PoseStack.Pose pose, VertexConsumer buffer, EnumWaveType wave, int start,
+                                     float size, int segments, float segmentLength, int outerColor, int innerColor) {
+        Random random = new Random(start);
+        float lastX = 0F, lastY = 0F, lastZ = 0F;
+        for (int i = 0; i <= segments; i++) {
+            float[] offset = waveOffset(wave, size, start, i, random);
+            float x = offset[0];
+            float y = segmentLength * i;
+            float z = offset[1];
+            if (i > 0) segmentPrism(pose, buffer, outerColor, lastX, lastY, lastZ, x, y, z, 0.01F);
+            lastX = x;
+            lastY = y;
+            lastZ = z;
+        }
+        segmentPrism(pose, buffer, innerColor, 0F, 0F, 0F, 0F, segmentLength * segments, 0F, 0.01F);
+    }
+
+    private static float[] waveOffset(EnumWaveType wave, float size, int start, int segment, Random random) {
+        if (wave == EnumWaveType.SPIRAL) {
+            double angle = Math.toRadians(start + 45F * segment);
+            return new float[]{(float) (Math.cos(angle) * size), (float) (-Math.sin(angle) * size)};
+        }
+        if (wave == EnumWaveType.RANDOM) {
+            double angle = (random.nextFloat() + random.nextFloat()) * Math.PI * 2D;
+            return new float[]{(float) (Math.cos(angle) * size), (float) (-Math.sin(angle) * size)};
+        }
+        return new float[]{0F, 0F};
+    }
+
+    private static void segmentPrism(PoseStack.Pose pose, VertexConsumer buffer, int color,
+                                     float x0, float y0, float z0, float x1, float y1, float z1, float radius) {
+        quad(pose, buffer, color, x0 + radius, y0, z0 + radius, x0 + radius, y0, z0 - radius,
+                x1 + radius, y1, z1 - radius, x1 + radius, y1, z1 + radius);
+        quad(pose, buffer, color, x0 - radius, y0, z0 + radius, x0 - radius, y0, z0 - radius,
+                x1 - radius, y1, z1 - radius, x1 - radius, y1, z1 + radius);
+        quad(pose, buffer, color, x0 + radius, y0, z0 + radius, x0 - radius, y0, z0 + radius,
+                x1 - radius, y1, z1 + radius, x1 + radius, y1, z1 + radius);
+        quad(pose, buffer, color, x0 + radius, y0, z0 - radius, x0 - radius, y0, z0 - radius,
+                x1 - radius, y1, z1 - radius, x1 + radius, y1, z1 - radius);
+    }
+
+    private static void quad(PoseStack.Pose pose, VertexConsumer buffer, int color,
+                             float ax, float ay, float az, float bx, float by, float bz,
+                             float cx, float cy, float cz, float dx, float dy, float dz) {
+        tris(pose, buffer, color, ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz);
     }
 
     /** Emits the quad (a,b,c,d) as two triangles, in both windings (the old no-cull additive pass). */
@@ -94,9 +156,12 @@ public final class BeamPronter {
 
     /** Per-channel linear colour interpolation (the old {@code BobMathUtil.interpolateColor}). */
     private static int interpolateColor(int from, int to, float inter) {
-        int r = Mth.lerpInt(inter, (from >> 16) & 0xFF, (to >> 16) & 0xFF);
-        int g = Mth.lerpInt(inter, (from >> 8) & 0xFF, (to >> 8) & 0xFF);
-        int b = Mth.lerpInt(inter, from & 0xFF, to & 0xFF);
+        int r = (int) ((from >> 16 & 0xFF) + ((to >> 16 & 0xFF) - (from >> 16 & 0xFF)) * inter);
+        int g = (int) ((from >> 8 & 0xFF) + ((to >> 8 & 0xFF) - (from >> 8 & 0xFF)) * inter);
+        int b = (int) ((from & 0xFF) + ((to & 0xFF) - (from & 0xFF)) * inter);
         return (r << 16) | (g << 8) | b;
     }
+
+    public enum EnumWaveType { STRAIGHT, RANDOM, SPIRAL }
+    public enum EnumBeamType { SOLID, LINE }
 }

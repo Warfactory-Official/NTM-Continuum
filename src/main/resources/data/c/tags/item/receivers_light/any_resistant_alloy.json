@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#c:receivers_light/cdalloy",
+    "#c:receivers_light/tcalloy"
+  ]
+}

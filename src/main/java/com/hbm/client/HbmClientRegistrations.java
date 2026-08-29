@@ -9,6 +9,9 @@ import com.hbm.inventory.gui.GUIAnvil;
 import com.hbm.inventory.gui.GUIBatterySocket;
 import com.hbm.inventory.gui.GUICrate;
 import com.hbm.inventory.gui.GUICrystallizer;
+import com.hbm.inventory.gui.GUICentrifuge;
+import com.hbm.inventory.gui.GUIMixer;
+import com.hbm.inventory.gui.GUIMachineExposureChamber;
 import com.hbm.inventory.gui.GUICombustionEngine;
 import com.hbm.inventory.gui.GUICompressor;
 import com.hbm.inventory.gui.GUIFEL;
@@ -75,10 +78,13 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_WASTE_DRUM.get(), GUIWasteDrum::new);
         sink.register(ModMenus.MACHINE_ASSEMBLY_MACHINE.get(), GUIMachineAssemblyMachine::new);
         sink.register(ModMenus.MACHINE_CHEMICAL_PLANT.get(), GUIMachineChemicalPlant::new);
+        sink.register(ModMenus.MACHINE_MIXER.get(), GUIMixer::new);
+        sink.register(ModMenus.MACHINE_EXPOSURE_CHAMBER.get(), GUIMachineExposureChamber::new);
         sink.register(ModMenus.MACHINE_BLAST_FURNACE.get(), GUIBlastFurnace::new);
         sink.register(ModMenus.MACHINE_PUREX.get(), GUIMachinePUREX::new);
         sink.register(ModMenus.MACHINE_SOLDERING_STATION.get(), GUIMachineSolderingStation::new);
         sink.register(ModMenus.MACHINE_CRYSTALLIZER.get(), GUICrystallizer::new);
+        sink.register(ModMenus.MACHINE_CENTRIFUGE.get(), GUICentrifuge::new);
         sink.register(ModMenus.MACHINE_SILEX.get(), GUISILEX::new);
         sink.register(ModMenus.MACHINE_FEL.get(), GUIFEL::new);
         sink.register(ModMenus.MACHINE_MINING_LASER.get(), GUIMachineMiningLaser::new);
@@ -164,14 +170,19 @@ public final class HbmClientRegistrations {
     /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */
     public static void installKeybinds() {
         HbmKeybindsClient.register();
+        com.hbm.client.anim.GunRecoil.register();
         CraneKeybindHandler.register();
     }
 
     /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */
     public static void installGunAnimations() {
         com.hbm.client.anim.GunAnimations.init();
+        dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID,
+                "lag_animations", com.hbm.client.anim.LagAnimationLoader::invalidate);
         // The weapon renderers a gun item definition can name. Both eras read the same definitions:
         // 26.1 through its item-model system, older versions through GunLegacyModels' own parse.
         com.hbm.client.render.weapon.WeaponRenderers.init();
+        dev.golem.core.client.Fov.register(com.hbm.client.render.weapon.WeaponRenderers::viewFov);
+        dev.golem.core.client.Crosshairs.register(GunCrosshairOverlay::render);
     }
 }

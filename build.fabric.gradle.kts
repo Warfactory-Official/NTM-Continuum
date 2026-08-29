@@ -80,7 +80,7 @@ val modCfg = if (obfuscated) "modImplementation" else "implementation"
 val devRuntime = if (obfuscated) "modLocalRuntime" else "localRuntime"
 
 /**
- * Drops Loom's cached remap of Golem Core when the upstream jar is newer than it.
+ * Drops Loom's cached remap of Golem Core when an upstream input is newer than it.
  *
  * Loom caches remapped mod jars under `.gradle/loom-cache/remapped_mods/remapped/<group>/<artifact>/
  * <version>/`, keyed by the *coordinates* — content is never hashed. Golem Core arrives through a
@@ -100,15 +100,23 @@ fun invalidateStaleGolemRemap() {
     val cacheRoot = rootProject.file(".gradle/loom-cache/remapped_mods/remapped/dev/golem")
     if (!cacheRoot.isDirectory) return
 
-    val upstream = rootProject.file("../Golem-Core/versions/$mcVersion-fabric/build/libs")
-        .listFiles { file -> file.name.endsWith(".jar") && !file.name.endsWith("-sources.jar") }
-        ?.maxOfOrNull { it.lastModified() }
+    val golemRoot = rootProject.file("../Golem-Core")
+    val upstream = sequence {
+        // Directory mtimes make deletions and renames visible; file mtimes cover content changes.
+        yieldAll(golemRoot.resolve("src").walkTopDown().filter { it.isFile || it.isDirectory })
+        yield(golemRoot.resolve("build.fabric.gradle.kts"))
+        yield(golemRoot.resolve("settings.gradle.kts"))
+        yield(golemRoot.resolve("stonecutter.gradle.kts"))
+        yield(golemRoot.resolve("gradle.properties"))
+        yield(golemRoot.resolve("versions/$mcVersion-fabric/gradle.properties"))
+        yieldAll(golemRoot.resolve("versions/$mcVersion-fabric/build/libs").listFiles()
+            ?.filter { it.name.endsWith(".jar") && !it.name.endsWith("-sources.jar") }
+            .orEmpty())
+    }.filter { it.isFile || it.isDirectory }.maxOfOrNull { it.lastModified() }
 
     cacheRoot.listFiles { file -> file.isDirectory && file.name.startsWith("$mcVersion-fabric-") }
         ?.forEach { entry ->
             val cachedAt = entry.walkTopDown().filter { it.isFile }.maxOfOrNull { it.lastModified() }
-            // No upstream jar yet (clean checkout, Golem not built): leave the cache alone rather than
-            // forcing a remap of something that is about to be rebuilt anyway.
             if (cachedAt != null && upstream != null && upstream > cachedAt) {
                 logger.lifecycle("Golem Core changed since its cached remap; invalidating ${entry.name}.")
                 entry.deleteRecursively()

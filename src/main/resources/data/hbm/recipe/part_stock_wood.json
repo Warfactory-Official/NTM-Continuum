@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "W": "#minecraft:planks"
+  },
+  "pattern": [
+    "WWW",
+    "  W"
+  ],
+  "result": {
+    "id": "hbm:part_stock_wood"
+  }
+}

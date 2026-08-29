@@ -8,6 +8,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import com.hbm.tileentity.network.TileEntityFluidValve;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
@@ -120,11 +121,41 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
     }
 
     /** Recomputes all six connection flags from the duct's current type (after the type changes). */
-    private BlockState recomputeConnections(BlockState state, BlockGetter level, BlockPos pos) {
+    private static BlockState recomputeConnections(BlockState state, BlockGetter level, BlockPos pos) {
         for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
             state = state.setValue(e.getValue(), canConnectTo(level, pos, e.getKey()));
         }
         return state;
+    }
+
+    /** Retypes the connected old-style pipe network, matching fluid_identifier's sneaking behavior. */
+    public static void spreadType(Level level, BlockPos pos, FluidType hand, FluidType pipe, int remaining) {
+        if (remaining <= 0) return;
+
+        BlockEntity entity = level.getBlockEntity(pos);
+        FluidType current;
+        if (entity instanceof TileEntityFluidDuctNT duct) {
+            current = duct.getFluidType();
+            if (current != pipe || current == hand) return;
+            duct.setFluidType(hand);
+        } else if (entity instanceof TileEntityFluidValve valve) {
+            current = valve.getFluidType();
+            if (current != pipe || current == hand) return;
+            valve.setFluidType(hand);
+        } else {
+            return;
+        }
+
+        if (level.getBlockState(pos).getBlock() instanceof BlockFluidDuct) {
+            level.setBlock(pos, recomputeConnections(level.getBlockState(pos), level, pos), 3);
+        } else {
+            level.updateNeighborsAt(pos, level.getBlockState(pos).getBlock());
+        }
+
+        if (remaining == 1) return;
+        for (Direction direction : Direction.values()) {
+            spreadType(level, pos.relative(direction), hand, pipe, remaining - 1);
+        }
     }
 
     @Override
@@ -184,10 +215,16 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-            duct.setFluidType(type);
-            level.setBlock(pos, recomputeConnections(state, level, pos), 3); // refresh this duct + notify neighbours
-            player.sendSystemMessage(Component.literal("Duct fluid: ").append(type.getDisplayName())
-                    .withStyle(ChatFormatting.AQUA));
+            if (type != duct.getFluidType()) {
+                if (player.isShiftKeyDown()) {
+                    spreadType(level, pos, type, duct.getFluidType(), 256);
+                } else {
+                    duct.setFluidType(type);
+                    level.setBlock(pos, recomputeConnections(state, level, pos), 3); // refresh this duct + notify neighbours
+                }
+                player.sendSystemMessage(Component.literal("Duct fluid: ").append(type.getDisplayName())
+                        .withStyle(ChatFormatting.AQUA));
+            }
         }
         return InteractionResult.SUCCESS;
     }

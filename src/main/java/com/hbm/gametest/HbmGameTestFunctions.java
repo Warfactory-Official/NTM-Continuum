@@ -64,6 +64,17 @@ public final class HbmGameTestFunctions {
             TESTS.function("pump_conversion", 40, 8, () -> PumpGameTests::conversion);
     public static final GameTests.Function PUMP_RECIPE =
             TESTS.function("pump_recipe", 40, () -> PumpGameTests::recipe);
+    public static final GameTests.Function STEAM_PUMP_LAYOUT =
+            TESTS.function("steam_pump_layout", 100, 8, () -> PumpGameTests::steamLayout);
+    public static final GameTests.Function STEAM_PUMP_PORTS =
+            TESTS.function("steam_pump_ports", 40, 8, () -> PumpGameTests::steamPorts);
+    public static final GameTests.Function STEAM_PUMP_CONVERSION =
+            TESTS.function("steam_pump_conversion", 40, 8, () -> PumpGameTests::steamConversion);
+    public static final GameTests.Function STEAM_PUMP_RECIPE =
+            TESTS.function("steam_pump_recipe", 40, () -> PumpGameTests::steamRecipe);
+    public static final GameTests.Function STEAM_PUMP_NETWORK_SUBSCRIPTION =
+            TESTS.function("steam_pump_network_subscription", 40, 8,
+                    () -> PumpGameTests::steamNetworkSubscription);
     public static final GameTests.Function STIRLING_LAYOUT =
             TESTS.function("stirling_layout", 100, 8, () -> StirlingGameTests::layout);
     public static final GameTests.Function STIRLING_PORTS =
@@ -74,6 +85,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("stirling_variants_recipes", 40, () -> StirlingGameTests::variantsAndRecipes);
     public static final GameTests.Function STIRLING_MISSING_GEAR =
             TESTS.function("stirling_missing_gear", 100, 8, () -> StirlingGameTests::missingGearPlacement);
+    public static final GameTests.Function FLUID_VALVE_NODE_LIFECYCLE =
+            TESTS.function("fluid_valve_node_lifecycle", 100, 8,
+                    () -> FluidValveDrainGameTests::valveTypeAndNodeLifecycle);
+    public static final GameTests.Function FLUID_IDENTIFIER_SPREAD =
+            TESTS.function("fluid_identifier_spread", 100, 8,
+                    () -> FluidValveDrainGameTests::identifierSpreadsPipeType);
+    public static final GameTests.Function MACHINE_DRAIN_LAYOUT_PORTS =
+            TESTS.function("machine_drain_layout_ports", 100, 8,
+                    () -> FluidValveDrainGameTests::drainLayoutAndPorts);
+    public static final GameTests.Function MACHINE_DRAIN_SPILL_RATE =
+            TESTS.function("machine_drain_spill_rate", 100, 8,
+                    () -> FluidValveDrainGameTests::drainSpillRate);
     public static final GameTests.Function CONDENSER_CONVERSION =
             TESTS.function("condenser_conversion", 20, () -> HbmGameTestFunctions::condenserConversion);
     public static final GameTests.Function PUREX_RECIPE_CYCLE =
@@ -191,6 +214,48 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function PRESS_CASING =
             TESTS.function("press_casing", 20, () -> PressGameTests::casingRecipes);
 
+    // --- standard centrifuge ---
+    public static final GameTests.Function CENTRIFUGE_RECIPES =
+            TESTS.function("centrifuge_recipes", 20, () -> CentrifugeGameTests::recipes);
+    public static final GameTests.Function CENTRIFUGE_LAYOUT_PORTS =
+            TESTS.function("centrifuge_layout_ports", 100, 8, () -> CentrifugeGameTests::layoutAndPorts);
+    public static final GameTests.Function CENTRIFUGE_PROCESSING =
+            TESTS.function("centrifuge_processing", 300, 8, () -> CentrifugeGameTests::processing);
+    public static final GameTests.Function CENTRIFUGE_CONSTRUCTION =
+            TESTS.function("centrifuge_construction", 40, () -> CentrifugeGameTests::constructionRecipe);
+    public static final GameTests.Function CENTRIFUGE_MENU =
+            TESTS.function("centrifuge_menu", 40, () -> CentrifugeGameTests::menu);
+
+    // --- Exposure Chamber ---
+    public static final GameTests.Function EXPOSURE_CHAMBER_RECIPES =
+            TESTS.function("exposure_chamber_recipes", 20, () -> ExposureChamberGameTests::recipes);
+    public static final GameTests.Function EXPOSURE_CHAMBER_LAYOUT_PORTS =
+            TESTS.function("exposure_chamber_layout_ports", 100, 14,
+                    () -> ExposureChamberGameTests::layoutAndPorts);
+    public static final GameTests.Function EXPOSURE_CHAMBER_PROCESSING =
+            TESTS.function("exposure_chamber_processing", 1_700, 14,
+                    () -> ExposureChamberGameTests::processing);
+    public static final GameTests.Function EXPOSURE_CHAMBER_CONSTRUCTION =
+            TESTS.function("exposure_chamber_construction", 40, () -> ExposureChamberGameTests::constructionRecipe);
+    public static final GameTests.Function EXPOSURE_CHAMBER_MENU =
+            TESTS.function("exposure_chamber_menu", 40, () -> ExposureChamberGameTests::menu);
+    public static final GameTests.Function EXPOSURE_CHAMBER_OUTPUT_FULL =
+            TESTS.function("exposure_chamber_output_full", 40, () -> ExposureChamberGameTests::outputFullStopsCycles);
+    public static final GameTests.Function EXPOSURE_CHAMBER_UPGRADES =
+            TESTS.function("exposure_chamber_upgrades", 40, () -> ExposureChamberGameTests::upgrades);
+
+    // --- Mixer ---
+    public static final GameTests.Function MIXER_RECIPES =
+            TESTS.function("mixer_recipes", 20, () -> MixerGameTests::recipes);
+    public static final GameTests.Function MIXER_LAYOUT_PORTS =
+            TESTS.function("mixer_layout_ports", 100, 8, () -> MixerGameTests::layoutAndPorts);
+    public static final GameTests.Function MIXER_PROCESSING =
+            TESTS.function("mixer_processing", 40, 8, () -> MixerGameTests::processing);
+    public static final GameTests.Function MIXER_MENU =
+            TESTS.function("mixer_menu", 40, () -> MixerGameTests::menu);
+    public static final GameTests.Function MIXER_RECIPE_INDEX =
+            TESTS.function("mixer_recipe_index", 40, () -> MixerGameTests::recipeIndexNormalization);
+
     // --- sawmill ---
     public static final GameTests.Function SAWMILL_RECIPES =
             TESTS.function("sawmill_recipes", 20, () -> SawmillGameTests::recipes);
@@ -242,6 +307,22 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_dry_fire", 100, () -> GunGameTests::gunDryFire);
     public static final GameTests.Function GUN_AMMO_STATS =
             TESTS.function("gun_ammo_stats", 20, () -> GunGameTests::ammoStats);
+    public static final GameTests.Function GUN_AMMO_22_STATS =
+            TESTS.function("gun_ammo22_stats", 20, () -> GunGameTests::ammo22Stats);
+    public static final GameTests.Function GUN_AMMO_9_STATS =
+            TESTS.function("gun_ammo9_stats", 20, () -> GunGameTests::ammo9Stats);
+    public static final GameTests.Function GUN_AMMO_44_STATS =
+            TESTS.function("gun_ammo44_stats", 20, () -> GunGameTests::ammo44Stats);
+    public static final GameTests.Function GUN_44_CONFIGS =
+            TESTS.function("gun_44_configs", 20, () -> GunGameTests::gun44Configs);
+    public static final GameTests.Function GUN_44_SINGLE_RELOAD =
+            TESTS.function("gun_44_single_reload", 400, () -> GunGameTests::gun44SingleReload);
+    public static final GameTests.Function GUN_9MM_CONFIGS =
+            TESTS.function("gun_9mm_configs", 20, () -> GunGameTests::gun9Configs);
+    public static final GameTests.Function GUN_AUTO_REFIRE =
+            TESTS.function("gun_auto_refire", 100, () -> GunGameTests::gunAutoRefire);
+    public static final GameTests.Function GUN_STAR_F_RELOAD =
+            TESTS.function("gun_star_f_reload", 200, () -> GunGameTests::gunStarFReload);
     public static final GameTests.Function GUN_AMMO_REGISTRY =
             TESTS.function("gun_ammo_registry", 20, () -> GunGameTests::ammoRegistry);
     public static final GameTests.Function GUN_WEAR_CURVES =
@@ -254,6 +335,16 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_resets_when_stowed", 100, () -> GunGameTests::gunResetsWhenStowed);
     public static final GameTests.Function GUN_DOES_NOT_MINE =
             TESTS.function("gun_does_not_mine", 20, () -> GunGameTests::gunDoesNotMine);
+    public static final GameTests.Function GUN_RECOIL_BINDINGS =
+            TESTS.function("gun_recoil_bindings", 20, () -> GunGameTests::gunRecoilBindings);
+    public static final GameTests.Function GUN_RECOIL_RESET =
+            TESTS.function("gun_recoil_reset", 20, () -> GunGameTests::gunRecoilReset);
+    public static final GameTests.Function GUN_ANIMATION_MATH =
+            TESTS.function("gun_animation_math", 20, () -> GunGameTests::gunAnimationMath);
+    public static final GameTests.Function GUN_FOV_MATH =
+            TESTS.function("gun_fov_math", 20, () -> GunGameTests::gunFovMath);
+    public static final GameTests.Function GUN_CREATIVE_QUALITY_VISIBILITY =
+            TESTS.function("gun_creative_quality_visibility", 20, () -> GunGameTests::gunCreativeQualityVisibility);
     public static final GameTests.Function BULLET_DAMAGES_MOB =
             TESTS.function("bullet_damages_mob", 100, () -> GunGameTests::bulletDamagesMob);
     public static final GameTests.Function BULLET_ARMOR_PIERCING =
@@ -1547,7 +1638,11 @@ public final class HbmGameTestFunctions {
                 ModBiomes.preserve(ModBiomes.Type.OUTER))));
         helper.assertFalse(preserved, "Outer crater must preserve an existing inner crater cell");
 
-        var secondColumn = position.offset(1, 0, 1);
+        // GameTest origins are not quart-aligned; choose a second column explicitly inside the same
+        // quart cell so this assertion does not depend on the random test placement.
+        var quartOrigin = new net.minecraft.core.BlockPos((position.getX() >> 2) << 2, position.getY(),
+                (position.getZ() >> 2) << 2);
+        var secondColumn = quartOrigin.offset(1, 0, 1);
         boolean sameQuartCell = Biomes.apply(chunk, java.util.List.of(
                 new Biomes.Change(position.getX(), position.getZ(), ModBiomes.holder(registries, ModBiomes.Type.OUTER),
                         holder -> false),

@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "#c:stocks/bakelite",
+    "#c:stocks/polymer"
+  ]
+}

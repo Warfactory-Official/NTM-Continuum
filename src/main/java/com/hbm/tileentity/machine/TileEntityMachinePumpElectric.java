@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /** Electric groundwater pump logic ported from the legacy pump base and electric implementation. */
 public class TileEntityMachinePumpElectric extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IFluidStandardSenderMK2 {
+        implements IEnergyReceiverMK2, IFluidStandardSenderMK2, PumpAnimationState {
 
     public static final long MAX_POWER = 10_000;
     public static final int POWER_COST = 1_000;
@@ -136,6 +136,9 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
                 new DirPos(pos.north(2), Library.NEG_Z)
         };
     }
+
+    @Override public float getRotor() { return rotor; }
+    @Override public float getLastRotor() { return lastRotor; }
 
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }

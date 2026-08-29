@@ -4,7 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
+import com.hbm.tileentity.machine.PumpAnimationState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
@@ -13,24 +13,30 @@ import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Faithful split-part renderer for the legacy electric pump OBJ. */
-public final class PumpRenderer implements CompatBER<TileEntityMachinePumpElectric, PumpRenderState> {
+/** Faithful split-part renderer for both legacy groundwater pump variants. */
+public final class PumpRenderer<T extends BlockEntity & PumpAnimationState>
+        implements CompatBER<T, PumpRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/pump.obj"));
-    private final RenderType renderType = CompatRenderTypes.entityCutoutNoCull(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/pump_electric.png"));
+    private final RenderType renderType;
+
+    public PumpRenderer(Identifier texture) {
+        this.renderType = CompatRenderTypes.entityCutoutNoCull(texture);
+    }
 
     @Override public PumpRenderState createRenderState() { return new PumpRenderState(); }
     @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachinePumpElectric be, Vec3 cameraPosition) { return true; }
+    @Override public boolean shouldRender(T be, Vec3 cameraPosition) { return true; }
     @Override public int getViewDistance() { return 256; }
 
     @Override
-    public void extract(TileEntityMachinePumpElectric be, PumpRenderState state, float partialTicks,
+    public void extract(T be, PumpRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState blockState = be.getBlockState();
         int meta = blockState.hasProperty(BlockDummyable.META)
@@ -41,7 +47,7 @@ public final class PumpRenderer implements CompatBER<TileEntityMachinePumpElectr
             case NORTH -> 270F;
             default -> 0F;
         };
-        state.rotation = be.lastRotor + (be.rotor - be.lastRotor) * partialTicks;
+        state.rotation = be.getLastRotor() + (be.getRotor() - be.getLastRotor()) * partialTicks;
     }
 
     @Override

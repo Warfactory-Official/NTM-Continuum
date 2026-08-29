@@ -90,6 +90,9 @@ public final class OreDictManager {
     public static final NTMMaterial CHLOROCALCITE = Mats.MAT_CHLOROCALCITE;
     public static final NTMMaterial MOLYSITE    = Mats.MAT_MOLYSITE;
 
+    /** Saltpeter/niter is registered as hbm:niter, but is not a smeltable Mats entry. */
+    public static final NTMMaterial KNO         = new NTMMaterial(-1, "niter");
+
     // Alloys
     public static final NTMMaterial DESH        = Mats.MAT_DESH;
     public static final NTMMaterial MAGTUNG     = Mats.MAT_MAGTUNG;

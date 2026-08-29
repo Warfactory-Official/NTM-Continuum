@@ -3,14 +3,20 @@ package com.hbm.gametest;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachinePump;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
+import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
+import com.hbm.tileentity.network.TileEntityFluidDuctNT;
+import com.hbm.uninos.UniNodespace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
 
-/** Focused contracts for the electric groundwater pump. */
+/** Focused contracts for the electric and steam groundwater pumps. */
 public final class PumpGameTests {
 
     private PumpGameTests() {}
@@ -74,6 +80,91 @@ public final class PumpGameTests {
         helper.succeed();
     }
 
+    public static void steamLayout(GameTestHelper helper) {
+        BlockPos core = new BlockPos(3, 1, 3);
+        MachinePump pump = ModMachineBlocks.machine_pump_steam.get();
+        helper.setBlock(core, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        pump.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
+
+        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
+                "Steam pump east port was not marked extra");
+        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.west())).getValue(BlockDummyable.META) >= 6,
+                "Steam pump west port was not marked extra");
+        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.north())).getValue(BlockDummyable.META) >= 6,
+                "Steam pump north port was not marked extra");
+        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.south())).getValue(BlockDummyable.META) >= 6,
+                "Steam pump south port was not marked extra");
+        helper.succeed();
+    }
+
+    public static void steamPorts(GameTestHelper helper) {
+        TileEntityMachinePumpSteam pump = placeSteam(helper, new BlockPos(3, 1, 3));
+        BlockPos port = pump.getBlockPos().east();
+        MachinePump block = ModMachineBlocks.machine_pump_steam.get();
+
+        helper.assertTrue(block.canConnect(Fluids.STEAM, helper.getLevel(), port.getX(), port.getY(), port.getZ(),
+                        ForgeDirection.EAST), "Steam pump must accept steam at its east port");
+        helper.assertTrue(block.canConnect(Fluids.SPENTSTEAM, helper.getLevel(), port.getX(), port.getY(), port.getZ(),
+                        ForgeDirection.EAST), "Steam pump must expose spent-steam output");
+        helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), port.getX(), port.getY(), port.getZ(),
+                        ForgeDirection.EAST), "Steam pump must expose water output");
+        helper.assertTrue(!block.canConnect(helper.getLevel(), port, ForgeDirection.EAST),
+                "Steam pump must not expose an energy port");
+        helper.succeed();
+    }
+
+    public static void steamConversion(GameTestHelper helper) {
+        TileEntityMachinePumpSteam pump = placeSteam(helper, new BlockPos(3, 1, 3));
+        pump.steam.setFill(TileEntityMachinePumpSteam.STEAM_COST);
+        pump.groundCheckDelay = 1;
+        pump.onGround = true;
+
+        TileEntityMachinePumpSteam.serverTick(helper.getLevel(), pump.getBlockPos(), pump.getBlockState(), pump);
+
+        helper.assertTrue(pump.isOn, "Steam pump did not operate with steam and valid ground");
+        helper.assertTrue(pump.steam.getFill() == 0, "Steam pump did not consume 100 mB steam");
+        helper.assertTrue(pump.lps.getFill() == 1, "Steam pump did not produce 1 mB spent steam");
+        helper.assertTrue(pump.water.getFill() == TileEntityMachinePumpSteam.STEAM_SPEED,
+                "Steam pump did not produce 1,000 mB water");
+        helper.succeed();
+    }
+
+    public static void steamRecipe(GameTestHelper helper) {
+        var recipe = AnvilRecipes.getConstruction().stream()
+                .filter(candidate -> candidate.output.get(0).stack.is(ModMachineBlocks.machine_pump_steam.get().asItem()))
+                .findFirst().orElse(null);
+        helper.assertTrue(recipe != null, "Steam pump construction recipe is missing");
+        helper.assertTrue(recipe != null && recipe.input.size() == 4 && recipe.tierLower == 2,
+                "Steam pump recipe inputs or tier are wrong");
+        helper.succeed();
+    }
+
+    public static void steamNetworkSubscription(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        TileEntityMachinePumpSteam pump = placeSteam(helper, new BlockPos(3, 1, 3));
+        BlockPos ductPos = pump.getBlockPos().east(2);
+        level.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+        TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
+        duct.setFluidType(Fluids.STEAM);
+        TileEntityFluidDuctNT.serverTick(level, ductPos, duct.getBlockState(), duct);
+        UniNodespace.updateNodespace(level.getServer());
+
+        FluidNode node = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.STEAM.getNetworkProvider());
+        helper.assertTrue(node != null && node.hasValidNet(), "typed steam duct did not create a fluid network");
+        node.net.removeReceiver(pump);
+
+        int delay = (int) ((1 - (level.getGameTime() % 20) + 20) % 20);
+        Runnable tick = () -> {
+            TileEntityMachinePumpSteam.serverTick(level, pump.getBlockPos(), pump.getBlockState(), pump);
+            FluidNode current = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.STEAM.getNetworkProvider());
+            helper.assertTrue(current != null && current.hasValidNet() && current.net.isSubscribed(pump),
+                    "steam pump must refresh its network subscription on a non-20th tick");
+            helper.succeed();
+        };
+        if (delay == 0) tick.run();
+        else helper.runAfterDelay(delay, tick);
+    }
+
     private static TileEntityMachinePumpElectric place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachinePump pump = ModMachineBlocks.machine_pump_electric.get();
@@ -82,6 +173,16 @@ public final class PumpGameTests {
                 "Pump core BlockEntity was not created");
         pump.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
         return (TileEntityMachinePumpElectric) helper.getLevel().getBlockEntity(pos);
+    }
+
+    private static TileEntityMachinePumpSteam placeSteam(GameTestHelper helper, BlockPos relativePos) {
+        BlockPos pos = helper.absolutePos(relativePos);
+        MachinePump pump = ModMachineBlocks.machine_pump_steam.get();
+        helper.getLevel().setBlock(pos, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+        helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityMachinePumpSteam,
+                "Steam pump core BlockEntity was not created");
+        pump.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        return (TileEntityMachinePumpSteam) helper.getLevel().getBlockEntity(pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, BlockPos expected, ForgeDirection direction) {

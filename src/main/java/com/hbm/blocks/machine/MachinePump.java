@@ -9,6 +9,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
+import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -23,16 +24,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** The electric groundwater pump. The steam variant remains intentionally deferred. */
+/** The shared 3x3x5 groundwater-pump multiblock. */
 public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
+    private final boolean steam;
+
     public MachinePump(Properties properties) {
+        this(properties, false);
+    }
+
+    public MachinePump(Properties properties, boolean steam) {
         super(properties);
+        this.steam = steam;
     }
 
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
-        return new TileEntityMachinePumpElectric(pos, state);
+        return steam ? new TileEntityMachinePumpSteam(pos, state) : new TileEntityMachinePumpElectric(pos, state);
     }
 
     @Override
@@ -57,6 +65,7 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
 
     @Override
     public boolean canConnect(BlockGetter level, BlockPos pos, ForgeDirection dir) {
+        if (steam) return false;
         return findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump
                 && IEnergyConnectorBlock.isPort(pump.getConPos(), pos, dir);
     }
@@ -64,6 +73,11 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
     @Override
     public boolean canConnect(FluidType type, BlockGetter level, int x, int y, int z, ForgeDirection dir) {
         BlockPos pos = new BlockPos(x, y, z);
+        if (steam) {
+            return (type == Fluids.STEAM || type == Fluids.SPENTSTEAM || type == Fluids.WATER)
+                    && findCoreTE(level, pos) instanceof TileEntityMachinePumpSteam pump
+                    && IEnergyConnectorBlock.isPort(pump.getConPos(), pos, dir);
+        }
         return type == Fluids.WATER
                 && findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump
                 && IEnergyConnectorBlock.isPort(pump.getConPos(), pos, dir);
@@ -71,18 +85,34 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
 
     @Override
     public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump)) return;
-
         List<String> text = new ArrayList<>();
-        text.add("§a-> §r" + String.format(Locale.US, "%,d", pump.power) + " / "
-                + String.format(Locale.US, "%,d", pump.getMaxPower()) + "HE");
-        text.add("§c<- §r" + pump.water.getTankType().getDisplayNameString() + ": "
-                + String.format(Locale.US, "%,d", pump.water.getFill()) + " / "
-                + String.format(Locale.US, "%,d", pump.water.getMaxFill()) + "mB");
-        if (pump.getBlockPos().getY() > TileEntityMachinePumpElectric.GROUND_HEIGHT) {
-            text.add("&[" + warningColor() + "&]! ! ! ALTITUDE ! ! !");
+        if (steam) {
+            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpSteam pump)) return;
+            text.add("§a-> §r" + pump.steam.getTankType().getDisplayNameString() + ": "
+                    + String.format(Locale.US, "%,d", pump.steam.getFill()) + " / "
+                    + String.format(Locale.US, "%,d", pump.steam.getMaxFill()) + "mB");
+            text.add("§c<- §r" + pump.lps.getTankType().getDisplayNameString() + ": "
+                    + String.format(Locale.US, "%,d", pump.lps.getFill()) + " / "
+                    + String.format(Locale.US, "%,d", pump.lps.getMaxFill()) + "mB");
+            text.add("§c<- §r" + pump.water.getTankType().getDisplayNameString() + ": "
+                    + String.format(Locale.US, "%,d", pump.water.getFill()) + " / "
+                    + String.format(Locale.US, "%,d", pump.water.getMaxFill()) + "mB");
+            if (pump.getBlockPos().getY() > TileEntityMachinePumpSteam.GROUND_HEIGHT) {
+                text.add("&[" + warningColor() + "&]! ! ! ALTITUDE ! ! !");
+            }
+            if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");
+        } else {
+            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump)) return;
+            text.add("§a-> §r" + String.format(Locale.US, "%,d", pump.power) + " / "
+                    + String.format(Locale.US, "%,d", pump.getMaxPower()) + "HE");
+            text.add("§c<- §r" + pump.water.getTankType().getDisplayNameString() + ": "
+                    + String.format(Locale.US, "%,d", pump.water.getFill()) + " / "
+                    + String.format(Locale.US, "%,d", pump.water.getMaxFill()) + "mB");
+            if (pump.getBlockPos().getY() > TileEntityMachinePumpElectric.GROUND_HEIGHT) {
+                text.add("&[" + warningColor() + "&]! ! ! ALTITUDE ! ! !");
+            }
+            if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");
         }
-        if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");
         ILookOverlay.printGeneric(graphics, getName().getString(), 0xffff00, 0x404000, text);
     }
 
@@ -94,6 +124,13 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
                                                                     BlockEntityType<T> type) {
+        if (steam) {
+            return level.isClientSide()
+                    ? createTickerHelper(type, ModBlockEntities.MACHINE_PUMP_STEAM.get(),
+                            TileEntityMachinePumpSteam::clientTick)
+                    : createTickerHelper(type, ModBlockEntities.MACHINE_PUMP_STEAM.get(),
+                            TileEntityMachinePumpSteam::serverTick);
+        }
         return level.isClientSide()
                 ? createTickerHelper(type, ModBlockEntities.MACHINE_PUMP_ELECTRIC.get(),
                         TileEntityMachinePumpElectric::clientTick)

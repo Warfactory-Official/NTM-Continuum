@@ -36,8 +36,8 @@ import org.jspecify.annotations.Nullable;
  * <p>Rendering: the old anvils were {@code forge_marker} OBJ blockstates, so like the machines the block
  * is {@link RenderShape#INVISIBLE} and carries a no-op {@link TileEntityAnvil} for
  * {@link com.hbm.client.render.AnvilObjRenderer}. The thin per-axis collision box is faithful to the old
- * {@code getBoundingBox}. <b>Deferred:</b> the old {@code BlockFalling} gravity (a falling-block entity
- * would render nothing for an INVISIBLE block) and the tier tooltip's JEI hooks.
+  * {@code getBoundingBox}. <b>Deferred:</b> the old {@code BlockFalling} gravity (a falling-block entity
+  * would render nothing for an INVISIBLE block).
  */
 public class NTMAnvil extends dev.golem.core.world.CompatBlock implements EntityBlock {
 

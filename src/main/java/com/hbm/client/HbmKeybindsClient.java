@@ -6,6 +6,7 @@ import com.hbm.packet.KeybindPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.KeyMappings;
+import dev.golem.core.client.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -44,6 +45,7 @@ public final class HbmKeybindsClient {
         gunTertiaryKey = KeyMappings.register(CATEGORY, "key.hbm.gunTertiary",
                 InputConstants.Type.MOUSE, 2, CATEGORY);
 
+        MouseInput.onButton(HbmKeybindsClient::onMouseButton);
         ClientTicks.onEndTick(HbmKeybindsClient::onEndTick);
     }
 
@@ -60,8 +62,9 @@ public final class HbmKeybindsClient {
         // A screen is open: report everything released, so opening the inventory mid-burst stops it.
         boolean suppressed = mc.screen != null || !holdingGun;
 
-        // Read the attack key before suppressing it, or the trigger would never register as pressed.
-        boolean primary = !suppressed && mc.options.keyAttack.isDown();
+        // The vanilla attack mapping is deliberately drained below, so poll its physical mouse button.
+        // Keyboard rebindings retain their ordinary mapping state.
+        boolean primary = !suppressed && KeyMappings.isHeld(mc.options.keyAttack);
         report(EnumKeybind.GUN_PRIMARY, primary);
         // isHeld, not isDown: on 1.20.1 vanilla tracks only one binding per key, so a bind sharing
         // a mouse button with Use or Pick Block never receives state at all (see KeyMappings.Mapping).
@@ -85,11 +88,35 @@ public final class HbmKeybindsClient {
      */
     private static void suppressAttack(Minecraft mc) {
         drain(mc.options.keyAttack);
-        // The gun binds sit on the same mouse buttons as Use and Pick Block. Left alone, aiming would
-        // also pick a block and firing would also place one — and on 1.20.1 the gun reads those buttons
-        // straight from the device, so vanilla's own state has to be cleared for both.
-        drain(mc.options.keyUse);
-        drain(mc.options.keyPickItem);
+        // Clear other vanilla actions only while they actually overlap a gun binding. This preserves
+        // user rebindings while retaining the old mod's "gun action wins" behavior.
+        if (overlapsGunBinding(mc.options.keyUse, mc)) drain(mc.options.keyUse);
+        if (overlapsGunBinding(mc.options.keyPickItem, mc)) drain(mc.options.keyPickItem);
+    }
+
+    /** Drains overlaps immediately after mappings update, before vanilla handles the buffered click. */
+    private static void onMouseButton(int button, boolean pressed) {
+        Minecraft mc = Minecraft.getInstance();
+        LocalPlayer player = mc.player;
+        if (player == null || mc.level == null || mc.screen != null
+                || (!isGun(player.getMainHandItem()) && !isGun(player.getOffhandItem()))) {
+            return;
+        }
+
+        boolean primary = KeyMappings.matchesMouse(mc.options.keyAttack, button);
+        boolean secondary = KeyMappings.matchesMouse(gunSecondaryKey, button);
+        boolean tertiary = KeyMappings.matchesMouse(gunTertiaryKey, button);
+        boolean reload = KeyMappings.matchesMouse(reloadKey, button);
+        if (!primary && !secondary && !tertiary && !reload) return;
+
+        if (KeyMappings.matchesMouse(mc.options.keyAttack, button)) drain(mc.options.keyAttack);
+        if (KeyMappings.matchesMouse(mc.options.keyUse, button)) drain(mc.options.keyUse);
+        if (KeyMappings.matchesMouse(mc.options.keyPickItem, button)) drain(mc.options.keyPickItem);
+
+        if (primary) report(EnumKeybind.GUN_PRIMARY, pressed);
+        if (secondary) report(EnumKeybind.GUN_SECONDARY, pressed);
+        if (tertiary) report(EnumKeybind.GUN_TERTIARY, pressed);
+        if (reload) report(EnumKeybind.RELOAD, pressed);
     }
 
     /** Clears a vanilla bind's held state and any clicks it buffered this tick. */
@@ -100,9 +127,17 @@ public final class HbmKeybindsClient {
         }
     }
 
+    private static boolean overlapsGunBinding(KeyMapping mapping, Minecraft mc) {
+        return mapping.same(mc.options.keyAttack)
+                || mapping.same(gunSecondaryKey)
+                || mapping.same(gunTertiaryKey)
+                || mapping.same(reloadKey);
+    }
+
     /** Advances the aim transition — upstream runs this from the item's client-side update. */
     private static void updateAiming(LocalPlayer player) {
         ItemStack held = player.getMainHandItem();
+        if (!isGun(held)) held = player.getOffhandItem();
         if (!isGun(held)) return;
 
         ItemGunBaseNT.prevAimingProgress = ItemGunBaseNT.aimingProgress;

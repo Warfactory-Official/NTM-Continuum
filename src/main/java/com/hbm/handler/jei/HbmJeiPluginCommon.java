@@ -4,10 +4,20 @@ package com.hbm.handler.jei;
 
 import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.inventory.ModMenus;
+import com.hbm.inventory.container.ContainerCentrifuge;
+import com.hbm.inventory.container.ContainerMachineExposureChamber;
+import com.hbm.inventory.container.ContainerMixer;
+import com.hbm.inventory.gui.GUICentrifuge;
+import com.hbm.inventory.gui.GUIMachineExposureChamber;
+import com.hbm.inventory.gui.GUIMixer;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
+import com.hbm.inventory.recipes.CentrifugeRecipes;
+import com.hbm.inventory.recipes.MixerRecipes;
+import com.hbm.inventory.recipes.ExposureChamberRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.inventory.recipes.PUREXRecipes;
@@ -20,9 +30,11 @@ import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.registration.IExtraIngredientRegistration;
+import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -46,11 +58,14 @@ public final class HbmJeiPluginCommon {
     // Categories are created in registerCategories (needs the IGuiHelper) and reused in registerRecipes.
     private static JEIGenericRecipeHandler assembly;
     private static JEIGenericRecipeHandler chemplant;
+    private static JEIGenericRecipeHandler mixer;
+    private static JEIGenericRecipeHandler exposure;
     private static JEIGenericRecipeHandler purex;
     private static JEIGenericRecipeHandler fusion;
     private static PressRecipeHandler press;
     private static SolderingStationRecipeHandler soldering;
     private static CrystallizerRecipeHandler crystallizer;
+    private static CentrifugeRecipeHandler centrifuge;
     private static SILEXRecipeHandler silex;
     private static ShredderRecipeHandler shredder;
     private static SawmillRecipeHandler sawmill;
@@ -97,6 +112,11 @@ public final class HbmJeiPluginCommon {
                 title("assembly_machine"), AssemblyMachineRecipes.INSTANCE, stack(ModMachineBlocks.machine_assembly_machine.get()));
         chemplant = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.CHEMICAL_PLANT,
                 title("chemical_plant"), ChemicalPlantRecipes.INSTANCE, stack(ModMachineBlocks.machine_chemical_plant.get()));
+        mixer = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.MIXER,
+                title("mixer"), MixerRecipes.INSTANCE, stack(ModMachineBlocks.machine_mixer.get()));
+        exposure = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.EXPOSURE_CHAMBER,
+                title("exposure_chamber"), ExposureChamberRecipes.INSTANCE,
+                stack(ModMachineBlocks.machine_exposure_chamber.get()));
         purex = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.PUREX,
                 title("purex"), PUREXRecipes.INSTANCE, stack(ModMachineBlocks.machine_purex.get()));
         fusion = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.FUSION,
@@ -108,6 +128,8 @@ public final class HbmJeiPluginCommon {
                 title("soldering_station"), stack(ModMachineBlocks.machine_soldering_station.get()));
         crystallizer = new CrystallizerRecipeHandler(helper, HbmJeiRecipeTypes.CRYSTALLIZER,
                 title("crystallizer"), stack(ModMachineBlocks.machine_crystallizer.get()));
+        centrifuge = new CentrifugeRecipeHandler(helper, HbmJeiRecipeTypes.CENTRIFUGE,
+                title("centrifuge"), stack(ModMachineBlocks.machine_centrifuge.get()));
         silex = new SILEXRecipeHandler(helper, HbmJeiRecipeTypes.SILEX,
                 title("silex"), stack(ModMachineBlocks.machine_silex.get()));
         shredder = new ShredderRecipeHandler(helper, HbmJeiRecipeTypes.SHREDDER,
@@ -149,7 +171,7 @@ public final class HbmJeiPluginCommon {
         compressor = new CompressorRecipeHandler(helper, HbmJeiRecipeTypes.COMPRESSOR,
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
 
-        reg.addRecipeCategories(assembly, chemplant, purex, fusion, press, soldering, crystallizer, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
+        reg.addRecipeCategories(assembly, chemplant, mixer, exposure, purex, fusion, press, soldering, crystallizer, centrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                 refinery, fractioning, liquefaction, solidification, boiling, cooling,
                 vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor);
     }
@@ -157,19 +179,25 @@ public final class HbmJeiPluginCommon {
     public static void registerRecipes(IRecipeRegistration reg) {
         AssemblyMachineRecipes.INSTANCE.registerRecipes();
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
+        MixerRecipes.INSTANCE.registerRecipes();
+        ExposureChamberRecipes.INSTANCE.registerRecipes();
         PUREXRecipes.INSTANCE.registerRecipes();
         com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes();
         PressRecipes.register();
         SolderingRecipes.register();
         CrystallizerRecipes.register();
+        CentrifugeRecipes.register();
 
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, assembly.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, chemplant.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.MIXER, mixer.buildRecipes());
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.EXPOSURE_CHAMBER, exposure.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PUREX, purex.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.FUSION, fusion.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRYSTALLIZER, CrystallizerRecipes.recipes);
+        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CENTRIFUGE, CentrifugeRecipes.recipes);
         SILEXRecipes.register();
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SILEX, SILEXRecipes.recipes);
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SHREDDER, ShredderRecipeHandler.buildRecipes());
@@ -193,14 +221,39 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
     }
 
+    public static void registerGuiHandlers(IGuiHandlerRegistration reg) {
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMixer.class, 62, 36, 52, 44,
+                HbmJeiRecipeTypes.MIXER);
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMachineExposureChamber.class, 36, 40, 40, 8,
+                HbmJeiRecipeTypes.EXPOSURE_CHAMBER);
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUICentrifuge.class, 35, 9, 106, 40,
+                HbmJeiRecipeTypes.CENTRIFUGE);
+    }
+
+    public static void registerRecipeTransferHandlers(IRecipeTransferRegistration reg) {
+        dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerMixer.class,
+                ModMenus.MACHINE_MIXER.get(), HbmJeiRecipeTypes.MIXER, new int[]{1}, 5, 36,
+                recipe -> recipe.inputFluid == null || recipe.inputFluid.length == 0);
+        dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerMachineExposureChamber.class,
+                ModMenus.MACHINE_EXPOSURE_CHAMBER.get(), HbmJeiRecipeTypes.EXPOSURE_CHAMBER,
+                new int[]{0, 2}, 7, 36, recipe -> true);
+        dev.golem.core.jei.Jei.addRecipeTransferHandler(reg, ContainerCentrifuge.class,
+                ModMenus.MACHINE_CENTRIFUGE.get(), HbmJeiRecipeTypes.CENTRIFUGE,
+                0, 1, ContainerCentrifuge.MACHINE_SLOTS, 36);
+    }
+
     public static void registerCatalysts(IRecipeCatalystRegistration reg) {
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, stack(ModMachineBlocks.machine_chemical_plant.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.MIXER, stack(ModMachineBlocks.machine_mixer.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.FUSION, stack(ModMachineBlocks.fusion_torus.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SOLDERING_STATION, stack(ModMachineBlocks.machine_soldering_station.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRYSTALLIZER, stack(ModMachineBlocks.machine_crystallizer.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CENTRIFUGE, stack(ModMachineBlocks.machine_centrifuge.get()));
+        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.EXPOSURE_CHAMBER,
+                stack(ModMachineBlocks.machine_exposure_chamber.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SILEX, stack(ModMachineBlocks.machine_silex.get()));
         // Each laser crystal is also a catalyst: clicking one shows what the SILEX can do with it
         // loaded (the old plugin's per-wavelength categories, folded into one).

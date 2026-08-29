@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": "#c:mechanisms/weaponsteel",
+    "P": "#c:plates_cast/gold",
+    "G": "hbm:gun_henry"
+  },
+  "pattern": [
+    " M ",
+    "PGP",
+    " M "
+  ],
+  "result": {
+    "id": "hbm:gun_henry_lincoln"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/exposure_chamber.obj",
+      "texture": "hbm:textures/models/machines/exposure_chamber.png",
+      "scale": 0.08,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

@@ -3,6 +3,9 @@ package com.hbm.items.weapon.sedna.factory;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import java.util.function.BiConsumer;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * The .357 Magnum family, ported from 1.12.2 {@code XFactory357}.
@@ -24,6 +27,10 @@ public class XFactory357 {
     public static BulletConfig m357_jhp;
     public static BulletConfig m357_ap;
     public static BulletConfig m357_express;
+
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_ATLAS =
+            (stack, ctx) -> ItemGunBaseNT.setupRecoil(10F,
+                    (float) (ctx.getPlayer().getRandom().nextGaussian() * 1.5));
 
     public static void init() {
         m357_bp = BulletConfigs.register("m357_bp", new BulletConfig()

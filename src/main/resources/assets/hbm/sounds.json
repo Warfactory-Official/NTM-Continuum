@@ -8,6 +8,15 @@
       }
     ]
   },
+  "block.reactor_start": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/reactorstart",
+        "stream": false
+      }
+    ]
+  },
   "block.assembler_strike": {
     "category": "block",
     "sounds": [
@@ -216,6 +225,60 @@
       }
     ]
   },
+  "weapon.fire.pistollight": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/fire/pistollight",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.fire.greasegun": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/fire/greasegun",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.fire.uzi": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/fire/uzi",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.fire.rifle": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/rifleshoot",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.fire.rifleheavy": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/fire/rifleheavy",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.44shoot": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/44shoot",
+        "stream": false
+      }
+    ]
+  },
   "weapon.reload.dryfireclick": {
     "category": "player",
     "sounds": [
@@ -287,6 +350,15 @@
     "sounds": [
       {
         "name": "hbm:block/steamengineoperate",
+        "stream": false
+      }
+    ]
+  },
+  "block.centrifuge_operate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/centrifugeoperate",
         "stream": false
       }
     ]

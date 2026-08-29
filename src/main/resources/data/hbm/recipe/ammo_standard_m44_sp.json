@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:ammo_standard_m44_sp",
+    "hbm:nitra"
+  ],
+  "result": {
+    "id": "hbm:ammo_standard_m44_sp",
+    "count": 6
+  }
+}

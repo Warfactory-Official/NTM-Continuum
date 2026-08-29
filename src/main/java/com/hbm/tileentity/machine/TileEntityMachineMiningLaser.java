@@ -10,6 +10,7 @@ import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineMiningLaser;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.recipes.CentrifugeRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes.CrystallizerRecipe;
 import com.hbm.inventory.recipes.ShredderRecipes;
@@ -60,8 +61,7 @@ import net.minecraft.world.phys.AABB;
  * 500 mB of crude oil (sent out the side arms); liquids in the path are deleted and dammed with
  * {@code sandbags}. All formulas ported verbatim (old update() lines 116–212).
  *
- * <p>Slots: 0 battery, 1–8 upgrades, 9–29 output buffer. Deferred (documented): the CENTRIFUGE
- * drop-processing (CentrifugeRecipes unported — behaves as the old no-match fall-through), old
+ * <p>Slots: 0 battery, 1–8 upgrades, 9–29 output buffer. Deferred (documented): old
  * {@code IDrillInteraction} blocks and the gas-block check (neither system exists in the port).
  */
 public class TileEntityMachineMiningLaser extends TileEntityMachineBase
@@ -241,7 +241,8 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
 
     /**
      * Breaks the target (old breakBlock): the drop-processing upgrades run in the old priority order
-     * (crystallizer → centrifuge [unported: falls through like a recipe miss] → shredder → smelter);
+     * (crystallizer → centrifuge → shredder → smelter); the centrifuge branch uses the feasible modern
+     * recipe table and falls back to the raw drop when that table has no match.
      * a match spawns the processed output and suppresses the raw drop. Otherwise the block drops its
      * loot with the FORTUNE level applied via a synthetic enchanted tool.
      */
@@ -264,8 +265,13 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
 
             } else if (hasUpgrade(ModUpgradeItems.upgrade_centrifuge.get())) {
 
-                // CentrifugeRecipes is unported — the old code falls through to the normal drop when no
-                // recipe matches, so the upgrade is faithfully a pass-through until the centrifuge lands.
+                ItemStack[] result = CentrifugeRecipes.getOutput(stack);
+                if (result != null) {
+                    for (ItemStack output : result) {
+                        if (output != null) spawnDrop(output.copy());
+                    }
+                    normal = false;
+                }
 
             } else if (hasUpgrade(ModUpgradeItems.upgrade_shredder.get())) {
 

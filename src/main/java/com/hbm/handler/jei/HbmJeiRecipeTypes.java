@@ -5,6 +5,8 @@ package com.hbm.handler.jei;
 import com.hbm.Constants;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
+import com.hbm.inventory.recipes.CentrifugeRecipes;
+import com.hbm.inventory.recipes.MixerRecipes;
 import com.hbm.inventory.recipes.PressRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
@@ -36,10 +38,13 @@ public final class HbmJeiRecipeTypes {
     public static final JeiRecipeType<GenericRecipe> CHEMICAL_PLANT = type("chemical_plant", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> PUREX = type("purex", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> FUSION = type("fusion", GenericRecipe.class);
+    public static final JeiRecipeType<GenericRecipe> MIXER = type("mixer", GenericRecipe.class);
+    public static final JeiRecipeType<GenericRecipe> EXPOSURE_CHAMBER = type("exposure_chamber", GenericRecipe.class);
 
     public static final JeiRecipeType<PressRecipes.PressRecipe> PRESS = type("press", PressRecipes.PressRecipe.class);
     public static final JeiRecipeType<SolderingRecipes.SolderingRecipe> SOLDERING_STATION = type("soldering_station", SolderingRecipes.SolderingRecipe.class);
     public static final JeiRecipeType<CrystallizerRecipes.CrystallizerRecipe> CRYSTALLIZER = type("crystallizer", CrystallizerRecipes.CrystallizerRecipe.class);
+    public static final JeiRecipeType<CentrifugeRecipes.CentrifugeRecipe> CENTRIFUGE = type("centrifuge", CentrifugeRecipes.CentrifugeRecipe.class);
     public static final JeiRecipeType<ShredderRecipeHandler.ShredderPair> SHREDDER = type("shredder", ShredderRecipeHandler.ShredderPair.class);
     public static final JeiRecipeType<com.hbm.inventory.recipes.SawmillRecipes.SawmillRecipe> SAWMILL =
             type("sawmill", com.hbm.inventory.recipes.SawmillRecipes.SawmillRecipe.class);

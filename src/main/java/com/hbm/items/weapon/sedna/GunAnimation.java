@@ -3,10 +3,8 @@ package com.hbm.items.weapon.sedna;
 /**
  * The animation cues a gun's state machine emits.
  *
- * <p>Ported from {@code AnimationEnums.GunAnimation} in 1.12.2. The bus-animation system that turns
- * these into first-person motion is not ported, but the cues themselves are: the server-side state
- * machine emits them at exactly the right moments, and they are what the client will bind to when the
- * animation stack lands. Until then the client uses them only for muzzle-flash and recoil timing.
+ * <p>Ported from {@code AnimationEnums.GunAnimation} in 1.12.2. The server-side state machine emits
+ * these cues at exactly the right moments; the client binds them to the per-gun bus-animation tables.
  *
  * <p>Ordinals are load-bearing — they travel over the wire in the animation payload — so entries are
  * kept in upstream's order, {@code RELOAD_EMPTY} included even though upstream deprecates it.

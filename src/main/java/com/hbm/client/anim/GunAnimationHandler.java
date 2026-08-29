@@ -1,9 +1,12 @@
 package com.hbm.client.anim;
 
 import com.hbm.items.weapon.sedna.GunAnimation;
+import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.packet.GunAnimationPayload;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -27,16 +30,32 @@ public final class GunAnimationHandler {
         ItemStack stack = minecraft.player.getMainHandItem();
         if (!(stack.getItem() instanceof ItemGunBaseNT gun)) return;
 
+        String heldItemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
+        if (payload.itemId() == null || !heldItemId.equals(payload.itemId())) return;
+
+        if (payload.animation() < 0 || payload.animation() >= GunAnimation.VALUES.length) return;
+
         GunAnimation cue = GunAnimation.byOrdinal(payload.animation());
         int index = payload.configIndex();
+        if (!gun.isValidConfigIndex(index)) return;
+        GunConfig config = gun.getConfig(stack, index);
+        Receiver[] receivers = config.getReceivers(stack);
+        if (receivers == null) return;
 
         // The shot timestamp drives muzzle flash and smoke, and must be stamped even when the gun has
         // no animation table at all.
-        if (cue == GunAnimation.CYCLE && index >= 0 && index < gun.lastShot.length) {
+        if (cue == GunAnimation.CYCLE && index < gun.lastShot.length) {
+            int receiverIndex = payload.receiver();
+            if (receiverIndex < 0 || receiverIndex >= receivers.length) return;
             gun.lastShot[index] = System.currentTimeMillis();
+            java.util.function.BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> recoil =
+                    receivers[receiverIndex].getRecoil(stack);
+            if (recoil != null) recoil.accept(stack,
+                    new ItemGunBaseNT.LambdaContext(config, minecraft.player,
+                            minecraft.player.getInventory(), index));
         }
 
-        BusAnimation animation = GunAnimations.get(stack.getItem(), cue);
+        BusAnimation animation = GunAnimations.get(stack, cue, index);
         if (animation != null) HbmAnimations.start(stack.getItem(), animation, index);
     }
 }

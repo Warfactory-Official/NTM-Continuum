@@ -46,7 +46,9 @@ public final class Mats {
         return m;
     }
 
-    // --- the ported metals (colours + autogen shape sets ported from the 1.12.2 Mats) ---
+    // --- the ported metals and material-backed weapon parts (colours + autogen shape sets ported from the 1.12.2 Mats) ---
+    public static final NTMMaterial MAT_WOOD         = mat(3, "wood")
+            .colors(0x896727, 0x281E0B, 0x896727).setAutogen(STOCK, GRIP);
     public static final NTMMaterial MAT_IRON         = mat(2600, "iron")          // vanilla iron
             .colors(0xFFFFFF, 0x353535, 0xFFA259).setAutogen(FRAGMENT, DUST, PIPE, CASTPLATE, WELDEDPLATE, BLOCK);
     public static final NTMMaterial MAT_GOLD         = mat(7900, "gold")          // vanilla gold

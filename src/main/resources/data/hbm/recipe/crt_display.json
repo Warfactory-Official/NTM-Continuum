@@ -4,7 +4,7 @@
   "key": {
     "A": "#c:dusts/aluminium",
     "S": "#c:plates/steel",
-    "G": "minecraft:glass_pane",
+    "G": "#c:glass_panes",
     "T": "hbm:circuit_vacuum_tube"
   },
   "pattern": [

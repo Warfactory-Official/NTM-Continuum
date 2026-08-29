@@ -39,8 +39,9 @@ final class ForgeClientInit {
         dev.golem.core.render.ForgeItemRenderers.install(com.hbm.client.render.MachineItemRenderers::render);
         modBus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent event) ->
                 event.registerReloadListener(
-                        (net.minecraft.server.packs.resources.ResourceManagerReloadListener)
-                                com.hbm.client.render.MachineItemModels::reload));
+                        (net.minecraft.server.packs.resources.ResourceManagerReloadListener) resources -> {
+                            com.hbm.client.render.MachineItemModels.reload(resources);
+                        }));
         HbmClientRegistrations.registerBlockColors();
         modBus.addListener((FMLClientSetupEvent event) -> event.enqueueWork(() -> {
             HbmClientRegistrations.registerScreens(MenuScreens::register);

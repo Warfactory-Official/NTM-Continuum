@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:solid_fuel",
+    "hbm:cordite",
+    "#c:dusts/niter"
+  ],
+  "result": {
+    "id": "hbm:powder_semtex_mix",
+    "count": 3
+  }
+}

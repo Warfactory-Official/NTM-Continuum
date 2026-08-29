@@ -71,6 +71,14 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static float prevAimingProgress;
     public static float aimingProgress;
 
+    /** Gen-3 camera recoil accumulator, kept in the same global shape as upstream. */
+    public static float recoilVertical;
+    public static float recoilHorizontal;
+    public static float recoilDecay = 0.75F;
+    public static float recoilRebound = 0.25F;
+    public static float offsetVertical;
+    public static float offsetHorizontal;
+
     protected final GunConfig[] configs_DNA;
     public final WeaponQuality quality;
 
@@ -87,12 +95,23 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
         return configs_DNA[index];
     }
 
+    /** Guards client payloads before they can reach a config or its magazine. */
+    public boolean isValidConfigIndex(int index) {
+        return index >= 0 && index < configs_DNA.length;
+    }
+
     public int getConfigCount() {
         return configs_DNA.length;
     }
 
     public enum WeaponQuality {
         A_SIDE, B_SIDE, LEGENDARY, UTILITY, SPECIAL, SECRET, DEBUG
+    }
+
+    /** Upstream exposes only these qualities in the ordinary weapon creative tab. */
+    public boolean isCreativeTabVisible() {
+        return quality == WeaponQuality.A_SIDE || quality == WeaponQuality.SPECIAL
+                || quality == WeaponQuality.UTILITY;
     }
 
     public enum GunState {
@@ -180,10 +199,40 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
     public static void playAnimation(Player player, ItemStack stack, GunAnimation type, int index) {
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            com.hbm.packet.HbmPackets.sendGunAnimation(serverPlayer, type, index);
+            com.hbm.packet.HbmPackets.sendGunAnimation(serverPlayer, stack, type, index);
             setLastAnim(stack, index, type);
             setAnimTimer(stack, index, 0);
         }
+    }
+
+    /** Adds one upstream recoil impulse; the client tick consumes the accumulated values. */
+    public static void setupRecoil(float vertical, float horizontal, float decay, float rebound) {
+        recoilVertical += vertical;
+        recoilHorizontal += horizontal;
+        recoilDecay = decay;
+        recoilRebound = rebound;
+    }
+
+    public static void setupRecoil(float vertical, float horizontal) {
+        setupRecoil(vertical, horizontal, 0.75F, 0.25F);
+    }
+
+    /** Clears the client-only recoil accumulators when visual recoil is disabled. */
+    public static void clearRecoil() {
+        offsetVertical = 0;
+        offsetHorizontal = 0;
+        recoilVertical = 0;
+        recoilHorizontal = 0;
+    }
+
+    /** The frame-interpolated ADS value shared by the weapon pose and camera FOV. */
+    public static float aimingProgress(float partialTick) {
+        return prevAimingProgress + (aimingProgress - prevAimingProgress) * partialTick;
+    }
+
+    /** Applies one upstream renderer's ADS FOV factor without involving client-only state. */
+    public static float applyAimingFov(float fov, float partialTick, float zoom) {
+        return fov * (1F - aimingProgress(partialTick) * zoom);
     }
 
     /**

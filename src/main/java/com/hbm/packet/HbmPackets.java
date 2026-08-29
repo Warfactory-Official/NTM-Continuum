@@ -39,10 +39,11 @@ public final class HbmPackets {
     }
 
     /** Tells one player's client that their gun played an animation cue. */
-    public static void sendGunAnimation(ServerPlayer player, com.hbm.items.weapon.sedna.GunAnimation animation,
-            int configIndex) {
+    public static void sendGunAnimation(ServerPlayer player, net.minecraft.world.item.ItemStack stack,
+            com.hbm.items.weapon.sedna.GunAnimation animation, int configIndex) {
         GolemNetwork.sendToPlayer(player, GunAnimationPayload.CODEC,
-                new GunAnimationPayload(animation.ordinal(), 0, configIndex));
+                new GunAnimationPayload(animation.ordinal(), 0, configIndex,
+                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()));
     }
 
     /** Attaches client handlers only after the physical client is available. */

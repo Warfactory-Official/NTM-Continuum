@@ -21,10 +21,13 @@ public final class ModSounds {
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
 
     public static final RegistryObject<SoundEvent> MOTOR = register("block.motor");
+    /** Shared switch-on sound used by the legacy fluid valve and other toggles. */
+    public static final RegistryObject<SoundEvent> REACTOR_START = register("block.reactor_start");
     public static final RegistryObject<SoundEvent> ASSEMBLER_STRIKE = register("block.assembler_strike");
     public static final RegistryObject<SoundEvent> ASSEMBLER_START = register("block.assembler_start");
     public static final RegistryObject<SoundEvent> ASSEMBLER_STOP = register("block.assembler_stop");
     public static final RegistryObject<SoundEvent> CHEMICAL_PLANT = register("block.chemical_plant");
+    public static final RegistryObject<SoundEvent> CENTRIFUGE_OPERATE = register("block.centrifuge_operate");
     public static final RegistryObject<SoundEvent> PRESS_OPERATE = register("block.pressoperate");
     public static final RegistryObject<SoundEvent> WARN_OVERSPEED = register("block.warnoverspeed");
     /** The electric heater's hum loop (old {@code block.electricHum}). */
@@ -73,6 +76,12 @@ public final class ModSounds {
     /** Weapons. Old ids {@code weapon.fire.pistol}, {@code weapon.reload.dryFireClick} and
      * {@code weapon.revolverReload}, lowercased to satisfy 26.1's id charset. */
     public static final RegistryObject<SoundEvent> FIRE_PISTOL = register("weapon.fire.pistol");
+    public static final RegistryObject<SoundEvent> FIRE_PISTOL_LIGHT = register("weapon.fire.pistollight");
+    public static final RegistryObject<SoundEvent> FIRE_GREASE_GUN = register("weapon.fire.greasegun");
+    public static final RegistryObject<SoundEvent> FIRE_UZI = register("weapon.fire.uzi");
+    public static final RegistryObject<SoundEvent> FIRE_RIFLE = register("weapon.fire.rifle");
+    public static final RegistryObject<SoundEvent> FIRE_RIFLE_HEAVY = register("weapon.fire.rifleheavy");
+    public static final RegistryObject<SoundEvent> SHOOT_44 = register("weapon.44shoot");
     public static final RegistryObject<SoundEvent> DRY_FIRE_CLICK = register("weapon.reload.dryfireclick");
     public static final RegistryObject<SoundEvent> RELOAD_REVOLVER = register("weapon.revolverreload");
     public static final RegistryObject<SoundEvent> LASER_BANG = register("weapon.laser_bang");

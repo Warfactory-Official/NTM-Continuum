@@ -6,9 +6,11 @@ package com.hbm.handler.jei;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IExtraIngredientRegistration;
+import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.IRecipeTransferRegistration;
 import mezz.jei.api.registration.ISubtypeRegistration;
 import net.minecraft.resources.Identifier;
 
@@ -46,6 +48,16 @@ public class HbmJeiPluginFabric implements IModPlugin {
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
         HbmJeiPluginCommon.registerRecipes(registration);
+    }
+
+    @Override
+    public void registerGuiHandlers(IGuiHandlerRegistration registration) {
+        HbmJeiPluginCommon.registerGuiHandlers(registration);
+    }
+
+    @Override
+    public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
+        HbmJeiPluginCommon.registerRecipeTransferHandlers(registration);
     }
 
     @Override

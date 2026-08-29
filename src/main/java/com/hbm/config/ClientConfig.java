@@ -13,4 +13,7 @@ public final class ClientConfig {
 
     /** The HUD/camera shake on a nearby nuclear detonation (old {@code NUKE_HUD_SHAKE}). */
     public static boolean NUKE_HUD_SHAKE = true;
+
+    /** The first-person camera kick after firing a gun (old {@code GUN_VISUAL_RECOIL}). */
+    public static boolean GUN_VISUAL_RECOIL = true;
 }

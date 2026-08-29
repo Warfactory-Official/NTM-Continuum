@@ -155,6 +155,10 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputItems(S.dust())
                 .inputFluids(new FluidStack(Fluids.PEROXIDE, 1_000), new FluidStack(Fluids.WATER, 1_000))
                 .outputFluids(new FluidStack(Fluids.SULFURIC_ACID, 2_000)));
+        reg.registerGenerated(new GenericRecipe("chem.nitricacid").setup(50, 100)
+                .inputItems(KNO.dust())
+                .inputFluids(new FluidStack(Fluids.SULFURIC_ACID, 500))
+                .outputFluids(new FluidStack(Fluids.NITRIC_ACID, 1_000)));
         reg.registerGenerated(new GenericRecipe("chem.birkeland").setup(200, 5_000)
                 .inputFluids(new FluidStack(Fluids.AIR, 8_000), new FluidStack(Fluids.WATER, 2_000))
                 .outputFluids(new FluidStack(Fluids.NITRIC_ACID, 1_000))
@@ -180,14 +184,32 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.PAIN, 1000), new FluidStack(Fluids.PEROXIDE, 500))
                 .outputItems(new ItemStack(ModItems.gem_tantalium.get()), new ItemStack(ModItems.dust.get(), 3))
                 .outputFluids(new FluidStack(Fluids.WATER, 250)));
+        reg.registerGenerated(new GenericRecipe("chem.cordite").setup(40, 100)
+                .inputItems(KNO.dust().count(2), new ComparableStack(ModItems.powder_sawdust.get(), 2))
+                .inputFluids(new FluidStack(Fluids.GAS, 200))
+                .outputItems(new ItemStack(ModItems.cordite.get(), 4)));
         reg.registerGenerated(new GenericRecipe("chem.rocketfuel").setup(200, 100)
                 .inputItems(new ComparableStack(ModFuelItems.solid_fuel.get(), 2))
                 .inputFluids(new FluidStack(Fluids.PETROLEUM, 200), new FluidStack(Fluids.NITRIC_ACID, 100))
                 .outputItems(new ItemStack(ModFuelItems.rocket_fuel.get(), 4)));
+        reg.registerGenerated(new GenericRecipe("chem.dynamite").setup(50, 100)
+                .inputItems(new ComparableStack(Items.SUGAR), KNO.dust(), tag("minecraft", "sand", 1))
+                .outputItems(new ItemStack(ModItems.ball_dynamite.get(), 2)));
+        reg.registerGenerated(new GenericRecipe("chem.tnt").setup(100, 1_000)
+                .inputItems(KNO.dust())
+                .inputFluids(new FluidStack(Fluids.AROMATICS, 500))
+                .outputItems(new ItemStack(ModItems.ball_tnt.get(), 4)));
+    }
+
+    private static void register1(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("chem.tatb").setup(50, 5_000)
                 .inputItems(new ComparableStack(ModItems.ball_tnt.get()))
                 .inputFluids(new FluidStack(Fluids.SOURGAS, 200, 1), new FluidStack(Fluids.NITRIC_ACID, 10))
                 .outputItems(new ItemStack(ModItems.ball_tatb.get())));
+        reg.registerGenerated(new GenericRecipe("chem.c4").setup(100, 1_000)
+                .inputItems(KNO.dust())
+                .inputFluids(new FluidStack(Fluids.UNSATURATEDS, 500))
+                .outputItems(new ItemStack(ModFuelItems.ingot_c4.get(), 4)));
         reg.registerGenerated(new GenericRecipe("chem.napalm").setup(40, 100)
                 .inputItems(new ComparableStack(ModItems.canister_empty.get()))
                 .inputFluids(new FluidStack(Fluids.GASOLINE, 100), new FluidStack(Fluids.AROMATICS, 50))
@@ -200,9 +222,6 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputItems(U.billet().count(2), S.dust().count(2))
                 .inputFluids(new FluidStack(Fluids.PEROXIDE, 500))
                 .outputItems(new ItemStack(ModItems.powder_yellowcake.get())));
-    }
-
-    private static void register1(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("chem.uf6").setup(100, 500)
                 .inputItems(new ComparableStack(ModItems.powder_yellowcake.get()), F.dust().count(4))
                 .inputFluids(new FluidStack(Fluids.WATER, 1_000))

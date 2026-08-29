@@ -97,6 +97,15 @@ public abstract class WeaponRenderer {
         }
     }
 
+    /** The upstream FOV adjustment for this renderer; most renderers deliberately leave it unchanged. */
+    public float viewFov(ItemStack stack, float fov, float partialTick) {
+        return fov;
+    }
+
+    protected static float aimingFov(ItemStack stack, float fov, float partialTick, float zoom) {
+        return ItemGunBaseNT.applyAimingFov(fov, partialTick, zoom);
+    }
+
     /** Lerps between the hip position and the sighted one by how far the aim transition has run. */
     public static void standardAimingTransform(ItemStack stack, PoseStack pose,
             double sX, double sY, double sZ, double aX, double aY, double aZ) {

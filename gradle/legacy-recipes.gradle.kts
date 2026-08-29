@@ -2,11 +2,11 @@ import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
 /**
- * Rewrites crafting recipes into the pre-1.21.2 JSON shape, and restores the pre-1.21.2 data-pack
- * directory layout where necessary.
+ * Rewrites crafting recipes into the pre-26.1 JSON shape, and restores the 1.20.x data-pack directory
+ * layout where necessary.
  *
- * Vanilla's `Ingredient` codec changed shape, not meaning. From 1.21.2 an ingredient is written as a
- * bare string — `"hbm:ingot_lead"` for an item, `"#c:ingots/lead"` for a tag — while before that it
+ * Vanilla's `Ingredient` codec changed shape, not meaning. In 26.1 an ingredient is written as a bare
+ * string — `"hbm:ingot_lead"` for an item, `"#c:ingots/lead"` for a tag — while before that it
  * had to be an object: `{"item": "hbm:ingot_lead"}` or `{"tag": "c:ingots/lead"}`. Nothing else about
  * these recipes differs, so the port keeps ONE set of recipe files, written in the 26.1 shape that
  * `gen_recipes` emits, and converts them on the way into older nodes' resources.
@@ -35,7 +35,7 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
             val repointed = if (conventionNamespace != "c") repointConventionTagReferences(root, conventionNamespace) else 0
             var converted = 0
             root.walkTopDown()
-                .filter { it.isFile && it.extension == "json" && it.parentFile.name == "recipes" }
+                .filter { it.isFile && it.extension == "json" && it.parentFile.name in setOf("recipe", "recipes") }
                 .forEach { file ->
                     @Suppress("UNCHECKED_CAST")
                     val json = JsonSlurper().parse(file) as? MutableMap<String, Any?> ?: return@forEach
@@ -69,12 +69,12 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
                             }
                         }
                         val id = result["id"] as? String
-                        if (json["type"] in legacyCookingRecipeTypes && id != null) {
-                            // Cooking recipes had a bare result id before 1.21.2.
+                        if (needsLegacyRecipeResults(mcVersion) && json["type"] in legacyCookingRecipeTypes && id != null) {
+                            // Cooking recipes use a bare result id on 1.20.x.
                             json["result"] = id
                             changed = true
-                        } else if (id != null && "item" !in result) {
-                            // Crafting recipe results used `item` before 1.21.2.
+                        } else if (needsLegacyRecipeResults(mcVersion) && id != null && "item" !in result) {
+                            // Crafting recipe results use `item` on 1.20.x.
                             result.remove("id")
                             result["item"] = id
                             changed = true
@@ -177,8 +177,8 @@ val legacyCookingRecipeTypes = setOf(
 )
 
 /**
- * Minecraft versions before 1.21.2 expect plural recipe, loot-table, advancement, structure, and tag
- * registry directories.
+ * The supported 1.20.x node expects plural recipe, loot-table, advancement, structure, and tag registry
+ * directories. 1.21.1 and newer use the singular registry paths.
  * This only moves files after Gradle has copied them into [ProcessResources.destinationDir].
  */
 fun renameLegacyDataDirectories(root: File): Int {
@@ -283,24 +283,23 @@ fun toLegacyIngredient(value: Any?): Any? = when {
 }
 
 /**
- * Whether this Minecraft version predates the bare-string ingredient form, i.e. anything below
- * 1.21.2. Kept here rather than in the buildscripts so both loaders share one answer.
+ * Whether this Minecraft version uses object-form ingredients. 26.1 is the first supported node with
+ * bare-string ingredients; 1.21.1 still uses the object form but already uses result ids.
  */
 fun needsLegacyIngredients(mcVersion: String): Boolean {
     val parts = mcVersion.split('.').map { it.toIntOrNull() ?: 0 }
     val major = parts.getOrElse(0) { 0 }
-    val minor = parts.getOrElse(1) { 0 }
-    val patch = parts.getOrElse(2) { 0 }
-    return when {
-        major >= 26 -> false          // 26.1 and up: the new shape is native
-        minor > 21 -> false
-        minor < 21 -> true            // 1.20.x
-        else -> patch < 2             // 1.21 and 1.21.1, but not 1.21.2+
-    }
+    return major < 26
 }
 
-/** Directory singularization and the recipe codec changed together in 1.21.2. */
-fun needsLegacyDataDirectories(mcVersion: String) = needsLegacyIngredients(mcVersion)
+/** 1.20.x uses the pre-data-component recipe result shape; 1.21.1 already uses result ids. */
+fun needsLegacyRecipeResults(mcVersion: String): Boolean = needsLegacyDataDirectories(mcVersion)
+
+/** 1.20.x uses plural data directories; 1.21.x and newer use the singular registry paths. */
+fun needsLegacyDataDirectories(mcVersion: String): Boolean {
+    val parts = mcVersion.split('.').map { it.toIntOrNull() ?: 0 }
+    return parts.getOrElse(0) { 0 } == 1 && parts.getOrElse(1) { 0 } < 21
+}
 
 /** Item stacks switched from NBT to data components in 1.20.5. */
 fun needsLegacyItemStacks(mcVersion: String): Boolean {

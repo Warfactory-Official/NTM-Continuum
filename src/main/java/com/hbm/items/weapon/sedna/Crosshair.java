@@ -1,15 +1,13 @@
 package com.hbm.items.weapon.sedna;
 
 /**
- * Which crosshair a gun draws, and where it sits on {@code textures/gui/crosshairs.png}.
+ * Which crosshair a gun draws, and where it sits on {@code textures/misc/overlay_misc.png}.
  *
  * <p>Ported from the enum nested in 1.12.2's {@code RenderScreenOverlay}. It lives in the common
  * weapon package rather than a client class because a {@link GunConfig} names one, and gun configs are
  * built on the server as well — the drawing itself stays client-side.
  *
- * <p>The atlas coordinates are carried verbatim so the original texture lines up unchanged once the
- * crosshair renderer is ported; until then a gun's choice is recorded but the vanilla crosshair is
- * drawn.
+ * <p>The atlas coordinates are carried verbatim so the original texture lines up unchanged.
  */
 public enum Crosshair {
     NONE(0, 0, 0),

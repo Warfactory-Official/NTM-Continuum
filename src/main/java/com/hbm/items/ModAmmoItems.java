@@ -34,10 +34,34 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> m357_ap = ITEMS.registerSimpleItem("ammo_standard_m357_ap");
     public static final RegistryObject<Item> m357_express = ITEMS.registerSimpleItem("ammo_standard_m357_express");
 
+    // .44 Magnum, in the order upstream declares them.
+    public static final RegistryObject<Item> m44_bp = ITEMS.registerSimpleItem("ammo_standard_m44_bp");
+    public static final RegistryObject<Item> m44_sp = ITEMS.registerSimpleItem("ammo_standard_m44_sp");
+    public static final RegistryObject<Item> m44_fmj = ITEMS.registerSimpleItem("ammo_standard_m44_fmj");
+    public static final RegistryObject<Item> m44_jhp = ITEMS.registerSimpleItem("ammo_standard_m44_jhp");
+    public static final RegistryObject<Item> m44_ap = ITEMS.registerSimpleItem("ammo_standard_m44_ap");
+    public static final RegistryObject<Item> m44_express = ITEMS.registerSimpleItem("ammo_standard_m44_express");
+    /** The old metadata item {@code ammo_secret:M44_EQUESTRIAN}, flattened to one item. */
+    public static final RegistryObject<Item> m44_equestrian = ITEMS.registerSimpleItem("ammo_secret_m44_equestrian");
+
+    // .22 LR, in the order upstream declares them: magazines prefer soft point first.
+    public static final RegistryObject<Item> p22_sp = ITEMS.registerSimpleItem("ammo_standard_p22_sp");
+    public static final RegistryObject<Item> p22_fmj = ITEMS.registerSimpleItem("ammo_standard_p22_fmj");
+    public static final RegistryObject<Item> p22_jhp = ITEMS.registerSimpleItem("ammo_standard_p22_jhp");
+    public static final RegistryObject<Item> p22_ap = ITEMS.registerSimpleItem("ammo_standard_p22_ap");
+
+    // 9 mm, in the order upstream declares them: magazines prefer soft point first.
+    public static final RegistryObject<Item> p9_sp = ITEMS.registerSimpleItem("ammo_standard_p9_sp");
+    public static final RegistryObject<Item> p9_fmj = ITEMS.registerSimpleItem("ammo_standard_p9_fmj");
+    public static final RegistryObject<Item> p9_jhp = ITEMS.registerSimpleItem("ammo_standard_p9_jhp");
+    public static final RegistryObject<Item> p9_ap = ITEMS.registerSimpleItem("ammo_standard_p9_ap");
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
-                ammo_debug, m357_bp, m357_sp, m357_fmj, m357_jhp, m357_ap, m357_express}) {
+                 ammo_debug, m357_bp, m357_sp, m357_fmj, m357_jhp, m357_ap, m357_express,
+                 m44_bp, m44_sp, m44_fmj, m44_jhp, m44_ap, m44_express,
+                 p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }

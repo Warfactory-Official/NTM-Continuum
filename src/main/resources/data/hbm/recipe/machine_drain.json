@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:plates_cast/steel",
+    "T": "hbm:tank_steel"
+  },
+  "pattern": [
+    "PPP",
+    "T  ",
+    "PPP"
+  ],
+  "result": {
+    "id": "hbm:machine_drain"
+  }
+}

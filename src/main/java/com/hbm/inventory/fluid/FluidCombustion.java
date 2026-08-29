@@ -28,6 +28,11 @@ public final class FluidCombustion {
     private static final Map<FluidType, Long> FLAMMABLE = new HashMap<>();
     private static final Map<FluidType, Combustible> COMBUSTIBLE = new HashMap<>();
     private static final Set<FluidType> GASEOUS = new HashSet<>();
+    private static final Set<String> LIQUID_VISCOUS = Set.of(
+            "OIL", "HEAVYOIL", "SMEAR", "HEATINGOIL", "NAPHTHA", "NITAN", "BALEFIRE",
+            "CRACKOIL", "COALOIL", "NAPHTHA_CRACK", "AROMATICS", "HEAVYOIL_VACUUM", "REFORMATE",
+            "XYLENE", "HEATINGOIL_VACUUM", "OIL_DS", "CRACKOIL_DS", "OIL_COKER", "NAPHTHA_COKER",
+            "REDMUD");
     private static boolean initialized = false;
 
     /** TU per bucket when burned for heat (old FT_Flammable.getHeatEnergy), 0 when not flammable. */
@@ -52,6 +57,11 @@ public final class FluidCombustion {
     public static boolean isGaseous(FluidType type) {
         init();
         return GASEOUS.contains(type);
+    }
+
+    /** The old drain's liquid + viscous gate; the two traits are represented by this exact legacy set. */
+    public static boolean isLiquidAndViscous(FluidType type) {
+        return type != null && LIQUID_VISCOUS.contains(type.getName());
     }
 
     private static void flam(FluidType type, long energy) {

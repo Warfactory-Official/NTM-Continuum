@@ -70,6 +70,11 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
     }
 
     @Override
+    public float viewFov(ItemStack stack, float fov, float partialTick) {
+        return aimingFov(stack, fov, partialTick, 0.33F);
+    }
+
+    @Override
     public void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
             int light, int overlay) {
         pose.scale(0.125F, 0.125F, 0.125F);

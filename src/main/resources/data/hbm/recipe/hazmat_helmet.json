@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "E": "hbm:hazmat_cloth",
-    "I": "minecraft:glass_pane",
+    "I": "#c:glass_panes",
     "P": "#c:plates/iron"
   },
   "pattern": [

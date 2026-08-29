@@ -23,6 +23,9 @@ public final class GeneralConfig {
     /** Old {@code 1.26_enableCarbonMonoxide}. */
     public static boolean enableCarbonMonoxide = true;
 
+    /** Old {@code 1.99_enableExpensiveMode}; selects the alternate Exposure Chamber catalyst. */
+    public static boolean enableExpensiveMode = false;
+
     /** One-in-N random ticks before radon dissipates; dense radon deposits fallout when it expires. */
     public static int radonDecayChance = 20;
 

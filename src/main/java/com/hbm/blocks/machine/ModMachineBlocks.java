@@ -8,6 +8,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.struct.TileEntityWatzStruct;
 import com.hbm.blocks.network.BlockCable;
 import com.hbm.blocks.network.BlockFluidDuct;
+import com.hbm.blocks.network.FluidValve;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.blocks.bomb.LaunchPad;
@@ -52,6 +53,9 @@ public final class ModMachineBlocks {
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachinePump> machine_pump_electric = BLOCKS.registerBlock(
             "machine_pump_electric", MachinePump::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachinePump> machine_pump_steam = BLOCKS.registerBlock(
+            "machine_pump_steam", p -> new MachinePump(p, true),
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineStirling> machine_stirling = BLOCKS.registerBlock(
             "machine_stirling", MachineStirling::new,
@@ -161,6 +165,14 @@ public final class ModMachineBlocks {
             "machine_fluidtank", MachineFluidTank::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    public static final RegistryObject<FluidValve> fluid_valve = BLOCKS.registerBlock(
+            "fluid_valve", FluidValve::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
+    public static final RegistryObject<MachineDrain> machine_drain = BLOCKS.registerBlock(
+            "machine_drain", MachineDrain::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     // --- scaffold machines: placeable, directional, BlockEntity-backed; logic deferred (§18) ---
 
     public static final RegistryObject<MachineElectricFurnace> machine_electric_furnace_off = BLOCKS.registerBlock(
@@ -191,6 +203,12 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineChemicalPlant> machine_chemical_plant = BLOCKS.registerBlock(
             "machine_chemical_plant", MachineChemicalPlant::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineMixer> machine_mixer = BLOCKS.registerBlock(
+            "machine_mixer", MachineMixer::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineExposureChamber> machine_exposure_chamber = BLOCKS.registerBlock(
+            "machine_exposure_chamber", MachineExposureChamber::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineBlastFurnace> machine_blast_furnace = BLOCKS.registerBlock(
             "machine_blast_furnace", MachineBlastFurnace::new,
@@ -308,6 +326,11 @@ public final class ModMachineBlocks {
             "machine_crystallizer", MachineCrystallizer::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    /** Standard item centrifuge — a 1×1×4 tower with four output streams. */
+    public static final RegistryObject<MachineCentrifuge> machine_centrifuge = BLOCKS.registerBlock(
+            "machine_centrifuge", MachineCentrifuge::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     /** SILEX — the laser isotope separation chamber. Fluid-only (peroxide); the laser supplies the energy. */
     public static final RegistryObject<MachineSILEX> machine_silex = BLOCKS.registerBlock(
             "machine_silex", MachineSILEX::new,
@@ -383,6 +406,7 @@ public final class ModMachineBlocks {
         tabItem("machine_large_turbine", machine_large_turbine);
         tabItem("machine_steam_engine", machine_steam_engine);
         tabItem("machine_pump_electric", machine_pump_electric);
+        tabItem("machine_pump_steam", machine_pump_steam);
         tabItem("machine_stirling", machine_stirling);
         tabItem("machine_stirling_steel", machine_stirling_steel);
         tabItem("machine_stirling_creative", machine_stirling_creative);
@@ -413,6 +437,8 @@ public final class ModMachineBlocks {
         tabItem("fluid_duct_mk2", fluid_duct_mk2);
         tabItem("creative_fluid_source", creative_fluid_source);
         tabItem("machine_fluidtank", machine_fluidtank);
+        tabItem("fluid_valve", fluid_valve);
+        tabItem("machine_drain", machine_drain);
         tabItem("machine_electric_furnace_off", machine_electric_furnace_off);
         tabItem("machine_shredder", machine_shredder);
         tabItem("machine_epress", machine_epress);
@@ -420,6 +446,8 @@ public final class ModMachineBlocks {
         tabItem("machine_sawmill", machine_sawmill);
         tabItem("machine_assembly_machine", machine_assembly_machine);
         tabItem("machine_chemical_plant", machine_chemical_plant);
+        tabItem("machine_mixer", machine_mixer);
+        tabItem("machine_exposure_chamber", machine_exposure_chamber);
         tabItem("machine_blast_furnace", machine_blast_furnace);
         tabItem("machine_purex", machine_purex);
         tabItem("machine_well", machine_well);
@@ -446,6 +474,7 @@ public final class ModMachineBlocks {
         tabItem("heater_oilburner", heater_oilburner);
         tabItem("machine_soldering_station", machine_soldering_station);
         tabItem("machine_crystallizer", machine_crystallizer);
+        tabItem("machine_centrifuge", machine_centrifuge);
         tabItem("machine_silex", machine_silex);
         tabItem("machine_fel", machine_fel);
         tabItem("machine_crucible", machine_crucible);

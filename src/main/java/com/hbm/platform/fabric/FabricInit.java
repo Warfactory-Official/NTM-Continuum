@@ -80,7 +80,12 @@ public class FabricInit implements ModInitializer {
         // Populate our creative tabs from the common contents map.
         ModTabs.CONTENTS.forEach((tabKey, contents) ->
                 dev.golem.core.registry.Tabs.modifyEntries(tabKey, output -> {
-                    contents.forEach(item -> output.accept(new net.minecraft.world.item.ItemStack(item.get())));
+                    contents.forEach(item -> {
+                        net.minecraft.world.item.Item resolved = item.get();
+                        if (ModTabs.shouldDisplay(tabKey, resolved)) {
+                            output.accept(new net.minecraft.world.item.ItemStack(resolved));
+                        }
+                    });
                     var stacks = ModTabs.STACK_CONTENTS.get(tabKey);
                     if (stacks != null) stacks.forEach(supplier -> supplier.get().forEach(output::accept));
                 }));

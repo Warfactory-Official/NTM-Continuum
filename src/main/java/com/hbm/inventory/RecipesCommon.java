@@ -18,7 +18,7 @@ import java.util.List;
  * {@link AStack} is an abstract "ingredient stack" the recipe system matches against real
  * {@link ItemStack}s. The 1.12.2 ore dictionary is replaced by item {@link TagKey tags}
  * ({@link TagStack}); {@link ComparableStack} matches an exact item and can retain its component/NBT
- * data for metadata variants. (The JEI helpers from the original are deferred.)
+ * data for metadata variants. The legacy JEI display helpers are represented by {@link AStack#getDisplayStacks()}.
  */
 public class RecipesCommon {
 

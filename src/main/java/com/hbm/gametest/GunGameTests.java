@@ -4,12 +4,19 @@ import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModGunItems;
+import com.hbm.creativetabs.HbmTab;
+import com.hbm.creativetabs.ModTabs;
+import com.hbm.client.anim.BusAnimationKeyframe;
+import com.hbm.client.anim.BusAnimationSequence;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.factory.XFactory357;
+import com.hbm.items.weapon.sedna.factory.XFactory22lr;
+import com.hbm.items.weapon.sedna.factory.XFactory44;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleTypeBase;
+import com.hbm.items.weapon.sedna.factory.XFactory9mm;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -297,6 +304,213 @@ public final class GunGameTests {
         helper.succeed();
     }
 
+    /** The .22 LR family preserves each upstream damage, armour, and penetration distinction. */
+    public static void ammo22Stats(GameTestHelper helper) {
+        helper.assertTrue(XFactory22lr.p22_sp.knockbackMult == 0F,
+                "soft-point .22 should have no knockback");
+        helper.assertTrue(XFactory22lr.p22_fmj.damageMult == 0.8F
+                        && XFactory22lr.p22_fmj.armorThresholdNegation == 1F
+                        && XFactory22lr.p22_fmj.armorPiercingPercent == 0.1F,
+                "FMJ .22 stats must match upstream");
+        helper.assertTrue(XFactory22lr.p22_jhp.damageMult == 1.5F
+                        && XFactory22lr.p22_jhp.headshotMult == 1.5F
+                        && XFactory22lr.p22_jhp.armorPiercingPercent == -0.25F,
+                "JHP .22 stats must match upstream");
+        helper.assertTrue(XFactory22lr.p22_ap.doesPenetrate
+                        && !XFactory22lr.p22_ap.damageFalloffByPen
+                        && XFactory22lr.p22_ap.damageMult == 1.5F
+                        && XFactory22lr.p22_ap.armorThresholdNegation == 2.5F
+                        && XFactory22lr.p22_ap.armorPiercingPercent == 0.15F,
+                "AP .22 stats must match upstream");
+        helper.succeed();
+    }
+
+    /** The 9 mm rounds preserve upstream's damage, armour, and penetration distinctions. */
+    public static void ammo9Stats(GameTestHelper helper) {
+        helper.assertTrue(XFactory9mm.p9_sp.damageMult == 1F && !XFactory9mm.p9_sp.doesPenetrate,
+                "soft-point 9 mm should be the baseline non-penetrating round");
+        helper.assertTrue(XFactory9mm.p9_fmj.damageMult == 0.8F
+                        && XFactory9mm.p9_fmj.armorThresholdNegation == 2F
+                        && XFactory9mm.p9_fmj.armorPiercingPercent == 0.1F,
+                "FMJ 9 mm stats must match upstream");
+        helper.assertTrue(XFactory9mm.p9_jhp.damageMult == 1.5F
+                        && XFactory9mm.p9_jhp.headshotMult == 1.5F
+                        && XFactory9mm.p9_jhp.armorPiercingPercent == -0.25F,
+                "JHP 9 mm stats must match upstream");
+        helper.assertTrue(XFactory9mm.p9_ap.doesPenetrate
+                        && !XFactory9mm.p9_ap.damageFalloffByPen
+                        && XFactory9mm.p9_ap.damageMult == 1.5F
+                        && XFactory9mm.p9_ap.armorThresholdNegation == 5F
+                        && XFactory9mm.p9_ap.armorPiercingPercent == 0.15F,
+                "AP 9 mm stats must match upstream");
+        helper.succeed();
+    }
+
+    /** The .44 family preserves upstream's damage, armour, penetration, and black-powder distinctions. */
+    public static void ammo44Stats(GameTestHelper helper) {
+        helper.assertTrue(XFactory44.m44_bp.damageMult == 0.75F && XFactory44.m44_bp.blackPowder,
+                "black-powder .44 must be weaker and marked black powder");
+        helper.assertTrue(XFactory44.m44_fmj.damageMult == 0.8F
+                        && XFactory44.m44_fmj.armorThresholdNegation == 3F
+                        && XFactory44.m44_fmj.armorPiercingPercent == 0.1F,
+                "FMJ .44 stats must match upstream");
+        helper.assertTrue(XFactory44.m44_jhp.damageMult == 1.5F
+                        && XFactory44.m44_jhp.headshotMult == 1.5F
+                        && XFactory44.m44_jhp.armorPiercingPercent == -0.25F,
+                "JHP .44 stats must match upstream");
+        helper.assertTrue(XFactory44.m44_ap.doesPenetrate
+                        && !XFactory44.m44_ap.damageFalloffByPen
+                        && XFactory44.m44_ap.damageMult == 1.5F
+                        && XFactory44.m44_ap.armorThresholdNegation == 7.5F
+                        && XFactory44.m44_ap.armorPiercingPercent == 0.15F,
+                "AP .44 stats must match upstream");
+        helper.assertTrue(XFactory44.m44_express.doesPenetrate
+                        && XFactory44.m44_express.damageMult == 1.5F
+                        && XFactory44.m44_express.armorThresholdNegation == 3F
+                        && XFactory44.m44_express.wear == 1.5F,
+                "express .44 stats must match upstream");
+        helper.assertTrue(XFactory44.m44_equestrian_pip.ammoItem() == ModAmmoItems.m44_equestrian.get()
+                        && XFactory44.m44_equestrian_mn7.ammoItem() == ModAmmoItems.m44_equestrian.get()
+                        && XFactory44.m44_equestrian_pip.damageMult == 0F
+                        && XFactory44.m44_equestrian_mn7.damageMult == 0F,
+                "both Equestrian configs must share the flattened secret ammo item and zero damage");
+        helper.succeed();
+    }
+
+    /** The six .44 weapons retain their upstream receiver damage and magazine capacities. */
+    public static void gun44Configs(GameTestHelper helper) {
+        ItemStack henry = new ItemStack(ModGunItems.gun_henry.get());
+        ItemStack lincoln = new ItemStack(ModGunItems.gun_henry_lincoln.get());
+        ItemStack revolver = new ItemStack(ModGunItems.gun_heavy_revolver.get());
+        ItemStack lilmac = new ItemStack(ModGunItems.gun_heavy_revolver_lilmac.get());
+        ItemStack protege = new ItemStack(ModGunItems.gun_heavy_revolver_protege.get());
+        ItemStack hangman = new ItemStack(ModGunItems.gun_hangman.get());
+
+        var henryReceiver = ((ItemGunBaseNT) henry.getItem()).getConfig(henry, 0).getReceivers(henry)[0];
+        var lincolnReceiver = ((ItemGunBaseNT) lincoln.getItem()).getConfig(lincoln, 0).getReceivers(lincoln)[0];
+        var revolverReceiver = ((ItemGunBaseNT) revolver.getItem()).getConfig(revolver, 0).getReceivers(revolver)[0];
+        var lilmacReceiver = ((ItemGunBaseNT) lilmac.getItem()).getConfig(lilmac, 0).getReceivers(lilmac)[0];
+        var protegeReceiver = ((ItemGunBaseNT) protege.getItem()).getConfig(protege, 0).getReceivers(protege)[0];
+        var hangmanReceiver = ((ItemGunBaseNT) hangman.getItem()).getConfig(hangman, 0).getReceivers(hangman)[0];
+
+        helper.assertTrue(henryReceiver.getBaseDamage(henry) == 10F
+                        && henryReceiver.getMagazine(henry).getCapacity(henry) == 14,
+                "Henry receiver must match upstream");
+        helper.assertTrue(lincolnReceiver.getBaseDamage(lincoln) == 20F
+                        && lincolnReceiver.getMagazine(lincoln).getCapacity(lincoln) == 14,
+                "Lincoln receiver must match upstream");
+        helper.assertTrue(revolverReceiver.getBaseDamage(revolver) == 15F
+                        && revolverReceiver.getMagazine(revolver).getCapacity(revolver) == 6,
+                "heavy revolver receiver must match upstream");
+        helper.assertTrue(lilmacReceiver.getBaseDamage(lilmac) == 30F
+                        && lilmacReceiver.getMagazine(lilmac).getCapacity(lilmac) == 6,
+                "Little Macintosh receiver must match upstream");
+        helper.assertTrue(protegeReceiver.getBaseDamage(protege) == 30F
+                        && protegeReceiver.getMagazine(protege).getCapacity(protege) == 6,
+                "Protege receiver must match upstream");
+        helper.assertTrue(hangmanReceiver.getBaseDamage(hangman) == 25F
+                        && hangmanReceiver.getMagazine(hangman).getCapacity(hangman) == 8,
+                "Hangman receiver must match upstream");
+        helper.succeed();
+    }
+
+    /** Henry loads one .44 round per cycle and stops at the available inventory count. */
+    public static void gun44SingleReload(GameTestHelper helper) {
+        Player player = player(helper);
+        ItemStack stack = armed(helper, player, ModGunItems.gun_henry.get(), ModAmmoItems.m44_sp.get(), 3);
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+        draw(helper, player, stack);
+
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.RELOAD, true);
+        tick(helper, player, stack, 300);
+
+        helper.assertTrue(mag(stack).getAmount(stack, player.getInventory()) == 3,
+                "Henry should load all three available .44 rounds one at a time");
+        helper.assertTrue(mag(stack).getType(stack, player.getInventory()) == XFactory44.m44_sp,
+                "Henry should adopt the .44 soft-point config");
+        helper.assertTrue(player.getInventory().countItem(ModAmmoItems.m44_sp.get()) == 0,
+                "Henry should consume the loaded .44 rounds");
+        helper.succeed();
+    }
+
+    /** The four 9 mm guns retain their upstream receiver timings and magazine layout. */
+    public static void gun9Configs(GameTestHelper helper) {
+        ItemStack greasegun = new ItemStack(ModGunItems.gun_greasegun.get());
+        ItemStack lag = new ItemStack(ModGunItems.gun_lag.get());
+        ItemStack uzi = new ItemStack(ModGunItems.gun_uzi.get());
+        ItemStack akimbo = new ItemStack(ModGunItems.gun_uzi_akimbo.get());
+
+        var grease = ((ItemGunBaseNT) greasegun.getItem()).getConfig(greasegun, 0).getReceivers(greasegun)[0];
+        var longPistol = ((ItemGunBaseNT) lag.getItem()).getConfig(lag, 0).getReceivers(lag)[0];
+        var uziReceiver = ((ItemGunBaseNT) uzi.getItem()).getConfig(uzi, 0).getReceivers(uzi)[0];
+        var akimboFirst = ((ItemGunBaseNT) akimbo.getItem()).getConfig(akimbo, 0).getReceivers(akimbo)[0];
+        var akimboSecond = ((ItemGunBaseNT) akimbo.getItem()).getConfig(akimbo, 1).getReceivers(akimbo)[0];
+
+        helper.assertTrue(grease.getBaseDamage(greasegun) == 3F && grease.getDelayAfterFire(greasegun) == 4
+                        && grease.getDelayAfterDryFire(greasegun) == 40
+                        && grease.getRefireOnHold(greasegun)
+                        && grease.getMagazine(greasegun).getCapacity(greasegun) == 30,
+                "Grease Gun receiver must match upstream");
+        helper.assertTrue(longPistol.getBaseDamage(lag) == 25F && longPistol.getDelayAfterFire(lag) == 4
+                        && longPistol.getDelayAfterDryFire(lag) == 10
+                        && longPistol.getMagazine(lag).getCapacity(lag) == 17,
+                "LAG receiver must match upstream");
+        helper.assertTrue(uziReceiver.getDelayAfterFire(uzi) == 2
+                        && uziReceiver.getDelayAfterDryFire(uzi) == 25
+                        && uziReceiver.getRefireOnHold(uzi)
+                        && uziReceiver.getMagazine(uzi).getCapacity(uzi) == 30,
+                "Uzi receiver must match upstream");
+        helper.assertTrue(akimboFirst.getMagazine(akimbo).getCapacity(akimbo) == 30
+                        && akimboSecond.getMagazine(akimbo).getCapacity(akimbo) == 30
+                        && akimboFirst.getRefireOnHold(akimbo)
+                        && akimboSecond.getRefireOnHold(akimbo)
+                        && akimboFirst.getHipfireSpread(akimbo) == 0F
+                        && akimboSecond.getHipfireSpread(akimbo) == 0F,
+                "both akimbo receivers must have independent thirty-round magazines");
+        helper.succeed();
+    }
+
+    /** A held primary trigger repeatedly fires an automatic receiver after each cooldown. */
+    public static void gunAutoRefire(GameTestHelper helper) {
+        Player player = player(helper);
+        ItemStack stack = armed(helper, player, ModGunItems.gun_am180.get(), ModAmmoItems.p22_sp.get(), 0);
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+        draw(helper, player, stack);
+
+        IMagazine<BulletConfig> magazine = mag(stack);
+        magazine.setType(stack, XFactory22lr.p22_sp);
+        magazine.setAmount(stack, 30);
+        helper.assertTrue(gun.getConfig(stack, 0).getReceivers(stack)[0].getRefireOnHold(stack),
+                "AM180 receiver must refire while primary remains held");
+
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_PRIMARY, true);
+        tick(helper, player, stack, 20);
+        int remaining = magazine.getAmount(stack, player.getInventory());
+        helper.assertTrue(remaining < 29,
+                "held primary should fire more than the initial AM180 round, remaining=" + remaining);
+        helper.succeed();
+    }
+
+    /** The Star-F accepts .22 rounds in upstream order and fills its fifteen-round magazine. */
+    public static void gunStarFReload(GameTestHelper helper) {
+        Player player = player(helper);
+        ItemStack stack = armed(helper, player, ModGunItems.gun_star_f.get(),
+                ModAmmoItems.p22_sp.get(), 20);
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+        draw(helper, player, stack);
+
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.RELOAD, true);
+        tick(helper, player, stack, 100);
+
+        helper.assertTrue(mag(stack).getAmount(stack, player.getInventory()) == 15,
+                "the Star-F should load fifteen .22 rounds");
+        helper.assertTrue(mag(stack).getType(stack, player.getInventory()) == XFactory22lr.p22_sp,
+                "the Star-F should chamber .22 soft point rounds");
+        helper.assertTrue(player.getInventory().countItem(ModAmmoItems.p22_sp.get()) == 5,
+                "the Star-F should consume fifteen rounds");
+        helper.succeed();
+    }
+
     /** Each round is registered under its own id and resolves back to the same object. */
     public static void ammoRegistry(GameTestHelper helper) {
         for (BulletConfig config : XFactory357.all()) {
@@ -401,6 +615,121 @@ public final class GunGameTests {
                 helper.getLevel().getBlockState(helper.absolutePos(pos)),
                 helper.getLevel(), helper.absolutePos(pos), player);
         helper.assertTrue(!canDestroy, "a held gun must not be able to break blocks");
+        helper.succeed();
+    }
+
+    /** Every current Gen-3 gun keeps its upstream recoil callback, while the debug gun has none. */
+    public static void gunRecoilBindings(GameTestHelper helper) {
+        assertRecoil(helper, ModGunItems.gun_light_revolver.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_am180.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_star_f.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_star_f_akimbo.get(), 0, 1);
+        assertRecoil(helper, ModGunItems.gun_greasegun.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_lag.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_uzi.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_uzi_akimbo.get(), 0, 1);
+        assertRecoil(helper, ModGunItems.gun_henry.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_henry_lincoln.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_heavy_revolver.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_heavy_revolver_lilmac.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_heavy_revolver_protege.get(), 0);
+        assertRecoil(helper, ModGunItems.gun_hangman.get(), 0);
+
+        ItemGunBaseNT debug = ModGunItems.gun_debug.get();
+        helper.assertTrue(debug.getConfig(new ItemStack(debug), 0).getReceivers(new ItemStack(debug))[0]
+                        .getRecoil(new ItemStack(debug)) == null,
+                "the upstream debug gun has no recoil callback");
+        helper.succeed();
+    }
+
+    /** Disabling visual recoil cannot leave a stale camera kick behind. */
+    public static void gunRecoilReset(GameTestHelper helper) {
+        float oldRecoilVertical = ItemGunBaseNT.recoilVertical;
+        float oldRecoilHorizontal = ItemGunBaseNT.recoilHorizontal;
+        float oldOffsetVertical = ItemGunBaseNT.offsetVertical;
+        float oldOffsetHorizontal = ItemGunBaseNT.offsetHorizontal;
+        try {
+            ItemGunBaseNT.recoilVertical = 4F;
+            ItemGunBaseNT.recoilHorizontal = -3F;
+            ItemGunBaseNT.offsetVertical = 2F;
+            ItemGunBaseNT.offsetHorizontal = -1F;
+            ItemGunBaseNT.clearRecoil();
+            helper.assertTrue(ItemGunBaseNT.recoilVertical == 0F && ItemGunBaseNT.recoilHorizontal == 0F
+                            && ItemGunBaseNT.offsetVertical == 0F && ItemGunBaseNT.offsetHorizontal == 0F,
+                    "clearing visual recoil must clear both recoil and offset accumulators");
+        } finally {
+            ItemGunBaseNT.recoilVertical = oldRecoilVertical;
+            ItemGunBaseNT.recoilHorizontal = oldRecoilHorizontal;
+            ItemGunBaseNT.offsetVertical = oldOffsetVertical;
+            ItemGunBaseNT.offsetHorizontal = oldOffsetHorizontal;
+        }
+        helper.succeed();
+    }
+
+    private static void assertRecoil(GameTestHelper helper, Item item, int... indexes) {
+        ItemGunBaseNT gun = (ItemGunBaseNT) item;
+        ItemStack stack = new ItemStack(item);
+        for (int index : indexes) {
+            helper.assertTrue(gun.isValidConfigIndex(index), "recoil config index should be valid: " + index);
+            var receivers = gun.getConfig(stack, index).getReceivers(stack);
+            helper.assertTrue(receivers.length > 0 && receivers[0].getRecoil(stack) != null,
+                    "missing upstream recoil callback for " + item);
+        }
+    }
+
+    /** Resource and payload guards are pure data checks; no camera pixels are claimed here. */
+    public static void gunAnimationMath(GameTestHelper helper) {
+        BusAnimationKeyframe previous = new BusAnimationKeyframe(0D, 0, BusAnimationKeyframe.IType.BEZIER);
+        previous.rightX = 25D;
+        previous.rightY = 10D;
+        BusAnimationKeyframe current = new BusAnimationKeyframe(10D, 100, BusAnimationKeyframe.IType.LINEAR);
+        current.leftX = 75D;
+        current.leftY = 10D;
+        double bezier = current.interpolate(0D, 50D, previous);
+        helper.assertTrue(bezier >= 0D && bezier <= 10D && Math.abs(bezier - 5D) > 0.1D,
+                "BEZIER must use the imported handles rather than linear interpolation, got " + bezier);
+
+        BusAnimationSequence sequence = new BusAnimationSequence();
+        double[] transform = sequence.getTransformation(0);
+        helper.assertTrue(transform[12] == 0D && transform[13] == 1D && transform[14] == 2D,
+                "LAG's default rotation order must remain XYZ");
+        helper.succeed();
+    }
+
+    /** The ADS FOV uses the interpolated aim progress and the upstream 0.33 zoom factor. */
+    public static void gunFovMath(GameTestHelper helper) {
+        float previous = ItemGunBaseNT.prevAimingProgress;
+        float current = ItemGunBaseNT.aimingProgress;
+        try {
+            ItemGunBaseNT.prevAimingProgress = 0.25F;
+            ItemGunBaseNT.aimingProgress = 0.75F;
+            helper.assertTrue(Math.abs(ItemGunBaseNT.applyAimingFov(100F, 0.5F, 0.33F) - 83.5F) < 0.0001F,
+                    "upstream ADS FOV interpolation must remain exact");
+            helper.assertTrue(Math.abs(ItemGunBaseNT.applyAimingFov(100F, 0.5F, 0.66F) - 67F) < 0.0001F,
+                    "scoped ADS FOV interpolation must remain exact");
+        } finally {
+            ItemGunBaseNT.prevAimingProgress = previous;
+            ItemGunBaseNT.aimingProgress = current;
+        }
+        helper.succeed();
+    }
+
+    /** Creative-tab filtering is centralized and follows the old quality rule. */
+    public static void gunCreativeQualityVisibility(GameTestHelper helper) {
+        var weapons = ModTabs.get(HbmTab.WEAPONS).getKey();
+        helper.assertTrue(ModTabs.shouldDisplay(weapons, ModGunItems.gun_light_revolver.get()),
+                "A_SIDE weapons should be visible");
+        helper.assertTrue(ModTabs.shouldDisplay(weapons, ModGunItems.gun_am180.get()),
+                "A_SIDE .22 weapons should be visible");
+        helper.assertTrue(!ModTabs.shouldDisplay(weapons, ModGunItems.gun_debug.get()),
+                "DEBUG weapons should be hidden");
+        helper.assertTrue(!ModTabs.shouldDisplay(weapons, ModGunItems.gun_star_f_akimbo.get()),
+                "B_SIDE weapons should be hidden");
+        helper.assertTrue(!ModTabs.shouldDisplay(weapons, ModGunItems.gun_heavy_revolver_lilmac.get()),
+                "LEGENDARY weapons should be hidden");
+        helper.assertTrue(ModTabs.CONTENTS.get(weapons).stream()
+                        .noneMatch(item -> item.equals(ModAmmoItems.m44_equestrian)),
+                "secret equestrian ammunition must remain registered but not appear in Weapons");
         helper.succeed();
     }
 }

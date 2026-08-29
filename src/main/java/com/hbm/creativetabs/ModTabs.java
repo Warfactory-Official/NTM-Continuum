@@ -75,6 +75,13 @@ public final class ModTabs {
         return TAB_OBJECTS.get(tab);
     }
 
+    /** Applies upstream's weapon-quality rule at the shared tab boundary, for every loader. */
+    public static boolean shouldDisplay(ResourceKey<CreativeModeTab> tab, Item item) {
+        if (!get(HbmTab.WEAPONS).getKey().equals(tab)) return true;
+        return !(item instanceof com.hbm.items.weapon.sedna.ItemGunBaseNT gun)
+                || gun.isCreativeTabVisible();
+    }
+
     /** Forces class initialization so the static registrations above run. */
     public static void init() {}
 }

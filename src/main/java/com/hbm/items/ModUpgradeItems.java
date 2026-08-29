@@ -49,8 +49,7 @@ public final class ModUpgradeItems {
     // centrifuge → crystallizer. The mining laser processes mined drops through the matching recipe set.
     public static final RegistryObject<ItemMachineUpgrade> upgrade_smelter = upgrade("upgrade_smelter", UpgradeType.SPECIAL, 0);
     public static final RegistryObject<ItemMachineUpgrade> upgrade_shredder = upgrade("upgrade_shredder", UpgradeType.SPECIAL, 0);
-    /** Registered for the crafting chain; no laser effect yet (CentrifugeRecipes is unported — old behavior
-     * on a recipe miss is the normal drop, so this is faithfully a pass-through). */
+    /** The mining-laser centrifuge step; matched outputs replace the raw drop, while a recipe miss passes through. */
     public static final RegistryObject<ItemMachineUpgrade> upgrade_centrifuge = upgrade("upgrade_centrifuge", UpgradeType.SPECIAL, 0);
     public static final RegistryObject<ItemMachineUpgrade> upgrade_crystallizer = upgrade("upgrade_crystallizer", UpgradeType.SPECIAL, 0);
     /** The Screaming Scientist upgrade — in the mining laser: ×4 cycles, ×4 speed, ×20 consumption, and

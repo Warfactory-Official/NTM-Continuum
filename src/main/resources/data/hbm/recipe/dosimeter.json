@@ -3,7 +3,7 @@
   "category": "misc",
   "key": {
     "W": "#minecraft:planks",
-    "G": "minecraft:glass_pane",
+    "G": "#c:glass_panes",
     "C": "hbm:circuit_vacuum_tube",
     "B": "#c:ingots/beryllium"
   },

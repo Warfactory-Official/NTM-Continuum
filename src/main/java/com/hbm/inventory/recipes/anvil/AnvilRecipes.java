@@ -215,6 +215,14 @@ public final class AnvilRecipes {
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {
+                        new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "cobblestones")), 8),
+                        new TagStack(ItemTags.PLANKS, 16),
+                        CU.plate().count(8),
+                        PB.pipe().count(2)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_pump_steam.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
                         new ComparableStack(Blocks.STONE_BRICKS.asItem(), 8),
                         STEEL.plate().count(16),
                         PB.pipe().count(4),
