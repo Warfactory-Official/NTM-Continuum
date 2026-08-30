@@ -3,15 +3,15 @@ package com.hbm.blocks.machine;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -84,10 +84,10 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         List<String> text = new ArrayList<>();
         if (steam) {
-            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpSteam pump)) return;
+            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpSteam pump)) return null;
             text.add("§a-> §r" + pump.steam.getTankType().getDisplayNameString() + ": "
                     + String.format(Locale.US, "%,d", pump.steam.getFill()) + " / "
                     + String.format(Locale.US, "%,d", pump.steam.getMaxFill()) + "mB");
@@ -102,7 +102,7 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
             }
             if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");
         } else {
-            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump)) return;
+            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump)) return null;
             text.add("§a-> §r" + String.format(Locale.US, "%,d", pump.power) + " / "
                     + String.format(Locale.US, "%,d", pump.getMaxPower()) + "HE");
             text.add("§c<- §r" + pump.water.getTankType().getDisplayNameString() + ": "
@@ -113,7 +113,7 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
             }
             if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");
         }
-        ILookOverlay.printGeneric(graphics, getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
     private static int warningColor() {

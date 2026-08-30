@@ -13,20 +13,23 @@
 // and build/classes/java/main holds exactly the classes that survived that node's Stonecutter guards.
 
 import groovy.json.JsonSlurper
+import org.gradle.api.tasks.SourceSetContainer
+
+val mainOutput = (project.extensions.getByName("sourceSets") as SourceSetContainer)["main"].output
+val resourcesDir: File = mainOutput.resourcesDir ?: project.layout.buildDirectory.dir("resources/main").get().asFile
+val classesDirs = mainOutput.classesDirs
 
 val validateMixinConfigs = tasks.register("validateMixinConfigs") {
     group = "verification"
     description = "Fails if a mixin config names a class that will not be in the jar."
 
-    val resourcesDir = layout.buildDirectory.dir("resources/main")
-    val classesDir = layout.buildDirectory.dir("classes/java/main")
     inputs.dir(resourcesDir).optional(true).withPathSensitivity(PathSensitivity.RELATIVE)
-    inputs.dir(classesDir).optional(true).withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(classesDirs).optional(true).withPathSensitivity(PathSensitivity.RELATIVE)
     outputs.upToDateWhen { true }
 
     doLast {
-        val resources = resourcesDir.get().asFile
-        val classes = classesDir.get().asFile
+        val resources = resourcesDir
+        val classes = classesDirs.files
         val configs = resources.listFiles { f -> f.name.endsWith(".mixins.json") }?.sortedBy { it.name }.orEmpty()
 
         if (configs.isEmpty()) {
@@ -53,8 +56,8 @@ val validateMixinConfigs = tasks.register("validateMixinConfigs") {
                     val fqn = "$pkg.$entry"
                     declared += fqn
                     // Inner classes are declared as Outer$Inner; the file on disk matches that name.
-                    val classFile = File(classes, fqn.replace('.', '/') + ".class")
-                    if (!classFile.isFile) {
+                    val classPath = fqn.replace('.', '/') + ".class"
+                    if (classes.none { File(it, classPath).isFile }) {
                         problems += "${config.name} [$section] declares '$fqn' but no such class is compiled " +
                                 "into this node — the config entry is stale, or the class is behind a " +
                                 "Stonecutter guard that excludes it from this node."
@@ -70,13 +73,15 @@ val validateMixinConfigs = tasks.register("validateMixinConfigs") {
             (JsonSlurper().parse(it) as Map<String, Any?>)["package"] as? String
         }.distinct()
         for (pkg in mixinPackages) {
-            val dir = File(classes, pkg.replace('.', '/'))
-            if (!dir.isDirectory) continue
-            dir.listFiles { f -> f.name.endsWith(".class") && !f.name.contains('$') }.orEmpty().forEach { f ->
-                val fqn = "$pkg.${f.name.removeSuffix(".class")}"
-                if (fqn !in declared) {
-                    logger.warn("validateMixinConfigs: WARNING '$fqn' is compiled but no mixin config " +
-                            "declares it — it will be silently inert.")
+            for (classesDir in classes) {
+                val dir = File(classesDir, pkg.replace('.', '/'))
+                if (!dir.isDirectory) continue
+                dir.listFiles { f -> f.name.endsWith(".class") && !f.name.contains('$') }.orEmpty().forEach { f ->
+                    val fqn = "$pkg." + f.name.removeSuffix(".class")
+                    if (fqn !in declared) {
+                        logger.warn("validateMixinConfigs: WARNING '$fqn' is compiled but no mixin config " +
+                                "declares it — it will be silently inert.")
+                    }
                 }
             }
         }

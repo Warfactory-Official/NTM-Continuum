@@ -1,13 +1,12 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityFoundryOutlet;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -154,9 +153,9 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements E
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         TileEntityFoundryOutlet te = getTE(level, pos);
-        if (te == null) return;
+        if (te == null) return null;
         List<String> text = new ArrayList<>();
         text.add(te.isClosed() ? "§cClosed" : "§aOpen");
         if (te.filter != null) {
@@ -164,6 +163,6 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements E
         }
         if (te.invertFilter) text.add("§eFilter inverted");
         if (te.invertRedstone) text.add("§2Redstone inverted");
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xFF4000, 0x401000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xFF4000, 0x401000, text);
     }
 }

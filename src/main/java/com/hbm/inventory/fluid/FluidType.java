@@ -2,12 +2,15 @@ package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
 import com.hbm.api.fluidmk2.FluidNetMK2;
+import com.hbm.lib.Library;
 import com.hbm.uninos.INetworkProvider;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
-import java.util.Locale;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -15,8 +18,8 @@ import java.util.Map;
  * owns its own {@link INetworkProvider} so that, in UNINOS, every fluid kind has a wholly separate
  * nodespace — fluid networks are segregated by type (water pipes never mix with oil pipes).
  *
- * <p>The original also carried Forge-fluid interop, pollution/potion hooks, and client-side tooltip/render
- * code. Those remain outside this type; its trait map retains the thermal conversion data used by machines.
+ * <p>The original also carried Forge-fluid interop, pollution/potion hooks, and client-side rendering. Those
+ * remain outside this type; tooltip facts use the ported thermal and combustion data below.
  *
  * @author hbm, mlbv
  */
@@ -123,6 +126,45 @@ public class FluidType {
     public boolean hasTrait(Class<?> trait) { return traits.containsKey(trait); }
 
     public <T> T getTrait(Class<T> trait) { return trait.cast(traits.get(trait)); }
+
+    /** Adds the fluid facts currently represented by the port's fluid model to a tooltip. */
+    public void addInfo(List<Component> info) {
+        if (temperature != ROOM_TEMPERATURE) {
+            if (temperature < 0) info.add(Component.literal(temperature + "\u00b0C").withStyle(ChatFormatting.BLUE));
+            if (temperature > 0) info.add(Component.literal(temperature + "\u00b0C").withStyle(ChatFormatting.RED));
+        }
+
+        long flammable = FluidCombustion.getFlammableEnergy(this);
+        if (flammable > 0) {
+            info.add(bracketed("trait.flammable", ChatFormatting.YELLOW));
+            info.add(Component.translatable("trait.flammable.desc", Library.getShortNumber(flammable)));
+        }
+
+        FluidCombustion.Combustible combustible = FluidCombustion.getCombustible(this);
+        if (combustible != null) {
+            info.add(bracketed("trait.combustable", ChatFormatting.GOLD));
+            if (combustible.energyPerBucket() > 0) {
+                info.add(Component.translatable("trait.combustable.desc",
+                        Library.getShortNumber(combustible.energyPerBucket())));
+                info.add(Component.translatable("trait.combustable.desc2",
+                        Component.translatable(fuelGradeKey(combustible.grade()))));
+            }
+        }
+    }
+
+    private static Component bracketed(String key, ChatFormatting style) {
+        return Component.literal("[").append(Component.translatable(key)).append("]").withStyle(style);
+    }
+
+    private static String fuelGradeKey(FluidCombustion.FuelGrade grade) {
+        return switch (grade) {
+            case LOW -> "trait.combustable.low";
+            case MEDIUM -> "trait.combustable.medium";
+            case HIGH -> "trait.combustable.high";
+            case AERO -> "trait.combustable.avi";
+            case GAS -> "trait.combustable.gas";
+        };
+    }
 
     protected INetworkProvider<FluidNetMK2> NETWORK_PROVIDER = () -> new FluidNetMK2(this);
 

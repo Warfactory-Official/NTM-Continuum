@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Minimal Wavefront OBJ loader + immediate-mode renderer for the new render pipeline. Ported from the
@@ -77,8 +79,12 @@ public final class WavefrontObj {
      * exclusion set gives the whole-model bounds, so callers can pass one unconditionally.
      */
     public float[][] boundsExcluding(java.util.Set<String> excluded) {
-        if (excluded.isEmpty()) return new float[][] {min, max};
+        float[][] bounds = boundsExcludingExact(excluded);
+        return bounds == null ? new float[][] {min, max} : bounds;
+    }
 
+    /** Bounding box of non-excluded geometry, or {@code null} when every rendered group was excluded. */
+    public @Nullable float[][] boundsExcludingExact(Set<String> excluded) {
         float[] mn = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
         float[] mx = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
         boolean any = false;
@@ -96,7 +102,55 @@ public final class WavefrontObj {
                 }
             }
         }
-        return any ? new float[][] {mn, mx} : new float[][] {min, max};
+        return any ? new float[][] {mn, mx} : null;
+    }
+
+    /** Bounding box of only the named groups, or {@code null} when none of them contains geometry. */
+    public @Nullable float[][] boundsIncluding(Set<String> included) {
+        if (included.isEmpty()) return null;
+
+        float[] mn = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
+        float[] mx = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
+        boolean any = false;
+
+        for (Group group : groups) {
+            if (!included.contains(group.name)) continue;
+            for (int[][] face : group.faces) {
+                for (int[] vertex : face) {
+                    float[] p = positions[vertex[0]];
+                    any = true;
+                    for (int i = 0; i < 3; i++) {
+                        mn[i] = Math.min(mn[i], p[i]);
+                        mx[i] = Math.max(mx[i], p[i]);
+                    }
+                }
+            }
+        }
+        return any ? new float[][] {mn, mx} : null;
+    }
+
+    /** Bounding box of only groups whose material has a resolved render pass. */
+    public @Nullable float[][] boundsIncludingMaterials(Set<String> included) {
+        if (included.isEmpty()) return null;
+
+        float[] mn = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
+        float[] mx = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
+        boolean any = false;
+
+        for (Group group : groups) {
+            if (!included.contains(group.material)) continue;
+            for (int[][] face : group.faces) {
+                for (int[] vertex : face) {
+                    float[] p = positions[vertex[0]];
+                    any = true;
+                    for (int i = 0; i < 3; i++) {
+                        mn[i] = Math.min(mn[i], p[i]);
+                        mx[i] = Math.max(mx[i], p[i]);
+                    }
+                }
+            }
+        }
+        return any ? new float[][] {mn, mx} : null;
     }
 
     /** Loads and parses an OBJ from the client resource pack at {@code location}. */
@@ -231,6 +285,11 @@ public final class WavefrontObj {
         for (Group g : groups) if (g.name.equals(name)) drawGroup(g, pose, buffer, light, overlay, color);
     }
 
+    /** Draws a named part with only position and vertex colour, for textureless legacy glow parts. */
+    public void renderPartColor(String name, PoseStack.Pose pose, VertexConsumer buffer, int color) {
+        for (Group g : groups) if (g.name.equals(name)) drawColorGroup(g, pose, buffer, color);
+    }
+
     /**
      * Draws a named part with the texture scrolled by {@code (uOffset, vOffset)} and, optionally, both
      * faces emitted.
@@ -262,7 +321,7 @@ public final class WavefrontObj {
     }
 
     private void drawGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay,
-                           int color, boolean doubleSided, float uOffset, float vOffset) {
+                            int color, boolean doubleSided, float uOffset, float vOffset) {
         for (int[][] face : g.faces) {
             // Fan-triangulate; emit each triangle as a quad (4th vertex duplicates the 3rd) for QUADS mode.
             for (int i = 1; i + 1 < face.length; i++) {
@@ -278,6 +337,22 @@ public final class WavefrontObj {
                 }
             }
         }
+    }
+
+    private void drawColorGroup(Group g, PoseStack.Pose pose, VertexConsumer buffer, int color) {
+        for (int[][] face : g.faces) {
+            for (int i = 1; i + 1 < face.length; i++) {
+                emitColor(face[0], pose, buffer, color);
+                emitColor(face[i], pose, buffer, color);
+                emitColor(face[i + 1], pose, buffer, color);
+                emitColor(face[i + 1], pose, buffer, color);
+            }
+        }
+    }
+
+    private void emitColor(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int color) {
+        float[] p = positions[ref[0]];
+        Vertexes.color(buffer, pose, p[0], p[1], p[2], color);
     }
 
     private void emit(int[] ref, PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {

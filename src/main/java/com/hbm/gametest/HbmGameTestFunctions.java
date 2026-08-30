@@ -48,6 +48,24 @@ public final class HbmGameTestFunctions {
             TESTS.function("large_turbine_conversion", 100, 8, () -> LargeTurbineGameTests::conversion);
     public static final GameTests.Function LARGE_TURBINE_MENU =
             TESTS.function("large_turbine_menu", 40, () -> LargeTurbineGameTests::menu);
+    public static final GameTests.Function GAS_TURBINE_LAYOUT =
+            TESTS.function("gas_turbine_layout", 100, 8, () -> GasTurbineGameTests::layout);
+    public static final GameTests.Function GAS_TURBINE_PORTS =
+            TESTS.function("gas_turbine_ports", 100, 8, () -> GasTurbineGameTests::ports);
+    public static final GameTests.Function GAS_TURBINE_STARTUP =
+            TESTS.function("gas_turbine_startup", 100, 8, () -> GasTurbineGameTests::startup);
+    public static final GameTests.Function GAS_TURBINE_SUSTAINED_RUN =
+            TESTS.function("gas_turbine_sustained_run", 100, 8, () -> GasTurbineGameTests::sustainedRun);
+    public static final GameTests.Function GAS_TURBINE_MENU_RECIPE =
+            TESTS.function("gas_turbine_menu_recipe", 40, () -> GasTurbineGameTests::menuAndRecipe);
+    public static final GameTests.Function GAS_TURBINE_GUI_TOOLTIPS =
+            TESTS.function("gas_turbine_gui_tooltips", 20, () -> GasTurbineGameTests::guiTooltips);
+    public static final GameTests.Function TURBOFAN_LAYOUT =
+            TESTS.function("turbofan_layout", 100, 8, () -> TurbofanGameTests::layout);
+    public static final GameTests.Function TURBOFAN_PORTS_BURN =
+            TESTS.function("turbofan_ports_burn", 100, 8, () -> TurbofanGameTests::portsAndBurn);
+    public static final GameTests.Function TURBOFAN_MENU =
+            TESTS.function("turbofan_menu", 40, () -> TurbofanGameTests::menu);
     public static final GameTests.Function STEAM_ENGINE_LAYOUT =
             TESTS.function("steam_engine_layout", 100, 8, () -> SteamEngineGameTests::layout);
     public static final GameTests.Function STEAM_ENGINE_PORTS =
@@ -85,6 +103,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("stirling_variants_recipes", 40, () -> StirlingGameTests::variantsAndRecipes);
     public static final GameTests.Function STIRLING_MISSING_GEAR =
             TESTS.function("stirling_missing_gear", 100, 8, () -> StirlingGameTests::missingGearPlacement);
+    public static final GameTests.Function WOOD_BURNER_LAYOUT_AND_FUEL =
+            TESTS.function("wood_burner_layout_and_fuel", 100, 8, () -> CombustionHeatGameTests::woodBurnerLayoutAndFuel);
+    public static final GameTests.Function FIREBOX_FUEL_AND_HEAT =
+            TESTS.function("firebox_fuel_and_heat", 40, 8, () -> CombustionHeatGameTests::fireboxFuelAndHeat);
+    public static final GameTests.Function HEATER_OVEN_PULLS_HEAT =
+            TESTS.function("heater_oven_pulls_heat", 40, 8, () -> CombustionHeatGameTests::heaterOvenPullsHeat);
+    public static final GameTests.Function OILBURNER_FUEL_AND_SETTING =
+            TESTS.function("oilburner_fuel_and_setting", 40, 8, () -> CombustionHeatGameTests::oilburnerFuelAndSetting);
+    public static final GameTests.Function ELECTRIC_HEATER_CONVERSION =
+            TESTS.function("electric_heater_conversion", 40, 8, () -> CombustionHeatGameTests::electricHeaterConversion);
+    public static final GameTests.Function INDUSTRIAL_BOILER_CONVERSION =
+            TESTS.function("industrial_boiler_conversion", 100, 8, () -> CombustionHeatGameTests::industrialBoilerConversion);
     public static final GameTests.Function FLUID_VALVE_NODE_LIFECYCLE =
             TESTS.function("fluid_valve_node_lifecycle", 100, 8,
                     () -> FluidValveDrainGameTests::valveTypeAndNodeLifecycle);
@@ -115,6 +145,15 @@ public final class HbmGameTestFunctions {
             TESTS.function("purex_menu", 20, () -> HbmGameTestFunctions::purexMenu);
     public static final GameTests.Function PUREX_LAYOUT =
             TESTS.function("purex_layout", 100, 8, () -> HbmGameTestFunctions::purexLayout);
+    public static final GameTests.Function MINI_RTG_GENERATION =
+            TESTS.function("mini_rtg_generation", 20, () -> RadiationMachineGameTests::miniRtgGeneration);
+    public static final GameTests.Function RAD_SENSOR_LADDERS =
+            TESTS.function("rad_sensor_ladders", 20, () -> RadiationMachineGameTests::radSensorLadders);
+    public static final GameTests.Function RAD_GEN_LAYOUT_PORTS_FUEL =
+            TESTS.function("rad_gen_layout_ports_fuel", 100, 8,
+                    () -> RadiationMachineGameTests::radGenLayoutPortsAndFuel);
+    public static final GameTests.Function RAD_GEN_MENU =
+            TESTS.function("rad_gen_menu", 20, () -> RadiationMachineGameTests::radGenMenu);
     public static final GameTests.Function BLAST_FURNACE_RECIPES =
             TESTS.function("blast_furnace_recipes", 20, () -> BlastFurnaceGameTests::recipes);
     public static final GameTests.Function BLAST_FURNACE_LAYOUT =
@@ -127,6 +166,14 @@ public final class HbmGameTestFunctions {
             TESTS.function("generic_fluid_atomicity", 20, () -> BlastFurnaceGameTests::genericFluidAtomicity);
     public static final GameTests.Function GENERIC_CHANCE_SEMANTICS =
             TESTS.function("generic_chance_semantics", 20, () -> BlastFurnaceGameTests::genericChanceSemantics);
+    public static final GameTests.Function FURNACE_BRICK_PROCESSING =
+            TESTS.function("furnace_brick_processing", 240, 8, () -> FurnaceGameTests::brickProcessing);
+    public static final GameTests.Function FURNACE_IRON_PROCESSING =
+            TESTS.function("furnace_iron_processing", 240, 8, () -> FurnaceGameTests::ironProcessing);
+    public static final GameTests.Function FURNACE_STEEL_PROCESSING =
+            TESTS.function("furnace_steel_processing", 40, 8, () -> FurnaceGameTests::steelProcessing);
+    public static final GameTests.Function FURNACE_MENUS_AND_SLOTS =
+            TESTS.function("furnace_menus_and_slots", 40, 8, () -> FurnaceGameTests::menusAndSlots);
     public static final GameTests.Function ZIRNOX_GOLDEN_TICK =
             TESTS.function("zirnox_golden_tick", 20, 8, () -> HbmGameTestFunctions::zirnoxGoldenTick);
     public static final GameTests.Function ZIRNOX_LAYOUT =
@@ -151,6 +198,26 @@ public final class HbmGameTestFunctions {
             TESTS.function("fusion_chain", 100, 24, () -> HbmGameTestFunctions::fusionChain);
     public static final GameTests.Function FUSION_PORTS =
             TESTS.function("fusion_ports", 100, 24, () -> HbmGameTestFunctions::fusionPorts);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_RECIPES =
+            TESTS.function("fusion_plasma_forge_recipes", 20, () -> HbmGameTestFunctions::fusionPlasmaForgeRecipes);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_MENU =
+            TESTS.function("fusion_plasma_forge_menu", 20, () -> HbmGameTestFunctions::fusionPlasmaForgeMenu);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_PROCESSING =
+            TESTS.function("fusion_plasma_forge_processing", 100, 8,
+                    () -> HbmGameTestFunctions::fusionPlasmaForgeProcessing);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_RENDER =
+            TESTS.function("fusion_plasma_forge_render", 20, () -> PlasmaForgeRenderGameTests::predicates);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_CONTAINER_LAYOUT =
+            TESTS.function("fusion_plasma_forge_container_layout", 20,
+                    () -> PlasmaForgeContainerGameTests::layoutAndValidation);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_CONTAINER_TRANSFER =
+            TESTS.function("fusion_plasma_forge_container_transfer", 20,
+                    () -> PlasmaForgeContainerGameTests::transferRouting);
+    public static final GameTests.Function FUSION_PLASMA_FORGE_CONTAINER_OUTPUT =
+            TESTS.function("fusion_plasma_forge_container_output", 20,
+                    () -> PlasmaForgeContainerGameTests::outputCrafting);
+    public static final GameTests.Function FUSION_BREEDER =
+            TESTS.function("fusion_breeder", 20, () -> HbmGameTestFunctions::fusionBreeder);
     public static final GameTests.Function FLUID_DISPLAY_NAMES =
             TESTS.function("fluid_display_names", 20, () -> HbmGameTestFunctions::fluidDisplayNames);
     public static final GameTests.Function LANG_COVERAGE =
@@ -225,6 +292,54 @@ public final class HbmGameTestFunctions {
             TESTS.function("centrifuge_construction", 40, () -> CentrifugeGameTests::constructionRecipe);
     public static final GameTests.Function CENTRIFUGE_MENU =
             TESTS.function("centrifuge_menu", 40, () -> CentrifugeGameTests::menu);
+
+    // --- gas centrifuge ---
+
+    public static final GameTests.Function GAS_CENTRIFUGE_RECIPES =
+            TESTS.function("gas_centrifuge_recipes", 20, () -> GasCentrifugeGameTests::recipes);
+    public static final GameTests.Function GAS_CENTRIFUGE_LAYOUT_PORTS =
+            TESTS.function("gas_centrifuge_layout_ports", 100, 8, () -> GasCentrifugeGameTests::layoutAndPorts);
+    public static final GameTests.Function GAS_CENTRIFUGE_PROCESSING =
+            TESTS.function("gas_centrifuge_processing", 300, 8, () -> GasCentrifugeGameTests::processing);
+    public static final GameTests.Function GAS_CENTRIFUGE_TWO_BATCHES =
+            TESTS.function("gas_centrifuge_two_batches", 400, 8, () -> GasCentrifugeGameTests::twoBatchesResetProgress);
+    public static final GameTests.Function GAS_CENTRIFUGE_UF6_NETWORK =
+            TESTS.function("gas_centrifuge_uf6_network", 100, 8, () -> GasCentrifugeGameTests::uf6FluidNetwork);
+    public static final GameTests.Function GAS_CENTRIFUGE_OVERCLOCK =
+            TESTS.function("gas_centrifuge_overclock", 200, 8, () -> GasCentrifugeGameTests::overclock);
+    public static final GameTests.Function GAS_CENTRIFUGE_MENU =
+            TESTS.function("gas_centrifuge_menu", 40, () -> GasCentrifugeGameTests::menu);
+    public static final GameTests.Function GAS_CENTRIFUGE_TOOLTIPS =
+            TESTS.function("gas_centrifuge_tooltips", 20, () -> GasCentrifugeGameTests::tooltips);
+    public static final GameTests.Function GAS_CENTRIFUGE_CONSTRUCTION =
+            TESTS.function("gas_centrifuge_construction", 40, () -> GasCentrifugeGameTests::constructionRecipe);
+
+    // --- electrolyser ---
+
+    public static final GameTests.Function ELECTROLYSER_RECIPES =
+            TESTS.function("electrolyser_recipes", 20, () -> ElectrolyserGameTests::recipes);
+    public static final GameTests.Function ELECTROLYSER_LAYOUT_PORTS =
+            TESTS.function("electrolyser_layout_ports", 100, 16, () -> ElectrolyserGameTests::layoutAndPorts);
+    public static final GameTests.Function ELECTROLYSER_FLUID_PROCESSING =
+            TESTS.function("electrolyser_fluid_processing", 200, 8, () -> ElectrolyserGameTests::fluidProcessing);
+    public static final GameTests.Function ELECTROLYSER_METAL_PROCESSING =
+            TESTS.function("electrolyser_metal_processing", 700, 8, () -> ElectrolyserGameTests::metalProcessing);
+    public static final GameTests.Function ELECTROLYSER_PAUSES =
+            TESTS.function("electrolyser_pauses", 40, 8, () -> ElectrolyserGameTests::pausesAndResumes);
+    public static final GameTests.Function ELECTROLYSER_MOLTEN_POUR_RATE =
+            TESTS.function("electrolyser_molten_pour_rate", 40, 8, () -> ElectrolyserGameTests::moltenPourRate);
+    public static final GameTests.Function ELECTROLYSER_MENUS =
+            TESTS.function("electrolyser_menus", 40, () -> ElectrolyserGameTests::menus);
+    public static final GameTests.Function ELECTROLYSER_CONSTRUCTION =
+            TESTS.function("electrolyser_construction", 40, () -> ElectrolyserGameTests::constructionRecipe);
+
+    // --- isotope processing ---
+    public static final GameTests.Function F6_TANK_CONTRACT =
+            TESTS.function("f6_tank_contract", 100, () -> IsotopeProcessingGameTests::f6TankContract);
+    public static final GameTests.Function DEUTERIUM_EXTRACTOR_RATIO =
+            TESTS.function("deuterium_extractor_ratio", 40, () -> IsotopeProcessingGameTests::deuteriumExtractorRatio);
+    public static final GameTests.Function DEUTERIUM_TOWER_CONTRACT =
+            TESTS.function("deuterium_tower_contract", 100, 8, () -> IsotopeProcessingGameTests::deuteriumTowerContract);
 
     // --- Exposure Chamber ---
     public static final GameTests.Function EXPOSURE_CHAMBER_RECIPES =
@@ -484,6 +599,9 @@ public final class HbmGameTestFunctions {
             TESTS.function("rbmk_boiler", 40, () -> RBMKGameTests::boiler);
     public static final GameTests.Function RBMK_DEBRIS =
             TESTS.function("rbmk_debris", 40, () -> RBMKGameTests::debris);
+    public static final GameTests.Function LOOK_OVERLAY_SERVER_CLASSES =
+            TESTS.function("look_overlay_server_classes", 20,
+                    () -> LookOverlayGameTests::blockClassesAreDedicatedServerSafe);
 
     public static void init() {}
 
@@ -1246,12 +1364,143 @@ public final class HbmGameTestFunctions {
     private static void fusionPorts(GameTestHelper helper) {
         checkPorts(helper, new net.minecraft.core.BlockPos(9, 1, 9), ModMachineBlocks.fusion_torus.get(),
                 te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionTorus) te).getConPos());
+        checkPorts(helper, new net.minecraft.core.BlockPos(9, 1, 27), ModMachineBlocks.fusion_plasma_forge.get(),
+                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge) te).getConPos());
         checkPorts(helper, new net.minecraft.core.BlockPos(2, 1, 2), ModMachineBlocks.fusion_klystron.get(),
                 te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron) te).getConPos());
         checkPorts(helper, new net.minecraft.core.BlockPos(2, 1, 16), ModMachineBlocks.fusion_boiler.get(),
                 te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler) te).getConPos());
         checkPorts(helper, new net.minecraft.core.BlockPos(20, 1, 2), ModMachineBlocks.fusion_mhdt.get(),
                 te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT) te).getConPos());
+        checkPorts(helper, new net.minecraft.core.BlockPos(20, 1, 16), ModMachineBlocks.fusion_breeder.get(),
+                te -> ((com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder) te).getConPos());
+        helper.succeed();
+    }
+
+    private static void fusionPlasmaForgeRecipes(GameTestHelper helper) {
+        var recipes = com.hbm.inventory.recipes.PlasmaForgeRecipes.INSTANCE;
+        recipes.registerRecipes();
+        helper.assertTrue(recipes.recipeOrderedList.size() == 15,
+                "Expected 15 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
+        helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", java.util.List.of()).size() == 11,
+                "Expected 11 welded-plate variants in the auto-switch group");
+
+        var euphemium = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.plateeuphemium");
+        helper.assertTrue(euphemium != null && euphemium.ignitionTemp == 1_000_000L
+                        && euphemium.duration == 600 && euphemium.power == 10_000_000L
+                        && euphemium.outputItem[0].getCount() == 4,
+                "Euphemium plate recipe lost its legacy timing, ignition, power, or output");
+
+        var hde = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.hde");
+        helper.assertTrue(hde != null && hde.inputFluid.length == 1
+                        && hde.inputFluid[0].type == com.hbm.inventory.fluid.Fluids.STELLAR_FLUX
+                        && hde.inputFluid[0].fill == 4_000,
+                "HDE must require 4,000 mB of stellar flux");
+        helper.assertTrue(!recipes.getRecipe("plsm.weldsteel").isPooled(),
+                "Feasible plasma-forge recipes must not require an unavailable blueprint pool");
+
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var block = ModMachineBlocks.fusion_plasma_forge.get();
+        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
+        forge.plasmaModule.recipe = hde.getInternalName();
+        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.serverTick(
+                helper.getLevel(), helper.absolutePos(pos), forge.getBlockState(), forge);
+        helper.assertTrue(forge.maxPower == hde.power * 100L,
+                "Plasma-forge capacity did not follow the selected high-power recipe");
+
+        var weldIron = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.weldiron");
+        forge.plasmaModule.recipe = weldIron.getInternalName();
+        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.serverTick(
+                helper.getLevel(), helper.absolutePos(pos), forge.getBlockState(), forge);
+        helper.assertTrue(forge.maxPower == 100_000L,
+                "Plasma-forge capacity did not decrease when switching to a lower-power recipe");
+        helper.succeed();
+    }
+
+    private static void fusionPlasmaForgeMenu(GameTestHelper helper) {
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var block = ModMachineBlocks.fusion_plasma_forge.get();
+        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var menu = new com.hbm.inventory.container.ContainerMachinePlasmaForge(0, player.getInventory(), forge);
+
+        helper.assertTrue(menu.slots.size() == 52,
+                "Plasma-forge menu must have 16 machine slots plus 36 player slots");
+        helper.assertFalse(menu.slots.get(com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.SLOT_OUTPUT)
+                        .mayPlace(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT)),
+                "The plasma-forge output slot must be take-only");
+        var castIron = com.hbm.items.ModAutogenItems.get(
+                com.hbm.inventory.material.MaterialShapes.CASTPLATE,
+                com.hbm.inventory.material.Mats.MAT_IRON);
+        forge.plasmaModule.recipe = "plsm.weldiron";
+        helper.assertTrue(forge.isItemValidForSlot(
+                        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.FIRST_INPUT,
+                        new net.minecraft.world.item.ItemStack(castIron)),
+                "A welded-plate cast input must be accepted by the plasma-forge input area");
+        helper.succeed();
+    }
+
+    private static void fusionPlasmaForgeProcessing(GameTestHelper helper) {
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var block = ModMachineBlocks.fusion_plasma_forge.get();
+        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
+        var castIron = com.hbm.items.ModAutogenItems.get(
+                com.hbm.inventory.material.MaterialShapes.CASTPLATE,
+                com.hbm.inventory.material.Mats.MAT_IRON);
+        var weldedIron = com.hbm.items.ModAutogenItems.get(
+                com.hbm.inventory.material.MaterialShapes.WELDEDPLATE,
+                com.hbm.inventory.material.Mats.MAT_IRON);
+        forge.plasmaModule.recipe = "plsm.weldiron";
+        forge.power = 5_000L;
+        forge.inventory.setStackInSlot(com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.FIRST_INPUT,
+                new net.minecraft.world.item.ItemStack(castIron, 2));
+
+        for (int tick = 0; tick < 50; tick++) forge.plasmaModule.update(1D, 1D, true,
+                net.minecraft.world.item.ItemStack.EMPTY);
+
+        helper.assertTrue(forge.inventory.getStackInSlot(
+                        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.SLOT_OUTPUT).is(weldedIron),
+                "A complete 50-tick iron weld must produce a welded iron plate");
+        helper.assertTrue(forge.inventory.getStackInSlot(
+                        com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.FIRST_INPUT).isEmpty(),
+                "A completed weld must consume both cast plates");
+        helper.assertTrue(forge.power == 0L,
+                "The weld must consume exactly 5,000 HE over 50 ticks, left " + forge.power);
+        helper.succeed();
+    }
+
+    private static void fusionBreeder(GameTestHelper helper) {
+        var core = new net.minecraft.core.BlockPos(2, 1, 2);
+        var block = ModMachineBlocks.fusion_breeder.get();
+        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+
+        var breeder = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
+                com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.class);
+        helper.assertTrue(breeder != null, "Breeder setup failed");
+        helper.assertFalse(breeder.receivesFusionPower(), "Breeder must not consume a plasma power share");
+
+        breeder.inventory.setStackInSlot(1, new net.minecraft.world.item.ItemStack(
+                net.minecraft.world.item.Items.GOLD_NUGGET));
+        breeder.receiveFusionPower(0L, com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.CAPACITY + 1D,
+                0F, 0F, 0F);
+        helper.assertTrue(breeder.inventory.getStackInSlot(2).is(
+                        com.hbm.items.ModItems.nugget_au198.get()),
+                "Gold nugget irradiation must produce gold-198");
+
+        breeder.tanks[0].setTankType(com.hbm.inventory.fluid.Fluids.GAS);
+        breeder.tanks[0].setFill(1_000);
+        breeder.receiveFusionPower(0L, com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.CAPACITY + 1D,
+                0F, 0F, 0F);
+        helper.assertTrue(breeder.tanks[1].getTankType() == com.hbm.inventory.fluid.Fluids.SYNGAS
+                        && breeder.tanks[1].getFill() == 1_000,
+                "Gas irradiation must produce 1,000 mB of syngas");
         helper.succeed();
     }
 

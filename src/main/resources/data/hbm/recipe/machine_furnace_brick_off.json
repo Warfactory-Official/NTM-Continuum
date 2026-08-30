@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:brick",
+    "B": "minecraft:stone"
+  },
+  "pattern": [
+    "III",
+    "I I",
+    "BBB"
+  ],
+  "result": {
+    "id": "hbm:machine_furnace_brick_off"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/turbofan.obj",
+      "texture": "hbm:textures/models/machines/turbofan.png",
+      "overlayTexture": "hbm:textures/models/machines/turbofan_back.png",
+      "overlayParts": ["Afterburner"],
+      "scale": 0.15,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

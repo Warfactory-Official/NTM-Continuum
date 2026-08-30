@@ -94,6 +94,7 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
                         (float) sx, (float) sy, 16, 16, 256, 256, 0x80FFFFFF);
             }
         }
+
     }
 
     /** The selector button hot-zone (GUI-relative), matching the 1.12.2 layout. */
@@ -142,4 +143,5 @@ public class GUIMachineAssemblyMachine extends dev.golem.core.gui.CompatContaine
     public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
         return this.menu.getAssembler();
     }
+
 }

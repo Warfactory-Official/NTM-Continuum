@@ -31,9 +31,14 @@ public abstract class HbmRecipeCategory<T> extends AbstractRecipeCategory<T> {
     protected final IDrawable background;
 
     protected HbmRecipeCategory(IGuiHelper helper, JeiRecipeType<T> type, Component title, ItemStack icon, String texture) {
-        super(type.unwrap(), title, helper.createDrawableItemStack(icon), WIDTH, HEIGHT);
+        this(helper, type, title, icon, texture, WIDTH, HEIGHT, 5, 11);
+    }
+
+    protected HbmRecipeCategory(IGuiHelper helper, JeiRecipeType<T> type, Component title, ItemStack icon,
+                                String texture, int width, int height, int textureX, int textureY) {
+        super(type.unwrap(), title, helper.createDrawableItemStack(icon), width, height);
         this.helper = helper;
-        this.background = helper.createDrawable(tex(texture), 5, 11, WIDTH, HEIGHT);
+        this.background = helper.createDrawable(tex(texture), textureX, textureY, width, height);
     }
 
     protected static Identifier tex(String name) {

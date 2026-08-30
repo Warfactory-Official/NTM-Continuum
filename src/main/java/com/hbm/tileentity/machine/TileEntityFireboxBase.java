@@ -13,6 +13,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.MenuProvider;
 import dev.golem.core.world.Compat;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -114,6 +116,20 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
                     y + level.getRandom().nextDouble() * 0.25,
                     z + level.getRandom().nextDouble() * 0.5 - 0.25, 0, 0, 0);
         }
+    }
+
+    /** Classifies fuel for the ash stream used by the firebox and brick furnace. */
+    public static com.hbm.items.ItemEnums.EnumAshType getAshFromFuel(ItemStack stack) {
+        if (stack.isEmpty()) return com.hbm.items.ItemEnums.EnumAshType.MISC;
+        String path = BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+        if (stack.is(ItemTags.LOGS) || stack.is(ItemTags.PLANKS) || stack.is(ItemTags.SAPLINGS)
+                || path.contains("wood")) {
+            return com.hbm.items.ItemEnums.EnumAshType.WOOD;
+        }
+        if (path.contains("coal") || path.contains("coke") || path.contains("lignite")) {
+            return com.hbm.items.ItemEnums.EnumAshType.COAL;
+        }
+        return com.hbm.items.ItemEnums.EnumAshType.MISC;
     }
 
     public abstract ModuleBurnTime getModule();

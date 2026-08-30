@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/furnace_iron.obj",
+      "texture": "hbm:textures/models/machines/furnace_iron.png",
+      "exclude": ["On"],
+      "scale": 0.525,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

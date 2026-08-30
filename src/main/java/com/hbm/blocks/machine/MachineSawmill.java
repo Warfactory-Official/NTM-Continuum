@@ -2,6 +2,7 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
 import com.hbm.lib.ForgeDirection;
@@ -36,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** The 3x3 sawmill multiblock and its core interaction rules. */
-public class MachineSawmill extends BlockDummyable implements WorldlyContainerHolder {
+public class MachineSawmill extends BlockDummyable implements WorldlyContainerHolder, ILookOverlay {
 
     public MachineSawmill(Properties properties) {
         super(properties);
@@ -187,6 +188,44 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
         }
         if (took) sawmill.setChanged();
         return took;
+    }
+
+    @Override
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntitySawmill sawmill)) return null;
+
+        List<String> text = new java.util.ArrayList<>();
+        text.add(sawmill.heat + "TU/t");
+
+        double percent = (double) sawmill.heat / 300D;
+        int color = ((int) (0xFF - 0xFF * percent)) << 16 | ((int) (0xFF * percent) << 8);
+        if (percent > 1D) color = 0xff0000;
+        text.add("&[" + color + "&]" + ((sawmill.heat * 1000 / 300) / 10D) + "%");
+
+        int limiter = sawmill.progress * 26 / TileEntitySawmill.PROCESSING_TIME;
+        StringBuilder bar = new StringBuilder("§a[ ");
+        for (int i = 0; i < 25; i++) {
+            if (i == limiter) bar.append("§r");
+            bar.append("\u258f");
+        }
+        bar.append("§a ]");
+        text.add(bar.toString());
+
+        for (int i = 0; i < 3; i++) {
+            ItemStack stack = sawmill.inventory.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                text.add((i == 0 ? "§a-> " : "§c<- ") + "§r" + stack.getHoverName().getString()
+                        + (stack.getCount() > 1 ? " x" + stack.getCount() : ""));
+            }
+        }
+
+        if (sawmill.heat > 300) {
+            text.add("&[" + (System.currentTimeMillis() % 1000 < 500 ? 0xff0000 : 0xffff00)
+                    + "&]! ! ! OVERSPEED ! ! !");
+        }
+        if (!sawmill.hasBlade) text.add("&[16711680&]Blade missing!");
+
+        return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @Override

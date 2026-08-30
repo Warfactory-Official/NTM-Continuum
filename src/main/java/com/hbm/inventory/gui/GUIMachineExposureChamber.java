@@ -71,6 +71,12 @@ public class GUIMachineExposureChamber extends dev.golem.core.gui.CompatContaine
     }
 
     @Override
+    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        GuiDraw.text(graphics, font, title, 70 - font.width(title) / 2, 6, 0x404040, false);
+        GuiDraw.text(graphics, font, playerInventoryTitle, 8, imageHeight - 94, 0x404040, false);
+    }
+
+    @Override
     public com.hbm.tileentity.IUpgradeInfoProvider getUpgradeInfoProvider() {
         return menu.getChamber();
     }

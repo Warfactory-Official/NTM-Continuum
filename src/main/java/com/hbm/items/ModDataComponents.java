@@ -14,6 +14,7 @@ public final class ModDataComponents {
 
     public static final GolemComponent<Integer> FLUID_ID = GolemComponent.integer(Constants.MOD_ID, "fluid_id");
     public static final GolemComponent<Integer> FLUID_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "fluid_amount");
+    public static final GolemComponent<Integer> FLUID_PRESSURE = GolemComponent.integer(Constants.MOD_ID, "fluid_pressure");
     public static final GolemComponent<String> MATERIAL = GolemComponent.string(Constants.MOD_ID, "material");
     public static final GolemComponent<Integer> MAT_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "mat_amount");
     public static final GolemComponent<Long> BATTERY_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "battery_charge");
@@ -74,6 +75,9 @@ public final class ModDataComponents {
     public static int fluidAmount(ItemStack stack) { return FLUID_AMOUNT.getOr(stack, 0); }
     public static void fluidAmount(ItemStack stack, int value) { FLUID_AMOUNT.set(stack, value); }
     public static void removeFluidAmount(ItemStack stack) { FLUID_AMOUNT.remove(stack); }
+    public static int fluidPressure(ItemStack stack) { return FLUID_PRESSURE.getOr(stack, 0); }
+    public static void fluidPressure(ItemStack stack, int value) { FLUID_PRESSURE.set(stack, value); }
+    public static void removeFluidPressure(ItemStack stack) { FLUID_PRESSURE.remove(stack); }
     public static String material(ItemStack stack) { return MATERIAL.get(stack).orElse(null); }
     public static void material(ItemStack stack, String value) { MATERIAL.set(stack, value); }
     public static int materialAmount(ItemStack stack, int defaultValue) { return MAT_AMOUNT.getOr(stack, defaultValue); }

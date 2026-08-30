@@ -18,13 +18,21 @@ import com.hbm.tileentity.machine.TileEntityCreativeFluidSource;
 import com.hbm.tileentity.machine.TileEntityCreativeGenerator;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
+import com.hbm.tileentity.machine.TileEntityMachineMiniRTG;
+import com.hbm.tileentity.machine.TileEntityMachineRadGen;
+import com.hbm.tileentity.machine.TileEntityRadSensor;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
+import com.hbm.tileentity.machine.TileEntityMachineGasCent;
+import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
+import com.hbm.tileentity.machine.TileEntityFurnaceBrick;
+import com.hbm.tileentity.machine.TileEntityFurnaceIron;
+import com.hbm.tileentity.machine.TileEntityFurnaceSteel;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
@@ -33,6 +41,10 @@ import com.hbm.tileentity.machine.TileEntityStirling;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
+import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
+import com.hbm.tileentity.machine.TileEntityMachinePuF6Tank;
+import com.hbm.tileentity.machine.TileEntityDeuteriumExtractor;
+import com.hbm.tileentity.machine.TileEntityDeuteriumTower;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidValve;
@@ -51,6 +63,19 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_battery",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineBattery::new, ModMachineBlocks.machine_battery.get()));
 
+    public static final RegistryObject<BlockEntityType<TileEntityMachineRadGen>> MACHINE_RAD_GEN =
+            BLOCK_ENTITIES.register("machine_radgen",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityMachineRadGen::new, ModMachineBlocks.machine_radgen.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityMachineMiniRTG>> MACHINE_MINI_RTG =
+            BLOCK_ENTITIES.register("machine_minirtg",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityMachineMiniRTG::new,
+                            ModMachineBlocks.machine_minirtg.get(), ModMachineBlocks.rtg_polonium.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityRadSensor>> RAD_SENSOR =
+            BLOCK_ENTITIES.register("radsensor",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityRadSensor::new, ModMachineBlocks.radsensor.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityCableBaseNT>> RED_CABLE =
             BLOCK_ENTITIES.register("red_cable",
                     () -> Services.PLATFORM.blockEntityType(TileEntityCableBaseNT::new, ModMachineBlocks.red_cable.get()));
@@ -67,6 +92,16 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_large_turbine",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineLargeTurbine::new,
                             ModMachineBlocks.machine_large_turbine.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineTurbineGas>> MACHINE_TURBINE_GAS =
+            BLOCK_ENTITIES.register("machine_turbine_gas",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineTurbineGas::new,
+                            ModMachineBlocks.machine_turbine_gas.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineTurbofan>> MACHINE_TURBOFAN =
+            BLOCK_ENTITIES.register("machine_turbofan",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineTurbofan::new,
+                            ModMachineBlocks.machine_turbofan.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineSteamEngine>> MACHINE_STEAM_ENGINE =
             BLOCK_ENTITIES.register("machine_steam_engine",
@@ -113,6 +148,9 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler>> FUSION_BOILER =
             BLOCK_ENTITIES.register("fusion_boiler",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler::new, ModMachineBlocks.fusion_boiler.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder>> FUSION_BREEDER =
+            BLOCK_ENTITIES.register("fusion_breeder",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder::new, ModMachineBlocks.fusion_breeder.get()));
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT>> FUSION_MHDT =
             BLOCK_ENTITIES.register("fusion_mhdt",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT::new, ModMachineBlocks.fusion_mhdt.get()));
@@ -120,6 +158,10 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionTorus>> FUSION_TORUS =
             BLOCK_ENTITIES.register("fusion_torus",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionTorus::new, ModMachineBlocks.fusion_torus.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge>> FUSION_PLASMA_FORGE =
+            BLOCK_ENTITIES.register("fusion_plasma_forge",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge::new,
+                            ModMachineBlocks.fusion_plasma_forge.get()));
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct>> STRUCT_TORUS_CORE =
             BLOCK_ENTITIES.register("struct_torus_core",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct::new, ModMachineBlocks.struct_torus_core.get()));
@@ -160,6 +202,24 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_fluidtank",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineFluidTank::new, ModMachineBlocks.machine_fluidtank.get()));
 
+    public static final RegistryObject<BlockEntityType<TileEntityMachineUF6Tank>> MACHINE_UF6_TANK =
+            BLOCK_ENTITIES.register("machine_uf6_tank",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityMachineUF6Tank::new, ModMachineBlocks.machine_uf6_tank.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityMachinePuF6Tank>> MACHINE_PUF6_TANK =
+            BLOCK_ENTITIES.register("machine_puf6_tank",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityMachinePuF6Tank::new, ModMachineBlocks.machine_puf6_tank.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityDeuteriumExtractor>> MACHINE_DEUTERIUM_EXTRACTOR =
+            BLOCK_ENTITIES.register("machine_deuterium_extractor",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityDeuteriumExtractor::new,
+                            ModMachineBlocks.machine_deuterium_extractor.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityDeuteriumTower>> MACHINE_DEUTERIUM_TOWER =
+            BLOCK_ENTITIES.register("machine_deuterium_tower",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityDeuteriumTower::new,
+                            ModMachineBlocks.machine_deuterium_tower.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityFluidValve>> FLUID_VALVE =
             BLOCK_ENTITIES.register("fluid_valve",
                     () -> Services.PLATFORM.blockEntityType(TileEntityFluidValve::new, ModMachineBlocks.fluid_valve.get()));
@@ -198,6 +258,16 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityMachineElectricFurnace>> MACHINE_ELECTRIC_FURNACE =
             BLOCK_ENTITIES.register("machine_electric_furnace",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineElectricFurnace::new, ModMachineBlocks.machine_electric_furnace_off.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityFurnaceBrick>> FURNACE_BRICK =
+            BLOCK_ENTITIES.register("machine_furnace_brick_off",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityFurnaceBrick::new, ModMachineBlocks.machine_furnace_brick_off.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityFurnaceIron>> FURNACE_IRON =
+            BLOCK_ENTITIES.register("furnace_iron",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityFurnaceIron::new, ModMachineBlocks.furnace_iron.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityFurnaceSteel>> FURNACE_STEEL =
+            BLOCK_ENTITIES.register("furnace_steel",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityFurnaceSteel::new, ModMachineBlocks.furnace_steel.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineShredder>> MACHINE_SHREDDER =
             BLOCK_ENTITIES.register("machine_shredder",
@@ -252,6 +322,14 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityMachineCentrifuge>> MACHINE_CENTRIFUGE =
             BLOCK_ENTITIES.register("machine_centrifuge",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineCentrifuge::new, ModMachineBlocks.machine_centrifuge.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityMachineGasCent>> MACHINE_GAS_CENT =
+            BLOCK_ENTITIES.register("machine_gascent",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityMachineGasCent::new, ModMachineBlocks.machine_gascent.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityMachineElectrolyser>> MACHINE_ELECTROLYSER =
+            BLOCK_ENTITIES.register("machine_electrolyser",
+                    () -> Services.PLATFORM.blockEntityType(TileEntityMachineElectrolyser::new, ModMachineBlocks.machine_electrolyser.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntitySILEX>> MACHINE_SILEX =
             BLOCK_ENTITIES.register("machine_silex",
@@ -348,9 +426,17 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("heat_boiler",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityHeatBoiler::new, ModMachineBlocks.machine_boiler.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial>> MACHINE_INDUSTRIAL_BOILER =
+            BLOCK_ENTITIES.register("machine_industrial_boiler",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::new, ModMachineBlocks.machine_industrial_boiler.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeaterOilburner>> HEATER_OILBURNER =
             BLOCK_ENTITIES.register("heater_oilburner",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityHeaterOilburner::new, ModMachineBlocks.heater_oilburner.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineWoodBurner>> MACHINE_WOOD_BURNER =
+            BLOCK_ENTITIES.register("machine_wood_burner",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityMachineWoodBurner::new, ModMachineBlocks.machine_wood_burner.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineMiningLaser>> MACHINE_MINING_LASER =
             BLOCK_ENTITIES.register("machine_mining_laser",
@@ -391,6 +477,10 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeaterFirebox>> HEATER_FIREBOX =
             BLOCK_ENTITIES.register("heater_firebox",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityHeaterFirebox::new, ModMachineBlocks.heater_firebox.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeaterOven>> HEATER_OVEN =
+            BLOCK_ENTITIES.register("heater_oven",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityHeaterOven::new, ModMachineBlocks.heater_oven.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeaterElectric>> HEATER_ELECTRIC =
             BLOCK_ENTITIES.register("heater_electric",

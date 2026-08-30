@@ -2,7 +2,7 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModGearItems;
 import com.hbm.items.machine.ItemGear;
@@ -10,7 +10,6 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityStirling;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -142,8 +141,8 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityStirling stirling)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntityStirling stirling)) return null;
 
         List<String> text = new ArrayList<>();
         text.add(stirling.heat + "TU/t");
@@ -157,7 +156,7 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
             if (stirling.heat > maxHeat) text.add("&[0xff0000&]! ! ! OVERSPEED ! ! !");
             if (!stirling.hasCog) text.add("&[0xff0000&]Gear missing!");
         }
-        ILookOverlay.printGeneric(graphics, getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @Override

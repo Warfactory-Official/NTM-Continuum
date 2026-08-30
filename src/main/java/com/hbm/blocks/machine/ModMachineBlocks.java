@@ -33,6 +33,19 @@ public final class ModMachineBlocks {
             "machine_battery", BlockMachineBattery::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
 
+    public static final RegistryObject<MachineRadGen> machine_radgen = BLOCKS.registerBlock(
+            "machine_radgen", MachineRadGen::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineMiniRTG> machine_minirtg = BLOCKS.registerBlock(
+            "machine_minirtg", MachineMiniRTG::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<MachineMiniRTG> rtg_polonium = BLOCKS.registerBlock(
+            "rtg_polonium", MachineMiniRTG::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<RadSensor> radsensor = BLOCKS.registerBlock(
+            "radsensor", RadSensor::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
     public static final RegistryObject<BlockCable> red_cable = BLOCKS.registerBlock(
             "red_cable", BlockCable::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
@@ -47,6 +60,12 @@ public final class ModMachineBlocks {
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
     public static final RegistryObject<MachineLargeTurbine> machine_large_turbine = BLOCKS.registerBlock(
             "machine_large_turbine", MachineLargeTurbine::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineTurbineGas> machine_turbine_gas = BLOCKS.registerBlock(
+            "machine_turbine_gas", MachineTurbineGas::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineTurbofan> machine_turbofan = BLOCKS.registerBlock(
+            "machine_turbofan", MachineTurbofan::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineSteamEngine> machine_steam_engine = BLOCKS.registerBlock(
             "machine_steam_engine", MachineSteamEngine::new,
@@ -136,9 +155,15 @@ public final class ModMachineBlocks {
     public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionBoiler> fusion_boiler = BLOCKS.registerBlock(
             "fusion_boiler", com.hbm.blocks.machine.fusion.MachineFusionBoiler::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionBreeder> fusion_breeder = BLOCKS.registerBlock(
+            "fusion_breeder", com.hbm.blocks.machine.fusion.MachineFusionBreeder::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionMHDT> fusion_mhdt = BLOCKS.registerBlock(
             "fusion_mhdt", com.hbm.blocks.machine.fusion.MachineFusionMHDT::new,
             p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge> fusion_plasma_forge = BLOCKS.registerBlock(
+            "fusion_plasma_forge", com.hbm.blocks.machine.fusion.MachineFusionPlasmaForge::new,
+            p -> dummyable(p.strength(5.0F, 60.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     /** Seed blocks for the hand-built multiblocks. */
     public static final RegistryObject<BlockStruct> struct_watz_core = BLOCKS.registerBlock(
@@ -165,6 +190,13 @@ public final class ModMachineBlocks {
             "machine_fluidtank", MachineFluidTank::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    public static final RegistryObject<MachineUF6Tank> machine_uf6_tank = BLOCKS.registerBlock(
+            "machine_uf6_tank", MachineUF6Tank::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachinePuF6Tank> machine_puf6_tank = BLOCKS.registerBlock(
+            "machine_puf6_tank", MachinePuF6Tank::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     public static final RegistryObject<FluidValve> fluid_valve = BLOCKS.registerBlock(
             "fluid_valve", FluidValve::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
@@ -178,6 +210,16 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineElectricFurnace> machine_electric_furnace_off = BLOCKS.registerBlock(
             "machine_electric_furnace_off", MachineElectricFurnace::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
+    public static final RegistryObject<MachineFurnaceBrick> machine_furnace_brick_off = BLOCKS.registerBlock(
+            "machine_furnace_brick_off", MachineFurnaceBrick::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE));
+    public static final RegistryObject<MachineFurnaceIron> furnace_iron = BLOCKS.registerBlock(
+            "furnace_iron", MachineFurnaceIron::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineFurnaceSteel> furnace_steel = BLOCKS.registerBlock(
+            "furnace_steel", MachineFurnaceSteel::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     /** Shredder — a plain JSON-model cube (no BER), unlike the multiblocks below. */
     public static final RegistryObject<MachineShredder> machine_shredder = BLOCKS.registerBlock(
@@ -203,6 +245,9 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<MachineChemicalPlant> machine_chemical_plant = BLOCKS.registerBlock(
             "machine_chemical_plant", MachineChemicalPlant::new,
+            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineElectrolyser> machine_electrolyser = BLOCKS.registerBlock(
+            "machine_electrolyser", MachineElectrolyser::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineMixer> machine_mixer = BLOCKS.registerBlock(
             "machine_mixer", MachineMixer::new,
@@ -257,9 +302,19 @@ public final class ModMachineBlocks {
             "heat_boiler", MachineHeatBoiler::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    /** Industrial heat boiler — the five-port, high-capacity variant. */
+    public static final RegistryObject<MachineHeatBoilerIndustrial> machine_industrial_boiler = BLOCKS.registerBlock(
+            "machine_industrial_boiler", MachineHeatBoilerIndustrial::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     /** Fluid Burner — burns flammable fluids into an IHeatSource reservoir. */
     public static final RegistryObject<HeaterOilburner> heater_oilburner = BLOCKS.registerBlock(
             "heater_oilburner", HeaterOilburner::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    /** Wood Burner — solid fuel or WOODOIL generator with a 100k HE buffer. */
+    public static final RegistryObject<MachineWoodBurner> machine_wood_burner = BLOCKS.registerBlock(
+            "machine_wood_burner", MachineWoodBurner::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     // --- oil wave: extraction drills ---
@@ -331,6 +386,18 @@ public final class ModMachineBlocks {
             "machine_centrifuge", MachineCentrifuge::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    /** Gas centrifuge — a dedicated four-block cascade machine for UF6/PUF6/WATZ. */
+    public static final RegistryObject<MachineGasCent> machine_gascent = BLOCKS.registerBlock(
+            "machine_gascent", MachineGasCent::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final RegistryObject<MachineDeuteriumExtractor> machine_deuterium_extractor = BLOCKS.registerBlock(
+            "machine_deuterium_extractor", MachineDeuteriumExtractor::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<MachineDeuteriumTower> machine_deuterium_tower = BLOCKS.registerBlock(
+            "machine_deuterium_tower", MachineDeuteriumTower::new,
+            p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     /** SILEX — the laser isotope separation chamber. Fluid-only (peroxide); the laser supplies the energy. */
     public static final RegistryObject<MachineSILEX> machine_silex = BLOCKS.registerBlock(
             "machine_silex", MachineSILEX::new,
@@ -378,6 +445,10 @@ public final class ModMachineBlocks {
             "heater_firebox", HeaterFirebox::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    public static final RegistryObject<HeaterOven> heater_oven = BLOCKS.registerBlock(
+            "heater_oven", HeaterOven::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     public static final RegistryObject<HeaterElectric> heater_electric = BLOCKS.registerBlock(
             "heater_electric", HeaterElectric::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
@@ -400,10 +471,16 @@ public final class ModMachineBlocks {
 
     static {
         tabItem("machine_battery", machine_battery);
+        tabItem("machine_radgen", machine_radgen);
+        tabItem("machine_minirtg", machine_minirtg);
+        tabItem("rtg_polonium", rtg_polonium);
+        tabItem("radsensor", radsensor);
         tabItem("red_cable", red_cable);
         tabItem("creative_generator", creative_generator);
         tabItem("machine_turbine", machine_turbine);
         tabItem("machine_large_turbine", machine_large_turbine);
+        tabItem("machine_turbine_gas", machine_turbine_gas);
+        tabItem("machine_turbofan", machine_turbofan);
         tabItem("machine_steam_engine", machine_steam_engine);
         tabItem("machine_pump_electric", machine_pump_electric);
         tabItem("machine_pump_steam", machine_pump_steam);
@@ -425,7 +502,9 @@ public final class ModMachineBlocks {
         tabItem("fusion_klystron", fusion_klystron);
         tabItem("fusion_klystron_creative", fusion_klystron_creative);
         tabItem("fusion_boiler", fusion_boiler);
+        tabItem("fusion_breeder", fusion_breeder);
         tabItem("fusion_mhdt", fusion_mhdt);
+        tabItem("fusion_plasma_forge", fusion_plasma_forge);
         tabItem("watz_pump", watz_pump);
         tabItem("watz_casing", watz_casing);
         tabItem("watz_casing_tooled", watz_casing_tooled);
@@ -436,16 +515,22 @@ public final class ModMachineBlocks {
         tabItem("machine_waste_drum", machine_waste_drum);
         tabItem("fluid_duct_mk2", fluid_duct_mk2);
         tabItem("creative_fluid_source", creative_fluid_source);
-        tabItem("machine_fluidtank", machine_fluidtank);
+         tabItem("machine_fluidtank", machine_fluidtank);
+         tabItem("machine_uf6_tank", machine_uf6_tank);
+         tabItem("machine_puf6_tank", machine_puf6_tank);
         tabItem("fluid_valve", fluid_valve);
         tabItem("machine_drain", machine_drain);
         tabItem("machine_electric_furnace_off", machine_electric_furnace_off);
+        tabItem("machine_furnace_brick_off", machine_furnace_brick_off);
+        tabItem("furnace_iron", furnace_iron);
+        tabItem("furnace_steel", furnace_steel);
         tabItem("machine_shredder", machine_shredder);
         tabItem("machine_epress", machine_epress);
         tabItem("machine_press", machine_press);
         tabItem("machine_sawmill", machine_sawmill);
         tabItem("machine_assembly_machine", machine_assembly_machine);
-        tabItem("machine_chemical_plant", machine_chemical_plant);
+         tabItem("machine_chemical_plant", machine_chemical_plant);
+         tabItem("machine_electrolyser", machine_electrolyser);
         tabItem("machine_mixer", machine_mixer);
         tabItem("machine_exposure_chamber", machine_exposure_chamber);
         tabItem("machine_blast_furnace", machine_blast_furnace);
@@ -470,16 +555,22 @@ public final class ModMachineBlocks {
         tabItem("machine_liquefactor", machine_liquefactor);
         tabItem("machine_solidifier", machine_solidifier);
         tabItem("machine_refinery", machine_refinery);
-        tabItem("heat_boiler", machine_boiler);
+         tabItem("heat_boiler", machine_boiler);
+         tabItem("machine_industrial_boiler", machine_industrial_boiler);
         tabItem("heater_oilburner", heater_oilburner);
         tabItem("machine_soldering_station", machine_soldering_station);
         tabItem("machine_crystallizer", machine_crystallizer);
-        tabItem("machine_centrifuge", machine_centrifuge);
+         tabItem("machine_centrifuge", machine_centrifuge);
+         tabItem("machine_gascent", machine_gascent);
+         tabItem("machine_deuterium_extractor", machine_deuterium_extractor);
+         tabItem("machine_deuterium_tower", machine_deuterium_tower);
         tabItem("machine_silex", machine_silex);
         tabItem("machine_fel", machine_fel);
         tabItem("machine_crucible", machine_crucible);
-        tabItem("heater_firebox", heater_firebox);
-        tabItem("heater_electric", heater_electric);
+          tabItem("heater_firebox", heater_firebox);
+          tabItem("heater_oven", heater_oven);
+          tabItem("heater_electric", heater_electric);
+         tabItem("machine_wood_burner", machine_wood_burner);
         tabItem("foundry_channel", foundry_channel);
         tabItem("foundry_mold", foundry_mold);
         tabItem("foundry_basin", foundry_basin);

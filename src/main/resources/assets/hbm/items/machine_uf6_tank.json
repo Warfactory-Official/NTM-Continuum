@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/tank.obj",
+      "texture": "hbm:textures/models/machines/uf6tank.png",
+      "scale": 0.525,
+      "yaw": 270,
+      "ty": 0.0
+    }
+  }
+}

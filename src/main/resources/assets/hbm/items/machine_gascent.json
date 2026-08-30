@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/centrifuge_gas.obj",
+      "texture": "hbm:textures/models/machines/centrifuge_gas.png",
+      "scale": 0.2625,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

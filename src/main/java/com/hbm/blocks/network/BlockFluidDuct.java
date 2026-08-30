@@ -1,6 +1,6 @@
 package com.hbm.blocks.network;
 
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.IItemFluidId;
@@ -10,7 +10,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidValve;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -251,11 +250,11 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
 
     /** Look-overlay: the duct's carried fluid type, tinted by its colour. */
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct)) return null;
         FluidType type = duct.getFluidType();
         List<String> text = new ArrayList<>();
         text.add("&[" + type.getColor() + "&]" + type.getDisplayNameString());
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 }

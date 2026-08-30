@@ -3,8 +3,12 @@ package com.hbm.blocks.machine;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
+import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine;
@@ -23,9 +27,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 /** The 7x4x4 industrial steam turbine multiblock. */
 public class MachineIndustrialTurbine extends BlockDummyable
-        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineIndustrialTurbine(Properties properties) {
         super(properties);
@@ -115,6 +123,34 @@ public class MachineIndustrialTurbine extends BlockDummyable
         return (com.hbm.inventory.recipes.CoolingRecipes.get(type) != null || type == com.hbm.inventory.fluid.Fluids.SPENTSTEAM)
                 && findCoreTE(world, pos) instanceof TileEntityMachineIndustrialTurbine turbine
                 && IEnergyConnectorBlock.isPort(turbine.getConPos(), pos, dir);
+    }
+
+    @Override
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntityMachineIndustrialTurbine turbine)) return null;
+
+        List<String> text = new ArrayList<>();
+        FluidType inputType = turbine.tanks[0].getTankType();
+        FluidType outputType = Fluids.NONE;
+        CoolingRecipes.CoolingRecipe recipe = CoolingRecipes.get(inputType);
+        if (recipe != null) outputType = recipe.output();
+
+        int color = ((int) (0xFF - 0xFF * turbine.spin)) << 16
+                | ((int) (0xFF * turbine.spin) << 8);
+        int time = (int) ((level.getGameTime() / 4) % 4);
+        String[] animation = {"\u2596 ", "\u2598 ", " \u2598", " \u2596"};
+
+        text.add("§a-> §r" + inputType.getDisplayNameString() + ": "
+                + String.format(Locale.US, "%,d", turbine.tanks[0].getFill()) + "/"
+                + String.format(Locale.US, "%,d", turbine.tanks[0].getMaxFill()) + "mB");
+        text.add("§c<- §r" + outputType.getDisplayNameString() + ": "
+                + String.format(Locale.US, "%,d", turbine.tanks[1].getFill()) + "/"
+                + String.format(Locale.US, "%,d", turbine.tanks[1].getMaxFill()) + "mB");
+        text.add("&[" + color + "&]§c<- §r" + Library.getShortNumber(turbine.powerBuffer)
+                + "HE (" + animation[turbine.powerBuffer <= 0 ? 0 : time]
+                + Math.round(turbine.spin * 100) + "%§r)");
+
+        return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @Override

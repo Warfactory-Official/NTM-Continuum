@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/rtg.obj",
+      "texture": "hbm:textures/models/machines/rtg_cell.png",
+      "noCull": true,
+      "scale": 1.0,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

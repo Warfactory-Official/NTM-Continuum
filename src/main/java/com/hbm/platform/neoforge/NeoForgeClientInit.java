@@ -91,6 +91,8 @@ public final class NeoForgeClientInit {
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
                 event.register(dev.golem.core.Ids.of("hbm", "gun"),
                         com.hbm.client.render.weapon.GunItemModel.Unbaked.MAP_CODEC));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
+                event.register(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC));
         //?} else {
         /*modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent event) ->
                 event.registerReloadListener(

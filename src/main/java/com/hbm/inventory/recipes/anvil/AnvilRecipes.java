@@ -1,6 +1,7 @@
 package com.hbm.inventory.recipes.anvil;
 
 import com.hbm.blocks.ModAnvilBlocks;
+import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
@@ -240,6 +241,15 @@ public final class AnvilRecipes {
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {
+                        new ComparableStack(Blocks.STONE_BRICKS.asItem(), 16),
+                        IRON.ingot().count(4),
+                        STEEL.plate().count(16),
+                        CU.ingot().count(8),
+                        new ComparableStack(ModSteelBlocks.steel_grate.get().asItem(), 16)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.furnace_steel.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
                         new TagStack(ItemTags.PLANKS, 16),
                         STEEL.plate().count(6),
                         CU.ingot().count(8),
@@ -352,6 +362,13 @@ public final class AnvilRecipes {
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {
+                        new ComparableStack(ModItems.ingot_firebrick.get(), 16),
+                        STEEL.plate().count(4),
+                        CU.ingot().count(8)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.heater_oven.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
                         new ComparableStack(Blocks.STONE_BRICKS.asItem(), 8),
                         new TagStack(ItemTags.LOGS, 16),
                         CU.plateCast().count(2),
@@ -381,6 +398,13 @@ public final class AnvilRecipes {
                         CU.plate().count(16),   // old CU.plate528() = plate() at default config
                         new ComparableStack(ModItems.plate_polymer.get(), 8)
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_boiler.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        STEEL.plateCast().count(8),
+                        CU.ingot().count(8),
+                        ANY_PLASTIC.ingot().count(4)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_industrial_boiler.get()))).setTier(3));
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {

@@ -24,6 +24,13 @@ public class GUIMachineElectricFurnace extends dev.golem.core.gui.CompatContaine
     }
 
     @Override
+    protected void init() {
+        super.init();
+        titleLabelX = imageWidth / 2 - font.width(title) / 2;
+        inventoryLabelY = imageHeight - 96 + 2;
+    }
+
+    @Override
     public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
         GuiDraw.blit(graphics, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 

@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.items.machine.ItemMold;
@@ -9,7 +9,6 @@ import com.hbm.items.machine.ItemMold.Mold;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityFoundryCastingBase;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -153,9 +152,9 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
     // --- look overlay: installed mold + fill state ---
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         TileEntityFoundryCastingBase cast = getTE(level, pos);
-        if (cast == null) return;
+        if (cast == null) return null;
 
         List<String> text = new ArrayList<>();
         Mold mold = ItemMold.getMold(cast.syncMold);
@@ -168,6 +167,6 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
                         + cast.amount + " / " + mold.getCost());
             }
         }
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xFF4000, 0x401000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xFF4000, 0x401000, text);
     }
 }

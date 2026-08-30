@@ -6,9 +6,11 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
+import dev.golem.core.world.CompatItem;
+import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 
 import java.util.List;
 
@@ -19,12 +21,13 @@ import java.util.List;
  * #getIcon} falls back to it for a fluid-output recipe, and the recipe selector shows it).
  *
  * <p>Like {@link ItemFluidBucket} it carries the fluid in the {@link ModDataComponents#FLUID_ID}
- * component and tints the grayscale {@code fluid_icon.png} droplet by the fluid colour via the vanilla
+ * component, and stacks made from a {@link FluidStack} retain their amount in
+ * {@link ModDataComponents#FLUID_AMOUNT}. It tints the grayscale {@code fluid_icon.png} droplet by the fluid colour via the vanilla
  * {@code custom_model_data} colour list (read by the model's {@code minecraft:custom_model_data} tint
  * source) — so one item + one model covers all 157 fluids, no per-fluid model or client colour handler
  * (the 26.1 replacement for the 1.12.2 metadata subtypes + {@code IItemColor}).
  */
-public class ItemFluidIcon extends Item {
+public class ItemFluidIcon extends CompatItem {
 
     public ItemFluidIcon(Properties properties) {
         super(properties);
@@ -38,9 +41,12 @@ public class ItemFluidIcon extends Item {
         return stack;
     }
 
-    /** Convenience: a droplet for a {@link FluidStack}'s type (amount/pressure are shown by the recipe). */
+    /** Convenience: a droplet for a {@link FluidStack}'s type, retaining its amount for the tooltip. */
     public static ItemStack make(FluidStack stack) {
-        return make(stack.type);
+        ItemStack icon = make(stack.type);
+        ModDataComponents.fluidAmount(icon, stack.fill);
+        ModDataComponents.fluidPressure(icon, stack.pressure);
+        return icon;
     }
 
     public static FluidType getFluid(ItemStack stack) {
@@ -50,5 +56,15 @@ public class ItemFluidIcon extends Item {
     @Override
     public Component getName(ItemStack stack) {
         return getFluid(stack).getDisplayName();
+    }
+
+    @Override
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
+        int amount = ModDataComponents.fluidAmount(stack);
+        if (amount > 0) tooltip.add(Component.literal(amount + "mB"));
+        int pressure = ModDataComponents.fluidPressure(stack);
+        if (pressure > 0) tooltip.add(Component.literal(pressure + "PU").withStyle(net.minecraft.ChatFormatting.RED));
+        getFluid(stack).addInfo(tooltip);
     }
 }

@@ -6,8 +6,8 @@
       "type": "hbm:machine_obj",
       "obj": "hbm:models/machines/boiler.obj",
       "texture": "hbm:textures/models/machines/boiler.png",
-      "scale": 0.3,
-      "yaw": 180,
+      "scale": 0.2625,
+      "yaw": 0,
       "ty": 0.0
     }
   }

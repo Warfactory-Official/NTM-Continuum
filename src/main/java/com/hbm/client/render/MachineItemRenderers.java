@@ -50,7 +50,7 @@ public final class MachineItemRenderers {
         RecordingSubmitSink sink = new RecordingSubmitSink();
         if (column != null) column.submit(poseStack, sink, light, overlay);
         else if (block != null) block.submit(poseStack, sink, light, overlay);
-        else model.submit(poseStack, sink, light, overlay);
+        else model.submit(poseStack, sink, light, overlay, context);
         // No level: these draws happen in inventory/hand space, and the sink only needs one for item
         // sub-draws, which an OBJ machine never makes.
         sink.flush(buffers, null);

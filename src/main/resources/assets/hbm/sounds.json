@@ -381,6 +381,33 @@
       }
     ]
   },
+  "block.turbinegas_startup": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/turbinegasstartup",
+        "stream": false
+      }
+    ]
+  },
+  "block.turbinegas_shutdown": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/turbinegasshutdown",
+        "stream": false
+      }
+    ]
+  },
+  "block.turbinegas_running": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/turbinegasrunning",
+        "stream": false
+      }
+    ]
+  },
   "block.industrial_turbine": {
     "category": "block",
     "sounds": [

@@ -3,7 +3,7 @@ package com.hbm.blocks.machine.fusion;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
@@ -81,8 +81,8 @@ public class MachineFusionMHDT extends BlockDummyable implements ILookOverlay, I
      * Both blink, as upstream.
      */
     @Override
-    public void printHook(net.minecraft.client.gui.GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityFusionMHDT turbine)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntityFusionMHDT turbine)) return null;
 
         boolean hasPlasma = turbine.hasMinimumPlasma();
         boolean isCool = turbine.isCool();
@@ -109,7 +109,7 @@ public class MachineFusionMHDT extends BlockDummyable implements ILookOverlay, I
         if (!isCool) {
             text.add("&[" + (blink ? 0xff0000 : 0xffff00) + "&]! ! ! INSUFFICIENT COOLING ! ! !");
         }
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @Override

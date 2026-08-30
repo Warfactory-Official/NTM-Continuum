@@ -1,11 +1,10 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.lib.Library;
 import com.hbm.platform.Services;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -70,8 +69,8 @@ public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implem
 
     /** Look-overlay: charge / max, throughput (±HE/s), and a colour-coded fill percentage. */
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityMachineBattery battery)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(level.getBlockEntity(pos) instanceof TileEntityMachineBattery battery)) return null;
 
         List<String> text = new ArrayList<>();
         text.add(Library.getShortNumber(battery.power) + "/" + Library.getShortNumber(TileEntityMachineBattery.MAX_POWER) + " HE");
@@ -81,6 +80,6 @@ public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implem
         double frac = (double) battery.power / (double) TileEntityMachineBattery.MAX_POWER;
         text.add("&[" + Library.getColorProgress(frac) + "&]    " + Library.getPercentage(frac) + "%");
 
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 }

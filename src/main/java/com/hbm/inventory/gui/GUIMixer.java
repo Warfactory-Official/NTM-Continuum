@@ -61,15 +61,15 @@ public class GUIMixer extends dev.golem.core.gui.CompatContainerScreen<Container
         int top = bottom - fill;
         int drawX = leftPos + x;
         Identifier fluidTexture = tank.getTankType().getTexture();
+        int tint = 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
         if (Minecraft.getInstance().getResourceManager().getResource(fluidTexture).isPresent()) {
             graphics.enableScissor(drawX, top, drawX + width, bottom);
             for (int y = bottom - 16; y > top - 16; y -= 16) {
-                GuiDraw.blit(graphics, fluidTexture, drawX, y, 0F, 0F, width, 16, 16, 16);
+                GuiDraw.blit(graphics, fluidTexture, drawX, y, 0F, 0F, width, 16, 16, 16, tint);
             }
             graphics.disableScissor();
         } else {
-            graphics.fill(drawX, top, drawX + width, bottom,
-                    0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
+            graphics.fill(drawX, top, drawX + width, bottom, tint);
         }
     }
 
@@ -97,16 +97,26 @@ public class GUIMixer extends dev.golem.core.gui.CompatContainerScreen<Container
         }
         if (isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, mouseX, mouseY)) {
             MixerRecipe[] recipes = MixerRecipes.getOutput(mixer.tanks[2].getTankType());
-            if (recipes == null || recipes.length == 0) return;
+            if (recipes == null || recipes.length <= 1) return;
             MixerRecipe recipe = recipes[Math.floorMod(mixer.recipeIndex, recipes.length)];
             List<Component> tooltip = new ArrayList<>();
             tooltip.add(Component.translatable("gui.recipe.current", mixer.recipeIndex + 1, recipes.length)
                     .withStyle(ChatFormatting.YELLOW));
-            if (recipe.input1 != null) tooltip.add(recipe.input1.type.getDisplayName());
-            if (recipe.input2 != null) tooltip.add(recipe.input2.type.getDisplayName());
-            if (recipe.solidInput != null) tooltip.add(recipe.solidInput.getCyclingDisplayStack().getHoverName());
+            if (recipe.input1 != null) tooltip.add(Component.literal("-").append(recipe.input1.type.getDisplayName()));
+            if (recipe.input2 != null) tooltip.add(Component.literal("-").append(recipe.input2.type.getDisplayName()));
+            if (recipe.solidInput != null) {
+                tooltip.add(Component.literal("-").append(recipe.solidInput.getCyclingDisplayStack().getHoverName()));
+            }
             tooltip.add(Component.translatable("gui.recipe.clickToChange").withStyle(ChatFormatting.RED));
             GuiDraw.tooltip(graphics, font, tooltip, Optional.empty(), mouseX, mouseY);
+            return;
+        }
+        if (isHovering(43, 23, 7, 52, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(mixer.tanks[0]), Optional.empty(), mouseX, mouseY);
+        } else if (isHovering(52, 23, 7, 52, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(mixer.tanks[1]), Optional.empty(), mouseX, mouseY);
+        } else if (isHovering(117, 23, 16, 52, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, font, GuiUtil.tankTooltip(mixer.tanks[2]), Optional.empty(), mouseX, mouseY);
         }
     }
 

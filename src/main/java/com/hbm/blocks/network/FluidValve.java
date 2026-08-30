@@ -1,7 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
@@ -9,7 +9,6 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.network.TileEntityFluidValve;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -114,12 +113,12 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityFluidValve valve)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(level.getBlockEntity(pos) instanceof TileEntityFluidValve valve)) return null;
         List<String> text = new ArrayList<>();
         text.add(level.getBlockState(pos).getValue(OPEN) ? "§aOpen" : "§cClosed");
         text.add("&[" + valve.getFluidType().getColor() + "&]" + valve.getFluidType().getDisplayNameString());
-        ILookOverlay.printGeneric(graphics, getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @SuppressWarnings("unchecked")

@@ -6,12 +6,11 @@
       "type": "hbm:machine_obj",
       "obj": "hbm:models/machines/mixer.obj",
       "texture": "hbm:textures/models/machines/mixer.png",
+      "noCull": true,
       "scale": 0.35,
       "yaw": 180,
       "ty": 0.0,
-      "exclude": [
-        "Fluid"
-      ]
+      "exclude": ["Fluid"]
     }
   }
 }

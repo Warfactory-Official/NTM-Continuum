@@ -4,7 +4,8 @@ package com.hbm.mixin;
 // entry in hbm.fabric.mixins.json is filtered out per node by processResources.
 //? if fabric && >=26.1 {
 
-/*import com.hbm.client.render.weapon.GunItemModel;
+/*import com.hbm.client.render.MachineItemModelRenderer;
+ import com.hbm.client.render.weapon.GunItemModel;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModels;
@@ -34,6 +35,7 @@ public class MixinItemModels {
     @Inject(method = "bootstrap", at = @At("TAIL"))
     private static void hbm$registerGunModel(CallbackInfo ci) {
         ID_MAPPER.put(dev.golem.core.Ids.of("hbm", "gun"), GunItemModel.Unbaked.MAP_CODEC);
+        ID_MAPPER.put(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC);
     }
 }
 *///?}

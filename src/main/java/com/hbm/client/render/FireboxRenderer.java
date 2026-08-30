@@ -26,13 +26,26 @@ public class FireboxRenderer<T extends TileEntityFireboxBase> implements CompatB
 
     private final WavefrontObj model;
     private final RenderType baseType;
+    private final boolean translateDoor;
 
     public FireboxRenderer() {
-        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/firebox.obj");
-        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/firebox.png");
+        this("models/machines/firebox.obj", "textures/models/machines/firebox.png", "InnerEmpty", false);
+    }
+
+    public FireboxRenderer(String modelPath, String texturePath, String emptyPart) {
+        this(modelPath, texturePath, emptyPart, false);
+    }
+
+    public FireboxRenderer(String modelPath, String texturePath, String emptyPart, boolean translateDoor) {
+        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, modelPath);
+        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, texturePath);
         this.model = WavefrontObj.load(obj);
         this.baseType = CompatRenderTypes.entityCutout(tex);
+        this.emptyPart = emptyPart;
+        this.translateDoor = translateDoor;
     }
+
+    private final String emptyPart;
 
     @Override public FireboxRenderState createRenderState() { return new FireboxRenderState(); }
     @Override public boolean shouldRenderOffScreen() { return true; }
@@ -63,18 +76,23 @@ public class FireboxRenderer<T extends TileEntityFireboxBase> implements CompatB
 
         part(col, ps, "Main", light);
 
-        // The door swings about its hinge (old translate/rotate: hinge at 1.375, 0.375; about -Y).
         ps.pushPose();
-        ps.translate(1.375F, 0F, 0.375F);
-        ps.mulPose(Axis.YN.rotationDegrees(s.doorAngle));
-        ps.translate(-1.375F, 0F, -0.375F);
+        if (translateDoor) {
+            // The heating oven slides its door along Z; it does not use the firebox hinge.
+            ps.translate(0F, 0F, s.doorAngle * 0.75F / 135F);
+        } else {
+            // The firebox door swings about the legacy hinge at (1.375, 0.375).
+            ps.translate(1.375F, 0F, 0.375F);
+            ps.mulPose(Axis.YN.rotationDegrees(s.doorAngle));
+            ps.translate(-1.375F, 0F, -0.375F);
+        }
         part(col, ps, "Door", light);
         ps.popPose();
 
         if (s.burning) {
             part(col, ps, "InnerBurning", FoundryRenderHelper.FULLBRIGHT);
         } else {
-            part(col, ps, "InnerEmpty", light);
+            part(col, ps, emptyPart, light);
         }
 
         ps.popPose();

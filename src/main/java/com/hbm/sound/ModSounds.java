@@ -70,6 +70,9 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> RBMK_SHUTDOWN = register("rbmk_shutdown");
     public static final RegistryObject<SoundEvent> STEAM_ENGINE_OPERATE = register("steam_engine_operate");
     public static final RegistryObject<SoundEvent> TURBOFAN_OPERATE = register("block.turbofan_operate");
+    public static final RegistryObject<SoundEvent> TURBINE_GAS_STARTUP = register("block.turbinegas_startup");
+    public static final RegistryObject<SoundEvent> TURBINE_GAS_SHUTDOWN = register("block.turbinegas_shutdown");
+    public static final RegistryObject<SoundEvent> TURBINE_GAS_RUNNING = register("block.turbinegas_running");
     public static final RegistryObject<SoundEvent> INDUSTRIAL_TURBINE = register("block.industrial_turbine");
     public static final RegistryObject<SoundEvent> CHUNGUS_LEVER = register("block.chungus_lever");
 

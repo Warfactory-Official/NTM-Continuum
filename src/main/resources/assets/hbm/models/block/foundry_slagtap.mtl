@@ -13,7 +13,7 @@ map_Kd hbm:blocks/foundry_slagtap_top
 newmtl m_9cfe4fa3-bdb9-c63b-d714-204ce81ae698
 map_Kd hbm:blocks/foundry_outlet_lock
 
-newmtl m_a7ef23a5-b34d-59b3-slagtap-fbdc243f960a
+newmtl m_a7ef23a5-b34d-59b3-5b0b-fbdc243f960a
 map_Kd hbm:blocks/foundry_slagtap_side
 
 newmtl m_a865d7a3-41a6-aeb3-d516-a02cd5027f09

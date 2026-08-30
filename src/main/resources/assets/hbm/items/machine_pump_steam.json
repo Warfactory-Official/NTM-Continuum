@@ -7,9 +7,10 @@
       "obj": "hbm:models/machines/pump.obj",
       "texture": "hbm:textures/models/machines/pump_steam.png",
       "noCull": true,
-      "scale": 0.2,
-      "yaw": 90,
-      "ty": 0.0
+      "scale": 0.21,
+      "yaw": 0,
+      "ty": 0.0,
+      "animation": "pump"
     }
   }
 }

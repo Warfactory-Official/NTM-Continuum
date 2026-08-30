@@ -1,13 +1,17 @@
 package com.hbm.inventory.gui;
 
 import dev.golem.core.gui.GuiDraw;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +46,24 @@ public final class GuiUtil {
         return list;
     }
 
+    /** Plays the legacy master-channel UI click through the shared GUI helper. */
+    public static void playClickSound() {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+    }
+
+    /** The exact legacy fluid-tank tooltip: name, fill, optional pressure, then fluid metadata. */
+    public static List<Component> tankTooltip(FluidTankNTM tank) {
+        List<Component> lines = new ArrayList<>();
+        lines.add(tank.getTankType().getDisplayName());
+        lines.add(Component.literal(tank.getFill() + "/" + tank.getMaxFill() + "mB"));
+        if (tank.getPressure() != 0) {
+            lines.add(Component.literal("Pressure: " + tank.getPressure() + " PU")
+                    .withStyle(ChatFormatting.RED));
+        }
+        tank.getTankType().addInfo(lines);
+        return lines;
+    }
+
     /** The shared HBM {@code gui_utility.png} icon sheet (info/warning glyphs) — the 1.12.2 {@code GuiInfoContainer.guiUtil}. */
     private static final Identifier GUI_UTILITY = dev.golem.core.Ids.of("hbm", "textures/gui/gui_utility.png");
 
@@ -51,6 +73,24 @@ public final class GuiUtil {
     /** Draws the "small blue *" info‑panel glyph (1.12.2 {@code drawInfoPanel(...,8)}) at screen {@code x,y}. */
     public static void drawUpgradeInfoPanel(GuiGraphicsExtractor graphics, int x, int y) {
         GuiDraw.blit(graphics, GUI_UTILITY, x, y, 0.0F, 32.0F, INFO_PANEL_SIZE, INFO_PANEL_SIZE, 256, 256);
+    }
+
+    /** Draws one of the legacy info/warning glyphs from {@code gui_utility.png}. */
+    public static void drawInfoPanel(GuiGraphicsExtractor graphics, int x, int y, int type) {
+        int sourceX = switch (type) {
+            case 2, 6, 10 -> 8;
+            case 3, 7, 11 -> 24;
+            default -> 0;
+        };
+        int sourceY = switch (type) {
+            case 1, 5 -> 8;
+            case 4, 6, 7 -> 16;
+            case 8, 10, 11 -> 32;
+            case 9 -> 40;
+            default -> 0;
+        };
+        int size = type >= 2 && type <= 3 || type >= 6 ? 16 : 8;
+        GuiDraw.blit(graphics, GUI_UTILITY, x, y, sourceX, sourceY, size, size, 256, 256);
     }
 
     /** The 16×16 "large red !" warning glyph (1.12.2 {@code drawInfoPanel(...,16,16,6)}) at screen {@code x,y}. */

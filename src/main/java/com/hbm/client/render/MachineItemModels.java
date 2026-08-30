@@ -94,11 +94,12 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 String path = file.getPath();
                 String name = path.substring("items/".length(), path.length() - ".json".length());
                 Identifier item = dev.golem.core.Ids.of(file.getNamespace(), name);
-                if (machine != null) built.put(item, parse(machine));
+                if (machine != null) built.put(item, parse(machine, isBlockFramed(root)));
                 Map<Integer, JsonObject> variantJson = machineObjVariantsOf(root);
                 if (!variantJson.isEmpty()) {
                     Map<Integer, MachineItemModel> parsed = new HashMap<>();
-                    variantJson.forEach((variant, value) -> parsed.put(variant, parse(value)));
+                    boolean blockFramed = isBlockFramed(root);
+                    variantJson.forEach((variant, value) -> parsed.put(variant, parse(value, blockFramed)));
                     builtVariants.put(item, Map.copyOf(parsed));
                     MachineItemModel fallback = parsed.get(-1);
                     if (fallback != null) built.put(item, fallback);
@@ -122,19 +123,28 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
 
      /^ 
      * The `hbm:machine_obj` object inside an item definition, or null if this definition is not one.
-     * Shape: `{"model": {"type": "minecraft:special", "base": ..., "model": {"type": "hbm:machine_obj", ...}}}`.
+      * Shape: `{"model": {"type": "minecraft:special", "base": ..., "model": {"type": "hbm:machine_obj", ...}}}`
+      * or the context-aware direct form `{"model": {"type": "hbm:machine_obj", ...}}`.
      ^/
     private static JsonObject machineObjOf(JsonElement root) {
         if (!root.isJsonObject()) return null;
         JsonElement model = root.getAsJsonObject().get("model");
         if (model == null || !model.isJsonObject()) return null;
         JsonObject special = model.getAsJsonObject();
+        if ("hbm:machine_obj".equals(string(special, "type", ""))) return special;
         if (!"minecraft:special".equals(string(special, "type", ""))) return null;
         JsonElement inner = special.get("model");
         if (inner == null || !inner.isJsonObject()) return null;
         JsonObject machine = inner.getAsJsonObject();
         // Same id as MachineItemModelRenderer.ID on 26.1; spelled out because that class does not exist here.
         return "hbm:machine_obj".equals(string(machine, "type", "")) ? machine : null;
+    }
+
+    private static boolean isBlockFramed(JsonElement root) {
+        if (!root.isJsonObject()) return true;
+        JsonElement model = root.getAsJsonObject().get("model");
+        return model == null || !model.isJsonObject()
+                || !"hbm:machine_obj".equals(string(model.getAsJsonObject(), "type", ""));
     }
 
      /^ Reads both direct special models and the component-select form used by metadata-backed items. ^/
@@ -144,6 +154,10 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         JsonElement model = root.getAsJsonObject().get("model");
         if (model == null || !model.isJsonObject()) return out;
         JsonObject modelObject = model.getAsJsonObject();
+        if ("hbm:machine_obj".equals(string(modelObject, "type", ""))) {
+            out.put(-1, modelObject);
+            return out;
+        }
         if ("minecraft:special".equals(string(modelObject, "type", ""))) {
             JsonObject machine = machineObjFromSpecial(modelObject);
             if (machine != null) out.put(-1, machine);
@@ -222,15 +236,18 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 f(json, "scale", 1F), f(json, "yaw", 0F), f(json, "lift", -0.5F));
     }
 
-    private static MachineItemModel parse(JsonObject json) {
+    private static MachineItemModel parse(JsonObject json, boolean blockFramed) {
         WavefrontObj obj = WavefrontObj.load(id(json, "obj", null));
         Identifier texture = id(json, "texture", DEFAULT_TEXTURE);
         boolean noCull = bool(json, "noCull", false);
         Identifier overlayTexture = id(json, "overlayTexture", null);
         List<Float> pivot = floats(json, "rotatePivot");
         List<Float> spinPivot = floats(json, "spinPivot");
+        List<Float> itemTranslate = floats(json, "itemTranslate");
+        List<Float> itemPreTranslate = floats(json, "itemPreTranslate");
+        List<Float> guiTranslate = floats(json, "guiTranslate");
 
-        Map<String, RenderType> materialTypes = Map.of();
+         Map<String, RenderType> materialTypes = Map.of();
         if (bool(json, "mtl", false)) {
             // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
             Identifier objId = id(json, "obj", null);
@@ -241,30 +258,62 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 Identifier tex = lib.get(mat);
                 if (tex != null) resolved.put(mat, cutout(tex, noCull));
             }
-            materialTypes = resolved;
-        }
+                   materialTypes = resolved;
+         }
+         List<String> blackParts = strings(json, "blackParts");
+         Map<String, MachineItemModel.ContextTransform> contextTransforms = contextTransforms(json);
 
-        return new MachineItemModel(
-                obj,
-                cutout(texture, noCull),
-                f(json, "scale", 0.28F),
-                f(json, "yaw", 90.0F),
+          return new MachineItemModel(
+                 obj,
+                 cutout(texture, noCull),
+                 f(json, "scale", 0.28F),
+                 bool(json, "rawLegacyTransform", false),
+                 blockFramed,
+                 f(json, "yaw", 90.0F),
                 f(json, "pitch", 0.0F),
-                f(json, "ty", 0.0F),
-                Set.copyOf(strings(json, "exclude")),
-                overlayTexture == null ? null : cutout(overlayTexture, noCull),
-                strings(json, "overlayParts"),
-                strings(json, "rotateParts"),
+                 f(json, "ty", 0.0F),
+                 itemTranslate.size() == 3 ? new Vector3f(itemTranslate.get(0), itemTranslate.get(1), itemTranslate.get(2)) : new Vector3f(),
+                 itemPreTranslate.size() == 3 ? new Vector3f(itemPreTranslate.get(0), itemPreTranslate.get(1), itemPreTranslate.get(2)) : new Vector3f(),
+                  guiTranslate.size() == 3 ? new Vector3f(guiTranslate.get(0), guiTranslate.get(1), guiTranslate.get(2)) : new Vector3f(),
+                  f(json, "guiScale", 1.0F), f(json, "guiYaw", 0.0F),
+                 Set.copyOf(strings(json, "exclude")),
+                 overlayTexture == null ? null : cutout(overlayTexture, noCull),
+                 strings(json, "overlayParts"),
+                 blackParts.isEmpty() ? null : CompatRenderTypes.entitySolid(
+                         dev.golem.core.Ids.of("hbm", "textures/models/misc/white.png")),
+                 blackParts,
+                 strings(json, "rotateParts"),
                 f(json, "rotateX", 0.0F),
                 pivot.size() == 3 ? new Vector3f(pivot.get(0), pivot.get(1), pivot.get(2)) : new Vector3f(),
-                strings(json, "spinParts"),
-                spinPivot.size() == 3 ? new Vector3f(spinPivot.get(0), spinPivot.get(1), spinPivot.get(2)) : new Vector3f(),
-                materialTypes,
-                bool(json, "spin", false));
+                 strings(json, "spinParts"),
+                 spinPivot.size() == 3 ? new Vector3f(spinPivot.get(0), spinPivot.get(1), spinPivot.get(2)) : new Vector3f(),
+                  materialTypes,
+                   bool(json, "spin", false), contextTransforms, string(json, "animation", ""));
     }
 
     private static RenderType cutout(Identifier texture, boolean noCull) {
         return noCull ? CompatRenderTypes.entityCutoutNoCull(texture) : CompatRenderTypes.entityCutout(texture);
+    }
+
+    private static Map<String, MachineItemModel.ContextTransform> contextTransforms(JsonObject json) {
+        JsonElement value = json.get("contextTransforms");
+        if (value == null || !value.isJsonObject()) return Map.of();
+        Map<String, MachineItemModel.ContextTransform> out = new LinkedHashMap<>();
+        for (Map.Entry<String, JsonElement> entry : value.getAsJsonObject().entrySet()) {
+            if (!entry.getValue().isJsonObject()) continue;
+            JsonObject transform = entry.getValue().getAsJsonObject();
+            List<Float> rotation = floats(transform, "rotation");
+            List<Float> translation = floats(transform, "translation");
+            out.put(entry.getKey(), new MachineItemModel.ContextTransform(
+                    vector(rotation), vector(translation), f(transform, "scale", 1F)));
+        }
+        return Map.copyOf(out);
+    }
+
+    private static Vector3f vector(List<Float> values) {
+        return values.size() == 3
+                ? new Vector3f(values.get(0), values.get(1), values.get(2))
+                : new Vector3f();
     }
 
     private static String string(JsonObject json, String key, String fallback) {

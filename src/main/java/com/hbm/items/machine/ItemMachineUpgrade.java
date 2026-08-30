@@ -66,6 +66,10 @@ public class ItemMachineUpgrade extends CompatItem {
             tooltip.add(Component.literal(" ").append(Component.translatable("desc.upgrade15")));
             tooltip.add(Component.literal(" ").append(Component.translatable("desc.upgrade16")));
             tooltip.add(Component.literal(" ").append(Component.translatable("desc.upgrade17")));
+        } else if (this == com.hbm.items.ModUpgradeItems.upgrade_gc_speed.get()) {
+            tooltip.add(Component.literal("Gas Centrifuge Upgrade").withStyle(net.minecraft.ChatFormatting.RED));
+            tooltip.add(Component.literal("Allows total isotopic separation of HEUF6"));
+            tooltip.add(Component.literal("Also makes the centrifuge go sicko mode").withStyle(net.minecraft.ChatFormatting.YELLOW));
         }
     }
 

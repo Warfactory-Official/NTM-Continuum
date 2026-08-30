@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:plates/steel",
+    "C": "hbm:coil_copper",
+    "I": "#c:ingots/iron",
+    "F": "minecraft:furnace"
+  },
+  "pattern": [
+    "PPP",
+    "CFC",
+    "I I"
+  ],
+  "result": {
+    "id": "hbm:machine_wood_burner"
+  }
+}

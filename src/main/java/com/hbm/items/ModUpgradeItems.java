@@ -52,6 +52,8 @@ public final class ModUpgradeItems {
     /** The mining-laser centrifuge step; matched outputs replace the raw drop, while a recipe miss passes through. */
     public static final RegistryObject<ItemMachineUpgrade> upgrade_centrifuge = upgrade("upgrade_centrifuge", UpgradeType.SPECIAL, 0);
     public static final RegistryObject<ItemMachineUpgrade> upgrade_crystallizer = upgrade("upgrade_crystallizer", UpgradeType.SPECIAL, 0);
+    /** Gas centrifuge overclock: permits the terminal HEUF6 separation and shortens its processing time. */
+    public static final RegistryObject<ItemMachineUpgrade> upgrade_gc_speed = upgrade("upgrade_gc_speed", UpgradeType.SPECIAL, 0);
     /** The Screaming Scientist upgrade — in the mining laser: ×4 cycles, ×4 speed, ×20 consumption, and
      * screams at the mined block each tick (1.12.2 {@code upgrade_screm}). */
     public static final RegistryObject<ItemMachineUpgrade> upgrade_screm = upgrade("upgrade_screm", UpgradeType.SCREAM, 1);

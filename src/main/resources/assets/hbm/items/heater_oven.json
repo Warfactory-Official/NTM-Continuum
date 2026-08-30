@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/heating_oven.obj",
+      "texture": "hbm:textures/models/machines/heating_oven.png",
+      "scale": 0.329411765,
+      "yaw": 180,
+      "ty": 0.0
+    }
+  }
+}

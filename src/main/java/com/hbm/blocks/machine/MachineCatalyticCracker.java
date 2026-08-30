@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -12,7 +12,6 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticCracker;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -111,15 +110,15 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         BlockPos core = findCore(level, pos);
-        if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineCatalyticCracker cracker)) return;
+        if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineCatalyticCracker cracker)) return null;
 
         List<String> text = new ArrayList<>();
         for (FluidTankNTM tank : cracker.tanks) {
             text.add(tank.getTankType().getDisplayNameString() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
         }
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @SuppressWarnings("unchecked")

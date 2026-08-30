@@ -2,11 +2,10 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterElectric;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -94,14 +93,14 @@ public class HeaterElectric extends BlockDummyable implements IEnergyConnectorBl
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityHeaterElectric heater)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntityHeaterElectric heater)) return null;
 
         List<String> text = new ArrayList<>();
         text.add(String.format("%,d", heater.heatEnergy) + " TU");
         text.add("§7Setting: " + heater.setting);
         text.add("§a-> §r" + heater.getConsumption() + " HE/t");
         text.add("§c<- §r" + heater.getHeatGen() + " TU/t");
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 }

@@ -2,7 +2,7 @@ package com.hbm.blocks.machine.fusion;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
@@ -68,8 +68,8 @@ public class MachineFusionBoiler extends BlockDummyable implements ILookOverlay,
      * it the boiler is completely opaque - it has no GUI of its own.
      */
     @Override
-    public void printHook(net.minecraft.client.gui.GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityFusionBoiler boiler)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntityFusionBoiler boiler)) return null;
 
         java.util.List<String> text = new java.util.ArrayList<>();
         text.add("§a-> §r" + String.format(java.util.Locale.US, "%,d", boiler.plasmaEnergy) + " TU");
@@ -79,7 +79,7 @@ public class MachineFusionBoiler extends BlockDummyable implements ILookOverlay,
                     + ": " + String.format(java.util.Locale.US, "%,d", tanks[i].getFill())
                     + "/" + String.format(java.util.Locale.US, "%,d", tanks[i].getMaxFill()) + " mB");
         }
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @Override

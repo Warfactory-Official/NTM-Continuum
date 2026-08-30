@@ -1,0 +1,372 @@
+package com.hbm.tileentity.machine;
+
+import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.inventory.fluid.FluidCombustion;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.container.ContainerMachineTurbineGas;
+import com.hbm.items.machine.IItemFluidId;
+import com.hbm.lib.DirPos;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.lib.Library;
+import com.hbm.sound.ModSounds;
+import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.tileentity.TileEntityMachineBase;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/** The legacy gas turbine: a slow-starting gas generator with a steam heat exchanger. */
+public class TileEntityMachineTurbineGas extends TileEntityMachineBase
+        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, MenuProvider {
+
+    public static final long MAX_POWER = 1_000_000L;
+
+    public final FluidTankNTM[] tanks = {
+            new FluidTankNTM(Fluids.GAS, 100_000),
+            new FluidTankNTM(Fluids.LUBRICANT, 16_000),
+            new FluidTankNTM(Fluids.WATER, 16_000),
+            new FluidTankNTM(Fluids.HOTSTEAM, 160_000)
+    };
+    public long power;
+    public int rpm;
+    public int temp;
+    public int rpmIdle = 10;
+    public int tempIdle = 300;
+    public int powerSliderPos;
+    public int throttle;
+    public boolean autoMode;
+    public int state;
+    public int counter;
+    public int instantPowerOutput;
+    public double waterToBoil;
+
+    private int rpmLast;
+    private int tempLast;
+    private double fuelToConsume;
+    private long powerBeforeNet;
+
+    private static final Map<FluidType, Double> FUEL_MAX_CONSUMPTION = new HashMap<>();
+
+    static {
+        FUEL_MAX_CONSUMPTION.put(Fluids.GAS, 50D);
+        FUEL_MAX_CONSUMPTION.put(Fluids.SYNGAS, 10D);
+        FUEL_MAX_CONSUMPTION.put(Fluids.OXYHYDROGEN, 100D);
+        FUEL_MAX_CONSUMPTION.put(Fluids.REFORMGAS, 5D);
+    }
+
+    public TileEntityMachineTurbineGas(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.MACHINE_TURBINE_GAS.get(), pos, state, 2);
+    }
+
+    public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbineGas turbine) {
+        turbine.waterToBoil = 0D;
+        turbine.throttle = turbine.powerSliderPos * 100 / 60;
+        turbine.updateFuelType();
+
+        if (turbine.autoMode) {
+            int target = 60 - (int) (60D * turbine.power / MAX_POWER);
+            if (target > turbine.powerSliderPos) turbine.powerSliderPos++;
+            else if (target < turbine.powerSliderPos) turbine.powerSliderPos--;
+        }
+
+        switch (turbine.state) {
+            case 0 -> turbine.shutdown();
+            case -1 -> {
+                turbine.stopIfNotReady();
+                turbine.startup(level);
+            }
+            case 1 -> {
+                turbine.stopIfNotReady();
+                turbine.run(level);
+            }
+            default -> { }
+        }
+
+        ForgeDirection dir = turbine.getFacing();
+        turbine.powerBeforeNet = Math.min(turbine.power, MAX_POWER);
+        turbine.power = Library.chargeItemsFromTE(turbine.inventory, 0, turbine.power, MAX_POWER);
+        DirPos power = turbine.getPowerPos();
+        turbine.tryProvide(level, power.getPos(), power.getDir());
+        turbine.power = Math.min(turbine.power, MAX_POWER);
+
+        for (DirPos connection : turbine.getFuelPos()) turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection);
+        for (DirPos connection : turbine.getLubePos()) turbine.trySubscribe(turbine.tanks[1].getTankType(), level, connection);
+        for (DirPos connection : turbine.getWaterPos()) turbine.trySubscribe(turbine.tanks[2].getTankType(), level, connection);
+        turbine.tryProvide(turbine.tanks[3], level, turbine.getSteamPos());
+        turbine.networkPackNT();
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbineGas turbine) {
+        com.hbm.client.sound.GasTurbineSoundHandler.tickLoop(turbine);
+    }
+
+    private void updateFuelType() {
+        ItemStack id = inventory.getStackInSlot(1);
+        if (!(id.getItem() instanceof IItemFluidId identifier)) return;
+        FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
+        FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(type);
+        if (fuel != null && fuel.grade() == FluidCombustion.FuelGrade.GAS) tanks[0].setTankType(type);
+    }
+
+    private void stopIfNotReady() {
+        if (tanks[0].getFill() == 0 || tanks[1].getFill() == 0 || !hasAcceptableFuel()) state = 0;
+    }
+
+    public boolean hasAcceptableFuel() {
+        FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(tanks[0].getTankType());
+        return fuel != null && fuel.grade() == FluidCombustion.FuelGrade.GAS;
+    }
+
+    /** Menu controls: 0 ignition, 1 automatic load-following, 1000..1060 slider position. */
+    public void handleButton(int id) {
+        if (id == 0 && (counter == 0 || counter == 579)) state = state - 1;
+        else if (id == 1 && state == 1) autoMode = !autoMode;
+        else if (id == 2 && state == 1) autoMode = false;
+        else if (id >= 1000 && id <= 1060 && state == 1) {
+            powerSliderPos = id - 1000;
+            autoMode = false;
+        } else return;
+        setChanged();
+    }
+
+    private void startup(Level level) {
+        counter++;
+        if (counter <= 20) rpm = 5 * counter;
+        else if (counter <= 40) rpm = 100 - 5 * (counter - 20);
+        else if (counter > 50) {
+            rpm = rpmIdle * (counter - 50) / 530;
+            temp = tempIdle * (counter - 50) / 530;
+        }
+        if (counter == 50) level.playSound(null, worldPosition.above(2), ModSounds.TURBINE_GAS_STARTUP.get(),
+                SoundSource.BLOCKS, 1F, 1F);
+        if (counter == 580) state = 1;
+    }
+
+    private void shutdown() {
+        autoMode = false;
+        instantPowerOutput = 0;
+        if (powerSliderPos > 0) powerSliderPos--;
+
+        if (rpm <= 10 && counter > 0) {
+            if (counter == 225) {
+                if (level != null) level.playSound(null, worldPosition.above(2), ModSounds.TURBINE_GAS_SHUTDOWN.get(),
+                        SoundSource.BLOCKS, 1F, 1F);
+                rpmLast = rpm;
+                tempLast = temp;
+            }
+            counter--;
+            rpm = rpmLast * counter / 225;
+            temp = tempLast * counter / 225;
+        } else if (rpm > 11) {
+            counter = 42069;
+            rpm--;
+        } else if (rpm == 11) {
+            counter = 225;
+            rpm--;
+        }
+    }
+
+    protected int getFluidBurnTemp(FluidType type) {
+        FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(type);
+        double energy = fuel == null ? 0D : fuel.energyPerBucket();
+        return (int) Math.floor(800D - Math.exp(-energy / 100_000D) * 300D);
+    }
+
+    private void run(Level level) {
+        if ((int) (throttle * 0.9D) > rpm - rpmIdle) {
+            if (level.getGameTime() % 5 == 0) rpm++;
+        } else if ((int) (throttle * 0.9D) < rpm - rpmIdle && level.getGameTime() % 2 == 0) {
+            rpm--;
+        }
+
+        int maxTemp = getFluidBurnTemp(tanks[0].getTankType());
+        int heatTarget = throttle * 5 * (maxTemp - tempIdle) / 500;
+        if (heatTarget > temp - tempIdle && level.getGameTime() % 2 == 0) temp++;
+        else if (heatTarget < temp - tempIdle && level.getGameTime() % 2 == 0) temp--;
+        makePower(level, FUEL_MAX_CONSUMPTION.getOrDefault(tanks[0].getTankType(), 5D), throttle);
+    }
+
+    private void makePower(Level level, double maxConsumption, int throttle) {
+        double consumption = maxConsumption * 0.05D + maxConsumption * throttle / 100D;
+        fuelToConsume += consumption;
+        int consumed = (int) Math.floor(fuelToConsume);
+        tanks[0].setFill(tanks[0].getFill() - consumed);
+        fuelToConsume -= consumed;
+        if (level.getGameTime() % 10 == 0) tanks[1].setFill(tanks[1].getFill() - 1);
+        if (tanks[0].getFill() < 0) {
+            tanks[0].setFill(0);
+            state = 0;
+        }
+        if (tanks[1].getFill() < 0) {
+            tanks[1].setFill(0);
+            state = 0;
+        }
+
+        FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(tanks[0].getTankType());
+        long energy = fuel == null ? 0L : fuel.energyPerBucket() / 1000L;
+        int rpmEfficiency = rpm - rpmIdle;
+        double target = maxConsumption * energy * rpmEfficiency / 90D;
+        if (instantPowerOutput < target) {
+            instantPowerOutput += Math.random() * 0.005D * maxConsumption * energy;
+            if (instantPowerOutput > target) instantPowerOutput = (int) target;
+        } else if (instantPowerOutput > target) {
+            instantPowerOutput -= Math.random() * 0.011D * maxConsumption * energy;
+            if (instantPowerOutput < target) instantPowerOutput = (int) target;
+        }
+        power += instantPowerOutput;
+
+        waterToBoil = maxConsumption * energy * (temp - tempIdle) / 220_000D;
+        int heatCycles = (int) Math.floor(waterToBoil);
+        int waterCycles = tanks[2].getFill();
+        int steamCycles = (tanks[3].getMaxFill() - tanks[3].getFill()) / 10;
+        int cycles = Math.min(heatCycles, Math.min(waterCycles, steamCycles));
+        tanks[2].setFill(tanks[2].getFill() - cycles);
+        tanks[3].setFill(tanks[3].getFill() + cycles * 10);
+    }
+
+    public ForgeDirection getFacing() {
+        int meta = getBlockState().hasProperty(com.hbm.blocks.BlockDummyable.META)
+                ? getBlockState().getValue(com.hbm.blocks.BlockDummyable.META) : com.hbm.blocks.BlockDummyable.offset + 2;
+        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+    }
+
+    public DirPos getPowerPos() {
+        ForgeDirection dir = getFacing();
+        return new DirPos(worldPosition.getX() - dir.offsetZ * 5, worldPosition.getY() + 1,
+                worldPosition.getZ() + dir.offsetX * 5, dir.getRotation(ForgeDirection.UP));
+    }
+
+    public DirPos[] getFuelPos() { return getInputPair(2, 1); }
+    public DirPos[] getLubePos() { return getInputPair(2, 1); }
+
+    private DirPos[] getInputPair(int distance, int rotationDistance) {
+        ForgeDirection dir = getFacing();
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+        return new DirPos[]{
+                new DirPos(worldPosition.getX() - dir.offsetX * distance + rot.offsetX * rotationDistance, worldPosition.getY(),
+                        worldPosition.getZ() - dir.offsetZ * distance + rot.offsetZ * rotationDistance, dir.getOpposite()),
+                new DirPos(worldPosition.getX() + dir.offsetX * distance + rot.offsetX * rotationDistance, worldPosition.getY(),
+                        worldPosition.getZ() + dir.offsetZ * distance + rot.offsetZ * rotationDistance, dir)
+        };
+    }
+
+    public DirPos[] getWaterPos() {
+        ForgeDirection dir = getFacing();
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+        return new DirPos[]{
+                new DirPos(worldPosition.getX() - dir.offsetX * 2 - rot.offsetX * 4, worldPosition.getY(),
+                        worldPosition.getZ() - dir.offsetZ * 2 - rot.offsetZ * 4, dir.getOpposite()),
+                new DirPos(worldPosition.getX() + dir.offsetX * 2 - rot.offsetX * 4, worldPosition.getY(),
+                        worldPosition.getZ() + dir.offsetZ * 2 - rot.offsetZ * 4, dir)
+        };
+    }
+
+    public DirPos getSteamPos() {
+        ForgeDirection dir = getFacing();
+        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+        return new DirPos(worldPosition.getX() + dir.offsetZ * 6, worldPosition.getY() + 1,
+                worldPosition.getZ() - dir.offsetX * 6, rot.getOpposite());
+    }
+
+    /** All connection anchors, in legacy order: power, fuel/lube, water, steam. */
+    public DirPos[] getConPos() {
+        DirPos[] fuel = getFuelPos();
+        DirPos[] water = getWaterPos();
+        return new DirPos[]{getPowerPos(), fuel[0], fuel[1], water[0], water[1], getSteamPos()};
+    }
+
+    public boolean isPort(BlockPos pos, ForgeDirection dir) {
+        for (DirPos connection : getConPos()) {
+            if (connection.getPos().equals(pos) && connection.getDir() == dir) return true;
+        }
+        return false;
+    }
+
+    public boolean isFluidPort(BlockPos pos, ForgeDirection dir) {
+        DirPos[] ports = {
+                getFuelPos()[0], getFuelPos()[1], getWaterPos()[0], getWaterPos()[1], getSteamPos()
+        };
+        return com.hbm.api.energymk2.IEnergyConnectorBlock.isPort(ports, pos, dir);
+    }
+
+    @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return dir != ForgeDirection.DOWN; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0], tanks[1], tanks[2]}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[3]}; }
+    @Override public FluidTankNTM[] getAllTanks() { return tanks; }
+    @Override public long getPower() { return power; }
+    @Override public void setPower(long value) { power = value; }
+    @Override public long getMaxPower() { return MAX_POWER; }
+    @Override public boolean isItemValidForSlot(int slot, ItemStack stack) {
+        return slot == 0 ? Library.isBattery(stack) : stack.getItem() instanceof IItemFluidId;
+    }
+    @Override public String getDefaultName() { return "container.turbinegas"; }
+    @Override public Component getDisplayName() { return Component.translatable(getDefaultName()); }
+    @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+        return new ContainerMachineTurbineGas(id, inventory, this);
+    }
+
+    @Override public void serialize(RegistryFriendlyByteBuf buf) {
+        super.serialize(buf);
+        buf.writeLong(powerBeforeNet);
+        buf.writeInt(rpm);
+        buf.writeInt(temp);
+        buf.writeInt(state);
+        buf.writeBoolean(autoMode);
+        buf.writeInt(throttle);
+        buf.writeInt(powerSliderPos);
+        buf.writeInt(state == 1 ? instantPowerOutput : counter);
+        for (FluidTankNTM tank : tanks) tank.serialize(buf);
+    }
+    @Override public void deserialize(RegistryFriendlyByteBuf buf) {
+        super.deserialize(buf);
+        power = buf.readLong();
+        rpm = buf.readInt();
+        temp = buf.readInt();
+        state = buf.readInt();
+        autoMode = buf.readBoolean();
+        throttle = buf.readInt();
+        powerSliderPos = buf.readInt();
+        if (state == 1) instantPowerOutput = buf.readInt(); else counter = buf.readInt();
+        for (FluidTankNTM tank : tanks) tank.deserialize(buf);
+    }
+    @Override protected void saveData(DataOut output) {
+        super.saveData(output);
+        for (int i = 0; i < tanks.length; i++) tanks[i].writeToNBT(output, switch (i) {
+            case 0 -> "gas"; case 1 -> "lube"; case 2 -> "water"; default -> "densesteam";
+        });
+        output.putBoolean("automode", autoMode);
+        output.putLong("power", power);
+        output.putInt("state", state == 1 ? state : 0);
+        output.putInt("rpm", state == 1 ? rpm : 0);
+        output.putInt("temperature", state == 1 ? temp : 20);
+        output.putInt("slidPos", state == 1 ? powerSliderPos : 0);
+        output.putInt("instPwr", state == 1 ? instantPowerOutput : 0);
+        output.putInt("counter", state == 1 ? 225 : 0);
+    }
+    @Override protected void loadData(DataIn input) {
+        super.loadData(input);
+        tanks[0].readFromNBT(input, "gas"); tanks[1].readFromNBT(input, "lube");
+        tanks[2].readFromNBT(input, "water"); tanks[3].readFromNBT(input, "densesteam");
+        autoMode = input.getBooleanOr("automode", false);
+        power = input.getLongOr("power", 0L); state = input.getIntOr("state", 0);
+        rpm = input.getIntOr("rpm", 0); temp = input.getIntOr("temperature", 20);
+        powerSliderPos = input.getIntOr("slidPos", 0); instantPowerOutput = input.getIntOr("instPwr", 0);
+        counter = input.getIntOr("counter", 0);
+    }
+}

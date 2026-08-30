@@ -1,6 +1,76 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
+data class MachineObjTransformExpectation(
+    val scale: Double,
+    val yaw: Double,
+    val ty: Double = 0.0,
+    val guiTranslate: List<Double> = listOf(0.0, 0.0, 0.0),
+    val guiScale: Double = 1.0,
+    val guiYaw: Double = 0.0,
+    val animation: String = "",
+    val obj: String? = null,
+    val texture: String? = null,
+    val noCull: Boolean? = null,
+    val exclude: List<String>? = null,
+    val overlayTexture: String? = null,
+    val overlayParts: List<String>? = null,
+    val blackParts: List<String>? = null,
+    val specialBase: String = MACHINE_OBJ_ITEM_BASE,
+    val directModel: Boolean = false,
+)
+
+val RTG_BLOCKSTATE_IDS = listOf("machine_minirtg", "rtg_polonium")
+val MACHINE_OBJ_ITEM_BASE = "hbm:item/machine_obj_base"
+
+/** Centered item scales derived from submitted OBJ bounds, using the assembly machine's 1.05-unit frame. */
+val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
+    "fusion_breeder" to MachineObjTransformExpectation(0.21, 90.0, exclude = listOf("BreederAlt")),
+    "fusion_plasma_forge" to MachineObjTransformExpectation(
+        0.095454545, 90.0,
+        obj = "hbm:models/fusion/plasma_forge.obj",
+        texture = "hbm:textures/models/fusion/plasma_forge.png",
+        exclude = listOf("Plasma"),
+        blackParts = listOf("Plasma"),
+    ),
+    "machine_turbine_gas" to MachineObjTransformExpectation(0.105, 90.0),
+    "machine_turbofan" to MachineObjTransformExpectation(
+        0.15, 0.0,
+        overlayTexture = "hbm:textures/models/machines/turbofan_back.png",
+        overlayParts = listOf("Afterburner"),
+    ),
+    "machine_radgen" to MachineObjTransformExpectation(0.171428571, 0.0, exclude = listOf("Glass")),
+    "machine_industrial_boiler" to MachineObjTransformExpectation(0.21, 90.0),
+    "heat_boiler" to MachineObjTransformExpectation(0.2625, 0.0),
+    "heater_oven" to MachineObjTransformExpectation(0.329411765, 180.0),
+    "furnace_iron" to MachineObjTransformExpectation(0.525, 90.0, exclude = listOf("On")),
+    "furnace_steel" to MachineObjTransformExpectation(0.35, 0.0),
+    "machine_wood_burner" to MachineObjTransformExpectation(0.266666667, 90.0),
+    "machine_gascent" to MachineObjTransformExpectation(0.2625, 0.0),
+    "machine_electrolyser" to MachineObjTransformExpectation(0.091290059, 0.0),
+    "machine_deuterium_tower" to MachineObjTransformExpectation(0.099275384, 180.0),
+    "machine_uf6_tank" to MachineObjTransformExpectation(0.525, 270.0),
+    "machine_puf6_tank" to MachineObjTransformExpectation(0.525, 270.0),
+    "machine_mixer" to MachineObjTransformExpectation(0.35, 180.0, exclude = listOf("Fluid")),
+    "machine_exposure_chamber" to MachineObjTransformExpectation(0.095454545, 90.0),
+    "machine_pump_electric" to MachineObjTransformExpectation(0.21, 0.0, animation = "pump"),
+    "machine_pump_steam" to MachineObjTransformExpectation(0.21, 0.0, animation = "pump"),
+    "machine_minirtg" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        obj = "hbm:models/machines/rtg.obj",
+        texture = "hbm:textures/models/machines/rtg_cell.png",
+        noCull = true,
+        exclude = emptyList(),
+    ),
+    "rtg_polonium" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        obj = "hbm:models/machines/rtg.obj",
+        texture = "hbm:textures/models/machines/rtg_polonium.png",
+        noCull = true,
+        exclude = emptyList(),
+    ),
+)
+
 /**
  * Converts client assets written in the 26.1 layout into the pre-1.21.4 layout.
  *
@@ -28,6 +98,12 @@ import groovy.json.JsonSlurper
  * report `isCustomRenderer()` and route the item to the loader's BEWLR / DynamicItemRenderer.
  */
 val MACHINE_OBJ_LEGACY_MODEL = "hbm:item/machine_obj_legacy"
+
+/**
+ * Marker for context-aware machine OBJ definitions. Its display block is the exact perspective matrix
+ * used by the old StaticWavefrontItemBakedModel/ItemRenderBase path.
+ */
+val MACHINE_OBJ_CONTEXT_LEGACY_MODEL = "hbm:item/machine_obj_context_legacy"
 
 /**
  * The same marker for a Sedna gun. `hbm:gun` is a whole item MODEL on 26.1 (only that layer is handed the
@@ -58,7 +134,8 @@ fun Project.applyLegacyItemAssets() {
                     // longer references (their definitions point at the OBJ renderer), and leaving it in
                     // place would render them flat here and 3D there. The same applies to a gun, whose
                     // placeholder sprite predates its OBJ renderer. Every other item defers to what ships.
-            val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent == GUN_OBJ_LEGACY_MODEL
+                    val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent == MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+                            || parent == GUN_OBJ_LEGACY_MODEL
                     if (target.exists() && !selfRendered) return@forEach
                     itemModels.mkdirs()
                     target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mapOf("parent" to parent))))
@@ -135,12 +212,146 @@ fun Project.applyLegacyItemAssets() {
 }
 
 /**
+ * Resource-level regression test for the nested machine OBJ definitions. This is deliberately
+ * independent of a client launch: it catches a wrapper/type regression and exact-value drift in every node.
+ */
+fun Project.registerMachineObjTransformChecks() {
+    val validation = tasks.register("validateMachineObjTransforms") {
+        group = "verification"
+        description = "Checks the legacy machine OBJ item transform contract."
+        doLast {
+            val directory = rootProject.file("src/main/resources/assets/hbm/items")
+            fun close(actual: Any?, expected: Double, label: String) {
+                check(actual is Number && kotlin.math.abs(actual.toDouble() - expected) < 0.000001) {
+                    "$label expected $expected but was $actual"
+                }
+            }
+            fun vector(actual: Any?, expected: List<Double>, label: String) {
+                check(actual is List<*> && actual.size == expected.size) {
+                    "$label must contain ${expected.size} values"
+                }
+                expected.forEachIndexed { index, value -> close(actual[index], value, "$label[$index]") }
+            }
+            fun strings(actual: Any?, label: String): List<String> {
+                if (actual == null) return emptyList()
+                check(actual is List<*>) { "$label must be an array" }
+                return actual.mapIndexed { index, value ->
+                    check(value is String) { "$label[$index] must be a string" }
+                    value
+                }
+            }
+            MACHINE_OBJ_TRANSFORM_EXPECTATIONS.forEach { (name, expected) ->
+                val file = File(directory, "$name.json")
+                check(file.isFile) { "Missing machine OBJ item definition: $file" }
+                @Suppress("UNCHECKED_CAST")
+                val root = JsonSlurper().parse(file) as? Map<String, Any?>
+                    ?: error("Invalid JSON object: $file")
+                @Suppress("UNCHECKED_CAST")
+                val rootModel = root["model"] as? Map<String, Any?>
+                    ?: error("Missing model object: $file")
+                check(rootModel["type"] == "minecraft:special") {
+                    "$file must use a minecraft:special wrapper"
+                }
+                check(rootModel["base"] == expected.specialBase) {
+                    "$file must use ${expected.specialBase} as its special-model base"
+                }
+                check((rootModel["type"] == "hbm:machine_obj") == expected.directModel) {
+                    "$file has the wrong item-model form"
+                }
+                @Suppress("UNCHECKED_CAST")
+                val model = when (rootModel["type"]) {
+                    "hbm:machine_obj" -> rootModel
+                    "minecraft:special" -> {
+                        check(rootModel["base"] == MACHINE_OBJ_ITEM_BASE) {
+                            "$file must use $MACHINE_OBJ_ITEM_BASE as its special-model base"
+                        }
+                        rootModel["model"] as? Map<String, Any?>
+                            ?: error("Missing nested hbm:machine_obj model: $file")
+                    }
+                    else -> error("$file must use hbm:machine_obj directly or inside minecraft:special")
+                }
+                check(model["type"] == "hbm:machine_obj") {
+                    "$file must use the hbm:machine_obj item-model type"
+                }
+                expected.obj?.let { check(model["obj"] == it) { "$name.obj expected $it but was ${model["obj"]}" } }
+                expected.texture?.let {
+                    check(model["texture"] == it) { "$name.texture expected $it but was ${model["texture"]}" }
+                }
+                expected.noCull?.let {
+                    check(model["noCull"] == it) { "$name.noCull expected $it but was ${model["noCull"]}" }
+                }
+                expected.exclude?.let {
+                    check(strings(model["exclude"], "$name.exclude") == it) {
+                        "$name.exclude expected $it but was ${model["exclude"]}"
+                    }
+                }
+                expected.overlayTexture?.let {
+                    check(model["overlayTexture"] == it) {
+                        "$name.overlayTexture expected $it but was ${model["overlayTexture"]}"
+                    }
+                }
+                expected.overlayParts?.let {
+                    check(strings(model["overlayParts"], "$name.overlayParts") == it) {
+                        "$name.overlayParts expected $it but was ${model["overlayParts"]}"
+                    }
+                }
+                expected.blackParts?.let {
+                    check(strings(model["blackParts"], "$name.blackParts") == it) {
+                        "$name.blackParts expected $it but was ${model["blackParts"]}"
+                    }
+                }
+                listOf("rawLegacyTransform", "guiTranslate", "guiScale", "guiYaw",
+                    "contextTransforms", "itemTranslate", "itemPreTranslate").forEach { field ->
+                    check(!model.containsKey(field)) {
+                        "$name must not declare legacy $field"
+                    }
+                }
+                vector(expected.guiTranslate, listOf(0.0, 0.0, 0.0), "$name.guiTranslate")
+                close(expected.guiScale, 1.0, "$name.guiScale")
+                close(expected.guiYaw, 0.0, "$name.guiYaw")
+                check(model.containsKey("ty")) { "$name must explicitly declare ty" }
+                close(model["ty"], expected.ty, "$name.ty")
+                close(model["scale"], expected.scale, "$name.scale")
+                close(model["yaw"], expected.yaw, "$name.yaw")
+                check((model["animation"] ?: "") == expected.animation) {
+                    "$name.animation expected ${expected.animation} but was ${model["animation"]}"
+                }
+            }
+
+            val blockstateDirectory = rootProject.file("src/main/resources/assets/hbm/blockstates")
+            RTG_BLOCKSTATE_IDS.forEach { name ->
+                val file = File(blockstateDirectory, "$name.json")
+                check(file.isFile) { "Missing RTG blockstate: $file" }
+                @Suppress("UNCHECKED_CAST")
+                val root = JsonSlurper().parse(file) as? Map<String, Any?>
+                    ?: error("Invalid JSON object: $file")
+                @Suppress("UNCHECKED_CAST")
+                val variants = root["variants"] as? Map<Any?, Any?>
+                    ?: error("$file must contain variants")
+                check(variants.isNotEmpty()) { "$file must contain at least one variant" }
+                variants.forEach { (variant, value) ->
+                    @Suppress("UNCHECKED_CAST")
+                    val variantModel = value as? Map<String, Any?>
+                        ?: error("$file variant $variant must be an object")
+                    check(variantModel["model"] == "hbm:block/machine_dummy_empty") {
+                        "$file variant $variant must map to hbm:block/machine_dummy_empty"
+                    }
+                }
+            }
+            logger.lifecycle("machineObjTransforms: validated ${MACHINE_OBJ_TRANSFORM_EXPECTATIONS.size} definitions and ${RTG_BLOCKSTATE_IDS.size} RTG blockstates")
+        }
+    }
+    tasks.named("check") { dependsOn(validation) }
+}
+
+/**
  * The model an item definition resolves to, as a plain parent reference, or null if this definition has
  * no single static model to fall back on.
  *
  * `minecraft:model` is the ordinary case and names its model directly.
  *
- * `minecraft:special` pairs a base model with a special renderer. For HBM's OBJ machine renderer the
+         * `hbm:machine_obj` item-model type is nested under the shared special-model base. For
+         * `minecraft:special` pairs a base model with a special renderer. For HBM's OBJ machine renderer the
  * older-version equivalent is a per-loader "render this item yourself" hook (NeoForge's BEWLR, Fabric's
  * DynamicItemRenderer) — and vanilla only consults that hook when the baked model reports
  * `isCustomRenderer()`, which is true exactly when the model's parent chain ends at
@@ -201,6 +412,7 @@ fun parentModelOf(definition: File): String? {
     val model = json["model"] as? Map<String, Any?> ?: return null
     return when (model["type"]) {
         "minecraft:model" -> model["model"] as? String
+        "hbm:machine_obj" -> MACHINE_OBJ_CONTEXT_LEGACY_MODEL
         // A gun's item model is HBM's own type, not a vanilla wrapper: it needs the builtin/entity marker.
         "hbm:gun" -> GUN_OBJ_LEGACY_MODEL
         "minecraft:special" -> {
@@ -242,3 +454,5 @@ fun needsLegacyItemAssets(mcVersion: String): Boolean {
 if (needsLegacyItemAssets(extra.properties["mc_version"] as String)) {
     applyLegacyItemAssets()
 }
+
+registerMachineObjTransformChecks()

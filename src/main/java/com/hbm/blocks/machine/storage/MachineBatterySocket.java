@@ -2,16 +2,16 @@ package com.hbm.blocks.machine.storage;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -93,8 +93,8 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
 
     /** Look-overlay: the carried battery item's charge / max (or "Empty" when no battery is inserted). */
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityBatterySocket socket)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntityBatterySocket socket)) return null;
 
         // Read the SYNCED carried stack, not getPower()/getMaxPower() — those read the slot-0 inventory
         // item, which is only synced to the client while the container is open (so the HUD would show a
@@ -112,6 +112,6 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
             double frac = (double) power / (double) max;
             text.add("&[" + Library.getColorProgress(frac) + "&]    " + Library.getPercentage(frac) + "%");
         }
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 }

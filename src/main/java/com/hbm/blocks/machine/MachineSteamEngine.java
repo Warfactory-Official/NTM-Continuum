@@ -3,16 +3,16 @@ package com.hbm.blocks.machine;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -81,14 +81,14 @@ public class MachineSteamEngine extends BlockDummyable
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         BlockPos core = findCore(level, pos);
-        if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineSteamEngine engine)) return;
+        if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineSteamEngine engine)) return null;
 
         List<String> text = new ArrayList<>();
         text.add("§a-> §r" + tankLine(engine.tanks[0]));
         text.add("§c<- §r" + tankLine(engine.tanks[1]));
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
     private static String tankLine(com.hbm.inventory.fluid.tank.FluidTankNTM tank) {

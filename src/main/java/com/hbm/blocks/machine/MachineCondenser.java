@@ -1,12 +1,12 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCondenser;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,14 +27,14 @@ public class MachineCondenser extends dev.golem.core.world.CompatBlock implement
     }
     /** Look-overlay: green {@code ->} for the incoming spent steam, red {@code <-} for the water it sends. */
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityCondenser condenser)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(level.getBlockEntity(pos) instanceof TileEntityCondenser condenser)) return null;
 
         List<String> text = new ArrayList<>();
         text.add("§a-> §r" + tankLine(condenser.input));
         text.add("§c<- §r" + tankLine(condenser.output));
 
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
     private static String tankLine(FluidTankNTM tank) {

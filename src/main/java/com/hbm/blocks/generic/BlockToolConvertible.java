@@ -1,12 +1,10 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.api.block.IToolable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.handler.NTMToolHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.util.InventoryUtil;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
@@ -50,14 +48,13 @@ public class BlockToolConvertible extends dev.golem.core.world.CompatBlock imple
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        ItemStack held = Minecraft.getInstance().player == null
-                ? ItemStack.EMPTY : Minecraft.getInstance().player.getMainHandItem();
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        ItemStack held = player.getMainHandItem();
         ToolType tool = ToolType.getType(held);
-        if (tool == null) return;
+        if (tool == null) return null;
 
         NTMToolHandler.Conversion conversion = NTMToolHandler.get(tool, this);
-        if (conversion == null) return;
+        if (conversion == null) return null;
 
         List<String> text = new ArrayList<>();
         for (AStack material : conversion.materials()) {
@@ -65,6 +62,6 @@ public class BlockToolConvertible extends dev.golem.core.world.CompatBlock imple
             if (display.isEmpty()) continue;
             text.add(display.getCount() + "x " + display.getHoverName().getString());
         }
-        ILookOverlay.printGeneric(graphics, this.getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 }

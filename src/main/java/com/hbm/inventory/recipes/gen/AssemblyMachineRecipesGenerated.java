@@ -212,6 +212,10 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.combustiongen").setup(300, 100)
                 .inputItems(STEEL.plate().count(16), CU.ingot().count(12), GOLD.wireDense().count(8), new ComparableStack(ModItems.canister_empty.get(), 4), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC)))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_combustion_engine.get())));
+        reg.registerGenerated(new GenericRecipe("ass.radgen").setup(400, 100)
+                .inputItems(STEEL.ingot().count(8), STEEL.plate().count(32), new ComparableStack(ModItems.coil_magnetized_tungsten.get(), 6), MAGTUNG.wire().count(24), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 16), new ComparableStack(ModItems.reactor_core.get(), 3), STAR.ingot(), new ComparableStack(Items.RED_DYE))
+                .outputItems(new ItemStack(ModMachineBlocks.machine_radgen.get()))
+                .setPools("discover.radgen"));
         reg.registerGenerated(new GenericRecipe("ass.capacitorgold").setup(100, 100)
                 .inputItems(STEEL.plate().count(8), GOLD.wireDense().count(16))
                 .outputItems(new ItemStack(ModBatteryItems.PACKS.get(EnumBatteryPack.CAPACITOR_GOLD).get())));
@@ -299,12 +303,12 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.thrusternerva").setup(600, 100)
                 .inputItems(DURA.ingot().count(32), B.ingot().count(8), PB.plate().count(16), STEEL.pipe().count(4))
                 .outputItems(new ItemStack(ModItems.thruster_nuclear.get())));
-        reg.registerGenerated(new GenericRecipe("ass.launchpadsilo").setup(200, 100)
-                .inputItems(STEEL.plateWelded().count(8), tag("c", "concretes", 8), ANY_HARDPLASTIC.ingot().count(16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4))
-                .outputItems(new ItemStack(ModMachineBlocks.launch_pad.get())));
     }
 
     private static void register2(GenericRecipes reg) {
+        reg.registerGenerated(new GenericRecipe("ass.launchpadsilo").setup(200, 100)
+                .inputItems(STEEL.plateWelded().count(8), tag("c", "concretes", 8), ANY_HARDPLASTIC.ingot().count(16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4))
+                .outputItems(new ItemStack(ModMachineBlocks.launch_pad.get())));
         reg.registerGenerated(new GenericRecipe("ass.lander").setup(2_400, 100)
                 .inputItems(AL.shell().count(4), RUBBER.ingot().count(16), new ComparableStack(ModFuelItems.rocket_fuel.get(), 16), new ComparableStack(ModItems.thruster_small.get(), 3), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 3), new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 12))
                 .outputItems(new ItemStack(ModItems.missile_soyuz_lander.get()))

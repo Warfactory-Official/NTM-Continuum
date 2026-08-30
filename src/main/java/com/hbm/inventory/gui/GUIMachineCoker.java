@@ -81,9 +81,12 @@ public class GUIMachineCoker extends dev.golem.core.gui.CompatContainerScreen<Co
                 return;
             }
         }
-        if (this.isHovering(61, 55, 52, 5, mouseX, mouseY)) {
+        if (this.isHovering(60, 45, 54, 7, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(String.format("%,d / %,d TU",
+                    te.progress, te.processTime))), Optional.empty(), mouseX, mouseY);
+        } else if (this.isHovering(60, 54, 54, 7, mouseX, mouseY)) {
             GuiDraw.tooltip(graphics, this.font, List.of(Component.literal(
-                    String.format("%,d", te.heat) + " / " + String.format("%,d", TileEntityMachineCoker.maxHeat) + " TU")), Optional.empty(), mouseX, mouseY);
+                    String.format("%,d / %,d TU", te.heat, TileEntityMachineCoker.maxHeat))), Optional.empty(), mouseX, mouseY);
         }
     }
 }

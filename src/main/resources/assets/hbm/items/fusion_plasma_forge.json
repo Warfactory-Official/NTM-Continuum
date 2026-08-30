@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/fusion/plasma_forge.obj",
+      "texture": "hbm:textures/models/fusion/plasma_forge.png",
+      "exclude": ["Plasma"],
+      "blackParts": ["Plasma"],
+      "scale": 0.095454545,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

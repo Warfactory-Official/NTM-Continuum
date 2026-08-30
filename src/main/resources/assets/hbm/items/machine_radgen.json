@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/radgen.obj",
+      "texture": "hbm:textures/models/machines/rad_gen_body.png",
+      "noCull": true,
+      "scale": 0.171428571,
+      "yaw": 0,
+      "ty": 0.0,
+      "exclude": ["Glass"]
+    }
+  }
+}

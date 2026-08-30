@@ -2,7 +2,7 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.client.ILookOverlay;
+import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.DirPos;
@@ -10,7 +10,6 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineDrain;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -88,12 +87,12 @@ public class MachineDrain extends BlockDummyable implements IFluidConnectorBlock
     }
 
     @Override
-    public void printHook(GuiGraphicsExtractor graphics, Level level, BlockPos pos) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachineDrain drain)) return;
+    public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
+        if (!(findCoreTE(level, pos) instanceof TileEntityMachineDrain drain)) return null;
         List<String> text = new ArrayList<>();
         text.add("§a-> §r" + drain.tank.getTankType().getDisplayNameString() + ": "
                 + drain.tank.getFill() + "/" + drain.tank.getMaxFill() + "mB");
-        ILookOverlay.printGeneric(graphics, getName().getString(), 0xffff00, 0x404000, text);
+        return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
     @Override

@@ -60,12 +60,19 @@ public final class HbmBlockEntityRenderers {
         // Fluid mixer overlay (its own texture, tinted by the recipe fluid, only while processing).
          regCustom(sink, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), ctx -> new ChemicalPlantRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_MIXER.get(), ctx -> new MixerRenderer());
+         // Mini and polonium RTGs share the legacy body; the renderer adds the four optional connectors.
+         regCustom(sink, ModBlockEntities.MACHINE_MINI_RTG.get(), ctx -> new RTGRenderer());
+         // RadGen is entirely custom-rendered, including its glass shell and running indicator.
+         regCustom(sink, ModBlockEntities.MACHINE_RAD_GEN.get(), ctx -> new RadGenRenderer());
+          regCustom(sink, ModBlockEntities.FUSION_PLASMA_FORGE.get(), ctx -> new PlasmaForgeRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_EXPOSURE_CHAMBER.get(), ctx -> new ExposureChamberRenderer());
         // Blast furnace: static body, with the legacy yaw map (base 90° + the standard facing map).
         regCustom(sink, ModBlockEntities.MACHINE_BLAST_FURNACE.get(), ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityMachineBlastFurnace>(90F, 1F,
                 new ModelDef(obj("machines/blast_furnace.obj"), tex("machines/blast_furnace.png"))).doubleSided());
         regCustom(sink, ModBlockEntities.MACHINE_INDUSTRIAL_TURBINE.get(), ctx -> new IndustrialTurbineRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_LARGE_TURBINE.get(), ctx -> new LargeTurbineRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_TURBINE_GAS.get(), ctx -> new GasTurbineRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_TURBOFAN.get(), ctx -> new TurbofanRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_STEAM_ENGINE.get(), ctx -> new SteamEngineRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_PUMP_ELECTRIC.get(), ctx -> new PumpRenderer<com.hbm.tileentity.machine.TileEntityMachinePumpElectric>(
                  tex("machines/pump_electric.png")));
@@ -94,8 +101,13 @@ public final class HbmBlockEntityRenderers {
         // Ore acidizer: static Body + rotating Spinner + the tinted acid overlay while processing.
          regCustom(sink, ModBlockEntities.MACHINE_CRYSTALLIZER.get(), ctx -> new CrystallizerRenderer());
          // Standard centrifuge: static tower, with the legacy N/S/W/E core yaw map.
-         reg(sink, ModBlockEntities.MACHINE_CENTRIFUGE.get(), 0F, 1F,
-                 new ModelDef(obj("machines/centrifuge.obj"), tex("machines/centrifuge_new.png")));
+          reg(sink, ModBlockEntities.MACHINE_CENTRIFUGE.get(), 0F, 1F,
+                  new ModelDef(obj("machines/centrifuge.obj"), tex("machines/centrifuge_new.png")));
+          // Gas centrifuge: old yaw map N270/S90/W0/E180 = built-in facing map + 270 degrees.
+          reg(sink, ModBlockEntities.MACHINE_GAS_CENT.get(), 270F, 1F,
+                   new ModelDef(obj("machines/centrifuge_gas.obj"), tex("machines/centrifuge_gas.png")));
+           reg(sink, ModBlockEntities.MACHINE_ELECTROLYSER.get(), 180F, 1F,
+                   new ModelDef(obj("machines/electrolyser.obj"), tex("machines/electrolyser.png")));
          regCustom(sink, ModBlockEntities.MACHINE_MINING_LASER.get(), ctx -> new MiningLaserRenderer());
 
         // Watz: upstream had no TESR for it at all — it was a StaticTesrBakedModels entry whose yaw map
@@ -121,6 +133,8 @@ public final class HbmBlockEntityRenderers {
                 new ModelDef(obj("fusion/collector.obj"), tex("fusion/collector.png")));
         reg(sink, ModBlockEntities.FUSION_BOILER.get(), 90F, 1F,
                 new ModelDef(obj("fusion/boiler.obj"), tex("fusion/boiler.png")));
+        reg(sink, ModBlockEntities.FUSION_BREEDER.get(), 90F, 1F,
+                new ModelDef(obj("fusion/breeder.obj"), tex("fusion/breeder.png")));
 
         // The klystron's model is authored one block off its core, and its fan spins about the machine
         // axis at a pivot 2.5 up. The "Pipes" group is deliberately not drawn, as upstream does not.
@@ -222,7 +236,10 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModBlockEntities.MACHINE_COMPRESSOR.get(), ctx -> new CompressorRenderer());
 
         // Heat boiler: static OBJ + the burst husk + the near-full wobble (own renderer).
-        regCustom(sink, ModBlockEntities.HEAT_BOILER.get(), ctx -> new HeatBoilerRenderer());
+         regCustom(sink, ModBlockEntities.HEAT_BOILER.get(), ctx -> new HeatBoilerRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_INDUSTRIAL_BOILER.get(),
+                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial>(0F, 1F,
+                         new ModelDef(obj("machines/industrial_boiler.obj"), tex("machines/industrial_boiler.png"))).ignoreFacing());
         // Oilburner: static OBJ; the old yaw map is all zeros -> facing-independent.
         regCustom(sink, ModBlockEntities.HEATER_OILBURNER.get(),
                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityHeaterOilburner>(0F, 1F,
@@ -241,7 +258,14 @@ public final class HbmBlockEntityRenderers {
          // Fluid tank: a BlockDummyable multiblock with its own renderer — the cylinder body is textured
          // per-fluid (tank/tank_<name>.png, NONE -> tank_none) while the frame stays machines/tank.png, so
          // it can't use the single-texture-per-part generic renderer. (Base yaw 180°; see FluidTankRenderer.)
-         regCustom(sink, ModBlockEntities.FLUID_TANK.get(), ctx -> new FluidTankRenderer());
+          regCustom(sink, ModBlockEntities.FLUID_TANK.get(), ctx -> new FluidTankRenderer());
+          reg(sink, ModBlockEntities.MACHINE_UF6_TANK.get(), 0F, 1F,
+                  new ModelDef(obj("tank.obj"), tex("machines/uf6tank.png")));
+          reg(sink, ModBlockEntities.MACHINE_PUF6_TANK.get(), 0F, 1F,
+                  new ModelDef(obj("tank.obj"), tex("machines/puf6tank.png")));
+           reg(sink, ModBlockEntities.MACHINE_DEUTERIUM_TOWER.get(), 180F, 1F, 0.5F, -0.5F,
+                   new ModelDef(obj("machines/machine_deuterium_tower.obj"),
+                           tex("machines/machine_deuterium_tower.png")));
          // Drain: legacy yaw map is the standard facing map + 90 degrees.
          regCustom(sink, ModBlockEntities.MACHINE_DRAIN.get(), ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityMachineDrain>(90F, 1F,
                  new ModelDef(obj("machines/drain.obj"), tex("machines/drain.png"))));
@@ -252,8 +276,16 @@ public final class HbmBlockEntityRenderers {
         // Crucible: basin OBJ + molten pool surface + the two pour streams.
         regCustom(sink, ModBlockEntities.MACHINE_CRUCIBLE.get(), ctx -> new CrucibleRenderer());
 
-        // Firebox: body + door + the burning/empty interior.
-        regCustom(sink, ModBlockEntities.HEATER_FIREBOX.get(), ctx -> new FireboxRenderer<>());
+         // Firebox: body + door + the burning/empty interior.
+          regCustom(sink, ModBlockEntities.HEATER_FIREBOX.get(), ctx -> new FireboxRenderer<>());
+           regCustom(sink, ModBlockEntities.HEATER_OVEN.get(), ctx -> new FireboxRenderer<com.hbm.tileentity.machine.TileEntityHeaterOven>(
+                   "models/machines/heating_oven.obj", "textures/models/machines/heating_oven.png", "Inner", true));
+          regCustom(sink, ModBlockEntities.FURNACE_IRON.get(), ctx -> new FurnaceIronRenderer());
+         regCustom(sink, ModBlockEntities.FURNACE_STEEL.get(), ctx -> new FurnaceSteelRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_WOOD_BURNER.get(),
+                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityMachineWoodBurner>(180F, 1F,
+                         -0.5F, -0.5F, Set.of(), 0,
+                         new ModelDef(obj("machines/wood_burner.obj"), tex("machines/wood_burner.png"))));
 
         // Electric heater: a static OBJ (the old CE fork used a static baked model).
         reg(sink, ModBlockEntities.HEATER_ELECTRIC.get(), 90F, 1F,
