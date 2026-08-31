@@ -4,11 +4,13 @@ package com.hbm.inventory.recipes.gen;
 // - DO NOT HAND-EDIT (regenerated wholesale). The ore-dict sweep half (registerPost) is
 // hand-ported onto the tag system in ShredderRecipes.java.
 
+import com.hbm.blocks.ModBeaconBlocks;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModDecoBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ModFuelItems;
@@ -106,6 +108,7 @@ public final class ShredderRecipesGenerated {
         set.accept(ModIntermediateItems.chunk(EnumChunkType.RARE), new ItemStack(ModItems.powder_desh_mix.get()));
         set.accept(Items.SAND, new ItemStack(ModItems.dust.get(), 2));
         set.accept(ModBlocks.ore_aluminium.get().asItem(), ModIntermediateItems.chunk(EnumChunkType.CRYOLITE, 2));
+        set.accept(ModBeaconBlocks.block_bakelite.get().asItem(), new ItemStack(ModItems.powder_bakelite.get(), 9));
         set.accept(ModItems.ingot_bakelite.get(), new ItemStack(ModItems.powder_bakelite.get()));
         set.accept(ModFuelItems.ingot_schraranium.get(), new ItemStack(ModItems.nugget_schrabidium.get(), 2));
         set.accept(ModFuelItems.crystal_coal.get(), new ItemStack(ModFuelItems.powder_coal.get(), 3));
@@ -147,17 +150,18 @@ public final class ShredderRecipesGenerated {
         set.accept(ModStorageBlocks.crate_iron.get().asItem(), new ItemStack(ModItems.powder_iron.get(), 8));
         set.accept(ModStorageBlocks.crate_steel.get().asItem(), new ItemStack(ModItems.powder_steel.get(), 8));
         set.accept(Items.ANVIL, new ItemStack(ModItems.powder_iron.get(), 31));
+        set.accept(ModSteelBlocks.steel_grate.get().asItem(), new ItemStack(ModItems.powder_steel_tiny.get(), 3));
         set.accept(ModItems.pipes_steel.get(), new ItemStack(ModItems.powder_steel.get(), 27));
         set.accept(ModFalloutBlocks.sellafield_slaked.get().asItem(), new ItemStack(Items.GRAVEL));
         set.accept(ModFallingBlocks.dirt_dead.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
         set.accept(ModFallingBlocks.dirt_oily.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
         set.accept(ModFallingBlocks.sand_dirty.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
         set.accept(ModFallingBlocks.sand_dirty_red.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
-        set.accept(ModBlocks.stone_cracked.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
-        set.accept(ModItems.debris_concrete.get(), new ItemStack(ModItems.scrap_nuclear.get(), 2));
     }
 
     private static void register2(BiConsumer<Item, ItemStack> set) {
+        set.accept(ModBlocks.stone_cracked.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
+        set.accept(ModItems.debris_concrete.get(), new ItemStack(ModItems.scrap_nuclear.get(), 2));
         set.accept(ModItems.debris_shrapnel.get(), new ItemStack(ModItems.powder_steel_tiny.get(), 5));
         set.accept(ModItems.debris_exchanger.get(), new ItemStack(ModItems.powder_steel.get(), 3));
         set.accept(ModItems.debris_element.get(), new ItemStack(ModItems.scrap_nuclear.get(), 4));

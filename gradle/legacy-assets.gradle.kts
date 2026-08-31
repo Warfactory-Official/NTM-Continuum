@@ -25,6 +25,27 @@ val MACHINE_OBJ_ITEM_BASE = "hbm:item/machine_obj_base"
 
 /** Centered item scales derived from submitted OBJ bounds, using the assembly machine's 1.05-unit frame. */
 val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
+    "machine_fensu" to MachineObjTransformExpectation(
+        0.21, 90.0,
+        obj = "hbm:models/machines/fensu.obj",
+        texture = "hbm:textures/models/machines/fensus/fensu_light_blue.png",
+    ),
+    "machine_bigasstank" to MachineObjTransformExpectation(
+        0.0807692308, 0.0,
+        obj = "hbm:models/machines/bigasstank.obj",
+        texture = "hbm:textures/models/machines/bigasstank.png",
+    ),
+    "machine_bat9000" to MachineObjTransformExpectation(
+        0.2, 0.0,
+        obj = "hbm:models/machines/bat9000.obj",
+        texture = "hbm:textures/models/machines/bat9000.png",
+    ),
+    "machine_battery_redd" to MachineObjTransformExpectation(
+        0.1024390244, 270.0,
+        obj = "hbm:models/machines/fensu2.obj",
+        texture = "hbm:textures/models/machines/fensu2.png",
+        exclude = listOf("Plasma"),
+    ),
     "fusion_breeder" to MachineObjTransformExpectation(0.21, 90.0, exclude = listOf("BreederAlt")),
     "fusion_plasma_forge" to MachineObjTransformExpectation(
         0.095454545, 90.0,

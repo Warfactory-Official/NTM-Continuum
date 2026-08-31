@@ -129,6 +129,14 @@ public final class HbmGameTestFunctions {
                     () -> FluidValveDrainGameTests::drainSpillRate);
     public static final GameTests.Function CONDENSER_CONVERSION =
             TESTS.function("condenser_conversion", 20, () -> HbmGameTestFunctions::condenserConversion);
+    public static final GameTests.Function STORAGE_DRUM_RECIPES =
+            TESTS.function("storage_drum_recipes", 20, () -> HbmGameTestFunctions::storageDrumRecipes);
+    public static final GameTests.Function STORAGE_DRUM_MENU =
+            TESTS.function("storage_drum_menu", 20, () -> HbmGameTestFunctions::storageDrumMenu);
+    public static final GameTests.Function POWERED_CONDENSER_CONVERSION =
+            TESTS.function("powered_condenser_conversion", 20, () -> HbmGameTestFunctions::poweredCondenserConversion);
+    public static final GameTests.Function POWERED_CONDENSER_PORTS =
+            TESTS.function("powered_condenser_ports", 20, () -> HbmGameTestFunctions::poweredCondenserPorts);
     public static final GameTests.Function PUREX_RECIPE_CYCLE =
             TESTS.function("purex_recipe_cycle", 20, () -> HbmGameTestFunctions::purexRecipeCycle);
     public static final GameTests.Function PUREX_HOT_WASTE_REJECTED =
@@ -222,6 +230,16 @@ public final class HbmGameTestFunctions {
             TESTS.function("fluid_display_names", 20, () -> HbmGameTestFunctions::fluidDisplayNames);
     public static final GameTests.Function LANG_COVERAGE =
             TESTS.function("lang_coverage", 20, () -> HbmGameTestFunctions::langCoverage);
+    public static final GameTests.Function BATTERY_REDD_LAYOUT_PORTS =
+            TESTS.function("battery_redd_layout_ports", 100, 8, () -> BatteryReddGameTests::layoutAndPorts);
+    public static final GameTests.Function BATTERY_REDD_BIG_INTEGER_TRANSFER =
+            TESTS.function("battery_redd_big_integer_transfer", 40, () -> BatteryReddGameTests::bigIntegerAndTransfer);
+    public static final GameTests.Function BATTERY_REDD_PERSISTENCE_SYNC =
+            TESTS.function("battery_redd_persistence_sync", 40, () -> BatteryReddGameTests::persistenceAndSync);
+    public static final GameTests.Function BATTERY_REDD_MENU =
+            TESTS.function("battery_redd_menu", 40, () -> BatteryReddGameTests::menuAndItemContract);
+    public static final GameTests.Function BATTERY_REDD_ITEM_MODELS =
+            TESTS.function("battery_redd_item_models", 20, () -> BatteryReddGameTests::itemModels);
     public static final GameTests.Function ZIRNOX_WORLD_TICK =
             TESTS.function("zirnox_world_tick", 100, 8, () -> HbmGameTestFunctions::zirnoxWorldTick);
     public static final GameTests.Function ZIRNOX_STEAM_OUTPUT =
@@ -280,6 +298,26 @@ public final class HbmGameTestFunctions {
     // --- press recipes (implementations live in PressGameTests) ---
     public static final GameTests.Function PRESS_CASING =
             TESTS.function("press_casing", 20, () -> PressGameTests::casingRecipes);
+    public static final GameTests.Function AMMO_PRESS_RECIPES =
+            TESTS.function("ammo_press_recipes", 20, () -> AmmoPressGameTests::recipes);
+    public static final GameTests.Function AMMO_PRESS_LAYOUT_MENU =
+            TESTS.function("ammo_press_layout_menu", 100, 8, () -> AmmoPressGameTests::layoutAndMenu);
+    public static final GameTests.Function AMMO_PRESS_SHIFT_CLICK =
+            TESTS.function("ammo_press_shift_click", 40, () -> AmmoPressGameTests::shiftClickInput);
+    public static final GameTests.Function AMMO_PRESS_PROCESSING =
+            TESTS.function("ammo_press_processing", 40, 8, () -> AmmoPressGameTests::controlAndProcessing);
+
+    // --- FEnSU ---
+    public static final GameTests.Function FENSU_NUMERIC =
+            TESTS.function("fensu_numeric", 40, () -> FensuGameTests::numeric);
+    public static final GameTests.Function FENSU_LAYOUT_PORTS =
+            TESTS.function("fensu_layout_ports", 100, 8, () -> FensuGameTests::layoutAndPorts);
+    public static final GameTests.Function FENSU_PERSISTENCE_SYNC =
+            TESTS.function("fensu_persistence_sync", 100, 8, () -> FensuGameTests::persistenceAndSync);
+    public static final GameTests.Function FENSU_ASSETS =
+            TESTS.function("fensu_assets", 40, () -> FensuGameTests::assets);
+    public static final GameTests.Function FENSU_DYE_TAGS =
+            TESTS.function("fensu_dye_tags", 20, () -> FensuGameTests::dyeTags);
 
     // --- standard centrifuge ---
     public static final GameTests.Function CENTRIFUGE_RECIPES =
@@ -292,6 +330,20 @@ public final class HbmGameTestFunctions {
             TESTS.function("centrifuge_construction", 40, () -> CentrifugeGameTests::constructionRecipe);
     public static final GameTests.Function CENTRIFUGE_MENU =
             TESTS.function("centrifuge_menu", 40, () -> CentrifugeGameTests::menu);
+
+    // --- standard cyclotron ---
+    public static final GameTests.Function CYCLOTRON_RECIPES =
+            TESTS.function("cyclotron_recipes", 20, () -> CyclotronGameTests::recipes);
+    public static final GameTests.Function CYCLOTRON_LAYOUT_PORTS_ROUTING =
+            TESTS.function("cyclotron_layout_ports_routing", 100, 8, () -> CyclotronGameTests::layoutPortsAndRouting);
+    public static final GameTests.Function CYCLOTRON_PROCESSING =
+            TESTS.function("cyclotron_processing", 800, 8, () -> CyclotronGameTests::processing);
+    public static final GameTests.Function CYCLOTRON_MENU =
+            TESTS.function("cyclotron_menu", 40, 8, () -> CyclotronGameTests::menu);
+    public static final GameTests.Function CYCLOTRON_SYNC =
+            TESTS.function("cyclotron_sync", 40, 8, () -> CyclotronGameTests::sync);
+    public static final GameTests.Function CYCLOTRON_CONSTRUCTION =
+            TESTS.function("cyclotron_construction", 40, () -> CyclotronGameTests::constructionRecipe);
 
     // --- gas centrifuge ---
 
@@ -340,6 +392,16 @@ public final class HbmGameTestFunctions {
             TESTS.function("deuterium_extractor_ratio", 40, () -> IsotopeProcessingGameTests::deuteriumExtractorRatio);
     public static final GameTests.Function DEUTERIUM_TOWER_CONTRACT =
             TESTS.function("deuterium_tower_contract", 100, 8, () -> IsotopeProcessingGameTests::deuteriumTowerContract);
+    public static final GameTests.Function GIANT_TANK_LAYOUTS_PORTS =
+            TESTS.function("giant_tank_layouts_ports", 100, 8, () -> GiantTankGameTests::layoutsAndPorts);
+    public static final GameTests.Function GIANT_TANK_CONTAINER =
+            TESTS.function("giant_tank_container", 100, 8, () -> GiantTankGameTests::containerBehavior);
+    public static final GameTests.Function GIANT_TANK_MODE_ANTIMATTER =
+            TESTS.function("giant_tank_mode_antimatter", 100, 8, () -> GiantTankGameTests::modeAndAntimatter);
+    public static final GameTests.Function GIANT_TANK_TILTED_OUTPUT =
+            TESTS.function("giant_tank_tilted_output", 100, 8, () -> GiantTankGameTests::tiltedOutputShutdown);
+    public static final GameTests.Function GIANT_TANK_DROPS =
+            TESTS.function("giant_tank_drops", 100, 8, () -> GiantTankGameTests::dropsAndReplacesWithFluid);
 
     // --- Exposure Chamber ---
     public static final GameTests.Function EXPOSURE_CHAMBER_RECIPES =
@@ -358,6 +420,16 @@ public final class HbmGameTestFunctions {
             TESTS.function("exposure_chamber_output_full", 40, () -> ExposureChamberGameTests::outputFullStopsCycles);
     public static final GameTests.Function EXPOSURE_CHAMBER_UPGRADES =
             TESTS.function("exposure_chamber_upgrades", 40, () -> ExposureChamberGameTests::upgrades);
+
+    // --- Precision Assembler ---
+    public static final GameTests.Function PRECISION_ASSEMBLER_RECIPES =
+            TESTS.function("precision_assembler_recipes", 40, () -> PrecisionAssemblerGameTests::recipes);
+    public static final GameTests.Function PRECISION_ASSEMBLER_LAYOUT =
+            TESTS.function("precision_assembler_layout", 40, () -> PrecisionAssemblerGameTests::layoutAndValidation);
+    public static final GameTests.Function PRECISION_ASSEMBLER_PROCESSING =
+            TESTS.function("precision_assembler_processing", 140, () -> PrecisionAssemblerGameTests::processing);
+    public static final GameTests.Function PRECISION_ASSEMBLER_BLUEPRINTS =
+            TESTS.function("precision_assembler_blueprints", 40, () -> PrecisionAssemblerGameTests::blueprints);
 
     // --- Mixer ---
     public static final GameTests.Function MIXER_RECIPES =
@@ -1219,6 +1291,122 @@ public final class HbmGameTestFunctions {
         player.setPos(absTower.getX() + 40.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
         helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "Being high up near nothing must not grant access");
+        helper.succeed();
+    }
+
+    /** The long/short metadata families, byproduct amounts, and neutron-contamination input gate. */
+    private static void storageDrumRecipes(GameTestHelper helper) {
+        com.hbm.inventory.fluid.Fluids.init();
+        com.hbm.inventory.recipes.StorageDrumRecipes.registerRecipes();
+        helper.assertTrue(com.hbm.inventory.recipes.StorageDrumRecipes.getAll().size() == 27,
+                "Storage drum available recipe count regressed");
+
+        var input = com.hbm.items.ModStorageDrumItems.make(
+                com.hbm.items.ModStorageDrumItems.nuclear_waste_short.get(),
+                com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(), 1);
+        var output = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(input);
+        var waste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(input);
+        helper.assertTrue(output != null
+                        && output.getItem() == com.hbm.items.ModStorageDrumItems.nuclear_waste_short_depleted.get()
+                        && ((com.hbm.items.special.ItemWasteStorage) output.getItem()).variant(output)
+                                == com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(),
+                "Short-waste transformation lost its subtype");
+        helper.assertTrue(waste != null && waste[0] == 216_000 && waste[1] == 350 && waste[2] == 1_000,
+                "Short-waste liquid/gas output regressed");
+
+        var longTinyInput = com.hbm.items.ModStorageDrumItems.make(
+                com.hbm.items.ModStorageDrumItems.nuclear_waste_long_tiny.get(),
+                com.hbm.items.special.ItemWasteStorage.LongWasteClass.URANIUM233.ordinal(), 1);
+        var longTinyOutput = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(longTinyInput);
+        var longTinyWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(longTinyInput);
+        helper.assertTrue(longTinyOutput != null
+                        && longTinyOutput.getItem() == com.hbm.items.ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get()
+                        && ((com.hbm.items.special.ItemWasteStorage) longTinyOutput.getItem()).variant(longTinyOutput)
+                                == com.hbm.items.special.ItemWasteStorage.LongWasteClass.URANIUM233.ordinal()
+                        && longTinyWaste != null && longTinyWaste[0] == 21_600
+                        && longTinyWaste[1] == 0 && longTinyWaste[2] == 5,
+                "Long-tiny waste must scale liquid and gas by 0.1");
+
+        var shortTinyInput = com.hbm.items.ModStorageDrumItems.make(
+                com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.get(),
+                com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(), 1);
+        var shortTinyWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(shortTinyInput);
+        helper.assertTrue(shortTinyWaste != null && shortTinyWaste[0] == 21_600
+                        && shortTinyWaste[1] == 35 && shortTinyWaste[2] == 100,
+                "Short-tiny waste must scale liquid and gas by 0.1");
+
+        var contaminated = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT);
+        com.hbm.util.ContaminationUtil.neutronActivateItem(contaminated, 1F, 1F);
+        helper.assertTrue(com.hbm.util.ContaminationUtil.isContaminated(contaminated),
+                "Neutron-contaminated items must remain valid drum inputs");
+        helper.succeed();
+    }
+
+    /** The original six-by-six ring's 24 slots and player-inventory coordinates. */
+    private static void storageDrumMenu(GameTestHelper helper) {
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        helper.setBlock(pos, com.hbm.blocks.machine.ModMachineBlocks.machine_storage_drum.get().defaultBlockState());
+        var drum = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.TileEntityStorageDrum.class);
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
+        var menu = new com.hbm.inventory.container.ContainerStorageDrum(0, player.getInventory(), drum);
+        helper.assertTrue(menu.slots.size() == 60, "Storage drum menu must have 24 + 36 slots");
+        int[][] expected = {
+                {71, 24}, {89, 24},
+                {53, 42}, {71, 42}, {89, 42}, {107, 42},
+                {35, 60}, {53, 60}, {71, 60}, {89, 60}, {107, 60}, {125, 60},
+                {35, 78}, {53, 78}, {71, 78}, {89, 78}, {107, 78}, {125, 78},
+                {53, 96}, {71, 96}, {89, 96}, {107, 96},
+                {71, 114}, {89, 114}
+        };
+        for (int i = 0; i < expected.length; i++) assertSlot(helper, menu, i, expected[i][0], expected[i][1]);
+        helper.assertTrue(drum.getSlotsForFace(net.minecraft.core.Direction.UP).length == 24,
+                "All storage drum slots must be sided-accessible");
+        helper.assertTrue(drum.liquid.getMaxFill() == 16_000 && drum.gas.getMaxFill() == 16_000,
+                "Storage drum tank capacity regressed");
+        helper.succeed();
+    }
+
+    /** Powered condenser conversion is blocked below 10 HE per mB and consumes exactly that amount. */
+    private static void poweredCondenserConversion(GameTestHelper helper) {
+        com.hbm.inventory.fluid.Fluids.init();
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState()
+                .setValue(com.hbm.blocks.BlockDummyable.META, 12);
+        helper.setBlock(pos, state);
+        var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
+        condenser.input.setFill(100);
+        condenser.power = 999;
+        com.hbm.tileentity.machine.TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
+                state, condenser);
+        helper.assertTrue(condenser.input.getFill() == 100 && condenser.output.getFill() == 0,
+                "Powered condenser must be energy-gated");
+        condenser.power = 1_000;
+        com.hbm.tileentity.machine.TileEntityCondenserPowered.serverTick(helper.getLevel(), helper.absolutePos(pos),
+                state, condenser);
+        helper.assertTrue(condenser.input.getFill() == 0 && condenser.output.getFill() == 100
+                        && condenser.power == 0 && condenser.waterTimer == 20,
+                "Powered condenser must convert 1:1 at 10 HE per mB");
+        helper.succeed();
+    }
+
+    /** The six anchored fluid/power positions are the legacy powered-condenser ports. */
+    private static void poweredCondenserPorts(GameTestHelper helper) {
+        var pos = new net.minecraft.core.BlockPos(1, 1, 1);
+        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState()
+                .setValue(com.hbm.blocks.BlockDummyable.META, 12);
+        helper.setBlock(pos, state);
+        var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
+                com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
+        var ports = condenser.getConPos();
+        helper.assertTrue(ports.length == 6, "Powered condenser must expose six ports");
+        helper.assertTrue(ports[0].getPos().equals(helper.absolutePos(pos).offset(4, 1, 0))
+                        && ports[0].getDir() == com.hbm.lib.ForgeDirection.EAST,
+                "Powered condenser lateral port geometry regressed");
+        helper.assertTrue(ports[2].getPos().equals(helper.absolutePos(pos).offset(-1, 1, -2))
+                        && ports[2].getDir() == com.hbm.lib.ForgeDirection.NORTH,
+                "Powered condenser front port geometry regressed");
         helper.succeed();
     }
 

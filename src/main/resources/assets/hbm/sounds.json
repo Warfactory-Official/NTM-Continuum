@@ -8,6 +8,15 @@
       }
     ]
   },
+  "block.fensu_hum": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/fensuhum",
+        "stream": false
+      }
+    ]
+  },
   "block.reactor_start": {
     "category": "block",
     "sounds": [

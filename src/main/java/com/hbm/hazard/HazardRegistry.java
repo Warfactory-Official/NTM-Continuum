@@ -113,6 +113,16 @@ public class HazardRegistry {
         regItem("scrap_nuclear", makeData(RADIATION, 1F));
         regItem("trinitite", makeData(RADIATION, trn * ingot).addEntry(CONTAMINATING, 5));
 
+        // The old metadata families share one hazard per registered item; the component only selects the isotope name.
+        regItem("nuclear_waste_long", makeData(RADIATION, 5F));
+        regItem("nuclear_waste_long_tiny", makeData(RADIATION, 0.5F));
+        regItem("nuclear_waste_short", makeData().addEntry(RADIATION, 30F).addEntry(HOT, 5F));
+        regItem("nuclear_waste_short_tiny", makeData().addEntry(RADIATION, 3F).addEntry(HOT, 5F));
+        regItem("nuclear_waste_long_depleted", makeData(RADIATION, 0.5F));
+        regItem("nuclear_waste_long_depleted_tiny", makeData(RADIATION, 0.05F));
+        regItem("nuclear_waste_short_depleted", makeData(RADIATION, 3F));
+        regItem("nuclear_waste_short_depleted_tiny", makeData(RADIATION, 0.3F));
+
         registerZirnoxFuel();
         registerResearchPlateFuel();
         registerRBMKFuel();

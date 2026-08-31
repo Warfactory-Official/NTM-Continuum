@@ -78,6 +78,8 @@ public final class MachineItemModel {
     private final Vector3f spinPivot;
     /** Multi-texture mode ({@code "mtl": true}): material name → its render type, from the OBJ's .mtl. */
     private final Map<String, RenderType> materialTypes;
+    /** Explicit OBJ-part texture overrides for models whose sockets do not use an .mtl file. */
+    private final Map<String, RenderType> partTypes;
     /** Whether this item has the old continuously rotating inventory pose. */
     private final boolean spin;
     private final Map<String, ContextTransform> contextTransforms;
@@ -102,9 +104,10 @@ public final class MachineItemModel {
                             float guiYaw, Set<String> exclude,
                             @Nullable RenderType overlayType, List<String> overlayParts,
                             @Nullable RenderType blackType, List<String> blackParts,
-                            List<String> rotateParts, float rotateX, Vector3f rotatePivot,
-                            List<String> spinParts, Vector3f spinPivot, Map<String, RenderType> materialTypes,
-                            boolean spin, Map<String, ContextTransform> contextTransforms, String animation) {
+                             List<String> rotateParts, float rotateX, Vector3f rotatePivot,
+                             List<String> spinParts, Vector3f spinPivot, Map<String, RenderType> materialTypes,
+                             Map<String, RenderType> partTypes,
+                             boolean spin, Map<String, ContextTransform> contextTransforms, String animation) {
         this.model = model;
         this.renderType = renderType;
         this.scale = scale;
@@ -128,6 +131,7 @@ public final class MachineItemModel {
         this.spinParts = spinParts;
         this.spinPivot = spinPivot;
         this.materialTypes = materialTypes;
+        this.partTypes = Map.copyOf(partTypes);
         this.spin = spin;
         this.contextTransforms = Map.copyOf(contextTransforms);
         this.animation = animation;
@@ -162,6 +166,15 @@ public final class MachineItemModel {
         applyTransform(poseStack, context);
         if ("pump".equals(animation)) {
             submitPumpAnimation(poseStack, sink, lightCoords, overlayCoords);
+            poseStack.popPose();
+            return;
+        }
+        if (!partTypes.isEmpty()) {
+            for (Map.Entry<String, RenderType> entry : partTypes.entrySet()) {
+                if (userExclude.contains(entry.getKey())) continue;
+                sink.submitCustomGeometry(poseStack, entry.getValue(),
+                        (pose, buffer) -> model.renderPart(entry.getKey(), pose, buffer, lightCoords, overlayCoords));
+            }
             poseStack.popPose();
             return;
         }
@@ -228,6 +241,12 @@ public final class MachineItemModel {
         applyTransform(ps, context);
         if ("pump".equals(animation)) {
             pumpExtents(ps, output);
+            return;
+        }
+        if (!partTypes.isEmpty()) {
+            Set<String> included = new HashSet<>(partTypes.keySet());
+            included.removeAll(userExclude);
+            emitPartBounds(ps, included, output);
             return;
         }
         if (!materialTypes.isEmpty()) {

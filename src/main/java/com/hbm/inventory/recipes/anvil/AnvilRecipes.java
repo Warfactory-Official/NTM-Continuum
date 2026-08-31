@@ -433,6 +433,17 @@ public final class AnvilRecipes {
         add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(ModStampItems.stamp_iron_flat.get()), GUNMETAL.ingot().count(2)}, new AnvilOutput(new ItemStack(ModStampItems.stamp_50.get()))).setTier(2));
         add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(ModStampItems.stamp_desh_flat.get()), WEAPONSTEEL.ingot().count(4)}, new AnvilOutput(new ItemStack(ModStampItems.stamp_desh_9.get()))).setTier(4));
         add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(ModStampItems.stamp_desh_flat.get()), WEAPONSTEEL.ingot().count(4)}, new AnvilOutput(new ItemStack(ModStampItems.stamp_desh_50.get()))).setTier(4));
+
+        // -------- BAT-9000 salvage (old AnvilRecipes L722-727) --------
+        Item tcalloyWelded = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, TCALLOY);
+        if (tcalloyWelded != null) {
+            add(new AnvilConstructionRecipe(
+                    new ComparableStack(com.hbm.blocks.machine.ModMachineBlocks.machine_bat9000.get().asItem()),
+                    new AnvilOutput[]{
+                            new AnvilOutput(new ItemStack(tcalloyWelded, 4)),
+                            new AnvilOutput(new ItemStack(ModItems.plate_steel.get(), 16))
+                    }).setTier(3));
+        }
     }
 
     private static void stampSet(Item flat, int tier, Item... outputs) {

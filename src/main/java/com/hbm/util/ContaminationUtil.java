@@ -10,9 +10,11 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardSystem;
+import com.hbm.hazard.type.HazardTypeRadiation;
 import com.hbm.interfaces.IRadiationImmune;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
+import com.hbm.items.ModDataComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -41,8 +43,7 @@ import net.minecraft.world.phys.Vec3;
  * the exponential hazmat reduction ({@code 10^-resistance}).
  *
  * <p>Deferred vs the original: the mutation/stability/rad-x potion interactions (no potions yet), the
- * per-entity compat config resistances, neutron-activation NBT (a data component once used), the
- * marshmallow gag, and the euphemium-armor blast exemption.
+ * per-entity compat config resistances, the marshmallow gag, and the euphemium-armor blast exemption.
  */
 public class ContaminationUtil {
 
@@ -203,7 +204,54 @@ public class ContaminationUtil {
 
     /** Neutron activation reads — data-component based; system is config-off, kept minimal. */
     public static float getNeutronRads(ItemStack stack) {
-        return 0F; // TODO(neutron-activation): NEUTRON data component read
+        if (stack.isEmpty() || isRadItem(stack)) return 0F;
+        return ModDataComponents.NEUTRON_ACTIVATION.getOr(stack, 0F) * stack.getCount();
+    }
+
+    /** Whether an otherwise non-radioactive stack carries the old neutron-activation contamination. */
+    public static boolean isContaminated(ItemStack stack) {
+        return !stack.isEmpty() && ModDataComponents.NEUTRON_ACTIVATION.has(stack);
+    }
+
+    /** The old drum-side neutron activation update, expressed with the modern item component. */
+    public static boolean neutronActivateItem(ItemStack stack, float rad, float decay) {
+        if (stack.isEmpty() || stack.getCount() != 1 || isRadItem(stack)) return false;
+        float previous = ModDataComponents.NEUTRON_ACTIVATION.getOr(stack, 0F);
+        float next = previous * decay + rad / stack.getCount();
+        if (next < 0.0001F) {
+            if (previous > 0F) {
+                ModDataComponents.NEUTRON_ACTIVATION.remove(stack);
+                return true;
+            }
+        } else if (Math.abs(next - previous) > 1.0e-6F) {
+            ModDataComponents.NEUTRON_ACTIVATION.set(stack, next);
+            return true;
+        }
+        return false;
+    }
+
+    /** Adds the old neutron-activation radioactive tooltip lines to the shared item tooltip path. */
+    public static void addNeutronRadInfo(ItemStack stack, List<Component> list) {
+        float activation = getNeutronRads(stack);
+        if (activation <= 0F) return;
+
+        double perItem = activation / stack.getCount();
+        list.add(Component.literal("[").append(Component.translatable("trait.radioactive"))
+                .append(Component.literal("]")).withStyle(ChatFormatting.GREEN));
+        list.add(Component.literal(" " + Math.round(HazardTypeRadiation.getNewValue(perItem) * 1000D) / 1000D)
+                .append(neutronSuffix(perItem)).append(Component.literal(" "))
+                .append(Component.translatable("desc.rads")).withStyle(ChatFormatting.YELLOW));
+        if (stack.getCount() > 1) {
+            list.add(Component.literal(" ").append(Component.translatable("desc.stack"))
+                    .append(Component.literal(" " + Math.round(HazardTypeRadiation.getNewValue(activation) * 1000D) / 1000D))
+                    .append(neutronSuffix(activation)).append(Component.literal(" "))
+                    .append(Component.translatable("desc.rads")).withStyle(ChatFormatting.YELLOW));
+        }
+    }
+
+    private static Component neutronSuffix(double radiation) {
+        if (radiation < 1_000_000D) return Component.empty();
+        return Component.translatable(radiation < 1_000_000_000D ? "desc.mil" : "desc.bil");
     }
 
     public static double getRads(Entity e) {

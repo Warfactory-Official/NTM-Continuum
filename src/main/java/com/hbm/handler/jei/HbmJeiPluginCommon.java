@@ -6,10 +6,14 @@ import com.hbm.blocks.ModAnvilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.container.ContainerCentrifuge;
+import com.hbm.inventory.container.ContainerMachineCyclotron;
 import com.hbm.inventory.gui.GUIFusionBreeder;
 import com.hbm.inventory.container.ContainerMachineExposureChamber;
 import com.hbm.inventory.container.ContainerMixer;
+import com.hbm.inventory.container.ContainerMachineAmmoPress;
+import com.hbm.inventory.container.ContainerMachinePrecAss;
 import com.hbm.inventory.gui.GUICentrifuge;
+import com.hbm.inventory.gui.GUIMachineCyclotron;
 import com.hbm.inventory.gui.GUIMachineExposureChamber;
 import com.hbm.inventory.gui.GUIMixer;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
@@ -17,6 +21,7 @@ import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
+import com.hbm.inventory.recipes.CyclotronRecipes;
 import com.hbm.inventory.recipes.GasCentrifugeRecipes;
 import com.hbm.inventory.recipes.ElectrolyserFluidRecipes;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
@@ -25,6 +30,8 @@ import com.hbm.inventory.recipes.ExposureChamberRecipes;
 import com.hbm.inventory.recipes.FluidBreederRecipes;
 import com.hbm.inventory.recipes.SILEXRecipes;
 import com.hbm.inventory.recipes.PressRecipes;
+import com.hbm.inventory.recipes.AmmoPressRecipes;
+import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.PUREXRecipes;
 import com.hbm.inventory.recipes.PlasmaForgeRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
@@ -32,6 +39,7 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
+import com.hbm.items.ModStorageDrumItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.helpers.IGuiHelper;
@@ -63,6 +71,7 @@ public final class HbmJeiPluginCommon {
 
     // Categories are created in registerCategories (needs the IGuiHelper) and reused in registerRecipes.
     private static JEIGenericRecipeHandler assembly;
+    private static JEIGenericRecipeHandler precisionAssembler;
     private static JEIGenericRecipeHandler chemplant;
     private static JEIGenericRecipeHandler mixer;
     private static JEIGenericRecipeHandler exposure;
@@ -71,9 +80,11 @@ public final class HbmJeiPluginCommon {
     private static JEIGenericRecipeHandler fusionBreeder;
     private static JEIGenericRecipeHandler plasmaForge;
     private static PressRecipeHandler press;
+    private static AmmoPressRecipeHandler ammoPress;
     private static SolderingStationRecipeHandler soldering;
     private static CrystallizerRecipeHandler crystallizer;
     private static CentrifugeRecipeHandler centrifuge;
+    private static CyclotronRecipeHandler cyclotron;
     private static GasCentrifugeRecipeHandler gasCentrifuge;
     private static ElectrolyserFluidRecipeHandler electrolyserFluid;
     private static ElectrolyserMetalRecipeHandler electrolyserMetal;
@@ -96,11 +107,22 @@ public final class HbmJeiPluginCommon {
     private static CokerRecipeHandler coker;
     private static PyrolysisRecipeHandler pyrolysis;
     private static CompressorRecipeHandler compressor;
+    private static StorageDrumRecipeHandler storageDrum;
 
     /** Make each fluid-icon variant a distinct JEI ingredient, keyed on its {@code FLUID_ID} component
      * (so the droplet icons don't all collapse to one "fluid_icon" in the item list). */
     public static void registerItemSubtypes(ISubtypeRegistration reg) {
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, com.hbm.items.ModMachineItems.blueprints.get(),
+                ModDataComponents.BLUEPRINT_POOL);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_icon.get(), ModDataComponents.FLUID_ID);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long.get(), ModDataComponents.STORAGE_WASTE_CLASS);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short.get(), ModDataComponents.STORAGE_WASTE_CLASS);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long_depleted.get(), ModDataComponents.STORAGE_WASTE_CLASS);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_long_depleted_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short_depleted.get(), ModDataComponents.STORAGE_WASTE_CLASS);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModStorageDrumItems.nuclear_waste_short_depleted_tiny.get(), ModDataComponents.STORAGE_WASTE_CLASS);
     }
 
     /** Add a droplet icon for every registered fluid to JEI's ingredient list / search — the fluid‑icon item
@@ -121,6 +143,8 @@ public final class HbmJeiPluginCommon {
 
         assembly = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
                 title("assembly_machine"), AssemblyMachineRecipes.INSTANCE, stack(ModMachineBlocks.machine_assembly_machine.get()));
+        precisionAssembler = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.PRECISION_ASSEMBLER,
+                title("precass"), PrecAssRecipes.INSTANCE, stack(ModMachineBlocks.machine_precass.get()));
         chemplant = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.CHEMICAL_PLANT,
                 title("chemical_plant"), ChemicalPlantRecipes.INSTANCE, stack(ModMachineBlocks.machine_chemical_plant.get()));
         mixer = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.MIXER,
@@ -139,14 +163,18 @@ public final class HbmJeiPluginCommon {
         plasmaForge = new JEIGenericRecipeHandler(helper, HbmJeiRecipeTypes.PLASMA_FORGE,
                 title("plasma_forge"), PlasmaForgeRecipes.INSTANCE,
                 stack(ModMachineBlocks.fusion_plasma_forge.get()));
-        press = new PressRecipeHandler(helper, HbmJeiRecipeTypes.PRESS, title("press"),
-                stack(ModMachineBlocks.machine_press.get()));
+         press = new PressRecipeHandler(helper, HbmJeiRecipeTypes.PRESS, title("press"),
+                 stack(ModMachineBlocks.machine_press.get()));
+         ammoPress = new AmmoPressRecipeHandler(helper, HbmJeiRecipeTypes.AMMO_PRESS, title("ammo_press"),
+                 stack(ModMachineBlocks.machine_ammo_press.get()));
         soldering = new SolderingStationRecipeHandler(helper, HbmJeiRecipeTypes.SOLDERING_STATION,
                 title("soldering_station"), stack(ModMachineBlocks.machine_soldering_station.get()));
         crystallizer = new CrystallizerRecipeHandler(helper, HbmJeiRecipeTypes.CRYSTALLIZER,
                 title("crystallizer"), stack(ModMachineBlocks.machine_crystallizer.get()));
         centrifuge = new CentrifugeRecipeHandler(helper, HbmJeiRecipeTypes.CENTRIFUGE,
                 title("centrifuge"), stack(ModMachineBlocks.machine_centrifuge.get()));
+        cyclotron = new CyclotronRecipeHandler(helper, HbmJeiRecipeTypes.CYCLOTRON,
+                title("cyclotron"), stack(ModMachineBlocks.machine_cyclotron.get()));
         gasCentrifuge = new GasCentrifugeRecipeHandler(helper, HbmJeiRecipeTypes.GAS_CENTRIFUGE,
                 title("gas_centrifuge"), stack(ModMachineBlocks.machine_gascent.get()));
         electrolyserFluid = new ElectrolyserFluidRecipeHandler(helper, HbmJeiRecipeTypes.ELECTROLYSIS_FLUID,
@@ -193,14 +221,17 @@ public final class HbmJeiPluginCommon {
                 title("pyrolysis"), stack(ModMachineBlocks.machine_pyrooven.get()));
         compressor = new CompressorRecipeHandler(helper, HbmJeiRecipeTypes.COMPRESSOR,
                 title("compressor"), stack(ModMachineBlocks.machine_compressor.get()));
+        storageDrum = new StorageDrumRecipeHandler(helper, HbmJeiRecipeTypes.STORAGE_DRUM,
+                Component.translatable("container.storageDrum"));
 
-        reg.addRecipeCategories(assembly, chemplant, mixer, exposure, purex, fusion, fusionBreeder, plasmaForge, press, soldering, crystallizer, centrifuge, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
+          reg.addRecipeCategories(assembly, precisionAssembler, chemplant, mixer, exposure, purex, fusion, fusionBreeder, plasmaForge, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                 electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
-                vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor);
+                vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum);
     }
 
     public static void registerRecipes(IRecipeRegistration reg) {
-        AssemblyMachineRecipes.INSTANCE.registerRecipes();
+         AssemblyMachineRecipes.INSTANCE.registerRecipes();
+         PrecAssRecipes.INSTANCE.registerRecipes();
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
         MixerRecipes.INSTANCE.registerRecipes();
         ExposureChamberRecipes.INSTANCE.registerRecipes();
@@ -208,15 +239,18 @@ public final class HbmJeiPluginCommon {
         com.hbm.inventory.recipes.FusionRecipes.INSTANCE.registerRecipes();
         FluidBreederRecipes.INSTANCE.registerRecipes();
         PlasmaForgeRecipes.INSTANCE.registerRecipes();
-        PressRecipes.register();
+         PressRecipes.register();
+         AmmoPressRecipes.register();
         SolderingRecipes.register();
         CrystallizerRecipes.register();
         CentrifugeRecipes.register();
+        CyclotronRecipes.register();
         GasCentrifugeRecipes.register();
         ElectrolyserFluidRecipes.register();
         ElectrolyserMetalRecipes.register();
 
-        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, assembly.buildRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, assembly.buildRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PRECISION_ASSEMBLER, precisionAssembler.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, chemplant.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.MIXER, mixer.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.EXPOSURE_CHAMBER, exposure.buildRecipes());
@@ -224,11 +258,13 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.FUSION, fusion.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.FUSION_BREEDER, fusionBreeder.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PLASMA_FORGE, plasmaForge.buildRecipes());
-        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PRESS, PressRecipes.getRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.AMMO_PRESS, AmmoPressRecipes.getRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.SOLDERING_STATION, SolderingRecipes.recipes);
-        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRYSTALLIZER, CrystallizerRecipes.recipes);
-        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CENTRIFUGE, CentrifugeRecipes.recipes);
-        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.GAS_CENTRIFUGE, GasCentrifugeRecipes.RECIPES);
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CRYSTALLIZER, CrystallizerRecipes.recipes);
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CENTRIFUGE, CentrifugeRecipes.recipes);
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.CYCLOTRON, CyclotronRecipes.recipes);
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.GAS_CENTRIFUGE, GasCentrifugeRecipes.RECIPES);
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ELECTROLYSIS_FLUID, electrolyserFluid.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ELECTROLYSIS_METAL, electrolyserMetal.buildRecipes());
         SILEXRecipes.register();
@@ -251,7 +287,8 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.HYDROTREATING, HydrotreatingRecipeHandler.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COKER, CokerRecipeHandler.buildRecipes());
         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.PYROLYSIS, PyrolysisRecipeHandler.buildRecipes());
-        dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.STORAGE_DRUM, StorageDrumRecipeHandler.buildRecipes());
     }
 
     public static void registerGuiHandlers(IGuiHandlerRegistration reg) {
@@ -261,6 +298,8 @@ public final class HbmJeiPluginCommon {
                 HbmJeiRecipeTypes.EXPOSURE_CHAMBER);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUICentrifuge.class, 35, 9, 106, 40,
                 HbmJeiRecipeTypes.CENTRIFUGE);
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMachineCyclotron.class, 11, 18, 134, 54,
+                HbmJeiRecipeTypes.CYCLOTRON);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIMachineGasCent.class, 70, 36, 36, 12,
                 HbmJeiRecipeTypes.GAS_CENTRIFUGE);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIMachineElectrolyser.class, 62, 26, 12, 40,
@@ -272,7 +311,9 @@ public final class HbmJeiPluginCommon {
     }
 
     public static void registerRecipeTransferHandlers(IRecipeTransferRegistration reg) {
-        dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerMixer.class,
+         dev.golem.core.jei.Jei.addRecipeTransferHandler(reg, ContainerMachineAmmoPress.class,
+                 ModMenus.MACHINE_AMMO_PRESS.get(), HbmJeiRecipeTypes.AMMO_PRESS, 0, 9, 10, 36);
+         dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerMixer.class,
                 ModMenus.MACHINE_MIXER.get(), HbmJeiRecipeTypes.MIXER, new int[]{1}, 5, 36,
                 recipe -> recipe.inputFluid == null || recipe.inputFluid.length == 0);
         dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerMachineExposureChamber.class,
@@ -281,13 +322,21 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addRecipeTransferHandler(reg, ContainerCentrifuge.class,
                 ModMenus.MACHINE_CENTRIFUGE.get(), HbmJeiRecipeTypes.CENTRIFUGE,
                 0, 1, ContainerCentrifuge.MACHINE_SLOTS, 36);
-        dev.golem.core.jei.Jei.addRecipeTransferHandler(reg, com.hbm.inventory.container.ContainerMachineElectrolyser.class,
+         dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerMachineCyclotron.class,
+                 ModMenus.MACHINE_CYCLOTRON.get(), HbmJeiRecipeTypes.CYCLOTRON,
+                 new int[]{0, 3}, 12, 36, recipe -> true);
+         dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerMachinePrecAss.class,
+                 ModMenus.MACHINE_PREC_ASS.get(), HbmJeiRecipeTypes.PRECISION_ASSEMBLER,
+                 new int[]{4, 5, 6, 7, 8, 9, 10, 11, 12}, 22, 36,
+                 recipe -> recipe.inputFluid == null || recipe.inputFluid.length == 0);
+         dev.golem.core.jei.Jei.addRecipeTransferHandler(reg, com.hbm.inventory.container.ContainerMachineElectrolyser.class,
                 ModMenus.MACHINE_ELECTROLYSER_METAL.get(), HbmJeiRecipeTypes.ELECTROLYSIS_METAL,
                 3, 1, 10, 36);
     }
 
     public static void registerCatalysts(IRecipeCatalystRegistration reg) {
-        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PRECISION_ASSEMBLER, stack(ModMachineBlocks.machine_precass.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CHEMICAL_PLANT, stack(ModMachineBlocks.machine_chemical_plant.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.MIXER, stack(ModMachineBlocks.machine_mixer.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PUREX, stack(ModMachineBlocks.machine_purex.get()));
@@ -295,11 +344,14 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.FUSION_BREEDER,
                 stack(ModMachineBlocks.fusion_breeder.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PLASMA_FORGE, stack(ModMachineBlocks.fusion_plasma_forge.get()));
-        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.PRESS, stack(ModMachineBlocks.machine_press.get()), stack(ModMachineBlocks.machine_epress.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.AMMO_PRESS,
+                 stack(ModMachineBlocks.machine_ammo_press.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.SOLDERING_STATION, stack(ModMachineBlocks.machine_soldering_station.get()));
-        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRYSTALLIZER, stack(ModMachineBlocks.machine_crystallizer.get()));
-        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CENTRIFUGE, stack(ModMachineBlocks.machine_centrifuge.get()));
-        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.GAS_CENTRIFUGE, stack(ModMachineBlocks.machine_gascent.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRYSTALLIZER, stack(ModMachineBlocks.machine_crystallizer.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CENTRIFUGE, stack(ModMachineBlocks.machine_centrifuge.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CYCLOTRON, stack(ModMachineBlocks.machine_cyclotron.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.GAS_CENTRIFUGE, stack(ModMachineBlocks.machine_gascent.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ELECTROLYSIS_FLUID, stack(ModMachineBlocks.machine_electrolyser.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ELECTROLYSIS_METAL, stack(ModMachineBlocks.machine_electrolyser.get()));
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.EXPOSURE_CHAMBER,
@@ -334,8 +386,10 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.BOILING, stack(ModMachineBlocks.machine_boiler.get()),
                 stack(ModMachineBlocks.heater_firebox.get()), stack(ModMachineBlocks.heater_electric.get()),
                 stack(ModMachineBlocks.heater_oilburner.get()));
-        dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.COOLING, stack(ModMachineBlocks.machine_turbine.get()),
-                stack(ModMachineBlocks.machine_condenser.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.COOLING, stack(ModMachineBlocks.machine_turbine.get()),
+                  stack(ModMachineBlocks.machine_condenser.get()), stack(ModMachineBlocks.machine_condenser_powered.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.STORAGE_DRUM,
+                 stack(ModMachineBlocks.machine_storage_drum.get()));
 
         // The electric furnace runs vanilla smelting — surface it under JEI's built-in furnace category
         // (mirrors the old JEIConfig line; no bespoke category needed).

@@ -140,6 +140,12 @@ public abstract class ModuleMachineBase {
     }
 
     protected boolean canFitOutput(GenericRecipe recipe) {
+        if (recipe.outputChoices != null) {
+            for (GenericRecipe.OutputChoice choice : recipe.outputChoices) {
+                if (!canFitOutput(recipe, new ItemStack[]{choice.stack()})) return false;
+            }
+            return true;
+        }
         return canFitOutput(recipe, recipe.outputItem);
     }
 
@@ -255,6 +261,18 @@ public abstract class ModuleMachineBase {
         ItemStack[] outputs = new ItemStack[recipe.outputItem.length];
         for (int i = 0; i < outputs.length; i++) {
             ItemStack out = recipe.outputItem[i].copy();
+            if (recipe.outputChoices != null && i == 0) {
+                float total = 0F;
+                for (GenericRecipe.OutputChoice choice : recipe.outputChoices) total += Math.max(0F, choice.weight());
+                float pick = random.nextFloat() * total;
+                for (GenericRecipe.OutputChoice choice : recipe.outputChoices) {
+                    pick -= Math.max(0F, choice.weight());
+                    if (pick <= 0F) {
+                        out = choice.stack().copy();
+                        break;
+                    }
+                }
+            }
             float chance = recipe.getChance(i);
             if (chance <= 0F) {
                 out = ItemStack.EMPTY;

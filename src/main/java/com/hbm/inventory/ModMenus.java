@@ -2,11 +2,15 @@ package com.hbm.inventory;
 
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerBatterySocket;
+import com.hbm.inventory.container.ContainerMachineFENSU;
+import com.hbm.inventory.container.ContainerBatteryREDD;
 import com.hbm.inventory.container.ContainerCrate;
 import com.hbm.inventory.container.ContainerMachineAssemblyMachine;
+import com.hbm.inventory.container.ContainerMachinePrecAss;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.inventory.container.ContainerCrystallizer;
 import com.hbm.inventory.container.ContainerCentrifuge;
+import com.hbm.inventory.container.ContainerMachineCyclotron;
 import com.hbm.inventory.container.ContainerMachineGasCent;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.container.ContainerMachineChemicalPlant;
@@ -20,12 +24,15 @@ import com.hbm.inventory.container.ContainerFurnaceIron;
 import com.hbm.inventory.container.ContainerFurnaceSteel;
 import com.hbm.inventory.container.ContainerMachineEPress;
 import com.hbm.inventory.container.ContainerMachinePress;
+import com.hbm.inventory.container.ContainerMachineAmmoPress;
 import com.hbm.inventory.container.ContainerMachineShredder;
 import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
 import com.hbm.inventory.container.ContainerMachineF6Tank;
+import com.hbm.inventory.container.ContainerMachineGiantTank;
 import com.hbm.inventory.container.ContainerNukeMan;
 import com.hbm.inventory.container.ContainerWasteDrum;
+import com.hbm.inventory.container.ContainerStorageDrum;
 import com.hbm.inventory.container.ContainerMachineRadGen;
 import com.hbm.inventory.container.ContainerReactorZirnox;
 import com.hbm.platform.Services;
@@ -48,12 +55,16 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerWasteDrum>> MACHINE_WASTE_DRUM =
             MENUS.register("machine_waste_drum", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerWasteDrum::new));
+    public static final RegistryObject<MenuType<ContainerStorageDrum>> MACHINE_STORAGE_DRUM =
+            MENUS.register("machine_storage_drum", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerStorageDrum::new));
 
     public static final RegistryObject<MenuType<ContainerMachineRadGen>> MACHINE_RAD_GEN =
             MENUS.register("machine_radgen", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineRadGen::new));
 
     public static final RegistryObject<MenuType<ContainerMachineAssemblyMachine>> MACHINE_ASSEMBLY_MACHINE =
             MENUS.register("machine_assembly_machine", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineAssemblyMachine::new));
+    public static final RegistryObject<MenuType<ContainerMachinePrecAss>> MACHINE_PREC_ASS =
+            MENUS.register("machine_precass", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePrecAss::new));
 
     public static final RegistryObject<MenuType<ContainerMachineChemicalPlant>> MACHINE_CHEMICAL_PLANT =
             MENUS.register("machine_chemical_plant", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineChemicalPlant::new));
@@ -79,6 +90,9 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerCentrifuge>> MACHINE_CENTRIFUGE =
             MENUS.register("machine_centrifuge", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCentrifuge::new));
+
+    public static final RegistryObject<MenuType<ContainerMachineCyclotron>> MACHINE_CYCLOTRON =
+            MENUS.register("machine_cyclotron", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineCyclotron::new));
 
     public static final RegistryObject<MenuType<ContainerMachineGasCent>> MACHINE_GAS_CENT =
             MENUS.register("machine_gascent", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineGasCent::new));
@@ -192,6 +206,9 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerMachinePress>> MACHINE_PRESS =
             MENUS.register("machine_press", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePress::new));
 
+    public static final RegistryObject<MenuType<ContainerMachineAmmoPress>> MACHINE_AMMO_PRESS =
+            MENUS.register("machine_ammo_press", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineAmmoPress::new));
+
     public static final RegistryObject<MenuType<ContainerMachineEPress>> MACHINE_EPRESS =
             MENUS.register("machine_epress", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineEPress::new));
 
@@ -214,8 +231,15 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerMachineF6Tank>> F6_TANK =
             MENUS.register("f6_tank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineF6Tank::new));
 
+    public static final RegistryObject<MenuType<ContainerMachineGiantTank>> GIANT_TANK =
+            MENUS.register("giant_tank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineGiantTank::new));
+
     public static final RegistryObject<MenuType<ContainerBatterySocket>> BATTERY_SOCKET =
             MENUS.register("machine_battery_socket", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBatterySocket::new));
+    public static final RegistryObject<MenuType<ContainerMachineFENSU>> FENSU =
+            MENUS.register("machine_fensu", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineFENSU::new));
+    public static final RegistryObject<MenuType<ContainerBatteryREDD>> BATTERY_REDD =
+            MENUS.register("machine_battery_redd", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBatteryREDD::new));
 
     /** Shared by all 12 anvils; the container re-derives the tier from the block state at the pos. */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerAnvil>> ANVIL =

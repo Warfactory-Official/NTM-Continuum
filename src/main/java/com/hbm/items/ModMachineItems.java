@@ -6,11 +6,15 @@ import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
+import com.hbm.inventory.recipes.PrecAssRecipes;
+import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
 import com.hbm.items.machine.ItemBlades;
 import com.hbm.items.machine.ItemBlueprints;
+import com.hbm.items.machine.ItemBlueprintFolder;
+import com.hbm.items.machine.ItemBroken;
 import com.hbm.items.machine.ItemFELCrystal;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
 import com.hbm.items.machine.ItemFluidId;
@@ -36,6 +40,16 @@ public final class ModMachineItems {
     /** Assembly machine "plates" template — unlocks the metal-plate recipes. */
     public static final RegistryObject<ItemBlueprints> blueprint_plate = ITEMS.registerItem(
             "blueprint_plate", p -> new ItemBlueprints(p, AssemblyMachineRecipes.POOL_PLATES), p -> p.stacksTo(1));
+
+    /** Dynamic blueprint selected from a blueprint folder's pool. */
+    public static final RegistryObject<ItemBlueprints> blueprints = ITEMS.registerItem(
+            "blueprints", p -> new ItemBlueprints(p, null));
+    /** The 1.12.2 booklet which turns into a randomly selected blueprint on right-click. */
+    public static final RegistryObject<ItemBlueprintFolder> blueprint_folder = ITEMS.registerItem(
+            "blueprint_folder", ItemBlueprintFolder::new, p -> p.stacksTo(1));
+    /** Faulty output from precision-assembler recipes; the original item id is carried as data. */
+    public static final RegistryObject<ItemBroken> broken_item = ITEMS.registerItem(
+            "broken_item", ItemBroken::new);
 
     /** Fluid identifier — a dedicated one per fluid; set a tank/duct's type with it. */
     public static final RegistryObject<ItemFluidId> fluid_identifier = ITEMS.registerItem(
@@ -75,6 +89,8 @@ public final class ModMachineItems {
 
     static {
         ModTabs.addTo(HbmTab.TEMPLATES, blueprint_plate);
+        ModTabs.addTo(HbmTab.TEMPLATES, blueprints);
+        ModTabs.addTo(HbmTab.TEMPLATES, blueprint_folder);
         ModTabs.addTo(HbmTab.CONTROL, laser_crystal_co2);
         ModTabs.addTo(HbmTab.CONTROL, laser_crystal_bismuth);
         ModTabs.addTo(HbmTab.CONTROL, laser_crystal_cmb);
@@ -88,6 +104,11 @@ public final class ModMachineItems {
         // tab-build time, after Fluids.init() has populated.
         ModTabs.addStacksTo(HbmTab.TEMPLATES, () -> {
             List<ItemStack> list = new ArrayList<>();
+            AssemblyMachineRecipes.INSTANCE.registerRecipes();
+            PrecAssRecipes.INSTANCE.registerRecipes();
+            for (String pool : GenericRecipes.blueprintPools.keySet()) {
+                if (!pool.startsWith(GenericRecipes.POOL_PREFIX_SECRET)) list.add(ItemBlueprints.make(pool));
+            }
             for (FluidType fluid : Fluids.getAll()) {
                 if (fluid == Fluids.NONE) continue;
                 list.add(ItemFluidId.make(fluid));

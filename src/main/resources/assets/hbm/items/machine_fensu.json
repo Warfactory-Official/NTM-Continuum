@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/fensu.obj",
+      "texture": "hbm:textures/models/machines/fensus/fensu_light_blue.png",
+      "scale": 0.21,
+      "yaw": 90.0,
+      "ty": 0.0
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/assembly_machine.obj",
+      "texture": "hbm:textures/models/machines/precass.png",
+      "scale": 0.35,
+      "yaw": 180,
+      "ty": 0.0
+    }
+  }
+}

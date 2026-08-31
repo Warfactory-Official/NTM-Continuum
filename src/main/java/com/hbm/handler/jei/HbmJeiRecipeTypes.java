@@ -6,11 +6,13 @@ import com.hbm.Constants;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
+import com.hbm.inventory.recipes.CyclotronRecipes;
 import com.hbm.inventory.recipes.GasCentrifugeRecipes;
 import com.hbm.inventory.recipes.ElectrolyserFluidRecipes;
 import com.hbm.inventory.recipes.ElectrolyserMetalRecipes;
 import com.hbm.inventory.recipes.MixerRecipes;
 import com.hbm.inventory.recipes.PressRecipes;
+import com.hbm.inventory.recipes.AmmoPressRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.anvil.AnvilSmithingRecipe;
@@ -38,6 +40,7 @@ public final class HbmJeiRecipeTypes {
     }
 
     public static final JeiRecipeType<GenericRecipe> ASSEMBLY_MACHINE = type("assembly_machine", GenericRecipe.class);
+    public static final JeiRecipeType<GenericRecipe> PRECISION_ASSEMBLER = type("precass", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> CHEMICAL_PLANT = type("chemical_plant", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> PUREX = type("purex", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> FUSION = type("fusion", GenericRecipe.class);
@@ -45,11 +48,17 @@ public final class HbmJeiRecipeTypes {
     public static final JeiRecipeType<GenericRecipe> PLASMA_FORGE = type("plasma_forge", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> MIXER = type("mixer", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> EXPOSURE_CHAMBER = type("exposure_chamber", GenericRecipe.class);
+    public static final JeiRecipeType<StorageDrumRecipeHandler.Entry> STORAGE_DRUM =
+            type("storage_drum", StorageDrumRecipeHandler.Entry.class);
 
     public static final JeiRecipeType<PressRecipes.PressRecipe> PRESS = type("press", PressRecipes.PressRecipe.class);
+    public static final JeiRecipeType<AmmoPressRecipes.AmmoPressRecipe> AMMO_PRESS =
+            type("ammo_press", AmmoPressRecipes.AmmoPressRecipe.class);
     public static final JeiRecipeType<SolderingRecipes.SolderingRecipe> SOLDERING_STATION = type("soldering_station", SolderingRecipes.SolderingRecipe.class);
     public static final JeiRecipeType<CrystallizerRecipes.CrystallizerRecipe> CRYSTALLIZER = type("crystallizer", CrystallizerRecipes.CrystallizerRecipe.class);
     public static final JeiRecipeType<CentrifugeRecipes.CentrifugeRecipe> CENTRIFUGE = type("centrifuge", CentrifugeRecipes.CentrifugeRecipe.class);
+    public static final JeiRecipeType<CyclotronRecipes.CyclotronRecipe> CYCLOTRON =
+            type("cyclotron", CyclotronRecipes.CyclotronRecipe.class);
     public static final JeiRecipeType<GasCentrifugeRecipes.GasCentrifugeRecipe> GAS_CENTRIFUGE =
             type("gas_centrifuge", GasCentrifugeRecipes.GasCentrifugeRecipe.class);
     public static final JeiRecipeType<ElectrolyserFluidRecipes.ElectrolysisRecipe> ELECTROLYSIS_FLUID =

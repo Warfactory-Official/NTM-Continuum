@@ -32,6 +32,8 @@ public class GenericRecipe {
      * the roll happens per <i>item</i> in the stack, so a 50% ×4 output averages two items.
      */
     public float[] outputChance;
+    /** Mutually exclusive weighted outputs for one result slot, matching ChanceOutputMulti. */
+    public OutputChoice[] outputChoices;
     public int duration;
     public long power;
     public String autoSwitchGroup = null;
@@ -57,8 +59,18 @@ public class GenericRecipe {
 
     public GenericRecipe outputItems(ItemStack... output) {
         this.outputItem = output;
+        this.outputChoices = null;
         return this;
     }
+
+    /** Sets one result slot whose output is selected by weight when the recipe completes. */
+    public GenericRecipe outputChoices(OutputChoice... choices) {
+        this.outputChoices = choices;
+        this.outputItem = choices.length == 0 ? null : new ItemStack[]{choices[0].stack().copy()};
+        return this;
+    }
+
+    public record OutputChoice(ItemStack stack, float weight) { }
 
     /** Drop chances (0..1) for the outputs set by {@link #outputItems}, in the same order. */
     public GenericRecipe outputChances(float... chances) {
@@ -159,7 +171,16 @@ public class GenericRecipe {
         if (inputFluid != null) for (FluidStack fluid : inputFluid) list.add(fluidLine(fluid));
 
         list.add(Component.translatable("gui.recipe.output").append(":").withStyle(ChatFormatting.BOLD));
-        if (outputItem != null) for (int i = 0; i < outputItem.length; i++) {
+        if (outputChoices != null) {
+            float total = 0F;
+            for (OutputChoice choice : outputChoices) total += Math.max(0F, choice.weight());
+            for (OutputChoice choice : outputChoices) {
+                int chance = total <= 0F ? 0 : Math.round(choice.weight() * 100F / total);
+                ItemStack out = choice.stack();
+                list.add(Component.literal("  " + chance + "% " + out.getCount() + "x ")
+                        .append(out.getHoverName()).withStyle(ChatFormatting.GRAY));
+            }
+        } else if (outputItem != null) for (int i = 0; i < outputItem.length; i++) {
             ItemStack out = outputItem[i];
             float chance = getChance(i);
             String prefix = chance >= 1F ? "  " : "  " + Math.round(chance * 100F) + "% ";

@@ -14,6 +14,12 @@ public abstract class GenericRecipes {
 
     /** Pool prefix: lets a single "alt" template cover a family of recipes (e.g. all plates). */
     public static final String POOL_PREFIX_ALT = "alt.";
+    /** Discoverable blueprint pools from the legacy recipe catalogue. */
+    public static final String POOL_PREFIX_DISCOVER = "discover.";
+    /** Secret blueprint pools from the legacy recipe catalogue. */
+    public static final String POOL_PREFIX_SECRET = "secret.";
+    /** 528-mode blueprint pools from the legacy precision assembler. */
+    public static final String POOL_PREFIX_528 = "528.";
 
     public final List<GenericRecipe> recipeOrderedList = new ArrayList<>();
     public final Map<String, GenericRecipe> recipeNameMap = new HashMap<>();
@@ -21,6 +27,8 @@ public abstract class GenericRecipes {
 
     /** pool name → recipe internal names in that pool. */
     public static final Map<String, List<String>> blueprintPools = new HashMap<>();
+    /** recipe internal name → recipe, for blueprint tooltip display. */
+    public static final Map<String, GenericRecipe> pooledBlueprints = new HashMap<>();
 
     /** Populates {@link #recipeNameMap}/{@link #recipeOrderedList} — implemented per machine. */
     public abstract void registerRecipes();
@@ -45,6 +53,7 @@ public abstract class GenericRecipes {
 
     public static void addToPool(String pool, GenericRecipe recipe) {
         blueprintPools.computeIfAbsent(pool, k -> new ArrayList<>()).add(recipe.getInternalName());
+        pooledBlueprints.put(recipe.getInternalName(), recipe);
     }
 
     public void addToGroup(String group, GenericRecipe recipe) {

@@ -66,7 +66,10 @@ public final class PlasmaForgeRecipes extends GenericRecipes {
                         new ComparableStack(ModMachineBlocks.fusion_component_bscco_welded.get().asItem(), 64),
                         new ComparableStack(ModMachineBlocks.fusion_component_blanket.get().asItem(), 64),
                         new ComparableStack(ModMachineBlocks.fusion_component_blanket.get().asItem(), 64),
-                        new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 4)));
+                         new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 4)));
+
+        // ass.fensusan is intentionally deferred: its exact old inputs require the unregistered
+        // ingot_electronium and ingot_u238m2. Do not replace either with a similar material.
     }
 
     private void weld(String name, com.hbm.inventory.material.NTMMaterial material,

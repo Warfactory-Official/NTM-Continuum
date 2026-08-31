@@ -35,9 +35,9 @@ import java.util.List;
  * <p><b>Deferred with their content</b> (the bulk of the original file, ~600 of its 822 lines): the 28
  * RBMK fuel-pellet families ({@code rbmk_pellet_*}, each with a fresh and a xenon-poisoned variant) and
  * the 32 {@code nuclear_waste_long/short[_depleted]} × {@code WasteClass} reprocessing recipes, plus
- * the tiny-waste translation table that derives a tiny recipe from its full-size counterpart. None of
- * those items are ported. The structure here takes them unchanged when they land: add the recipe, add
- * the translation.
+ * the tiny-waste translation table that derives a tiny recipe from its full-size counterpart. The long/short
+ * waste items now exist for the storage drum, but these SILEX recipe families remain deferred until their
+ * other fuel inputs land.
  */
 public final class SILEXRecipes {
 

@@ -47,6 +47,10 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> RADAWAY = register("item.radaway");
     public static final RegistryObject<SoundEvent> JETPACK_TANK = register("item.jetpack_tank");
     public static final RegistryObject<SoundEvent> VICE = register("item.vice");
+    /** Looping hum of the current BigInteger FEnSU. */
+    public static final RegistryObject<SoundEvent> FENSU_HUM = SOUNDS.register("block.fensu_hum",
+            () -> SoundEvent.createFixedRangeEvent(
+                    dev.golem.core.Ids.of(Constants.MOD_ID, "block.fensu_hum"), 25F));
 
     /** The Scream upgrade's screaming-scientist sound (old {@code block.screm}). */
     public static final RegistryObject<SoundEvent> SCREM = register("block.screm");

@@ -54,11 +54,16 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModRBMKBlockEntities.RBMK_GAUGE.get(), RBMKGaugeRenderer::new);
         regCustom(sink, ModRBMKBlockEntities.RBMK_CRANE_CONSOLE.get(), ctx -> new RBMKCraneConsoleRenderer());
         regCustom(sink, ModRBMKBlockEntities.RBMK_DEBRIS.get(), ctx -> new RBMKDebrisBlockRenderer());
-        // The assembly machine has its own animated renderer (spinning ring + two robotic arms).
-        regCustom(sink, ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), ctx -> new AssemblyMachineRenderer());
+         // The assembly machine has its own animated renderer (spinning ring + two robotic arms).
+         regCustom(sink, ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), ctx -> new AssemblyMachineRenderer());
+         // Precision assembler: the legacy four-striker variant of the same assembly model.
+         regCustom(sink, ModBlockEntities.MACHINE_PREC_ASS.get(), ctx -> new PrecisionAssemblerRenderer());
         // The chemical plant has its own animated renderer too: a sliding Slider + rotating Spinner + the
         // Fluid mixer overlay (its own texture, tinted by the recipe fluid, only while processing).
-         regCustom(sink, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), ctx -> new ChemicalPlantRenderer());
+          regCustom(sink, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), ctx -> new ChemicalPlantRenderer());
+          regCustom(sink, ModBlockEntities.MACHINE_CONDENSER_POWERED.get(), ctx -> new CondenserRenderer());
+          reg(sink, ModBlockEntities.MACHINE_STORAGE_DRUM.get(), 0F, 1F,
+                  new ModelDef(obj("machines/drum.obj"), tex("machines/drum_gray.png")));
          regCustom(sink, ModBlockEntities.MACHINE_MIXER.get(), ctx -> new MixerRenderer());
          // Mini and polonium RTGs share the legacy body; the renderer adds the four optional connectors.
          regCustom(sink, ModBlockEntities.MACHINE_MINI_RTG.get(), ctx -> new RTGRenderer());
@@ -85,11 +90,12 @@ public final class HbmBlockEntityRenderers {
                 obj("epress_body.obj"), tex("machines/epress_body.png"),
                 obj("epress_head.obj"), tex("machines/epress_head.png"),
                 90F, true, 1.875F, 1.0F, 200, te -> te.progress));
-        regCustom(sink, ModBlockEntities.MACHINE_PRESS.get(), ctx -> new PressRenderer<>(
-                obj("press_body.obj"), tex("machines/press_body.png"),
-                obj("press_head.obj"), tex("machines/press_head.png"),
-                 180F, false, 0.875F, 0.95F, 200, te -> te.progress));
-        regCustom(sink, ModBlockEntities.MACHINE_SAWMILL.get(), ctx -> new SawmillRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_PRESS.get(), ctx -> new PressRenderer<>(
+                 obj("press_body.obj"), tex("machines/press_body.png"),
+                 obj("press_head.obj"), tex("machines/press_head.png"),
+                  180F, false, 0.875F, 0.95F, 200, te -> te.progress));
+         regCustom(sink, ModBlockEntities.MACHINE_AMMO_PRESS.get(), ctx -> new AmmoPressRenderer());
+         regCustom(sink, ModBlockEntities.MACHINE_SAWMILL.get(), ctx -> new SawmillRenderer());
         // The launch pad draws the missile it is holding on top of the silo, so it needs its own
         // renderer rather than the generic static-OBJ one.
         regCustom(sink, ModBlockEntities.LAUNCH_PAD.get(), ctx -> new LaunchPadRenderer());
@@ -101,9 +107,10 @@ public final class HbmBlockEntityRenderers {
         // Ore acidizer: static Body + rotating Spinner + the tinted acid overlay while processing.
          regCustom(sink, ModBlockEntities.MACHINE_CRYSTALLIZER.get(), ctx -> new CrystallizerRenderer());
          // Standard centrifuge: static tower, with the legacy N/S/W/E core yaw map.
-          reg(sink, ModBlockEntities.MACHINE_CENTRIFUGE.get(), 0F, 1F,
-                  new ModelDef(obj("machines/centrifuge.obj"), tex("machines/centrifuge_new.png")));
-          // Gas centrifuge: old yaw map N270/S90/W0/E180 = built-in facing map + 270 degrees.
+           reg(sink, ModBlockEntities.MACHINE_CENTRIFUGE.get(), 0F, 1F,
+                   new ModelDef(obj("machines/centrifuge.obj"), tex("machines/centrifuge_new.png")));
+           regCustom(sink, ModBlockEntities.MACHINE_CYCLOTRON.get(), ctx -> new CyclotronRenderer());
+           // Gas centrifuge: old yaw map N270/S90/W0/E180 = built-in facing map + 270 degrees.
           reg(sink, ModBlockEntities.MACHINE_GAS_CENT.get(), 270F, 1F,
                    new ModelDef(obj("machines/centrifuge_gas.obj"), tex("machines/centrifuge_gas.png")));
            reg(sink, ModBlockEntities.MACHINE_ELECTROLYSER.get(), 180F, 1F,
@@ -261,8 +268,10 @@ public final class HbmBlockEntityRenderers {
           regCustom(sink, ModBlockEntities.FLUID_TANK.get(), ctx -> new FluidTankRenderer());
           reg(sink, ModBlockEntities.MACHINE_UF6_TANK.get(), 0F, 1F,
                   new ModelDef(obj("tank.obj"), tex("machines/uf6tank.png")));
-          reg(sink, ModBlockEntities.MACHINE_PUF6_TANK.get(), 0F, 1F,
-                  new ModelDef(obj("tank.obj"), tex("machines/puf6tank.png")));
+           reg(sink, ModBlockEntities.MACHINE_PUF6_TANK.get(), 0F, 1F,
+                   new ModelDef(obj("tank.obj"), tex("machines/puf6tank.png")));
+           regCustom(sink, ModBlockEntities.MACHINE_BIG_ASS_TANK.get(), ctx -> new BigAssTankRenderer());
+           regCustom(sink, ModBlockEntities.MACHINE_BAT9000.get(), ctx -> new BAT9000Renderer());
            reg(sink, ModBlockEntities.MACHINE_DEUTERIUM_TOWER.get(), 180F, 1F, 0.5F, -0.5F,
                    new ModelDef(obj("machines/machine_deuterium_tower.obj"),
                            tex("machines/machine_deuterium_tower.png")));
@@ -271,7 +280,11 @@ public final class HbmBlockEntityRenderers {
                  new ModelDef(obj("machines/drain.obj"), tex("machines/drain.png"))));
 
          // Battery socket: draws the cradle + the inserted battery (per-variant texture).
-        regCustom(sink, ModBlockEntities.BATTERY_SOCKET.get(), ctx -> new BatterySocketRenderer());
+         regCustom(sink, ModBlockEntities.BATTERY_SOCKET.get(), ctx -> new BatterySocketRenderer());
+          // FEnSU: colored body + X-axis flywheel, with its lights submitted fullbright.
+          regCustom(sink, ModBlockEntities.FENSU.get(), ctx -> new FensuRenderer());
+          // Current FEnSU: the separate fensu2 flywheel bank, including additive plasma and zaps.
+          regCustom(sink, ModBlockEntities.BATTERY_REDD.get(), ctx -> new BatteryReddRenderer());
 
         // Crucible: basin OBJ + molten pool surface + the two pour streams.
         regCustom(sink, ModBlockEntities.MACHINE_CRUCIBLE.get(), ctx -> new CrucibleRenderer());

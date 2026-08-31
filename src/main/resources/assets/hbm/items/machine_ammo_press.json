@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/ammo_press.obj",
+      "texture": "hbm:textures/models/machines/ammo_press.png",
+      "scale": 0.42,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

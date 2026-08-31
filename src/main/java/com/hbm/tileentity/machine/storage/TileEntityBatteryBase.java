@@ -79,7 +79,13 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
             }
         }
 
-        lastRedstone = getComparatorPower();
+        byte comparator = getComparatorPower();
+        if (comparator != lastRedstone) {
+            for (BlockPos port : getPortPos()) {
+                level.updateNeighborsAt(port, getBlockState().getBlock());
+            }
+            lastRedstone = comparator;
+        }
         setChanged();
         networkPackNT();
     }

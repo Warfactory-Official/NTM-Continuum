@@ -220,6 +220,7 @@ public class HazardSystem {
         for (HazardEntry hazard : getHazardsFromStack(stack)) {
             hazard.type.addHazardInformation(player, list, hazard.baseLevel, stack, hazard.mods);
         }
+        com.hbm.util.ContaminationUtil.addNeutronRadInfo(stack, list);
     }
 
     public static void clearCaches() {

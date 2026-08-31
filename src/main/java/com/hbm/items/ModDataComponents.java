@@ -7,6 +7,8 @@ import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ModelData;
 import net.minecraft.world.item.ItemStack;
 
+import java.math.BigInteger;
+
 /** HBM's typed mutable item state, backed by Golem Core on every target. */
 public final class ModDataComponents {
 
@@ -15,6 +17,9 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> FLUID_ID = GolemComponent.integer(Constants.MOD_ID, "fluid_id");
     public static final GolemComponent<Integer> FLUID_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "fluid_amount");
     public static final GolemComponent<Integer> FLUID_PRESSURE = GolemComponent.integer(Constants.MOD_ID, "fluid_pressure");
+    /** Filled giant-tank block state carried when a giant tank is broken and picked up. */
+    public static final GolemComponent<Integer> GIANT_TANK_MODE =
+            GolemComponent.integer(Constants.MOD_ID, "giant_tank_mode");
     public static final GolemComponent<String> MATERIAL = GolemComponent.string(Constants.MOD_ID, "material");
     public static final GolemComponent<Integer> MAT_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "mat_amount");
     public static final GolemComponent<Long> BATTERY_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "battery_charge");
@@ -23,6 +28,32 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
     public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
+    /** The old metadata value on the long/short storage-drum waste items. */
+    public static final GolemComponent<Integer> STORAGE_WASTE_CLASS =
+            GolemComponent.integer(Constants.MOD_ID, "storage_waste_class");
+    /** The old neutron-contamination float formerly stored directly on an item NBT tag. */
+    public static final GolemComponent<Float> NEUTRON_ACTIVATION =
+            GolemComponent.floatValue(Constants.MOD_ID, "neutron_activation");
+    /** Pool name carried by the legacy dynamic blueprint item. */
+    public static final GolemComponent<String> BLUEPRINT_POOL = GolemComponent.string(Constants.MOD_ID, "blueprint_pool");
+    /** Registry id of the item represented by a broken precision-assembler output. */
+    public static final GolemComponent<String> BROKEN_ITEM = GolemComponent.string(Constants.MOD_ID, "broken_item");
+    /** Internal energy carried by a dropped FEnSU machine block. */
+    public static final GolemComponent<Long> FENSU_POWER = GolemComponent.longValue(Constants.MOD_ID, "fensu_power");
+    /** Dye metadata carried by a dropped FEnSU machine block. */
+    public static final GolemComponent<Integer> FENSU_COLOR = GolemComponent.integer(Constants.MOD_ID, "fensu_color");
+    /** Unpowered redstone mode carried by a dropped FEnSU machine block. */
+    public static final GolemComponent<Integer> FENSU_RED_LOW = GolemComponent.integer(Constants.MOD_ID, "fensu_red_low");
+    /** Powered redstone mode carried by a dropped FEnSU machine block. */
+    public static final GolemComponent<Integer> FENSU_RED_HIGH = GolemComponent.integer(Constants.MOD_ID, "fensu_red_high");
+    /** Network priority carried by a dropped FEnSU machine block. */
+    public static final GolemComponent<Integer> FENSU_PRIORITY = GolemComponent.integer(Constants.MOD_ID, "fensu_priority");
+    /** Arbitrary power carried by a dropped machine_battery_redd block; decimal encoding avoids a long cap. */
+    public static final GolemComponent<BigInteger> BATTERY_REDD_POWER = GolemComponent.of(
+            Constants.MOD_ID, "battery_redd_power", Codec.STRING.xmap(BigInteger::new, BigInteger::toString));
+    /** Muffler state carried by a dropped machine_battery_redd block. */
+    public static final GolemComponent<Boolean> BATTERY_REDD_MUFFLED = GolemComponent.of(
+            Constants.MOD_ID, "battery_redd_muffled", Codec.BOOL);
     public static final GolemComponent<Long> RBMK_TOOL_TARGET = GolemComponent.longValue(Constants.MOD_ID, "rbmk_tool_target");
     /** A Watz fuel pellet's remaining yield (the old NBT double {@code "yield"}). */
     public static final GolemComponent<Double> WATZ_YIELD = GolemComponent.of(Constants.MOD_ID, "watz_yield", Codec.DOUBLE);
@@ -97,6 +128,32 @@ public final class ModDataComponents {
     public static void gasMaskFilter(ItemStack stack, ItemStack filter) { GAS_MASK_FILTER.set(stack, dev.golem.core.world.ItemStacks.copyWithCount(filter, 1)); }
     public static void removeGasMaskFilter(ItemStack stack) { GAS_MASK_FILTER.remove(stack); }
     public static void removeCustomModelData(ItemStack stack) { ModelData.removeColor(stack); }
+    public static int storageWasteClass(ItemStack stack) { return STORAGE_WASTE_CLASS.getOr(stack, 0); }
+    public static void storageWasteClass(ItemStack stack, int value) { STORAGE_WASTE_CLASS.set(stack, value); }
+
+    public static String blueprintPool(ItemStack stack) { return BLUEPRINT_POOL.getOr(stack, null); }
+    public static void blueprintPool(ItemStack stack, String value) { BLUEPRINT_POOL.set(stack, value); }
+    public static String brokenItem(ItemStack stack) { return BROKEN_ITEM.getOr(stack, null); }
+    public static void brokenItem(ItemStack stack, String value) { BROKEN_ITEM.set(stack, value); }
+    public static long fensuPower(ItemStack stack) { return FENSU_POWER.getOr(stack, 0L); }
+    public static void fensuPower(ItemStack stack, long value) { FENSU_POWER.set(stack, value); }
+    public static int fensuColor(ItemStack stack, int defaultValue) { return FENSU_COLOR.getOr(stack, defaultValue); }
+    public static void setFensuColor(ItemStack stack, int value) { FENSU_COLOR.set(stack, value); }
+    public static int fensuRedLow(ItemStack stack, int defaultValue) { return FENSU_RED_LOW.getOr(stack, defaultValue); }
+    public static void setFensuRedLow(ItemStack stack, int value) { FENSU_RED_LOW.set(stack, value); }
+    public static int fensuRedHigh(ItemStack stack, int defaultValue) { return FENSU_RED_HIGH.getOr(stack, defaultValue); }
+    public static void setFensuRedHigh(ItemStack stack, int value) { FENSU_RED_HIGH.set(stack, value); }
+    public static int fensuPriority(ItemStack stack, int defaultValue) { return FENSU_PRIORITY.getOr(stack, defaultValue); }
+    public static void setFensuPriority(ItemStack stack, int value) { FENSU_PRIORITY.set(stack, value); }
+    public static BigInteger batteryReddPower(ItemStack stack) {
+        return BATTERY_REDD_POWER.getOr(stack, BigInteger.ZERO);
+    }
+    public static void setBatteryReddPower(ItemStack stack, BigInteger value) {
+        BATTERY_REDD_POWER.set(stack, value.max(BigInteger.ZERO));
+    }
+    public static boolean hasBatteryReddPower(ItemStack stack) { return BATTERY_REDD_POWER.has(stack); }
+    public static boolean batteryReddMuffled(ItemStack stack) { return BATTERY_REDD_MUFFLED.getOr(stack, false); }
+    public static void setBatteryReddMuffled(ItemStack stack, boolean value) { BATTERY_REDD_MUFFLED.set(stack, value); }
 
     public static void init() {}
 }

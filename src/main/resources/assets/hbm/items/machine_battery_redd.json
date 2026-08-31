@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/fensu2.obj",
+      "texture": "hbm:textures/models/machines/fensu2.png",
+      "exclude": [
+        "Plasma"
+      ],
+      "scale": 0.1024390244,
+      "yaw": 270.0,
+      "ty": 0.0
+    }
+  }
+}

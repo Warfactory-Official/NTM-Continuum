@@ -1,0 +1,20 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/cyclotron.obj",
+      "texture": "hbm:textures/models/machines/cyclotron.png",
+      "partTextures": {
+        "B1": "hbm:textures/models/machines/cyclotron_ashes.png",
+        "B2": "hbm:textures/models/machines/cyclotron_book.png",
+        "B3": "hbm:textures/models/machines/cyclotron_gavel.png",
+        "B4": "hbm:textures/models/machines/cyclotron_coin.png"
+      },
+      "scale": 0.25,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

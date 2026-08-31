@@ -2,7 +2,7 @@ package com.hbm.config;
 
 /**
  * General switches, ported from 1.12.2's {@code GeneralConfig} (plain constants like {@link BombConfig}).
- * Only the radiation-relevant switches are present so far — grow as more systems land.
+ * Only the switches needed by ported systems are present so far — grow as more systems land.
  */
 public final class GeneralConfig {
 
@@ -25,6 +25,9 @@ public final class GeneralConfig {
 
     /** Old {@code 1.99_enableExpensiveMode}; selects the alternate Exposure Chamber catalyst. */
     public static boolean enableExpensiveMode = false;
+
+    /** The legacy central 528-mode toggle; precision-assembler recipes remain disabled by default. */
+    public static boolean enable528 = false;
 
     /** One-in-N random ticks before radon dissipates; dense radon deposits fallout when it expires. */
     public static int radonDecayChance = 20;

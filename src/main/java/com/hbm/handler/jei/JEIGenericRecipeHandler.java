@@ -7,6 +7,7 @@ import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
+import com.hbm.items.machine.ItemBlueprints;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
@@ -29,8 +30,8 @@ import java.util.List;
  * vertical <b>arrow-over-machine pill</b> {@code (59,87,18,36)} drawn at {@code (74,14)} with the machine
  * icon in its lower half. The old assembly-machine offset (recipes with &gt;9 inputs shift everything
  * +18px) is preserved. Fluids render as {@link ItemFluidIcon} droplets; {@link AStack} inputs expand via
- * {@code getDisplayStacks()} (the old {@code extractForJEI()}). Blueprint-template display is deferred
- * (the port's blueprints are one-item-per-pool, no {@code ItemBlueprints.make}).
+ * {@code getDisplayStacks()} (the old {@code extractForJEI()}). Pooled recipes display their required
+ * dynamic blueprint templates above the machine, as in the old handler.
  */
 public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
 
@@ -38,6 +39,7 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
     protected final ItemStack[] machines;
     protected final IDrawable slotFrame;    // gui_nei 5,87 18x18
     protected final IDrawable machinePill;  // gui_nei 59,87 18x36 (arrow above, machine below)
+    protected final IDrawable blueprintPill; // gui_nei 77,87 18x50 (blueprint, arrow, machine)
 
     public JEIGenericRecipeHandler(IGuiHelper helper, JeiRecipeType<GenericRecipe> type, Component title,
                                    GenericRecipes recipeSet, ItemStack... machines) {
@@ -46,6 +48,7 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         this.machines = machines;
         this.slotFrame = helper.createDrawable(tex("gui_nei.png"), 5, 87, 18, 18);
         this.machinePill = helper.createDrawable(tex("gui_nei.png"), 59, 87, 18, 36);
+        this.blueprintPill = helper.createDrawable(tex("gui_nei.png"), 77, 87, 18, 50);
     }
 
     /** The recipes to register for this category — the machine's whole ordered list, minus empties. */
@@ -53,6 +56,16 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         recipeSet.registerRecipes(); // idempotent; JEI runs client-side before the machine's first server tick
         List<GenericRecipe> out = new ArrayList<>();
         for (GenericRecipe recipe : recipeSet.recipeOrderedList) {
+            if (recipe.isPooled() && recipe.blueprintPools != null) {
+                boolean secret = false;
+                for (String pool : recipe.blueprintPools) {
+                    if (pool.startsWith(GenericRecipes.POOL_PREFIX_SECRET)) {
+                        secret = true;
+                        break;
+                    }
+                }
+                if (secret) continue;
+            }
             if (!inputs(recipe).isEmpty() || !outputs(recipe).isEmpty()) out.add(recipe);
         }
         return out;
@@ -75,7 +88,11 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
     /** Expanded output lists (item outputs first, then fluid droplets), one entry per slot. */
     protected static List<List<ItemStack>> outputs(GenericRecipe recipe) {
         List<List<ItemStack>> list = new ArrayList<>();
-        if (recipe.outputItem != null) for (ItemStack s : recipe.outputItem) {
+        if (recipe.outputChoices != null) {
+            List<ItemStack> choices = new ArrayList<>();
+            for (GenericRecipe.OutputChoice choice : recipe.outputChoices) choices.add(choice.stack().copy());
+            if (!choices.isEmpty()) list.add(choices);
+        } else if (recipe.outputItem != null) for (ItemStack s : recipe.outputItem) {
             if (s != null && !s.isEmpty()) list.add(Collections.singletonList(s.copy()));
         }
         if (recipe.outputFluid != null) for (FluidStack f : recipe.outputFluid) {
@@ -90,11 +107,20 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
         return recipe.inputItem != null && recipe.inputItem.length > 9 ? 18 : 0;
     }
 
+    /** Dynamic blueprint stacks are the pooled recipe requirement, not ordinary recipe ingredients. */
+    protected static List<ItemStack> blueprintTemplates(GenericRecipe recipe) {
+        if (!recipe.isPooled() || recipe.blueprintPools == null) return List.of();
+        List<ItemStack> templates = new ArrayList<>(recipe.blueprintPools.length);
+        for (String pool : recipe.blueprintPools) templates.add(ItemBlueprints.make(pool));
+        return templates;
+    }
+
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, GenericRecipe recipe, IFocusGroup focuses) {
         int off = xOffset(recipe);
         List<List<ItemStack>> in = inputs(recipe);
         List<List<ItemStack>> out = outputs(recipe);
+        List<ItemStack> templates = blueprintTemplates(recipe);
 
         int[][] inPos = getInputSlotPositions(in.size());
         for (int i = 0; i < in.size(); i++) {
@@ -110,15 +136,24 @@ public class JEIGenericRecipeHandler extends HbmRecipeCategory<GenericRecipe> {
 
         // The machine itself, sitting in the lower half of the pill (old: init(74+off, 29) → item at +1).
         if (machines != null && machines.length > 0) {
-            builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75 + off, 30)
+            builder.addSlot(dev.golem.core.jei.Jei.CRAFTING_STATION, 75 + off, templates.isEmpty() ? 30 : 37)
                     .addItemStacks(List.of(machines));
+        }
+
+        if (!templates.isEmpty()) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, 75 + off, 10)
+                    .addItemStacks(templates);
         }
     }
 
     @Override
     public void draw(GenericRecipe recipe, IRecipeSlotsView slots, GuiGraphicsExtractor g, double mouseX, double mouseY) {
         super.draw(recipe, slots, g, mouseX, mouseY);
-        machinePill.draw(g, 74 + xOffset(recipe), 14);
+        if (blueprintTemplates(recipe).isEmpty()) {
+            machinePill.draw(g, 74 + xOffset(recipe), 14);
+        } else {
+            blueprintPill.draw(g, 74 + xOffset(recipe), 7);
+        }
     }
 
     // The 1.12.2 JEIGenericRecipeHandler coordinate tables (item positions; the frame draws at -1,-1).

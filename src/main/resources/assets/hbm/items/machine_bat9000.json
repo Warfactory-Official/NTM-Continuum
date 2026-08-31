@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/bat9000.obj",
+      "texture": "hbm:textures/models/machines/bat9000.png",
+      "scale": 0.2,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

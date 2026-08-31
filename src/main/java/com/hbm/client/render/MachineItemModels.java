@@ -248,7 +248,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         List<Float> guiTranslate = floats(json, "guiTranslate");
 
          Map<String, RenderType> materialTypes = Map.of();
-        if (bool(json, "mtl", false)) {
+          if (bool(json, "mtl", false)) {
             // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
             Identifier objId = id(json, "obj", null);
             Map<String, Identifier> lib = WavefrontObj.loadMtl(dev.golem.core.Ids.of(
@@ -259,6 +259,18 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 if (tex != null) resolved.put(mat, cutout(tex, noCull));
             }
                    materialTypes = resolved;
+         }
+         Map<String, RenderType> partTypes = Map.of();
+         JsonElement partTextureValue = json.get("partTextures");
+         if (partTextureValue != null && partTextureValue.isJsonObject()) {
+             Map<String, RenderType> resolved = new LinkedHashMap<>();
+             resolved.put("Body", cutout(texture, noCull));
+             for (Map.Entry<String, JsonElement> entry : partTextureValue.getAsJsonObject().entrySet()) {
+                 if (entry.getValue().isJsonPrimitive()) {
+                     resolved.put(entry.getKey(), cutout(dev.golem.core.Ids.parse(entry.getValue().getAsString()), noCull));
+                 }
+             }
+             partTypes = resolved;
          }
          List<String> blackParts = strings(json, "blackParts");
          Map<String, MachineItemModel.ContextTransform> contextTransforms = contextTransforms(json);
@@ -287,7 +299,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 pivot.size() == 3 ? new Vector3f(pivot.get(0), pivot.get(1), pivot.get(2)) : new Vector3f(),
                  strings(json, "spinParts"),
                  spinPivot.size() == 3 ? new Vector3f(spinPivot.get(0), spinPivot.get(1), spinPivot.get(2)) : new Vector3f(),
-                  materialTypes,
+                   materialTypes, partTypes,
                    bool(json, "spin", false), contextTransforms, string(json, "animation", ""));
     }
 

@@ -74,6 +74,7 @@ public final class MainRegistry {
         ModDataComponents.init();  // custom item data components (referenced by hand items below)
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModStorageDrumItems.init();
         com.hbm.items.ModFoodItems.init();
         com.hbm.items.ModCatalystItems.init();
         ModMedicineItems.init();
