@@ -1,6 +1,6 @@
 package com.hbm;
 
-import com.hbm.platform.Services;
+import dev.golem.core.platform.Platform;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Items;
 
@@ -12,10 +12,11 @@ public class CommonClass {
         // Fabric via DeferredRegister.flushAll). This must run before registration is flushed.
         com.hbm.main.MainRegistry.bootstrap();
 
-        Constants.LOG.info("Hello from Common init on {}! we are currently in a {} environment!", Services.PLATFORM.getPlatformName(), Services.PLATFORM.getEnvironmentName());
+        Constants.LOG.info("Hello from Common init on {}! we are currently in a {} environment!",
+                Platform.name(), Platform.environmentName());
         Constants.LOG.info("The ID for diamonds is {}", BuiltInRegistries.ITEM.getKey(Items.DIAMOND));
 
-        if (Services.PLATFORM.isModLoaded("hbm")) {
+        if (Platform.isModLoaded("hbm")) {
 
             Constants.LOG.info("Hello to hbm");
         }

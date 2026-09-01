@@ -132,11 +132,7 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     }
 
     private byte[] compilePayload() {
-        //? if >=1.20.5 {
-        RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), level.registryAccess());
-        //?} else {
-        /*RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer());
-        *///?}
+        var buf = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), level);
         try {
             serialize(buf);
             byte[] data = new byte[buf.readableBytes()];

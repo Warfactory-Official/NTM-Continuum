@@ -27,12 +27,7 @@ public final class HbmCommands {
     private HbmCommands() {}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("hbm").requires(//? if >=26.1 {
-                Commands.hasPermission(Commands.LEVEL_GAMEMASTERS)
-                //?} else {
-                /*src -> src.hasPermission(Commands.LEVEL_GAMEMASTERS)
-                *///?}
-                )
+        dispatcher.register(Commands.literal("hbm").requires(dev.golem.core.command.Permissions.gamemasters())
                 .then(Commands.literal("rad")
                         .then(Commands.literal("set")
                                 .then(Commands.argument("pos", BlockPosArgument.blockPos())

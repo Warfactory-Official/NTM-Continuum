@@ -2,8 +2,7 @@ package com.hbm.tileentity;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
-import com.hbm.platform.Services;
-import com.hbm.platform.services.BlockEntityFactory;
+import dev.golem.core.registry.BlockEntities;
 import com.hbm.tileentity.machine.rbmk.*;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -14,7 +13,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 public final class ModRBMKBlockEntities {
     private ModRBMKBlockEntities() {}
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
-    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> RegistryObject<BlockEntityType<T>> type(String id, BlockEntityFactory<T> factory, RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks){return BLOCK_ENTITIES.register(id,()->Services.PLATFORM.blockEntityType(factory,java.util.Arrays.stream(blocks).map(RegistryObject::get).toArray(net.minecraft.world.level.block.Block[]::new)));}
+    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> RegistryObject<BlockEntityType<T>> type(String id, BlockEntities.Factory<T> factory, RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks){return BLOCK_ENTITIES.register(id,()->BlockEntities.type(factory,java.util.Arrays.stream(blocks).map(RegistryObject::get).toArray(net.minecraft.world.level.block.Block[]::new)));}
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKRod>> RBMK_ROD=type("rbmk_fuel_rod",BlockEntityRBMKRod::new,ModRBMKBlocks.rbmk_fuel_rod,ModRBMKBlocks.rbmk_fuel_rod_moderated);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKRodReaSim>> RBMK_ROD_REASIM=type("rbmk_fuel_rod_reasim",BlockEntityRBMKRodReaSim::new,ModRBMKBlocks.rbmk_fuel_rod_reasim,ModRBMKBlocks.rbmk_fuel_rod_reasim_moderated);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKControlManual>> RBMK_CONTROL=type("rbmk_control",BlockEntityRBMKControlManual::new,ModRBMKBlocks.rbmk_control,ModRBMKBlocks.rbmk_control_mod,ModRBMKBlocks.rbmk_control_reasim);

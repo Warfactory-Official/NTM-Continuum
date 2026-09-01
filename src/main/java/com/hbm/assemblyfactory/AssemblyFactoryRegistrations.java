@@ -5,7 +5,7 @@ import com.hbm.blocks.machine.MachineAssemblyFactory;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
-import com.hbm.platform.Services;
+import dev.golem.core.registry.BlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
@@ -37,7 +37,7 @@ public final class AssemblyFactoryRegistrations {
             "machine_assembly_factory", MACHINE_ASSEMBLY_FACTORY);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineAssemblyFactory>> MACHINE_ASSEMBLY_FACTORY_BE =
-            BLOCK_ENTITIES.register("machine_assembly_factory", () -> Services.PLATFORM.blockEntityType(
+            BLOCK_ENTITIES.register("machine_assembly_factory", () -> BlockEntities.type(
                     TileEntityMachineAssemblyFactory::new, MACHINE_ASSEMBLY_FACTORY.get()));
 
     public static final RegistryObject<MenuType<ContainerMachineAssemblyFactory>> MACHINE_ASSEMBLY_FACTORY_MENU =

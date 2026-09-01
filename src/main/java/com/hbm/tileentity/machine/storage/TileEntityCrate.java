@@ -3,9 +3,6 @@ package com.hbm.tileentity.machine.storage;
 import com.hbm.inventory.container.ContainerCrate;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.NonNullList;
-//? if >=26.1 {
-import net.minecraft.core.component.DataComponentGetter;
-//?}
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -43,7 +40,8 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
         return crateType.defaultName;
     }
 
-    private NonNullList<ItemStack> getItems() {
+    @Override
+    protected NonNullList<ItemStack> carriedItems() {
         return inventory.getStacks();
     }
 
@@ -57,44 +55,12 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
     }
 
-    // --- contents-in-item ---
-
-    //? if >=26.1 {
-    @Override
-    protected void applyImplicitComponents(DataComponentGetter components) {
-        super.applyImplicitComponents(components);
-        components.getOrDefault(net.minecraft.core.component.DataComponents.CONTAINER,
-                net.minecraft.world.item.component.ItemContainerContents.EMPTY).copyInto(getItems());
-    }
-
-    @Override
-    protected void collectImplicitComponents(net.minecraft.core.component.DataComponentMap.Builder components) {
-        super.collectImplicitComponents(components);
-        components.set(net.minecraft.core.component.DataComponents.CONTAINER,
-                net.minecraft.world.item.component.ItemContainerContents.fromItems(getItems()));
-    }
-
     @Override
     protected void removeSavedComponents(DataOut output) {
-        // The inventory lives in the CONTAINER component on the item; drop the redundant saved copy
-        // (mirrors vanilla discarding "Items"). Only affects the save-to-item path, not the world save.
+        super.removeSavedComponents(output);
         output.discard("inventory");
+        output.discard("customName");
     }
-    //?} else if >=1.20.5 {
-    /*@Override
-    protected void applyImplicitComponents(net.minecraft.world.level.block.entity.BlockEntity.DataComponentInput components) {
-        super.applyImplicitComponents(components);
-        components.getOrDefault(net.minecraft.core.component.DataComponents.CONTAINER,
-                net.minecraft.world.item.component.ItemContainerContents.EMPTY).copyInto(getItems());
-    }
-
-    @Override
-    protected void collectImplicitComponents(net.minecraft.core.component.DataComponentMap.Builder components) {
-        super.collectImplicitComponents(components);
-        components.set(net.minecraft.core.component.DataComponents.CONTAINER,
-                net.minecraft.world.item.component.ItemContainerContents.fromItems(getItems()));
-    }
-    *///?}
 
     @Override
     public Component getDisplayName() {

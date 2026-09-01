@@ -4,7 +4,6 @@ import com.hbm.config.BombConfig;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.interfaces.IBomb;
-import com.hbm.platform.Services;
 import com.hbm.tileentity.bomb.TileEntityNukeMan;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;

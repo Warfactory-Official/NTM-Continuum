@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine.struct;
 
-import com.hbm.platform.services.BlockEntityFactory;
+import dev.golem.core.registry.BlockEntities;
 import com.hbm.tileentity.machine.struct.TileEntityStructBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -26,10 +26,10 @@ import org.jspecify.annotations.Nullable;
  */
 public class BlockStruct extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
-    private final BlockEntityFactory<?> factory;
+    private final BlockEntities.Factory<?> factory;
     private final java.util.function.Supplier<BlockEntityType<?>> type;
 
-    public BlockStruct(Properties properties, BlockEntityFactory<?> factory,
+    public BlockStruct(Properties properties, BlockEntities.Factory<?> factory,
                        java.util.function.Supplier<BlockEntityType<?>> type) {
         super(properties);
         this.factory = factory;

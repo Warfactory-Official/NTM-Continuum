@@ -63,13 +63,7 @@ public class BlockBalefire extends CompatFireBlock {
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        // 26.1 folds the old `doFireTick` gamerule check and the area-loaded guard into one helper,
-        // which is exactly what vanilla FireBlock.tick now calls.
-        //? if >=26.1 {
-        if (!level.canSpreadFireAround(pos)) return;
-        //?} else {
-        /*if (!level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOFIRETICK)) return;
-        *///?}
+        if (!dev.golem.core.world.Fires.canSpreadAround(level, pos)) return;
 
         int age = state.getValue(AGE);
         if (age < 15) {

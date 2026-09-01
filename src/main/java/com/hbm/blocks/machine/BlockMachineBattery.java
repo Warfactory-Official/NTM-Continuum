@@ -2,7 +2,6 @@ package com.hbm.blocks.machine;
 
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.lib.Library;
-import com.hbm.platform.Services;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import net.minecraft.core.BlockPos;

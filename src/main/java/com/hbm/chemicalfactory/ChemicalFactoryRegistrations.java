@@ -6,7 +6,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
-import com.hbm.platform.Services;
+import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -38,7 +38,7 @@ public final class ChemicalFactoryRegistrations {
             "machine_chemical_factory", MACHINE_CHEMICAL_FACTORY);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineChemicalFactory>> MACHINE_CHEMICAL_FACTORY_BE =
-            BLOCK_ENTITIES.register("machine_chemical_factory", () -> Services.PLATFORM.blockEntityType(
+            BLOCK_ENTITIES.register("machine_chemical_factory", () -> BlockEntities.type(
                     TileEntityMachineChemicalFactory::new, MACHINE_CHEMICAL_FACTORY.get()));
 
     public static final RegistryObject<MenuType<ContainerMachineChemicalFactory>> MACHINE_CHEMICAL_FACTORY_MENU =

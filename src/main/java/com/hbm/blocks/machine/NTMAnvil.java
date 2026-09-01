@@ -1,7 +1,6 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.inventory.container.ContainerAnvil;
-import com.hbm.platform.Services;
 import com.hbm.tileentity.TileEntityAnvil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

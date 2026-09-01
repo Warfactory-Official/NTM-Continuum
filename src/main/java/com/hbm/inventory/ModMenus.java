@@ -35,7 +35,6 @@ import com.hbm.inventory.container.ContainerWasteDrum;
 import com.hbm.inventory.container.ContainerStorageDrum;
 import com.hbm.inventory.container.ContainerMachineRadGen;
 import com.hbm.inventory.container.ContainerReactorZirnox;
-import com.hbm.platform.Services;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;

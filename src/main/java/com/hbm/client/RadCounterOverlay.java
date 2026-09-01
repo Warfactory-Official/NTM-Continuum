@@ -78,11 +78,7 @@ public final class RadCounterOverlay {
     private static boolean carriesCounter(Player player) {
         Item geiger = ModGearItems.geiger_counter.get();
         Item dosimeter = ModGearItems.dosimeter.get();
-        //? if >=26.1 {
-        for (ItemStack stack : player.getInventory()) {
-        //?} else {
-        /*for (ItemStack stack : player.getInventory().items) {
-        *///?}
+        for (ItemStack stack : dev.golem.core.data.Inventories.main(player.getInventory())) {
             if (stack.is(geiger) || stack.is(dosimeter)) return true;
         }
         return false;

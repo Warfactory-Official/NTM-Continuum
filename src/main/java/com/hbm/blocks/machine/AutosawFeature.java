@@ -31,7 +31,7 @@ public final class AutosawFeature {
             "machine_autosaw", p -> new ItemBlockAutosaw(machine_autosaw.get(), p), Compat::blockDescription);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineAutosaw>> MACHINE_AUTOSAW =
-            BLOCK_ENTITIES.register("machine_autosaw", () -> com.hbm.platform.Services.PLATFORM.blockEntityType(
+            BLOCK_ENTITIES.register("machine_autosaw", () -> dev.golem.core.registry.BlockEntities.type(
                     TileEntityMachineAutosaw::new, machine_autosaw.get()));
 
     static {

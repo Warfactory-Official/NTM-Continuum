@@ -10,7 +10,7 @@ import com.hbm.inventory.container.ContainerAshpit;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import com.hbm.tileentity.machine.TileEntityChimneyBrick;
 import com.hbm.tileentity.machine.TileEntityChimneyIndustrial;
-import com.hbm.platform.Services;
+import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -49,13 +49,13 @@ public final class SmokeChainRegistration {
     }
 
     public static final RegistryObject<BlockEntityType<TileEntityChimneyBrick>> CHIMNEY_BRICK =
-            BLOCK_ENTITIES.register("chimney_brick", () -> Services.PLATFORM.blockEntityType(
+            BLOCK_ENTITIES.register("chimney_brick", () -> BlockEntities.type(
                     TileEntityChimneyBrick::new, chimney_brick.get()));
     public static final RegistryObject<BlockEntityType<TileEntityChimneyIndustrial>> CHIMNEY_INDUSTRIAL =
-            BLOCK_ENTITIES.register("chimney_industrial", () -> Services.PLATFORM.blockEntityType(
+            BLOCK_ENTITIES.register("chimney_industrial", () -> BlockEntities.type(
                     TileEntityChimneyIndustrial::new, chimney_industrial.get()));
     public static final RegistryObject<BlockEntityType<TileEntityAshpit>> ASHPIT =
-            BLOCK_ENTITIES.register("machine_ashpit", () -> Services.PLATFORM.blockEntityType(
+            BLOCK_ENTITIES.register("machine_ashpit", () -> BlockEntities.type(
                     TileEntityAshpit::new, machine_ashpit.get()));
 
     public static final RegistryObject<MenuType<ContainerAshpit>> ASHPIT_MENU = MENUS.register(

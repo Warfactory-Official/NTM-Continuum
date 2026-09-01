@@ -32,7 +32,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.cow.Cow;
@@ -226,11 +225,7 @@ public class EntityEffectHandler {
     }
 
     private static void convert(Mob from, EntityType<? extends Mob> toType, ServerLevel level) {
-        //? if >=26.1 {
-        Mob to = toType.create(level, EntitySpawnReason.CONVERSION);
-        //?} else {
-        /*Mob to = toType.create(level);
-        *///?}
+        Mob to = dev.golem.core.registry.Entities.createForConversion(toType, level);
         if (to == null) return;
         to.snapTo(from.getX(), from.getY(), from.getZ(), from.getYRot(), from.getXRot());
         if (from.isAlive() && level.addFreshEntity(to)) {

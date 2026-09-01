@@ -9,7 +9,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
  * stacks and other registry-aware values can be streamed.
  *
  * <p>The send/receive plumbing is cross-loader: {@link TileEntityLoadedBase#networkPackNT()} compiles
- * the payload server-side and {@code Services.PLATFORM.sendToTracking} ships it; the registered
+ * the payload server-side and {@code GolemNetwork.sendToTracking} ships it; the registered
  * client receiver resolves the tile and calls {@link #deserialize(RegistryFriendlyByteBuf)}.
  */
 public interface IBufPacketReceiver {

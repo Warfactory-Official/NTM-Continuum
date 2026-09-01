@@ -85,24 +85,17 @@ public final class MassStorageGameTests {
     }
 
     public static void carriedState(GameTestHelper helper) {
-        //? if >=1.20.5 {
-        ItemStack carried = new ItemStack(Items.CHEST);
-        net.minecraft.core.NonNullList<ItemStack> contents =
-                net.minecraft.core.NonNullList.withSize(3, ItemStack.EMPTY);
+        TileEntityMassStorage storage = place(helper, MassStorageType.IRON, new BlockPos(2, 1, 2));
         ItemStack filter = new ItemStack(Items.GOLD_INGOT);
-        contents.set(TileEntityMassStorage.FILTER_SLOT, filter);
-        carried.set(net.minecraft.core.component.DataComponents.CONTAINER,
-                net.minecraft.world.item.component.ItemContainerContents.fromItems(contents));
-        net.minecraft.nbt.CompoundTag state = new net.minecraft.nbt.CompoundTag();
-        state.putInt("stack", 321);
-        state.putBoolean("output", true);
-        carried.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA,
-                net.minecraft.world.item.component.CustomData.of(state));
+        storage.setFilter(filter);
+        storage.setStockpile(321);
+        storage.output = true;
+        ItemStack carried = new ItemStack(ModStorageBlocks.mass_storage_iron.get().asItem());
+        storage.saveToItemCompat(carried);
         helper.assertTrue(ItemStacks.sameItemAndData(MassStorageItemData.filter(carried), filter)
                         && MassStorageItemData.stockpile(carried) == 321
                         && MassStorageItemData.output(carried),
                 "mass-storage item did not retain filter/stock/output state");
-        //?}
         helper.succeed();
     }
 

@@ -3,11 +3,12 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.resources.Identifier;
+import java.util.function.Consumer;
+import org.joml.Vector3fc;
 
 /**
  * The inventory preview of a non-fuel RBMK column, ported from the old baked models' inventory quads:
@@ -38,8 +39,7 @@ public final class RBMKBlockColumnItemModel {
 
     public void submit(PoseStack pose, SubmitSink sink, int light, int overlay) {
         pose.pushPose();
-        pose.translate(.5F, .5F + lift, .5F); pose.mulPose(Axis.YP.rotationDegrees(yaw));
-        pose.scale(scale, scale, scale); pose.translate(-.5F, 0F, -.5F);
+        RBMKItemModelBounds.applyColumnTransform(pose, scale, yaw, lift);
         var sideType = CompatRenderTypes.entityCutout(side);
         var topType = CompatRenderTypes.entityCutout(top);
         for (int i = 0; i < SECTIONS; i++) {
@@ -70,5 +70,23 @@ public final class RBMKBlockColumnItemModel {
             pose.popPose();
         }
         pose.popPose();
+    }
+
+    public void extents(Consumer<Vector3fc> output) {
+        PoseStack pose = new PoseStack();
+        RBMKItemModelBounds.applyColumnTransform(pose, scale, yaw, lift);
+        RBMKItemModelBounds.emitBox(pose, 0F, 0F, 0F, 1F, 4F, 1F, output);
+        if (pipeSide != null && pipeTop != null) {
+            for (float x : new float[]{.0625F, .5625F}) for (float z : new float[]{.0625F, .5625F}) {
+                RBMKItemModelBounds.emitBox(pose, x, PIPE_Y, z,
+                        x + .375F, PIPE_Y + .125F, z + .375F, output);
+            }
+        }
+        if (lidTexture != null) {
+            pose.pushPose();
+            pose.translate(.5F, LID_Y, .5F);
+            RBMKItemModelBounds.emitPart(pose, RODS, "Lid", output);
+            pose.popPose();
+        }
     }
 }

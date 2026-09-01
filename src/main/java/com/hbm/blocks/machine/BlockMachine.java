@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.platform.services.BlockEntityFactory;
+import dev.golem.core.registry.BlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -22,16 +22,16 @@ import org.jspecify.annotations.Nullable;
  * IMPLEMENTATION.md §18). Plain {@link Block} + {@link EntityBlock} (not BaseEntityBlock, which would
  * force a {@code codec()} and INVISIBLE render), mirroring {@link BlockMachineBattery}.
  *
- * <p>Each machine supplies its own BlockEntity via a {@link BlockEntityFactory}, so no per-machine
+ * <p>Each machine supplies its own BlockEntity via a {@link BlockEntities.Factory}, so no per-machine
  * block subclass is needed for the scaffold.
  */
 public class BlockMachine extends dev.golem.core.world.CompatBlock implements EntityBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    private final BlockEntityFactory<?> factory;
+    private final BlockEntities.Factory<?> factory;
 
-    public BlockMachine(Properties properties, BlockEntityFactory<?> factory) {
+    public BlockMachine(Properties properties, BlockEntities.Factory<?> factory) {
         super(properties);
         this.factory = factory;
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));

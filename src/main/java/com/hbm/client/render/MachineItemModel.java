@@ -17,11 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-//? if >=26.1 {
 import net.minecraft.client.renderer.rendertype.RenderType;
-//?} else {
-/*import net.minecraft.client.renderer.rendertype.RenderType;
-*///?}
 
 /**
  * A machine's OBJ model posed as an inventory/hand item: the geometry, the render types, and the

@@ -736,6 +736,14 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function LOOK_OVERLAY_SERVER_CLASSES =
             TESTS.function("look_overlay_server_classes", 20,
                     () -> LookOverlayGameTests::blockClassesAreDedicatedServerSafe);
+    public static final GameTests.Function FOUNDRY_REMOVAL_SCRAPS =
+            TESTS.function("foundry_removal_scraps", 20, () -> CompatibilityBoundaryGameTests::foundryRemovalScraps);
+    public static final GameTests.Function CRUCIBLE_REMOVAL_SCRAPS =
+            TESTS.function("crucible_removal_scraps", 20, () -> CompatibilityBoundaryGameTests::crucibleRemovalScraps);
+    public static final GameTests.Function COMPATIBILITY_FACADE_CONTRACTS =
+            TESTS.function("compatibility_facade_contracts", 20, () -> CompatibilityBoundaryGameTests::facadeContracts);
+    public static final GameTests.Function CRATE_CARRIED_ROUND_TRIP =
+            TESTS.function("crate_carried_round_trip", 40, () -> CompatibilityBoundaryGameTests::crateCarriedRoundTrip);
 
     public static void init() {}
 

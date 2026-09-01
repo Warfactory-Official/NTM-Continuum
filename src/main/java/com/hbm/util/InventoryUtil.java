@@ -11,17 +11,12 @@ import java.util.List;
 /**
  * Player-inventory ingredient helpers, ported from the 1.12.2 {@code InventoryUtil} (only the members the
  * anvil needs so far — grow as content is ported). Works on the player's 36 main slots
- * ({@link net.minecraft.world.entity.player.Inventory#getNonEquipmentItems()}).
+ * through {@link dev.golem.core.data.Inventories#main}.
  */
 public final class InventoryUtil {
 
     private InventoryUtil() {}
 
-    /**
-     * Checks whether the player's main inventory can satisfy every {@link AStack} ingredient (counts drawn
-     * across any number of slots), and if {@code shouldRemove} also consumes them. All-or-nothing: nothing
-     * is consumed unless every ingredient is satisfiable.
-     */
     /**
      * Inserts {@code stack} into machine-inventory slots {@code start..end} (inclusive), merging into
      * existing stacks first, then empty slots. Returns the remainder ({@link ItemStack#EMPTY} when fully
@@ -37,11 +32,7 @@ public final class InventoryUtil {
 
     public static boolean doesPlayerHaveAStacks(Player player, List<AStack> stacks, boolean shouldRemove) {
 
-        //? if >=26.1 {
-        NonNullList<ItemStack> original = player.getInventory().getNonEquipmentItems();
-        //?} else {
-        /*NonNullList<ItemStack> original = player.getInventory().items;
-        *///?}
+        NonNullList<ItemStack> original = dev.golem.core.data.Inventories.main(player.getInventory());
 
         // Work on copies so the availability check never mutates the real inventory.
         ItemStack[] inventory = new ItemStack[original.size()];

@@ -11,7 +11,6 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.special.NoDataSpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.resources.Identifier;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import java.util.function.Consumer;
 
@@ -21,7 +20,7 @@ public final class RBMKColumnItemModelRenderer implements NoDataSpecialModelRend
     private final RBMKColumnItemModel model;
     private RBMKColumnItemModelRenderer(RBMKColumnItemModel model) { this.model = model; }
     @Override public void submit(PoseStack pose, SubmitNodeCollector collector, int light, int overlay, boolean foil, int outline) { model.submit(pose, new VanillaSubmitSink(collector), light, overlay); }
-    @Override public void getExtents(Consumer<Vector3fc> output) { output.accept(new Vector3f(0F, -.675F, 0F)); output.accept(new Vector3f(1F, .725F, 1F)); }
+    @Override public void getExtents(Consumer<Vector3fc> output) { model.extents(output); }
     public record Unbaked(Identifier side, Identifier top, Identifier inner, float scale, float yaw, float lift) implements NoDataSpecialModelRenderer.Unbaked {
         public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Identifier.CODEC.fieldOf("side").forGetter(Unbaked::side), Identifier.CODEC.fieldOf("top").forGetter(Unbaked::top),

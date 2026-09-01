@@ -468,7 +468,6 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     }
 
     /** On destruction, drop the slot items (super) plus the molten content as scraps (old breakBlock). */
-    //? if >=26.1 {
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
@@ -483,7 +482,6 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         recipeStack.clear();
         wasteStack.clear();
     }
-    //?}
 
 
     @Override

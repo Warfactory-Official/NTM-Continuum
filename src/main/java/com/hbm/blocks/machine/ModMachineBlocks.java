@@ -628,31 +628,16 @@ public final class ModMachineBlocks {
         tabItem("foundry_outlet", foundry_outlet);
         tabItem("foundry_slagtap", foundry_slagtap);
         tabItem(HbmTab.MISSILES, "launch_pad", launch_pad);
-        // Mining laser item carries the old addInformation tooltip (26.1 blocks have no tooltip hook).
+        // Mining laser item carries the old addInformation tooltip and the legacy Forge renderer bridge.
         RegistryObject<BlockItem> miningLaserItem = ITEMS.registerItem("machine_mining_laser",
-                p -> new BlockItem(machine_mining_laser.get(), p) {
+                p -> new dev.golem.core.world.CompatBlockItem(machine_mining_laser.get(), p) {
                     @Override
-                    //? if >=26.1 {
-                    public void appendHoverText(net.minecraft.world.item.ItemStack stack,
-                                                net.minecraft.world.item.Item.TooltipContext context,
-                                                net.minecraft.world.item.component.TooltipDisplay display,
-                                                java.util.function.Consumer<net.minecraft.network.chat.Component> adder,
-                                                net.minecraft.world.item.TooltipFlag flag) {
-                    //?} else if >=1.21.1 {
-                    /*public void appendHoverText(net.minecraft.world.item.ItemStack stack,
-                                                net.minecraft.world.item.Item.TooltipContext context,
-                                                java.util.List<net.minecraft.network.chat.Component> hbm$lines,
-                                                net.minecraft.world.item.TooltipFlag flag) {
-                        java.util.function.Consumer<net.minecraft.network.chat.Component> adder = hbm$lines::add;
-                    *///?} else {
-                    /*public void appendHoverText(net.minecraft.world.item.ItemStack stack,
-                                                 net.minecraft.world.level.Level level,
-                                                 java.util.List<net.minecraft.network.chat.Component> hbm$lines,
-                                                 net.minecraft.world.item.TooltipFlag flag) {
-                        java.util.function.Consumer<net.minecraft.network.chat.Component> adder = hbm$lines::add;
-                    *///?}
-                        adder.accept(net.minecraft.network.chat.Component.translatable("desc.mininglaser1"));
-                        adder.accept(net.minecraft.network.chat.Component.translatable("desc.mininglaser2"));
+                    protected void appendCompatHoverText(net.minecraft.world.item.ItemStack stack,
+                                                         dev.golem.core.world.CompatTooltipContext context,
+                                                         java.util.List<net.minecraft.network.chat.Component> tooltip,
+                                                         net.minecraft.world.item.TooltipFlag flag) {
+                        tooltip.add(net.minecraft.network.chat.Component.translatable("desc.mininglaser1"));
+                        tooltip.add(net.minecraft.network.chat.Component.translatable("desc.mininglaser2"));
                     }
                 }, p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.MACHINES, miningLaserItem);

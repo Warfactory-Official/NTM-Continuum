@@ -5,7 +5,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerDiFurnace;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
-import com.hbm.platform.Services;
+import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -44,7 +44,7 @@ public final class DiFurnaceContent {
             "machine_difurnace_ext", MACHINE_DIFURNACE_EXTENSION);
 
     public static final RegistryObject<BlockEntityType<TileEntityDiFurnace>> DI_FURNACE = BLOCK_ENTITIES.register(
-            "machine_difurnace_off", () -> Services.PLATFORM.blockEntityType(
+            "machine_difurnace_off", () -> BlockEntities.type(
                     TileEntityDiFurnace::new, MACHINE_DIFURNACE.get()));
 
     public static final RegistryObject<MenuType<ContainerDiFurnace>> DI_FURNACE_MENU = MENUS.register(

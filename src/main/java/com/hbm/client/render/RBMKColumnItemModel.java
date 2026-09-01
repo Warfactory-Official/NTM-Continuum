@@ -3,11 +3,12 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.resources.Identifier;
+import java.util.function.Consumer;
+import org.joml.Vector3fc;
 
 /** The four-section, non-piped fuel-channel inventory model from {@code RBMKColumnModel.Kind.FUEL}. */
 public final class RBMKColumnItemModel {
@@ -32,8 +33,7 @@ public final class RBMKColumnItemModel {
     public void submit(PoseStack pose, SubmitSink sink, int light, int overlay) {
         pose.pushPose();
         // RenderRBMKRod:36-37: fuel columns are non-piped and sit 0.675 below the item origin.
-        pose.translate(.5F, .5F + lift, .5F); pose.mulPose(Axis.YP.rotationDegrees(yaw));
-        pose.scale(scale, scale, scale); pose.translate(-.5F, 0F, -.5F);
+        RBMKItemModelBounds.applyColumnTransform(pose, scale, yaw, lift);
         for (int segment = 0; segment < 4; segment++) {
             final int y = segment;
             sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(side),
@@ -48,5 +48,18 @@ public final class RBMKColumnItemModel {
             pose.popPose();
         }
         pose.popPose();
+    }
+
+    public void extents(Consumer<Vector3fc> output) {
+        PoseStack pose = new PoseStack();
+        RBMKItemModelBounds.applyColumnTransform(pose, scale, yaw, lift);
+        RBMKItemModelBounds.emitBox(pose, 0F, 0F, 0F, 1F, 4F, 1F, output);
+        for (int segment = 0; segment < 4; segment++) {
+            pose.pushPose();
+            pose.translate(.5F, segment, .5F);
+            RBMKItemModelBounds.emitPart(pose, ELEMENT, "Inner", output);
+            RBMKItemModelBounds.emitPart(pose, ELEMENT, "Cap", output);
+            pose.popPose();
+        }
     }
 }
