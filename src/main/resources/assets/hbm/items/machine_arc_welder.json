@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/arc_welder.obj",
+      "texture": "hbm:textures/models/machines/arc_welder.png",
+      "scale": 0.28,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

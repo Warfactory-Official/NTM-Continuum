@@ -279,10 +279,27 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("crate_desh", () -> Services.PLATFORM.blockEntityType(
                     (pos, state) -> new TileEntityCrate(CrateType.DESH, pos, state), ModStorageBlocks.crate_desh.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> MASS_STORAGE_WOOD =
+            massStorage(com.hbm.tileentity.machine.storage.MassStorageType.WOOD, ModStorageBlocks.mass_storage_wood);
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> MASS_STORAGE_IRON =
+            massStorage(com.hbm.tileentity.machine.storage.MassStorageType.IRON, ModStorageBlocks.mass_storage_iron);
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> MASS_STORAGE_DESH =
+            massStorage(com.hbm.tileentity.machine.storage.MassStorageType.DESH, ModStorageBlocks.mass_storage_desh);
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> MASS_STORAGE =
+            massStorage(com.hbm.tileentity.machine.storage.MassStorageType.MASS, ModStorageBlocks.mass_storage);
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityCrateTemplate>> CRATE_TEMPLATE =
+            BLOCK_ENTITIES.register("crate_template", () -> Services.PLATFORM.blockEntityType(
+                    com.hbm.tileentity.machine.storage.TileEntityCrateTemplate::new, ModStorageBlocks.crate_template.get()));
+
     static {
         CrateType.IRON.setTypeSupplier(CRATE_IRON::get);
         CrateType.STEEL.setTypeSupplier(CRATE_STEEL::get);
         CrateType.DESH.setTypeSupplier(CRATE_DESH::get);
+        com.hbm.tileentity.machine.storage.MassStorageType.WOOD.setBlockEntityTypeSupplier(MASS_STORAGE_WOOD::get);
+        com.hbm.tileentity.machine.storage.MassStorageType.IRON.setBlockEntityTypeSupplier(MASS_STORAGE_IRON::get);
+        com.hbm.tileentity.machine.storage.MassStorageType.DESH.setBlockEntityTypeSupplier(MASS_STORAGE_DESH::get);
+        com.hbm.tileentity.machine.storage.MassStorageType.MASS.setBlockEntityTypeSupplier(MASS_STORAGE::get);
+        com.hbm.tileentity.machine.storage.TemplateCrateLayout.setBlockEntityTypeSupplier(CRATE_TEMPLATE::get);
     }
 
     // --- scaffold machines (placeable + persistent; logic deferred, see IMPLEMENTATION.md §18) ---
@@ -290,6 +307,16 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityMachineElectricFurnace>> MACHINE_ELECTRIC_FURNACE =
             BLOCK_ENTITIES.register("machine_electric_furnace",
                     () -> Services.PLATFORM.blockEntityType(TileEntityMachineElectricFurnace::new, ModMachineBlocks.machine_electric_furnace_off.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineArcWelder>> MACHINE_ARC_WELDER =
+            BLOCK_ENTITIES.register("machine_arc_welder", () -> Services.PLATFORM.blockEntityType(
+                    com.hbm.tileentity.machine.TileEntityMachineArcWelder::new, ModMachineBlocks.machine_arc_welder.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineIntake>> MACHINE_INTAKE =
+            BLOCK_ENTITIES.register("machine_intake", () -> Services.PLATFORM.blockEntityType(
+                    ModBlockEntities::newIntake, ModMachineBlocks.machine_intake.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.blocks.machine.MachineFan.TileEntityFan>> MACHINE_FAN =
+            BLOCK_ENTITIES.register("fan", () -> Services.PLATFORM.blockEntityType(
+                    ModBlockEntities::newFan, ModMachineBlocks.fan.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityFurnaceBrick>> FURNACE_BRICK =
             BLOCK_ENTITIES.register("machine_furnace_brick_off",
@@ -531,6 +558,10 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("heater_electric",
                     () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityHeaterElectric::new, ModMachineBlocks.heater_electric.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeaterHeatex>> HEATER_HEATEX =
+            BLOCK_ENTITIES.register("heater_heatex",
+                    () -> Services.PLATFORM.blockEntityType(com.hbm.tileentity.machine.TileEntityHeaterHeatex::new, ModMachineBlocks.heater_heatex.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityLaunchPad>> LAUNCH_PAD =
             BLOCK_ENTITIES.register("launch_pad",
                     () -> Services.PLATFORM.blockEntityType(TileEntityLaunchPad::new, ModMachineBlocks.launch_pad.get()));
@@ -555,6 +586,23 @@ public final class ModBlockEntities {
                     () -> Services.PLATFORM.blockEntityType(TileEntityDeco::new, java.util.stream.Stream.concat(
                             com.hbm.blocks.ModDecoBlocks.OBJ_BLOCKS.stream(), com.hbm.blocks.ModSteelBlocks.OBJ_BLOCKS.stream())
                             .map(RegistryObject::get).toArray(net.minecraft.world.level.block.Block[]::new)));
+
+    private static RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> massStorage(
+            com.hbm.tileentity.machine.storage.MassStorageType type,
+            RegistryObject<? extends net.minecraft.world.level.block.Block> block) {
+        return BLOCK_ENTITIES.register(type.id, () -> Services.PLATFORM.blockEntityType(
+                (pos, state) -> new com.hbm.tileentity.machine.storage.TileEntityMassStorage(type, pos, state), block.get()));
+    }
+
+    private static com.hbm.tileentity.machine.TileEntityMachineIntake newIntake(
+            net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        return new com.hbm.tileentity.machine.TileEntityMachineIntake(MACHINE_INTAKE.get(), pos, state);
+    }
+
+    private static com.hbm.blocks.machine.MachineFan.TileEntityFan newFan(
+            net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        return new com.hbm.blocks.machine.MachineFan.TileEntityFan(MACHINE_FAN.get(), pos, state);
+    }
 
     public static void init() {}
 }

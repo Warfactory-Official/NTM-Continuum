@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine.oil;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerPyroOven;
@@ -46,7 +47,7 @@ import java.util.List;
  * checked with {@code (speed, powerSaving)} but drained with {@code (speed + overdrive·2, powerSaving)}.
  * SPEED/POWER/OVERDRIVE ×3.
  *
- * <p>Deferred (§20): pollution/smoke tank + venting, the pyroOperate audio loop.
+ * <p>Deferred (§20): pollution/smoke tank + venting.
  */
 public class TileEntityMachinePyroOven extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, WorldlyContainer {
@@ -112,12 +113,41 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         te.prevAnim = te.anim;
         if (te.isProgressing) {
             te.anim++;
-            // Vanilla CLOUD stand-in for the old chimney vent particles (§20).
-            if (level.getRandom().nextInt(20) == 0) {
-                level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
-                        pos.getX() + 0.5, pos.getY() + 3, pos.getZ() + 0.5, 0.0, 0.05, 0.0);
+            net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+            if (player != null && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 3, pos.getZ() + 0.5) < 2_500D) {
+                ForgeDirection dir = ForgeDirection.getOrientation(te.getBlockState().getValue(BlockDummyable.META) - 10);
+                ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                        pos.getX() + 0.5 - rot.offsetX - dir.offsetX * 0.875, pos.getY() + 3,
+                        pos.getZ() + 0.5 - rot.offsetZ - dir.offsetZ * 0.875, 0.0, 0.05, 0.0);
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                        pos.getX() + 0.5 - rot.offsetX - dir.offsetX * 2.375, pos.getY() + 3,
+                        pos.getZ() + 0.5 - rot.offsetZ - dir.offsetZ * 2.375, 0.0, 0.05, 0.0);
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                        pos.getX() + 0.5 - rot.offsetX + dir.offsetX * 0.875, pos.getY() + 3,
+                        pos.getZ() + 0.5 - rot.offsetZ + dir.offsetZ * 0.875, 0.0, 0.05, 0.0);
+                if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
+                        pos.getX() + 0.5 - rot.offsetX + dir.offsetX * 2.375, pos.getY() + 3,
+                        pos.getZ() + 0.5 - rot.offsetZ + dir.offsetZ * 2.375, 0.0, 0.05, 0.0);
             }
         }
+        com.hbm.client.sound.PyroOvenSoundHandler.tickLoop(te);
+    }
+
+    @Override
+    public int countMufflers() {
+        if (level == null) return 0;
+        int count = 0;
+        for (Direction direction : Direction.values()) {
+            if (level.getBlockState(worldPosition.relative(direction)).is(ModBlocks.muffler.get())) count++;
+        }
+        return count;
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && level.isClientSide()) com.hbm.client.sound.PyroOvenSoundHandler.onRemoved(this);
     }
 
     public static int getConsumption(int speed, int powerSaving) {
@@ -157,7 +187,8 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         if (recipe.outputFluid != null && recipe.outputFluid.fill + tanks[1].getFill() > tanks[1].getMaxFill() && recipe.outputFluid.type == tanks[1].getTankType()) return false;
         if (recipe.outputItem != null && !inventory.getStackInSlot(2).isEmpty() && recipe.outputItem.getCount() + inventory.getStackInSlot(2).getCount() > inventory.getStackInSlot(2).getMaxStackSize()) return false;
         if (recipe.outputItem != null && !inventory.getStackInSlot(2).isEmpty() && recipe.outputItem.getItem() != inventory.getStackInSlot(2).getItem()) return false;
-        return true;
+        return recipe.outputItem == null || inventory.getStackInSlot(2).isEmpty()
+                || recipe.outputItem.getDamageValue() == inventory.getStackInSlot(2).getDamageValue();
     }
 
     public void finishRecipe(PyroOvenRecipe recipe) {

@@ -386,6 +386,14 @@ public final class AnvilRecipes {
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {
+                        RUBBER.ingot().count(4),
+                        CU.ingot().count(16),
+                        STEEL.plate().count(16),
+                        STEEL.pipe().count(3)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.heater_heatex.get()))).setTier(3));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
                         new ComparableStack(ModItems.ingot_firebrick.get(), 20),
                         CU.ingot().count(8),
                         STEEL.plate().count(8)

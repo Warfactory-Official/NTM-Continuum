@@ -6,7 +6,6 @@
       "type": "hbm:machine_obj",
       "obj": "hbm:models/machines/steam_engine.obj",
       "texture": "hbm:textures/models/machines/steam_engine.png",
-      "noCull": true,
       "scale": 0.2,
       "yaw": 90,
       "ty": 0.0

@@ -26,18 +26,22 @@ import org.jspecify.annotations.Nullable;
  * the standard facing map. Draws the static {@code Fueler} part, then the {@code Fluid} part offset by
  * {@code (1 − fillLevel) · −0.625} and tinted with the tank fluid's colour.
  *
- * <p>Deviation (§20): the old fluid part used a GL clip plane (cutting below y=0.125) + additive
- * blending; both are dropped here (no clean modern equivalent) — the fluid renders as plain tinted
- * translucent geometry.
+ * <p>Deviation (§20): the old fluid part used a GL clip plane (cutting below y=0.125), which has no
+ * clean submit-pipeline equivalent and remains omitted. Its texture-disabled SRC_ALPHA/ONE pass is
+ * represented by the shared textureless lightning render type.
  */
 public class RefuelerRenderer implements CompatBER<TileEntityRefueler, RefuelerRenderState> {
 
     private final WavefrontObj model;
-    private final RenderType renderType;
+    private final RenderType baseType;
+    private final RenderType fluidType;
 
     public RefuelerRenderer() {
         this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/refueler.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/refueler.png"));
+        Identifier texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/refueler.png");
+        this.baseType = CompatRenderTypes.entityCutout(texture);
+        // The old pass disabled texturing and used SRC_ALPHA/ONE additive blending.
+        this.fluidType = CompatRenderTypes.lightning();
     }
 
     @Override public RefuelerRenderState createRenderState() { return new RefuelerRenderState(); }
@@ -57,7 +61,7 @@ public class RefuelerRenderer implements CompatBER<TileEntityRefueler, RefuelerR
             case EAST -> 270F;
             default -> 0F; // NORTH
         };
-        state.fillLevel = (float) (be.prevFillLevel + (be.fillLevel - be.prevFillLevel) * partialTicks);
+        state.fillLevel = be.prevFillLevel + (be.fillLevel - be.prevFillLevel) * partialTicks;
         state.fluidColor = be.tank.getTankType().getColor();
     }
 
@@ -68,14 +72,14 @@ public class RefuelerRenderer implements CompatBER<TileEntityRefueler, RefuelerR
         ps.translate(0.5F, 0F, 0.5F);
         ps.mulPose(Axis.YP.rotationDegrees(s.yaw));
 
-        col.submitCustomGeometry(ps, renderType,
+        col.submitCustomGeometry(ps, baseType,
                 (pose, buffer) -> model.renderPart("Fueler", pose, buffer, light, OverlayTexture.NO_OVERLAY));
 
         // Fluid level: old translate(0, (1 - fillLevel) * -0.625, 0), tinted by the tank fluid.
-        ps.translate(0F, (1F - s.fillLevel) * -0.625F, 0F);
+        ps.translate(0F, (float) ((1D - s.fillLevel) * -0.625D), 0F);
         int argb = 0xBF000000 | (s.fluidColor & 0xFFFFFF); // 0.75 alpha, as the old color(..., 0.75F)
-        col.submitCustomGeometry(ps, renderType,
-                (pose, buffer) -> model.renderPart("Fluid", pose, buffer, light, OverlayTexture.NO_OVERLAY, argb));
+        col.submitCustomGeometry(ps, fluidType,
+                (pose, buffer) -> model.renderPartColor("Fluid", pose, buffer, argb));
 
         ps.popPose();
     }

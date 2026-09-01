@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.ModNuclearBlocks;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -33,8 +34,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
  * every specific matcher stays ahead of it.
  *
  * <p>Skipped old entries (source blocks not ported, marked TODO): ore_nether_uranium,
- * glyphid base/spawner, ore_uranium + ore_gneiss_uranium (→ sellafite schrabidium/scorched-uranium),
- * ore_bedrock_block, volcano_core.
+ * glyphid base/spawner, ore_bedrock_block, volcano_core.
  *
  * <p>MUST be built lazily ({@link #entries()}): the outcome states resolve registry objects, which
  * throws "Components not bound yet" during class-init/mod-setup.
@@ -158,8 +158,18 @@ public final class FalloutConfig {
                     .max(max).opaque(true).solid(true)
                     .matchesBlock(ModBlocks.ore_beryllium.get()).build());
 
-            // TODO(port): ore_uranium / ore_gneiss_uranium -> {sellafite schrabidium w1, scorched uranium w9}
-            //             (only m > 4) once the uranium ore block lands
+            if (m > 4) {
+                e.add(FalloutEntry.builder()
+                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_schrabidium.get(), m), 1)
+                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_uranium_scorched.get(), m), 9)
+                        .max(max).opaque(true).solid(true)
+                        .matchesBlock(ModNuclearBlocks.ore_uranium.get()).build());
+                e.add(FalloutEntry.builder()
+                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_schrabidium.get(), m), 1)
+                        .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_uranium_scorched.get(), m), 9)
+                        .max(max).opaque(true).solid(true)
+                        .matchesBlock(ModNuclearBlocks.ore_gneiss_uranium.get()).build());
+            }
 
             e.add(FalloutEntry.builder()
                     .addPrimary(sellafield(ModFalloutBlocks.ore_sellafield_radgem.get(), m), 1)

@@ -1,6 +1,8 @@
 package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
+import com.hbm.inventory.fluid.trait.FT_Coolable;
+import com.hbm.inventory.fluid.trait.FT_Coolable.CoolingType;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
 
@@ -353,6 +355,7 @@ public class Fluids {
         FLUE = new FluidType("FLUE", 0x131313);
 
         registerHeatableTraits();
+        registerCoolableTraits();
 
         Constants.LOG.info("[HBM] Registered {} fluids", idMapping.size());
     }
@@ -377,6 +380,41 @@ public class Fluids {
         SODIUM.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 2.5D).setEff(HeatingType.ICF, 3.0D).addStep(400, 1, SODIUM_HOT, 1));
         LEAD.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 0.75D).setEff(HeatingType.ICF, 4.0D).addStep(800, 1, LEAD_HOT, 1));
         THORIUM_SALT.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 1.0D).addStep(400, 1, THORIUM_SALT_HOT, 1));
+    }
+
+    /** Complete upstream FT_Coolable data, including the heat-exchanger-only coolant families. */
+    private static void registerCoolableTraits() {
+        double steamTurbineEfficiency = 1.0D;
+        double steamHeatExchangerEfficiency = 0.5D;
+
+        STEAM.addTraits(new FT_Coolable(SPENTSTEAM, 100, 1, 200)
+                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
+                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
+        HOTSTEAM.addTraits(new FT_Coolable(STEAM, 1, 10, 2)
+                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
+                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
+        SUPERHOTSTEAM.addTraits(new FT_Coolable(HOTSTEAM, 1, 10, 18)
+                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
+                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
+        ULTRAHOTSTEAM.addTraits(new FT_Coolable(SUPERHOTSTEAM, 1, 10, 120)
+                .setEff(CoolingType.TURBINE, steamTurbineEfficiency)
+                .setEff(CoolingType.HEATEXCHANGER, steamHeatExchangerEfficiency));
+
+        HOTOIL.addTraits(new FT_Coolable(OIL, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        HOTOIL_DS.addTraits(new FT_Coolable(OIL_DS, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        HOTCRACKOIL.addTraits(new FT_Coolable(CRACKOIL, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        HOTCRACKOIL_DS.addTraits(new FT_Coolable(CRACKOIL_DS, 1, 1, 10).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+
+        COOLANT_HOT.addTraits(new FT_Coolable(COOLANT, 1, 1, 300).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        PERFLUOROMETHYL_HOT.addTraits(new FT_Coolable(PERFLUOROMETHYL, 1, 1, 300)
+                .setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        MUG_HOT.addTraits(new FT_Coolable(MUG, 1, 1, 400).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        BLOOD_HOT.addTraits(new FT_Coolable(BLOOD, 1, 1, 500).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        HEAVYWATER_HOT.addTraits(new FT_Coolable(HEAVYWATER, 1, 1, 300).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        SODIUM_HOT.addTraits(new FT_Coolable(SODIUM, 1, 1, 400).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        LEAD_HOT.addTraits(new FT_Coolable(LEAD, 1, 1, 680).setEff(CoolingType.HEATEXCHANGER, 1.0D));
+        THORIUM_SALT_HOT.addTraits(new FT_Coolable(THORIUM_SALT_DEPLETED, 1, 1, 400)
+                .setEff(CoolingType.HEATEXCHANGER, 1.0D));
     }
 
     /** Registers a fluid, assigning it the next sequential ID. Called from the {@link FluidType} ctor. */

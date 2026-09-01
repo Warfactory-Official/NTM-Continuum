@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": "#c:plates/aluminium",
+    "B": "hbm:steel_beam",
+    "S": "#c:ingots/steel"
+  },
+  "pattern": [
+    "AAA",
+    " B ",
+    "SSS"
+  ],
+  "result": {
+    "id": "hbm:solar_mirror",
+    "count": 3
+  }
+}

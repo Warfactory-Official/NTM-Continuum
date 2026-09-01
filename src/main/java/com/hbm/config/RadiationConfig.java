@@ -46,6 +46,8 @@ public final class RadiationConfig {
     // ---- hazard system ----
     /** Ticks between application of effects for the hazards. */
     public static int hazardRate = 5;
+    /** Ticks between dropped-item hazard updates; the old server-config default was 2. */
+    public static int itemHazardDropTickRate = 2;
     public static boolean disableAsbestos = false;
     public static boolean disableBlinding = false;
     public static boolean disableCoal = false;

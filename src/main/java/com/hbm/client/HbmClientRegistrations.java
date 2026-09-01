@@ -21,6 +21,7 @@ import com.hbm.inventory.gui.GUICombustionEngine;
 import com.hbm.inventory.gui.GUICompressor;
 import com.hbm.inventory.gui.GUIFEL;
 import com.hbm.inventory.gui.GUIFirebox;
+import com.hbm.inventory.gui.GUIHeaterHeatex;
 import com.hbm.inventory.gui.GUIMachineWoodBurner;
 import com.hbm.inventory.gui.GUILiquefactor;
 import com.hbm.inventory.gui.GUIMachineAssemblyMachine;
@@ -93,6 +94,7 @@ public final class HbmClientRegistrations {
     }
 
     public static void registerScreens(ScreenSink sink) {
+        com.hbm.client.sound.AssemblyFactorySoundHandler.setAssemblerCut(com.hbm.sound.ModSounds.ASSEMBLER_CUT.get());
         sink.register(ModMenus.MACHINE_BATTERY.get(), GUIMachineBattery::new);
         sink.register(ModMenus.MACHINE_WASTE_DRUM.get(), GUIWasteDrum::new);
         sink.register(ModMenus.MACHINE_STORAGE_DRUM.get(), GUIStorageDrum::new);
@@ -151,6 +153,7 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.ANVIL.get(), GUIAnvil::new);
         sink.register(ModMenus.MACHINE_CRUCIBLE.get(), com.hbm.inventory.gui.GUICrucible::new);
          sink.register(ModMenus.HEATER_FIREBOX.get(), GUIFirebox::new);
+         sink.register(ModMenus.HEATER_HEATEX.get(), GUIHeaterHeatex::new);
          sink.register(ModMenus.MACHINE_WOOD_BURNER.get(), GUIMachineWoodBurner::new);
         sink.register(ModMenus.MACHINE_VACUUM_DISTILL.get(), GUIMachineVacuumDistill::new);
         sink.register(ModMenus.MACHINE_CATALYTIC_REFORMER.get(), GUIMachineCatalyticReformer::new);
@@ -160,6 +163,16 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_PYROOVEN.get(), GUIPyroOven::new);
         sink.register(ModMenus.MACHINE_COMBUSTION_ENGINE.get(), GUICombustionEngine::new);
         sink.register(ModMenus.MACHINE_COMPRESSOR.get(), GUICompressor::new);
+        sink.register(ModMenus.MACHINE_ARC_WELDER.get(), com.hbm.inventory.gui.GUIMachineArcWelder::new);
+        sink.register(com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY_MENU.get(),
+                com.hbm.inventory.gui.GUIMachineAssemblyFactory::new);
+        com.hbm.client.chemicalfactory.ChemicalFactoryClientRegistrations.registerScreen(sink);
+        com.hbm.smoke.SmokeChainClientRegistrations.registerScreens(sink);
+        com.hbm.foundry.FoundryExpansionScreens.register(sink);
+        sink.register(com.hbm.blocks.machine.DiFurnaceContent.DI_FURNACE_MENU.get(),
+                com.hbm.inventory.gui.GUIDiFurnace::new);
+        sink.register(ModMenus.MASS_STORAGE.get(), com.hbm.inventory.gui.GUIMassStorage::new);
+        sink.register(ModMenus.CRATE_TEMPLATE.get(), com.hbm.inventory.gui.GUICrateTemplate::new);
         RBMKClientScreens.register(sink);
         RBMKGauge.OPEN_SCREEN = com.hbm.inventory.gui.ScreenRBMKGauge::new;
     }

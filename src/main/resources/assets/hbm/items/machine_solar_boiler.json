@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/solar_boiler.obj",
+      "texture": "hbm:textures/models/machines/solar_boiler.png",
+      "noCull": true,
+      "scale": 0.2625,
+      "yaw": 0,
+      "ty": 0.0,
+      "exclude": ["Overglow_1", "Overglow_2", "Overglow_3"]
+    }
+  }
+}

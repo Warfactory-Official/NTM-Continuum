@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "rolls": 1.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "hbm:mass_storage",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "source": "block_entity",
+              "include": [ "minecraft:container", "minecraft:custom_data", "minecraft:custom_name" ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "random_sequence": "hbm:blocks/mass_storage"
+}

@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/chimney_brick.obj",
+      "texture": "hbm:textures/models/machines/chimney_brick.png",
+      "scale": 0.5,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

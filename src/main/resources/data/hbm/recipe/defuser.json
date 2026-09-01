@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:ingots/any_plastic",
+    "S": "#c:plates/steel"
+  },
+  "pattern": [
+    " PS",
+    "P P",
+    " P "
+  ],
+  "result": {
+    "id": "hbm:defuser"
+  }
+}

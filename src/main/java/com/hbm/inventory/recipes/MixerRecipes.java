@@ -109,6 +109,13 @@ public final class MixerRecipes extends GenericRecipes {
         register(Fluids.PERFLUOROMETHYL, recipe(1_000, 20).fluid1(Fluids.PETROLEUM, 1_000)
                 .fluid2(Fluids.UNSATURATEDS, 500).solid(OreDictManager.F.dust()));
         register(Fluids.BITUMEN, recipe(50, 20).solid(new TagStack(PyroOvenRecipes.TARS)));
+
+        for (com.hbm.inventory.recipes.material.FuelAdditiveRecipes.MixerRecipeSpec spec
+                : com.hbm.inventory.recipes.material.FuelAdditiveRecipes.mixerRecipes()) {
+            register(spec.output(), recipe(spec.outputAmount(), spec.processTime())
+                    .fluid1(spec.input(), spec.inputAmount())
+                    .solid(new ComparableStack(spec.solid().getItem())));
+        }
     }
 
     private void register(FluidType output, MixerRecipe... entries) {

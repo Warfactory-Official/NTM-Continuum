@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "up": "hbm:blocks/concrete_colored_ext.machine",
+    "down": "hbm:blocks/concrete_colored_ext.machine",
+    "north": "hbm:blocks/concrete_colored_ext.machine_stripe",
+    "south": "hbm:blocks/concrete_colored_ext.machine_stripe",
+    "west": "hbm:blocks/concrete_colored_ext.machine_stripe",
+    "east": "hbm:blocks/concrete_colored_ext.machine_stripe",
+    "particle": "hbm:blocks/concrete_colored_ext.machine_stripe"
+  }
+}

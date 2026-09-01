@@ -398,6 +398,18 @@ public final class ModMachineBlocks {
             "machine_soldering_station", MachineSolderingStation::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    public static final RegistryObject<MachineArcWelder> machine_arc_welder = BLOCKS.registerBlock(
+            "machine_arc_welder", MachineArcWelder::new,
+            p -> dummyable(p.strength(5.0F, 30.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final RegistryObject<MachineIntake> machine_intake = BLOCKS.registerBlock(
+            "machine_intake", p -> new MachineIntake(p, () -> ModBlockEntities.MACHINE_INTAKE.get()),
+            p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final RegistryObject<MachineFan> fan = BLOCKS.registerBlock(
+            "fan", p -> new MachineFan(p, () -> ModBlockEntities.MACHINE_FAN.get()),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
+
     public static final RegistryObject<MachineCrystallizer> machine_crystallizer = BLOCKS.registerBlock(
             "machine_crystallizer", MachineCrystallizer::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
@@ -475,6 +487,10 @@ public final class ModMachineBlocks {
 
     public static final RegistryObject<HeaterElectric> heater_electric = BLOCKS.registerBlock(
             "heater_electric", HeaterElectric::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
+    public static final RegistryObject<HeaterHeatex> heater_heatex = BLOCKS.registerBlock(
+            "heater_heatex", HeaterHeatex::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     public static final RegistryObject<LaunchPad> launch_pad = BLOCKS.registerBlock(
@@ -589,6 +605,9 @@ public final class ModMachineBlocks {
          tabItem("machine_industrial_boiler", machine_industrial_boiler);
         tabItem("heater_oilburner", heater_oilburner);
         tabItem("machine_soldering_station", machine_soldering_station);
+        tabItem("machine_arc_welder", machine_arc_welder);
+        tabItem("machine_intake", machine_intake);
+        tabItem("fan", fan);
           tabItem("machine_crystallizer", machine_crystallizer);
           tabItem("machine_centrifuge", machine_centrifuge);
           tabItem("machine_cyclotron", machine_cyclotron);
@@ -600,7 +619,8 @@ public final class ModMachineBlocks {
         tabItem("machine_crucible", machine_crucible);
           tabItem("heater_firebox", heater_firebox);
           tabItem("heater_oven", heater_oven);
-          tabItem("heater_electric", heater_electric);
+           tabItem("heater_electric", heater_electric);
+          tabItem("heater_heatex", heater_heatex);
          tabItem("machine_wood_burner", machine_wood_burner);
         tabItem("foundry_channel", foundry_channel);
         tabItem("foundry_mold", foundry_mold);

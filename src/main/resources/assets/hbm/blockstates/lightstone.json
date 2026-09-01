@@ -1,0 +1,9 @@
+{
+  "variants": {
+    "type=unrefined": {"model": "hbm:block/lightstone_unrefined"},
+    "type=tile": {"model": "hbm:block/lightstone_tile"},
+    "type=bricks": {"model": "hbm:block/lightstone_bricks"},
+    "type=bricks_chiseled": {"model": "hbm:block/lightstone_bricks_chiseled"},
+    "type=chiseled": {"model": "hbm:block/lightstone_chiseled"}
+  }
+}

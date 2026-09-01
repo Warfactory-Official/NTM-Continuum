@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/iron",
+    "P": "minecraft:paper"
+  },
+  "pattern": [
+    "IPI",
+    "P P",
+    "IPI"
+  ],
+  "result": {
+    "id": "hbm:crate_template"
+  }
+}

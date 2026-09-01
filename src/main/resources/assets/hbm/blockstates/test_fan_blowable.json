@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "hbm:block/test_fan_blowable" }
+  }
+}

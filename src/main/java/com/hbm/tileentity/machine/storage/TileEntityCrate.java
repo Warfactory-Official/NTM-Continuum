@@ -98,7 +98,8 @@ public class TileEntityCrate extends TileEntityMachineBase implements MenuProvid
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.hbm." + crateType.id);
+        return hasCustomName() ? Component.literal(getName())
+                : Component.translatable("block.hbm." + crateType.id);
     }
 
     @Override

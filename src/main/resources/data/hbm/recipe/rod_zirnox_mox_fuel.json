@@ -1,6 +1,13 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "hbm:component_copy_shapeless",
   "category": "misc",
-  "ingredients": ["hbm:rod_zirnox_empty", "hbm:billet_mox_fuel", "hbm:billet_mox_fuel"],
-  "result": { "id": "hbm:rod_zirnox_mox_fuel" }
+  "ingredients": [
+    "hbm:rod_zirnox_empty",
+    "hbm:billet_mox_fuel",
+    "hbm:billet_mox_fuel"
+  ],
+  "copy_from": "hbm:rod_zirnox_empty",
+  "result": {
+    "id": "hbm:rod_zirnox_mox_fuel"
+  }
 }

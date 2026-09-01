@@ -5,11 +5,13 @@ import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Player;
@@ -29,8 +31,7 @@ import java.util.List;
  * standing on it (AABB expanded ±0.5), playing the extinguish sound every 20 op-ticks. Fluid enters via
  * a pipe on the side opposite the facing.
  *
- * <p>Deferred (§20): the {@code ArmorModHandler} jetpack-mod branch (armor mods unported) and the
- * {@code HbmEffectNT.FluidFill} particle (skipped). {@code fillLevel} interp is kept for the renderer.
+ * <p>Deferred (§20): the {@code ArmorModHandler} jetpack-mod branch (armor mods unported).
  */
 public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
 
@@ -84,6 +85,21 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityRefueler te) {
+        if (te.isOperating) {
+            ForgeDirection dir = te.portDir();
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+            var random = level.getRandom();
+            CompoundTag data = new CompoundTag();
+            data.putInt("color", te.tank.getTankType().getColor());
+            data.putDouble("mX", -dir.offsetX + random.nextGaussian() * 0.1D);
+            data.putDouble("mY", 0D);
+            data.putDouble("mZ", -dir.offsetZ + random.nextGaussian() * 0.1D);
+            HbmEffectNT.FluidFill.summonParticle(level,
+                    pos.getX() + 0.5D + random.nextDouble() * 0.0625D + dir.offsetX * 0.5D + rot.offsetX * 0.25D,
+                    pos.getY() + 0.375D,
+                    pos.getZ() + 0.5D + random.nextDouble() * 0.0625D + dir.offsetZ * 0.5D + rot.offsetZ * 0.25D,
+                    data);
+        }
         te.prevFillLevel = te.fillLevel;
         double target = (double) te.tank.getFill() / (double) te.tank.getMaxFill();
         double speed = (target > te.fillLevel || !te.isOperating) ? 0.1 : 0.01;

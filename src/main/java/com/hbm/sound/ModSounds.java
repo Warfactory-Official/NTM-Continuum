@@ -26,6 +26,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> ASSEMBLER_STRIKE = register("block.assembler_strike");
     public static final RegistryObject<SoundEvent> ASSEMBLER_START = register("block.assembler_start");
     public static final RegistryObject<SoundEvent> ASSEMBLER_STOP = register("block.assembler_stop");
+    public static final RegistryObject<SoundEvent> ASSEMBLER_CUT = register("block.assembler_cut");
     public static final RegistryObject<SoundEvent> CHEMICAL_PLANT = register("block.chemical_plant");
     public static final RegistryObject<SoundEvent> CENTRIFUGE_OPERATE = register("block.centrifuge_operate");
     public static final RegistryObject<SoundEvent> PRESS_OPERATE = register("block.pressoperate");
@@ -34,6 +35,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> ELECTRIC_HUM = register("block.electric_hum");
     /** The FEL's looping laser hum; its volume and pitch ramp with the machine's audioDuration. */
     public static final RegistryObject<SoundEvent> FEL = register("block.fel");
+    public static final RegistryObject<SoundEvent> STORAGE_OPEN = register("block.storage_open");
+    public static final RegistryObject<SoundEvent> STORAGE_CLOSE = register("block.storage_close");
 
     /** Machine-upgrade insertion "plug" click (old {@code item.upgradePlug}). */
     public static final RegistryObject<SoundEvent> UPGRADE_PLUG = register("item.upgrade_plug");
@@ -79,6 +82,10 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> TURBINE_GAS_RUNNING = register("block.turbinegas_running");
     public static final RegistryObject<SoundEvent> INDUSTRIAL_TURBINE = register("block.industrial_turbine");
     public static final RegistryObject<SoundEvent> CHUNGUS_LEVER = register("block.chungus_lever");
+    public static final RegistryObject<SoundEvent> PYRO_OPERATE = SOUNDS.register("block.pyro_operate",
+            () -> SoundEvent.createFixedRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.pyro_operate"), 15F));
+    public static final RegistryObject<SoundEvent> IGENERATOR_OPERATE = SOUNDS.register("block.igenerator_operate",
+            () -> SoundEvent.createFixedRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.igenerator_operate"), 10F));
 
     /** Weapons. Old ids {@code weapon.fire.pistol}, {@code weapon.reload.dryFireClick} and
      * {@code weapon.revolverReload}, lowercased to satisfy 26.1's id charset. */

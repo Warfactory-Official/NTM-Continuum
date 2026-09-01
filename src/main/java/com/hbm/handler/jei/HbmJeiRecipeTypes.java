@@ -3,6 +3,7 @@ package com.hbm.handler.jei;
 //? if jei {
 
 import com.hbm.Constants;
+import com.hbm.foundry.ArcFurnaceRecipes;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
@@ -40,6 +41,7 @@ public final class HbmJeiRecipeTypes {
     }
 
     public static final JeiRecipeType<GenericRecipe> ASSEMBLY_MACHINE = type("assembly_machine", GenericRecipe.class);
+    public static final JeiRecipeType<GenericRecipe> ALLOY = type("alloy", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> PRECISION_ASSEMBLER = type("precass", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> CHEMICAL_PLANT = type("chemical_plant", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> PUREX = type("purex", GenericRecipe.class);
@@ -48,6 +50,12 @@ public final class HbmJeiRecipeTypes {
     public static final JeiRecipeType<GenericRecipe> PLASMA_FORGE = type("plasma_forge", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> MIXER = type("mixer", GenericRecipe.class);
     public static final JeiRecipeType<GenericRecipe> EXPOSURE_CHAMBER = type("exposure_chamber", GenericRecipe.class);
+    public static final JeiRecipeType<ArcFurnaceRecipes.ArcFurnaceRecipe> ARC_FURNACE_SOLID =
+            type("arc_furnace_solid", ArcFurnaceRecipes.ArcFurnaceRecipe.class);
+    public static final JeiRecipeType<ArcFurnaceRecipes.ArcFurnaceRecipe> ARC_FURNACE_FLUID =
+            type("arc_furnace_fluid", ArcFurnaceRecipes.ArcFurnaceRecipe.class);
+    public static final JeiRecipeType<com.hbm.inventory.recipes.ArcWelderRecipes.ArcWelderRecipe> ARC_WELDER =
+            type("arc_welder", com.hbm.inventory.recipes.ArcWelderRecipes.ArcWelderRecipe.class);
     public static final JeiRecipeType<StorageDrumRecipeHandler.Entry> STORAGE_DRUM =
             type("storage_drum", StorageDrumRecipeHandler.Entry.class);
 

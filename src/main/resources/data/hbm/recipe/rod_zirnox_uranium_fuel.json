@@ -1,6 +1,13 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "hbm:component_copy_shapeless",
   "category": "misc",
-  "ingredients": ["hbm:rod_zirnox_empty", "hbm:billet_uranium_fuel", "hbm:billet_uranium_fuel"],
-  "result": { "id": "hbm:rod_zirnox_uranium_fuel" }
+  "ingredients": [
+    "hbm:rod_zirnox_empty",
+    "hbm:billet_uranium_fuel",
+    "hbm:billet_uranium_fuel"
+  ],
+  "copy_from": "hbm:rod_zirnox_empty",
+  "result": {
+    "id": "hbm:rod_zirnox_uranium_fuel"
+  }
 }

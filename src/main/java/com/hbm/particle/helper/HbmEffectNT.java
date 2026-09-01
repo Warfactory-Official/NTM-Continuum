@@ -44,7 +44,11 @@ public enum HbmEffectNT {
     /** One puff of a missile's exhaust trail. Spawned client-side, once per tick per nozzle. */
     MissileContrail,
     /** Redstone block debris thrown from a living entity hit by a running sawmill blade. */
-    SawmillDamage;
+    SawmillDamage,
+    /** The drifting cooling-tower smoke puff. */
+    Tower,
+    /** One vanilla critical particle used while a refueler fills an item. */
+    FluidFill;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

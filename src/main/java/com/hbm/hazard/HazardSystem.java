@@ -17,6 +17,7 @@ import com.hbm.hazard.type.IHazardType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -182,6 +183,25 @@ public class HazardSystem {
         List<HazardEntry> hazards = getHazardsFromStack(stack);
         for (HazardEntry hazard : hazards) {
             hazard.applyHazard(stack, entity);
+        }
+    }
+
+    /**
+     * Updates hazards emitted by a dropped item. The old ASM hook called this after every vanilla item
+     * tick; the cadence is world-time based and the evaluated level is count/modifier sensitive.
+     */
+    public static void updateDroppedItem(ItemEntity entity) {
+        if (entity == null || entity.level().isClientSide() || entity.isRemoved()) return;
+
+        ItemStack stack = entity.getItem();
+        if (stack.isEmpty()) return;
+
+        int tickRate = Math.max(1, RadiationConfig.itemHazardDropTickRate);
+        if (entity.level().getGameTime() % tickRate != 0) return;
+
+        for (HazardEntry entry : getHazardsFromStack(stack)) {
+            entry.type.updateEntity(entity,
+                    IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
         }
     }
 

@@ -18,6 +18,8 @@ public final class ParticleCreators {
     public static final IParticleCreator EXPLOSION_SMALL = new ExplosionSmallCreator();
     public static final IParticleCreator BLACK_POWDER = new BlackPowderCreator();
     public static final IParticleCreator ASHES = new AshesCreator();
+    public static final IParticleCreator TOWER = new CoolingTowerCreator();
+    public static final IParticleCreator FLUID_FILL = new FluidFillCreator();
 
     /** Effect-name to creator. Keys match upstream's strings so old call sites port unchanged. */
     public static final Map<String, IParticleCreator> particleCreators = new HashMap<>();
@@ -27,5 +29,7 @@ public final class ParticleCreators {
         particleCreators.put("explosionSmall", EXPLOSION_SMALL);
         particleCreators.put("blackPowder", BLACK_POWDER);
         particleCreators.put("ashes", ASHES);
+        particleCreators.put("tower", TOWER);
+        particleCreators.put("fluidfill", FLUID_FILL);
     }
 }

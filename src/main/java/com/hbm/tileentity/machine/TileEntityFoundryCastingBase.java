@@ -37,8 +37,12 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
     public ItemStack syncOutput = ItemStack.EMPTY;
 
     public TileEntityFoundryCastingBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        this(type, pos, state, 2);
+    }
+
+    protected TileEntityFoundryCastingBase(BlockEntityType<?> type, BlockPos pos, BlockState state, int slotCount) {
         super(type, pos, state);
-        this.inventory = new NTMItemHandler(2) {
+        this.inventory = new NTMItemHandler(slotCount) {
             @Override
             protected void onContentsChanged(int slot) {
                 TileEntityFoundryCastingBase.this.setChanged();
@@ -175,11 +179,14 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
     // --- Container (delegates to the handler, like TileEntityInventoryBase) ---
 
-    @Override public int getContainerSize() { return 2; }
+    @Override public int getContainerSize() { return inventory.getSlots(); }
 
     @Override
     public boolean isEmpty() {
-        return inventory.getStackInSlot(0).isEmpty() && inventory.getStackInSlot(1).isEmpty();
+        for (int slot = 0; slot < inventory.getSlots(); slot++) {
+            if (!inventory.getStackInSlot(slot).isEmpty()) return false;
+        }
+        return true;
     }
 
     @Override public ItemStack getItem(int slot) { return inventory.getStackInSlot(slot); }
@@ -210,7 +217,8 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
     @Override
     public void clearContent() {
-        inventory.setStackInSlot(0, ItemStack.EMPTY);
-        inventory.setStackInSlot(1, ItemStack.EMPTY);
+        for (int slot = 0; slot < inventory.getSlots(); slot++) {
+            inventory.setStackInSlot(slot, ItemStack.EMPTY);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.hbm.tileentity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
@@ -37,6 +38,16 @@ public abstract class TileEntityMachineBase extends TileEntityInventoryBase {
 
     public void setCustomName(String name) {
         this.customName = name;
+    }
+
+    @Override
+    protected Component collectCarriedName() {
+        return hasCustomName() ? Component.literal(customName) : null;
+    }
+
+    @Override
+    protected void applyCarriedName(Component name) {
+        customName = name.getString();
     }
 
     // --- GUI / sided access hooks ---

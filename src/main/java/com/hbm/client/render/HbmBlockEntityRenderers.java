@@ -202,9 +202,7 @@ public final class HbmBlockEntityRenderers {
                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill>(0F, 1F,
                         new ModelDef(obj("machines/vacuum_distill.obj"), tex("machines/vacuum_distill.png"))).ignoreFacing());
         // Reformer: old RenderCatalyticReformer yaw map N90/W180/S270/E0 = the built-in map + 90.
-        regCustom(sink, ModBlockEntities.MACHINE_CATALYTIC_REFORMER.get(),
-                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer>(90F, 1F,
-                        new ModelDef(obj("machines/catalytic_reformer.obj"), tex("machines/catalytic_reformer.png"))));
+        regCustom(sink, ModBlockEntities.MACHINE_CATALYTIC_REFORMER.get(), ctx -> new CatalyticReformerRenderer());
         // Cracker: old StaticTesrBakedModels yaw map meta12(N)=90/13(S)=270/14(W)=180/15(E)=0 = built-in + 90.
         regCustom(sink, ModBlockEntities.MACHINE_CATALYTIC_CRACKER.get(),
                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticCracker>(90F, 1F,
@@ -219,9 +217,7 @@ public final class HbmBlockEntityRenderers {
         // Pyro oven: old RenderPyroOven yaw map N180/W270/S0/E90 = the built-in map + 180. (The animated
         // "Slider"/"Fan" sub-parts render at their model origin — the Slider's rest transform is a −0.5 X
         // translate, so it sits half a block off until a custom animated renderer lands. §20)
-        regCustom(sink, ModBlockEntities.MACHINE_PYROOVEN.get(),
-                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven>(180F, 1F,
-                        new ModelDef(obj("machines/pyrooven.obj"), tex("machines/pyrooven.png"))));
+        regCustom(sink, ModBlockEntities.MACHINE_PYROOVEN.get(), ctx -> new PyroOvenRenderer());
         // ZIRNOX: old yaw map meta12(N)=90/13(S)=270/14(W)=180/15(E)=0 = built-in + 90.
         regCustom(sink, ModBlockEntities.MACHINE_ZIRNOX.get(),
                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityReactorZirnox>(90F, 1F,
@@ -231,9 +227,7 @@ public final class HbmBlockEntityRenderers {
         // Combustion engine: the old RenderCombustionEngine yaw map is N90/S270/W180/E0 — exactly the
         // generic renderer's built-in map (N0/S180/W90/E270) + 90 — then a post-rotation
         // translate(-0.5, 0, 3) (the model isn't centred on the core cell).
-        regCustom(sink, ModBlockEntities.MACHINE_COMBUSTION_ENGINE.get(),
-                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityMachineCombustionEngine>(90F, 1F, -0.5F, 3F, Set.of(), 0,
-                        new ModelDef(obj("machines/combustion_engine.obj"), tex("machines/combustion_engine.png"))));
+        regCustom(sink, ModBlockEntities.MACHINE_COMBUSTION_ENGINE.get(), ctx -> new CombustionEngineRenderer());
         // Refueler: a single FACING block (not a BlockDummyable), so the generic renderer can't read its
         // facing — own renderer (yaw from FACING + the fill-level fluid part).
         regCustom(sink, ModBlockEntities.REFUELER.get(), ctx -> new RefuelerRenderer());
@@ -303,6 +297,8 @@ public final class HbmBlockEntityRenderers {
         // Electric heater: a static OBJ (the old CE fork used a static baked model).
         reg(sink, ModBlockEntities.HEATER_ELECTRIC.get(), 90F, 1F,
                 new ModelDef(obj("machines/electric_heater.obj"), tex("machines/electric_heater.png")));
+        reg(sink, ModBlockEntities.HEATER_HEATEX.get(), 90F, 1F,
+                new ModelDef(obj("machines/heatex.obj"), tex("machines/heater_heatex.png")));
 
         // Foundry: channel melt level, casters (mold JSON-modelled / basin OBJ), outlet + slagtap OBJs, slag pile.
         regCustom(sink, ModBlockEntities.FOUNDRY_CHANNEL.get(), ctx -> new FoundryChannelRenderer());
@@ -317,6 +313,18 @@ public final class HbmBlockEntityRenderers {
 
         // The 12 tiered anvils: one renderer picks the per-anvil OBJ + texture from the block.
         regCustom(sink, ModBlockEntities.ANVIL.get(), ctx -> new AnvilObjRenderer());
+        regCustom(sink, ModBlockEntities.MACHINE_ARC_WELDER.get(), ctx -> new ArcWelderRenderer());
+        regCustom(sink, com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY_BE.get(),
+                ctx -> new AssemblyFactoryRenderer());
+        com.hbm.client.chemicalfactory.ChemicalFactoryClientRegistrations.registerRenderer(sink);
+        regCustom(sink, com.hbm.blocks.machine.AutosawFeature.MACHINE_AUTOSAW.get(), ctx -> new AutosawRenderer());
+        regCustom(sink, com.hbm.tileentity.machine.solar.ModSolarBlockEntities.SOLAR_BOILER.get(),
+                ctx -> new com.hbm.client.render.solar.SolarBoilerRenderer());
+        regCustom(sink, com.hbm.tileentity.machine.solar.ModSolarBlockEntities.SOLAR_MIRROR.get(),
+                ctx -> new com.hbm.client.render.solar.SolarMirrorRenderer());
+        IntakeFanRenderers.register(sink, ModBlockEntities.MACHINE_INTAKE.get(), ModBlockEntities.MACHINE_FAN.get());
+        com.hbm.smoke.SmokeChainClientRegistrations.registerRenderers(sink);
+        com.hbm.foundry.FoundryExpansionClient.registerRenderers(sink);
     }
 
     private static <T extends BlockEntity> void reg(Sink sink, BlockEntityType<T> type, float yaw, float scale, ModelDef... defs) {

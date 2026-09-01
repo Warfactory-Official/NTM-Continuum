@@ -1,20 +1,20 @@
 {
   "replace": false,
   "values": [
-    "hbm:waste_log",
-    "hbm:ladder_sturdy",
-    "hbm:ladder_iron",
-    "hbm:ladder_gold",
     "hbm:ladder_aluminium",
-    "hbm:ladder_copper",
-    "hbm:ladder_titanium",
-    "hbm:ladder_lead",
     "hbm:ladder_cobalt",
-    "hbm:ladder_steel",
-    "hbm:ladder_tungsten",
+    "hbm:ladder_copper",
+    "hbm:ladder_gold",
+    "hbm:ladder_iron",
+    "hbm:ladder_lead",
     "hbm:ladder_red",
     "hbm:ladder_red_top",
+    "hbm:ladder_steel",
+    "hbm:ladder_sturdy",
+    "hbm:ladder_titanium",
+    "hbm:ladder_tungsten",
     "hbm:pink_slab",
-    "hbm:pink_stairs"
+    "hbm:pink_stairs",
+    "hbm:waste_log"
   ]
 }

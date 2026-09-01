@@ -51,6 +51,33 @@
       }
     ]
   },
+  "block.assembler_cut": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/assemblercut",
+        "stream": false
+      }
+    ]
+  },
+  "block.pyro_operate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/pyrooperate",
+        "stream": false
+      }
+    ]
+  },
+  "block.igenerator_operate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/igeneratoroperate",
+        "stream": false
+      }
+    ]
+  },
   "block.chemical_plant": {
     "category": "block",
     "sounds": [
@@ -345,24 +372,6 @@
       }
     ]
   },
-  "rbmk_explosion": {
-    "category": "block",
-    "sounds": [
-      {
-        "name": "hbm:block/rbmk_explosion",
-        "stream": true
-      }
-    ]
-  },
-  "steam_engine_operate": {
-    "category": "block",
-    "sounds": [
-      {
-        "name": "hbm:block/steamengineoperate",
-        "stream": false
-      }
-    ]
-  },
   "block.centrifuge_operate": {
     "category": "block",
     "sounds": [
@@ -434,18 +443,6 @@
         "stream": false
       }
     ]
-  },
-  "rbmk_az5_cover": {
-    "category": "block",
-    "sounds": [
-      {
-        "name": "hbm:block/rbmk_az5_cover"
-      }
-    ]
-  },
-  "rbmk_shutdown": {
-    "category": "block",
-    "sounds": []
   },
   "weapon.missile_takeoff": {
     "category": "player",
@@ -521,5 +518,43 @@
       "hbm:weapon/laserbang3",
       "hbm:weapon/laserbang4"
     ]
+  },
+  "rbmk_explosion": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/rbmk_explosion",
+        "stream": true
+      }
+    ]
+  },
+  "steam_engine_operate": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/steamengineoperate",
+        "stream": false
+      }
+    ]
+  },
+  "rbmk_az5_cover": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/rbmk_az5_cover"
+      }
+    ]
+  },
+  "block.storage_open": {
+    "category": "block",
+    "sounds": ["hbm:block/storageopen"]
+  },
+  "block.storage_close": {
+    "category": "block",
+    "sounds": ["hbm:block/storageclose"]
+  },
+  "rbmk_shutdown": {
+    "category": "block",
+    "sounds": []
   }
 }

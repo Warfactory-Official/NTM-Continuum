@@ -17,5 +17,8 @@ public final class ModRecipes {
     public static final RegistryObject<RecipeSerializer<RBMKFuelDisassemblyRecipe>> RBMK_FUEL_DISASSEMBLY =
             SERIALIZERS.register("rbmk_fuel_disassembly", () -> RBMKFuelDisassemblyRecipe.SERIALIZER);
 
+    public static final RegistryObject<RecipeSerializer<ComponentCopyShapelessRecipe>> COMPONENT_COPY_SHAPELESS =
+            SERIALIZERS.register("component_copy_shapeless", () -> ComponentCopyShapelessRecipe.SERIALIZER);
+
     public static void init() {}
 }

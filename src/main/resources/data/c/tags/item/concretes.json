@@ -5,6 +5,8 @@
     "hbm:concrete_smooth",
     "hbm:concrete_asbestos",
     "hbm:ducrete",
-    "hbm:ducrete_smooth"
+    "hbm:ducrete_smooth",
+    "hbm:concrete_colored",
+    "hbm:concrete_colored_ext"
   ]
 }

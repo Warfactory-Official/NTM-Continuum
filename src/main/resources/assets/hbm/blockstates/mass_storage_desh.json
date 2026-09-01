@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "hbm:block/mass_storage_desh" }
+  }
+}

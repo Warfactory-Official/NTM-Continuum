@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "hbm:blocks/concrete_colored_ext.machine",
+    "top": "hbm:blocks/concrete_colored_ext.machine",
+    "side": "hbm:blocks/concrete_colored_ext.machine"
+  }
+}

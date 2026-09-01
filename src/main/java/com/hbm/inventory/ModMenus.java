@@ -84,6 +84,8 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerMachineSolderingStation>> MACHINE_SOLDERING_STATION =
             MENUS.register("machine_soldering_station", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineSolderingStation::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineArcWelder>> MACHINE_ARC_WELDER =
+            MENUS.register("machine_arc_welder", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineArcWelder::new));
 
     public static final RegistryObject<MenuType<ContainerCrystallizer>> MACHINE_CRYSTALLIZER =
             MENUS.register("machine_crystallizer", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrystallizer::new));
@@ -182,6 +184,9 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerFirebox>> HEATER_FIREBOX =
             MENUS.register("heater_firebox", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFirebox::new));
 
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerHeaterHeatex>> HEATER_HEATEX =
+            MENUS.register("heater_heatex", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerHeaterHeatex::new));
+
     public static final RegistryObject<MenuType<ContainerNukeMan>> NUKE_MAN =
             MENUS.register("nuke_man", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeMan::new));
 
@@ -249,9 +254,31 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerCrate>> CRATE =
             MENUS.register("crate", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrate::new));
 
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMassStorage>> MASS_STORAGE =
+            MENUS.register("mass_storage", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->
+                    new com.hbm.inventory.container.ContainerMassStorage(id, inventory, pos, ModMenus::massStorageMenu)));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCrateTemplate>> CRATE_TEMPLATE =
+            MENUS.register("crate_template", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->
+                    new com.hbm.inventory.container.ContainerCrateTemplate(id, inventory, pos, ModMenus::templateCrateMenu)));
+
+    static {
+        for (com.hbm.tileentity.machine.storage.MassStorageType type : com.hbm.tileentity.machine.storage.MassStorageType.values()) {
+            type.setMenuTypeSupplier(MASS_STORAGE::get);
+        }
+        com.hbm.tileentity.machine.storage.TemplateCrateLayout.setMenuTypeSupplier(CRATE_TEMPLATE::get);
+    }
+
     /** Shared by every launch pad type (only the small silo pad exists so far). */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerLaunchPad>> LAUNCH_PAD =
             MENUS.register("launch_pad", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerLaunchPad::new));
+
+    private static MenuType<com.hbm.inventory.container.ContainerMassStorage> massStorageMenu() {
+        return MASS_STORAGE.get();
+    }
+
+    private static MenuType<com.hbm.inventory.container.ContainerCrateTemplate> templateCrateMenu() {
+        return CRATE_TEMPLATE.get();
+    }
 
     public static void init() {}
 }

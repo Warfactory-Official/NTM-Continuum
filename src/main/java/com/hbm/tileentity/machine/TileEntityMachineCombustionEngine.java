@@ -4,6 +4,7 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidCombustion.Combustible;
@@ -19,6 +20,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -40,8 +42,7 @@ import dev.golem.core.data.DataOut;
  * ({@code speed = setting·2} mB×10/tick); {@code power += toBurn · combustionEnergy/10_000 · pistonEff}.
  * A sub-mB {@code tenth} accumulator preserves fractional burn.
  *
- * <p>Deferred (§20): pollution/smoke, OpenComputers {@code SimpleComponent}, the engine loop sound,
- * IFluidCopiable.
+ * <p>Deferred (§20): pollution/smoke, OpenComputers {@code SimpleComponent}, IFluidCopiable.
  */
 public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
         implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2 {
@@ -107,6 +108,23 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
         float swingSpeed = (te.doorAngle / 10F) + 3;
         if (te.playersUsing > 0) te.doorAngle += swingSpeed; else te.doorAngle -= swingSpeed;
         te.doorAngle = Mth.clamp(te.doorAngle, 0F, 135F);
+        com.hbm.client.sound.CombustionEngineSoundHandler.tickLoop(te);
+    }
+
+    @Override
+    public int countMufflers() {
+        if (level == null) return 0;
+        int count = 0;
+        for (Direction direction : Direction.values()) {
+            if (level.getBlockState(worldPosition.relative(direction)).is(ModBlocks.muffler.get())) count++;
+        }
+        return count;
+    }
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        if (level != null && level.isClientSide()) com.hbm.client.sound.CombustionEngineSoundHandler.onRemoved(this);
     }
 
     public DirPos[] getConPos() {

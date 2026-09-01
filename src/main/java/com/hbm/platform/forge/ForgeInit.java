@@ -55,6 +55,15 @@ public final class ForgeInit {
         com.hbm.gametest.FoodCatalystGameTests.init();
         com.hbm.gametest.OutgasGameTests.init();
         com.hbm.gametest.SteelStructureGameTests.init();
+        com.hbm.gametest.HazardGameTests.init();
+        com.hbm.gametest.ToolingGameTests.init();
+        com.hbm.gametest.AssemblyFactoryGameTests.init();
+        com.hbm.gametest.ChemicalFactoryGameTests.init();
+        com.hbm.gametest.AutosawGameTests.init();
+        com.hbm.gametest.SolarGameTests.init();
+        com.hbm.gametest.IntakeFanGameTests.init();
+        com.hbm.gametest.DiFurnaceGameTests.init();
+        com.hbm.gametest.MaterialCompletionGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -67,6 +76,24 @@ public final class ForgeInit {
                 com.hbm.gametest.OutgasGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.SteelStructureGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.HazardGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ToolingGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AssemblyFactoryGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ChemicalFactoryGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AutosawGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.SolarGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.IntakeFanGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.DiFurnaceGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.MaterialCompletionGameTests.TESTS));
 
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();

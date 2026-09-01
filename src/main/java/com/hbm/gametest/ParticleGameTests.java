@@ -49,7 +49,51 @@ public final class ParticleGameTests {
         if (Tags.getDoubleOr(received.data(), "hX", 0D) != -1.5D) {
             helper.fail("Double parameter did not survive the round trip");
         }
+
+        CompoundTag towerData = new CompoundTag();
+        towerData.putFloat("lift", 0F);
+        towerData.putFloat("base", 0.55F);
+        towerData.putFloat("max", 0.56F);
+        towerData.putFloat("strafe", 1F);
+        towerData.putInt("life", 560);
+        towerData.putInt("color", 0x404040);
+        towerData.putBoolean("noWind", true);
+        towerData.putFloat("alpha", 0.25F);
+        ParticlePayload tower = roundTrip(helper,
+                new ParticlePayload(HbmEffectNT.Tower.name(), 2D, 3D, 4D, towerData));
+        if (HbmEffectNT.byName(tower.effect()) != HbmEffectNT.Tower
+                || Tags.getFloatOr(tower.data(), "lift", -1F) != 0F
+                || Tags.getFloatOr(tower.data(), "base", -1F) != 0.55F
+                || Tags.getFloatOr(tower.data(), "max", -1F) != 0.56F
+                || Tags.getFloatOr(tower.data(), "strafe", -1F) != 1F
+                || Tags.getIntOr(tower.data(), "life", -1) != 560
+                || Tags.getIntOr(tower.data(), "color", -1) != 0x404040
+                || !tower.data().contains("noWind")
+                || Tags.getFloatOr(tower.data(), "alpha", -1F) != 0.25F) {
+            helper.fail("Tower payload did not preserve its legacy parameters");
+        }
+
+        CompoundTag fluidFillData = new CompoundTag();
+        fluidFillData.putDouble("mX", -1D);
+        fluidFillData.putDouble("mY", 0D);
+        fluidFillData.putDouble("mZ", 0.25D);
+        fluidFillData.putInt("color", 0x123456);
+        ParticlePayload fluidFill = roundTrip(helper,
+                new ParticlePayload(HbmEffectNT.FluidFill.name(), 5D, 6D, 7D, fluidFillData));
+        if (HbmEffectNT.byName(fluidFill.effect()) != HbmEffectNT.FluidFill
+                || Tags.getDoubleOr(fluidFill.data(), "mX", 0D) != -1D
+                || Tags.getDoubleOr(fluidFill.data(), "mY", -1D) != 0D
+                || Tags.getDoubleOr(fluidFill.data(), "mZ", 0D) != 0.25D
+                || Tags.getIntOr(fluidFill.data(), "color", -1) != 0x123456) {
+            helper.fail("FluidFill payload did not preserve its legacy parameters");
+        }
         helper.succeed();
+    }
+
+    private static ParticlePayload roundTrip(GameTestHelper helper, ParticlePayload sent) {
+        var buffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());
+        ParticlePayload.CODEC.encode(sent, buffer);
+        return ParticlePayload.CODEC.decode(buffer);
     }
 
     /** Every effect resolves by its own name, and an unknown name resolves to null rather than throwing. */
@@ -89,6 +133,22 @@ public final class ParticleGameTests {
                 pos.getX(), pos.getY(), pos.getZ(), 0, 1, 0, 10, 0.25F, 0.5F, 10, 0.25F);
         com.hbm.particle.helper.ParticleEffects.explosionSmall(helper.getLevel(),
                 pos.getX(), pos.getY(), pos.getZ(), 10, 2F, 0.5F);
+
+        CompoundTag towerData = new CompoundTag();
+        towerData.putFloat("lift", 0F);
+        towerData.putFloat("base", 0.55F);
+        towerData.putFloat("max", 0.56F);
+        towerData.putFloat("strafe", 1F);
+        towerData.putInt("life", 560);
+        towerData.putInt("color", 0x404040);
+        HbmEffectNT.Tower.send(helper.getLevel(), pos.getX(), pos.getY(), pos.getZ(), towerData);
+
+        CompoundTag fluidFillData = new CompoundTag();
+        fluidFillData.putDouble("mX", -1D);
+        fluidFillData.putDouble("mY", 0D);
+        fluidFillData.putDouble("mZ", 0D);
+        fluidFillData.putInt("color", 0x123456);
+        HbmEffectNT.FluidFill.send(helper.getLevel(), pos.getX(), pos.getY(), pos.getZ(), fluidFillData);
         helper.succeed();
     }
 }

@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/arc_furnace.obj",
+      "texture": "hbm:textures/models/machines/arc_furnace.png",
+      "scale": 0.161538461538462,
+      "yaw": 0,
+      "ty": 0.0,
+      "exclude": [
+        "ContentsHot", "ContentsCold",
+        "Electrode1Hot", "Electrode2Hot", "Electrode3Hot",
+        "Electrode1Short", "Electrode2Short", "Electrode3Short"
+      ]
+    }
+  }
+}

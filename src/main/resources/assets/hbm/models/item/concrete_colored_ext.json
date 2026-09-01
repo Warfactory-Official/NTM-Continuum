@@ -1,0 +1,12 @@
+{
+  "parent": "hbm:block/concrete_colored_ext_machine",
+  "overrides": [
+    {"predicate": {"hbm:item_variant": 1}, "model": "hbm:block/concrete_colored_ext_machine_stripe"},
+    {"predicate": {"hbm:item_variant": 2}, "model": "hbm:block/concrete_colored_ext_indigo"},
+    {"predicate": {"hbm:item_variant": 3}, "model": "hbm:block/concrete_colored_ext_purple"},
+    {"predicate": {"hbm:item_variant": 4}, "model": "hbm:block/concrete_colored_ext_pink"},
+    {"predicate": {"hbm:item_variant": 5}, "model": "hbm:block/concrete_colored_ext_hazard"},
+    {"predicate": {"hbm:item_variant": 6}, "model": "hbm:block/concrete_colored_ext_sand"},
+    {"predicate": {"hbm:item_variant": 7}, "model": "hbm:block/concrete_colored_ext_bronze"}
+  ]
+}

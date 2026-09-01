@@ -56,6 +56,15 @@ public final class MainRegistry {
         ModBlocks.init();
         com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)
+        com.hbm.assemblyfactory.AssemblyFactoryRegistrations.init();
+        com.hbm.chemicalfactory.ChemicalFactoryRegistrations.init();
+        com.hbm.blocks.machine.AutosawFeature.init();
+        com.hbm.blocks.machine.solar.ModSolarBlocks.init();
+        com.hbm.items.solar.ModSolarItems.init();
+        com.hbm.tileentity.machine.solar.ModSolarBlockEntities.init();
+        com.hbm.smoke.SmokeChainRegistration.init();
+        com.hbm.foundry.FoundryExpansion.init();
+        com.hbm.blocks.machine.DiFurnaceContent.init();
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)
         ModStorageBlocks.init();   // storage crates (iron / steel / desh)
         ModBombBlocks.init();      // bomb blocks (also precede block entities)
@@ -72,6 +81,7 @@ public final class MainRegistry {
         com.hbm.blocks.ModLadderBlocks.init();  // vanilla LadderBlock family, including ladder_red_top
         com.hbm.blocks.machine.rbmk.ModRBMKBlocks.init(); // reactor columns/peripherals before their block items and BE types
         ModDataComponents.init();  // custom item data components (referenced by hand items below)
+        com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
         com.hbm.items.ModStorageDrumItems.init();

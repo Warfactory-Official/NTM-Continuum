@@ -24,6 +24,68 @@ public final class HbmGameTestFunctions {
 
     public static final GameTests.Function COOLING_RECIPES =
             TESTS.function("cooling_recipes", 20, () -> HbmGameTestFunctions::coolingRecipes);
+    public static final GameTests.Function COMPONENT_COPY_EXACT_MULTISET =
+            TESTS.function("component_copy_exact_multiset", 20, () -> ComponentCopyRecipeGameTests::exactMultiset);
+    public static final GameTests.Function COMPONENT_COPY_SOURCE_STATE =
+            TESTS.function("component_copy_source_state", 20, () -> ComponentCopyRecipeGameTests::sourceStateAndFreshOutput);
+    public static final GameTests.Function COMPONENT_COPY_REJECTION =
+            TESTS.function("component_copy_rejection", 20, () -> ComponentCopyRecipeGameTests::rejectsWrongExtraAndAmbiguousInput);
+    public static final GameTests.Function HEATEX_COOLABLE_TABLE =
+            TESTS.function("heatex_coolable_table", 20, () -> HeatexGameTests::coolableTable);
+    public static final GameTests.Function HEATEX_LAYOUT_PORTS =
+            TESTS.function("heatex_layout_ports", 100, 8, () -> HeatexGameTests::layoutAndPorts);
+    public static final GameTests.Function HEATEX_CONVERSION =
+            TESTS.function("heatex_conversion", 40, 8, () -> HeatexGameTests::conversionArithmetic);
+    public static final GameTests.Function HEATEX_THROTTLE_CAPACITY =
+            TESTS.function("heatex_throttle_capacity", 40, 8, () -> HeatexGameTests::throttleDelayCapacity);
+    public static final GameTests.Function HEATEX_PERSISTENCE_MENU =
+            TESTS.function("heatex_persistence_menu", 40, 8, () -> HeatexGameTests::persistenceAndMenu);
+    public static final GameTests.Function ARC_WELDER_RECIPES =
+            TESTS.function("arc_welder_recipes", 40, () -> ArcWelderGameTests::feasibleCatalogueAndMatching);
+    public static final GameTests.Function ARC_WELDER_PROCESSING =
+            TESTS.function("arc_welder_processing", 100, 8, () -> ArcWelderGameTests::processingAndFluidAtomicity);
+    public static final GameTests.Function ARC_WELDER_UPGRADES =
+            TESTS.function("arc_welder_upgrades", 100, 8, () -> ArcWelderGameTests::upgradesAndPowerCeiling);
+    public static final GameTests.Function ARC_WELDER_LAYOUT =
+            TESTS.function("arc_welder_layout", 100, 16, () -> ArcWelderGameTests::layoutPortsAndHopperSlots);
+    public static final GameTests.Function ARC_WELDER_MENU =
+            TESTS.function("arc_welder_menu", 40, 8, () -> ArcWelderGameTests::menuTransferAndDisplay);
+    public static final GameTests.Function SMOKE_CHAIN_LAYOUTS =
+            TESTS.function("smoke_chain_layouts", 200, 28, () -> SmokeChainGameTests::layouts);
+    public static final GameTests.Function SMOKE_CHAIN_PORTS =
+            TESTS.function("smoke_chain_ports", 100, 8, () -> SmokeChainGameTests::portsAndCapture);
+    public static final GameTests.Function SMOKE_CHAIN_SOOT =
+            TESTS.function("smoke_chain_soot", 40, 8, () -> SmokeChainGameTests::industrialSoot);
+    public static final GameTests.Function ASHPIT_PROCESSING =
+            TESTS.function("ashpit_processing", 100, 8, () -> SmokeChainGameTests::ashpitProcessingAndHoppers);
+    public static final GameTests.Function ASHPIT_MENU =
+            TESTS.function("ashpit_menu", 40, 8, () -> SmokeChainGameTests::menuAndSync);
+    public static final GameTests.Function SMOKE_CHAIN_ITEM_MODELS =
+            TESTS.function("smoke_chain_item_models", 20, () -> SmokeChainGameTests::itemModels);
+    public static final GameTests.Function MASS_STORAGE_CAPACITIES =
+            TESTS.function("mass_storage_capacities", 20, () -> MassStorageGameTests::capacities);
+    public static final GameTests.Function MASS_STORAGE_PROCESSING =
+            TESTS.function("mass_storage_processing", 40, () -> MassStorageGameTests::filteringAndProcessing);
+    public static final GameTests.Function MASS_STORAGE_IDENTITY =
+            TESTS.function("mass_storage_identity", 20, () -> MassStorageGameTests::componentIdentity);
+    public static final GameTests.Function MASS_STORAGE_CARRIED =
+            TESTS.function("mass_storage_carried", 20, () -> MassStorageGameTests::carriedState);
+    public static final GameTests.Function MASS_STORAGE_OUTPUT_SYNC =
+            TESTS.function("mass_storage_output_sync", 40, () -> MassStorageGameTests::manualOutputAndSync);
+    public static final GameTests.Function MASS_STORAGE_MENU =
+            TESTS.function("mass_storage_menu", 40, () -> MassStorageGameTests::menuAndControls);
+    public static final GameTests.Function MASS_STORAGE_ASSETS =
+            TESTS.function("mass_storage_assets", 20, () -> MassStorageGameTests::assets);
+    public static final GameTests.Function TEMPLATE_CRATE_LAYOUT =
+            TESTS.function("template_crate_layout", 20, () -> TemplateCrateGameTests::layoutAndInventory);
+    public static final GameTests.Function TEMPLATE_CRATE_ASSETS =
+            TESTS.function("template_crate_assets", 20, () -> TemplateCrateGameTests::assets);
+    public static final GameTests.Function ADVANCED_OIL_PYRO_GATE =
+            TESTS.function("advanced_oil_pyro_gate", 40, 8, () -> AdvancedOilParityGameTests::pyroProgressGate);
+    public static final GameTests.Function ADVANCED_OIL_COMBUSTION_GATE =
+            TESTS.function("advanced_oil_combustion_gate", 40, 8, () -> AdvancedOilParityGameTests::combustionOperationGate);
+    public static final GameTests.Function ADVANCED_OIL_REFUELER_GATE =
+            TESTS.function("advanced_oil_refueler_gate", 40, 8, () -> AdvancedOilParityGameTests::refuelerIdleGate);
     public static final GameTests.Function TURBINE_CONVERSION =
             TESTS.function("turbine_conversion", 20, () -> HbmGameTestFunctions::turbineConversion);
     public static final GameTests.Function TURBINE_IDENTIFIER =

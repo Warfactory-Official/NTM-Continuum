@@ -118,7 +118,7 @@ public final class CrucibleUtil {
             mopHolder[0] = mop;
         }
 
-        if (mop.getType() != HitResult.Type.BLOCK) {
+        if (mop == null || mop.getType() != HitResult.Type.BLOCK) {
             return null;
         }
 
