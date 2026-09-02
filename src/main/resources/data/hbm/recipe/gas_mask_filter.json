@@ -1,7 +1,15 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "key": { "F": "hbm:filter_coal", "I": "#c:plates/iron" },
-  "pattern": [" I ", " F "],
-  "result": { "id": "hbm:gas_mask_filter" }
+  "key": {
+    "F": "hbm:filter_coal",
+    "I": "#c:plates/iron"
+  },
+  "pattern": [
+    "I",
+    "F"
+  ],
+  "result": {
+    "id": "hbm:gas_mask_filter"
+  }
 }

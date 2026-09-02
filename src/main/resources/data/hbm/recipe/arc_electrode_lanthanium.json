@@ -5,6 +5,12 @@
     "C": "#c:ingots/lanthanium",
     "T": "minecraft:brick"
   },
-  "pattern": ["C", "T", "C"],
-  "result": { "id": "hbm:arc_electrode_lanthanium" }
+  "pattern": [
+    "C",
+    "T",
+    "C"
+  ],
+  "result": {
+    "id": "hbm:arc_electrode_lanthanium"
+  }
 }

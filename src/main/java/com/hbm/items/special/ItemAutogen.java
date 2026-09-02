@@ -15,8 +15,9 @@ import net.minecraft.world.item.ItemStack;
  * {@code port-tools/gen_autogen_textures.py}) and a plain {@code item/generated} model — no
  * {@code custom_model_data}/select indirection, and tag-native.
  *
- * <p>Display name is {@code "<Material> <Shape>"} (e.g. "Iron Cast Plate"). Recipes match these via
- * {@link com.hbm.inventory.RecipesCommon.MaterialStack} (which resolves the exact item for a material+shape).
+ * <p>Display names use the exact legacy shape template (e.g. "Light Steel Barrel" and "Ivory Grip").
+ * Recipes match these via {@link com.hbm.inventory.RecipesCommon.MaterialStack} (which resolves the exact
+ * item for a material+shape).
  */
 public class ItemAutogen extends Item {
 
@@ -31,6 +32,6 @@ public class ItemAutogen extends Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        return Component.literal(material.getDisplayName() + " " + shape.displayName);
+        return Component.literal(shape.displayName(material.getDisplayName()));
     }
 }

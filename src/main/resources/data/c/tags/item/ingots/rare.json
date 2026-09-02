@@ -1,0 +1,6 @@
+{
+  "replace": false,
+  "values": [
+    "hbm:chunk_ore_rare"
+  ]
+}

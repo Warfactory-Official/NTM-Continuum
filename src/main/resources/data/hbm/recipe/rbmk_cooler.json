@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "hbm:rbmk_blank",
+    "I": "hbm:plate_polymer",
+    "G": "hbm:steel_grate"
+  },
+  "pattern": [
+    "IGI",
+    "GCG",
+    "IGI"
+  ],
+  "result": {
+    "id": "hbm:rbmk_cooler"
+  }
+}

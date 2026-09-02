@@ -9,6 +9,7 @@ import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
@@ -242,6 +243,9 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.cirnox").setup(600, 100)
                 .inputItems(STEEL.shell().count(4), STEEL.pipe().count(8), B.ingot().count(8), Mats.MAT_GRAPHITE.ingot().count(16), RUBBER.ingot().count(16), tag("c", "concretes", 16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 4))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_zirnox.get())));
+        reg.registerGenerated(new GenericRecipe("ass.rbmk").setup(100, 100)
+                .inputItems(new ComparableStack(ModBlocks.concrete_asbestos.get().asItem(), 4), STEEL.plateCast().count(2), CU.plate().count(4), RUBBER.ingot().count(2))
+                .outputItems(new ItemStack(ModRBMKBlocks.rbmk_blank.get())));
         reg.registerGenerated(new GenericRecipe("ass.watzrod").setup(200, 100)
                 .inputItems(STEEL.plateCast().count(2), ZR.ingot().count(2), BIGMT.ingot().count(2), ANY_HARDPLASTIC.ingot().count(4))
                 .outputItems(new ItemStack(ModBlocks.watz_element.get(), 3)));
@@ -275,6 +279,15 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.warheadhe3").setup(400, 100)
                 .inputItems(TI.plate().count(16), tag("c", "ingots/any_highexplosive", 8), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)))
                 .outputItems(new ItemStack(ModItems.warhead_generic_large.get())));
+        reg.registerGenerated(new GenericRecipe("ass.warheadinc1").setup(100, 100)
+                .inputItems(new ComparableStack(ModItems.warhead_generic_small.get()), P_RED.dust().count(2))
+                .outputItems(new ItemStack(ModItems.warhead_incendiary_small.get())));
+        reg.registerGenerated(new GenericRecipe("ass.warheadinc2").setup(200, 100)
+                .inputItems(new ComparableStack(ModItems.warhead_generic_medium.get()), P_RED.dust().count(4))
+                .outputItems(new ItemStack(ModItems.warhead_incendiary_medium.get())));
+        reg.registerGenerated(new GenericRecipe("ass.warheadinc3").setup(400, 100)
+                .inputItems(new ComparableStack(ModItems.warhead_generic_large.get()), P_RED.dust().count(8))
+                .outputItems(new ItemStack(ModItems.warhead_incendiary_large.get())));
         reg.registerGenerated(new GenericRecipe("ass.warheadcl1").setup(100, 100)
                 .inputItems(new ComparableStack(ModItems.warhead_generic_small.get()), new ComparableStack(ModItems.pellet_cluster.get(), 2))
                 .outputItems(new ItemStack(ModItems.warhead_cluster_small.get())));
@@ -290,6 +303,9 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.warheadbb2").setup(200, 100)
                 .inputItems(new ComparableStack(ModItems.warhead_generic_medium.get()), tag("c", "ingots/any_highexplosive", 4))
                 .outputItems(new ItemStack(ModItems.warhead_buster_medium.get())));
+    }
+
+    private static void register2(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("ass.warheadbb3").setup(400, 100)
                 .inputItems(new ComparableStack(ModItems.warhead_generic_large.get()), tag("c", "ingots/any_highexplosive", 8))
                 .outputItems(new ItemStack(ModItems.warhead_buster_large.get())));
@@ -303,9 +319,6 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.thrusternerva").setup(600, 100)
                 .inputItems(DURA.ingot().count(32), B.ingot().count(8), PB.plate().count(16), STEEL.pipe().count(4))
                 .outputItems(new ItemStack(ModItems.thruster_nuclear.get())));
-    }
-
-    private static void register2(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("ass.launchpadsilo").setup(200, 100)
                 .inputItems(STEEL.plateWelded().count(8), tag("c", "concretes", 8), ANY_HARDPLASTIC.ingot().count(16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4))
                 .outputItems(new ItemStack(ModMachineBlocks.launch_pad.get())));

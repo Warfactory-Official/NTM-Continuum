@@ -1,12 +1,12 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "pattern": [
-    "R"
-  ],
   "key": {
     "R": "hbm:deco_rbmk"
   },
+  "pattern": [
+    "R"
+  ],
   "result": {
     "id": "hbm:deco_rbmk_smooth"
   }

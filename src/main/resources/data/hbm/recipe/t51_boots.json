@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "hbm:plate_armor_titanium",
+    "B": "hbm:titanium_boots"
+  },
+  "pattern": [
+    "P P",
+    "PBP"
+  ],
+  "result": {
+    "id": "hbm:t51_boots"
+  }
+}

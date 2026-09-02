@@ -357,6 +357,23 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function INGREDIENT_ANVIL =
             TESTS.function("ingredient_anvil", 20, () -> IngredientGameTests::plateFuelAnvilRecipes);
 
+    // --- material catalogue/integration wave ---
+    public static final GameTests.Function MATERIAL_CATALOGUE_COMPLETE =
+            TESTS.function("material_catalogue_complete", 40, () -> MaterialCompletionGameTests::materialCatalogueComplete);
+    public static final GameTests.Function MATERIAL_AUTOGEN_SHAPES_COMPLETE =
+            TESTS.function("material_autogen_shapes_complete", 40, () -> MaterialCompletionGameTests::materialAutogenShapesComplete);
+    public static final GameTests.Function MATERIAL_DISTRIBUTION_COMPLETE =
+            TESTS.function("material_distribution_complete", 40, () -> MaterialCompletionGameTests::materialDistributionComplete);
+    public static final GameTests.Function MATERIAL_CRUCIBLE_PRESS_CRYSTALLIZER_COMPLETE =
+            TESTS.function("material_crucible_press_crystallizer_complete", 80,
+                    () -> MaterialCompletionGameTests::materialCruciblePressCrystallizerComplete);
+    public static final GameTests.Function MATERIAL_FRAGMENT_RECIPES_COMPLETE =
+            TESTS.function("material_fragment_recipes_complete", 40, () -> MaterialCompletionGameTests::materialFragmentRecipesComplete);
+    public static final GameTests.Function MATERIAL_TAG_ALIASES_COMPLETE =
+            TESTS.function("material_tag_aliases_complete", 40, () -> MaterialCompletionGameTests::materialTagAliasesComplete);
+    public static final GameTests.Function MACHINE_RECIPE_COMPLETION =
+            TESTS.function("machine_recipe_completion", 40, () -> MaterialCompletionGameTests::machineRecipeCompletion);
+
     // --- press recipes (implementations live in PressGameTests) ---
     public static final GameTests.Function PRESS_CASING =
             TESTS.function("press_casing", 20, () -> PressGameTests::casingRecipes);

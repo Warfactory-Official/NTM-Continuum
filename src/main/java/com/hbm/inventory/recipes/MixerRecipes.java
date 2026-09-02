@@ -48,7 +48,7 @@ public final class MixerRecipes extends GenericRecipes {
                 recipe(1_000, 20).fluid1(Fluids.SULFURIC_ACID, 900).fluid2(Fluids.PETROLEUM, 100),
                 recipe(1_000, 20).fluid1(Fluids.WATER, 1_000).fluid2(Fluids.PETROLEUM, 100)
                         .solid(OreDictManager.S.dust()));
-        register(Fluids.ENDERJUICE, recipe(100, 100).fluid1(Fluids.XPJUICE, 500).solid(item(ModItems.powder_diamond.get())));
+        register(Fluids.ENDERJUICE, recipe(100, 100).fluid1(Fluids.XPJUICE, 500).solid(OreDictManager.DIAMOND.dust()));
         register(Fluids.SALIENT, recipe(1_000, 20).fluid1(Fluids.SEEDSLURRY, 500).fluid2(Fluids.BLOOD, 500));
         register(Fluids.COLLOID, recipe(500, 20).fluid1(Fluids.WATER, 500).solid(item(ModItems.dust.get())));
         register(Fluids.PHOSGENE, recipe(1_000, 20).fluid1(Fluids.UNSATURATEDS, 500).fluid2(Fluids.CHLORINE, 500));

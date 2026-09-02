@@ -1,14 +1,11 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:crafting_shapeless",
   "category": "misc",
-  "key": {
-    "#": "hbm:block_cobalt"
-  },
-  "pattern": [
-    "#"
+  "ingredients": [
+    "hbm:billet_cobalt"
   ],
   "result": {
     "id": "hbm:ingot_cobalt",
-    "count": 9
+    "count": 6
   }
 }

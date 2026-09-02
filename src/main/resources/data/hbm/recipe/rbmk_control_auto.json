@@ -1,16 +1,16 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "pattern": [
-    "C",
-    "R",
-    "D"
-  ],
   "key": {
     "C": "hbm:circuit_advanced",
     "R": "hbm:rbmk_control",
     "D": "hbm:crt_display"
   },
+  "pattern": [
+    "C",
+    "R",
+    "D"
+  ],
   "result": {
     "id": "hbm:rbmk_control_auto"
   }

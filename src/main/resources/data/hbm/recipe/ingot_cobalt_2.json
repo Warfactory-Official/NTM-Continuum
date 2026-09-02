@@ -2,10 +2,9 @@
   "type": "minecraft:smelting",
   "category": "misc",
   "cookingtime": 200,
-  "experience": 2.0,
-  "ingredient": "hbm:crystal_cobalt",
+  "experience": 1.0,
+  "ingredient": "hbm:powder_cobalt",
   "result": {
-    "id": "hbm:ingot_cobalt",
-    "count": 2
+    "id": "hbm:ingot_cobalt"
   }
 }

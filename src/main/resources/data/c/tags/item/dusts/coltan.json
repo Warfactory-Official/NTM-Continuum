@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "hbm:powder_coltan"
+    "hbm:powder_coltan",
+    "hbm:powder_coltan_ore"
   ]
 }

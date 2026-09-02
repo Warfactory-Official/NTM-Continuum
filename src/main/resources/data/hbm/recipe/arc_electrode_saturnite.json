@@ -5,6 +5,12 @@
     "C": "#c:ingots/saturnite",
     "T": "#c:ingots/niobium"
   },
-  "pattern": ["C", "T", "C"],
-  "result": { "id": "hbm:arc_electrode_saturnite" }
+  "pattern": [
+    "C",
+    "T",
+    "C"
+  ],
+  "result": {
+    "id": "hbm:arc_electrode_saturnite"
+  }
 }

@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:hadron_analysis_glass"
+  ],
+  "result": {
+    "id": "hbm:circuit_advanced"
+  }
+}

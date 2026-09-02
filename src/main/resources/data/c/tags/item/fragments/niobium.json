@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "hbm:bedrock_ore_fragment_niobium",
     "hbm:fragment_niobium"
   ]
 }

@@ -12,6 +12,7 @@ import dev.golem.core.registry.RegistryObject;
 import org.jspecify.annotations.Nullable;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,8 +21,9 @@ import java.util.Map;
  * set). Registry id is {@code <shape-base>_<material>} (e.g. {@code plate_cast_iron}), matching the
  * pre-baked texture from {@code port-tools/gen_autogen_textures.py}.
  *
- * <p>The set of autogen shapes registered here (cast/welded plate, shell, pipe, fine/dense wire, bolt,
- * heavy component, gun parts) corresponds to the 1.12.2 {@code ItemAutogen} entries.
+ * <p>The set of autogen shapes registered here (raw ingot, bedrock fragment, cast/welded plate, shell,
+ * pipe, fine/dense wire, bolt, heavy component, gun parts) corresponds to the 1.12.2
+ * {@code ItemAutogen} entries.
  */
 public final class ModAutogenItems {
 
@@ -32,14 +34,15 @@ public final class ModAutogenItems {
     /** The autogen shapes + their registry-name base (must match gen_autogen_textures.py SHAPE_TO_BASE). */
     private static final Map<MaterialShapes, String> SHAPES = new LinkedHashMap<>();
     static {
-        SHAPES.put(MaterialShapes.CASTPLATE, "plate_cast");
-        SHAPES.put(MaterialShapes.WELDEDPLATE, "plate_welded");
         SHAPES.put(MaterialShapes.SHELL, "shell");
         SHAPES.put(MaterialShapes.PIPE, "pipe");
+        SHAPES.put(MaterialShapes.INGOT, "ingot_raw");
+        SHAPES.put(MaterialShapes.CASTPLATE, "plate_cast");
+        SHAPES.put(MaterialShapes.WELDEDPLATE, "plate_welded");
+        SHAPES.put(MaterialShapes.HEAVY_COMPONENT, "heavy_component");
         SHAPES.put(MaterialShapes.WIRE, "wire_fine");
         SHAPES.put(MaterialShapes.DENSEWIRE, "wire_dense");
         SHAPES.put(MaterialShapes.BOLT, "bolt");
-        SHAPES.put(MaterialShapes.HEAVY_COMPONENT, "heavy_component");
         SHAPES.put(MaterialShapes.LIGHTBARREL, "part_barrel_light");
         SHAPES.put(MaterialShapes.HEAVYBARREL, "part_barrel_heavy");
         SHAPES.put(MaterialShapes.LIGHTRECEIVER, "part_receiver_light");
@@ -47,6 +50,7 @@ public final class ModAutogenItems {
         SHAPES.put(MaterialShapes.MECHANISM, "part_mechanism");
         SHAPES.put(MaterialShapes.STOCK, "part_stock");
         SHAPES.put(MaterialShapes.GRIP, "part_grip");
+        SHAPES.put(MaterialShapes.FRAGMENT, "bedrock_ore_fragment");
     }
 
     /** (shape, material name) -> the registered item. */
@@ -75,6 +79,16 @@ public final class ModAutogenItems {
     public static @Nullable ItemAutogen get(MaterialShapes shape, NTMMaterial material) {
         RegistryObject<ItemAutogen> ro = BY_KEY.get(key(shape, material.name));
         return ro == null ? null : ro.get();
+    }
+
+    /** Number of distinct material-shape items registered by this class. */
+    public static int registeredCount() {
+        return BY_KEY.size();
+    }
+
+    /** The legacy declaration order used for the material-shape item families. */
+    public static List<MaterialShapes> shapeOrder() {
+        return List.copyOf(SHAPES.keySet());
     }
 
     public static void init() {}

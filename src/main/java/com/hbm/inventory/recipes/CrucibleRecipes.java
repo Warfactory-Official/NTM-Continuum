@@ -1,5 +1,6 @@
 package com.hbm.inventory.recipes;
 
+import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
@@ -21,8 +22,6 @@ import java.util.List;
  * <p><b>IMPORTANT (1.12.2 comment kept):</b> crucibles do not have stack size checks for the recipe's
  * result — make sure material doesn't "expand" when alloying.
  *
- * <p>Deferred with their materials: hematite/malachite ore smelting (source blocks not ported) and CMB
- * (needs MAT_MUD).
  */
 public class CrucibleRecipes extends GenericRecipes {
 
@@ -90,6 +89,20 @@ public class CrucibleRecipes extends GenericRecipes {
         register(new CrucibleRecipe("crucible.steel").crucibleSetup(20, new ItemStack(ModItems.ingot_steel.get()))
                 .inputs(new Mats.MaterialStack(Mats.MAT_IRON, n * 2), new Mats.MaterialStack(Mats.MAT_CARBON, n * 3), new Mats.MaterialStack(Mats.MAT_FLUX, n))
                 .outputs(new Mats.MaterialStack(Mats.MAT_STEEL, n * 2)));
+
+        register(new CrucibleRecipe("crucible.hematite")
+                .crucibleSetup(6, new ItemStack(ModOreBlocks.stone_resource_hematite.get().asItem()))
+                .inputs(new Mats.MaterialStack(Mats.MAT_HEMATITE, i * 2), new Mats.MaterialStack(Mats.MAT_FLUX, n * 2))
+                .outputs(new Mats.MaterialStack(Mats.MAT_IRON, i), new Mats.MaterialStack(Mats.MAT_SLAG, n * 3)));
+
+        register(new CrucibleRecipe("crucible.malachite")
+                .crucibleSetup(6, new ItemStack(ModOreBlocks.stone_resource_malachite.get().asItem()))
+                .inputs(new Mats.MaterialStack(Mats.MAT_MALACHITE, i * 2), new Mats.MaterialStack(Mats.MAT_FLUX, n * 2))
+                .outputs(new Mats.MaterialStack(Mats.MAT_COPPER, i), new Mats.MaterialStack(Mats.MAT_SLAG, n * 3)));
+
+        register(new CrucibleRecipe("crucible.cmb").crucibleSetup(3, new ItemStack(ModItems.ingot_combine_steel.get()))
+                .inputs(new Mats.MaterialStack(Mats.MAT_MAGTUNG, n * 6), new Mats.MaterialStack(Mats.MAT_MUD, n * 3))
+                .outputs(new Mats.MaterialStack(Mats.MAT_CMB, i)));
 
         register(new CrucibleRecipe("crucible.redcopper").crucibleSetup(2, new ItemStack(ModItems.ingot_red_copper.get()))
                 .inputs(new Mats.MaterialStack(Mats.MAT_COPPER, n), new Mats.MaterialStack(Mats.MAT_REDSTONE, n))

@@ -87,13 +87,12 @@ public final class SolderingRecipes {
                 a(cir(PCB, 16), ANY_HARDPLASTIC.ingot().count(4)),                                       a(PB.wire().count(16)));
 
         // machine upgrades (tier 1: template + a signature dust; tiers 2/3 via the 1.12.2 upgrade chains).
-        // The emerald dust is a ComparableStack — EMERALD isn't a material in the port's tag system.
         add(new ItemStack(ModUpgradeItems.upgrade_speed_1.get()), 200, 1_000, null,
                 a(cir(VACUUM_TUBE, 4), cir(CAPACITOR, 1)),
                 a(new ComparableStack(ModItems.upgrade_template.get()), MINGRADE.dust().count(4)),       a());
         add(new ItemStack(ModUpgradeItems.upgrade_effect_1.get()), 200, 1_000, null,
                 a(cir(VACUUM_TUBE, 4), cir(CAPACITOR, 1)),
-                a(new ComparableStack(ModItems.upgrade_template.get()), new ComparableStack(ModItems.powder_emerald.get(), 4)), a());
+                a(new ComparableStack(ModItems.upgrade_template.get()), EMERALD.dust().count(4)), a());
         add(new ItemStack(ModUpgradeItems.upgrade_power_1.get()), 200, 1_000, null,
                 a(cir(VACUUM_TUBE, 4), cir(CAPACITOR, 1)),
                 a(new ComparableStack(ModItems.upgrade_template.get()), GOLD.dust().count(4)),           a());

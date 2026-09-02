@@ -467,7 +467,7 @@
   "digamma.playerHealth": "Digamma influence:",
   "digamma.title": "DIGAMMA DIAGNOSTIC",
   "dosimeter.title": "DOSIMETER",
-  "effect.hbm.radiation": "Contaminated",
+  "effect.hbm.radiation": "Radiation",
   "flare.ignition": "Ignition",
   "flare.valve": "Flow Valve",
   "geiger.chunkRad": "Current chunk radiation:",

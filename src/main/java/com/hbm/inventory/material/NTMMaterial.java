@@ -37,9 +37,10 @@ public final class NTMMaterial {
     /** The original numeric id, kept for reference / ordering. */
     public final int id;
 
-    public int solidColorLight = 0xFFFFFF;
-    public int solidColorDark = 0x505050;
-    public int moltenColor = 0xFFFFFF;
+    /** The legacy constructor defaults, used by the three coke materials. */
+    public int solidColorLight = 0xFF4A00;
+    public int solidColorDark = 0x802000;
+    public int moltenColor = 0xFF4A00;
 
     /** How this material behaves in a crucible. Only {@code SMELTABLE} melt pools can be poured/cast. */
     public SmeltingBehavior smeltable = SmeltingBehavior.NOT_SMELTABLE;
@@ -51,6 +52,8 @@ public final class NTMMaterial {
 
     /** Shapes this material is auto-generated in (gates the autogen item's creative variants). */
     public final Set<MaterialShapes> autogen = EnumSet.noneOf(MaterialShapes.class);
+
+    private String displayName;
 
     public NTMMaterial(int id, String name) {
         this.id = id;
@@ -76,6 +79,12 @@ public final class NTMMaterial {
         return this;
     }
 
+    /** Sets the human-readable name when the canonical tag suffix is not the legacy display name. */
+    public NTMMaterial displayName(String displayName) {
+        this.displayName = displayName;
+        return this;
+    }
+
     public NTMMaterial setAutogen(MaterialShapes... shapes) {
         for (MaterialShapes s : shapes) if (s != null) autogen.add(s);
         return this;
@@ -83,6 +92,7 @@ public final class NTMMaterial {
 
     /** Title-cased display name, e.g. {@code combine_steel → "Combine Steel"}. */
     public String getDisplayName() {
+        if (displayName != null) return displayName;
         StringBuilder sb = new StringBuilder();
         for (String part : name.toLowerCase(Locale.US).split("_")) {
             if (part.isEmpty()) continue;

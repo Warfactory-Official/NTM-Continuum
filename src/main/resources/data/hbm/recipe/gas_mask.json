@@ -1,11 +1,17 @@
 {
   "type": "minecraft:crafting_shaped",
-  "category": "equipment",
+  "category": "misc",
   "key": {
-    "G": "minecraft:glass_pane",
-    "H": "hbm:hazmat_helmet",
-    "P": "#c:plates/iron"
+    "G": "#c:glass_panes",
+    "P": "#c:plates/steel",
+    "F": "#c:plates/iron"
   },
-  "pattern": [" G ", "G H", " P "],
-  "result": { "id": "hbm:gas_mask" }
+  "pattern": [
+    "PPP",
+    "GPG",
+    " F "
+  ],
+  "result": {
+    "id": "hbm:gas_mask"
+  }
 }

@@ -1,14 +1,10 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "minecraft:smelting",
   "category": "misc",
-  "key": {
-    "#": "hbm:block_desh"
-  },
-  "pattern": [
-    "#"
-  ],
+  "cookingtime": 200,
+  "experience": 3.0,
+  "ingredient": "hbm:arc_electrode_burnt_desh",
   "result": {
-    "id": "hbm:ingot_desh",
-    "count": 9
+    "id": "hbm:ingot_desh"
   }
 }

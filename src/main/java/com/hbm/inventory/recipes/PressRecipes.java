@@ -1,17 +1,26 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.inventory.RecipesCommon.ComparableStack;
+import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModCasingItems;
+import com.hbm.items.ModFuelItems;
+import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.items.machine.ItemStamp.StampType;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +31,10 @@ import static com.hbm.inventory.OreDictManager.*;
  * Press recipes — shared by the burner press and the electric press. A recipe is keyed by
  * (ingredient, {@link StampType}): inserting an ingredient plus a stamp of the matching type yields the
  * output. Faithful but <b>feasibility-limited</b> port of the 1.12.2 {@code PressRecipes} (see
- * IMPLEMENTATION.md §18): the metal-<b>plate</b> family and the metal casing family are registered here.
- * Other original recipes need an un-ported intermediate (dusts, gems, briquettes, shotshell casings,
- * circuits, pages). The plate set matches {@link AssemblyMachineRecipes} (ingot → plate) so the two
- * machines stay consistent.
+ * IMPLEMENTATION.md §18): the eight feasible defaults, metal-<b>plate</b> family, metal casing family,
+ * and material fine-wire loop are registered here. Meteorite-sword, briquette, and printing-page recipes
+ * remain blocked by their absent items or subsystems. The plate set matches {@link AssemblyMachineRecipes}
+ * (ingot → plate) so the two machines stay consistent.
  */
 public final class PressRecipes {
 
@@ -67,6 +76,20 @@ public final class PressRecipes {
         if (initialized) return;
         initialized = true;
 
+        // The eight feasible non-plate defaults from the 1.12.2 PressRecipes table.
+        makeRecipe(StampType.FLAT, dustTag("quartz"), new ItemStack(Items.QUARTZ));
+        makeRecipe(StampType.FLAT, dustTag("lapis"), new ItemStack(Items.LAPIS_LAZULI));
+        makeRecipe(StampType.FLAT, DIAMOND.dust(), new ItemStack(Items.DIAMOND));
+        makeRecipe(StampType.FLAT, EMERALD.dust(), new ItemStack(Items.EMERALD));
+        makeRecipe(StampType.FLAT, new ComparableStack(ModFuelItems.biomass.get()),
+                new ItemStack(ModFuelItems.biomass_compressed.get()));
+        makeRecipe(StampType.FLAT, new TagStack(ANY_COKE), new ItemStack(ModFuelItems.ingot_graphite.get()));
+        // Old Blocks.LOG metadata 3 is jungle; do not broaden this to every modern log.
+        makeRecipe(StampType.FLAT, new ComparableStack(Blocks.JUNGLE_LOG.asItem()),
+                new ItemStack(ModFuelItems.ball_resin.get()));
+        makeRecipe(StampType.CIRCUIT, SI.billet(),
+                new ItemStack(ModIntermediateItems.circuit(EnumCircuitType.SILICON)));
+
         // --- plates (ingot -> plate), the feasible slice (matches AssemblyMachineRecipes). Ingredients are
         // material TAGS (c:ingots/<metal>) so any mod's ingot works (the modern ore-dictionary equivalent). ---
         plate(IRON, ModItems.plate_iron.get());
@@ -104,7 +127,15 @@ public final class PressRecipes {
         makeRecipe(StampType.PLATE, mat.ingot(), new ItemStack(plate));
     }
 
+    private static AStack dustTag(String name) {
+        return new TagStack(TagKey.create(Registries.ITEM,
+                dev.golem.core.Ids.of("c", "dusts/" + name)));
+    }
+
     public static void makeRecipe(StampType type, AStack in, ItemStack out) {
         RECIPES.add(new PressRecipe(type, in, out));
     }
+
+    private static final TagKey<Item> ANY_COKE = TagKey.create(Registries.ITEM,
+            dev.golem.core.Ids.of("c", "cokes"));
 }

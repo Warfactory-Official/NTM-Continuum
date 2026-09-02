@@ -12,8 +12,8 @@ import com.hbm.inventory.material.NTMMaterial;
  * {@code port-tools/gen_material_tags.py}) rather than registered in code.
  *
  * <p>So a ported recipe reads almost unchanged — {@code new TagStack(IRON.ingot())} — via a static import
- * of these aliases. Only the metals whose items are ported are listed so far; extend alongside
- * {@link Mats} as the catalogue grows.
+ * of these aliases. The aliases cover the complete 108-material catalogue, including flattened metadata
+ * families and compatibility names; aggregate {@code ANY_*} groups remain standalone tag-only aliases.
  */
 public final class OreDictManager {
 
@@ -34,6 +34,20 @@ public final class OreDictManager {
     public static final NTMMaterial BIGMT       = Mats.MAT_SATURNITE;
     public static final NTMMaterial SA326       = Mats.MAT_SCHRABIDIUM;
 
+    // Vanilla-space and flattened material aliases.
+    public static final NTMMaterial BONE        = Mats.MAT_IVORY;
+    public static final NTMMaterial COALCOKE    = Mats.MAT_COALCOKE;
+    public static final NTMMaterial PETCOKE     = Mats.MAT_PETCOKE;
+    public static final NTMMaterial LIGCOKE     = Mats.MAT_LIGCOKE;
+    public static final NTMMaterial DIAMOND    = Mats.MAT_DIAMOND;
+    public static final NTMMaterial HEMATITE   = Mats.MAT_HEMATITE;
+    public static final NTMMaterial WROUGHTIRON = Mats.MAT_WROUGHTIRON;
+    public static final NTMMaterial PIGIRON    = Mats.MAT_PIGIRON;
+    public static final NTMMaterial METEORICIRON = Mats.MAT_METEORICIRON;
+    public static final NTMMaterial MALACHITE  = Mats.MAT_MALACHITE;
+    public static final NTMMaterial BAUXITE    = Mats.MAT_BAUXITE;
+    public static final NTMMaterial CRYOLITE   = Mats.MAT_CRYOLITE;
+
     // Radioactives / synthetics
     public static final NTMMaterial U           = Mats.MAT_URANIUM;
     public static final NTMMaterial U233        = Mats.MAT_U233;
@@ -41,12 +55,14 @@ public final class OreDictManager {
     public static final NTMMaterial U238        = Mats.MAT_U238;
     public static final NTMMaterial TH232       = Mats.MAT_THORIUM;
     public static final NTMMaterial PU          = Mats.MAT_PLUTONIUM;
+    public static final NTMMaterial PURG        = Mats.MAT_RGP;
     public static final NTMMaterial PU238       = Mats.MAT_PU238;
     public static final NTMMaterial PU239       = Mats.MAT_PU239;
     public static final NTMMaterial PU240       = Mats.MAT_PU240;
     public static final NTMMaterial PU241       = Mats.MAT_PU241;
     public static final NTMMaterial AM241       = Mats.MAT_AM241;
     public static final NTMMaterial AM242       = Mats.MAT_AM242;
+    public static final NTMMaterial AMRG        = Mats.MAT_RGA;
     public static final NTMMaterial NP237       = Mats.MAT_NEPTUNIUM;
     public static final NTMMaterial PO210       = Mats.MAT_POLONIUM;
     public static final NTMMaterial TC99        = Mats.MAT_TECHNETIUM;
@@ -89,9 +105,10 @@ public final class OreDictManager {
     public static final NTMMaterial SODALITE    = Mats.MAT_SODALITE;
     public static final NTMMaterial CHLOROCALCITE = Mats.MAT_CHLOROCALCITE;
     public static final NTMMaterial MOLYSITE    = Mats.MAT_MOLYSITE;
-
-    /** Saltpeter/niter is registered as hbm:niter, but is not a smeltable Mats entry. */
-    public static final NTMMaterial KNO         = new NTMMaterial(-1, "niter");
+    public static final NTMMaterial EMERALD     = Mats.MAT_EMERALD;
+    public static final NTMMaterial KNO         = Mats.MAT_KNO;
+    public static final NTMMaterial MUD         = Mats.MAT_MUD;
+    public static final NTMMaterial RAREEARTH   = Mats.MAT_RAREEARTH;
 
     // Alloys
     public static final NTMMaterial DESH        = Mats.MAT_DESH;

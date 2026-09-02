@@ -13,33 +13,33 @@ package com.hbm.inventory.material;
  */
 public enum MaterialShapes {
 
-    NUGGET("nugget", "nuggets", 8, "Nugget"),
-    TINY("tiny", "dusts_tiny", 8, "Tiny Pile"),
-    FRAGMENT("fragment", "fragments", 8, "Bedrock Ore Fragment"),
-    DUSTTINY("dust_tiny", "dusts_tiny", 8, "Tiny Pile of Dust"),
-    WIRE("wire", "wires", 9, "Fine Wire"),
-    BOLT("bolt", "bolts", 9, "Bolt"),
-    BILLET("billet", "billets", 48, "Billet"),  // 6 nuggets
-    INGOT("ingot", "ingots", 72, "Ingot"),      // 9 nuggets
-    GEM("gem", "gems", 72, "Gem"),
-    CRYSTAL("crystal", "crystals", 72, "Crystal"),
-    DUST("powder", "dusts", 72, "Powder"),      // HBM item prefix is "powder"; common tag is "dusts"
-    DENSEWIRE("wire_dense", "wires_dense", 72, "Dense Wire"),
-    PLATE("plate", "plates", 72, "Plate"),
-    CASTPLATE("plate_cast", "plates_cast", 216, "Cast Plate"),
-    WELDEDPLATE("plate_welded", "plates_welded", 432, "Welded Plate"),
-    SHELL("shell", "shells", 288, "Shell"),
-    PIPE("pipe", "pipes", 216, "Pipe"),
-    HEAVY_COMPONENT("heavy_component", "heavy_components", 55296, "Heavy Component"),
-    LIGHTBARREL("part_barrel_light", "barrels_light", 216, "Light Barrel"),
-    HEAVYBARREL("part_barrel_heavy", "barrels_heavy", 432, "Heavy Barrel"),
-    LIGHTRECEIVER("part_receiver_light", "receivers_light", 288, "Light Receiver"),
-    HEAVYRECEIVER("part_receiver_heavy", "receivers_heavy", 648, "Heavy Receiver"),
-    MECHANISM("part_mechanism", "mechanisms", 288, "Gun Mechanism"),
-    STOCK("part_stock", "stocks", 288, "Gun Stock"),
-    GRIP("part_grip", "grips", 144, "Gun Grip"),
-    BLOCK("block", "storage_blocks", 648, "Block"), // 9 ingots
-    ORE("ore", "ores", 0, "Ore");
+    NUGGET("nugget", "nuggets", 8, "%s Nugget"),
+    TINY("tiny", "dusts_tiny", 8, "%s Tiny Pile"),
+    FRAGMENT("fragment", "fragments", 8, "%s Bedrock Ore Fragment"),
+    DUSTTINY("dust_tiny", "dusts_tiny", 8, "%s Tiny Pile of Dust"),
+    WIRE("wire", "wires", 9, "%s Wire"),
+    BOLT("bolt", "bolts", 9, "%s Bolt"),
+    BILLET("billet", "billets", 48, "%s Billet"),  // 6 nuggets
+    INGOT("ingot", "ingots", 72, "%s Ingot"),      // 9 nuggets
+    GEM("gem", "gems", 72, "%s Gem"),
+    CRYSTAL("crystal", "crystals", 72, "%s Crystal"),
+    DUST("powder", "dusts", 72, "%s Powder"),      // HBM item prefix is "powder"; common tag is "dusts"
+    DENSEWIRE("wire_dense", "wires_dense", 72, "Dense %s Wire"),
+    PLATE("plate", "plates", 72, "%s Plate"),
+    CASTPLATE("plate_cast", "plates_cast", 216, "Cast %s Plate"),
+    WELDEDPLATE("plate_welded", "plates_welded", 432, "Welded %s Plate"),
+    SHELL("shell", "shells", 288, "%s Shell"),
+    PIPE("pipe", "pipes", 216, "%s Pipe"),
+    HEAVY_COMPONENT("heavy_component", "heavy_components", 55296, "Heavy %s Component"),
+    LIGHTBARREL("part_barrel_light", "barrels_light", 216, "Light %s Barrel"),
+    HEAVYBARREL("part_barrel_heavy", "barrels_heavy", 432, "Heavy %s Barrel"),
+    LIGHTRECEIVER("part_receiver_light", "receivers_light", 288, "Light %s Receiver"),
+    HEAVYRECEIVER("part_receiver_heavy", "receivers_heavy", 648, "Heavy %s Receiver"),
+    MECHANISM("part_mechanism", "mechanisms", 288, "%s Mechanism"),
+    STOCK("part_stock", "stocks", 288, "%s Stock"),
+    GRIP("part_grip", "grips", 144, "%s Grip"),
+    BLOCK("block", "storage_blocks", 648, "Block of %s"), // 9 ingots
+    ORE("ore", "ores", 0, "%s Ore");
 
     /** The HBM item-name prefix (e.g. {@code ingot} in {@code ingot_steel}; for autogen items the shared
      * registry-name stem, e.g. {@code plate_cast}). */
@@ -48,13 +48,26 @@ public enum MaterialShapes {
     public final String tagPlural;
     /** Material balance in 1/72-of-an-ingot units (for future recipe autogen). */
     public final int quantity;
-    /** Human-readable shape name for the autogen item display name ("{@code <Material> <displayName>}"). */
+    /** Exact legacy item-name template; {@code %s} is replaced by the material display name. */
+    public final String displayTemplate;
+    /** Short shape label retained for mold titles. */
     public final String displayName;
 
-    MaterialShapes(String itemPrefix, String tagPlural, int quantity, String displayName) {
+    MaterialShapes(String itemPrefix, String tagPlural, int quantity, String displayTemplate) {
         this.itemPrefix = itemPrefix;
         this.tagPlural = tagPlural;
         this.quantity = quantity;
-        this.displayName = displayName;
+        this.displayTemplate = displayTemplate;
+        this.displayName = switch (displayTemplate) {
+            case "%s Wire" -> "Fine Wire";
+            case "%s Mechanism" -> "Gun Mechanism";
+            case "%s Grip" -> "Gun Grip";
+            case "Block of %s" -> "Block";
+            default -> displayTemplate.replace("%s", "").replace("  ", " ").trim();
+        };
+    }
+
+    public String displayName(String materialName) {
+        return displayTemplate.replace("%s", materialName);
     }
 }

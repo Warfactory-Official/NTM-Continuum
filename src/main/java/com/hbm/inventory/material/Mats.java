@@ -1,6 +1,12 @@
 package com.hbm.inventory.material;
 
+import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
+import com.hbm.items.ItemEnums.EnumAshType;
+import com.hbm.items.ItemEnums.EnumChunkType;
+import com.hbm.items.ModIngredientItems;
+import com.hbm.items.ModIntermediateItems;
+import com.hbm.items.machine.ModStampItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
@@ -19,10 +25,11 @@ import static com.hbm.inventory.material.MaterialShapes.*;
  * definitions; each material's {@code tag(shape)} resolves to a {@code c:} common item tag (see
  * {@link NTMMaterial}).
  *
- * <p><b>Starter set</b>: this is a deliberate, growable slice — currently the metals whose ingots/plates
- * are ported (so the plate-recipe family can move to tags). The 1.12.2 {@code Mats} declares hundreds of
- * materials; add more here (with the matching {@code c:} item tags from {@code port-tools/gen_material_tags.py})
- * as their items + recipes are ported. Traits are deferred.
+ * <p><b>Complete catalogue</b>: the registry now contains all 108 legacy materials, with exact old English
+ * display labels kept separate from canonical tag suffixes. Persisted aliases such as {@code phosphorus}
+ * and {@code th232} resolve through {@link #byName} without adding ordered or numeric entries. Matching
+ * {@code c:} memberships are generated and audited by {@code port-tools/gen_material_tags.py}; only
+ * explicitly unsupported downstream recipes remain deferred.
  *
  * <p>The crucible half is ported for the foundry system: {@link MaterialStack} (integer quanta of molten
  * material, NUGGET = 8 / INGOT = 72), per-material {@link SmeltingBehavior} + conversion (see the static
@@ -58,7 +65,7 @@ public final class Mats {
     public static final NTMMaterial MAT_ALUMINIUM    = mat(1300, "aluminium")
             .colors(0xFFFFFF, 0x344550, 0xD0B8EB).setAutogen(FRAGMENT, WIRE, DUST, PLATE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK);
     public static final NTMMaterial MAT_STEEL        = mat(2605, "steel")
-            .colors(0xAFAFAF, 0x0F0F0F, 0x4A4A4A).setAutogen(BOLT, WIRE, DUST, PLATE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK,
+            .colors(0xAFAFAF, 0x0F0F0F, 0x4A4A4A).setAutogen(DUSTTINY, BOLT, WIRE, DUST, PLATE, CASTPLATE, WELDEDPLATE, SHELL, PIPE, BLOCK,
                     LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, GRIP);
     public static final NTMMaterial MAT_LEAD         = mat(8200, "lead")
             .colors(0xA6A6B2, 0x03030F, 0x646470).setAutogen(FRAGMENT, NUGGET, WIRE, BOLT, DUST, PLATE, CASTPLATE, PIPE, BLOCK);
@@ -93,19 +100,19 @@ public final class Mats {
     public static final NTMMaterial MAT_BERYLLIUM    = mat(400, "beryllium")
             .colors(0xB2B2A6, 0x0F0F03, 0xAE9572).setAutogen(FRAGMENT, NUGGET, DUST, BLOCK);
     public static final NTMMaterial MAT_COBALT       = mat(2700, "cobalt")
-            .colors(0xC2D1EE, 0x353554, 0x8F72AE).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
+            .colors(0xC2D1EE, 0x353554, 0x8F72AE).setAutogen(FRAGMENT, NUGGET, DUSTTINY, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_NIOBIUM      = mat(4100, "niobium")
-            .colors(0xB76EC9, 0x2F2D42, 0xD576B1).setAutogen(FRAGMENT, NUGGET, DUST, DENSEWIRE, BLOCK);
+            .colors(0xB76EC9, 0x2F2D42, 0xD576B1).setAutogen(FRAGMENT, NUGGET, DUSTTINY, DUST, DENSEWIRE, BLOCK);
     public static final NTMMaterial MAT_ZIRCONIUM    = mat(4000, "zirconium")
-            .colors(0xE3DCBE, 0x3E3719, 0xADA688).setAutogen(FRAGMENT, NUGGET, WIRE, BILLET, DUST, CASTPLATE, WELDEDPLATE, BLOCK);
+            .colors(0xE3DCBE, 0x3E3719, 0xADA688).setAutogen(FRAGMENT, NUGGET, WIRE, DUSTTINY, BILLET, DUST, CASTPLATE, WELDEDPLATE, BLOCK);
     public static final NTMMaterial MAT_BISMUTH      = mat(8300, "bismuth")
             .colors(0xB200FF, 0xB200FF, 0xB200FF).setAutogen(FRAGMENT, NUGGET, BILLET, DUST, BLOCK);
     public static final NTMMaterial MAT_BORON        = mat(500, "boron")
-            .colors(0xBDC8D2, 0x29343E, 0xAD72AE).setAutogen(FRAGMENT, DUST, BLOCK);
+            .colors(0xBDC8D2, 0x29343E, 0xAD72AE).setAutogen(FRAGMENT, DUSTTINY, DUST, BLOCK);
     public static final NTMMaterial MAT_ARSENIC      = mat(3300, "arsenic")
             .colors(0x6CBABA, 0x242525, 0x558080).setAutogen(NUGGET);
     public static final NTMMaterial MAT_NEODYMIUM    = mat(6000, "neodymium")
-            .colors(0xE6E6B6, 0x1C1C00, 0x8F8F5F).setAutogen(FRAGMENT, NUGGET, DUST, DENSEWIRE, BLOCK);
+            .colors(0xE6E6B6, 0x1C1C00, 0x8F8F5F).setAutogen(FRAGMENT, NUGGET, DUSTTINY, INGOT, DUST, DENSEWIRE, BLOCK);
     public static final NTMMaterial MAT_LANTHANIUM   = mat(5700, "lanthanium")
             .colors(0xC8E0E0, 0x3B5353, 0xA1B9B9).setAutogen(FRAGMENT, BLOCK);
     public static final NTMMaterial MAT_CADMIUM      = mat(4800, "cadmium")
@@ -184,7 +191,8 @@ public final class Mats {
             .colors(0xFCEE80, 0xBDA022, 0xF1DF68).setAutogen(FRAGMENT, DUST, BLOCK);
     public static final NTMMaterial MAT_FLUORITE       = mat(900, "fluorite")
             .colors(0xFFFFFF, 0xB0A192, 0xE1DBD4).setAutogen(FRAGMENT, DUST, BLOCK);
-    public static final NTMMaterial MAT_PHOSPHORUS     = mat(1500, "phosphorus")
+    public static final NTMMaterial MAT_PHOSPHORUS     = mat(1500, "red_phosphorus")
+            .displayName("Red Phosphorus")
             .colors(0xCB0213, 0x600006, 0xBA0615).setAutogen(FRAGMENT, DUST, BLOCK);
     public static final NTMMaterial MAT_CHLOROCALCITE  = mat(1701, "chlorocalcite")
             .colors(0xF7E761, 0x475B46, 0xB8B963).setAutogen(FRAGMENT, DUST);
@@ -279,10 +287,197 @@ public final class Mats {
 
         MAT_COAL.conv(MAT_CARBON, 2, 1);     // NOT_SMELTABLE itself, but melts into carbon
         MAT_LIGNITE.conv(MAT_CARBON, 3, 1);
+
+        // ItemScraps persists names; retain the old names without creating registry entries.
+        alias("phosphorus", MAT_PHOSPHORUS);
+        alias("th232", MAT_THORIUM);
     }
+
+    // BEGIN GENERATED MATERIAL COMPLETION
+    public static final NTMMaterial MAT_IVORY          = mat(4, "bone")
+            .colors(0xFFFEEE, 0x797870, 0xEDEBCA)
+            .setAutogen(GRIP);
+    public static final NTMMaterial MAT_COALCOKE       = mat(610, "coal_coke")
+            .conv(MAT_CARBON, 4, 3);
+    public static final NTMMaterial MAT_PETCOKE        = mat(611, "pet_coke")
+            .conv(MAT_CARBON, 4, 3);
+    public static final NTMMaterial MAT_LIGCOKE        = mat(612, "lignite_coke")
+            .conv(MAT_CARBON, 4, 3);
+    public static final NTMMaterial MAT_DIAMOND        = mat(1430, "diamond")
+            .colors(0xFFFFFF, 0x1B7B6B, 0x8CF4E2)
+            .conv(MAT_CARBON, 1, 1)
+            .setAutogen(FRAGMENT);
+    public static final NTMMaterial MAT_HEMATITE       = mat(2601, "hematite")
+            .smelting(SmeltingBehavior.ADDITIVE)
+            .colors(0xDFB7AE, 0x5F372E, 0x6E463D);
+    public static final NTMMaterial MAT_WROUGHTIRON    = mat(2602, "wrought_iron")
+            .smelting(SmeltingBehavior.SMELTABLE)
+            .colors(0xFAAB89, 0xFAAB89, 0xFAAB89);
+    public static final NTMMaterial MAT_PIGIRON        = mat(2603, "pig_iron")
+            .smelting(SmeltingBehavior.SMELTABLE)
+            .colors(0xFF8B59, 0xFF8B59, 0xFF8B59);
+    public static final NTMMaterial MAT_METEORICIRON   = mat(2604, "meteoric_iron")
+            .smelting(SmeltingBehavior.SMELTABLE)
+            .colors(0x715347, 0x715347, 0x715347);
+    public static final NTMMaterial MAT_MALACHITE      = mat(2901, "malachite")
+            .smelting(SmeltingBehavior.ADDITIVE)
+            .colors(0xA2F0C8, 0x227048, 0x61AF87);
+    public static final NTMMaterial MAT_BAUXITE        = mat(2902, "bauxite")
+            .colors(0xF4BA30, 0xAA320A, 0xE2560F)
+            .setAutogen(FRAGMENT);
+    public static final NTMMaterial MAT_CRYOLITE       = mat(2903, "cryolite")
+            .colors(0xCBC2A4, 0x8B711F, 0x8B701A)
+            .setAutogen(FRAGMENT);
+    public static final NTMMaterial MAT_RGP            = mat(9401, "pu_mix")
+            .smelting(SmeltingBehavior.SMELTABLE)
+            .colors(0x9AA3A0, 0x111A17, 0x78817E)
+            .setAutogen(NUGGET, BILLET, BLOCK);
+    public static final NTMMaterial MAT_RGA            = mat(9501, "am_mix")
+            .smelting(SmeltingBehavior.SMELTABLE)
+            .colors(0xCEB3B9, 0x3A1C21, 0x93767B)
+            .setAutogen(NUGGET, BILLET, BLOCK);
+    public static final NTMMaterial MAT_EMERALD        = mat(401, "emerald")
+            .colors(0xBAFFD4, 0x003900, 0x17DD62)
+            .conv(MAT_BERYLLIUM, 4, 3)
+            .setAutogen(FRAGMENT, DUST, GEM, BLOCK);
+    public static final NTMMaterial MAT_KNO            = mat(700, "niter")
+            .colors(0xD4D4D4, 0x969696, 0xC9C9C9)
+            .setAutogen(FRAGMENT, DUST, BLOCK);
+    public static final NTMMaterial MAT_MUD            = mat(44, "mud")
+            .smelting(SmeltingBehavior.SMELTABLE)
+            .colors(0xBCB5A9, 0x481213, 0x96783B);
+    public static final NTMMaterial MAT_RAREEARTH      = mat(20000, "rare")
+            .colors(0xC1BDBD, 0x384646, 0x7B7F7F)
+            .setAutogen(FRAGMENT);
+    // END GENERATED MATERIAL COMPLETION
+
+    // BEGIN GENERATED MATERIAL DISPLAY NAMES
+    static {
+        MAT_WOOD.displayName("Wood");
+        MAT_IRON.displayName("Iron");
+        MAT_GOLD.displayName("Gold");
+        MAT_TITANIUM.displayName("Titanium");
+        MAT_ALUMINIUM.displayName("Aluminium");
+        MAT_STEEL.displayName("Steel");
+        MAT_LEAD.displayName("Lead");
+        MAT_COPPER.displayName("Copper");
+        MAT_GUNMETAL.displayName("Gunmetal");
+        MAT_WEAPONSTEEL.displayName("Weapon Steel");
+        MAT_CMB.displayName("Combine Steel");
+        MAT_DURA.displayName("High-Speed Steel");
+        MAT_SATURNITE.displayName("Saturnite");
+        MAT_SCHRABIDIUM.displayName("Schrabidium");
+        MAT_DESH.displayName("Desh");
+        MAT_RED_COPPER.displayName("Minecraft Grade Copper");
+        MAT_MAGTUNG.displayName("Magnetized Tungsten");
+        MAT_TUNGSTEN.displayName("Tungsten");
+        MAT_BERYLLIUM.displayName("Beryllium");
+        MAT_COBALT.displayName("Cobalt");
+        MAT_NIOBIUM.displayName("Niobium");
+        MAT_ZIRCONIUM.displayName("Zirconium");
+        MAT_BISMUTH.displayName("Bismuth");
+        MAT_BORON.displayName("Boron");
+        MAT_ARSENIC.displayName("Arsenic");
+        MAT_NEODYMIUM.displayName("Neodymium");
+        MAT_LANTHANIUM.displayName("Lanthanium");
+        MAT_CADMIUM.displayName("Cadmium");
+        MAT_ASBESTOS.displayName("Asbestos");
+        MAT_URANIUM.displayName("Uranium");
+        MAT_THORIUM.displayName("Thorium-232");
+        MAT_PLUTONIUM.displayName("Plutonium");
+        MAT_NEPTUNIUM.displayName("Neptunium-237");
+        MAT_POLONIUM.displayName("Polonium-210");
+        MAT_ACTINIUM.displayName("Actinium-227");
+        MAT_U233.displayName("Uranium-233");
+        MAT_U235.displayName("Uranium-235");
+        MAT_U238.displayName("Uranium-238");
+        MAT_PU238.displayName("Plutonium-238");
+        MAT_PU239.displayName("Plutonium-239");
+        MAT_PU240.displayName("Plutonium-240");
+        MAT_PU241.displayName("Plutonium-241");
+        MAT_AM241.displayName("Americium-241");
+        MAT_AM242.displayName("Americium-242");
+        MAT_TECHNETIUM.displayName("Technetium-99");
+        MAT_RADIUM.displayName("Radium-226");
+        MAT_CO60.displayName("Cobalt-60");
+        MAT_AU198.displayName("Gold-198");
+        MAT_PB209.displayName("Lead-209");
+        MAT_SOLINIUM.displayName("Solinium");
+        MAT_SCHRABIDATE.displayName("Ferric Schrabidate");
+        MAT_SCHRARANIUM.displayName("Schraranium");
+        MAT_GHIORSIUM.displayName("Ghiorsium-336");
+        MAT_TANTALIUM.displayName("Tantalum");
+        MAT_SILICON.displayName("Silicon");
+        MAT_OSMIRIDIUM.displayName("Osmiridium");
+        MAT_CALCIUM.displayName("Calcium");
+        MAT_SODIUM.displayName("Sodium");
+        MAT_STRONTIUM.displayName("Strontium");
+        MAT_LITHIUM.displayName("Lithium");
+        MAT_SULFUR.displayName("Sulfur");
+        MAT_FLUORITE.displayName("Fluorite");
+        MAT_PHOSPHORUS.displayName("Red Phosphorus");
+        MAT_CHLOROCALCITE.displayName("Chlorocalcite");
+        MAT_MOLYSITE.displayName("Molysite");
+        MAT_CINNABAR.displayName("Cinnabar");
+        MAT_BORAX.displayName("Borax");
+        MAT_SODALITE.displayName("Sodalite");
+        MAT_CARBON.displayName("Carbon");
+        MAT_GRAPHITE.displayName("Graphite");
+        MAT_STAR.displayName("Starmetal");
+        MAT_FERRO.displayName("Ferrouranium");
+        MAT_TCALLOY.displayName("Technetium Steel");
+        MAT_CDALLOY.displayName("Cadmium Steel");
+        MAT_BBRONZE.displayName("Bismuth Bronze");
+        MAT_ABRONZE.displayName("Arsenic Bronze");
+        MAT_BSCCO.displayName("BSCCO");
+        MAT_DNT.displayName("Dineutronium");
+        MAT_SLAG.displayName("Slag");
+        MAT_FLUX.displayName("Flux");
+        MAT_POLYMER.displayName("Polymer");
+        MAT_BAKELITE.displayName("Bakelite");
+        MAT_RUBBER.displayName("Rubber");
+        MAT_HARDPLASTIC.displayName("Hard Plastic");
+        MAT_PVC.displayName("PVC");
+        MAT_STONE.displayName("Stone");
+        MAT_REDSTONE.displayName("Redstone");
+        MAT_OBSIDIAN.displayName("Obsidian");
+        MAT_COAL.displayName("Coal");
+        MAT_LIGNITE.displayName("Lignite");
+        MAT_IVORY.displayName("Ivory");
+        MAT_COALCOKE.displayName("Coal Coke");
+        MAT_PETCOKE.displayName("Petroleum Coke");
+        MAT_LIGCOKE.displayName("Lignite Coke");
+        MAT_DIAMOND.displayName("Diamond");
+        MAT_HEMATITE.displayName("Hematite");
+        MAT_WROUGHTIRON.displayName("Wrought Iron");
+        MAT_PIGIRON.displayName("Pig Iron");
+        MAT_METEORICIRON.displayName("Meteoric Iron");
+        MAT_MALACHITE.displayName("Malachite");
+        MAT_BAUXITE.displayName("Bauxite");
+        MAT_CRYOLITE.displayName("Cryolite");
+        MAT_RGP.displayName("Reactor-Grade Plutonium");
+        MAT_RGA.displayName("Reactor-Grade Americium");
+        MAT_EMERALD.displayName("Emerald");
+        MAT_KNO.displayName("Niter");
+        MAT_MUD.displayName("Poisonous Mud");
+        MAT_RAREEARTH.displayName("Rare Earth");
+    }
+    // END GENERATED MATERIAL DISPLAY NAMES
 
     public static NTMMaterial byName(String name) {
         return matByName.get(name);
+    }
+
+    /** Adds a persisted/legacy lookup name without changing the ordered or numeric registries. */
+    public static void alias(String name, NTMMaterial material) {
+        if (name == null || name.isBlank() || material == null) {
+            throw new IllegalArgumentException("Material aliases require a name and material");
+        }
+        NTMMaterial existing = matByName.get(name);
+        if (existing != null && existing != material) {
+            throw new IllegalArgumentException("Material alias collides with " + name);
+        }
+        matByName.put(name, material);
     }
 
     // ------------------------------------------------------------------------------------------------
@@ -333,19 +528,23 @@ public final class Mats {
         entry(items, net.minecraft.world.item.Items.POWERED_RAIL, MAT_GOLD, i, MAT_REDSTONE, DUST.quantity / 6);
         entry(items, net.minecraft.world.item.Items.DETECTOR_RAIL, MAT_IRON, i, MAT_REDSTONE, DUST.quantity / 6);
         entry(items, net.minecraft.world.item.Items.MINECART, MAT_IRON, i * 5);
-        entry(items, net.minecraft.world.item.Items.COAL, MAT_COAL, GEM.quantity);
         entry(items, net.minecraft.world.item.Items.CHARCOAL, MAT_CARBON, n * 3);
-        entry(items, net.minecraft.world.item.Items.DIAMOND, MAT_CARBON, GEM.quantity);
-        entry(items, net.minecraft.world.item.Items.REDSTONE, MAT_REDSTONE, DUST.quantity);
-        entry(items, net.minecraft.world.item.Items.REDSTONE_BLOCK, MAT_REDSTONE, DUST.quantity * 9);
 
-        // HBM fuels / powders without per-material shape tags
-        entry(items, com.hbm.items.ModFuelItems.lignite.get(), MAT_LIGNITE, i);
-        entry(items, com.hbm.items.ModFuelItems.powder_lignite.get(), MAT_LIGNITE, DUST.quantity);
-        entry(items, com.hbm.items.ModFuelItems.powder_coal.get(), MAT_COAL, DUST.quantity);
-        entry(items, com.hbm.items.ModFuelItems.powder_coal_tiny.get(), MAT_COAL, TINY.quantity);
-        entry(items, com.hbm.items.ModFuelItems.ingot_graphite.get(), MAT_GRAPHITE, i);
+        // powder_flux intentionally remains explicit: old MatDistribution added it alongside its tag entry.
         entry(items, com.hbm.items.ModItems.powder_flux.get(), MAT_FLUX, DUST.quantity);
+
+        // Flat stamps and flattened metadata families from MatDistribution.registerDefaults.
+        entry(items, ModStampItems.stamp_stone_flat.get(), MAT_STONE, i * 3);
+        entry(items, ModStampItems.stamp_iron_flat.get(), MAT_IRON, i * 3);
+        entry(items, ModStampItems.stamp_steel_flat.get(), MAT_STEEL, i * 3);
+        entry(items, ModStampItems.stamp_titanium_flat.get(), MAT_TITANIUM, i * 3);
+        entry(items, ModStampItems.stamp_obsidian_flat.get(), MAT_OBSIDIAN, i * 3);
+        entry(items, ModIntermediateItems.chunk(EnumChunkType.CRYOLITE),
+                MAT_ALUMINIUM, i, MAT_SODIUM, i);
+        entry(items, ModOreBlocks.stone_resource_limestone.get().asItem(), MAT_FLUX, DUST.quantity * 10);
+        entry(items, ModIngredientItems.ash(EnumAshType.WOOD), MAT_CARBON, n);
+        entry(items, ModIngredientItems.ash(EnumAshType.COAL), MAT_CARBON, n * 2);
+        entry(items, ModIngredientItems.ash(EnumAshType.MISC), MAT_CARBON, n);
 
         // castables (melt back to their mold cost, per the old MatDistribution)
         entry(items, com.hbm.items.ModItems.blade_titanium.get(), MAT_TITANIUM, i * 3);
@@ -376,6 +575,8 @@ public final class Mats {
         tagEntry(tags, "c:ores/beryllium", MAT_BERYLLIUM, i * 2, MAT_STONE, quart);
         tagEntry(tags, "c:ores/cobalt", MAT_COBALT, i, MAT_STONE, quart);
         tagEntry(tags, "c:ores/redstone", MAT_REDSTONE, i * 4, MAT_STONE, quart);
+        tagEntry(tags, "c:ores/hematite", MAT_HEMATITE, i);
+        tagEntry(tags, "c:ores/malachite", MAT_MALACHITE, i * 6);
 
         materialTagEntries = tags;
         materialEntries = items;

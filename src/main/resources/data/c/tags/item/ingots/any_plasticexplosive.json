@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
+    "hbm:ingot_c4",
     "hbm:ingot_semtex"
   ]
 }

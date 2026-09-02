@@ -1,11 +1,11 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:smelting",
   "category": "misc",
-  "ingredients": [
-    "hbm:billet_cobalt"
-  ],
+  "cookingtime": 200,
+  "experience": 2.0,
+  "ingredient": "hbm:crystal_cobalt",
   "result": {
     "id": "hbm:ingot_cobalt",
-    "count": 6
+    "count": 2
   }
 }

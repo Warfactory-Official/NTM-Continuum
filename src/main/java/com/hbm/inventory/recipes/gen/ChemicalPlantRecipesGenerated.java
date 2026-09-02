@@ -5,6 +5,7 @@ package com.hbm.inventory.recipes.gen;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
+import com.hbm.blocks.ModGlassBlocks;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -141,7 +142,7 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.LUBRICANT, 400), new FluidStack(Fluids.PEROXIDE, 500))
                 .outputItems(new ItemStack(ModMedicineItems.chocolate.get(), 4)));
         reg.registerGenerated(new GenericRecipe("chem.epearl").setup(100, 300)
-                .inputItems(tag("c", "dusts/diamond", 1))
+                .inputItems(DIAMOND.dust())
                 .inputFluids(new FluidStack(Fluids.XPJUICE, 500))
                 .outputFluids(new FluidStack(Fluids.ENDERJUICE, 100)));
         reg.registerGenerated(new GenericRecipe("chem.rustysteel").setup(40, 100)
@@ -214,6 +215,10 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputItems(new ComparableStack(ModItems.canister_empty.get()))
                 .inputFluids(new FluidStack(Fluids.GASOLINE, 100), new FluidStack(Fluids.AROMATICS, 50))
                 .outputItems(new ItemStack(ModItems.canister_napalm.get())));
+        reg.registerGenerated(new GenericRecipe("chem.laminate").setup(20, 100)
+                .inputItems(new ComparableStack(Items.GLASS), STEEL.bolt().count(4))
+                .inputFluids(new FluidStack(Fluids.XYLENE, 50), new FluidStack(Fluids.PHOSGENE, 50))
+                .outputItems(new ItemStack(ModGlassBlocks.reinforced_laminate.get())));
         reg.registerGenerated(new GenericRecipe("chem.polarized").setup(100, 500)
                 .inputItems(new ComparableStack(Items.GLASS_PANE))
                 .inputFluids(new FluidStack(Fluids.PETROLEUM, 1_000))

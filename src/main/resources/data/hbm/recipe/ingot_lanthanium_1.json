@@ -1,11 +1,10 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:smelting",
   "category": "misc",
-  "ingredients": [
-    "hbm:block_lanthanium"
-  ],
+  "cookingtime": 200,
+  "experience": 3.0,
+  "ingredient": "hbm:arc_electrode_burnt_lanthanium",
   "result": {
-    "id": "hbm:ingot_lanthanium",
-    "count": 9
+    "id": "hbm:ingot_lanthanium"
   }
 }
