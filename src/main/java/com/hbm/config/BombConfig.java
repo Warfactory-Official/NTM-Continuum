@@ -39,6 +39,18 @@ public final class BombConfig {
     /** Maximum milliseconds per tick allocated for fallout chunk processing (EntityFalloutRain). */
     public static int falloutDelay = 30;
 
+    /**
+     * On-demand fallout chunk requests retained per scan worker.
+     *
+     * <p>A deep pipeline hides generation latency, but 48 held 720 unresolved centre requests plus the
+     * active scans and expanded them into 1,983 unique
+     * neighbourhood chunks during a Tsar sweep. That saturated worldgen hard enough to produce 10-second
+     * server tick gaps. Sixteen still keeps hundreds of chunks in flight without flooding the generator.
+     * Each fallout entity snapshots this value when it is created and clamps it to 1..256, so changing
+     * the setting affects new sweeps only and an extreme value cannot overflow the effective request cap.
+     */
+    public static int falloutClaimWindow = 16;
+
     /** Disables the nuclear (crater + fallout) portion of nukes, leaving only the blast damage. */
     public static boolean disableNuclear = false;
 

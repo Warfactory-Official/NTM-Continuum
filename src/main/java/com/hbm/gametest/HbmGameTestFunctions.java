@@ -724,6 +724,11 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function NUKE_CRATER_BENCHMARK =
             TESTS.function("nuke_crater_benchmark", 20 * 90, () -> NukePerfGameTests::craterBenchmark);
 
+    /** Complete per-chunk hit-set parity between resident rays and event-driven chunk resumes. */
+    public static final GameTests.Function NUKE_RAY_RESUME_EQUIVALENCE =
+            TESTS.function("nuke_ray_resume_equivalence", 20 * 90,
+                    () -> NukePerfGameTests::rayResumeEquivalence);
+
     /** setBlock vs direct section write — the number behind the destruction-phase design. */
     public static final GameTests.Function NUKE_WRITE_THROUGHPUT =
             TESTS.function("nuke_write_throughput", 20 * 90, () -> NukePerfGameTests::writeThroughput);
@@ -748,6 +753,11 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function NUKE_FALLOUT_WRITE_THROUGHPUT =
             TESTS.function("nuke_fallout_write_throughput", 20 * 180,
                     () -> NukePerfGameTests::falloutWriteThroughput);
+
+    /** Worker output retains old last-state/first-falling position-map semantics. */
+    public static final GameTests.Function NUKE_FALLOUT_WRITE_DEDUPLICATION =
+            TESTS.function("nuke_fallout_write_deduplication", 20,
+                    () -> NukePerfGameTests::falloutWriteDeduplication);
 
     /** What the ash layer's self-rescheduling block tick costs, during and after the sweep. */
     public static final GameTests.Function NUKE_FALLOUT_ASH_LOAD =

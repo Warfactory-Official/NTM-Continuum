@@ -2,6 +2,7 @@ package com.hbm.world.feature;
 
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
@@ -29,12 +30,27 @@ public final class OilSpot {
     private OilSpot() {}
 
     public static void generateOilSpot(WorldGenLevel level, int x, int z, int width, int count, boolean addWillows) {
+        generateOilSpot(level, x, z, width, count, addWillows,
+                Integer.MIN_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE);
+    }
+
+    /** Worldgen variant constrained to the origin chunk and its one-chunk writable border. */
+    public static void generateOilSpot(WorldGenLevel level, BlockPos chunkOrigin, int x, int z,
+                                       int width, int count, boolean addWillows) {
+        generateOilSpot(level, x, z, width, count, addWillows,
+                chunkOrigin.getX() - 16, chunkOrigin.getX() + 31,
+                chunkOrigin.getZ() - 16, chunkOrigin.getZ() + 31);
+    }
+
+    private static void generateOilSpot(WorldGenLevel level, int x, int z, int width, int count,
+                                        boolean addWillows, int minX, int maxX, int minZ, int maxZ) {
         RandomSource rand = level.getRandom();
         MutableBlockPos pos = new MutableBlockPos();
 
         for (int i = 0; i < count; i++) {
             int rX = x + (int) (rand.nextGaussian() * width);
             int rZ = z + (int) (rand.nextGaussian() * width);
+            if (rX < minX || rX > maxX || rZ < minZ || rZ > maxZ) continue;
             int rY = level.getHeight(Heightmap.Types.WORLD_SURFACE, rX, rZ);
 
             for (int y = rY; y > rY - 4 && y > level.getMinY(); y--) {

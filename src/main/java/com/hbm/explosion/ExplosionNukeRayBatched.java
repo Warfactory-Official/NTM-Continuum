@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.config.BombConfig;
 import com.hbm.interfaces.IExplosionRay;
 import com.hbm.util.ChunkCarver;
+import dev.golem.core.world.Chunks;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
@@ -14,19 +15,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
  * The Fat Man / mk5 crater raytracer, ported from 1.12.2's {@code ExplosionNukeRayBatched} — with the
@@ -36,8 +35,9 @@ import java.util.concurrent.ForkJoinTask;
  *
  * <p><b>Phases:</b>
  * <ol>
- *   <li><b>Prefetch</b> (server thread, time-sliced): sync-resolve every chunk in the blast square into
- *       a read-only cache — workers must never call {@code Level} methods.</li>
+ *   <li><b>Chunk acquisition</b> (server thread, time-sliced): seed resident chunks, then request only
+ *       chunks reached by rays through bounded loading-only claims. Workers never call {@code Level}
+ *       methods and the server thread never waits for generation.</li>
  *   <li><b>Rays</b> (ForkJoin common pool): a coordinator walks the generalized-spiral recurrence
  *       (inherently sequential — each longitude is a prefix sum) and hands direction batches to pool
  *       tasks; each batch marches its rays against the chunk cache into a <em>worker-local</em>
@@ -66,6 +66,9 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
     /** Directions per pool task in the ray phase. */
     private static final int RAY_BATCH = 4096;
+    /** Maximum chunks being generated concurrently per common-pool worker. */
+    private static final int LOAD_WINDOW_PER_WORKER = 48;
+    private static final int MAX_LOAD_WINDOW = 512;
 
     /**
      * Destroyed blocks, as one bitset per chunk keyed by packed chunk position.
@@ -96,49 +99,66 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     private UUID detonator;
 
     // --- prefetch state (server thread only) ---
-    private final Long2ObjectOpenHashMap<LevelChunk> chunkCache;
+    private final AtomicReferenceArray<LevelChunk> chunkCache;
     private final int chunkMinX, chunkMinZ, chunkSpan;
 
     /**
-     * How many rounds of "march, park on a missing chunk, load it, march again" are allowed.
-     *
-     * <p>Scaled to the blast, not a flat number: a ray stops at the <em>first</em> chunk it cannot read,
-     * so a radial line of un-generated chunks costs one round per chunk. A Fat Man reaches eleven chunks
-     * out, and a fixed cap of 8 would clip its crater short in ungenerated terrain. Extra rounds are
-     * cheap — only parked rays re-march, and they resume where they stopped.
-     */
-    private final int maxRayRounds;
-    /**
-     * Rays stopped at an unloaded chunk, as {@code (vx, vy, vz, strength, r)} quintuples.
+     * Rays stopped at an unloaded chunk, grouped by that chunk as
+     * {@code (vx, vy, vz, strength, r, pass)} sextuples.
      *
      * <p>The strength and step index travel with the direction so a resumed ray continues from where it
-     * stopped instead of re-walking its prefix. Re-walking is correct (the hit bitsets are a set) but at
-     * Fat Man scale, with up to {@link #maxRayRounds} rounds, it would multiply the most expensive
-     * phase by the number of rounds.
+     * stopped instead of re-walking its prefix. Every successful resume either terminates the finite ray
+     * or advances it through at least one newly cached chunk.
      */
-    private final it.unimi.dsi.fastutil.doubles.DoubleArrayList parkedDirs =
-            new it.unimi.dsi.fastutil.doubles.DoubleArrayList();
+    private final Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waitingRays =
+            new Long2ObjectOpenHashMap<>();
+    /** Resumed-ray batches whose required chunk is resident, awaiting a bounded worker slot. */
+    private final ArrayDeque<double[]> readyResumeBatches = new ArrayDeque<>();
+    /** Resumed-ray workers currently running. Server thread owns the list. */
+    private final List<CompletableFuture<BatchResult>> resumeJobs = new ArrayList<>();
 
-    /** Doubles per parked ray: direction (3) + accumulated strength + the step it stopped at. */
-    private static final int PARK_STRIDE = 5;
-    /** Chunk keys the parked rays need. Server thread loads these between rounds. */
+    /** Doubles per parked ray: direction (3), accumulated strength, stopped step, and pass number. */
+    private static final int PARK_STRIDE = 6;
+    /** Chunk keys with waiters that have not been claimed yet. */
     private final it.unimi.dsi.fastutil.longs.LongOpenHashSet missedChunks =
             new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
-    private int rayRound = 0;
+    /** Requested chunks that have not reached FULL/resident state yet. */
+    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet awaitingChunks =
+            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    /** Loading-only claims retained until their chunks are no longer needed by this blast. */
+    private final it.unimi.dsi.fastutil.longs.LongOpenHashSet heldChunks =
+            new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+    private int maxRayPasses = 1;
+    private int residentChunksSeeded = 0;
     private int chunksLoadedOnDemand = 0;
+    private int peakAwaitingChunks = 0;
+    private int peakHeldChunks = 0;
+    private int chunkWaitTicks = 0;
+    private long chunkWaitStartedAt = 0;
+    private long chunkWaitWallMs = 0;
 
     private CompletableFuture<Void> rayJob;
+    private boolean initialRayComplete;
+    private final AtomicLong resumedRayCpuNanos = new AtomicLong();
+    private volatile boolean failed;
+    private int rayPipelineTicks;
+    /** Immutable attenuation tables, copy-on-write published to all ray workers. */
+    private volatile AttenuationTable[] attenuationTables = new AttenuationTable[0];
+    /** Test seam: force resident chunks through the waiter path without unloading the world. */
+    private boolean deferAlternateResidentChunksForTest;
 
     // --- instrumentation: where the wall-clock actually goes (see IMPLEMENTATION-HISTORY §19z-f) ---
     private final long createdAt = System.currentTimeMillis();
     private long prefetchMs;
     private long rayWallMs;
+    private long rayPhaseWallMs;
     private long rayStartedAt;
     private long destructionMs;
     private int blocksDestroyed;
     private int destructionTicks;
 
     public ExplosionNukeRayBatched(Level world, int x, int y, int z, int strength, int radius) {
+        if (radius <= 0) throw new IllegalArgumentException("Nuclear crater radius must be positive");
         this.world = world;
         this.posX = x;
         this.posY = y;
@@ -156,8 +176,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         this.chunkMinX = (posX >> 4) - chunkRadius;
         this.chunkMinZ = (posZ >> 4) - chunkRadius;
         this.chunkSpan = chunkRadius * 2 + 1;
-        this.chunkCache = new Long2ObjectOpenHashMap<>(chunkSpan * chunkSpan);
-        this.maxRayRounds = chunkRadius + 4;
+        this.chunkCache = new AtomicReferenceArray<>(chunkSpan * chunkSpan);
     }
 
     // ------------------------------------------------------------------ phases
@@ -165,6 +184,10 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     @Override
     public void update(int processTimeMs) {
         if (cancelled) return;
+        if (failed) {
+            cancel();
+            return;
+        }
 
         if (isAusf3Complete) {
             destructionTick(processTimeMs);
@@ -172,38 +195,46 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         }
 
         if (rayJob == null) {
-            // Round 1. Only chunks already resident are seeded — see seedResidentChunks.
+            // Initial pass. Only chunks already resident are seeded — see seedResidentChunks.
             long t0 = System.currentTimeMillis();
             seedResidentChunks();
             prefetchMs += System.currentTimeMillis() - t0;
             seedOriginClear();
             rayStartedAt = System.currentTimeMillis();
-            startRayRound();
+            startInitialRayJob();
             return;
         }
 
-        if (!rayJob.isDone()) return;
+        if (!initialRayComplete) {
+            if (!rayJob.isDone()) return;
+            try {
+                rayJob.join();
+            } catch (Exception e) {
+                Constants.LOG.error("[NUKE] initial crater ray phase failed; aborting this blast", e);
+                fail();
+                return;
+            }
+            initialRayComplete = true;
+        }
 
-        try {
-            rayJob.join();
-        } catch (Exception e) {
-            Constants.LOG.error("[NUKE] crater ray phase failed; destroying what was gathered", e);
+        if (!harvestResumeJobs()) return;
+        long t0 = System.currentTimeMillis();
+        resolveMissesTick(processTimeMs);
+        prefetchMs += System.currentTimeMillis() - t0;
+        submitReadyResumeJobs();
+
+        rayPipelineTicks++;
+        if (rayPipelineTicks % 200 == 0) {
+            Constants.LOG.info("[NUKE] ray pipeline waiting: {} waiter chunks, {} unclaimed misses, "
+                            + "{} awaiting chunks, {} ready batches, {} running batches, max pass {}",
+                    waitingRays.size(), missedChunks.size(), awaitingChunks.size(),
+                    readyResumeBatches.size(), resumeJobs.size(), maxRayPasses);
+        }
+
+        if (resumeJobs.isEmpty() && readyResumeBatches.isEmpty() && waitingRays.isEmpty()
+                && missedChunks.isEmpty() && awaitingChunks.isEmpty()) {
             finishRayPhase();
-            return;
         }
-
-        // Rays that ran into a chunk nobody had loaded parked instead of pretending it was vacuum.
-        // Resolve what they asked for — on this thread, within the budget — and re-march just those rays.
-        if (!parkedDirs.isEmpty() && rayRound < maxRayRounds) {
-            long t0 = System.currentTimeMillis();
-            boolean resolved = resolveMissesTick(processTimeMs);
-            prefetchMs += System.currentTimeMillis() - t0;
-            if (!resolved) return; // more chunks to fetch; stay in this phase
-            startRayRound();
-            return;
-        }
-
-        finishRayPhase();
     }
 
     /**
@@ -226,41 +257,138 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
             int cx = chunkMinX + i % chunkSpan;
             int cz = chunkMinZ + i / chunkSpan;
             LevelChunk chunk = server.getChunkSource().getChunkNow(cx, cz);
-            if (chunk != null) chunkCache.put(ChunkPos.pack(cx, cz), chunk);
+            if (chunk != null) {
+                if (deferAlternateResidentChunksForTest && (((cx - chunkMinX) + (cz - chunkMinZ)) & 1) == 0) {
+                    continue;
+                }
+                claimChunk(server, ChunkPos.pack(cx, cz));
+                cacheChunk(ChunkPos.pack(cx, cz), chunk);
+                residentChunksSeeded++;
+            }
         }
     }
 
     /**
-     * Server-thread, time-sliced loading of the chunks the last ray round asked for. Returns true when
-     * every requested chunk is in the cache.
+     * Server-thread, time-sliced requesting of the chunks the last ray round asked for. Returns true
+     * when every requested chunk is resident and in the cache.
+     *
+     * <p>No call here waits for generation. Loading-only tickets start bounded background work and
+     * {@code getChunkNow} harvests completed chunks on later server ticks. The old synchronous
+     * {@code world.getChunk} path cost 44 seconds for a radius-500 blast and produced one enormous tick.
      */
     private boolean resolveMissesTick(int processTimeMs) {
-        long deadline = System.currentTimeMillis() + processTimeMs;
+        if (!(world instanceof ServerLevel server)) return true;
+
+        long deadline = System.nanoTime() + processTimeMs * 1_000_000L;
+
+        // First harvest requests that completed since the previous tick.
+        var awaiting = awaitingChunks.iterator();
+        int harvested = 0;
+        while (awaiting.hasNext()) {
+            long key = awaiting.nextLong();
+            LevelChunk chunk = server.getChunkSource().getChunkNow(ChunkPos.getX(key), ChunkPos.getZ(key));
+            if (chunk == null) continue;
+            cacheChunk(key, chunk);
+            awaiting.remove();
+            chunksLoadedOnDemand++;
+            queueWaitingRays(key);
+            if ((++harvested & 63) == 0 && System.nanoTime() >= deadline) break;
+        }
+
+        // Keep a deep but bounded generation pipeline. Resident chunks free a slot immediately while
+        // their loading-only claim remains held for later ray/destruction access.
+        int loadWindow = Math.min(MAX_LOAD_WINDOW,
+                Math.max(32, ForkJoinPool.commonPool().getParallelism() * LOAD_WINDOW_PER_WORKER));
         int handled = 0;
-        while (!missedChunks.isEmpty()) {
+        while (awaitingChunks.size() < loadWindow && !missedChunks.isEmpty()) {
             long key = missedChunks.iterator().nextLong();
             missedChunks.remove(key);
-            int cx = ChunkPos.getX(key);
-            int cz = ChunkPos.getZ(key);
-            if (!chunkCache.containsKey(key)) {
-                chunkCache.put(key, world.getChunk(cx, cz)); // loads/generates — the expensive call
-                chunksLoadedOnDemand++;
+            if (chunkCacheIndex(key) < 0) {
+                Constants.LOG.error("[NUKE] ray requested chunk [{}, {}] outside cache square [{}, {}] span {}",
+                        ChunkPos.getX(key), ChunkPos.getZ(key), chunkMinX, chunkMinZ, chunkSpan);
+                fail();
+                return false;
             }
-            if ((++handled & 3) == 0 && System.currentTimeMillis() >= deadline) return false;
+            if (cachedChunk(key) != null) {
+                queueWaitingRays(key);
+                continue;
+            }
+            LevelChunk resident = server.getChunkSource().getChunkNow(ChunkPos.getX(key), ChunkPos.getZ(key));
+            if (resident != null) {
+                claimChunk(server, key);
+                cacheChunk(key, resident);
+                chunksLoadedOnDemand++;
+                queueWaitingRays(key);
+                continue;
+            }
+            claimChunk(server, key);
+            awaitingChunks.add(key);
+            if (awaitingChunks.size() > peakAwaitingChunks) peakAwaitingChunks = awaitingChunks.size();
+            if ((++handled & 63) == 0 && System.nanoTime() >= deadline) break;
         }
-        return true;
+
+        if (missedChunks.isEmpty() && awaitingChunks.isEmpty()) {
+            if (chunkWaitStartedAt != 0) {
+                chunkWaitWallMs += System.currentTimeMillis() - chunkWaitStartedAt;
+                chunkWaitStartedAt = 0;
+            }
+            return true;
+        }
+        if (chunkWaitStartedAt == 0) chunkWaitStartedAt = System.currentTimeMillis();
+        chunkWaitTicks++;
+        return false;
     }
 
-    /** Fires off one round of ray work: round 1 streams the spiral, later rounds re-march parked rays. */
-    private void startRayRound() {
-        rayRound++;
-        double[] parked = parkedDirs.isEmpty() ? null : parkedDirs.toDoubleArray();
-        parkedDirs.clear();
+    /** Starts the one generalized-spiral pass. Parked rays resume independently afterward. */
+    private void startInitialRayJob() {
         rayJob = CompletableFuture.runAsync(() -> {
             long t0 = System.currentTimeMillis();
-            computeRays(parked);
-            rayWallMs += System.currentTimeMillis() - t0; // compute only; the resolve waits are separate
+            computeInitialRays();
+            rayWallMs += System.currentTimeMillis() - t0;
         }, ForkJoinPool.commonPool());
+    }
+
+    private void queueWaitingRays(long chunkKey) {
+        it.unimi.dsi.fastutil.doubles.DoubleArrayList waiting = waitingRays.remove(chunkKey);
+        if (waiting == null || waiting.isEmpty()) return;
+        double[] rays = waiting.toDoubleArray();
+        int batchLength = RAY_BATCH * PARK_STRIDE;
+        for (int off = 0; off < rays.length; off += batchLength) {
+            int len = Math.min(batchLength, rays.length - off);
+            readyResumeBatches.addLast(off == 0 && len == rays.length
+                    ? rays : java.util.Arrays.copyOfRange(rays, off, off + len));
+        }
+    }
+
+    private void submitReadyResumeJobs() {
+        int maxJobs = Math.max(1, ForkJoinPool.commonPool().getParallelism() * 2 + 1);
+        while (resumeJobs.size() < maxJobs && !readyResumeBatches.isEmpty()) {
+            double[] batch = readyResumeBatches.removeFirst();
+            resumeJobs.add(CompletableFuture.supplyAsync(() -> {
+                long t0 = System.nanoTime();
+                try {
+                    return marchResumed(batch, batch.length / PARK_STRIDE);
+                } finally {
+                    resumedRayCpuNanos.addAndGet(System.nanoTime() - t0);
+                }
+            }, ForkJoinPool.commonPool()));
+        }
+    }
+
+    private boolean harvestResumeJobs() {
+        for (int i = resumeJobs.size() - 1; i >= 0; i--) {
+            CompletableFuture<BatchResult> job = resumeJobs.get(i);
+            if (!job.isDone()) continue;
+            resumeJobs.remove(i);
+            try {
+                mergeResult(job.join());
+            } catch (Exception e) {
+                Constants.LOG.error("[NUKE] resumed crater ray batch failed; aborting this blast", e);
+                fail();
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -289,82 +417,192 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * merging their worker-local hit maps into {@link #perChunk}. Sets {@link #isAusf3Complete} last —
      * the volatile write publishes the maps to the server thread.
      */
-    private void computeRays(double[] parked) {
+    private void computeInitialRays() {
         ForkJoinPool pool = ForkJoinPool.commonPool();
         int maxPending = pool.getParallelism() * 2 + 1;
         ArrayDeque<ForkJoinTask<BatchResult>> pending = new ArrayDeque<>();
+        try {
+            double gspX = Math.PI;
+            double gspY = 0.0;
+            int gspNum = 1;
 
-        if (parked != null) {
-            // A later round: only the rays that stopped at a chunk nobody had loaded. They restart from
-            // r = 0, which re-records the hits they already found — the bitsets are a set, so that is
-            // free — and then continue past the chunk that is now resident.
-            for (int off = 0; off < parked.length; off += RAY_BATCH * PARK_STRIDE) {
-                int len = Math.min(RAY_BATCH * PARK_STRIDE, parked.length - off);
-                double[] batch = java.util.Arrays.copyOfRange(parked, off, off + len);
-                pending.addLast(pool.submit(() -> marchResumed(batch, len / PARK_STRIDE)));
-                if (pending.size() >= maxPending) mergeResult(pending.removeFirst().join());
-            }
-            while (!pending.isEmpty()) mergeResult(pending.removeFirst().join());
-            return;
-        }
+            while (gspNum <= gspNumMax && !cancelled && !failed) {
+                int count = Math.min(RAY_BATCH, gspNumMax - gspNum + 1);
+                double[] dirs = new double[count * 3];
+                for (int i = 0; i < count; i++) {
+                    double sinX = Math.sin(gspX);
+                    dirs[i * 3] = sinX == 0.0D ? 0.0D : sinX * Math.cos(gspY);
+                    dirs[i * 3 + 1] = sinX == 0.0D ? 0.0D : sinX * Math.sin(gspY);
+                    dirs[i * 3 + 2] = Math.cos(gspX);
 
-        double gspX = Math.PI;
-        double gspY = 0.0;
-        int gspNum = 1;
-
-        while (gspNum <= gspNumMax && !cancelled) {
-            int count = Math.min(RAY_BATCH, gspNumMax - gspNum + 1);
-            double[] dirs = new double[count * 3];
-            for (int i = 0; i < count; i++) {
-                // Cartesian direction for the current spherical point (90° X-rotation, like the old code).
-                dirs[i * 3] = Math.sin(gspX) * Math.cos(gspY);
-                dirs[i * 3 + 1] = Math.sin(gspX) * Math.sin(gspY);
-                dirs[i * 3 + 2] = Math.cos(gspX);
-
-                // Advance the recurrence (verbatim old generateGspUp).
-                if (gspNum < gspNumMax) {
-                    int k = gspNum + 1;
-                    double hk = -1.0 + 2.0 * (k - 1.0) / (gspNumMax - 1.0);
-                    gspX = Math.acos(hk);
-                    gspY = (gspY + 3.6 / Math.sqrt(gspNumMax) / Math.sqrt(1.0 - hk * hk)) % (Math.PI * 2);
-                } else {
-                    gspX = 0.0;
-                    gspY = 0.0;
+                    // Advance the recurrence (verbatim old generateGspUp).
+                    if (gspNum < gspNumMax) {
+                        int k = gspNum + 1;
+                        double hk = -1.0 + 2.0 * (k - 1.0) / (gspNumMax - 1.0);
+                        gspX = Math.acos(hk);
+                        gspY = (gspY + 3.6 / Math.sqrt(gspNumMax) / Math.sqrt(1.0 - hk * hk)) % (Math.PI * 2);
+                    } else {
+                        gspX = 0.0;
+                        gspY = 0.0;
+                    }
+                    gspNum++;
                 }
-                gspNum++;
+
+                double[] batch = dirs;
+                int batchCount = count;
+                pending.addLast(pool.submit(() -> marchBatch(batch, batchCount)));
+
+                if (pending.size() >= maxPending) {
+                    mergeResult(pending.removeFirst().join());
+                }
             }
 
-            double[] batch = dirs;
-            int batchCount = count;
-            pending.addLast(pool.submit(() -> marchBatch(batch, batchCount)));
-
-            if (pending.size() >= maxPending) {
+            while (!pending.isEmpty()) {
                 mergeResult(pending.removeFirst().join());
             }
-        }
-
-        while (!pending.isEmpty()) {
-            mergeResult(pending.removeFirst().join());
+        } catch (RuntimeException | Error error) {
+            markFailed();
+            while (!pending.isEmpty()) {
+                try {
+                    pending.removeFirst().join();
+                } catch (RuntimeException | Error ignored) {
+                    // Drain every child; failed makes queued/running work stop cooperatively.
+                }
+            }
+            throw error;
         }
     }
 
-    /** One batch's findings: blocks to destroy, rays that parked, and the chunks they are waiting on. */
+    /** One batch's findings: blocks to destroy and rays grouped by the chunk they need next. */
     private record BatchResult(Long2ObjectOpenHashMap<BitSet> hits,
-                               it.unimi.dsi.fastutil.doubles.DoubleArrayList parked,
-                               it.unimi.dsi.fastutil.longs.LongOpenHashSet misses) {}
+                               Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters,
+                               int maxPass) {}
 
-    private void mergeResult(BatchResult result) {
+    private record AttenuationTable(int resistanceBits, float[] values) {}
+
+    private synchronized void mergeResult(BatchResult result) {
+        if (cancelled) return;
         for (it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<BitSet> e : result.hits().long2ObjectEntrySet()) {
             perChunk.merge(e.getLongKey(), e.getValue(), (a, b) -> { a.or(b); return a; });
         }
-        parkedDirs.addAll(result.parked());
-        missedChunks.addAll(result.misses());
+        for (it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<it.unimi.dsi.fastutil.doubles.DoubleArrayList> e
+                : result.waiters().long2ObjectEntrySet()) {
+            long key = e.getLongKey();
+            it.unimi.dsi.fastutil.doubles.DoubleArrayList existing = waitingRays.get(key);
+            if (existing == null) waitingRays.put(key, e.getValue());
+            else existing.addAll(e.getValue());
+            missedChunks.add(key);
+        }
+        if (result.maxPass() > maxRayPasses) maxRayPasses = result.maxPass();
     }
 
     private synchronized void finishRayPhase() {
         if (isAusf3Complete) return;
+        long t0 = System.currentTimeMillis();
+        if (world instanceof ServerLevel server) {
+            // A chunk that was resident during ray tracing can otherwise unload before destruction.
+            // Retain every hit chunk so the destruction phase also remains strictly non-blocking.
+            for (long key : perChunk.keySet()) claimChunk(server, key);
+
+            // Chunks traversed by rays but containing no hit never participate in destruction.
+            var held = heldChunks.iterator();
+            while (held.hasNext()) {
+                long key = held.nextLong();
+                if (perChunk.containsKey(key)) continue;
+                held.remove();
+                Chunks.releaseForLoading(server, ChunkPos.getX(key), ChunkPos.getZ(key));
+            }
+        }
+        prefetchMs += System.currentTimeMillis() - t0;
+        rayPhaseWallMs = System.currentTimeMillis() - rayStartedAt;
         orderChunks();
         isAusf3Complete = true;
+        if (perChunk.isEmpty()) {
+            releaseAllChunks();
+            logSummary();
+        }
+    }
+
+    private void fail() {
+        markFailed();
+        cancel();
+    }
+
+    private synchronized boolean markFailed() {
+        if (failed) return false;
+        failed = true;
+        return true;
+    }
+
+    public boolean hasFailed() {
+        return failed;
+    }
+
+    /** Forces half the resident cache through the event-driven resume path for full-hit-set tests. */
+    public void deferAlternateResidentChunksForTest() {
+        if (rayJob != null) throw new IllegalStateException("ray phase already started");
+        deferAlternateResidentChunksForTest = true;
+    }
+
+    /** Whether ray tracing, but not necessarily destruction, has completed. */
+    public boolean isRayPhaseComplete() {
+        return isAusf3Complete;
+    }
+
+    /** Exact relative per-chunk bitset comparison used to prove scheduler equivalence. */
+    public boolean hasSameHitsRelativeTo(ExplosionNukeRayBatched other) {
+        if (!isAusf3Complete || !other.isAusf3Complete || perChunk.size() != other.perChunk.size()) return false;
+        int thisX = posX >> 4, thisZ = posZ >> 4;
+        int otherX = other.posX >> 4, otherZ = other.posZ >> 4;
+        for (it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry<BitSet> entry : perChunk.long2ObjectEntrySet()) {
+            int relativeX = ChunkPos.getX(entry.getLongKey()) - thisX;
+            int relativeZ = ChunkPos.getZ(entry.getLongKey()) - thisZ;
+            BitSet otherBits = other.perChunk.get(ChunkPos.pack(otherX + relativeX, otherZ + relativeZ));
+            if (!entry.getValue().equals(otherBits)) return false;
+        }
+        return true;
+    }
+
+    private int chunkCacheIndex(long key) {
+        int localX = ChunkPos.getX(key) - chunkMinX;
+        int localZ = ChunkPos.getZ(key) - chunkMinZ;
+        if (localX < 0 || localX >= chunkSpan || localZ < 0 || localZ >= chunkSpan) return -1;
+        return localZ * chunkSpan + localX;
+    }
+
+    private LevelChunk cachedChunk(long key) {
+        int index = chunkCacheIndex(key);
+        return index < 0 ? null : chunkCache.get(index);
+    }
+
+    private void cacheChunk(long key, LevelChunk chunk) {
+        int index = chunkCacheIndex(key);
+        if (index >= 0) chunkCache.set(index, chunk);
+    }
+
+    private void claimChunk(ServerLevel server, long key) {
+        if (!heldChunks.add(key)) return;
+        Chunks.claimForLoading(server, ChunkPos.getX(key), ChunkPos.getZ(key));
+        if (heldChunks.size() > peakHeldChunks) peakHeldChunks = heldChunks.size();
+    }
+
+    private void releaseChunk(long key) {
+        if (!(world instanceof ServerLevel server) || !heldChunks.remove(key)) return;
+        Chunks.releaseForLoading(server, ChunkPos.getX(key), ChunkPos.getZ(key));
+    }
+
+    private void releaseAllChunks() {
+        if (world instanceof ServerLevel server) {
+            for (long key : heldChunks) {
+                Chunks.releaseForLoading(server, ChunkPos.getX(key), ChunkPos.getZ(key));
+            }
+        }
+        heldChunks.clear();
+        awaitingChunks.clear();
+        missedChunks.clear();
+        waitingRays.clear();
+        readyResumeBatches.clear();
+        resumeJobs.clear();
     }
 
     /** Nearest-chunk-first, so the crater opens from the middle outwards like the original. */
@@ -387,46 +625,50 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     /** Marches one batch of ray directions against the read-only chunk cache. Pool-thread only. */
     private BatchResult marchBatch(double[] dirs, int count) {
         Long2ObjectOpenHashMap<BitSet> hits = new Long2ObjectOpenHashMap<>();
-        it.unimi.dsi.fastutil.doubles.DoubleArrayList parked = new it.unimi.dsi.fastutil.doubles.DoubleArrayList();
-        it.unimi.dsi.fastutil.longs.LongOpenHashSet misses = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters = new Long2ObjectOpenHashMap<>();
         MutableBlockPos pos = new MutableBlockPos();
+        int[] maxPass = {1};
 
-        for (int i = 0; i < count && !cancelled; i++) {
-            marchOne(dirs[i * 3], dirs[i * 3 + 1], dirs[i * 3 + 2], strength * 0.3F, 0, hits, parked, misses, pos);
+        for (int i = 0; i < count && !cancelled && !failed; i++) {
+            marchOne(dirs[i * 3], dirs[i * 3 + 1], dirs[i * 3 + 2], strength * 0.3F, 0, 1,
+                    hits, waiters, maxPass, pos);
         }
-        return new BatchResult(hits, parked, misses);
+        return new BatchResult(hits, waiters, maxPass[0]);
     }
 
     /** Re-marches rays that parked, each resuming from its own stored strength and step. */
     private BatchResult marchResumed(double[] rays, int count) {
         Long2ObjectOpenHashMap<BitSet> hits = new Long2ObjectOpenHashMap<>();
-        it.unimi.dsi.fastutil.doubles.DoubleArrayList parked = new it.unimi.dsi.fastutil.doubles.DoubleArrayList();
-        it.unimi.dsi.fastutil.longs.LongOpenHashSet misses = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters = new Long2ObjectOpenHashMap<>();
         MutableBlockPos pos = new MutableBlockPos();
+        int[] maxPass = {1};
 
-        for (int i = 0; i < count && !cancelled; i++) {
+        for (int i = 0; i < count && !cancelled && !failed; i++) {
             int base = i * PARK_STRIDE;
             marchOne(rays[base], rays[base + 1], rays[base + 2],
-                    (float) rays[base + 3], (int) rays[base + 4], hits, parked, misses, pos);
+                    (float) rays[base + 3], (int) rays[base + 4], (int) rays[base + 5],
+                    hits, waiters, maxPass, pos);
         }
-        return new BatchResult(hits, parked, misses);
+        return new BatchResult(hits, waiters, maxPass[0]);
     }
 
     /** One ray, from step {@code startR} with {@code startStrength} left. Pool-thread only. */
-    private void marchOne(double vx, double vy, double vz, float startStrength, int startR,
-                          Long2ObjectOpenHashMap<BitSet> hits,
-                          it.unimi.dsi.fastutil.doubles.DoubleArrayList parked,
-                          it.unimi.dsi.fastutil.longs.LongOpenHashSet misses,
-                          MutableBlockPos pos) {
+    private void marchOne(double vx, double vy, double vz, float startStrength, int startR, int rayPass,
+                           Long2ObjectOpenHashMap<BitSet> hits,
+                           Long2ObjectOpenHashMap<it.unimi.dsi.fastutil.doubles.DoubleArrayList> waiters,
+                           int[] maxPass,
+                           MutableBlockPos pos) {
         {
             float rayStrength = startStrength;
             // A ray crosses ~16 cells per chunk, so the lookup is the same one over and over. Holding the
             // last (key, chunk) turns a hash probe per sampled block into a long compare.
             long lastKey = Long.MIN_VALUE;
             LevelChunk lastChunk = null;
+            int lastResistanceBits = 0;
+            float[] lastAttenuation = null;
 
             // Find the end of the ray (verbatim old march, including the r = 0,2,3,… sampling).
-            for (int r = startR; r < radius + 1; r++) {
+            for (int r = startR; r < radius + 1 && !cancelled && !failed; r++) {
 
                 int iY = (int) Math.floor(posY + (vy * r));
                 if (iY < minY || iY > maxY) {
@@ -442,20 +684,32 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                 if (chunkKey == lastKey) {
                     chunk = lastChunk;
                 } else {
-                    chunk = chunkCache.get(chunkKey);
+                    chunk = cachedChunk(chunkKey);
                     lastKey = chunkKey;
                     lastChunk = chunk;
                 }
                 if (chunk == null) {
+                    if (chunkCacheIndex(chunkKey) < 0) {
+                        if (markFailed()) {
+                            Constants.LOG.error("[NUKE] ray at [{}, {}, {}] requested out-of-cache chunk [{}, {}] "
+                                            + "from origin [{}, {}, {}], r={}, pass={}",
+                                    iX, iY, iZ, iX >> 4, iZ >> 4, posX, posY, posZ, r, rayPass);
+                        }
+                        break;
+                    }
                     // Nobody has this chunk in memory. Park the ray rather than treat unloaded terrain as
                     // vacuum (which is what the old code did, letting a blast punch through un-generated
-                    // ground); the server thread loads it and this ray is re-marched next round.
-                    misses.add(chunkKey);
+                    // ground); the server thread loads it and resumes only this chunk's waiters.
+                    int nextPass = rayPass + 1;
+                    it.unimi.dsi.fastutil.doubles.DoubleArrayList parked = waiters.computeIfAbsent(
+                            chunkKey, ignored -> new it.unimi.dsi.fastutil.doubles.DoubleArrayList());
                     parked.add(vx);
                     parked.add(vy);
                     parked.add(vz);
                     parked.add(rayStrength);
                     parked.add(r);
+                    parked.add(nextPass);
+                    if (nextPass > maxPass[0]) maxPass[0] = nextPass;
                     break;
                 }
                 BlockState blockState = chunk.getBlockState(pos.set(iX, iY, iZ));
@@ -471,8 +725,13 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                     float resistance = blockState.getBlock().getExplosionResistance();
                     if (resistance >= 2_000_000) break;
 
-                    rayStrength -= (float) (Math.pow(nukeResistance(blockState, resistance) + 1,
-                            3 * ((float) r) / ((float) radius)) - 1);
+                    float effectiveResistance = nukeResistance(blockState, resistance);
+                    int resistanceBits = Float.floatToRawIntBits(effectiveResistance);
+                    if (lastAttenuation == null || resistanceBits != lastResistanceBits) {
+                        lastResistanceBits = resistanceBits;
+                        lastAttenuation = attenuationTable(resistanceBits).values();
+                    }
+                    rayStrength -= lastAttenuation[r];
                 }
                 // Air is skipped above rather than run through the maths: its resistance is 0, so the
                 // attenuation term is pow(1, k) - 1 = 0 exactly. Most cells a big blast samples are air,
@@ -521,10 +780,59 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         return resistance;
     }
 
+    private AttenuationTable attenuationTable(int bits) {
+        AttenuationTable[] tables = attenuationTables;
+        for (AttenuationTable table : tables) {
+            if (table.resistanceBits() == bits) return table;
+        }
+        return installAttenuationTable(bits);
+    }
+
+    private synchronized AttenuationTable installAttenuationTable(int resistanceBits) {
+        for (AttenuationTable table : attenuationTables) {
+            if (table.resistanceBits() == resistanceBits) return table;
+        }
+        float resistance = Float.intBitsToFloat(resistanceBits);
+        AttenuationTable table = new AttenuationTable(resistanceBits,
+                buildAttenuationTable(resistance, radius));
+        AttenuationTable[] expanded = java.util.Arrays.copyOf(attenuationTables, attenuationTables.length + 1);
+        expanded[expanded.length - 1] = table;
+        attenuationTables = expanded;
+        return table;
+    }
+
+    private static float[] buildAttenuationTable(float resistance, int radius) {
+        float[] values = new float[radius + 1];
+        for (int r = 1; r <= radius; r++) {
+            values[r] = (float) (Math.pow(resistance + 1,
+                    3 * ((float) r) / ((float) radius)) - 1);
+        }
+        if (radius > 0) values[0] = values[1];
+        return values;
+    }
+
+    /** Pins cached attenuation to the exact former per-sample expression. */
+    public static boolean attenuationTableContractForTest() {
+        int radius = 500;
+        float[] resistances = {0.1F, 0.5F, 4F, 18F, 1200F};
+        int[] samples = {1, 2, 17, 249, 500};
+        for (float resistance : resistances) {
+            float[] table = buildAttenuationTable(resistance, radius);
+            for (int r : samples) {
+                float direct = (float) (Math.pow(resistance + 1,
+                        3 * ((float) r) / ((float) radius)) - 1);
+                if (Float.floatToRawIntBits(table[r]) != Float.floatToRawIntBits(direct)) return false;
+            }
+        }
+        return true;
+    }
+
+
     // ------------------------------------------------------------------ lifecycle
 
     @Override
-    public void cancel() {
+    public synchronized void cancel() {
+        if (cancelled) return;
         cancelled = true;
         isAusf3Complete = true;
         orderedChunks = new long[0];
@@ -534,6 +842,15 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         // per-chunk repair is skipped along with the rest of the blast. Dropping the reference is what
         // stops the next tick from calling finish() against a bitset that is no longer there.
         carver = null;
+        List<CompletableFuture<?>> running = new ArrayList<>();
+        if (rayJob != null && !rayJob.isDone()) running.add(rayJob);
+        for (CompletableFuture<BatchResult> job : resumeJobs) if (!job.isDone()) running.add(job);
+        if (!running.isEmpty() && world instanceof ServerLevel server) {
+            CompletableFuture.allOf(running.toArray(CompletableFuture[]::new))
+                    .whenComplete((ignored, error) -> server.getServer().execute(this::releaseAllChunks));
+        } else {
+            releaseAllChunks();
+        }
     }
 
     @Override
@@ -544,6 +861,11 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     @Override
     public boolean isContained() {
         return isContained;
+    }
+
+    /** Diagnostics and deterministic benchmark assertion. */
+    public int getBlocksDestroyed() {
+        return blocksDestroyed;
     }
 
     @Override
@@ -558,10 +880,13 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         destructionTicks++;
         while (System.currentTimeMillis() < start + time) {
             if (perChunk.isEmpty()) break;
-            processChunkBlocks(start, time);
+            if (!processChunkBlocks(start, time)) break;
         }
         destructionMs += System.currentTimeMillis() - start;
-        if (perChunk.isEmpty()) logSummary();
+        if (perChunk.isEmpty()) {
+            releaseAllChunks();
+            logSummary();
+        }
     }
 
     private boolean logged = false;
@@ -574,10 +899,14 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         if (logged) return;
         logged = true;
         long total = System.currentTimeMillis() - createdAt;
-        Constants.LOG.info("[NUKE] r={} done in {} ms wall: chunks {} ms ({} cached, {} loaded on demand, "
-                        + "{} ray rounds), rays {} ms, destruction {} ms over {} ticks ({} blocks, {} blocks/ms)",
-                radius, total, prefetchMs, chunkCache.size(), chunksLoadedOnDemand, rayRound,
-                rayWallMs, destructionMs, destructionTicks,
+        Constants.LOG.info("[NUKE] r={} done in {} ms wall: chunks {} ms server + {} ms async wait over {} ticks "
+                        + "({} initially resident, {} loaded on demand, peak {} awaiting/{} held, {} max ray passes), "
+                        + "rays {} ms initial + {} ms aggregate resumed worker time ({} ms phase wall), "
+                        + "{} attenuation tables, destruction {} ms over {} ticks ({} blocks, {} blocks/ms)",
+                radius, total, prefetchMs, chunkWaitWallMs, chunkWaitTicks,
+                residentChunksSeeded, chunksLoadedOnDemand, peakAwaitingChunks, peakHeldChunks, maxRayPasses,
+                rayWallMs, resumedRayCpuNanos.get() / 1_000_000L, rayPhaseWallMs,
+                attenuationTables.length, destructionMs, destructionTicks,
                 blocksDestroyed, destructionMs > 0 ? blocksDestroyed / destructionMs : blocksDestroyed);
     }
 
@@ -595,16 +924,19 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      */
     private ChunkCarver carver;
 
-    public void processChunkBlocks(long start, int time) {
-        if (this.perChunk.isEmpty() || orderedIndex >= orderedChunks.length) return;
+    private boolean processChunkBlocks(long start, int time) {
+        if (this.perChunk.isEmpty() || orderedIndex >= orderedChunks.length) return false;
 
         if (BombConfig.craterSectionCarve && world instanceof ServerLevel server) {
-            carveChunk(server, start, time);
-            return;
+            return carveChunk(server, start, time);
         }
 
         if (needsNewHitArray) {
             destChunk = orderedChunks[orderedIndex];
+            if (world instanceof ServerLevel server
+                    && server.getChunkSource().getChunkNow(ChunkPos.getX(destChunk), ChunkPos.getZ(destChunk)) == null) {
+                return false;
+            }
             hitArray = perChunk.get(destChunk);
             index = hitArray.nextSetBit(0);
             needsNewHitArray = false;
@@ -632,9 +964,11 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
 
         if (index < 0) {
             perChunk.remove(destChunk);
+            releaseChunk(destChunk);
             orderedIndex++;
             needsNewHitArray = true;
         }
+        return true;
     }
 
     /**
@@ -647,20 +981,25 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * is still time-sliced, so a single chunk spanning several ticks is fine — {@code finish()} simply
      * runs on the tick that exhausts its bitset.
      */
-    private void carveChunk(ServerLevel server, long start, int time) {
+    private boolean carveChunk(ServerLevel server, long start, int time) {
         if (carver == null) {
             destChunk = orderedChunks[orderedIndex];
             int cx = ChunkPos.getX(destChunk);
             int cz = ChunkPos.getZ(destChunk);
-            carver = new ChunkCarver(server, world.getChunk(cx, cz), perChunk.get(destChunk), cx, cz, maxY);
+            LevelChunk chunk = server.getChunkSource().getChunkNow(cx, cz);
+            if (chunk == null) return false;
+            carver = new ChunkCarver(server, chunk, perChunk.get(destChunk), cx, cz, maxY);
         }
 
-        if (!carver.carveUntil(start + time)) return;
+        if (!carver.carveUntil(start + time)) return true;
 
         carver.finish();
         blocksDestroyed += carver.carved();
         carver = null;
         perChunk.remove(destChunk);
+        releaseChunk(destChunk);
         orderedIndex++;
+        return true;
     }
+
 }

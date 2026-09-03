@@ -63,7 +63,8 @@ public class BedrockOilFeature extends Feature<NoneFeatureConfiguration> {
         }
 
         // old: DungeonToolbox.generateOre(... stone_porous) — skipped (block unported) §20
-        OilSpot.generateOilSpot(level, centerX, centerZ, OIL_SPOT_RADIUS, OIL_SPOT_HEIGHT, true);
+        OilSpot.generateOilSpot(level, chunkOrigin, centerX, centerZ,
+                OIL_SPOT_RADIUS, OIL_SPOT_HEIGHT, true);
         return true;
     }
 }

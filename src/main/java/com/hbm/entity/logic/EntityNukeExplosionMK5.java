@@ -140,6 +140,11 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         if (!explosion.isComplete()) {
             explosion.update(BombConfig.mk5);
         } else {
+            if (explosion instanceof ExplosionNukeRayBatched batched && batched.hasFailed()) {
+                com.hbm.Constants.LOG.error("[NUKE] blast aborted after a ray worker failure; fallout suppressed");
+                discard();
+                return;
+            }
             com.hbm.Constants.LOG.info("[NUKE] blast entity finished at tick {}", tickCount);
             if (fallout) {
                 EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level());
@@ -200,6 +205,11 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     /** Diagnostics and GameTests: the configured crater radius, before the strength multiplier. */
     public int getRadius() {
         return radius;
+    }
+
+    /** Diagnostics and deterministic crater benchmark assertion. */
+    public int getBlocksDestroyed() {
+        return explosion instanceof ExplosionNukeRayBatched batched ? batched.getBlocksDestroyed() : -1;
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.hbm.Constants;
 import com.hbm.config.BombConfig;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.explosion.ExplosionNukeRayBatched;
 import com.hbm.util.ChunkCarver;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -58,12 +59,9 @@ public final class NukePerfGameTests {
     private static final int FALLOUT_WRITE_X = 2 * OFFSET, FALLOUT_WRITE_Z = 0;
     private static final int ASH_X = -2 * OFFSET, ASH_Z = 0;
     private static final int NOTIFY_X = 0, NOTIFY_Z = 3 * OFFSET;
-    /** Wall-clock allowance for the fallout sweep, which is a far bigger job than a crater. */
-    private static final long FALLOUT_TIMEOUT_MS = 120_000L;
+    private static final int RESUME_X = 3 * OFFSET, RESUME_Z = 3 * OFFSET;
     /** Far enough that the second sweep cannot touch a chunk the first one loaded. */
     private static final int VIRGIN_OFFSET = 600;
-    /** Wall-clock allowance before calling it stuck. */
-    private static final long TIMEOUT_MS = 60_000L;
 
     public static void craterBenchmark(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -108,28 +106,28 @@ public final class NukePerfGameTests {
             }
         }
         Constants.LOG.info("[NUKE-BENCH] filled {} stone blocks in {} ms", filled, System.currentTimeMillis() - fillStart);
+        int filledBlocks = filled;
 
         EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
                 level, RADIUS, origin.getX(), y, origin.getZ());
         level.addFreshEntity(blast);
 
-        // Bounded by WALL CLOCK, not tick count: this loop runs ticks back to back, thousands of times a
-        // second, while part of the crater runs asynchronously and needs real time to finish. A tick
-        // budget here measures how fast the loop spins, not how fast the blast is.
+        // Let real server ticks drive it. The crater's loading-only requests are deliberately asynchronous;
+        // manually spin-ticking the entity would starve the chunk task system that has to satisfy them.
         long start = System.currentTimeMillis();
-        int ticks = 0;
-        while (blast.isAlive() && System.currentTimeMillis() - start < TIMEOUT_MS) {
-            blast.tick();
-            ticks++;
-        }
-        long wall = System.currentTimeMillis() - start;
-
-        Constants.LOG.info("[NUKE-BENCH] r={} finished in {} ms wall over {} ticks ({} filled blocks, budget {} ms/tick)",
-                RADIUS, wall, ticks, filled, BombConfig.mk5);
-
-        helper.assertTrue(!blast.isAlive(),
-                "the blast did not finish within " + TIMEOUT_MS + " ms — it is either stuck or far too slow");
-        helper.succeed();
+        BlastDriver driver = new BlastDriver(blast);
+        pollUntil(helper, BLAST_POLL_TRIES, driver::isComplete,
+                "the blast did not finish — it is either stuck or far too slow",
+                () -> {
+                    long wall = System.currentTimeMillis() - start;
+                    Constants.LOG.info("[NUKE-BENCH] r={} finished in {} ms wall over {} ticks "
+                                    + "({} filled blocks, budget {} ms/tick)",
+                            RADIUS, wall, blast.tickCount, filledBlocks, BombConfig.mk5);
+                    helper.assertTrue(blast.getBlocksDestroyed() == 313_350,
+                            "the deterministic r=64 crater destroyed " + blast.getBlocksDestroyed()
+                                    + " blocks instead of 313350; ray geometry or resistance changed");
+                    helper.succeed();
+                });
     }
 
     /**
@@ -456,33 +454,35 @@ public final class NukePerfGameTests {
                             level, radius, centre.getX(), centre.getY(), centre.getZ());
                     level.addFreshEntity(blast);
 
-                    long start = System.currentTimeMillis();
-                    while (blast.isAlive() && System.currentTimeMillis() - start < TIMEOUT_MS) blast.tick();
-                    helper.assertTrue(!blast.isAlive(), "the blast did not finish");
-                    helper.assertTrue(level.getBlockState(inside).isAir(),
-                            "the blast did not reach the probe; it is still " + level.getBlockState(inside));
-
-                    pollUntil(helper, LIGHT_POLL_TRIES,
-                            () -> sky(level, inside) == 15,
-                            "the crater never lit: sky light at the crater floor stayed "
-                                    + sky(level, inside) + " — the relight after a carve is broken",
+                    BlastDriver driver = new BlastDriver(blast);
+                    pollUntil(helper, BLAST_POLL_TRIES, driver::isComplete,
+                            "the blast did not finish",
                             () -> {
-                                int lit = sky(level, inside);
-                                int dark = sky(level, outside);
-                                Constants.LOG.info("[NUKE-BENCH] crater lighting: inside {}, buried control {}",
-                                        lit, dark);
-                                helper.assertTrue(lit == 15,
-                                        "the crater floor is open to the sky but its sky light is " + lit);
-                                // Strictly darker than the crater floor, not strictly zero. What this
-                                // control exists to catch is the crater's relight blanket-lighting the
-                                // whole chunk; demanding an exact 0 also demands that no sky light bleeds
-                                // in sideways from the slab's edge, which depends on exactly where the
-                                // probe sits and made the test flake on its own geometry twice.
-                                helper.assertTrue(dark < lit,
-                                        "the buried control is as lit as the crater floor (" + dark + " vs "
-                                                + lit + "); the whole chunk was relit rather than the "
-                                                + "crater, so this proves nothing");
-                                helper.succeed();
+                                helper.assertTrue(level.getBlockState(inside).isAir(),
+                                        "the blast did not reach the probe; it is still " + level.getBlockState(inside));
+
+                                pollUntil(helper, LIGHT_POLL_TRIES,
+                                        () -> sky(level, inside) == 15,
+                                        "the crater never lit: sky light at the crater floor stayed "
+                                                + sky(level, inside) + " — the relight after a carve is broken",
+                                        () -> {
+                                            int lit = sky(level, inside);
+                                            int dark = sky(level, outside);
+                                            Constants.LOG.info("[NUKE-BENCH] crater lighting: inside {}, buried control {}",
+                                                    lit, dark);
+                                            helper.assertTrue(lit == 15,
+                                                    "the crater floor is open to the sky but its sky light is " + lit);
+                                            // Strictly darker than the crater floor, not strictly zero. What this
+                                            // control exists to catch is the crater's relight blanket-lighting the
+                                            // whole chunk; demanding an exact 0 also demands that no sky light bleeds
+                                            // in sideways from the slab's edge, which depends on exactly where the
+                                            // probe sits and made the test flake on its own geometry twice.
+                                            helper.assertTrue(dark < lit,
+                                                    "the buried control is as lit as the crater floor (" + dark + " vs "
+                                                            + lit + "); the whole chunk was relit rather than the "
+                                                            + "crater, so this proves nothing");
+                                            helper.succeed();
+                                        });
                             });
                 });
     }
@@ -553,14 +553,23 @@ public final class NukePerfGameTests {
                     // in a world — the disc reaches far past whatever a player had loaded — and the only
                     // one that exercises the claim-and-wait path. The first cannot: filling its ground
                     // loaded every chunk it would ask for.
-                    com.hbm.entity.effect.EntityFalloutRain virgin = spawnSweep(level,
-                            centre.offset(VIRGIN_OFFSET, 0, VIRGIN_OFFSET), scale);
+                    int virginScale = 96;
+                    BlockPos virginCentre = findVirginFalloutCentre(level, centre);
+                    com.hbm.entity.effect.EntityFalloutRain virgin = spawnSweep(level, virginCentre, virginScale);
                     long virginStart = System.currentTimeMillis();
                     pollUntil(helper, SWEEP_POLL_TRIES, () -> !virgin.isAlive(),
                             "the virgin-terrain sweep did not finish",
                             () -> {
                                 Constants.LOG.info("[FALLOUT-BENCH] scale={} over virgin terrain finished "
-                                        + "in {} ms wall", scale, System.currentTimeMillis() - virginStart);
+                                        + "in {} ms wall", virginScale, System.currentTimeMillis() - virginStart);
+                                helper.assertTrue(virgin.getChunksRequested() > 0,
+                                        "the virgin fallout benchmark requested no chunks; it did not test "
+                                                + "the loading pipeline");
+                                helper.assertTrue(virgin.getPeakUnresolvedRequests()
+                                                <= virgin.getMaxUnresolvedRequests(),
+                                        "fallout exceeded its unresolved request cap: peak "
+                                                + virgin.getPeakUnresolvedRequests() + " > "
+                                                + virgin.getMaxUnresolvedRequests());
                                 assertAshIsTicking(helper, level, centre, scale);
                                 helper.succeed();
                             });
@@ -600,6 +609,79 @@ public final class NukePerfGameTests {
 
     /** Poll attempts for a whole sweep to finish. Generous: it has real chunks to wait on. */
     private static final int SWEEP_POLL_TRIES = 4000;
+    /** Poll attempts for an asynchronously chunk-loading crater to finish. */
+    private static final int BLAST_POLL_TRIES = 800;
+
+    /**
+     * Drives a blast once per poll while still yielding real server ticks to its asynchronous chunk
+     * requests. These benchmarks live outside the GameTest simulation area, so the level does not tick
+     * their entities reliably; the old tight loop drove them but starved the chunk task system.
+     */
+    private static final class BlastDriver {
+        private final EntityNukeExplosionMK5 blast;
+        private int observedTick;
+
+        private BlastDriver(EntityNukeExplosionMK5 blast) {
+            this.blast = blast;
+            this.observedTick = blast.tickCount;
+        }
+
+        private boolean isComplete() {
+            if (!blast.isAlive()) return true;
+            if (blast.tickCount == observedTick) blast.tick();
+            observedTick = blast.tickCount;
+            return !blast.isAlive();
+        }
+    }
+
+    /**
+     * Proves that event-driven per-chunk ray resumption produces the complete same hit set as an
+     * all-resident trace, not merely the same number of hits.
+     */
+    public static void rayResumeEquivalence(GameTestHelper helper) {
+        helper.assertTrue(ExplosionNukeRayBatched.attenuationTableContractForTest(),
+                "cached nuke attenuation differs from the exact per-sample formula");
+        ServerLevel level = helper.getLevel();
+        BlockPos plot = helper.absolutePos(BlockPos.ZERO);
+        int radius = 20;
+        int y = plot.getY() + radius + 4;
+        int firstX = (((plot.getX() + RESUME_X) >> 4) << 4) + 8;
+        int firstZ = (((plot.getZ() + RESUME_Z) >> 4) << 4) + 8;
+        BlockPos residentCentre = new BlockPos(firstX, y, firstZ);
+        BlockPos resumedCentre = residentCentre.offset(128, 0, 0); // same local chunk coordinates
+
+        fillRayVolume(level, residentCentre, radius);
+        fillRayVolume(level, resumedCentre, radius);
+
+        ExplosionNukeRayBatched resident = new ExplosionNukeRayBatched(level,
+                residentCentre.getX(), residentCentre.getY(), residentCentre.getZ(), radius * 2, radius);
+        ExplosionNukeRayBatched resumed = new ExplosionNukeRayBatched(level,
+                resumedCentre.getX(), resumedCentre.getY(), resumedCentre.getZ(), radius * 2, radius);
+        resumed.deferAlternateResidentChunksForTest();
+
+        Runnable cleanup = () -> {
+            resident.cancel();
+            resumed.cancel();
+        };
+        pollUntilWithCleanup(helper, BLAST_POLL_TRIES,
+                () -> {
+                    if (!resident.isRayPhaseComplete()) resident.update(BombConfig.mk5);
+                    if (!resumed.isRayPhaseComplete()) resumed.update(BombConfig.mk5);
+                    return resident.isRayPhaseComplete() && resumed.isRayPhaseComplete();
+                },
+                "the resident/resumed ray comparison did not finish",
+                () -> {
+                    try {
+                        helper.assertTrue(!resident.hasFailed() && !resumed.hasFailed(),
+                                "one side of the ray-resume comparison failed");
+                        helper.assertTrue(resident.hasSameHitsRelativeTo(resumed),
+                                "per-chunk crater hit bitsets differ between resident and resumed rays");
+                        helper.succeed();
+                    } finally {
+                        cleanup.run();
+                    }
+                }, cleanup);
+    }
 
     private static com.hbm.entity.effect.EntityFalloutRain spawnSweep(ServerLevel level, BlockPos centre,
                                                                      int scale) {
@@ -614,6 +696,29 @@ public final class NukePerfGameTests {
         rain.snapTo(centre.getX() + 0.5, centre.getY(), centre.getZ() + 0.5);
         level.addFreshEntity(rain);
         return rain;
+    }
+
+    /** Finds a 15x15 FULL-chunk-empty area, then loads only its centre so the logic entity can spawn. */
+    private static BlockPos findVirginFalloutCentre(ServerLevel level, BlockPos origin) {
+        for (int attempt = 0; attempt < 64; attempt++) {
+            int distance = VIRGIN_OFFSET + attempt * 512;
+            BlockPos candidate = origin.offset(distance, 0, distance);
+            int cx = candidate.getX() >> 4;
+            int cz = candidate.getZ() >> 4;
+            boolean virgin = true;
+            for (int dx = -7; dx <= 7 && virgin; dx++) {
+                for (int dz = -7; dz <= 7; dz++) {
+                    if (level.getChunkSource().getChunkNow(cx + dx, cz + dz) != null) {
+                        virgin = false;
+                        break;
+                    }
+                }
+            }
+            if (!virgin) continue;
+            level.getChunk(cx, cz); // test setup only; surrounding targets remain on-demand
+            return candidate;
+        }
+        throw new IllegalStateException("could not find virgin terrain for the fallout loading benchmark");
     }
 
     /**
@@ -689,6 +794,14 @@ public final class NukePerfGameTests {
                 "pass B did not convert");
         helper.assertTrue(level.getBlockState(new BlockPos(cOrigin.getX() + 1, baseY + 1, cOrigin.getZ() + 1)).is(Blocks.COBBLESTONE),
                 "pass C did not convert");
+        helper.succeed();
+    }
+
+    /** State writes are last-wins; falling markers use their own first-wins position set. */
+    public static void falloutWriteDeduplication(GameTestHelper helper) {
+        helper.assertTrue(com.hbm.entity.effect.EntityFalloutRain.writeDeduplicationContractForTest(
+                        Blocks.STONE.defaultBlockState(), Blocks.COBBLESTONE.defaultBlockState()),
+                "fallout scan writes no longer match the references' position-map deduplication");
         helper.succeed();
     }
 
@@ -1040,6 +1153,28 @@ public final class NukePerfGameTests {
         helper.runAfterDelay(2, () -> pollUntil(helper, triesLeft - 1, condition, stuckMessage, then));
     }
 
+    private static void pollUntilWithCleanup(GameTestHelper helper, int triesLeft,
+                                             java.util.function.BooleanSupplier condition,
+                                             String stuckMessage, Runnable then, Runnable cleanup) {
+        try {
+            if (condition.getAsBoolean()) {
+                then.run();
+                return;
+            }
+        } catch (RuntimeException | Error error) {
+            cleanup.run();
+            throw error;
+        }
+        if (triesLeft <= 0) {
+            cleanup.run();
+            helper.fail(stuckMessage);
+            return;
+        }
+        helper.getLevel().getChunkSource().getLightEngine().tryScheduleUpdate();
+        helper.runAfterDelay(2, () -> pollUntilWithCleanup(helper, triesLeft - 1,
+                condition, stuckMessage, then, cleanup));
+    }
+
     /**
      * Lays a solid slab with {@code Level.setBlock} so that the light engine genuinely darkens its
      * inside.
@@ -1069,13 +1204,29 @@ public final class NukePerfGameTests {
     }
 
     private static void fillCube(ServerLevel level, BlockPos origin, int baseY, int side,
-                                 net.minecraft.world.level.block.state.BlockState state) {
+                                  net.minecraft.world.level.block.state.BlockState state) {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int dx = 0; dx < side; dx++) {
             for (int dy = 0; dy < side; dy++) {
                 for (int dz = 0; dz < side; dz++) {
                     pos.set(origin.getX() + dx, baseY + dy, origin.getZ() + dz);
                     level.setBlock(pos, state, net.minecraft.world.level.block.Block.UPDATE_NONE);
+                }
+            }
+        }
+    }
+
+    private static void fillRayVolume(ServerLevel level, BlockPos centre, int radius) {
+        BlockState dirt = Blocks.DIRT.defaultBlockState();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                int x = centre.getX() + dx;
+                int z = centre.getZ() + dz;
+                net.minecraft.world.level.chunk.LevelChunk chunk = level.getChunk(x >> 4, z >> 4);
+                for (int dy = -radius; dy <= radius; dy++) {
+                    int y = centre.getY() + dy;
+                    chunk.getSection(chunk.getSectionIndex(y))
+                            .setBlockState(x & 15, y & 15, z & 15, dirt, false);
                 }
             }
         }
