@@ -65,8 +65,7 @@ public class BulletConfig {
     public ProjectileType pType = ProjectileType.BULLET;
     public float damageMult = 1.0F;
     /**
-     * Damage-threshold negation. Inert until the damage-resistance system is ported — this port has no
-     * damage threshold for it to negate — but carried so ammo declarations stay faithful.
+     * Damage-threshold negation, passed to {@code DamageResistanceHandler} with each impact.
      */
     public float armorThresholdNegation = 0.0F;
     /** Fraction of this round's damage that ignores armour entirely. */

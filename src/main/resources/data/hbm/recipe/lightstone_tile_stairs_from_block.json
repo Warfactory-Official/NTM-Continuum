@@ -1,0 +1,23 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "items": [
+        "hbm:lightstone"
+      ],
+      "components": {
+        "hbm:item_variant": 1
+      }
+    }
+  },
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "result": {
+    "id": "hbm:lightstone_tile_stairs",
+    "count": 8
+  }
+}

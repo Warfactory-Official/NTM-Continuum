@@ -1,8 +1,15 @@
 package com.hbm.gametest;
 
 import com.hbm.entity.missile.EntityMissileBaseNT;
+import com.hbm.entity.missile.EntityMissileTier0;
 import com.hbm.entity.missile.EntityMissileTier1;
+import com.hbm.entity.logic.EntityEMP;
+import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.missile.ModMissileEntities;
+import com.hbm.blocks.bomb.BlockTaint;
+import com.hbm.blocks.bomb.ModBombBlocks;
+import com.hbm.config.BombConfig;
+import com.hbm.explosion.ExplosionNukeSmall;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMissileItems;
 import com.hbm.inventory.container.ContainerLaunchPad;
@@ -12,6 +19,7 @@ import com.hbm.blocks.bomb.LaunchPad;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
 import com.hbm.tileentity.bomb.TileEntityLaunchPadBase;
+import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import com.hbm.world.chunk.ChunkLoaderTicket;
 import com.hbm.world.chunk.ChunkLoadingManager;
 import net.minecraft.core.BlockPos;
@@ -19,6 +27,8 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 /**
  * GameTests for the chunk-loading layer and the missile system.
@@ -182,8 +192,81 @@ public final class MissileGameTests {
                 "the missile launch table is empty: registerLaunchables() did not run");
         helper.assertTrue(TileEntityLaunchPadBase.missiles.containsKey(ModMissileItems.missile_generic.get()),
                 "the HE missile is missing from the launch table");
+        helper.assertTrue(TileEntityLaunchPadBase.missiles.containsKey(ModMissileItems.missile_micro.get()),
+                "the micro missile is missing from the launch table");
+        helper.assertTrue(TileEntityLaunchPadBase.missiles.containsKey(ModMissileItems.missile_taint.get()),
+                "the taint missile is missing from the launch table");
+        helper.assertTrue(TileEntityLaunchPadBase.missiles.containsKey(ModMissileItems.missile_emp_strong.get()),
+                "the strong EMP missile is missing from the launch table");
         helper.assertTrue(ModMissileEntities.MISSILE_NUCLEAR.get() != null,
                 "the nuclear missile entity type did not register");
+        helper.assertTrue(ModMissileEntities.MISSILE_MICRO.get() != null
+                        && ModMissileEntities.MISSILE_TAINT.get() != null
+                        && ModMissileEntities.MISSILE_EMP_STRONG.get() != null,
+                "one of the payload missile entity types did not register");
+        helper.succeed();
+    }
+
+    /** The micro keeps the old high preset, including its 35-block Fat Man radius and mk5 hand-off. */
+    public static void microPayloadPath(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        helper.assertFalse(ExplosionNukeSmall.PARAMS_HIGH.miniNuke,
+                "the micro preset must use the mk5 path, not the mini-nuke path");
+        helper.assertTrue(ExplosionNukeSmall.PARAMS_HIGH.blastRadius == BombConfig.fatmanRadius
+                        && BombConfig.fatmanRadius == 35,
+                "the micro preset no longer uses the old 35-block Fat Man radius");
+
+        BlockPos origin = helper.absolutePos(new BlockPos(2, 2, 2));
+        EntityMissileTier0.EntityMissileMicro missile = new EntityMissileTier0.EntityMissileMicro(
+                level, origin.getX(), origin.getY(), origin.getZ(), origin.getX() + 1, origin.getZ());
+        missile.onMissileImpact(null);
+
+        java.util.List<EntityNukeExplosionMK5> blasts = level.getEntitiesOfClass(EntityNukeExplosionMK5.class,
+                new AABB(origin).inflate(4));
+        helper.assertTrue(!blasts.isEmpty(), "the micro did not hand off to an mk5 crater entity");
+        blasts.forEach(net.minecraft.world.entity.Entity::discard);
+        missile.discard();
+        helper.succeed();
+    }
+
+    /** The taint block keeps its sixteen ages and old shallow collision box. */
+    public static void taintBlockContract(GameTestHelper helper) {
+        BlockTaint taint = ModBombBlocks.taint.get();
+        BlockState state = taint.defaultBlockState().setValue(BlockTaint.TAINTAGE, 7);
+        helper.assertTrue(state.getValue(BlockTaint.TAINTAGE) == 7, "taint age property was not registered");
+        helper.assertTrue(taint.getCollisionShape(state, null, BlockPos.ZERO,
+                        net.minecraft.world.phys.shapes.CollisionContext.empty())
+                        .max(net.minecraft.core.Direction.Axis.Y) == 0.75D,
+                "taint collision height changed from the old 0.75-block box");
+        helper.succeed();
+    }
+
+    /** Strong EMP uses the reusable field and drains an HBM-energy receiver on its second tick. */
+    public static void empFieldDrainsHbmEnergy(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos batteryRelative = new BlockPos(2, 1, 2);
+        BlockPos batteryPos = helper.absolutePos(batteryRelative);
+        helper.setBlock(batteryRelative, com.hbm.blocks.machine.ModMachineBlocks.machine_battery.get().defaultBlockState());
+        TileEntityMachineBattery battery = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+                helper, batteryRelative, TileEntityMachineBattery.class);
+        helper.assertTrue(battery != null, "the EMP test battery did not form");
+        battery.power = 1234;
+
+        EntityEMP emp = new EntityEMP(level);
+        emp.setPos(batteryPos.getX() + 0.5D, batteryPos.getY(), batteryPos.getZ() + 0.5D);
+        level.addFreshEntity(emp);
+        emp.tick();
+        emp.tick();
+        helper.assertTrue(battery.power == 0, "strong EMP did not clear HBM energy");
+
+        int cx = batteryPos.getX() >> 4;
+        int cz = batteryPos.getZ() >> 4;
+        helper.assertTrue(ChunkLoadingManager.isForced(level, cx - 1, cz)
+                        && ChunkLoadingManager.isForced(level, cx + 1, cz),
+                "strong EMP did not hold its old 3x3 chunk footprint");
+        emp.discard();
+        helper.assertFalse(ChunkLoadingManager.isForced(level, cx, cz),
+                "removing strong EMP left its chunk claim behind");
         helper.succeed();
     }
 
@@ -579,17 +662,17 @@ public final class MissileGameTests {
 
     /**
      * A missile whose warhead is not ported must be refused by the slot, not accepted and then silently
-     * un-launchable. Half the missile items are in that state, and the playtest hit exactly this.
+     * un-launchable. The black-hole missile is a representative remaining blocked payload.
      */
     public static void unportedMissileRefused(GameTestHelper helper) {
         TileEntityLaunchPadBase.registerLaunchables();
         TileEntityLaunchPad pad = pad(helper);
 
-        // missile_micro exists as an item but has no entity (ExplosionNukeSmall is not ported).
-        ItemStack micro = new ItemStack(ModMissileItems.missile_micro.get());
-        helper.assertFalse(pad.isMissileValid(micro),
+        // missile_bhole remains blocked because its EntityBlackHole payload is not ported.
+        ItemStack blackHole = new ItemStack(ModMissileItems.missile_bhole.get());
+        helper.assertFalse(pad.isMissileValid(blackHole),
                 "a missile with no flying entity was accepted as valid");
-        helper.assertFalse(pad.isItemValidForSlot(0, micro),
+        helper.assertFalse(pad.isItemValidForSlot(0, blackHole),
                 "the missile slot accepted a missile this build cannot launch");
 
         // The ones that DO fly must still be accepted, including the ABM, which is built directly and
@@ -660,11 +743,13 @@ public final class MissileGameTests {
         TileEntityLaunchPad pad = pad(helper);
 
         java.util.List<net.minecraft.world.item.Item> launchable = java.util.List.of(
+                ModMissileItems.missile_micro.get(), ModMissileItems.missile_taint.get(),
                 ModMissileItems.missile_generic.get(), ModMissileItems.missile_decoy.get(),
                 ModMissileItems.missile_incendiary.get(), ModMissileItems.missile_buster.get(),
                 ModMissileItems.missile_anti_ballistic.get(),
                 ModMissileItems.missile_strong.get(), ModMissileItems.missile_incendiary_strong.get(),
-                ModMissileItems.missile_buster_strong.get(), ModMissileItems.missile_stealth.get(),
+                ModMissileItems.missile_buster_strong.get(), ModMissileItems.missile_emp_strong.get(),
+                ModMissileItems.missile_stealth.get(),
                 ModMissileItems.missile_burst.get(), ModMissileItems.missile_inferno.get(),
                 ModMissileItems.missile_nuclear.get(), ModMissileItems.missile_nuclear_cluster.get(),
                 ModMissileItems.missile_doomsday.get(), ModMissileItems.missile_n2.get());
@@ -676,10 +761,8 @@ public final class MissileGameTests {
 
         // Everything blocked on an unported warhead, one per reason.
         java.util.List<net.minecraft.world.item.Item> refused = java.util.List.of(
-                ModMissileItems.missile_micro.get(),          // ExplosionNukeSmall
                 ModMissileItems.missile_bhole.get(),          // EntityBlackHole
                 ModMissileItems.missile_cluster.get(),        // EntityRocket
-                ModMissileItems.missile_emp_strong.get(),     // EntityEMP
                 ModMissileItems.missile_drill.get(),          // ExplosionNT ERRODE + jolt
                 ModMissileItems.missile_endo.get(),           // ExplosionThermo
                 ModMissileItems.missile_volcano.get(),        // the volcano blocks

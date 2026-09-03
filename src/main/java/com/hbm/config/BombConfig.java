@@ -12,6 +12,18 @@ public final class BombConfig {
     /** Crater radius of the Fat Man ({@code nuke_man}). */
     public static int manRadius = 175;
 
+    /** Crater radius of the Gadget. */
+    public static int gadgetRadius = 150;
+
+    /** Crater radius of Little Boy. */
+    public static int boyRadius = 120;
+
+    /** Crater radius of the Tsar Bomba. */
+    public static int tsarRadius = 500;
+
+    /** Radius used by {@code ExplosionNukeSmall.PARAMS_HIGH}, including the micro missile. */
+    public static int fatmanRadius = 35;
+
     /** Crater radius of a nuclear missile warhead. The MIRV and doomsday warheads double it. */
     public static int missileRadius = 100;
 

@@ -1,4 +1,4 @@
 {
   "replace": false,
-  "values": ["minecraft:cyan_dye"]
+  "values": ["hbm:chemical_dye_cyan", "hbm:crayon_cyan", "hbm:oil_tar_wax", "minecraft:cyan_dye"]
 }

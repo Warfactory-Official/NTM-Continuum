@@ -65,12 +65,12 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        // Mirror the 1.12.2 yaw->facing map: the player's horizontal facing rotates to a 2..5 value.
-        int facing = switch (context.getHorizontalDirection()) {
-            case SOUTH -> 5;
-            case WEST -> 3;
-            case EAST -> 2;
-            default -> 4; // NORTH
+        // BlockHorizontal used the placer-facing opposite in 1.12.2; retain its numeric direction values.
+        int facing = switch (context.getHorizontalDirection().getOpposite()) {
+            case SOUTH -> 3;
+            case WEST -> 4;
+            case EAST -> 5;
+            default -> 2; // NORTH
         };
         return this.defaultBlockState().setValue(FACING, facing);
     }
@@ -86,12 +86,12 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
-        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
+        if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
                 dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
             }
         }
-        return InteractionResult.SUCCESS;
+        return player.isShiftKeyDown() ? InteractionResult.TRY_WITH_EMPTY_HAND : InteractionResult.SUCCESS;
     }
 
     @Override

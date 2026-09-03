@@ -43,6 +43,10 @@ public final class MissileModels {
     private static void build() {
         built = true;
 
+        // Tier 0 — the micro body is the old missileTaint OBJ despite the neutral body name.
+        put(ModMissileItems.missile_micro.get(), "missile_taint.obj", "missile_micro.png", 1.0F);
+        put(ModMissileItems.missile_taint.get(), "missile_taint.obj", "missile_micro_taint.png", 1.0F);
+
         // Tier 1 — the V2 body.
         put(ModMissileItems.missile_generic.get(), "missile_v2.obj", "missile_v2.png", 1.0F);
         put(ModMissileItems.missile_incendiary.get(), "missile_v2.obj", "missile_v2_inc.png", 1.0F);
@@ -54,6 +58,7 @@ public final class MissileModels {
         put(ModMissileItems.missile_strong.get(), "missile_strong.obj", "missile_strong.png", 1.5F);
         put(ModMissileItems.missile_incendiary_strong.get(), "missile_strong.obj", "missile_strong_inc.png", 1.5F);
         put(ModMissileItems.missile_buster_strong.get(), "missile_strong.obj", "missile_strong_bu.png", 1.5F);
+        put(ModMissileItems.missile_emp_strong.get(), "missile_strong.obj", "missile_strong_emp.png", 1.5F);
 
         // Tier 3 — the huge body.
         put(ModMissileItems.missile_burst.get(), "missile_huge.obj", "missile_huge.png", 1.0F);

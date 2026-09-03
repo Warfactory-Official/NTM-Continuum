@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "#c:ingots/starmetal",
+    "C": "hbm:cobalt_helmet"
+  },
+  "pattern": [
+    "EEE",
+    "ECE"
+  ],
+  "result": {
+    "id": "hbm:starmetal_helmet"
+  }
+}

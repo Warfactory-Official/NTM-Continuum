@@ -1,4 +1,10 @@
 {
   "replace": false,
-  "values": ["minecraft:brown_dye"]
+  "values": [
+    "hbm:chemical_dye_brown",
+    "hbm:crayon_brown",
+    "hbm:powder_ash_fly",
+    "hbm:powder_lignite",
+    "minecraft:brown_dye"
+  ]
 }

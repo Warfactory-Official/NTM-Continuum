@@ -1,0 +1,20 @@
+{
+  "variants": {
+    "taintage=0": { "model": "hbm:block/taint" },
+    "taintage=1": { "model": "hbm:block/taint" },
+    "taintage=2": { "model": "hbm:block/taint" },
+    "taintage=3": { "model": "hbm:block/taint" },
+    "taintage=4": { "model": "hbm:block/taint" },
+    "taintage=5": { "model": "hbm:block/taint" },
+    "taintage=6": { "model": "hbm:block/taint" },
+    "taintage=7": { "model": "hbm:block/taint" },
+    "taintage=8": { "model": "hbm:block/taint" },
+    "taintage=9": { "model": "hbm:block/taint" },
+    "taintage=10": { "model": "hbm:block/taint" },
+    "taintage=11": { "model": "hbm:block/taint" },
+    "taintage=12": { "model": "hbm:block/taint" },
+    "taintage=13": { "model": "hbm:block/taint" },
+    "taintage=14": { "model": "hbm:block/taint" },
+    "taintage=15": { "model": "hbm:block/taint" }
+  }
+}

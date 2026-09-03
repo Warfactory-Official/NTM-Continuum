@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:concrete_green_slab",
+    "hbm:concrete_green_slab"
+  ],
+  "result": {
+    "id": "hbm:concrete_colored",
+    "components": {
+      "hbm:item_variant": 13
+    }
+  }
+}

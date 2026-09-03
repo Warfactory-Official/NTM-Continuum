@@ -1,0 +1,6 @@
+{
+  "layers": {
+    "humanoid": [{"texture": "hbm:robes"}],
+    "humanoid_leggings": [{"texture": "hbm:robes"}]
+  }
+}

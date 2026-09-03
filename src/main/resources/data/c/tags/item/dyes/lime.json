@@ -1,4 +1,4 @@
 {
   "replace": false,
-  "values": ["minecraft:lime_dye"]
+  "values": ["hbm:chemical_dye_lime", "hbm:crayon_lime", "minecraft:lime_dye"]
 }

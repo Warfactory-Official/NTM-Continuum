@@ -110,6 +110,11 @@ val syncDevMods = tasks.register<Sync>("syncDevMods") {
 }
 
 tasks.matching { it.name == "runClient" }.configureEach { dependsOn(syncDevMods) }
+// ModDev writes run arguments to build/moddev/clientRunProgramArgs.txt. Without this input, a
+// one-off HBM_QUICKPLAY launch remains cached and every later normal client run keeps auto-joining it.
+tasks.matching { it.name == "prepareClientRun" }.configureEach {
+    inputs.property("hbmQuickPlayWorld", providers.environmentVariable("HBM_QUICKPLAY").orElse(""))
+}
 
 dependencies {
     // Golem Core supplies the cross-version API facades. settings.gradle.kts includes it as a

@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:chemical_dye_cyan",
+    "#c:tars",
+    "minecraft:paper"
+  ],
+  "result": {
+    "id": "hbm:crayon_cyan",
+    "count": 4
+  }
+}

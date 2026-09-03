@@ -392,8 +392,8 @@ public final class MaterialCompletionGameTests {
                 ModIntermediateItems.circuit(EnumCircuitType.SILICON), 1);
 
         CrystallizerRecipes.register();
-        helper.assertTrue(CrystallizerRecipes.recipes.size() == 61,
-                "Crystallizer catalogue must contain exactly 61 dependency-complete defaults");
+        helper.assertTrue(CrystallizerRecipes.recipes.size() == 79,
+                "Crystallizer catalogue must contain exactly 79 dependency-complete defaults");
         assertCrystallizer(helper, new ItemStack(Blocks.COAL_ORE.asItem()), Fluids.PEROXIDE, 500, 600, 0.05F,
                 new ItemStack(ModFuelItems.crystal_coal.get()), 1);
         assertCrystallizer(helper, new ItemStack(ModNuclearBlocks.ore_gneiss_uranium.get().asItem()), Fluids.SULFURIC_ACID,

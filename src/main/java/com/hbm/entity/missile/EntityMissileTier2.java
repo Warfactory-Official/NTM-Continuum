@@ -2,6 +2,7 @@ package com.hbm.entity.missile;
 
 import com.hbm.explosion.ExplosionChaos;
 import com.hbm.explosion.ExplosionLarge;
+import com.hbm.entity.logic.EntityEMP;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMissileItems;
 import java.util.ArrayList;
@@ -14,8 +15,8 @@ import net.minecraft.world.phys.HitResult;
 /**
  * The "strong" family: double the yield of tier 1, on the larger airframe.
  *
- * <p>Not ported yet: {@code EntityMissileClusterStrong} (needs {@code EntityRocket}) and
- * {@code EntityMissileEMPStrong} (needs {@code EntityEMP}) — IMPLEMENTATION.md §20.
+     * <p>Not ported yet: {@code EntityMissileClusterStrong} (needs {@code EntityRocket}) —
+     * IMPLEMENTATION.md §20.
  */
 public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 
@@ -76,5 +77,20 @@ public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
         }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_medium.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_buster_strong.get()); }
+    }
+
+    /** Starts the reusable old EMP field on impact. */
+    public static class EntityMissileEMPStrong extends EntityMissileTier2 {
+        public EntityMissileEMPStrong(EntityType<?> type, Level world) { super(type, world); }
+        public EntityMissileEMPStrong(Level world, float x, float y, float z, int a, int b) {
+            super(ModMissileEntities.MISSILE_EMP_STRONG.get(), world, x, y, z, a, b);
+        }
+        @Override public void onMissileImpact(HitResult hit) {
+            EntityEMP emp = new EntityEMP(level());
+            emp.setPos(getX(), getY(), getZ());
+            level().addFreshEntity(emp);
+        }
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_generic_medium.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_emp_strong.get()); }
     }
 }

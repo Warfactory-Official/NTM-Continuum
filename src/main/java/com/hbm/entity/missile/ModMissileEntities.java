@@ -36,6 +36,13 @@ public final class ModMissileEntities {
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
             DeferredRegister.create(Registries.ENTITY_TYPE, Constants.MOD_ID);
 
+    // --- tier 0 ---
+
+    public static final RegistryObject<EntityType<EntityMissileTier0.EntityMissileMicro>> MISSILE_MICRO =
+            missile("entity_missile_micro", EntityMissileTier0.EntityMissileMicro::new);
+    public static final RegistryObject<EntityType<EntityMissileTier0.EntityMissileTaint>> MISSILE_TAINT =
+            missile("entity_missile_taint", EntityMissileTier0.EntityMissileTaint::new);
+
     // --- tier 1 ---
 
     public static final RegistryObject<EntityType<EntityMissileTier1.EntityMissileGeneric>> MISSILE_GENERIC =
@@ -55,6 +62,8 @@ public final class ModMissileEntities {
             missile("entity_missile_incendiary_strong", EntityMissileTier2.EntityMissileIncendiaryStrong::new);
     public static final RegistryObject<EntityType<EntityMissileTier2.EntityMissileBusterStrong>> MISSILE_BUSTER_STRONG =
             missile("entity_missile_buster_strong", EntityMissileTier2.EntityMissileBusterStrong::new);
+    public static final RegistryObject<EntityType<EntityMissileTier2.EntityMissileEMPStrong>> MISSILE_EMP_STRONG =
+            missile("entity_missile_emp_strong", EntityMissileTier2.EntityMissileEMPStrong::new);
 
     // --- tier 3 ---
 

@@ -3,6 +3,7 @@ package com.hbm.items.weapon.sedna;
 import com.hbm.Constants;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.util.DamageResistanceHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -140,28 +141,18 @@ public final class BulletImpact {
     /**
      * Applies one bullet's damage, honouring its armour piercing and knockback multiplier.
      *
-     * <p>Armour piercing is delivered by splitting the hit: {@code armorPiercingPercent} of the damage
-     * goes through {@code hbm:bullet_piercing}, which carries the vanilla {@code bypasses_armor} tag,
-     * and the rest through the round's own damage class. With no damage-resistance layer in this port
-     * that split <em>is</em> what "this fraction ignores armour" means. Upstream instead configures its
-     * {@code DamageResistanceHandler}; when that system lands, this is the seam to revisit.
-     *
-     * <p>{@code armorThresholdNegation} has no counterpart at all — vanilla has no damage threshold —
-     * so it is carried on the config and ignored here.
+     * <p>The resistance layer receives the original damage source and the two Sedna piercing values. This
+     * matters because splitting into a bypass-armor source loses threshold negation and changes exact
+     * source/category precedence.
      */
     private static void attack(ServerLevel level, LivingEntity victim, EntityBulletBaseMK4 bullet, float amount) {
         BulletConfig config = bullet.config;
         Vec3 before = victim.getDeltaMovement();
 
-        float piercing = amount * config.armorPiercingPercent;
-        float normal = amount - piercing;
-
-        if (normal > 0F) {
-            hurt(level, victim, source(level, config.dmgClass.type(), bullet), normal);
-        }
-        if (piercing > 0F) {
-            hurt(level, victim, source(level, ModDamageSources.BULLET_PIERCING, bullet), piercing);
-        }
+        // Upstream's attackEntityFromNT path always ignored i-frames so every pellet and burst round lands.
+        victim.invulnerableTime = 0;
+        DamageResistanceHandler.hurt(level, victim, source(level, config.dmgClass.type(), bullet), amount,
+                config.armorThresholdNegation, config.armorPiercingPercent);
 
         // Scale whatever knockback the hits produced rather than applying our own: that keeps knockback
         // resistance, shields and enchantments in play, which reimplementing it would quietly discard.

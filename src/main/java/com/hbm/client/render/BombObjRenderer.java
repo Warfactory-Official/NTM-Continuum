@@ -13,6 +13,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -26,11 +27,30 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
     private final WavefrontObj model;
     private final RenderType renderType;
     private final float scale;
+    private final IntegerProperty facingProperty;
+    private final float preTranslateX;
+    private final float preTranslateY;
+    private final float preTranslateZ;
+    private final float[] yawsByFacing;
 
     public BombObjRenderer(Identifier obj, Identifier texture, float scale) {
+        this(obj, texture, scale, NukeMan.FACING, 0F, 0F, 0F, 270F, 90F, 0F, 180F);
+    }
+
+    /**
+     * @param yawsByFacing values for legacy facing 2, 3, 4, and 5 respectively
+     */
+    public BombObjRenderer(Identifier obj, Identifier texture, float scale, IntegerProperty facingProperty,
+                           float preTranslateX, float preTranslateY, float preTranslateZ, float... yawsByFacing) {
         this.model = WavefrontObj.load(obj);
-        this.renderType = CompatRenderTypes.entityCutout(texture);
+        this.renderType = CompatRenderTypes.entityCutoutNoCull(texture);
         this.scale = scale;
+        this.facingProperty = facingProperty;
+        this.preTranslateX = preTranslateX;
+        this.preTranslateY = preTranslateY;
+        this.preTranslateZ = preTranslateZ;
+        if (yawsByFacing.length != 4) throw new IllegalArgumentException("A bomb needs four horizontal yaws");
+        this.yawsByFacing = yawsByFacing.clone();
     }
 
     @Override
@@ -56,13 +76,8 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
     @Override
     public void extract(T blockEntity, MachineRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState bs = blockEntity.getBlockState();
-        int facing = bs.hasProperty(NukeMan.FACING) ? bs.getValue(NukeMan.FACING) : 2;
-        state.yaw = switch (facing) {
-            case 3 -> 90F;
-            case 5 -> 180F;
-            case 4 -> 0F;
-            default -> 270F; // facing 2
-        };
+        int facing = bs.hasProperty(facingProperty) ? bs.getValue(facingProperty) : 2;
+        state.yaw = facing >= 2 && facing <= 5 ? yawsByFacing[facing - 2] : yawsByFacing[0];
     }
 
     @Override
@@ -70,9 +85,12 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
         poseStack.pushPose();
         poseStack.translate(0.5F, 0.0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        if (preTranslateX != 0F || preTranslateY != 0F || preTranslateZ != 0F) {
+            poseStack.translate(preTranslateX, preTranslateY, preTranslateZ);
+        }
         if (scale != 1.0F) poseStack.scale(scale, scale, scale);
         collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
+                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, true));
         poseStack.popPose();
     }
 }

@@ -28,6 +28,7 @@ public final class HbmEntityRenderers {
 
     public static void registerAll(Sink sink) {
         sink.register(ModEntities.NUKE_EXPLOSION_MK5.get(), NoopRenderer::new);
+        sink.register(ModEntities.ENTITY_EMP.get(), NoopRenderer::new);
         sink.register(ModEntities.FALLOUT_RAIN.get(), NoopRenderer::new);
         sink.register(ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
         sink.register(ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
@@ -39,6 +40,10 @@ public final class HbmEntityRenderers {
         sink.register(ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
         sink.register(ModRBMKEntities.SPEAR.get(), RenderSpear::new);
 
+        // Tier 0: both bodies use the old missileTaint OBJ, at the old 2x entity scale.
+        missile(sink, ModMissileEntities.MISSILE_MICRO.get(), "missile_taint.obj", "missile_micro.png", 2.0F);
+        missile(sink, ModMissileEntities.MISSILE_TAINT.get(), "missile_taint.obj", "missile_micro_taint.png", 2.0F);
+
         // The missiles. Model, texture and scale per airframe, exactly as upstream's 24 one-off
         // renderer classes: V2 and strong at 1.0, huge at 0.8, atlas at 1.5, stealth at 2.0.
         missile(sink, ModMissileEntities.MISSILE_GENERIC.get(), "missile_v2.obj", "missile_v2.png", 1.0F);
@@ -48,6 +53,7 @@ public final class HbmEntityRenderers {
         missile(sink, ModMissileEntities.MISSILE_STRONG.get(), "missile_strong.obj", "missile_strong.png", 1.0F);
         missile(sink, ModMissileEntities.MISSILE_INCENDIARY_STRONG.get(), "missile_strong.obj", "missile_strong_inc.png", 1.0F);
         missile(sink, ModMissileEntities.MISSILE_BUSTER_STRONG.get(), "missile_strong.obj", "missile_strong_bu.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_EMP_STRONG.get(), "missile_strong.obj", "missile_strong_emp.png", 1.0F);
         missile(sink, ModMissileEntities.MISSILE_BURST.get(), "missile_huge.obj", "missile_huge.png", 0.8F);
         missile(sink, ModMissileEntities.MISSILE_INFERNO.get(), "missile_huge.obj", "missile_huge_inc.png", 0.8F);
         missile(sink, ModMissileEntities.MISSILE_NUCLEAR.get(), "missile_atlas.obj", "missile_atlas_nuclear.png", 1.5F);

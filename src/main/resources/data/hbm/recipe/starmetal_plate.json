@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": "#c:ingots/starmetal",
+    "C": "hbm:cobalt_plate"
+  },
+  "pattern": [
+    "ECE",
+    "EEE",
+    "EEE"
+  ],
+  "result": {
+    "id": "hbm:starmetal_plate"
+  }
+}

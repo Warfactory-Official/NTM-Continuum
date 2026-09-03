@@ -1,6 +1,7 @@
 package com.hbm.items.gear;
 
 import com.hbm.handler.ArmorUtil;
+import com.hbm.handler.ArmorModHandler;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.ModGearItems;
 import com.hbm.lib.ModDamageSources;
@@ -14,6 +15,8 @@ import dev.golem.core.world.CompatArmorItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
+import dev.golem.core.world.Attributes;
+import com.hbm.items.armor.ItemModInsert;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -202,6 +205,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel {
      * comment in the old file: an effect refreshed 20 times a second is otherwise a wall of them.
      */
     public static void handleTick(Player player) {
+        updateInsertSpeed(player);
         if (!hasFSBArmor(player)) return;
 
         ArmorFSB chestplate = chestplate(player);
@@ -220,6 +224,18 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel {
         if (chestplate.step != null && player.level().isClientSide() && player.onGround()
                 && !player.isShiftKeyDown()) {
             steppy(player, chestplate.step.get());
+        }
+    }
+
+    private static void updateInsertSpeed(Player player) {
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        ItemStack insert = ArmorModHandler.pryMod(chest, ArmorModHandler.kevlar);
+        if (insert.getItem() instanceof ItemModInsert mod && mod.speed() != 1F) {
+            Attributes.replaceTransient(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED),
+                    "hbm:armor_insert_speed", mod.speed() - 1F);
+        } else {
+            Attributes.removeTransient(player.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED),
+                    "hbm:armor_insert_speed");
         }
     }
 
@@ -530,6 +546,8 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel {
             tooltip.add(Component.translatable("armor.fullSetBonus").withStyle(ChatFormatting.GOLD));
             tooltip.addAll(toAdd);
         }
+
+        com.hbm.util.DamageResistanceHandler.addInfo(stack, tooltip);
     }
 
     private static Component bonus(String key, ChatFormatting color, Object... args) {

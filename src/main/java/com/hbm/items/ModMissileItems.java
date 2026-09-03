@@ -16,12 +16,11 @@ import dev.golem.core.registry.RegistryObject;
  * The launchable missiles and the designators that aim them, declared exactly as 1.12.2's
  * {@code ModItems} declares them — same ids, same form factors, same tiers, same fuels.
  *
- * <p><b>All 31 missile items exist.</b> Not all of them fly yet: a missile is launchable only if
- * {@code TileEntityLaunchPadBase} has an entity registered for it, and the ones whose warheads depend
- * on unported subsystems (the whole of tier 0, the cluster family, EMP, volcano, endo/exo, shuttle)
- * are deliberately absent from that table. Those items exist, stack and craft, but <b>a launch pad will
- * not accept them into its missile slot at all</b> — a pad that took one would report itself Ready and
- * then silently do nothing. See IMPLEMENTATION.md §20 for the list and what each one is waiting on.
+     * <p><b>All 31 missile items exist.</b> Not all of them fly yet: a missile is launchable only if
+     * {@code TileEntityLaunchPadBase} has an entity registered for it. The remaining entries depend on
+     * unported black-hole, schrabidium, cluster, drill, thermonuclear, volcano or shuttle subsystems;
+     * a launch pad refuses those items rather than reporting Ready and silently doing nothing. See
+     * IMPLEMENTATION.md §20 for the list and what each one is waiting on.
  *
  * <p>The plain {@code detonator} is here too: it is how a pad is fired by hand (shift-click to bind,
  * click to launch), and without it a pad can only be triggered by redstone.

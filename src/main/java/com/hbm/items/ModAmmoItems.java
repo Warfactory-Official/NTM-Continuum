@@ -25,6 +25,10 @@ public final class ModAmmoItems {
     /** The debug gun's round — upstream's {@code ammo_debug}, which reuses the .45 sprite. */
     public static final RegistryObject<Item> ammo_debug = ITEMS.registerSimpleItem("ammo_debug");
 
+    /** The old {@code GunFactory.EnumAmmo.NUKE_HIGH}, dropped by a destroyed micro missile. */
+    public static final RegistryObject<Item> ammo_standard_nuke_high =
+            ITEMS.registerSimpleItem("ammo_standard_nuke_high");
+
     // .357 Magnum, in the order upstream declares them: this is also reload priority, so an empty
     // magazine picks up black powder before it picks up armour piercing.
     public static final RegistryObject<Item> m357_bp = ITEMS.registerSimpleItem("ammo_standard_m357_bp");
@@ -59,7 +63,7 @@ public final class ModAmmoItems {
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
-                 ammo_debug, m357_bp, m357_sp, m357_fmj, m357_jhp, m357_ap, m357_express,
+                 ammo_debug, ammo_standard_nuke_high, m357_bp, m357_sp, m357_fmj, m357_jhp, m357_ap, m357_express,
                  m44_bp, m44_sp, m44_fmj, m44_jhp, m44_ap, m44_express,
                  p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);

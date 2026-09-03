@@ -54,6 +54,7 @@ public final class MainRegistry {
         com.hbm.inventory.material.Mats.init(); // material registry (tag-based ore-dict replacement)
         // Order matters: blocks before items (block items reference blocks), tabs last.
         ModBlocks.init();
+        com.hbm.blocks.machine.ModArmorTableBlocks.init();
         com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)
         com.hbm.assemblyfactory.AssemblyFactoryRegistrations.init();
@@ -84,6 +85,7 @@ public final class MainRegistry {
         com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModChemicalDyeItems.init(); // flattened chemical-dye and crayon variants
         com.hbm.items.ModStorageDrumItems.init();
         com.hbm.items.ModFoodItems.init();
         com.hbm.items.ModCatalystItems.init();
@@ -108,6 +110,7 @@ public final class MainRegistry {
         ModBombItems.init();       // hand-registered bomb components
         com.hbm.items.ModGearItems.init(); // radiation gear (geiger/dosimeter + hazmat armor)
         com.hbm.items.ModArmorItems.init(); // modelled power armour (T-51b)
+        com.hbm.items.ModArmorModules.init(); // complete armor modules (storage, cladding, inserts)
         com.hbm.items.ModAmmoItems.init();  // Sedna ammunition (one item per old ammo_standard variant)
         // The bullet configs must exist before a gun's magazine names them; the gun items themselves are
         // built lazily at registration, well after this.

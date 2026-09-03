@@ -2,6 +2,7 @@ package com.hbm.entity;
 
 import com.hbm.Constants;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
+import com.hbm.entity.logic.EntityEMP;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntitySawblade;
 import dev.golem.core.registry.DeferredRegister;
@@ -33,6 +34,14 @@ public final class ModEntities {
                             .sized(1.0F, 1.0F)
                             .clientTrackingRange(8)
                             .updateInterval(Integer.MAX_VALUE), key));
+
+    /** Invisible six-minute EMP field; its HBM-energy drain runs server-side. */
+    public static final RegistryObject<EntityType<EntityEMP>> ENTITY_EMP =
+            ENTITY_TYPES.register("entity_emp", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityEMP>of(EntityEMP::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(64)
+                            .updateInterval(20), key));
 
     /** The invisible fallout sweep spawned when the crater completes (old {@code entity_fallout_rain}). */
     public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityFalloutRain>> FALLOUT_RAIN =

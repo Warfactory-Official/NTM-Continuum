@@ -20,6 +20,8 @@ import com.hbm.items.ModItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModMedicineItems;
 import com.hbm.items.ModOilItems;
+import com.hbm.items.ModChemicalDyeItems;
+import com.hbm.items.machine.ItemChemicalDye.EnumChemDye;
 import com.hbm.items.machine.ItemScraps;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -44,8 +46,8 @@ import static com.hbm.inventory.OreDictManager.*;
  *
  * <p><b>What's ported:</b> every default recipe whose complete input/output path exists in this port,
  * including the old coal/uranium, cement, gravel, tar, wax, semtex, latex, and fullerene entries.
- * Deferred entries are listed in the completion-wave review report: mercury, chemical dyes, bedrock-ore
- * grades, rebar, and external-mod compatibility recipes.
+ * Deferred entries are listed in the completion-wave review report: mercury, bedrock-ore grades, rebar,
+ * and external-mod compatibility recipes.
  *
  * <p>{@code productivity} is carried for parity but unused: in the 1.12.2 tile the free-item chance
  * came only from EFFECT machine upgrades (unported), never from the recipe field.
@@ -161,6 +163,22 @@ public final class CrystallizerRecipes {
                 200, 0F, Fluids.IONGEL, 500);
         add(item(ModFallingBlocks.moon_turf.get().asItem()).count(16),
                 stack(ModIntermediateItems.chunk(EnumChunkType.MOONSTONE)), 1_200, 0F, Fluids.PEROXIDE, 500);
+
+        // --- chemical dyes (the three old oil variants each unlock the same six colours) ---
+        for (FluidType oil : List.of(Fluids.WOODOIL, Fluids.FISHOIL, Fluids.LIGHTOIL)) {
+            add(dustTag("coal"), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.BLACK), 4),
+                    mixingTime, 0.15F, oil, 100);
+            add(TI.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.WHITE), 4),
+                    mixingTime, 0.15F, oil, 100);
+            add(IRON.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.RED), 4),
+                    mixingTime, 0.15F, oil, 100);
+            add(W.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.YELLOW), 4),
+                    mixingTime, 0.15F, oil, 100);
+            add(CU.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.GREEN), 4),
+                    mixingTime, 0.15F, oil, 100);
+            add(CO.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.BLUE), 4),
+                    mixingTime, 0.15F, oil, 100);
+        }
     }
 
     /** The recipe matching {@code stack} under the given tank fluid, or null. */

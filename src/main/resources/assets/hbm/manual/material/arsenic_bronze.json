@@ -1,0 +1,13 @@
+{
+	"name": "Arsenic Bronze",
+	"icon": ["hbm:ingot_arsenic_bronze", 1, 0],
+    "trigger": [["hbm:ingot_arsenic_bronze"]],
+    "title": {
+        "en_us": "Arsenic Bronze",
+		"ru_ru": "Мышьяковая бронза"
+    },
+	"content": {
+		"en_us": "Derivative of [[arsenic|Arsenic]] made in the [[crucible|Crucible]], therefore available only after building an [[RBMK]] due to requiring [[high-performance solvent|High-Performance Solvent]].<br><br>Fully interchangeable with [[bismuth bronze|Bismuth Bronze]].",
+		"ru_ru": "Производное [[мышьяка|Arsenic]], изготавливаемое в [[плавильне|Crucible]]. Доступно только после постройки [[РБМК|RBMK]], так как требует [[высокоэффективный растворитель|High-Performance Solvent]].<br><br>Полностью взаимозаменимо с [[висмутовой бронзой|Bismuth Bronze]]."
+	}
+}

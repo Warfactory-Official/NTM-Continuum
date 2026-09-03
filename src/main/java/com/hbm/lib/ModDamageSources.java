@@ -54,8 +54,8 @@ public final class ModDamageSources {
      * {@code hbm:bullet_<name>} damage type, and those three flags are the vanilla {@code is_projectile}
      * / {@code is_fire} / {@code is_explosion} type tags.
      *
-     * <p>The classes carry no resistance behaviour yet — the damage-resistance system they exist to feed
-     * is not ported — so today they differ only in death message and vanilla flags.
+     * <p>The classes feed {@code DamageResistanceHandler}'s source/category precedence. Their vanilla
+     * projectile/fire/explosion tags remain authoritative for ordinary armor calculations.
      */
     public enum DamageClass {
         PHYSICAL, FIRE, EXPLOSIVE, ELECTRIC, PLASMA, LASER, MICROWAVE, SUBATOMIC, OTHER;

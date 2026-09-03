@@ -1,0 +1,13 @@
+{
+	"name": "Arsenic",
+	"icon": ["hbm:ingot_arsenic", 1, 0],
+    "trigger": [["hbm:ingot_arsenic"], ["hbm:nugget_arsenic"]],
+    "title": {
+        "en_us": "Arsenic",
+		"ru_ru": "Мышьяк"
+    },
+	"content": {
+		"en_us": "Obtainable by treating oily scraps with [[high-performance solvent|High-Performance Solvent]] in an [[acidizer|Ore Acidizer]]. Oily scraps can be created by [[shredding|Shredder]] polluted blocks created by the [[fracking tower|Hydraulic Fracking Tower]]. Primarily used as [[arsenic bronze|Arsenic Bronze]].",
+		"ru_ru": "Можно получить, обработав маслянистые обломки [[высокоэффективным растворителем|High-Performance Solvent]] в [[рудном окислителе|Ore Acidizer]]. Маслянистые обломки можно получить путём [[измельчения|Shredder]] загрязнённых блоков, создаваемых [[башней гидроразрыва|Hydraulic Fracking Tower]]. В основном используется как [[мышьяковая бронза|Arsenic Bronze]]."
+	}
+}

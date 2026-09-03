@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:ingots/any_plastic",
+    "K": "hbm:insert_kevlar",
+    "D": "hbm:ducttape"
+  },
+  "pattern": [
+    "PKP",
+    "DPD",
+    "PKP"
+  ],
+  "result": {
+    "id": "hbm:insert_sapi"
+  }
+}

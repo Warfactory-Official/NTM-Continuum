@@ -15,6 +15,10 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
 import com.hbm.tileentity.bomb.TileEntityNukeMan;
+import com.hbm.tileentity.bomb.TileEntityNukeN2;
+import com.hbm.tileentity.bomb.TileEntityNukeBoy;
+import com.hbm.tileentity.bomb.TileEntityNukeGadget;
+import com.hbm.tileentity.bomb.TileEntityNukeTsar;
 import com.hbm.tileentity.deco.TileEntityDeco;
 import com.hbm.tileentity.machine.TileEntityCreativeFluidSource;
 import com.hbm.tileentity.machine.TileEntityCreativeGenerator;
@@ -571,6 +575,22 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityNukeMan>> NUKE_MAN =
             BLOCK_ENTITIES.register("nuke_man",
                     () -> BlockEntities.type(TileEntityNukeMan::new, ModBombBlocks.nuke_man.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityNukeN2>> NUKE_N2 =
+            BLOCK_ENTITIES.register("nuke_n2",
+                    () -> BlockEntities.type(TileEntityNukeN2::new, ModBombBlocks.nuke_n2.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityNukeBoy>> NUKE_BOY =
+            BLOCK_ENTITIES.register("nuke_boy",
+                    () -> BlockEntities.type(TileEntityNukeBoy::new, ModBombBlocks.nuke_boy.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityNukeGadget>> NUKE_GADGET =
+            BLOCK_ENTITIES.register("nuke_gadget",
+                    () -> BlockEntities.type(TileEntityNukeGadget::new, ModBombBlocks.nuke_gadget.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityNukeTsar>> NUKE_TSAR =
+            BLOCK_ENTITIES.register("nuke_tsar",
+                    () -> BlockEntities.type(TileEntityNukeTsar::new, ModBombBlocks.nuke_tsar.get()));
 
     // --- the 12 tiered anvils (OBJ-rendered; the BE exists only for the renderer) ---
 

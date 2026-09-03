@@ -20,6 +20,7 @@ public final class Hazards {
         HazardRegistry.registerItems();
         com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership
         com.hbm.items.ModArmorItems.configure();      // power-armour set bonuses, rad resistance, hazard classes
+        com.hbm.util.DamageResistanceHandler.init();  // threshold/resistance profiles + damage event seam
         com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
         com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables(); // missile item -> entity table
     }

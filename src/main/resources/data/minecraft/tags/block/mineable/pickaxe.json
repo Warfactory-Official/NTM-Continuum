@@ -395,6 +395,11 @@
     "hbm:watz",
     "hbm:watz_casing",
     "hbm:watz_casing_tooled",
-    "hbm:watz_pump"
+    "hbm:watz_pump",
+    "hbm:nuke_boy",
+    "hbm:nuke_gadget",
+    "hbm:nuke_man",
+    "hbm:nuke_n2",
+    "hbm:nuke_tsar"
   ]
 }

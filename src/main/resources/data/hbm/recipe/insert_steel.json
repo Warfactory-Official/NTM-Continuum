@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "hbm:ducttape",
+    "P": "#c:plates/iron",
+    "S": "#c:storage_blocks/steel"
+  },
+  "pattern": [
+    "DPD",
+    "PSP",
+    "DPD"
+  ],
+  "result": {
+    "id": "hbm:insert_steel"
+  }
+}

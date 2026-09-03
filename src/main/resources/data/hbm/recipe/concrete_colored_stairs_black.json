@@ -1,0 +1,23 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "items": [
+        "hbm:concrete_colored"
+      ],
+      "components": {
+        "hbm:item_variant": 15
+      }
+    }
+  },
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "result": {
+    "id": "hbm:concrete_colored_stairs_black",
+    "count": 8
+  }
+}

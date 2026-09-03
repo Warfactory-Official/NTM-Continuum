@@ -1,0 +1,13 @@
+{
+	"name": "Cadmium",
+	"icon": ["hbm:ingot_cadmium", 1, 0],
+    "trigger": [["hbm:ingot_cadmium"], ["hbm:powder_cadmium"]],
+    "title": {
+        "en_us": "Cadmium",
+		"ru_ru": "Кадмий"
+    },
+	"content": {
+		"en_us": "Made by treating mustard willow leaves with [[high-performance solvent|High-Performance Solvent]]. Used in [[PVC]], a lategame alternate recipe for [[rubber|Rubber]] and for [[cadmium steel|Cadmium Steel]], which acts as a [[technetium steel|Technetium Steel]] substitute.",
+		"ru_ru": "Изготавливается обработкой листьев горчичной ивы [[высокоэффективным растворителем|High-Performance Solvent]]. Используется в [[ПВХ|PVC]], альтернативном позднеигровом рецепте [[резины|Rubber]], а также при получении [[кадмиевой стали|Cadmium Steel]], которая служит заменой [[технециевой стали|Technetium Steel]]."
+	}
+}

@@ -32,6 +32,7 @@ public final class HbmKeybindsClient {
     public static KeyMappings.Mapping reloadKey;
     public static KeyMappings.Mapping gunSecondaryKey;
     public static KeyMappings.Mapping gunTertiaryKey;
+    public static KeyMappings.Mapping qmawKey;
 
     /** Last reported state per keybind, so only edges go over the wire. */
     private static final boolean[] LAST_STATE = new boolean[EnumKeybind.VALUES.length];
@@ -44,6 +45,7 @@ public final class HbmKeybindsClient {
                 InputConstants.Type.MOUSE, 1, CATEGORY);
         gunTertiaryKey = KeyMappings.register(CATEGORY, "key.hbm.gunTertiary",
                 InputConstants.Type.MOUSE, 2, CATEGORY);
+        qmawKey = KeyMappings.register(CATEGORY, "key.hbm.qmaw", InputConstants.KEY_F1, CATEGORY);
 
         MouseInput.onButton(HbmKeybindsClient::onMouseButton);
         ClientTicks.onEndTick(HbmKeybindsClient::onEndTick);

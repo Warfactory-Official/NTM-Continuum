@@ -68,6 +68,8 @@ public final class ModSounds {
 
     /** The nuclear detonation roar played by the Torex cloud when its shockwave reaches the player. */
     public static final RegistryObject<SoundEvent> NUCLEAR_EXPLOSION = register("weapon.nuclear_explosion");
+    /** The short detonation sound used by {@code ExplosionNukeSmall}. */
+    public static final RegistryObject<SoundEvent> MUKE_EXPLOSION = register("weapon.muke_explosion");
     /** A missile leaving the pad. Old id {@code hbm:weapon.missileTakeoff}. */
     public static final RegistryObject<SoundEvent> MISSILE_TAKEOFF = register("weapon.missile_takeoff");
 

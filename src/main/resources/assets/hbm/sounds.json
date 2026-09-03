@@ -175,6 +175,15 @@
       }
     ]
   },
+  "weapon.muke_explosion": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/mukeexplosion",
+        "stream": false
+      }
+    ]
+  },
   "block.electric_hum": {
     "category": "block",
     "sounds": [

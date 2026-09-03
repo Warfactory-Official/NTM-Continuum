@@ -33,10 +33,13 @@ public class HazmatRegistry {
     public static final double hazYellow = 0.6D;    // 50%
     public static final double hazRed = 1.0D;       // 90%
     public static final double hazGray = 2D;        // 99%
-    public static final double paa = 1.7D;          // 97%
     public static final double liquidator = 2.4D;   // 99.6%
+    public static final double security = 0.825D;   // 85%
+    public static final double star = 1.0D;         // 90%
     public static final double schrab = 3D;         // 99.9%
     public static final double euph = 10D;          // <100%
+    public static final double cobalt = 0.125D;     // 25%
+    public static final double paa = 1.7D;          // 97%
 
     private static final HashMap<Item, Double> entries = new HashMap<>();
 
@@ -53,9 +56,10 @@ public class HazmatRegistry {
         return f != null ? f + cladding : cladding;
     }
 
-    /** Cladding armor mods — system not ported yet. */
+    /** Returns radiation cladding from the ordered armor-module component, if installed. */
     public static double getCladding(ItemStack stack) {
-        return 0; // TODO(armor-mods): ItemModCladding
+        ItemStack mod = ArmorModHandler.pryMod(stack, ArmorModHandler.cladding);
+        return mod.getItem() instanceof com.hbm.items.armor.ItemModCladding cladding ? cladding.rad : 0D;
     }
 
     public static float getResistance(LivingEntity entity) {

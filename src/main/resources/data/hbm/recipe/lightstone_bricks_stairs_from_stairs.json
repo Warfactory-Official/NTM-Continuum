@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:lightstone_bricks_stairs",
+    "hbm:lightstone_bricks_stairs",
+    "hbm:lightstone_bricks_stairs",
+    "hbm:lightstone_bricks_stairs"
+  ],
+  "result": {
+    "id": "hbm:lightstone",
+    "count": 3,
+    "components": {
+      "hbm:item_variant": 2
+    }
+  }
+}

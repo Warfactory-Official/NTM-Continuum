@@ -1,0 +1,13 @@
+{
+	"name": "Steel",
+	"icon": ["hbm:ingot_steel", 1, 0],
+    "trigger": [["hbm:ingot_steel"], ["hbm:plate_steel"], ["hbm:powder_steel"]],
+    "title": {
+        "en_us": "Steel",
+		"ru_ru": "Сталь"
+    },
+	"content": {
+		"en_us": "Upgraded version of iron, basic material. Used in almost everything. Initially obtained by combining coal and iron in a [[blast furnace|Blast Furnace]]. Upgraded recipes are available later on via [[crucible|Crucible]] and [[rotary furnace|Rotary Furnace]].",
+		"ru_ru": "Улучшенная версия железа, базовый материал. Используется почти во всём. Изначально получается путём комбинирования угля и железа в [[доменной печи|Blast Furnace]]. Позже становятся доступны улучшенные рецепты в [[плавильне|Crucible]] и [[роторной печи|Rotary Furnace]]."
+	}
+}

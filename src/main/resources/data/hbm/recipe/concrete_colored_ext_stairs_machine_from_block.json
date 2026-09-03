@@ -1,0 +1,23 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "items": [
+        "hbm:concrete_colored_ext"
+      ],
+      "components": {
+        "hbm:item_variant": 0
+      }
+    }
+  },
+  "pattern": [
+    "#  ",
+    "## ",
+    "###"
+  ],
+  "result": {
+    "id": "hbm:concrete_colored_ext_stairs_machine",
+    "count": 8
+  }
+}

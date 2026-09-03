@@ -192,6 +192,16 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         return this;
     }
 
+    /** Diagnostics and GameTests: whether this blast will emit the later fallout sweep. */
+    public boolean hasFallout() {
+        return fallout;
+    }
+
+    /** Diagnostics and GameTests: the configured crater radius, before the strength multiplier. */
+    public int getRadius() {
+        return radius;
+    }
+
     @Override
     public void remove(RemovalReason reason) {
         if (explosion != null) explosion.cancel();

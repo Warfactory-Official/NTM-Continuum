@@ -1,0 +1,21 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "#": {
+      "items": [
+        "hbm:concrete_colored"
+      ],
+      "components": {
+        "hbm:item_variant": 3
+      }
+    }
+  },
+  "pattern": [
+    "###"
+  ],
+  "result": {
+    "id": "hbm:concrete_light_blue_slab",
+    "count": 6
+  }
+}

@@ -1,0 +1,13 @@
+{
+	"name": "Bismuth Bronze",
+	"icon": ["hbm:ingot_bismuth_bronze", 1, 0],
+    "trigger": [["hbm:ingot_bismuth_bronze"]],
+    "title": {
+        "en_us": "Bismuth Bronze",
+		"ru_ru": "Висмутовая бронза"
+    },
+	"content": {
+		"en_us": "Derivative of [[bismuth|Bismuth]] made in the [[crucible|Crucible]], therefore available only after building an [[RBMK]].<br><br>Fully interchangeable with [[arsenic bronze|Arsenic Bronze]].",
+		"ru_ru": "Производное [[висмута|Bismuth]], изготавливаемое в [[плавильне|Crucible]], поэтому доступно только после постройки [[РБМК|RBMK]].<br><br>Полностью взаимозаменимо с [[мышьяковой бронзой|Arsenic Bronze]]."
+	}
+}

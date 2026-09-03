@@ -1,0 +1,25 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "items": [
+        "hbm:lightstone"
+      ],
+      "components": {
+        "hbm:item_variant": 1
+      }
+    }
+  },
+  "pattern": [
+    "CC",
+    "CC"
+  ],
+  "result": {
+    "id": "hbm:lightstone",
+    "count": 4,
+    "components": {
+      "hbm:item_variant": 2
+    }
+  }
+}

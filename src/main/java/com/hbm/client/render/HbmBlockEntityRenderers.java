@@ -246,9 +246,21 @@ public final class HbmBlockEntityRenderers {
                 ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityHeaterOilburner>(0F, 1F,
                         new ModelDef(obj("machines/oilburner.obj"), tex("machines/oilburner.png"))).ignoreFacing());
 
-        // Bombs: the Fat Man draws a static OBJ keyed on its own FACING property (own yaw map).
-        regCustom(sink, ModBlockEntities.NUKE_MAN.get(),
-                ctx -> new BombObjRenderer<>(obj("bombs/fatman.obj"), tex("bombs/fatman.png"), 1F));
+         // Bombs: each static OBJ keeps the legacy model-specific yaw map and double-sided geometry.
+         regCustom(sink, ModBlockEntities.NUKE_MAN.get(),
+                 ctx -> new BombObjRenderer<>(obj("bombs/fatman.obj"), tex("bombs/fatman.png"), 1F));
+         regCustom(sink, ModBlockEntities.NUKE_N2.get(),
+                 ctx -> new BombObjRenderer<>(obj("bombs/n2.obj"), tex("bombs/n2.png"), 1F,
+                         com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 180F, 0F, 270F, 90F));
+         regCustom(sink, ModBlockEntities.NUKE_BOY.get(),
+                 ctx -> new BombObjRenderer<>(obj("bombs/lilboy.obj"), tex("bombs/lilboy.png"), 1F,
+                         com.hbm.blocks.bomb.NukeBombBlock.FACING, -2F, 0F, 0F, 0F, 180F, 90F, 270F));
+         regCustom(sink, ModBlockEntities.NUKE_GADGET.get(),
+                 ctx -> new BombObjRenderer<>(obj("bombs/gadget.obj"), tex("bombs/gadget.png"), 1F,
+                         com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 0F, 180F, 90F, 270F));
+         regCustom(sink, ModBlockEntities.NUKE_TSAR.get(),
+                 ctx -> new BombObjRenderer<>(obj("bombs/tsar.obj"), tex("bombs/tsar.png"), 1F,
+                         com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 0F, 180F, 90F, 270F));
 
         // Red cable: the real cable_neo.obj, parts chosen from the connection state.
         regCustom(sink, ModBlockEntities.RED_CABLE.get(), ctx -> new CableObjRenderer<>());

@@ -1,4 +1,10 @@
 {
   "replace": false,
-  "values": ["minecraft:light_gray_dye"]
+  "values": [
+    "hbm:chemical_dye_silver",
+    "hbm:crayon_silver",
+    "hbm:powder_ash_wood",
+    "hbm:powder_titanium",
+    "minecraft:light_gray_dye"
+  ]
 }

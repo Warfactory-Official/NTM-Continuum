@@ -83,6 +83,10 @@ public final class ModDataComponents {
      */
     public static final GolemComponent<Long> ARMOR_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "armor_charge");
 
+    /** Nine ordered armor-module slots, replacing the legacy {@code ntm_armor_mods.mod_slot_*} tag. */
+    public static final GolemComponent<java.util.List<ItemStack>> ARMOR_MODS =
+            GolemComponent.of(Constants.MOD_ID, "armor_mods", ItemStack.CODEC.listOf());
+
     /**
      * A gun's state-machine scratch space — timer, state, animation timer, button flags. Rewritten
      * constantly while a gun is held, and worth nothing once it is dropped.

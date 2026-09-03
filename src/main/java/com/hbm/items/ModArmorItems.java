@@ -50,6 +50,70 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSB> titanium_boots =
             plain("titanium_boots", HbmArmorMaterials.TITANIUM, ArmorSlot.BOOTS);
 
+    // ---- ordinary ArmorFSB families ----
+    public static final RegistryObject<ArmorFSB> cobalt_helmet =
+            plain("cobalt_helmet", HbmArmorMaterials.COBALT, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> cobalt_plate =
+            plain("cobalt_plate", HbmArmorMaterials.COBALT, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> cobalt_legs =
+            plain("cobalt_legs", HbmArmorMaterials.COBALT, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> cobalt_boots =
+            plain("cobalt_boots", HbmArmorMaterials.COBALT, ArmorSlot.BOOTS);
+
+    public static final RegistryObject<ArmorFSB> starmetal_helmet =
+            plain("starmetal_helmet", HbmArmorMaterials.STARMETAL, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> starmetal_plate =
+            plain("starmetal_plate", HbmArmorMaterials.STARMETAL, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> starmetal_legs =
+            plain("starmetal_legs", HbmArmorMaterials.STARMETAL, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> starmetal_boots =
+            plain("starmetal_boots", HbmArmorMaterials.STARMETAL, ArmorSlot.BOOTS);
+
+    public static final RegistryObject<ArmorFSB> schrabidium_helmet =
+            plain("schrabidium_helmet", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> schrabidium_plate =
+            plain("schrabidium_plate", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> schrabidium_legs =
+            plain("schrabidium_legs", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> schrabidium_boots =
+            plain("schrabidium_boots", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.BOOTS);
+
+    public static final RegistryObject<ArmorFSB> security_helmet =
+            plain("security_helmet", HbmArmorMaterials.SECURITY, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> security_plate =
+            plain("security_plate", HbmArmorMaterials.SECURITY, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> security_legs =
+            plain("security_legs", HbmArmorMaterials.SECURITY, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> security_boots =
+            plain("security_boots", HbmArmorMaterials.SECURITY, ArmorSlot.BOOTS);
+
+    /** The old casual robes use steel's numbers and have no full-set bonus. */
+    public static final RegistryObject<ArmorFSB> robes_helmet =
+            plain("robes_helmet", HbmArmorMaterials.ROBES, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> robes_plate =
+            plain("robes_plate", HbmArmorMaterials.ROBES, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> robes_legs =
+            plain("robes_legs", HbmArmorMaterials.ROBES, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> robes_boots =
+            plain("robes_boots", HbmArmorMaterials.ROBES, ArmorSlot.BOOTS);
+
+    public static final RegistryObject<ArmorFSB> asbestos_helmet =
+            plain("asbestos_helmet", HbmArmorMaterials.ASBESTOS, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> asbestos_plate =
+            plain("asbestos_plate", HbmArmorMaterials.ASBESTOS, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> asbestos_legs =
+            plain("asbestos_legs", HbmArmorMaterials.ASBESTOS, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> asbestos_boots =
+            plain("asbestos_boots", HbmArmorMaterials.ASBESTOS, ArmorSlot.BOOTS);
+
+    /** Power-assisted armor without a helmet, as in the legacy PAA partial set. */
+    public static final RegistryObject<ArmorFSB> paa_plate =
+            plain("paa_plate", HbmArmorMaterials.PAA, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> paa_legs =
+            plain("paa_legs", HbmArmorMaterials.PAA, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> paa_boots =
+            plain("paa_boots", HbmArmorMaterials.PAA, ArmorSlot.BOOTS);
+
     // ---- T-51b power armour ----
     // 1.12.2 ModItems.java:532-544. maxPower 1,000,000 / chargeRate 10,000 / consumption 1,000 / drain 5.
     private static final long T51_POWER = 1_000_000L;
@@ -95,6 +159,27 @@ public final class ModArmorItems {
     public static void configure() {
         configurePlainSet(steel_helmet.get(), steel_plate.get(), steel_legs.get(), steel_boots.get(), 0.045D);
         configurePlainSet(titanium_helmet.get(), titanium_plate.get(), titanium_legs.get(), titanium_boots.get(), 0.045D);
+        configurePlainSet(cobalt_helmet.get(), cobalt_plate.get(), cobalt_legs.get(), cobalt_boots.get(), 0.125D);
+        configurePlainSet(starmetal_helmet.get(), starmetal_plate.get(), starmetal_legs.get(), starmetal_boots.get(), 1.0D);
+        configurePlainSet(security_helmet.get(), security_plate.get(), security_legs.get(), security_boots.get(), 0.825D);
+
+        ArmorFSB schrabHelmet = schrabidium_helmet.get();
+        schrabHelmet.addEffect(Effects.instance(Effects.haste(), 20, 2))
+                .addEffect(Effects.instance(Effects.strength(), 20, 2))
+                .addEffect(Effects.instance(Effects.jumpBoost(), 20, 1))
+                .addEffect(Effects.instance(Effects.speed(), 20, 2));
+        configurePlainSet(schrabHelmet, schrabidium_plate.get(), schrabidium_legs.get(), schrabidium_boots.get(), 3.0D);
+        schrabHelmet.setHazardClass(FULL_PACKAGE);
+
+        ArmorFSB asbestosHelmet = asbestos_helmet.get().setOverlay(
+                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/overlay_asbestos.png"));
+        asbestosHelmet.setHazardClass(HazardClass.SAND, HazardClass.LIGHT);
+
+        ArmorFSB paa = paa_plate.get().setNoHelmet(true)
+                .addEffect(Effects.instance(Effects.haste(), 30, 0))
+                .setRadResist(1.7D);
+        paa_legs.get().cloneStats(paa);
+        paa_boots.get().cloneStats(paa);
 
         ArmorFSB helmet = t51_helmet.get();
 
@@ -136,6 +221,11 @@ public final class ModArmorItems {
     private static final HazardClass[] FULL_NO_LIGHT = {
             HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_LUNG,
             HazardClass.BACTERIA, HazardClass.GAS_BLISTERING, HazardClass.GAS_MONOXIDE, HazardClass.SAND};
+
+    private static final HazardClass[] FULL_PACKAGE = {
+            HazardClass.PARTICLE_COARSE, HazardClass.PARTICLE_FINE, HazardClass.GAS_LUNG,
+            HazardClass.BACTERIA, HazardClass.GAS_BLISTERING, HazardClass.GAS_MONOXIDE,
+            HazardClass.LIGHT, HazardClass.SAND};
 
     public static void init() {}
 }

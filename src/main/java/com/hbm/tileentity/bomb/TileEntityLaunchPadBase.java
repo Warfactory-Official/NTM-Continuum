@@ -7,6 +7,7 @@ import com.hbm.api.item.IDesignatorItem;
 import com.hbm.entity.missile.EntityMissileAntiBallistic;
 import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.entity.missile.EntityMissileStealth;
+import com.hbm.entity.missile.EntityMissileTier0;
 import com.hbm.entity.missile.EntityMissileTier1;
 import com.hbm.entity.missile.EntityMissileTier2;
 import com.hbm.entity.missile.EntityMissileTier3;
@@ -82,6 +83,9 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     public static void registerLaunchables() {
         if (!missiles.isEmpty()) return;
 
+        // Tier 0
+        missiles.put(ModMissileItems.missile_micro.get(), EntityMissileTier0.EntityMissileMicro::new);
+        missiles.put(ModMissileItems.missile_taint.get(), EntityMissileTier0.EntityMissileTaint::new);
         // Tier 1
         missiles.put(ModMissileItems.missile_generic.get(), EntityMissileTier1.EntityMissileGeneric::new);
         missiles.put(ModMissileItems.missile_decoy.get(), EntityMissileTier1.EntityMissileDecoy::new);
@@ -91,6 +95,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         missiles.put(ModMissileItems.missile_strong.get(), EntityMissileTier2.EntityMissileStrong::new);
         missiles.put(ModMissileItems.missile_incendiary_strong.get(), EntityMissileTier2.EntityMissileIncendiaryStrong::new);
         missiles.put(ModMissileItems.missile_buster_strong.get(), EntityMissileTier2.EntityMissileBusterStrong::new);
+        missiles.put(ModMissileItems.missile_emp_strong.get(), EntityMissileTier2.EntityMissileEMPStrong::new);
         // Tier 3
         missiles.put(ModMissileItems.missile_burst.get(), EntityMissileTier3.EntityMissileBurst::new);
         missiles.put(ModMissileItems.missile_inferno.get(), EntityMissileTier3.EntityMissileInferno::new);

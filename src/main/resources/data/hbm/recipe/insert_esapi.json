@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:ingots/any_plastic",
+    "K": "hbm:insert_sapi",
+    "D": "hbm:ducttape",
+    "S": "#c:plates/weaponsteel"
+  },
+  "pattern": [
+    "PKP",
+    "DSD",
+    "PKP"
+  ],
+  "result": {
+    "id": "hbm:insert_esapi"
+  }
+}

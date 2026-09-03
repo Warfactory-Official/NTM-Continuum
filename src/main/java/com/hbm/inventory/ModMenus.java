@@ -31,7 +31,12 @@ import com.hbm.inventory.container.ContainerMachineFluidTank;
 import com.hbm.inventory.container.ContainerMachineF6Tank;
 import com.hbm.inventory.container.ContainerMachineGiantTank;
 import com.hbm.inventory.container.ContainerNukeMan;
+import com.hbm.inventory.container.ContainerNukeN2;
+import com.hbm.inventory.container.ContainerNukeBoy;
+import com.hbm.inventory.container.ContainerNukeGadget;
+import com.hbm.inventory.container.ContainerNukeTsar;
 import com.hbm.inventory.container.ContainerWasteDrum;
+import com.hbm.inventory.container.ContainerArmorTable;
 import com.hbm.inventory.container.ContainerStorageDrum;
 import com.hbm.inventory.container.ContainerMachineRadGen;
 import com.hbm.inventory.container.ContainerReactorZirnox;
@@ -189,6 +194,15 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerNukeMan>> NUKE_MAN =
             MENUS.register("nuke_man", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeMan::new));
 
+    public static final RegistryObject<MenuType<ContainerNukeN2>> NUKE_N2 =
+            MENUS.register("nuke_n2", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeN2::new));
+    public static final RegistryObject<MenuType<ContainerNukeBoy>> NUKE_BOY =
+            MENUS.register("nuke_boy", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeBoy::new));
+    public static final RegistryObject<MenuType<ContainerNukeGadget>> NUKE_GADGET =
+            MENUS.register("nuke_gadget", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeGadget::new));
+    public static final RegistryObject<MenuType<ContainerNukeTsar>> NUKE_TSAR =
+            MENUS.register("nuke_tsar", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeTsar::new));
+
     public static final RegistryObject<MenuType<ContainerReactorZirnox>> REACTOR_ZIRNOX =
             MENUS.register("reactor_zirnox", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerReactorZirnox::new));
 
@@ -252,6 +266,9 @@ public final class ModMenus {
     /** Shared by all three storage crates; the container reads the BlockEntity's {@code CrateType} for layout. */
     public static final RegistryObject<MenuType<ContainerCrate>> CRATE =
             MENUS.register("crate", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrate::new));
+
+    public static final RegistryObject<MenuType<ContainerArmorTable>> ARMOR_TABLE =
+            MENUS.register("armor_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerArmorTable::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMassStorage>> MASS_STORAGE =
             MENUS.register("mass_storage", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->

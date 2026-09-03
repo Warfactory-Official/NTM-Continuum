@@ -1,6 +1,8 @@
 package com.hbm.items.gear;
 
 import com.hbm.api.energymk2.IBatteryItem;
+import com.hbm.handler.ArmorModHandler;
+import com.hbm.items.armor.ItemModBattery;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.Library;
 import dev.golem.core.world.ArmorSlot;
@@ -87,7 +89,8 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 
     @Override
     public long getMaxCharge(ItemStack stack) {
-        // TODO(armor-mods): × ItemModBattery.mod when an armour battery is installed.
+        ItemStack battery = ArmorModHandler.pryMod(stack, ArmorModHandler.battery);
+        if (battery.getItem() instanceof ItemModBattery mod) return (long) (maxPower * mod.mod);
         return maxPower;
     }
 

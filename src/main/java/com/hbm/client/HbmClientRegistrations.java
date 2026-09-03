@@ -6,6 +6,7 @@ import com.hbm.client.render.HbmEntityRenderers;
 import com.hbm.blocks.machine.rbmk.RBMKGauge;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.gui.GUIAnvil;
+import com.hbm.inventory.gui.GUIArmorTable;
 import com.hbm.inventory.gui.GUIBatterySocket;
 import com.hbm.inventory.gui.GUIBatteryREDD;
 import com.hbm.inventory.gui.GUIMachineFENSU;
@@ -53,6 +54,10 @@ import com.hbm.inventory.gui.GUIMachineTurbineGas;
 import com.hbm.inventory.gui.GUIMachineTurbofan;
 import com.hbm.inventory.gui.GUIMachineVacuumDistill;
 import com.hbm.inventory.gui.GUINukeMan;
+import com.hbm.inventory.gui.GUINukeN2;
+import com.hbm.inventory.gui.GUINukeBoy;
+import com.hbm.inventory.gui.GUINukeGadget;
+import com.hbm.inventory.gui.GUINukeTsar;
 import com.hbm.inventory.gui.GUIOilburner;
 import com.hbm.inventory.gui.GUIReactorZirnox;
 import com.hbm.inventory.gui.GUISILEX;
@@ -128,7 +133,11 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_GAS_FLARE.get(), GUIMachineGasFlare::new);
         sink.register(ModMenus.MACHINE_LIQUEFACTOR.get(), GUILiquefactor::new);
         sink.register(ModMenus.MACHINE_SOLIDIFIER.get(), GUISolidifier::new);
-        sink.register(ModMenus.NUKE_MAN.get(), GUINukeMan::new);
+         sink.register(ModMenus.NUKE_MAN.get(), GUINukeMan::new);
+         sink.register(ModMenus.NUKE_N2.get(), GUINukeN2::new);
+         sink.register(ModMenus.NUKE_BOY.get(), GUINukeBoy::new);
+         sink.register(ModMenus.NUKE_GADGET.get(), GUINukeGadget::new);
+         sink.register(ModMenus.NUKE_TSAR.get(), GUINukeTsar::new);
         sink.register(ModMenus.REACTOR_ZIRNOX.get(), GUIReactorZirnox::new);
         sink.register(ModMenus.WATZ.get(), GUIWatz::new);
         sink.register(ModMenus.FUSION_TORUS.get(), GUIFusionTorus::new);
@@ -141,7 +150,8 @@ public final class HbmClientRegistrations {
          sink.register(ModMenus.BATTERY_SOCKET.get(), GUIBatterySocket::new);
          sink.register(ModMenus.FENSU.get(), GUIMachineFENSU::new);
          sink.register(ModMenus.BATTERY_REDD.get(), GUIBatteryREDD::new);
-        sink.register(ModMenus.CRATE.get(), GUICrate::new);
+         sink.register(ModMenus.CRATE.get(), GUICrate::new);
+         sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
          sink.register(ModMenus.MACHINE_PRESS.get(), GUIMachinePress::new);
          sink.register(ModMenus.MACHINE_AMMO_PRESS.get(), GUIMachineAmmoPress::new);
          sink.register(ModMenus.MACHINE_EPRESS.get(), GUIMachineEPress::new);
@@ -222,6 +232,7 @@ public final class HbmClientRegistrations {
     /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */
     public static void installKeybinds() {
         HbmKeybindsClient.register();
+        QMAWClient.register();
         com.hbm.client.anim.GunRecoil.register();
         CraneKeybindHandler.register();
     }

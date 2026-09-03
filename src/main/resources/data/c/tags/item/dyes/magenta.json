@@ -1,4 +1,4 @@
 {
   "replace": false,
-  "values": ["minecraft:magenta_dye"]
+  "values": ["hbm:chemical_dye_magenta", "hbm:crayon_magenta", "hbm:powder_ash_fullerene", "minecraft:magenta_dye"]
 }

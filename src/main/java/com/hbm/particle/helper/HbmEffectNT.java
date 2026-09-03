@@ -39,6 +39,10 @@ public enum HbmEffectNT {
     Ashes,
     /** The full-size RBMK meltdown cloud. */
     RBMKMush,
+    /** The old small-nuke effect; its custom geometry handler is still deferred. */
+    Muke,
+    /** The tiny-tot small-nuke effect; its custom geometry handler is still deferred. */
+    TinyTot,
     /** The smaller Watz/RBMK cloud. */
     RBMKMushSmall,
     /** One puff of a missile's exhaust trail. Spawned client-side, once per tick per nozzle. */

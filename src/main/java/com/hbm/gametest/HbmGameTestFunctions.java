@@ -30,6 +30,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("component_copy_source_state", 20, () -> ComponentCopyRecipeGameTests::sourceStateAndFreshOutput);
     public static final GameTests.Function COMPONENT_COPY_REJECTION =
             TESTS.function("component_copy_rejection", 20, () -> ComponentCopyRecipeGameTests::rejectsWrongExtraAndAmbiguousInput);
+    public static final GameTests.Function CHEMICAL_DYE_FAMILIES =
+            TESTS.function("chemical_dye_families", 40, () -> ChemicalDyeAndComponentRecipeGameTests::dyeFamilies);
+    public static final GameTests.Function CHEMICAL_DYE_CRYSTALLIZER =
+            TESTS.function("chemical_dye_crystallizer", 40, () -> ChemicalDyeAndComponentRecipeGameTests::dyeCrystallizerRecipes);
+    public static final GameTests.Function COMPONENT_SHAPED_RECIPES =
+            TESTS.function("component_shaped_recipes", 40, () -> ChemicalDyeAndComponentRecipeGameTests::componentShapedRecipes);
     public static final GameTests.Function HEATEX_COOLABLE_TABLE =
             TESTS.function("heatex_coolable_table", 20, () -> HeatexGameTests::coolableTable);
     public static final GameTests.Function HEATEX_LAYOUT_PORTS =
@@ -647,6 +653,16 @@ public final class HbmGameTestFunctions {
             TESTS.function("armor_effect_visible", 20, () -> ArmorGameTests::setBonusEffectIsVisible);
     public static final GameTests.Function ARMOR_HARD_LANDING =
             TESTS.function("armor_hard_landing", 40, () -> ArmorGameTests::hardLandingThrowsEntities);
+    public static final GameTests.Function ARMOR_RESISTANCE_WAVE =
+            TESTS.function("armor_resistance_wave", 40, () -> ArmorWaveGameTests::resistancePrecedenceAndMath);
+    public static final GameTests.Function ARMOR_FULL_SET_ABSORPTION =
+            TESTS.function("armor_full_set_absorption", 40, () -> ArmorWaveGameTests::fullSetAndAbsorption);
+    public static final GameTests.Function ARMOR_FAMILIES =
+            TESTS.function("armor_families", 40, () -> ArmorWaveGameTests::familiesStatsAndHazards);
+    public static final GameTests.Function ARMOR_MODULE_STORAGE =
+            TESTS.function("armor_module_storage", 40, () -> ArmorWaveGameTests::moduleStorageRoundTrip);
+    public static final GameTests.Function ARMOR_TABLE_LIFECYCLE =
+            TESTS.function("armor_table_lifecycle", 40, () -> ArmorWaveGameTests::tableSlotsAndLifecycle);
     public static final GameTests.Function ARMOR_SHORT_FALL =
             TESTS.function("armor_short_fall", 40, () -> ArmorGameTests::shortFallDoesNothing);
     public static final GameTests.Function ARMOR_STEEL_TITANIUM =
@@ -671,6 +687,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("missile_pitch_noses_over", 60, () -> MissileGameTests::missilePitchNosesOver);
     public static final GameTests.Function MISSILE_LAUNCH_TABLE =
             TESTS.function("missile_launch_table", 20, () -> MissileGameTests::launchTableResolves);
+    public static final GameTests.Function MISSILE_MICRO_PAYLOAD =
+            TESTS.function("missile_micro_payload", 60, 80, () -> MissileGameTests::microPayloadPath);
+    public static final GameTests.Function MISSILE_TAINT_BLOCK =
+            TESTS.function("missile_taint_block", 20, () -> MissileGameTests::taintBlockContract);
+    public static final GameTests.Function MISSILE_EMP_FIELD =
+            TESTS.function("missile_emp_field", 60, () -> MissileGameTests::empFieldDrainsHbmEnergy);
     public static final GameTests.Function MISSILE_AIM_CONSTANTS =
             TESTS.function("missile_aim_constants", 20, () -> MissileGameTests::missileAimConstants);
     public static final GameTests.Function MISSILE_PAD_TANKS =
@@ -734,6 +756,19 @@ public final class HbmGameTestFunctions {
     /** Where the sweep's notify pass actually goes: neighbour updates vs the shape pass, by terrain. */
     public static final GameTests.Function NUKE_FALLOUT_NOTIFY_COST =
             TESTS.function("nuke_fallout_notify_cost", 20 * 300, () -> NukePerfGameTests::falloutNotifyCost);
+
+    public static final GameTests.Function NUKE_BOMB_SLOT_PREDICATES =
+            TESTS.function("nuke_bomb_slot_predicates", 40, () -> NukeBombGameTests::slotPredicates);
+    public static final GameTests.Function NUKE_BOMB_RADIUS_EFFECTS =
+            TESTS.function("nuke_bomb_radius_effects", 40, 40, () -> NukeBombGameTests::n2RadiusAndEffects);
+    public static final GameTests.Function NUKE_BOMB_MENU_ROUTING =
+            TESTS.function("nuke_bomb_menu_routing", 40, () -> NukeBombGameTests::menuRoutesComponents);
+    public static final GameTests.Function NUKE_BOMB_PERSISTENCE_SYNC =
+            TESTS.function("nuke_bomb_persistence_sync", 40, () -> NukeBombGameTests::persistenceAndSync);
+    public static final GameTests.Function NUKE_BOMB_REDSTONE_DETONATOR =
+            TESTS.function("nuke_bomb_redstone_detonator", 40, 40, () -> NukeBombGameTests::redstoneAndDetonator);
+    public static final GameTests.Function NUKE_BOMB_CHUNK_LIFECYCLE =
+            TESTS.function("nuke_bomb_chunk_lifecycle", 40, 40, () -> NukeBombGameTests::consumptionAndChunkLifecycle);
 
     // --- RBMK (implementations live in RBMKGameTests) ---
     public static final GameTests.Function RBMK_REGISTRY =

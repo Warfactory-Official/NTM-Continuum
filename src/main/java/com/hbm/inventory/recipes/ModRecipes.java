@@ -20,5 +20,8 @@ public final class ModRecipes {
     public static final RegistryObject<RecipeSerializer<ComponentCopyShapelessRecipe>> COMPONENT_COPY_SHAPELESS =
             SERIALIZERS.register("component_copy_shapeless", () -> ComponentCopyShapelessRecipe.SERIALIZER);
 
+    public static final RegistryObject<RecipeSerializer<dev.golem.core.world.ComponentShapedRecipe>> COMPONENT_SHAPED =
+            SERIALIZERS.register("component_shaped", () -> dev.golem.core.world.ComponentShapedRecipe.SERIALIZER);
+
     public static void init() {}
 }

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:chemical_dye_blue",
+    "hbm:chemical_dye_yellow"
+  ],
+  "result": {
+    "id": "hbm:chemical_dye_green",
+    "count": 2
+  }
+}

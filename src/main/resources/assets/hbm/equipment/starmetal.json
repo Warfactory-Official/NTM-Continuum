@@ -1,0 +1,6 @@
+{
+  "layers": {
+    "humanoid": [{"texture": "hbm:starmetal"}],
+    "humanoid_leggings": [{"texture": "hbm:starmetal"}]
+  }
+}

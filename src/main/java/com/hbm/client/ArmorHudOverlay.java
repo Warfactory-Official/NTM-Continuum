@@ -64,6 +64,12 @@ public final class ArmorHudOverlay {
         if (mc.level == null || mc.player == null || mc.options.hideGui) return;
 
         Player player = mc.player;
+        ArmorFSB helmet = player.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof ArmorFSB fsb ? fsb : null;
+        if (helmet != null && helmet.overlay() != null) {
+            int width = mc.getWindow().getGuiScaledWidth();
+            int height = mc.getWindow().getGuiScaledHeight();
+            GuiDraw.blit(graphics, helmet.overlay(), 0, 0, 0F, 0F, width, height, 256, 256);
+        }
         // Creative never spends charge — ArmorFSBPowered.armorTick returns early there — so the bars
         // would sit permanently full and tell the player nothing. Hiding them is a deliberate departure
         // from upstream, which draws them regardless; do not "restore" it for faithfulness.

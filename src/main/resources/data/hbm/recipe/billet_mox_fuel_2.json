@@ -4,7 +4,7 @@
   "ingredients": [
     "hbm:billet_uranium_fuel",
     "hbm:billet_uranium_fuel",
-    "hbm:billet_pu_mix"
+    "#c:billets/pu239"
   ],
   "result": {
     "id": "hbm:billet_mox_fuel",
