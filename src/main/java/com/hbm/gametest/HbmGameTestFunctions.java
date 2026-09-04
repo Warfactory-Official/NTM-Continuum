@@ -779,6 +779,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("nuke_bomb_redstone_detonator", 40, 40, () -> NukeBombGameTests::redstoneAndDetonator);
     public static final GameTests.Function NUKE_BOMB_CHUNK_LIFECYCLE =
             TESTS.function("nuke_bomb_chunk_lifecycle", 40, 40, () -> NukeBombGameTests::consumptionAndChunkLifecycle);
+    public static final GameTests.Function NUKE_DETONATOR_LOADS_TARGET =
+            TESTS.function("nuke_detonator_loads_target", 600, 40, () -> NukeBombGameTests::detonatorLoadsTarget);
+    public static final GameTests.Function NUKE_TOREX_TRACKING_AGE =
+            TESTS.function("nuke_torex_tracking_age", 40, () -> NukeBombGameTests::torexTrackingAge);
 
     // --- RBMK (implementations live in RBMKGameTests) ---
     public static final GameTests.Function RBMK_REGISTRY =

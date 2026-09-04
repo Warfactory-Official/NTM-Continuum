@@ -112,6 +112,12 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
+        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+    }
+
+    @Override
+    public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator,
+                                  @Nullable UUID detonatorId) {
         if (level.isClientSide()) return BombReturnCode.UNDEFINED;
         if (!(level.getBlockEntity(pos) instanceof TileEntityNukeMan entity)) return BombReturnCode.UNDEFINED;
 
@@ -119,13 +125,13 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
             UUID placer = entity.placerID;
             entity.clearSlots();
             level.removeBlock(pos, false);
-            ignite(level, detonator, pos, placer);
+            ignite(level, detonatorId, pos, placer);
             return BombReturnCode.DETONATED;
         }
         return BombReturnCode.ERROR_MISSING_COMPONENT;
     }
 
-    private void ignite(Level level, @Nullable Entity detonator, BlockPos pos, @Nullable UUID placer) {
+    private void ignite(Level level, @Nullable UUID detonatorId, BlockPos pos, @Nullable UUID placer) {
         level.playSound(null, pos,
                 SoundEvents.GENERIC_EXPLODE.value(),
                 SoundSource.BLOCKS, 1.0F,
@@ -133,9 +139,8 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
 
         EntityNukeExplosionMK5 mk5 = EntityNukeExplosionMK5.statFac(level, BombConfig.manRadius,
                 pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-        if (detonator != null) mk5.setDetonator(detonator);
-        else mk5.detonator = placer;
-        level.addFreshEntity(mk5);
+        mk5.detonator = detonatorId != null ? detonatorId : placer;
+        if (level.addFreshEntity(mk5)) mk5.startChunkLoading();
 
         // The mushroom cloud (which carries the shockwave ring, condensation collar, flare, flash + the
         // client sky flash / detonation sound / HUD white-out + shake). Gated like the original, and it
@@ -143,7 +148,7 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
         if (BombConfig.enableNukeClouds) {
             EntityNukeTorex torex = EntityNukeTorex.statFac(level,
                     pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, BombConfig.manRadius);
-            level.addFreshEntity(torex);
+            if (level.addFreshEntity(torex)) torex.startChunkLoading();
         }
     }
 }

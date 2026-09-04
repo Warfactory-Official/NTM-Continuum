@@ -148,6 +148,15 @@ public class EntityFalloutRain extends CompatEntity {
         return scale;
     }
 
+    /** Claims the source chunk before the completed MK5 blast releases its own ticket. */
+    public void startChunkLoading() {
+        chunkLoader.tick();
+    }
+
+    public boolean isChunkLoading() {
+        return chunkLoader.isLoading();
+    }
+
     /** Diagnostics for the real-world loading pipeline and its GameTest. */
     public int getChunksRequested() {
         return chunksRequested;

@@ -58,7 +58,9 @@ public final class ExplosionNukeSmall {
         }
 
         if (!params.miniNuke && world instanceof ServerLevel server) {
-            server.addFreshEntity(EntityNukeExplosionMK5.statFac(server, (int) params.blastRadius, x, y, z));
+            EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFac(
+                    server, (int) params.blastRadius, x, y, z);
+            if (server.addFreshEntity(blast)) blast.startChunkLoading();
         }
 
         if (params.miniNuke) {

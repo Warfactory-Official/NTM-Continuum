@@ -75,7 +75,11 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
     public static final int flareBaseDuration = 100;
 
     private static final Comparator<Cloudlet> CLOUD_SORTER =
-            (a, b) -> Double.compare(b.renderSortDistanceSq, a.renderSortDistanceSq);
+            (a, b) -> {
+                int distance = Double.compare(b.renderSortDistanceSq, a.renderSortDistanceSq);
+                return distance != 0 ? distance
+                        : Long.compare(a.getCreationOrdinal(), b.getCreationOrdinal());
+            };
 
     public TorexRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -94,6 +98,7 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
 
     @Override
     public void extract(EntityNukeTorex entity, TorexRenderState state, float partialTicks) {
+        entity.prepareClientAnimation();
         state.torex = entity;
         state.partialTicks = partialTicks;
         state.entityId = entity.getId();
@@ -102,7 +107,7 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
     @Override
     public void submit(TorexRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
         EntityNukeTorex cloud = state.torex;
-        if (cloud == null) return;
+        if (cloud == null || !cloud.isClientAnimationReady()) return;
 
         float partialTicks = state.partialTicks;
         float scale = (float) cloud.getScale();
@@ -148,8 +153,11 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
     // ---- Cloudlets ----
 
     private void sortCloudlets(EntityNukeTorex cloud, CameraInfo camera) {
-        if (cloud.lastRenderSortTick == cloud.tickCount) return;
         Vec3 cam = camera.pos;
+        if (cloud.lastRenderSortTick == cloud.tickCount
+                && Double.compare(cloud.lastRenderSortCameraX, cam.x) == 0
+                && Double.compare(cloud.lastRenderSortCameraY, cam.y) == 0
+                && Double.compare(cloud.lastRenderSortCameraZ, cam.z) == 0) return;
         for (Cloudlet cloudlet : cloud.cloudlets) {
             double dx = cam.x - cloudlet.posX;
             double dy = cam.y - cloudlet.posY;
@@ -158,6 +166,9 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
         }
         cloud.cloudlets.sort(CLOUD_SORTER);
         cloud.lastRenderSortTick = cloud.tickCount;
+        cloud.lastRenderSortCameraX = cam.x;
+        cloud.lastRenderSortCameraY = cam.y;
+        cloud.lastRenderSortCameraZ = cam.z;
     }
 
     private void submitCloudlets(EntityNukeTorex cloud, PoseStack poseStack, SubmitSink collector,

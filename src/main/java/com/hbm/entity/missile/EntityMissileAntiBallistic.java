@@ -34,8 +34,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Stealth missiles are skipped by the scan — that is the coating's whole purpose.
  *
- * <p>Radius 1: unlike a ballistic missile, an ABM turns, so it claims the 3×3 around itself rather than
- * just the chunk it is over.
+ * <p>Radius 1: like ballistic missiles on the modern nonblocking ticket layer, the ABM claims the 3×3
+ * around itself. Its turning path makes that full envelope necessary rather than directional lookahead.
  *
  * <p>Deferred: the radar interfaces, the {@code particleControl} exhaust trail, and
  * {@code ExplosionLarge.spawnShock}'s lock-on ring (its particle family is unported).

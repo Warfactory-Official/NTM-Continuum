@@ -102,6 +102,12 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
 
     @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
+        return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
+    }
+
+    @Override
+    public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator,
+                                  @Nullable UUID detonatorId) {
         if (level.isClientSide()) return BombReturnCode.UNDEFINED;
         if (!(level.getBlockEntity(pos) instanceof TileEntityNukeBomb bomb) || !bomb.isReady()) {
             return BombReturnCode.ERROR_MISSING_COMPONENT;
@@ -111,7 +117,7 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
         UUID placer = bomb.placerID;
         bomb.clearSlots();
         level.removeBlock(pos, false);
-        ignite(level, pos, radius, detonator, placer);
+        ignite(level, pos, radius, detonatorId, placer);
         return BombReturnCode.DETONATED;
     }
 
@@ -123,7 +129,7 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
         return false;
     }
 
-    private void ignite(Level level, BlockPos pos, int radius, @Nullable Entity detonator,
+    private void ignite(Level level, BlockPos pos, int radius, @Nullable UUID detonatorId,
                         @Nullable UUID placer) {
         level.playSound(null, pos, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS,
                 1.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
@@ -131,14 +137,13 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
         EntityNukeExplosionMK5 mk5 = noRadiation()
                 ? EntityNukeExplosionMK5.statFacNoRad(level, radius, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5)
                 : EntityNukeExplosionMK5.statFac(level, radius, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-        if (detonator != null) mk5.setDetonator(detonator);
-        else mk5.detonator = placer;
-        level.addFreshEntity(mk5);
+        mk5.detonator = detonatorId != null ? detonatorId : placer;
+        if (level.addFreshEntity(mk5)) mk5.startChunkLoading();
 
         if (BombConfig.enableNukeClouds) {
             EntityNukeTorex torex = EntityNukeTorex.statFac(level,
                     pos.getX() + cloudOffset(), pos.getY() + cloudOffset(), pos.getZ() + cloudOffset(), radius);
-            level.addFreshEntity(torex);
+            if (level.addFreshEntity(torex)) torex.startChunkLoading();
         }
     }
 

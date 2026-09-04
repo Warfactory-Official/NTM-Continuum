@@ -59,6 +59,7 @@ public final class ChunkLoadingManager {
             for (ServerLevel level : server.getAllLevels()) tickLevel(level);
         });
         Lifecycle.onLevelUnload((server, level) -> forget(level));
+        Lifecycle.onChunkLoad(PendingDetonations::onChunkLoaded);
     }
 
     // --- ticket API ---
@@ -137,6 +138,7 @@ public final class ChunkLoadingManager {
                         dropped, level.dimension());
             }
         }
+        PendingDetonations.tick(level);
     }
 
     /**
@@ -165,6 +167,7 @@ public final class ChunkLoadingManager {
      * lets {@link #restore} bring the same set back next time the level loads.
      */
     private static void forget(ServerLevel level) {
+        PendingDetonations.forget(level);
         STATES.remove(level.dimension());
     }
 

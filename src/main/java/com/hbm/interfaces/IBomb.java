@@ -1,5 +1,6 @@
 package com.hbm.interfaces;
 
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
@@ -13,6 +14,12 @@ import org.jspecify.annotations.Nullable;
 public interface IBomb {
 
     BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator);
+
+    /** Allows deferred triggers to retain attribution when the originating entity is no longer online. */
+    default BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator,
+                                   @Nullable UUID detonatorId) {
+        return explode(level, pos, detonator);
+    }
 
     enum BombReturnCode {
         UNDEFINED(false, ""),                                    // non-null type for clients that don't process the return code

@@ -67,10 +67,11 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
                 : EntityNukeExplosionMK5.statFacNoRad(level(), radius, getX(), getY(), getZ());
         if (falloutAdd > 0) mk5.moreFallout(falloutAdd);
         if (thrower != null) mk5.setDetonator(thrower);
-        level().addFreshEntity(mk5);
+        if (level().addFreshEntity(mk5)) mk5.startChunkLoading();
 
         if (BombConfig.enableNukeClouds) {
-            level().addFreshEntity(EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), radius));
+            EntityNukeTorex torex = EntityNukeTorex.statFac(level(), getX(), getY(), getZ(), radius);
+            if (level().addFreshEntity(torex)) torex.startChunkLoading();
         }
     }
 

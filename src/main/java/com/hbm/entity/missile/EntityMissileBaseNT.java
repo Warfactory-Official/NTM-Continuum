@@ -49,8 +49,9 @@ import org.jspecify.annotations.Nullable;
  * position to {@code position + motion · velocity} each tick and impacts on the first block in that
  * span, which is what keeps a 4-blocks-per-tick missile from tunnelling through the ground.
  *
- * <p>Missiles are chunkloaders (radius 0) for the obvious reason: an ICBM outruns the player who fired
- * it long before it lands.
+ * <p>Missiles are chunkloaders for the obvious reason: an ICBM outruns the player who fired it long
+ * before it lands. The modern loading ticket is asynchronous, so the missile holds the 3×3 around its
+ * current chunk; that gives the next border chunk time to become resident before the entity crosses.
  *
  * <p><b>One deviation.</b> Upstream ran the flight simulation on both sides and reconciled with its own
  * {@code EntityThrowableInterp} interpolation, because 1.12's tracker only sent a position every few
@@ -99,7 +100,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
     private double contrailZ;
     private boolean contrailStarted;
 
-    private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 0);
+    private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 1);
 
     public EntityMissileBaseNT(EntityType<?> type, Level world) {
         super(type, world);

@@ -15,8 +15,9 @@ import net.minecraft.world.level.ChunkPos;
  * needed a different superclass. Java still only has one superclass, so the shared part lives here and
  * each entity holds one, forwarding its {@link IChunkLoader} methods.
  *
- * <p>The {@code radius} is upstream's difference between the two flavours: a missile claims only the
- * chunk it is over (radius 0), while an ABM claims the 3×3 around itself (radius 1).
+ * <p>The {@code radius} selects the claim envelope: stationary logic entities use their own chunk
+ * (radius 0), while moving missiles use the 3×3 around themselves (radius 1) so asynchronous modern
+ * tickets request the next border before crossing it.
  */
 public final class EntityChunkLoader implements IChunkLoader {
 

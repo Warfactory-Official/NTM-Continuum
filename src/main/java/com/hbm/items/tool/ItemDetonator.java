@@ -4,12 +4,14 @@ import com.hbm.interfaces.IBomb;
 import com.hbm.interfaces.IBomb.BombReturnCode;
 import com.hbm.items.ModDataComponents;
 import com.hbm.sound.ModSounds;
+import com.hbm.world.chunk.PendingDetonations;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -85,26 +87,32 @@ public class ItemDetonator extends CompatItem {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
-        if (!(level.getBlockState(bound).getBlock() instanceof IBomb bomb)) {
-            if (!level.isClientSide()) {
-                player.sendSystemMessage(Component.translatable("chat.postoofarerror").withStyle(ChatFormatting.RED));
-            }
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        ServerLevel server = (ServerLevel) level;
+        var chunk = server.getChunkSource().getChunkNow(bound.getX() >> 4, bound.getZ() >> 4);
+        if (chunk == null) {
+            PendingDetonations.queue(server, bound, player.getUUID());
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
+                    SoundSource.AMBIENT, 1.0F, 1.0F);
+            return InteractionResult.SUCCESS;
+        }
+
+        if (!(chunk.getBlockState(bound).getBlock() instanceof IBomb bomb)) {
+            player.sendSystemMessage(Component.translatable("chat.postoofarerror").withStyle(ChatFormatting.RED));
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
                 SoundSource.AMBIENT, 1.0F, 1.0F);
-
-        if (!level.isClientSide()) {
-            BombReturnCode result = bomb.explode(level, bound, player);
-            // Upstream always reports "detonated"; the return code carries the real answer (a pad with no
-            // designator, no fuel or an unlaunchable missile says so), so it is what gets printed.
-            Component message = result.getUnlocalizedMessage().isEmpty()
-                    ? Component.translatable("chat.detonated")
-                    : Component.translatable(result.getUnlocalizedMessage());
-            player.sendSystemMessage(Component.literal("[").append(message).append("]")
-                    .withStyle(result.wasSuccessful() ? ChatFormatting.DARK_GREEN : ChatFormatting.RED));
-        }
+        PendingDetonations.handoff(server, bound);
+        BombReturnCode result = bomb.explode(level, bound, player);
+        // Upstream always reports "detonated"; the return code carries the real answer (a pad with no
+        // designator, no fuel or an unlaunchable missile says so), so it is what gets printed.
+        Component message = result.getUnlocalizedMessage().isEmpty()
+                ? Component.translatable("chat.detonated")
+                : Component.translatable(result.getUnlocalizedMessage());
+        player.sendSystemMessage(Component.literal("[").append(message).append("]")
+                .withStyle(result.wasSuccessful() ? ChatFormatting.DARK_GREEN : ChatFormatting.RED));
         return InteractionResult.SUCCESS;
     }
 }

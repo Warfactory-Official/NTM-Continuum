@@ -135,10 +135,16 @@ public final class MissileGameTests {
         int cz = origin.getZ() >> 4;
         helper.assertTrue(ChunkLoadingManager.isForced(level, cx, cz),
                 "a flying missile did not force the chunk it is over");
+        helper.assertTrue(ChunkLoadingManager.isForced(level, cx + 1, cz)
+                        && ChunkLoadingManager.isForced(level, cx, cz + 1)
+                        && ChunkLoadingManager.isForced(level, cx + 1, cz + 1),
+                "a flying missile did not preload the chunks across its east/south border");
 
         missile.discard();
         helper.assertFalse(ChunkLoadingManager.isForced(level, cx, cz),
                 "a removed missile left its chunk claim behind");
+        helper.assertFalse(ChunkLoadingManager.isForced(level, cx + 1, cz + 1),
+                "a removed missile left its border lookahead claim behind");
         helper.succeed();
     }
 

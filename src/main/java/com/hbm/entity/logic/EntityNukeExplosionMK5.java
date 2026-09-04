@@ -43,8 +43,8 @@ import java.util.UUID;
  * <p>Like 1.12.2's {@code EntityExplosionChunkloading}, it holds its own chunk forced for as long as
  * the crater is running: a blast that outlives the player walking away must keep carving.
  *
- * <p><b>Deferred vs 1.12.2:</b> the Torex mushroom cloud, the glowing-one conversion (tick-42 seam
- * below — the mob isn't ported), the Manhattan advancement, and the threaded explosion algorithms. The detonator is
+ * <p><b>Deferred vs 1.12.2:</b> the glowing-one conversion (tick-42 seam below — the mob isn't ported),
+ * the Manhattan advancement, and the threaded explosion algorithms. The detonator is
  * tracked for those future hooks but otherwise unused.
  */
 public class EntityNukeExplosionMK5 extends CompatEntity {
@@ -150,7 +150,7 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
                 EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), level());
                 rain.setPos(getX(), getY(), getZ());
                 rain.setScale((int) (this.radius * 2.5 + falloutAdd) * BombConfig.falloutRange / 100);
-                level().addFreshEntity(rain);
+                if (level().addFreshEntity(rain)) rain.startChunkLoading();
             }
             discard();
         }
@@ -210,6 +210,15 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
     /** Diagnostics and deterministic crater benchmark assertion. */
     public int getBlocksDestroyed() {
         return explosion instanceof ExplosionNukeRayBatched batched ? batched.getBlocksDestroyed() : -1;
+    }
+
+    /** Claims the source chunk before a spawning bomb or missile releases its own ticket. */
+    public void startChunkLoading() {
+        chunkLoader.tick();
+    }
+
+    public boolean isChunkLoading() {
+        return chunkLoader.isLoading();
     }
 
     @Override
