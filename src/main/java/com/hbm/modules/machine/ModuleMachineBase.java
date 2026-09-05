@@ -44,6 +44,8 @@ public abstract class ModuleMachineBase {
     public double progress;
     public boolean didProcess = false;
     public boolean markDirty = false;
+    /** Redstone-over-Radio recipe selection uses the old quarter-speed restricted mode. */
+    public boolean restrictedMode = false;
 
     public ModuleMachineBase(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {
         this.index = index;
@@ -180,6 +182,7 @@ public abstract class ModuleMachineBase {
     }
 
     public void process(GenericRecipe recipe, double speed, double power) {
+        if (restrictedMode) speed *= 0.25D;
         battery.setPower(battery.getPower() - (long) (recipe.power * power));
         double step = Math.min(speed / recipe.duration, 1D);
         this.progress += step;
@@ -336,6 +339,11 @@ public abstract class ModuleMachineBase {
         }
     }
 
+    public void setRecipe(String name, boolean ror) {
+        this.recipe = name;
+        this.restrictedMode = ror;
+    }
+
     /**
      * Whether {@code slot} is an input slot holding something the current recipe cannot use — such a stack
      * must be extractable again so automation can unblock the machine (the original
@@ -414,21 +422,25 @@ public abstract class ModuleMachineBase {
 
     public void serialize(RegistryFriendlyByteBuf buf) {
         buf.writeDouble(progress);
+        buf.writeBoolean(restrictedMode);
         buf.writeUtf(recipe);
     }
 
     public void deserialize(RegistryFriendlyByteBuf buf) {
         this.progress = buf.readDouble();
+        this.restrictedMode = buf.readBoolean();
         this.recipe = buf.readUtf();
     }
 
     public void save(DataOut out) {
         out.putDouble("progress" + index, progress);
         out.putString("recipe" + index, recipe);
+        out.putBoolean("restrictedMode" + index, restrictedMode);
     }
 
     public void load(DataIn in) {
         this.progress = in.getDoubleOr("progress" + index, 0D);
         this.recipe = in.getStringOr("recipe" + index, "null");
+        this.restrictedMode = in.getBooleanOr("restrictedMode" + index, false);
     }
 }

@@ -3,6 +3,7 @@ package com.hbm.blocks;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockCluster;
+import com.hbm.blocks.generic.BlockBedrockOre;
 import com.hbm.blocks.generic.BlockDepth;
 import com.hbm.blocks.generic.BlockDepthOre;
 import com.hbm.blocks.generic.BlockGasExplosive;
@@ -15,14 +16,19 @@ import com.hbm.blocks.generic.OreDrops;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ModItems;
+import com.hbm.items.special.ItemBedrockOreBase;
+import com.hbm.tileentity.BedrockOreBlockEntity;
+import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
 import java.util.LinkedHashMap;
@@ -42,8 +48,8 @@ import java.util.function.Supplier;
  * {@code noLootTable()} — <b>do not add these ids to the generator's loot-table list</b>. The generator
  * still owns their models, blockstates, lang and mineable-tag entries.
  *
- * <p><b>Not here:</b> {@code ore_bedrock_block} and the bedrock-ore acid/tier system, which need the
- * bedrock drill machine first (IMPLEMENTATION.md §20).
+ * <p>The bedrock-ore block also lives here: its block entity and extraction contract are feature-local,
+ * while the full excavator machine remains a separate integration.
  */
 public final class ModOreBlocks {
 
@@ -51,6 +57,8 @@ public final class ModOreBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
 
     /** Every block registered here, in registration order. Block items are created from this. */
     private static final Map<String, RegistryObject<? extends Block>> ALL = new LinkedHashMap<>();
@@ -75,6 +83,19 @@ public final class ModOreBlocks {
     public static final RegistryObject<BlockDepth> stone_depth = depth("stone_depth");
     /** Nether depth filler. */
     public static final RegistryObject<BlockDepth> stone_depth_nether = depth("stone_depth_nether");
+
+    /** Infinite floor deposit carrying resource, acid, tier, colour and shape state. */
+    public static final RegistryObject<BlockBedrockOre> ore_bedrock_block = reg("ore_bedrock_block",
+            BlockBedrockOre::new, p -> p.strength(-1.0F, 3_600_000.0F).sound(SoundType.STONE)
+                    .noLootTable().isValidSpawn((state, level, pos, type) -> false));
+
+    /** Raw coordinate-density stack emitted by overworld deposits. */
+    public static final RegistryObject<ItemBedrockOreBase> bedrock_ore_base = ITEMS.registerItem(
+            "bedrock_ore_base", ItemBedrockOreBase::new, p -> p.stacksTo(64));
+
+    public static final RegistryObject<BlockEntityType<BedrockOreBlockEntity>> BEDROCK_ORE_BLOCK_ENTITY =
+            BLOCK_ENTITIES.register("bedrock_ore", () -> BlockEntities.type(
+                    BedrockOreBlockEntity::new, ore_bedrock_block.get()));
 
     /** {@code OreEnum.CINNABAR}: {@code 1 + rand(2) + fortune} cinnabar. */
     public static final RegistryObject<BlockDepthOre> ore_depth_cinnabar =
@@ -196,7 +217,10 @@ public final class ModOreBlocks {
             RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
             ModTabs.addTo(HbmTab.RESOURCES, item);
         });
+        ModTabs.addTo(HbmTab.MATERIALS, bedrock_ore_base);
     }
 
-    public static void init() {}
+    public static void init() {
+        ItemBedrockOreBase.init();
+    }
 }

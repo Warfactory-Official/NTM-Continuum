@@ -4,6 +4,8 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.sound.ChemPlantSoundHandler;
 import com.hbm.interfaces.IControlReceiver;
@@ -53,7 +55,7 @@ import dev.golem.core.data.DataOut;
  * buckets + the network are wired). Upgrades (slots 2–3: SPEED/POWER/OVERDRIVE) use the 1.12.2 formulas.
  */
 public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer, IUpgradeInfoProvider {
+        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver, WorldlyContainer, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
 
     /** Slots a hopper/pipe may touch: the 3 item inputs + the 3 item outputs. */
     private static final int[] IO_SLOTS = {4, 5, 6, 7, 8, 9};
@@ -304,7 +306,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     public void receiveControl(CompoundTag data) {
         if (data.contains("index") && data.contains("selection")) {
             if (Tags.getIntOr(data, "index", 0) == 0) {
-                this.chemplantModule.recipe = Tags.getStringOr(data, "selection", "null");
+                this.chemplantModule.setRecipe(Tags.getStringOr(data, "selection", "null"), false);
                 this.chemplantModule.progress = 0D;
                 setChanged();
             }
@@ -321,6 +323,29 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineChemicalPlant(containerId, playerInventory, this);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active",
+                PREFIX_FUNCTION + "setrecipe" + NAME_SEPARATOR + "name"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(chemplantModule.progress * 100);
+        if ((PREFIX_VALUE + "recipe").equals(name)) return chemplantModule.recipe;
+        if ((PREFIX_VALUE + "active").equals(name)) return "" + (didProcess ? 1 : 0);
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setrecipe").equals(name) && params.length == 1) {
+            chemplantModule.setRecipe(params[0], true);
+            setChanged();
+        }
+        return null;
     }
 
     // --- sync (BufPacket) + persistence ---

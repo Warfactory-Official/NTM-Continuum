@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine.storage;
 
 import com.hbm.api.energymk2.IBatteryItem;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerBatterySocket;
 import com.hbm.lib.DirPos;
@@ -31,7 +33,7 @@ import dev.golem.core.data.DataOut;
  * vanillant explosion / bullet-beam subsystems which aren't ported. The core socket behaviour (battery as
  * storage, I/O modes, priority, comparator, the carried-stack sync for rendering) is kept.
  */
-public class TileEntityBatterySocket extends TileEntityBatteryBase implements MenuProvider {
+public class TileEntityBatterySocket extends TileEntityBatteryBase implements MenuProvider, IRORValueProvider, IRORInteractive {
 
     /** Net throughput over the last second (HE/s), for the GUI energy-bar tooltip; synced to clients. */
     public long delta = 0L;
@@ -179,5 +181,46 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
         super.deserialize(buf);
         delta = buf.readLong();
         syncStack = dev.golem.core.world.ItemStacks.readOptional(buf);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_VALUE + "delta",
+                PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode (0-3)",
+                PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)",
+                PREFIX_FUNCTION + "setredmode" + NAME_SEPARATOR + "mode (0-3)",
+                PREFIX_FUNCTION + "setredmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)",
+                PREFIX_FUNCTION + "setpriority" + NAME_SEPARATOR + "priority (0-2)"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "fill").equals(name)) return "" + getPower();
+        if ((PREFIX_VALUE + "fillpercent").equals(name)) return "" + (getPower() * 100L / Math.max(getMaxPower(), 1L));
+        if ((PREFIX_VALUE + "delta").equals(name)) return "" + delta;
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setmode").equals(name) && params.length > 0) {
+            int mode = IRORInteractive.parseInt(params[0], 0, 3);
+            if (mode != redLow) redLow = (short) mode;
+            else if (params.length > 1) redLow = (short) IRORInteractive.parseInt(params[1], 0, 3);
+            setChanged();
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setredmode").equals(name) && params.length > 0) {
+            int mode = IRORInteractive.parseInt(params[0], 0, 3);
+            if (mode != redHigh) redHigh = (short) mode;
+            else if (params.length > 1) redHigh = (short) IRORInteractive.parseInt(params[1], 0, 3);
+            setChanged();
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setpriority").equals(name) && params.length > 0) {
+            priority = ConnectionPriority.VALUES[IRORInteractive.parseInt(params[0], 0, 2) + 1];
+            setChanged();
+        }
+        return null;
     }
 }

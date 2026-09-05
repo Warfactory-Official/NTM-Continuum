@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.sound.IndustrialTurbineSoundHandler;
 import com.hbm.inventory.fluid.FluidType;
@@ -26,7 +27,7 @@ import java.util.Random;
  * It consumes 20% of the available input steam per tick and turns the released heat into HE.
  */
 public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
-        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2 {
+        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider {
 
     public static int inputTankSize = 750_000;
     public static int outputTankSize = 3_000_000;
@@ -211,6 +212,18 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1]}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "output", PREFIX_VALUE + "flywheel"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + (int) powerBuffer;
+        if ((PREFIX_VALUE + "flywheel").equals(name)) return "" + (int) (spin * 100);
+        return null;
+    }
 
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {

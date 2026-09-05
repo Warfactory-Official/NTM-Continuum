@@ -42,6 +42,17 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineMiniRTG> rtg_polonium = BLOCKS.registerBlock(
             "rtg_polonium", MachineMiniRTG::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<MachineRTG> machine_rtg_grey = BLOCKS.registerBlock(
+            "machine_rtg_grey", MachineRTG::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<BlockItem> machine_rtg_grey_item = ITEMS.registerItem(
+            "machine_rtg_grey",
+            p -> new dev.golem.core.world.CompatBlockItem(machine_rtg_grey.get(), p) {
+                @Override
+                public net.minecraft.network.chat.Component getName(net.minecraft.world.item.ItemStack stack) {
+                    return net.minecraft.network.chat.Component.literal("RT Generator");
+                }
+            }, p -> Compat.blockDescription(p));
     public static final RegistryObject<RadSensor> radsensor = BLOCKS.registerBlock(
             "radsensor", RadSensor::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
@@ -514,6 +525,7 @@ public final class ModMachineBlocks {
         tabItem("machine_radgen", machine_radgen);
         tabItem("machine_minirtg", machine_minirtg);
         tabItem("rtg_polonium", rtg_polonium);
+        ModTabs.addTo(HbmTab.MACHINES, machine_rtg_grey_item);
         tabItem("radsensor", radsensor);
         tabItem("red_cable", red_cable);
         tabItem("creative_generator", creative_generator);

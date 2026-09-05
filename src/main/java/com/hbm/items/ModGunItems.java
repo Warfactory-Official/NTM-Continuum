@@ -12,9 +12,12 @@ import com.hbm.items.weapon.sedna.factory.XFactory22lr;
 import com.hbm.items.weapon.sedna.factory.XFactory357;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
 import com.hbm.items.weapon.sedna.factory.XFactory44;
+import com.hbm.items.weapon.sedna.factory.XFactory556mm;
+import com.hbm.items.weapon.sedna.factory.XFactoryBlackPowder;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleReload;
 import com.hbm.sound.ModSounds;
+import com.hbm.sound.ModGunSounds;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
@@ -44,6 +47,14 @@ public final class ModGunItems {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
+    static {
+        // MainRegistry already initializes this class before registry flush. Keeping these feature-local
+        // avoids adding bootstrap hooks outside the gun wave's owned files.
+        ModGunSounds.init();
+        XFactoryBlackPowder.init();
+        XFactory556mm.init();
+    }
+
     /** The smallest complete gun in the mod: one receiver, one round, no frills. */
     public static final RegistryObject<ItemGunBaseNT> gun_debug = ITEMS.registerItem("gun_debug", props ->
             new ItemGunBaseNT(props, WeaponQuality.DEBUG, new GunConfig()
@@ -69,6 +80,64 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.3125D)
                             .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_ATLAS))
                      .setupStandardConfiguration()));
+
+    /** Atlas: the higher-damage, otherwise mechanically identical break-action revolver. */
+    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver_atlas = ITEMS.registerItem("gun_light_revolver_atlas", props ->
+            new ItemGunBaseNT(props, WeaponQuality.B_SIDE, new GunConfig()
+                    .dura(300).draw(4).inspect(23).crosshair(Crosshair.CIRCLE)
+                    .rec(new Receiver(0)
+                            .dmg(12.5F).delay(16).reload(55).jam(45)
+                            .sound(ModSounds.FIRE_PISTOL, 1.0F, 1.0F)
+                            .mag(new MagazineFullReload(0, 6).addConfigs(XFactory357.all()))
+                            .offset(0.75, -0.0625, -0.3125D)
+                            .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_ATLAS))
+                    .setupStandardConfiguration()));
+
+    /** Day And Night: two independently triggered and persisted legendary revolvers. */
+    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver_dani = ITEMS.registerItem("gun_light_revolver_dani", props ->
+            new ItemGunBaseNT(props, WeaponQuality.LEGENDARY,
+                    new GunConfig().dura(30_000).draw(20).inspect(23).crosshair(Crosshair.CIRCLE)
+                            .rec(new Receiver(0)
+                                    .dmg(15F).spreadHipfire(0F).delay(11).reload(55).jam(45)
+                                    .sound(ModSounds.FIRE_PISTOL, 1.0F, 1.1F)
+                                    .mag(new MagazineFullReload(0, 6).addConfigs(XFactory357.all()))
+                                    .offset(0.75, -0.0625, 0.3125D)
+                                    .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_DANI))
+                            .pp(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
+                            .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER),
+                    new GunConfig().dura(30_000).draw(20).inspect(23).crosshair(Crosshair.CIRCLE)
+                            .rec(new Receiver(0)
+                                    .dmg(15F).spreadHipfire(0F).delay(11).reload(55).jam(45)
+                                    .sound(ModSounds.FIRE_PISTOL, 1.0F, 0.9F)
+                                    .mag(new MagazineFullReload(1, 6).addConfigs(XFactory357.all()))
+                                    .offset(0.75, -0.0625, -0.3125D)
+                                    .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_DANI))
+                            .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
+                            .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)));
+
+    /** Six-shot Pepperbox accepting the four upstream stone/iron black-powder loads. */
+    public static final RegistryObject<ItemGunBaseNT> gun_pepperbox = ITEMS.registerItem("gun_pepperbox", props ->
+            new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
+                    .dura(300).draw(4).inspect(23).crosshair(Crosshair.CIRCLE)
+                    .rec(new Receiver(0)
+                            .dmg(5F).delay(27).reload(67).jam(58)
+                            .sound(ModGunSounds.FIRE_BLACK_POWDER, 1.0F, 1.0F)
+                            .mag(new MagazineFullReload(0, 6).addConfigs(XFactoryBlackPowder.all()))
+                            .offset(0.75, -0.0625, -0.1875D)
+                            .setupStandardFire().recoil(XFactoryBlackPowder.LAMBDA_RECOIL_PEPPERBOX))
+                    .setupStandardConfiguration()));
+
+    /** Unmodified H&K G3 path: automatic/semi-auto selector and thirty-round 5.56 mm magazine. */
+    public static final RegistryObject<ItemGunBaseNT> gun_g3 = ITEMS.registerItem("gun_g3", props ->
+            new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
+                    .dura(3_000).draw(10).inspect(33).crosshair(Crosshair.CIRCLE)
+                    .rec(new Receiver(0)
+                            .dmg(5F).delay(2).auto(true).dry(15).spread(0F).reload(50).jam(47)
+                            .sound(ModGunSounds.FIRE_ASSAULT, 1.0F, 1.0F)
+                            .mag(new MagazineFullReload(0, 30).addConfigs(XFactory556mm.all()))
+                            .offset(1, -0.0625 * 2.5, -0.25D)
+                            .setupStandardFire().recoil(XFactory556mm.LAMBDA_RECOIL_G3))
+                    .setupStandardConfiguration().ps(XFactory556mm.LAMBDA_STANDARD_CLICK_SECONDARY)));
 
     /** The automatic .22 submachine gun, stat-for-stat from upstream's Gen-3 declaration. */
     public static final RegistryObject<ItemGunBaseNT> gun_am180 = ITEMS.registerItem("gun_am180", props ->
@@ -250,6 +319,10 @@ public final class ModGunItems {
     static {
         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_debug);
         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_light_revolver);
+        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_light_revolver_atlas);
+        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_light_revolver_dani);
+        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_pepperbox);
+        com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_g3);
         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_am180);
         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_greasegun);
         com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun_lag);

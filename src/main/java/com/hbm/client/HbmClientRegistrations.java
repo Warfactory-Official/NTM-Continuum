@@ -179,6 +179,9 @@ public final class HbmClientRegistrations {
         com.hbm.client.chemicalfactory.ChemicalFactoryClientRegistrations.registerScreen(sink);
         com.hbm.smoke.SmokeChainClientRegistrations.registerScreens(sink);
         com.hbm.foundry.FoundryExpansionScreens.register(sink);
+        com.hbm.client.BombClientRegistrations.registerScreens(sink);
+        com.hbm.client.render.RtgClientRegistrations.registerScreen(sink);
+        com.hbm.radio.client.RadioClientRegistrations.registerScreens(sink);
         sink.register(com.hbm.blocks.machine.DiFurnaceContent.DI_FURNACE_MENU.get(),
                 com.hbm.inventory.gui.GUIDiFurnace::new);
         sink.register(ModMenus.MASS_STORAGE.get(), com.hbm.inventory.gui.GUIMassStorage::new);
@@ -199,6 +202,10 @@ public final class HbmClientRegistrations {
             HbmEntityRenderers.Sink entities) {
         HbmBlockEntityRenderers.registerAll(blockEntities);
         HbmEntityRenderers.registerAll(entities);
+        com.hbm.radio.client.RadioClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.BombClientRegistrations.registerBlockEntityRenderers(blockEntities);
+        com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
+        com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
     }
 
     public static void installTints() {

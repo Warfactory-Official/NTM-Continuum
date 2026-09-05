@@ -61,6 +61,15 @@ public class NeoForgeInit {
         com.hbm.gametest.IntakeFanGameTests.init();
         com.hbm.gametest.DiFurnaceGameTests.init();
         com.hbm.gametest.MaterialCompletionGameTests.init();
+        com.hbm.gametest.BedrockOreGameTests.init();
+        com.hbm.gametest.ExplosiveContentGameTests.init();
+         com.hbm.gametest.Gen3SednaGameTests.init();
+         com.hbm.gametest.RadioGameTests.init();
+         com.hbm.gametest.CounterControllerGameTests.init();
+         com.hbm.gametest.TelexGameTests.init();
+         com.hbm.gametest.AutocalGameTests.init();
+         com.hbm.gametest.RadioProviderGameTests.init();
+         com.hbm.gametest.RtgGameTests.init();
         //?}
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
@@ -99,6 +108,24 @@ public class NeoForgeInit {
                 com.hbm.gametest.DiFurnaceGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.MaterialCompletionGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.BedrockOreGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ExplosiveContentGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.Gen3SednaGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.RadioGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.CounterControllerGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.TelexGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.AutocalGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.RadioProviderGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.RtgGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {
@@ -143,8 +170,10 @@ public class NeoForgeInit {
         // Debug commands (/hbm rad ...).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) ->
                 com.hbm.command.HbmCommands.register(event.getDispatcher()));
-        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> Constants.LOG.info(
-                "[HBM] Loaded {} total recipes", event.getServer().getRecipeManager().getRecipes().size()));
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
+            com.hbm.config.AutocalConfig.load(event.getServer());
+            Constants.LOG.info("[HBM] Loaded {} total recipes", event.getServer().getRecipeManager().getRecipes().size());
+        });
     }
 
     private void onRegisterPayloads(RegisterPayloadHandlersEvent event) {

@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerFusionTorus;
 import com.hbm.inventory.fluid.Fluids;
@@ -54,7 +55,7 @@ import java.util.List;
  * accelerator's structural-stress system, which no ported machine has yet), and the looping reactor
  * hum (no positional looped-audio facade). Recorded in IMPLEMENTATION.md §20.
  */
-public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuProvider, IControlReceiver {
+public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuProvider, IControlReceiver, IRORValueProvider {
 
     public static final int SLOTS = 3;
     /** Slot 0 battery, slot 1 blueprint, slot 2 product. */
@@ -316,8 +317,8 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     public void receiveControl(CompoundTag data) {
         if (dev.golem.core.data.Tags.getIntOr(data, "index", -1) != 0) return;
         String selection = dev.golem.core.data.Tags.getStringOr(data, "selection", "null");
-        fusionModule.recipe = com.hbm.inventory.recipes.FusionRecipes.INSTANCE.getRecipe(selection) != null
-                ? selection : "null";
+        fusionModule.setRecipe(com.hbm.inventory.recipes.FusionRecipes.INSTANCE.getRecipe(selection) != null
+                ? selection : "null", false);
         fusionModule.progress = 0D;
         fusionModule.setupTanks(fusionModule.getRecipe());
         setChanged();
@@ -369,6 +370,18 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     }
 
     @Override protected boolean syncFullTagOnChunkLoad() { return true; }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "plasma", PREFIX_VALUE + "consumption"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "plasma").equals(name)) return "" + plasmaEnergy;
+        if ((PREFIX_VALUE + "consumption").equals(name)) return "" + (int) (fuelConsumption * 100);
+        return null;
+    }
 
     @Override public FluidTankNTM[] getReceivingTanks() {
         return new FluidTankNTM[]{coolantTanks[0], tanks[0], tanks[1], tanks[2]};

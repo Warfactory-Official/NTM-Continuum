@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
+import com.hbm.blocks.ModOreBlocks;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagKey;
@@ -34,7 +35,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
  * every specific matcher stays ahead of it.
  *
  * <p>Skipped old entries (source blocks not ported, marked TODO): ore_nether_uranium,
- * glyphid base/spawner, ore_bedrock_block, volcano_core.
+ * glyphid base/spawner, volcano_core.
  *
  * <p>MUST be built lazily ({@link #entries()}): the outcome states resolve registry objects, which
  * throws "Components not bound yet" during class-init/mod-setup.
@@ -184,6 +185,11 @@ public final class FalloutConfig {
                     .addPrimary(sellafield(ModFalloutBlocks.sellafield_bedrock.get(), m), 1)
                     .max(max).opaque(true).solid(true)
                     .matchesBlock(Blocks.BEDROCK).build());
+
+            e.add(FalloutEntry.builder()
+                    .addPrimary(sellafield(ModFalloutBlocks.sellafield_bedrock.get(), m), 1)
+                    .max(max).opaque(true).solid(true)
+                    .matchesBlock(ModOreBlocks.ore_bedrock_block.get()).build());
 
             e.add(FalloutEntry.builder()
                     .addPrimary(sellafield(ModFalloutBlocks.sellafield_bedrock.get(), m), 1)

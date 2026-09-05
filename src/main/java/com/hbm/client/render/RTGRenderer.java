@@ -7,7 +7,7 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.machine.TileEntityMachineMiniRTG;
+import com.hbm.tileentity.TileEntityLoadedBase;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /** Legacy RTG body plus the directional connector geometry from RenderRTG. */
-public final class RTGRenderer implements CompatBER<TileEntityMachineMiniRTG, RTGRenderState> {
+public final class RTGRenderer<T extends TileEntityLoadedBase> implements CompatBER<T, RTGRenderState> {
     private final WavefrontObj body = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/rtg.obj"));
     private final WavefrontObj connector = WavefrontObj.load(
@@ -32,6 +32,8 @@ public final class RTGRenderer implements CompatBER<TileEntityMachineMiniRTG, RT
             dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/rtg_cell.png"));
     private final RenderType poloniumType = CompatRenderTypes.entityCutoutNoCull(
             dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/rtg_polonium.png"));
+    private final RenderType greyType = CompatRenderTypes.entityCutoutNoCull(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/rtg.png"));
 
     @Override
     public RTGRenderState createRenderState() {
@@ -44,7 +46,7 @@ public final class RTGRenderer implements CompatBER<TileEntityMachineMiniRTG, RT
     }
 
     @Override
-    public boolean shouldRender(TileEntityMachineMiniRTG blockEntity, Vec3 cameraPosition) {
+    public boolean shouldRender(T blockEntity, Vec3 cameraPosition) {
         return true;
     }
 
@@ -54,9 +56,10 @@ public final class RTGRenderer implements CompatBER<TileEntityMachineMiniRTG, RT
     }
 
     @Override
-    public void extract(TileEntityMachineMiniRTG blockEntity, RTGRenderState state, float partialTicks,
+    public void extract(T blockEntity, RTGRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         state.polonium = blockEntity.getBlockState().is(ModMachineBlocks.rtg_polonium.get());
+        state.grey = blockEntity.getBlockState().is(ModMachineBlocks.machine_rtg_grey.get());
         Level level = blockEntity.getLevel();
         if (level == null) return;
 
@@ -69,7 +72,7 @@ public final class RTGRenderer implements CompatBER<TileEntityMachineMiniRTG, RT
 
     @Override
     public void submit(RTGRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        RenderType type = state.polonium ? poloniumType : cellType;
+        RenderType type = state.grey ? greyType : state.polonium ? poloniumType : cellType;
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(180F));

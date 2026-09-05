@@ -18,6 +18,7 @@ public final class Hazards {
         com.hbm.items.ModRBMKItems.linkPellets();
         HazardRegistry.registerTrafos();
         HazardRegistry.registerItems();
+        com.hbm.items.ModRtgContent.registerHazards();
         com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership
         com.hbm.items.ModArmorItems.configure();      // power-armour set bonuses, rad resistance, hazard classes
         com.hbm.util.DamageResistanceHandler.init();  // threshold/resistance profiles + damage event seam

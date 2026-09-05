@@ -58,6 +58,7 @@ public class OverworldOreFeature extends Feature<NoneFeatureConfiguration> {
         gneissOres(level, rand, cx, cz);
         stoneOres(level, rand, cx, cz);
         clustersAndLimestone(level, rand, cx, cz);
+        BedrockOreFeature.generateAutoChunk(level, rand, cx, cz);
         coltanAndAustralium(level, rand, cx, cz);
         return true;
     }

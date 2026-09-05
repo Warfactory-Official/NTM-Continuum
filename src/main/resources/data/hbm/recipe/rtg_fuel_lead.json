@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:crafting_shapeless", "category": "misc",
+  "ingredients": ["hbm:billet_pb209", "hbm:billet_pb209", "hbm:billet_pb209", "#c:plates/iron"],
+  "result": { "id": "hbm:pellet_rtg_lead" }
+}

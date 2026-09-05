@@ -69,6 +69,9 @@ public class NetherOreFeature extends Feature<NoneFeatureConfiguration> {
         smolderingNetherrack(level, rand, cx, cz);
         depthDeposits(level, rand, cx, cz);
         OverworldOreFeature.limestone(level, rand, cx, cz);
+        // Upstream ran the dimension-agnostic density deposit and then the Nether-specific weighted one.
+        BedrockOreFeature.generateAutoChunk(level, rand, cx, cz);
+        BedrockOreFeature.generateNetherChunk(level, rand, cx, cz);
         return true;
     }
 

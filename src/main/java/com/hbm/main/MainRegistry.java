@@ -57,6 +57,7 @@ public final class MainRegistry {
         com.hbm.blocks.machine.ModArmorTableBlocks.init();
         com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)
+        com.hbm.radio.ModRadioContent.init(); // Redstone-over-Radio blocks, block entities, and menus
         com.hbm.assemblyfactory.AssemblyFactoryRegistrations.init();
         com.hbm.chemicalfactory.ChemicalFactoryRegistrations.init();
         com.hbm.blocks.machine.AutosawFeature.init();
@@ -85,6 +86,7 @@ public final class MainRegistry {
         com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModRtgContent.init(); // RTG pellet state, block entity, and menu registrations
         com.hbm.items.ModChemicalDyeItems.init(); // flattened chemical-dye and crayon variants
         com.hbm.items.ModStorageDrumItems.init();
         com.hbm.items.ModFoodItems.init();

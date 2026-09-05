@@ -1,4 +1,5 @@
 {
+  "parent": "hbm:item/gun_obj_legacy",
   "gui_light": "side",
   "textures": { "particle": "hbm:blocks/block_steel" },
   "display": {

@@ -72,6 +72,11 @@ public final class WeaponRenderers {
                 new Sedna44WeaponRenderer(Sedna44WeaponRenderer.Variant.PROTEGE));
         register("hangman", ModGunItems.gun_hangman::get,
                 new Sedna44WeaponRenderer(Sedna44WeaponRenderer.Variant.HANGMAN));
+        register("atlas_variant", ModGunItems.gun_light_revolver_atlas::get,
+                new AtlasWeaponRenderer("bio_revolver_atlas"));
+        register("dani", ModGunItems.gun_light_revolver_dani::get, new DaniWeaponRenderer());
+        register("pepperbox", ModGunItems.gun_pepperbox::get, new PepperboxWeaponRenderer());
+        register("g3", ModGunItems.gun_g3::get, new G3WeaponRenderer());
     }
 
     private static void register(String name, Supplier<Item> item, WeaponRenderer renderer) {

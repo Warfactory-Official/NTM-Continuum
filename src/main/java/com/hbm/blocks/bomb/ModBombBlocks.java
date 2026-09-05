@@ -67,22 +67,53 @@ public final class ModBombBlocks {
             "nuke_tsar", NukeTsar::new,
             p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
 
+    public static final RegistryObject<NukeMike> nuke_mike = BLOCKS.registerBlock(
+            "nuke_mike", NukeMike::new,
+            p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
+
+    public static final RegistryObject<BlockTNT> tnt = BLOCKS.registerBlock(
+            "tnt_ntm", BlockTNT::new, p -> p.strength(0.0F).sound(SoundType.GRASS).ignitedByLava());
+    public static final RegistryObject<BlockDynamite> dynamite = BLOCKS.registerBlock(
+            "dynamite", BlockDynamite::new, p -> p.strength(0.0F).sound(SoundType.GRASS).ignitedByLava());
+    public static final RegistryObject<BlockSemtex> semtex = BLOCKS.registerBlock(
+            "semtex", BlockSemtex::new, p -> p.strength(0.0F).sound(SoundType.GRASS).ignitedByLava());
+    public static final RegistryObject<BlockC4> c4 = BLOCKS.registerBlock(
+            "c4", BlockC4::new, p -> p.strength(0.0F).sound(SoundType.GRASS).ignitedByLava());
+
     static {
         RegistryObject<ItemBlockTaint> taintItem = ITEMS.registerItem("taint",
                 p -> new ItemBlockTaint(taint.get(), p), Compat::blockDescription);
         // BlockTaint's old constructor put its item in the control tab, unlike the missile item itself.
         ModTabs.addTo(HbmTab.CONTROL, taintItem);
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem("nuke_man", nuke_man);
+        RegistryObject<? extends BlockItem> item = ITEMS.registerItem("nuke_man",
+                p -> new ItemNukeBlock(nuke_man.get(), p, ItemNukeBlock.Type.FAT_MAN), Compat::blockDescription);
         ModTabs.addTo(HbmTab.BOMBS, item);
-        item = ITEMS.registerBlockItem("nuke_n2", nuke_n2);
+        item = ITEMS.registerItem("nuke_n2",
+                p -> new ItemNukeBlock(nuke_n2.get(), p, ItemNukeBlock.Type.N2), Compat::blockDescription);
         ModTabs.addTo(HbmTab.BOMBS, item);
-        item = ITEMS.registerBlockItem("nuke_boy", nuke_boy);
+        item = ITEMS.registerItem("nuke_boy",
+                p -> new ItemNukeBlock(nuke_boy.get(), p, ItemNukeBlock.Type.LITTLE_BOY), Compat::blockDescription);
         ModTabs.addTo(HbmTab.BOMBS, item);
-        item = ITEMS.registerBlockItem("nuke_gadget", nuke_gadget);
+        item = ITEMS.registerItem("nuke_gadget",
+                p -> new ItemNukeBlock(nuke_gadget.get(), p, ItemNukeBlock.Type.GADGET), Compat::blockDescription);
         ModTabs.addTo(HbmTab.BOMBS, item);
-        item = ITEMS.registerBlockItem("nuke_tsar", nuke_tsar);
+        item = ITEMS.registerItem("nuke_tsar",
+                p -> new ItemNukeBlock(nuke_tsar.get(), p, ItemNukeBlock.Type.TSAR), Compat::blockDescription);
+        ModTabs.addTo(HbmTab.BOMBS, item);
+        item = ITEMS.registerItem("nuke_mike", p -> new ItemNukeMikeBlock(nuke_mike.get(), p),
+                Compat::blockDescription);
+        ModTabs.addTo(HbmTab.BOMBS, item);
+        item = ITEMS.registerBlockItem("tnt_ntm", tnt);
+        ModTabs.addTo(HbmTab.BOMBS, item);
+        item = ITEMS.registerBlockItem("dynamite", dynamite);
+        ModTabs.addTo(HbmTab.BOMBS, item);
+        item = ITEMS.registerBlockItem("semtex", semtex);
+        ModTabs.addTo(HbmTab.BOMBS, item);
+        item = ITEMS.registerBlockItem("c4", c4);
         ModTabs.addTo(HbmTab.BOMBS, item);
     }
 
-    public static void init() {}
+    public static void init() {
+        com.hbm.entity.explosive.ModExplosiveEntities.init();
+    }
 }

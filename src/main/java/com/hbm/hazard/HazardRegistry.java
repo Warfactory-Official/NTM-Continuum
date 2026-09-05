@@ -178,6 +178,7 @@ public class HazardRegistry {
 
         // ---- nuke components (bomb items that exist) ----
         regItem("man_core", makeData(RADIATION, pu239 * nugget * 10));
+        regItem("mike_core", makeData(RADIATION, u238 * nugget * 10));
 
         // ---- hazard BLOCK items (ModHazardBlocks); the block reads this back via getRawRadsFromBlock ----
         registerHazardBlocks();

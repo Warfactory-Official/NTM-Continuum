@@ -71,7 +71,6 @@ public final class ShredderRecipesGenerated {
         set.accept(Items.TERRACOTTA, new ItemStack(Items.CLAY_BALL, 4));
         set.accept(Items.TNT, new ItemStack(Items.GUNPOWDER, 5));
         set.accept(ModBlocks.stone_gneiss.get().asItem(), new ItemStack(ModItems.powder_lithium_tiny.get()));
-        set.accept(ModItems.powder_lapis.get(), new ItemStack(ModItems.powder_cobalt_tiny.get()));
         set.accept(ModItems.fragment_neodymium.get(), new ItemStack(ModItems.powder_neodymium_tiny.get()));
         set.accept(ModItems.fragment_cobalt.get(), new ItemStack(ModItems.powder_cobalt_tiny.get()));
         set.accept(ModItems.fragment_niobium.get(), new ItemStack(ModItems.powder_niobium_tiny.get()));
@@ -94,10 +93,10 @@ public final class ShredderRecipesGenerated {
         set.accept(ModItems.ingot_schrabidate.get(), new ItemStack(ModItems.powder_schrabidate.get()));
         set.accept(ModHazardBlocks.block_schrabidate.get().asItem(), new ItemStack(ModItems.powder_schrabidate.get(), 9));
         set.accept(ModFuelItems.coal_infernal.get(), new ItemStack(ModFuelItems.powder_coal.get(), 2));
+        set.accept(Items.FERMENTED_SPIDER_EYE, new ItemStack(ModItems.powder_poison.get(), 3));
     }
 
     private static void register1(BiConsumer<Item, ItemStack> set) {
-        set.accept(Items.FERMENTED_SPIDER_EYE, new ItemStack(ModItems.powder_poison.get(), 3));
         set.accept(Items.POISONOUS_POTATO, new ItemStack(ModItems.powder_poison.get()));
         set.accept(ModBlocks.ore_tektite_osmiridium.get().asItem(), new ItemStack(ModItems.powder_tektite.get()));
         set.accept(Items.DIRT, new ItemStack(ModItems.dust.get()));
@@ -157,10 +156,10 @@ public final class ShredderRecipesGenerated {
         set.accept(ModFallingBlocks.dirt_oily.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
         set.accept(ModFallingBlocks.sand_dirty.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
         set.accept(ModFallingBlocks.sand_dirty_red.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
+        set.accept(ModBlocks.stone_cracked.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
     }
 
     private static void register2(BiConsumer<Item, ItemStack> set) {
-        set.accept(ModBlocks.stone_cracked.get().asItem(), new ItemStack(ModItems.scrap_oil.get()));
         set.accept(ModItems.debris_concrete.get(), new ItemStack(ModItems.scrap_nuclear.get(), 2));
         set.accept(ModItems.debris_shrapnel.get(), new ItemStack(ModItems.powder_steel_tiny.get(), 5));
         set.accept(ModItems.debris_exchanger.get(), new ItemStack(ModItems.powder_steel.get(), 3));

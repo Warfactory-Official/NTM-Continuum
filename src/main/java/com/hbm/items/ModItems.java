@@ -78,6 +78,7 @@ public final class ModItems {
     public static final RegistryObject<Item> ingot_magnetized_tungsten = item("ingot_magnetized_tungsten", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ingot_technetium = item("ingot_technetium", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ingot_tcalloy = item("ingot_tcalloy", HbmTab.MATERIALS);
+    public static final RegistryObject<Item> ingot_tungsten_carbide = item("ingot_tungsten_carbide", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ingot_cdalloy = item("ingot_cdalloy", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ingot_ferrouranium = item("ingot_ferrouranium", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ingot_cadmium = item("ingot_cadmium", HbmTab.MATERIALS);
@@ -192,7 +193,6 @@ public final class ModItems {
     public static final RegistryObject<Item> pellet_canister = item("pellet_canister", HbmTab.MATERIALS);
     public static final RegistryObject<Item> pellet_claws = item("pellet_claws", HbmTab.MATERIALS);
     public static final RegistryObject<Item> cinnabar = item("cinnabar", HbmTab.MATERIALS);
-    public static final RegistryObject<Item> toothpicks = item("toothpicks", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ducttape = item("ducttape", HbmTab.MATERIALS);
     public static final RegistryObject<Item> catalyst_clay = item("catalyst_clay", HbmTab.MATERIALS);
     public static final RegistryObject<Item> motor = item("motor", HbmTab.MATERIALS);
@@ -220,6 +220,7 @@ public final class ModItems {
     public static final RegistryObject<Item> magnet_circular = item("magnet_circular", HbmTab.MATERIALS);
     public static final RegistryObject<Item> centrifuge_element = item("centrifuge_element", HbmTab.MATERIALS);
     public static final RegistryObject<Item> reactor_core = item("reactor_core", HbmTab.MATERIALS);
+    public static final RegistryObject<Item> coal_eternal = item("coal_eternal", HbmTab.CONTROL);
     public static final RegistryObject<Item> solid_fuel_bf = item("solid_fuel_bf", HbmTab.MATERIALS);
     public static final RegistryObject<Item> solid_fuel_presto_bf = item("solid_fuel_presto_bf", HbmTab.MATERIALS);
     public static final RegistryObject<Item> solid_fuel_presto_triplet_bf = item("solid_fuel_presto_triplet_bf", HbmTab.MATERIALS);
@@ -232,17 +233,15 @@ public final class ModItems {
     public static final RegistryObject<Item> fragment_meteorite = item("fragment_meteorite", HbmTab.MATERIALS);
     public static final RegistryObject<Item> fragment_boron = item("fragment_boron", HbmTab.MATERIALS);
     public static final RegistryObject<Item> fragment_coltan = item("fragment_coltan", HbmTab.MATERIALS);
-    public static final RegistryObject<Item> bottle_empty = item("bottle_empty", HbmTab.CONSUMABLES);
-    public static final RegistryObject<Item> bottle2_empty = item("bottle2_empty", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> cap_nuka = item("cap_nuka", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> cap_quantum = item("cap_quantum", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> cap_sparkle = item("cap_sparkle", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> cap_rad = item("cap_rad", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> cap_korl = item("cap_korl", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> cap_fritz = item("cap_fritz", HbmTab.CONSUMABLES);
-    public static final RegistryObject<Item> cap_sunset = item("cap_sunset", HbmTab.CONSUMABLES);
-    public static final RegistryObject<Item> cap_star = item("cap_star", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> ring_pull = item("ring_pull", HbmTab.CONSUMABLES);
+    public static final RegistryObject<Item> bottle_empty = item("bottle_empty", HbmTab.CONSUMABLES);
+    public static final RegistryObject<Item> bottle2_empty = item("bottle2_empty", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> egg_glyphid = item("egg_glyphid", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> can_key = item("can_key", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> coin_token = item("coin_token", HbmTab.CONSUMABLES);
@@ -320,6 +319,7 @@ public final class ModItems {
     public static final RegistryObject<Item> coil_copper = item("coil_copper", HbmTab.MATERIALS);
     public static final RegistryObject<Item> coil_copper_torus = item("coil_copper_torus", HbmTab.MATERIALS);
     public static final RegistryObject<Item> assembly_nuke = item("assembly_nuke", HbmTab.MATERIALS);
+    public static final RegistryObject<Item> holotape_damaged = item("holotape_damaged", HbmTab.CONTROL);
     public static final RegistryObject<Item> debris_graphite = item("debris_graphite", HbmTab.CONTROL);
     public static final RegistryObject<Item> debris_metal = item("debris_metal", HbmTab.CONTROL);
     public static final RegistryObject<Item> debris_fuel = item("debris_fuel", HbmTab.CONTROL);
@@ -334,8 +334,6 @@ public final class ModItems {
     public static final RegistryObject<Item> particle_hydrogen = item("particle_hydrogen", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_copper = item("particle_copper", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_lead = item("particle_lead", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
-    public static final RegistryObject<Item> particle_aproton = item("particle_aproton", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
-    public static final RegistryObject<Item> particle_aelectron = item("particle_aelectron", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_muon = item("particle_muon", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_amat = item("particle_amat", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_aschrab = item("particle_aschrab", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
@@ -344,6 +342,7 @@ public final class ModItems {
     public static final RegistryObject<Item> particle_dark = item("particle_dark", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_strange = item("particle_strange", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_sparkticle = item("particle_sparkticle", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
+    public static final RegistryObject<Item> particle_lutece = item("particle_lutece", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> pellet_coolant = item("pellet_coolant", HbmTab.CONTROL, p -> p.stacksTo(1).durability(41400));
     public static final RegistryObject<Item> ams_catalyst_blank = item("ams_catalyst_blank", HbmTab.CONTROL, p -> p.stacksTo(1));
     public static final RegistryObject<Item> gadget_explosive = item("gadget_explosive", HbmTab.BOMBS);
@@ -409,6 +408,11 @@ public final class ModItems {
     public static final RegistryObject<Item> shimmer_handle = item("shimmer_handle", HbmTab.MATERIALS);
     public static final RegistryObject<Item> telepad = item("telepad", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ducc = item("ducc", HbmTab.CONTROL);
+    public static final RegistryObject<Item> toothpicks = item("toothpicks", HbmTab.MATERIALS);
+    public static final RegistryObject<Item> cap_sunset = item("cap_sunset", HbmTab.CONSUMABLES);
+    public static final RegistryObject<Item> cap_star = item("cap_star", HbmTab.CONSUMABLES);
+    public static final RegistryObject<Item> particle_aproton = item("particle_aproton", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
+    public static final RegistryObject<Item> particle_aelectron = item("particle_aelectron", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<ItemCustomLore> reacher = lore("reacher", HbmTab.CONSUMABLES, p -> p.stacksTo(1));
     public static final RegistryObject<ItemCustomLore> fuse = lore("fuse", HbmTab.CONTROL, p -> p.stacksTo(16));
     public static final RegistryObject<ItemCustomLore> euphemium_capacitor = lore("euphemium_capacitor", HbmTab.CONTROL, p -> p.stacksTo(1));

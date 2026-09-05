@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.energymk2.Nodespace;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.lib.ForgeDirection;
@@ -34,7 +36,7 @@ import dev.golem.core.data.DataOut;
  *
  * <p>Energy reaches the GUI via the BufPacket (a full {@code long}, not a 16-bit {@code ContainerData}).
  */
-public class TileEntityMachineBattery extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, IEnergyProviderMK2, IEnergyConductorMK2 {
+public class TileEntityMachineBattery extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, IEnergyProviderMK2, IEnergyConductorMK2, IRORValueProvider, IRORInteractive {
 
     public static final long MAX_POWER = 1_000_000L;
     public long power = 0L;
@@ -227,5 +229,52 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     @Override
     public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
         return new ContainerMachineBattery(containerId, playerInventory, this);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent", PREFIX_VALUE + "delta",
+                PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode (0-3)",
+                PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)",
+                PREFIX_FUNCTION + "setredmode" + NAME_SEPARATOR + "mode (0-3)",
+                PREFIX_FUNCTION + "setredmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)",
+                PREFIX_FUNCTION + "setpriority" + NAME_SEPARATOR + "priority (0-2)"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "fill").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fillpercent").equals(name)) return "" + ((power * 100L) / getMaxPower());
+        if ((PREFIX_VALUE + "delta").equals(name)) return "" + delta;
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setmode").equals(name) && params.length > 0) {
+            int mode = IRORInteractive.parseInt(params[0], 0, 3);
+            if (mode != redLow) {
+                redLow = (short) mode;
+            } else if (params.length > 1) {
+                redLow = (short) IRORInteractive.parseInt(params[1], 0, 3);
+            }
+            setChanged();
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setredmode").equals(name) && params.length > 0) {
+            int mode = IRORInteractive.parseInt(params[0], 0, 3);
+            if (mode != redHigh) {
+                redHigh = (short) mode;
+            } else if (params.length > 1) {
+                redHigh = (short) IRORInteractive.parseInt(params[1], 0, 3);
+            }
+            setChanged();
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setpriority").equals(name) && params.length > 0) {
+            priority = ConnectionPriority.VALUES[IRORInteractive.parseInt(params[0], 0, 2) + 1];
+            setChanged();
+        }
+        return null;
     }
 }

@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:crafting_shapeless", "category": "misc",
+  "ingredients": ["hbm:billet_u238", "hbm:billet_u238", "hbm:billet_pu238", "#c:plates/iron"],
+  "result": { "id": "hbm:pellet_rtg_weak" }
+}

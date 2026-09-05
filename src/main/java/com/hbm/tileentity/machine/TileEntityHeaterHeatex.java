@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
@@ -35,7 +36,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * network-only and are deliberately restricted to the four remote horizontal connection points.
  */
 public class TileEntityHeaterHeatex extends TileEntityMachineBase
-        implements IHeatSource, IControlReceiver, IFluidStandardTransceiverMK2, MenuProvider {
+        implements IHeatSource, IControlReceiver, IFluidStandardTransceiverMK2, MenuProvider, IRORValueProvider {
 
     public static final int TANK_CAPACITY = 24_000;
 
@@ -255,5 +256,18 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         heatEnergy = input.getIntOr("heatEnergy", 0);
         amountToCool = input.getIntOr("toCool", 0);
         tickDelay = input.getIntOr("delay", 0);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "hotfluid", PREFIX_VALUE + "coldfluid", PREFIX_VALUE + "heat"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "hotfluid").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "coldfluid").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "heat").equals(name)) return "" + heatEnergy;
+        return null;
     }
 }

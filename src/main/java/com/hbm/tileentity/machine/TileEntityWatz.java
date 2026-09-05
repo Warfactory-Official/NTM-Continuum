@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -54,7 +55,7 @@ import java.util.List;
  * shrapnel spray is currently the mud columns alone.
  */
 public class TileEntityWatz extends TileEntityMachineBase
-        implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IControlReceiver {
+        implements IFluidStandardTransceiverMK2, WorldlyContainer, MenuProvider, IControlReceiver, IRORValueProvider {
 
     public static final int SLOTS = 24;
     private static final int[] ALL_SLOTS = java.util.stream.IntStream.range(0, SLOTS).toArray();
@@ -457,6 +458,22 @@ public class TileEntityWatz extends TileEntityMachineBase
         }
         isLocked = !isLocked;
         setChanged();
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "heat", PREFIX_VALUE + "flux", PREFIX_VALUE + "mud",
+                PREFIX_VALUE + "coolant_hot", PREFIX_VALUE + "coolant_cold"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "heat").equals(name)) return "" + heat;
+        if ((PREFIX_VALUE + "flux").equals(name)) return "" + (int) (fluxLastBase + fluxLastReaction);
+        if ((PREFIX_VALUE + "mud").equals(name)) return "" + tanks[2].getFill();
+        if ((PREFIX_VALUE + "coolant_hot").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "coolant_cold").equals(name)) return "" + tanks[0].getFill();
+        return null;
     }
 
     // --- persistence + sync ---

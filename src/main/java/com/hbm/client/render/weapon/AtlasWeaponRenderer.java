@@ -27,16 +27,24 @@ import net.minecraft.world.item.ItemStack;
 public class AtlasWeaponRenderer extends WeaponRenderer {
 
     private static final Identifier MODEL = dev.golem.core.Ids.of("hbm", "models/weapons/bio_revolver.obj");
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/models/weapons/bio_revolver.png");
+    private final Identifier texture;
 
     private WavefrontObj model;
     private RenderType body;
+
+    public AtlasWeaponRenderer() {
+        this("bio_revolver");
+    }
+
+    public AtlasWeaponRenderer(String texture) {
+        this.texture = dev.golem.core.Ids.of("hbm", "textures/models/weapons/" + texture + ".png");
+    }
 
     /** Loaded on first draw: the resource manager is not ready when renderers are declared. */
     private WavefrontObj model() {
         if (model == null) {
             model = WavefrontObj.load(MODEL);
-            body = CompatRenderTypes.entityCutout(TEXTURE);
+            body = CompatRenderTypes.entityCutout(texture);
         }
         return model;
     }

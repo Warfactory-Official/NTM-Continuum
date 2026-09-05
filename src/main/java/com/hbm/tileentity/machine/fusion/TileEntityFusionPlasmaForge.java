@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.interfaces.IControlReceiver;
@@ -41,7 +42,7 @@ import java.util.Random;
 /** Functional plasma-forge controller: plasma receiver/provider, item processing and one fluid inlet. */
 public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardReceiverMK2, IFusionPowerReceiver,
-        IControlReceiver, WorldlyContainer {
+        IControlReceiver, WorldlyContainer, IRORValueProvider {
 
     private static final int[] IO_SLOTS = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
@@ -226,6 +227,22 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
                 new DirPos(x - dir.offsetX * 6 + rot.offsetX * 2, y, z - dir.offsetZ * 6 + rot.offsetZ * 2, dir.getOpposite()));
     }
 
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active",
+                PREFIX_VALUE + "booster", PREFIX_VALUE + "plasma"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(plasmaModule.progress * 100);
+        if ((PREFIX_VALUE + "recipe").equals(name)) return plasmaModule.recipe;
+        if ((PREFIX_VALUE + "active").equals(name)) return "" + (didProcess ? 1 : 0);
+        if ((PREFIX_VALUE + "booster").equals(name)) return "" + booster;
+        if ((PREFIX_VALUE + "plasma").equals(name)) return "" + plasmaEnergy;
+        return null;
+    }
+
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
@@ -252,7 +269,7 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
     @Override
     public void receiveControl(CompoundTag data) {
         if (data.contains("index") && data.contains("selection") && Tags.getIntOr(data, "index", 0) == 0) {
-            plasmaModule.recipe = Tags.getStringOr(data, "selection", "null");
+            plasmaModule.setRecipe(Tags.getStringOr(data, "selection", "null"), false);
             plasmaModule.progress = 0D;
             setChanged();
         }

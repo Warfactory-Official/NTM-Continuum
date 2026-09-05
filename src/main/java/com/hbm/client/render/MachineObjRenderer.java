@@ -33,12 +33,17 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
 
     /**
      * A model file + the standalone texture it samples + its own vertical offset (block units) + the
-     * set of OBJ parts to skip (e.g. dynamic fluid overlays, or a frame that only shows conditionally).
+     * set of OBJ parts to skip (e.g. dynamic fluid overlays, or a frame that only shows conditionally),
+     * and whether the old renderer drew the model with face culling disabled.
      */
-    public record ModelDef(Identifier obj, Identifier texture, float yOffset, Set<String> exclude) {
-        public ModelDef(Identifier obj, Identifier texture) { this(obj, texture, 0F, Set.of()); }
-        public ModelDef(Identifier obj, Identifier texture, float yOffset) { this(obj, texture, yOffset, Set.of()); }
-        public ModelDef(Identifier obj, Identifier texture, Set<String> exclude) { this(obj, texture, 0F, exclude); }
+    public record ModelDef(Identifier obj, Identifier texture, float yOffset, Set<String> exclude, boolean noCull) {
+        public ModelDef(Identifier obj, Identifier texture) { this(obj, texture, 0F, Set.of(), false); }
+        public ModelDef(Identifier obj, Identifier texture, float yOffset) { this(obj, texture, yOffset, Set.of(), false); }
+        public ModelDef(Identifier obj, Identifier texture, Set<String> exclude) { this(obj, texture, 0F, exclude, false); }
+        public ModelDef(Identifier obj, Identifier texture, boolean noCull) { this(obj, texture, 0F, Set.of(), noCull); }
+        public ModelDef(Identifier obj, Identifier texture, float yOffset, Set<String> exclude) {
+            this(obj, texture, yOffset, exclude, false);
+        }
     }
 
     private record Part(WavefrontObj model, RenderType renderType, float yOffset, Set<String> exclude) {}
@@ -81,7 +86,10 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
             // entityCutout (alpha test) not entitySolid: the old TESRs ran with GL alpha-test on, so
             // fully-transparent texels (e.g. the chemical plant's glass) are discarded instead of being
             // drawn as opaque black.
-            built.add(new Part(WavefrontObj.load(d.obj()), CompatRenderTypes.entityCutout(d.texture()), d.yOffset(), d.exclude()));
+            RenderType renderType = d.noCull()
+                    ? CompatRenderTypes.entityCutoutNoCull(d.texture())
+                    : CompatRenderTypes.entityCutout(d.texture());
+            built.add(new Part(WavefrontObj.load(d.obj()), renderType, d.yOffset(), d.exclude()));
         }
         this.parts = built;
     }

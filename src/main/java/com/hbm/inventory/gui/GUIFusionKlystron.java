@@ -124,7 +124,7 @@ public class GUIFusionKlystron extends dev.golem.core.gui.CompatContainerScreen<
     protected boolean keyPressed(dev.golem.core.gui.KeyInput event) {
         // While the field has focus let it consume typing - including the inventory key ('e'), which
         // AbstractContainerScreen would otherwise take as "close the menu" mid-number. Escape still closes.
-        if (this.field != null && this.field.isFocused() && event.key() != 256) {
+        if (this.field != null && this.field.isFocused() && event.key() != 256 && event.key() != 258) {
             event.keyPressed(this.field);
             return true;
         }

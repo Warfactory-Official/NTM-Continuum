@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#minecraft:sand",
+    "#minecraft:sand",
+    "#c:dusts/quartz",
+    "#c:dusts/quartz"
+  ],
+  "result": {
+    "id": "hbm:sand_quartz"
+  }
+}

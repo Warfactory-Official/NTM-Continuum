@@ -18,9 +18,53 @@ data class MachineObjTransformExpectation(
     val blackParts: List<String>? = null,
     val specialBase: String = MACHINE_OBJ_ITEM_BASE,
     val directModel: Boolean = false,
+    val rawLegacyTransform: Boolean = false,
+    val itemTranslate: List<Double> = listOf(0.0, 0.0, 0.0),
+    val itemPreTranslate: List<Double> = listOf(0.0, 0.0, 0.0),
 )
 
-val RTG_BLOCKSTATE_IDS = listOf("machine_minirtg", "rtg_polonium")
+data class GunObjTransformExpectation(
+    val rotation: List<Double>,
+    val translation: List<Double>,
+    val scale: List<Double>,
+)
+
+data class GunObjExpectation(
+    val base: String,
+    val display: Map<String, GunObjTransformExpectation>,
+)
+
+fun gunTransform(rotation: List<Double>, translation: List<Double>, scale: Double) =
+    GunObjTransformExpectation(rotation, translation, listOf(scale, scale, scale))
+
+val GUN_OBJ_EXPECTATIONS = mapOf(
+    "gun_pepperbox" to GunObjExpectation("hbm:item/gun_obj_pepperbox_base", mapOf(
+        "gui" to gunTransform(listOf(-18.881721, -41.641143, -27.236313), listOf(1.011377, 1.228155, -6.40901), 0.09375),
+        "ground" to gunTransform(listOf(0.0, -90.0, 0.0), listOf(-0.5, -3.5, 0.5), 0.0625),
+        "fixed" to gunTransform(listOf(0.0, 90.0, 0.0), listOf(1.0, -1.56, -0.5), 0.125),
+        "thirdperson_righthand" to gunTransform(listOf(-179.493995, -1.125273, 179.74399), listOf(-0.757072, 1.14817, -2.356844), 0.0703125),
+        "thirdperson_lefthand" to gunTransform(listOf(-172.402674, 29.330267, 154.481445), listOf(8.662276, 3.115906, 0.150338), 0.0703125),
+        "head" to gunTransform(listOf(-31.091374, -55.675371, 143.318463), listOf(-3.357926, -10.391071, 17.010688), 0.3),
+    )),
+    "gun_g3" to GunObjExpectation("hbm:item/gun_obj_g3_base", mapOf(
+        "gui" to gunTransform(listOf(-18.881721, -41.641143, -27.236313), listOf(0.008565, 0.928038, -7.690641), 0.0546875),
+        "ground" to gunTransform(listOf(0.0, -90.0, 0.0), listOf(-0.5, -3.5, 0.5), 0.0625),
+        "fixed" to gunTransform(listOf(0.0, 90.0, 0.0), listOf(1.0, -1.56, -0.5), 0.125),
+        "thirdperson_righthand" to gunTransform(listOf(-179.493995, -1.125273, 179.74399), listOf(-0.784191, 2.283047, -3.47155), 0.0703125),
+        "thirdperson_lefthand" to gunTransform(listOf(-172.402674, 29.330267, 154.481445), listOf(8.790823, 4.283303, -0.922934), 0.0703125),
+        "head" to gunTransform(listOf(-31.091374, -55.675371, 143.318463), listOf(-8.938885, -13.512669, 19.28852), 0.3),
+    )),
+    "gun_light_revolver_dani" to GunObjExpectation("hbm:item/gun_obj_dani_base", mapOf(
+        "gui" to gunTransform(listOf(-180.0, 0.0, 0.0), listOf(0.5625, 1.4375, -8.5625), 0.0703125),
+        "ground" to gunTransform(listOf(0.0, -90.0, 0.0), listOf(-0.5, -3.5, 0.5), 0.0625),
+        "fixed" to gunTransform(listOf(0.0, 90.0, 0.0), listOf(1.0, -1.56, -0.5), 0.125),
+        "thirdperson_righthand" to gunTransform(listOf(-179.493995, -1.125273, 179.74399), listOf(-0.757072, 1.14817, -2.356844), 0.0703125),
+        "thirdperson_lefthand" to gunTransform(listOf(-172.402674, 29.330267, 154.481445), listOf(8.662276, 3.115906, 0.150338), 0.0703125),
+        "head" to gunTransform(listOf(-31.091374, -55.675371, 143.318463), listOf(-3.357926, -10.391071, 17.010688), 0.3),
+    )),
+)
+
+val RTG_BLOCKSTATE_IDS = listOf("machine_minirtg", "rtg_polonium", "machine_rtg_grey")
 val MACHINE_OBJ_ITEM_BASE = "hbm:item/machine_obj_base"
 
 /** Centered item scales derived from submitted OBJ bounds, using the assembly machine's 1.05-unit frame. */
@@ -94,6 +138,28 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
     "machine_puf6_tank" to MachineObjTransformExpectation(0.525, 270.0),
     "machine_mixer" to MachineObjTransformExpectation(0.35, 180.0, exclude = listOf("Fluid")),
     "machine_exposure_chamber" to MachineObjTransformExpectation(0.095454545, 90.0),
+    "radio_telex" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        obj = "hbm:models/machines/telex.obj",
+        texture = "hbm:textures/models/machines/telex.png",
+        noCull = true,
+        guiTranslate = listOf(0.0, -2.0, 0.0),
+        guiScale = 6.0,
+        rawLegacyTransform = true,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+        itemPreTranslate = listOf(0.0, 0.0, -0.5),
+    ),
+    "radio_autocal" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        obj = "hbm:models/machines/autocal.obj",
+        texture = "hbm:textures/models/machines/autocal.png",
+        noCull = true,
+        guiTranslate = listOf(0.0, -4.0, 0.0),
+        guiScale = 6.25,
+        rawLegacyTransform = true,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+        itemPreTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_pump_electric" to MachineObjTransformExpectation(0.21, 0.0, animation = "pump"),
     "machine_pump_steam" to MachineObjTransformExpectation(0.21, 0.0, animation = "pump"),
     "machine_minirtg" to MachineObjTransformExpectation(
@@ -107,6 +173,13 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         1.0, 0.0,
         obj = "hbm:models/machines/rtg.obj",
         texture = "hbm:textures/models/machines/rtg_polonium.png",
+        noCull = true,
+        exclude = emptyList(),
+    ),
+    "machine_rtg_grey" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        obj = "hbm:models/machines/rtg.obj",
+        texture = "hbm:textures/models/machines/rtg.png",
         noCull = true,
         exclude = emptyList(),
     ),
@@ -148,9 +221,9 @@ val MACHINE_OBJ_CONTEXT_LEGACY_MODEL = "hbm:item/machine_obj_context_legacy"
 
 /**
  * The same marker for a Sedna gun. `hbm:gun` is a whole item MODEL on 26.1 (only that layer is handed the
- * display context a weapon needs); below it the equivalent is the same per-loader BEWLR the machines use,
- * so the item needs the `builtin/entity` parent to be routed there — and this model carries the weapon
- * display transforms rather than the block ones.
+ * display context a weapon needs); below it the equivalent is the same per-loader BEWLR the machines use.
+ * Every gun base inherits this `builtin/entity` marker, so modern properties and legacy routing consume
+ * that base's one display block.
  */
 val GUN_OBJ_LEGACY_MODEL = "hbm:item/gun_obj_legacy"
 
@@ -176,7 +249,7 @@ fun Project.applyLegacyItemAssets() {
                     // place would render them flat here and 3D there. The same applies to a gun, whose
                     // placeholder sprite predates its OBJ renderer. Every other item defers to what ships.
                     val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent == MACHINE_OBJ_CONTEXT_LEGACY_MODEL
-                            || parent == GUN_OBJ_LEGACY_MODEL
+                            || isGunDefinition(definition)
                     if (target.exists() && !selfRendered) return@forEach
                     itemModels.mkdirs()
                     target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mapOf("parent" to parent))))
@@ -341,15 +414,26 @@ fun Project.registerMachineObjTransformChecks() {
                         "$name.blackParts expected $it but was ${model["blackParts"]}"
                     }
                 }
-                listOf("rawLegacyTransform", "guiTranslate", "guiScale", "guiYaw",
-                    "contextTransforms", "itemTranslate", "itemPreTranslate").forEach { field ->
-                    check(!model.containsKey(field)) {
-                        "$name must not declare legacy $field"
+                if (!expected.rawLegacyTransform) {
+                    listOf("rawLegacyTransform", "guiTranslate", "guiScale", "guiYaw",
+                        "contextTransforms", "itemTranslate", "itemPreTranslate").forEach { field ->
+                        check(!model.containsKey(field)) {
+                            "$name must not declare legacy $field"
+                        }
                     }
+                    vector(expected.guiTranslate, listOf(0.0, 0.0, 0.0), "$name.guiTranslate")
+                    close(expected.guiScale, 1.0, "$name.guiScale")
+                    close(expected.guiYaw, 0.0, "$name.guiYaw")
+                } else {
+                    check(model["rawLegacyTransform"] == true) {
+                        "$name must opt into rawLegacyTransform"
+                    }
+                    vector(model["itemTranslate"], expected.itemTranslate, "$name.itemTranslate")
+                    vector(model["itemPreTranslate"], expected.itemPreTranslate, "$name.itemPreTranslate")
+                    vector(model["guiTranslate"], expected.guiTranslate, "$name.guiTranslate")
+                    close(model["guiScale"], expected.guiScale, "$name.guiScale")
+                    close(model["guiYaw"] ?: 0.0, expected.guiYaw, "$name.guiYaw")
                 }
-                vector(expected.guiTranslate, listOf(0.0, 0.0, 0.0), "$name.guiTranslate")
-                close(expected.guiScale, 1.0, "$name.guiScale")
-                close(expected.guiYaw, 0.0, "$name.guiYaw")
                 check(model.containsKey("ty")) { "$name must explicitly declare ty" }
                 close(model["ty"], expected.ty, "$name.ty")
                 close(model["scale"], expected.scale, "$name.scale")
@@ -380,6 +464,73 @@ fun Project.registerMachineObjTransformChecks() {
                 }
             }
             logger.lifecycle("machineObjTransforms: validated ${MACHINE_OBJ_TRANSFORM_EXPECTATIONS.size} definitions and ${RTG_BLOCKSTATE_IDS.size} RTG blockstates")
+        }
+    }
+    tasks.named("check") { dependsOn(validation) }
+}
+
+/** Checks the dedicated old-renderer matrices and the shared modern/legacy base reference. */
+fun Project.registerGunObjTransformChecks() {
+    val validation = tasks.register("validateGunObjTransforms") {
+        group = "verification"
+        description = "Checks Sedna gun base references and exact static display transforms."
+        doLast {
+            val assets = rootProject.file("src/main/resources/assets/hbm")
+            fun vector(actual: Any?, expected: List<Double>, label: String) {
+                check(actual is List<*> && actual.size == expected.size) {
+                    "$label must contain ${expected.size} values"
+                }
+                expected.forEachIndexed { index, value ->
+                    val number = actual[index]
+                    check(number is Number && kotlin.math.abs(number.toDouble() - value) < 0.0000001) {
+                        "$label[$index] expected $value but was $number"
+                    }
+                }
+            }
+
+            GUN_OBJ_EXPECTATIONS.forEach { (item, expected) ->
+                val definition = File(assets, "items/$item.json")
+                check(definition.isFile) { "Missing gun item definition: $definition" }
+                @Suppress("UNCHECKED_CAST")
+                val root = JsonSlurper().parse(definition) as Map<String, Any?>
+                @Suppress("UNCHECKED_CAST")
+                val model = root["model"] as? Map<String, Any?> ?: error("Missing model object: $definition")
+                check(model["type"] == "hbm:gun") { "$definition must use hbm:gun" }
+                check(model["base"] == expected.base) {
+                    "$definition must reference ${expected.base}, not ${model["base"]}"
+                }
+                check(parentModelOf(definition) == expected.base) {
+                    "Legacy conversion must retain ${expected.base} for $item"
+                }
+
+                val baseName = expected.base.substringAfter("hbm:item/")
+                val baseFile = File(assets, "models/item/$baseName.json")
+                check(baseFile.isFile) { "Missing dedicated gun base: $baseFile" }
+                @Suppress("UNCHECKED_CAST")
+                val base = JsonSlurper().parse(baseFile) as Map<String, Any?>
+                check(base["parent"] == GUN_OBJ_LEGACY_MODEL) {
+                    "$baseFile must inherit $GUN_OBJ_LEGACY_MODEL for legacy custom rendering"
+                }
+                @Suppress("UNCHECKED_CAST")
+                val display = base["display"] as? Map<String, Any?> ?: error("Missing display object: $baseFile")
+                check(display.keys == expected.display.keys) {
+                    "$baseFile contexts expected ${expected.display.keys} but were ${display.keys}"
+                }
+                expected.display.forEach { (context, transform) ->
+                    @Suppress("UNCHECKED_CAST")
+                    val actual = display[context] as? Map<String, Any?>
+                        ?: error("Missing $context transform: $baseFile")
+                    vector(actual["rotation"], transform.rotation, "$item.$context.rotation")
+                    vector(actual["translation"], transform.translation, "$item.$context.translation")
+                    vector(actual["scale"], transform.scale, "$item.$context.scale")
+                }
+            }
+
+            val marker = JsonSlurper().parse(File(assets, "models/item/gun_obj_legacy.json")) as Map<*, *>
+            check(marker["parent"] == "minecraft:builtin/entity" && !marker.containsKey("display")) {
+                "gun_obj_legacy must remain a transform-free builtin/entity marker"
+            }
+            logger.lifecycle("gunObjTransforms: validated ${GUN_OBJ_EXPECTATIONS.size} dedicated weapon bases")
         }
     }
     tasks.named("check") { dependsOn(validation) }
@@ -446,6 +597,14 @@ fun isMachineObjSpecial(model: Any?): Boolean {
     return inner["type"] == "hbm:machine_obj"
 }
 
+fun isGunDefinition(definition: File): Boolean {
+    @Suppress("UNCHECKED_CAST")
+    val root = JsonSlurper().parse(definition) as? Map<String, Any?> ?: return false
+    @Suppress("UNCHECKED_CAST")
+    val model = root["model"] as? Map<String, Any?> ?: return false
+    return model["type"] == "hbm:gun"
+}
+
 fun parentModelOf(definition: File): String? {
     @Suppress("UNCHECKED_CAST")
     val json = JsonSlurper().parse(definition) as? Map<String, Any?> ?: return null
@@ -454,8 +613,8 @@ fun parentModelOf(definition: File): String? {
     return when (model["type"]) {
         "minecraft:model" -> model["model"] as? String
         "hbm:machine_obj" -> MACHINE_OBJ_CONTEXT_LEGACY_MODEL
-        // A gun's item model is HBM's own type, not a vanilla wrapper: it needs the builtin/entity marker.
-        "hbm:gun" -> GUN_OBJ_LEGACY_MODEL
+        // Gun bases inherit builtin/entity themselves, preserving their exact modern display matrices.
+        "hbm:gun" -> model["base"] as? String
         "minecraft:special" -> {
             @Suppress("UNCHECKED_CAST")
             val inner = model["model"] as? Map<String, Any?>
@@ -497,3 +656,4 @@ if (needsLegacyItemAssets(extra.properties["mc_version"] as String)) {
 }
 
 registerMachineObjTransformChecks()
+registerGunObjTransformChecks()

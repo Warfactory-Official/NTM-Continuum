@@ -279,6 +279,7 @@ public final class HbmJeiPluginCommon {
                  electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
                  vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum,
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace);
+        RTGJeiIntegration.registerCategory(reg);
     }
 
     public static void registerRecipes(IRecipeRegistration reg) {
@@ -346,8 +347,9 @@ public final class HbmJeiPluginCommon {
                  ArcFurnaceRecipeHandler.buildRecipes(false));
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ARC_FURNACE_FLUID,
                  ArcFurnaceRecipeHandler.buildRecipes(true));
-         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ALLOY, DiFurnaceRecipeHandler.buildRecipes());
-     }
+          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ALLOY, DiFurnaceRecipeHandler.buildRecipes());
+        RTGJeiIntegration.registerRecipes(reg);
+      }
 
     public static void registerGuiHandlers(IGuiHandlerRegistration reg) {
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMixer.class, 62, 36, 52, 44,
@@ -374,6 +376,7 @@ public final class HbmJeiPluginCommon {
                 HbmJeiRecipeTypes.ARC_FURNACE_FLUID);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIDiFurnace.class, 102, 36, 21, 14,
                 HbmJeiRecipeTypes.ALLOY);
+        RTGJeiIntegration.registerGuiHandler(reg);
     }
 
     public static void registerRecipeTransferHandlers(IRecipeTransferRegistration reg) {
@@ -416,12 +419,14 @@ public final class HbmJeiPluginCommon {
          dev.golem.core.jei.Jei.addRecipeTransferHandler(reg, ContainerMachineArcFurnaceLarge.class,
                  FoundryExpansion.ARC_FURNACE_MENU.get(), HbmJeiRecipeTypes.ARC_FURNACE_FLUID,
                  5, 1, 30, 36);
-         dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerDiFurnace.class,
-                 DiFurnaceContent.DI_FURNACE_MENU.get(), HbmJeiRecipeTypes.ALLOY,
-                 new int[]{0, 1}, 4, 36, recipe -> true);
+          dev.golem.core.jei.Jei.addSelectiveRecipeTransferHandler(reg, ContainerDiFurnace.class,
+                  DiFurnaceContent.DI_FURNACE_MENU.get(), HbmJeiRecipeTypes.ALLOY,
+                  new int[]{0, 1}, 4, 36, recipe -> true);
+        RTGJeiIntegration.registerTransfer(reg);
      }
 
     public static void registerCatalysts(IRecipeCatalystRegistration reg) {
+        RTGJeiIntegration.registerCatalyst(reg);
           dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
           dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
                   stack(com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get()));

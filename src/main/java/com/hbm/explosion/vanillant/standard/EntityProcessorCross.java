@@ -6,6 +6,7 @@ import com.hbm.explosion.vanillant.interfaces.IEntityProcessor;
 import com.hbm.explosion.vanillant.interfaces.IEntityRangeMutator;
 import com.hbm.lib.ForgeDirection;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.CompatEnchantments;
 import dev.golem.core.world.Raycasts;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Map;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -120,6 +122,10 @@ public class EntityProcessorCross implements IEntityProcessor {
             }
 
             double knockback = (1.0D - distanceScaled) * density;
+            double enchantedKnockback = knockback;
+            if (entity instanceof LivingEntity living && entity.level() instanceof ServerLevel serverLevel) {
+                enchantedKnockback = CompatEnchantments.blastKnockback(serverLevel, living, knockback);
+            }
 
             float dmg = calculateDamage(distanceScaled, density, knockback, size);
             Float existing = damageMap.get(entity);
@@ -127,12 +133,14 @@ public class EntityProcessorCross implements IEntityProcessor {
 
             if (shouldDealKnockback(entity)) {
                 entity.setDeltaMovement(entity.getDeltaMovement().add(
-                        deltaX * knockback * knockbackMult,
-                        deltaY * knockback * knockbackMult,
-                        deltaZ * knockback * knockbackMult));
+                        deltaX * enchantedKnockback * knockbackMult,
+                        deltaY * enchantedKnockback * knockbackMult,
+                        deltaZ * enchantedKnockback * knockbackMult));
             }
 
             if (entity instanceof Player player) {
+                // The packet path deliberately carries the raw value; old-hbm applies blast protection
+                // only to server motion, while the client receives this unmodified knockback map.
                 affectedPlayers.put(player, new Vec3(deltaX * knockback * knockbackMult,
                         deltaY * knockback * knockbackMult, deltaZ * knockback * knockbackMult));
             }

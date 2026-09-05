@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": "hbm:radio_torch_sender",
+    "R": "hbm:radio_torch_receiver",
+    "A": "hbm:circuit_analog",
+    "P": "#c:plates_cast/copper"
+  },
+  "pattern": [
+    "TAR",
+    "PAP",
+    "PAP"
+  ],
+  "result": {
+    "id": "hbm:radio_autocal"
+  }
+}

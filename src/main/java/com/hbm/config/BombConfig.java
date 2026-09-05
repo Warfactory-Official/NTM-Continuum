@@ -12,6 +12,9 @@ public final class BombConfig {
     /** Crater radius of the Fat Man ({@code nuke_man}). */
     public static int manRadius = 175;
 
+    /** Crater radius of a fully assembled Ivy Mike. Its under-filled test configuration uses manRadius. */
+    public static int mikeRadius = 250;
+
     /** Crater radius of the Gadget. */
     public static int gadgetRadius = 150;
 

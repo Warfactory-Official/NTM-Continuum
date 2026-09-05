@@ -185,7 +185,7 @@ public class GUIScreenRecipeSelector extends CompatScreen {
 
         if (isOver(x, y, 134, 108, 16, 16)) { // clear search
             this.search.setValue("");
-            this.search.setFocused(true);
+            this.setFocused(this.search);
             return true;
         }
 
@@ -219,7 +219,7 @@ public class GUIScreenRecipeSelector extends CompatScreen {
     @Override
     protected boolean keyPressedCompat(KeyInput event) {
         if (event.key() == 257 || event.key() == 335) { // ENTER / numpad enter toggles search focus
-            this.search.setFocused(!this.search.isFocused());
+            this.setFocused(this.search.isFocused() ? null : this.search);
             return true;
         }
         if (!this.search.isFocused() && this.minecraft != null

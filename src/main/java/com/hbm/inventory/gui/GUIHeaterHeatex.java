@@ -154,7 +154,7 @@ public class GUIHeaterHeatex extends dev.golem.core.gui.CompatContainerScreen<Co
     @Override
     protected boolean keyPressed(KeyInput event) {
         // A focused field must consume the inventory key too, just as the old keyTyped path did.
-        if (event.key() != 256) {
+        if (event.key() != 256 && event.key() != 258) {
             if (fieldCycles != null && fieldCycles.isFocused()) {
                 event.keyPressed(fieldCycles);
                 return true;

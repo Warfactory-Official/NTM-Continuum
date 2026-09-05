@@ -184,6 +184,21 @@
       }
     ]
   },
+  "weapon.explosion_small_near": {
+    "category": "player",
+    "sounds": [
+      "hbm:weapon/explosion_small_near1",
+      "hbm:weapon/explosion_small_near2",
+      "hbm:weapon/explosion_small_near3"
+    ]
+  },
+  "weapon.explosion_small_far": {
+    "category": "player",
+    "sounds": [
+      "hbm:weapon/explosion_small_far1",
+      "hbm:weapon/explosion_small_far2"
+    ]
+  },
   "block.electric_hum": {
     "category": "block",
     "sounds": [
@@ -565,5 +580,21 @@
   "rbmk_shutdown": {
     "category": "block",
     "sounds": []
+  },
+  "weapon.fire.blackpowder": {
+    "category": "player",
+    "sounds": ["hbm:weapon/fire/blackpowder"]
+  },
+  "weapon.fire.assault": {
+    "category": "player",
+    "sounds": ["hbm:weapon/fire/assault"]
+  },
+  "weapon.switchmode1": {
+    "category": "player",
+    "sounds": [{"name": "hbm:weapon/switchmode1", "stream": false}]
+  },
+  "weapon.switchmode2": {
+    "category": "player",
+    "sounds": [{"name": "hbm:weapon/switchmode2", "stream": false}]
   }
 }

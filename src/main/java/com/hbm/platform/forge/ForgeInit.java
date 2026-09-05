@@ -64,6 +64,15 @@ public final class ForgeInit {
         com.hbm.gametest.IntakeFanGameTests.init();
         com.hbm.gametest.DiFurnaceGameTests.init();
         com.hbm.gametest.MaterialCompletionGameTests.init();
+        com.hbm.gametest.BedrockOreGameTests.init();
+        com.hbm.gametest.ExplosiveContentGameTests.init();
+        com.hbm.gametest.Gen3SednaGameTests.init();
+        com.hbm.gametest.RadioGameTests.init();
+        com.hbm.gametest.CounterControllerGameTests.init();
+        com.hbm.gametest.TelexGameTests.init();
+        com.hbm.gametest.AutocalGameTests.init();
+        com.hbm.gametest.RadioProviderGameTests.init();
+        com.hbm.gametest.RtgGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -94,6 +103,24 @@ public final class ForgeInit {
                 com.hbm.gametest.DiFurnaceGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.MaterialCompletionGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.BedrockOreGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ExplosiveContentGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.Gen3SednaGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RadioGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.CounterControllerGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.TelexGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AutocalGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RadioProviderGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RtgGameTests.TESTS));
 
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();
@@ -135,6 +162,7 @@ public final class ForgeInit {
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent event) ->
                 com.hbm.command.HbmCommands.register(event.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
+            com.hbm.config.AutocalConfig.load(event.getServer());
             com.hbm.Constants.LOG.info("[HBM] Loaded {} total recipes",
                     event.getServer().getRecipeManager().getRecipes().size());
             auditWorldgen(event.getServer());

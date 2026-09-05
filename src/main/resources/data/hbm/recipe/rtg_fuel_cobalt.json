@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:crafting_shapeless", "category": "misc",
+  "ingredients": ["hbm:billet_co60", "hbm:billet_co60", "hbm:billet_co60", "#c:plates/iron"],
+  "result": { "id": "hbm:pellet_rtg_cobalt" }
+}

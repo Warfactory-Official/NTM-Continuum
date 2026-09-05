@@ -35,6 +35,7 @@ import com.hbm.inventory.container.ContainerNukeN2;
 import com.hbm.inventory.container.ContainerNukeBoy;
 import com.hbm.inventory.container.ContainerNukeGadget;
 import com.hbm.inventory.container.ContainerNukeTsar;
+import com.hbm.inventory.container.ContainerNukeMike;
 import com.hbm.inventory.container.ContainerWasteDrum;
 import com.hbm.inventory.container.ContainerArmorTable;
 import com.hbm.inventory.container.ContainerStorageDrum;
@@ -202,6 +203,8 @@ public final class ModMenus {
             MENUS.register("nuke_gadget", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeGadget::new));
     public static final RegistryObject<MenuType<ContainerNukeTsar>> NUKE_TSAR =
             MENUS.register("nuke_tsar", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeTsar::new));
+    public static final RegistryObject<MenuType<ContainerNukeMike>> NUKE_MIKE =
+            MENUS.register("nuke_mike", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeMike::new));
 
     public static final RegistryObject<MenuType<ContainerReactorZirnox>> REACTOR_ZIRNOX =
             MENUS.register("reactor_zirnox", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerReactorZirnox::new));

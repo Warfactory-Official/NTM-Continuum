@@ -32,6 +32,10 @@ public class XFactory357 {
             (stack, ctx) -> ItemGunBaseNT.setupRecoil(10F,
                     (float) (ctx.getPlayer().getRandom().nextGaussian() * 1.5));
 
+    public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_RECOIL_DANI =
+            (stack, ctx) -> ItemGunBaseNT.setupRecoil(5F,
+                    (float) (ctx.getPlayer().getRandom().nextGaussian() * 0.75));
+
     public static void init() {
         m357_bp = BulletConfigs.register("m357_bp", new BulletConfig()
                 .setItem(ModAmmoItems.m357_bp)

@@ -107,6 +107,11 @@ public final class ShredderRecipes {
         for (Item item : itemsOf(ItemTags.SAPLINGS)) set(item, new ItemStack(Items.STICK, 1));
         for (Item item : itemsOf(ItemTags.WOOL)) set(item, new ItemStack(Items.STRING, 4));
         for (Item item : itemsOf(ItemTags.TERRACOTTA)) set(item, new ItemStack(Items.CLAY_BALL, 4));
+        // Upstream moved this from registerDefaults into its dustLapis ore-dict loop. Keep it ahead of
+        // the generic dust sweep so first-wins still yields cobalt rather than generic dust.
+        for (Item item : itemsOf(cTag("dusts/lapis"))) {
+            set(item, new ItemStack(ModItems.powder_cobalt_tiny.get()));
+        }
     }
 
     /**

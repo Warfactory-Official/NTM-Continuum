@@ -70,6 +70,9 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> NUCLEAR_EXPLOSION = register("weapon.nuclear_explosion");
     /** The short detonation sound used by {@code ExplosionNukeSmall}. */
     public static final RegistryObject<SoundEvent> MUKE_EXPLOSION = register("weapon.muke_explosion");
+    /** Near/far report used by the old controller's small VNT explosion effect. */
+    public static final RegistryObject<SoundEvent> EXPLOSION_SMALL_NEAR = register("weapon.explosion_small_near");
+    public static final RegistryObject<SoundEvent> EXPLOSION_SMALL_FAR = register("weapon.explosion_small_far");
     /** A missile leaving the pad. Old id {@code hbm:weapon.missileTakeoff}. */
     public static final RegistryObject<SoundEvent> MISSILE_TAKEOFF = register("weapon.missile_takeoff");
 

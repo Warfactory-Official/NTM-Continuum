@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.container.ContainerCombustionEngine;
@@ -45,7 +47,7 @@ import dev.golem.core.data.DataOut;
  * <p>Deferred (§20): pollution/smoke, OpenComputers {@code SimpleComponent}, IFluidCopiable.
  */
 public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
-        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2 {
+        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, IRORValueProvider, IRORInteractive {
 
     public static final long maxPower = 2_500_000;
 
@@ -257,5 +259,44 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
         isOn = input.getBooleanOr("isOn", false);
         tenth = input.getIntOr("tenth", 0);
         tank.readFromNBT(input, "tank");
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "state", PREFIX_VALUE + "throttle", PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fuel", PREFIX_VALUE + "efficiency",
+                PREFIX_FUNCTION + "setstate" + NAME_SEPARATOR + "state",
+                PREFIX_FUNCTION + "setthrottle" + NAME_SEPARATOR + "throttle"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "state").equals(name)) return "" + (isOn ? 1 : 0);
+        if ((PREFIX_VALUE + "throttle").equals(name)) return "" + setting;
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tank.getFill();
+        if ((PREFIX_VALUE + "efficiency").equals(name)) {
+            ItemStack stack = inventory.getStackInSlot(2);
+            FluidCombustion.Combustible fuel = FluidCombustion.getCombustible(tank.getTankType());
+            if (!stack.isEmpty() && stack.getItem() instanceof ItemPistons piston && fuel != null) {
+                return "" + Math.round(piston.getVariant().eff[fuel.grade().ordinal()] * 100);
+            }
+            return "0";
+        }
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setstate").equals(name) && params.length > 0) {
+            isOn = IRORInteractive.parseInt(params[0], 0, 1) == 1;
+            setChanged();
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setthrottle").equals(name) && params.length > 0) {
+            setting = IRORInteractive.parseInt(params[0], 0, 30);
+            setChanged();
+        }
+        return null;
     }
 }

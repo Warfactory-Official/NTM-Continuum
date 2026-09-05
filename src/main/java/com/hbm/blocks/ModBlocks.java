@@ -64,6 +64,7 @@ public final class ModBlocks {
 
     // --- simple full-cube blocks (Wave 1) ---
     public static final RegistryObject<Block> fatduck = block("fatduck", HbmTab.BLOCKS, p -> p);
+    public static final RegistryObject<Block> structure_anchor = block("structure_anchor", HbmTab.BLOCKS, p -> p.strength(2.5F, 10.0F));
     public static final RegistryObject<Block> crystal_hardened = block("crystal_hardened", HbmTab.BLOCKS, p -> p.strength(15.0F));
     public static final RegistryObject<Block> reinforced_stone = block("reinforced_stone", HbmTab.BLOCKS, p -> p.strength(15.0F, 100.0F));
     public static final RegistryObject<Block> brick_concrete_cracked = block("brick_concrete_cracked", HbmTab.BLOCKS, p -> p.strength(15.0F, 60.0F));
@@ -198,6 +199,8 @@ public final class ModBlocks {
     public static final RegistryObject<Block> brick_light_slab = slab("brick_light_slab", null, p -> p.strength(15.0F, 20.0F));
     public static final RegistryObject<Block> brick_compound_slab = slab("brick_compound_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 200.0F));
     public static final RegistryObject<Block> brick_asbestos_slab = slab("brick_asbestos_slab", HbmTab.BLOCKS, p -> p);
+    public static final RegistryObject<Block> lightstone_tile_slab = slab("lightstone_tile_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 20.0F));
+    public static final RegistryObject<Block> lightstone_bricks_slab = slab("lightstone_bricks_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 20.0F));
     public static final RegistryObject<Block> brick_fire_slab = slab("brick_fire_slab", null, p -> p.strength(15.0F, 35.0F));
     public static final RegistryObject<Block> reinforced_sand_slab = slab("reinforced_sand_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 20.0F));
     public static final RegistryObject<Block> brick_obsidian_slab = slab("brick_obsidian_slab", HbmTab.BLOCKS, p -> p.strength(15.0F, 60.0F));

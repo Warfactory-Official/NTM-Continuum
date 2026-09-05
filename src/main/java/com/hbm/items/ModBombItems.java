@@ -54,6 +54,18 @@ public final class ModBombItems {
     public static final RegistryObject<ItemCustomLore> explosive_lenses =
             ITEMS.registerItem("man_explosive8", ItemCustomLore::new, p -> p.stacksTo(1));
 
+    /** Ivy Mike's uranium-coated primary vessel. */
+    public static final RegistryObject<ItemCustomLore> mike_core =
+            ITEMS.registerItem("mike_core", ItemCustomLore::new, p -> p.stacksTo(1));
+
+    /** Ivy Mike's deuterium secondary vessel. */
+    public static final RegistryObject<ItemCustomLore> mike_deut =
+            ITEMS.registerItem("mike_deut", ItemCustomLore::new, p -> p.stacksTo(1));
+
+    /** Ivy Mike's deuterium cooling assembly. */
+    public static final RegistryObject<ItemCustomLore> mike_cooling_unit =
+            ITEMS.registerItem("mike_cooling_unit", ItemCustomLore::new, p -> p.stacksTo(1));
+
     /** Optional sixth-stage Tsar core. */
     public static final RegistryObject<ItemCustomLore> tsar_core =
             ITEMS.registerItem("tsar_core", ItemCustomLore::new, p -> p.stacksTo(1));
@@ -74,6 +86,9 @@ public final class ModBombItems {
         ModTabs.addTo(HbmTab.BOMBS, boy_propellant);
         ModTabs.addTo(HbmTab.BOMBS, boy_igniter);
         ModTabs.addTo(HbmTab.BOMBS, explosive_lenses);
+        ModTabs.addTo(HbmTab.BOMBS, mike_core);
+        ModTabs.addTo(HbmTab.BOMBS, mike_deut);
+        ModTabs.addTo(HbmTab.BOMBS, mike_cooling_unit);
         ModTabs.addTo(HbmTab.BOMBS, tsar_core);
         ModTabs.addTo(HbmTab.BOMBS, n2_charge);
     }

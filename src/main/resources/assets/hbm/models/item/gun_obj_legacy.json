@@ -1,37 +1,5 @@
 {
-  "__comment": "Item model for Sedna guns below 1.21.4, pointed at by gradle/legacy-assets.gradle.kts. The builtin/entity parent is what makes vanilla report isCustomRenderer() and hand the item to our BEWLR / DynamicItemRenderer; it is a marker with no geometry and no inherited transforms, so the display block is the weapon framing (the same values as gun_obj_base.json, which 26.1 uses). The first-person entries are irrelevant either way: that body rebuilds its pose from the camera.",
+  "__comment": "Parent marker for Sedna gun bases. builtin/entity routes legacy items to the BEWLR / DynamicItemRenderer; each modern base supplies the same display transforms inherited by that legacy item.",
   "parent": "minecraft:builtin/entity",
-  "gui_light": "side",
-  "display": {
-    "gui": {
-      "rotation": [-18.882, -41.641, -27.236],
-      "translation": [0.396, 2.25, -7.602],
-      "scale": [0.07, 0.07, 0.07]
-    },
-    "ground": {
-      "rotation": [0.0, -90.0, 0.0],
-      "translation": [-0.5, -3.5, 0.5],
-      "scale": [0.0625, 0.0625, 0.0625]
-    },
-    "fixed": {
-      "rotation": [0.0, 90.0, 0.0],
-      "translation": [1.0, -1.56, -0.5],
-      "scale": [0.125, 0.125, 0.125]
-    },
-    "thirdperson_righthand": {
-      "rotation": [-179.494, -1.125, 179.744],
-      "translation": [-0.595, 0.718, -1.379],
-      "scale": [0.053, 0.053, 0.053]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [-179.494, -1.125, 179.744],
-      "translation": [0.534, 0.724, -1.401],
-      "scale": [0.053, 0.053, 0.053]
-    },
-    "head": {
-      "rotation": [31.33, 35.631, 160.475],
-      "translation": [20.532, -14.949, 28.203],
-      "scale": [0.3, 0.3, 0.3]
-    }
-  }
+  "gui_light": "side"
 }

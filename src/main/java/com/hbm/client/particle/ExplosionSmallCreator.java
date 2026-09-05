@@ -1,11 +1,15 @@
 package com.hbm.client.particle;
 
+import com.hbm.sound.ModSounds;
 import dev.golem.core.data.Tags;
 import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.resources.sounds.AbstractSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,10 +22,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * six neighbours for the first non-air block, exactly as upstream does — so a blast in open air
  * throws no debris at all, which is deliberate rather than a bug.
  *
- * <p><b>Not ported: the delayed report.</b> Upstream plays {@code explosionSmallNear}/{@code Far}
- * scheduled by {@code distance / speedOfSound}, so distant blasts arrive late — a genuinely nice
- * touch. Both sound events are unported, so the hook is left out rather than substituted with a
- * vanilla boom that would sound wrong and then need un-picking later.
+ * <p>The near/far report is scheduled by {@code distance / speedOfSound}, retaining the old delayed
+ * sound arrival instead of replacing it with a local vanilla boom.
  */
 public class ExplosionSmallCreator implements IParticleCreator {
 
@@ -36,6 +38,16 @@ public class ExplosionSmallCreator implements IParticleCreator {
         float cloudScale = Tags.getFloatOr(data, "cloudScale", 1F);
         float cloudSpeedMult = Tags.getFloatOr(data, "cloudSpeedMult", 0F);
         int debris = Tags.getIntOr(data, "debris", 0);
+
+        if (player != null) {
+            float distance = (float) Math.sqrt(player.distanceToSqr(x, y, z));
+            if (distance < 200F) {
+                var sound = distance < 80F ? ModSounds.EXPLOSION_SMALL_NEAR.get()
+                        : ModSounds.EXPLOSION_SMALL_FAR.get();
+                dev.golem.core.client.Sounds.playDelayed(
+                        new PositionalSound(sound, x, y, z), (int) (distance / speedOfSound));
+            }
+        }
 
         for (int i = 0; i < cloudCount; i++) {
             Particles.add(new ParticleExplosionSmall(level, x, y, z, cloudScale, cloudSpeedMult));
@@ -63,6 +75,17 @@ public class ExplosionSmallCreator implements IParticleCreator {
                     50 + rand.nextInt(20));
             fx.scale(2);
             Particles.add(fx);
+        }
+    }
+
+    private static final class PositionalSound extends AbstractSoundInstance {
+        private PositionalSound(net.minecraft.sounds.SoundEvent sound, double x, double y, double z) {
+            super(sound, SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.volume = 100F;
+            this.pitch = 1F;
         }
     }
 }

@@ -75,13 +75,22 @@ public class ExplosionVNT {
         boolean processBlocks = blockAllocator != null && blockProcessor != null;
         boolean processEntities = entityProcessor != null && playerProcessor != null;
 
+        ObjectOpenHashSet<BlockPos> affectedBlocks = null;
         if (processBlocks) {
-            ObjectOpenHashSet<BlockPos> affectedBlocks = blockAllocator.allocate(this, world, posX, posY, posZ, size);
+            // Exposure must be calculated against the pre-blast world, as in old-hbm.
+            affectedBlocks = blockAllocator.allocate(this, world, posX, posY, posZ, size);
+        }
+
+        HashMap<Player, Vec3> affectedPlayers = null;
+        if (processEntities) {
+            affectedPlayers = entityProcessor.process(this, world, posX, posY, posZ, size);
+        }
+
+        if (processBlocks) {
             blockProcessor.process(this, world, posX, posY, posZ, affectedBlocks);
         }
 
         if (processEntities) {
-            HashMap<Player, Vec3> affectedPlayers = entityProcessor.process(this, world, posX, posY, posZ, size);
             playerProcessor.process(this, world, posX, posY, posZ, affectedPlayers);
         }
 

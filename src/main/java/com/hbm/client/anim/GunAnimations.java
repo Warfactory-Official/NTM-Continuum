@@ -76,6 +76,10 @@ public final class GunAnimations {
         register(ModGunItems.gun_heavy_revolver_lilmac::get, GunAnimations::lilmac);
         register(ModGunItems.gun_heavy_revolver_protege::get, GunAnimations::lilmac);
         register(ModGunItems.gun_hangman::get, GunAnimations::hangman);
+        register(ModGunItems.gun_light_revolver_atlas::get, (stack, cue, rail) -> atlas(cue));
+        register(ModGunItems.gun_light_revolver_dani::get, SednaGen3Animations::dani);
+        register(ModGunItems.gun_pepperbox::get, SednaGen3Animations::pepperbox);
+        register(ModGunItems.gun_g3::get, SednaGen3Animations::g3);
     }
 
     private static BusAnimation greasegun(ItemStack stack, GunAnimation type, int rail) {

@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine.storage;
 
 import com.hbm.inventory.container.ContainerMassStorage;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -31,7 +33,7 @@ import java.util.function.Supplier;
  * The legacy three-slot mass-storage stockpile. The block supplies the variant and registry suppliers;
  * this class contains all four capacities' shared behavior.
  */
-public class TileEntityMassStorage extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
+public class TileEntityMassStorage extends TileEntityMachineBase implements MenuProvider, WorldlyContainer, IRORValueProvider, IRORInteractive {
 
     public static final int INPUT_SLOT = 0;
     public static final int FILTER_SLOT = 1;
@@ -288,5 +290,31 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
         if (carriedCapacity > 0) capacity = carriedCapacity;
         redstone = Tags.getByteOr(data, "redstone", (byte) 0);
         stockpile = Math.min(stockpile, capacity);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "type", PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent",
+                PREFIX_FUNCTION + "toggleoutput"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "fill").equals(name)) return "" + stockpile;
+        if ((PREFIX_VALUE + "fillpercent").equals(name)) return "" + (stockpile * 100 / capacity);
+        if ((PREFIX_VALUE + "type").equals(name)) {
+            ItemStack type = inventory.getStackInSlot(FILTER_SLOT);
+            return type.isEmpty() ? "None" : type.getHoverName().getString();
+        }
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "toggleoutput").equals(name)) {
+            output = !output;
+            setChanged();
+        }
+        return null;
     }
 }

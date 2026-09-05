@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -33,7 +35,7 @@ import java.util.Map;
 
 /** The legacy gas turbine: a slow-starting gas generator with a steam heat exchanger. */
 public class TileEntityMachineTurbineGas extends TileEntityMachineBase
-        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, MenuProvider {
+        implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, MenuProvider, IRORValueProvider, IRORInteractive {
 
     public static final long MAX_POWER = 1_000_000L;
 
@@ -319,6 +321,67 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
     @Override public Component getDisplayName() { return Component.translatable(getDefaultName()); }
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ContainerMachineTurbineGas(id, inventory, this);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "turbinepercent", PREFIX_VALUE + "turbinespeed", PREFIX_VALUE + "output",
+                PREFIX_VALUE + "state", PREFIX_VALUE + "automode", PREFIX_VALUE + "temp", PREFIX_VALUE + "power",
+                PREFIX_VALUE + "fuel", PREFIX_VALUE + "lubricant", PREFIX_VALUE + "water", PREFIX_VALUE + "steam",
+                PREFIX_FUNCTION + "setauto" + NAME_SEPARATOR + "auto",
+                PREFIX_FUNCTION + "setthrottle" + NAME_SEPARATOR + "percent",
+                PREFIX_FUNCTION + "setstate" + NAME_SEPARATOR + "state"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "turbinepercent").equals(name)) return "" + (int) (powerSliderPos * 100D / 60D);
+        if ((PREFIX_VALUE + "turbinespeed").equals(name)) return "" + rpm;
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + (instantPowerOutput * 20);
+        if ((PREFIX_VALUE + "state").equals(name)) return "" + state;
+        if ((PREFIX_VALUE + "automode").equals(name)) return "" + (autoMode ? 1 : 0);
+        if ((PREFIX_VALUE + "temp").equals(name)) return "" + temp;
+        if ((PREFIX_VALUE + "power").equals(name)) return "" + power;
+        if ((PREFIX_VALUE + "fuel").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "lubricant").equals(name)) return "" + tanks[1].getFill();
+        if ((PREFIX_VALUE + "water").equals(name)) return "" + tanks[2].getFill();
+        if ((PREFIX_VALUE + "steam").equals(name)) return "" + tanks[3].getFill();
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setauto").equals(name) && params.length > 0) {
+            try {
+                autoMode = Integer.parseInt(params[0]) == 1;
+                setChanged();
+            } catch (NumberFormatException ignored) {
+            }
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setthrottle").equals(name) && params.length > 0) {
+            try {
+                int percent = Integer.parseInt(params[0]);
+                percent = Math.max(0, Math.min(100, percent));
+                powerSliderPos = percent * 60 / 100;
+                setChanged();
+            } catch (NumberFormatException ignored) {
+            }
+            return null;
+        }
+        if ((PREFIX_FUNCTION + "setstate").equals(name) && params.length > 0) {
+            try {
+                int newState = Integer.parseInt(params[0]);
+                if (newState == 1) {
+                    if (state == 0) state = -1;
+                } else if (newState == 0) {
+                    if (state == 1) state = 0;
+                }
+                setChanged();
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return null;
     }
 
     @Override public void serialize(RegistryFriendlyByteBuf buf) {

@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachinePUREX;
@@ -54,7 +55,7 @@ import java.util.List;
  */
 public final class TileEntityMachinePUREX extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IControlReceiver,
-        IUpgradeInfoProvider, WorldlyContainer {
+        IUpgradeInfoProvider, WorldlyContainer, IRORValueProvider {
 
     /** Slots automation may touch: the three item inputs and the six outputs. */
     private static final int[] IO_SLOTS = {4, 5, 6, 7, 8, 9, 10, 11, 12};
@@ -221,10 +222,23 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
     @Override public void receiveControl(CompoundTag data) {
         if (Tags.getIntOr(data, "index", -1) == 0) {
             String selection = Tags.getStringOr(data, "selection", "null");
-            purexModule.recipe = PUREXRecipes.INSTANCE.getRecipe(selection) != null ? selection : "null";
+            purexModule.setRecipe(PUREXRecipes.INSTANCE.getRecipe(selection) != null ? selection : "null", false);
             purexModule.progress = 0D;
             setChanged();
         }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(purexModule.progress * 100);
+        if ((PREFIX_VALUE + "recipe").equals(name)) return purexModule.recipe;
+        if ((PREFIX_VALUE + "active").equals(name)) return "" + (didProcess ? 1 : 0);
+        return null;
     }
 
     // --- sync + persistence ---

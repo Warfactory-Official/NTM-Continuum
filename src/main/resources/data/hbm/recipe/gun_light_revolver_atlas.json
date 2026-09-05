@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": "#c:mechanisms/weaponsteel",
+    "A": "hbm:gun_light_revolver"
+  },
+  "pattern": [
+    " M ",
+    "MAM",
+    " M "
+  ],
+  "result": {
+    "id": "hbm:gun_light_revolver_atlas"
+  }
+}

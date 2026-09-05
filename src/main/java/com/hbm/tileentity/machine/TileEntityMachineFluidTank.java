@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluidmk2.FluidNode;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IClimbable;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
@@ -46,7 +48,7 @@ import java.util.HashSet;
  * fill readout, and (kept) the side ladder ({@link IClimbable}). The tank defaults to {@code NONE}; drop a
  * {@code fluid_identifier} in slot 0 to set its type (it then passes to slot 1), like the 1.12.2 tank.
  */
-public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable {
+public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable, IRORValueProvider, IRORInteractive {
 
     public static final int CAPACITY = 256_000;
     /** 0 = receive-only, 1 = both (acts like a pipe), 2 = send-only, 3 = disabled. */
@@ -390,5 +392,31 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         super.loadData(input);
         mode = (short) input.getShortOr("mode", (short) 0);
         tank.readFromNBT(input, "tank");
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "type", PREFIX_VALUE + "fill", PREFIX_VALUE + "fillpercent",
+                PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode (0-3)",
+                PREFIX_FUNCTION + "setmode" + NAME_SEPARATOR + "mode" + PARAM_SEPARATOR + "fallback (0-3)"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "type").equals(name)) return tank.getTankType().getName();
+        if ((PREFIX_VALUE + "fill").equals(name)) return "" + tank.getFill();
+        if ((PREFIX_VALUE + "fillpercent").equals(name)) return "" + (tank.getFill() * 100 / tank.getMaxFill());
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setmode").equals(name) && params.length > 0) {
+            int value = IRORInteractive.parseInt(params[0], 0, 3);
+            if (value != mode) mode = (short) value;
+            else if (params.length > 1) mode = (short) IRORInteractive.parseInt(params[1], 0, 3);
+            setChanged();
+        }
+        return null;
     }
 }

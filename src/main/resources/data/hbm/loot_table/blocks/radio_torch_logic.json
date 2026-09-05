@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:block",
+  "pools": [{ "rolls": 1, "entries": [{ "type": "minecraft:item", "name": "hbm:radio_torch_logic" }],
+    "conditions": [{ "condition": "minecraft:survives_explosion" }] }]
+}

@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine.rbmk;
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -26,7 +27,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Water-to-steam RBMK heat column, including the original compression ratios. */
 public class BlockEntityRBMKBoiler extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, IFluidStandardTransceiverMK2,
-        IControlReceiver, MenuProvider {
+        IControlReceiver, MenuProvider, IRORValueProvider {
     @Override public RBMKColumnType getConsoleType() { return RBMKColumnType.BOILER; }
     public final FluidTankNTM feed = new FluidTankNTM(Fluids.WATER, 10_000), steam = new FluidTankNTM(Fluids.STEAM, 1_000_000);
     public int consumption, output;
@@ -50,4 +51,11 @@ public class BlockEntityRBMKBoiler extends BlockEntityRBMKBase implements IFluid
     @Override public void deserialize(RegistryFriendlyByteBuf buffer) { super.deserialize(buffer); steam.deserialize(buffer); feed.deserialize(buffer); }
     @Override public Component getDisplayName() { return Component.translatable("container.rbmkBoiler"); }
     @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new MenuRBMKBoiler(id, inventory, this); }
+     @Override public String[] getFunctionInfo() { return new String[]{PREFIX_VALUE + "feed", PREFIX_VALUE + "steam", PREFIX_VALUE + "consumption"}; }
+     @Override public String provideRORValue(String name) {
+         if ((PREFIX_VALUE + "feed").equals(name)) return "" + feed.getFill();
+         if ((PREFIX_VALUE + "steam").equals(name)) return "" + steam.getFill();
+         if ((PREFIX_VALUE + "consumption").equals(name)) return "" + consumption;
+         return null;
+     }
 }

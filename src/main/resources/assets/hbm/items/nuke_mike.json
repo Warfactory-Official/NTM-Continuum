@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/bombs/ivymike.obj",
+      "texture": "hbm:textures/models/bombs/ivymike.png",
+      "noCull": true,
+      "scale": 0.23248,
+      "yaw": 0.0,
+      "ty": 0.0
+    }
+  }
+}

@@ -60,12 +60,25 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> p9_jhp = ITEMS.registerSimpleItem("ammo_standard_p9_jhp");
     public static final RegistryObject<Item> p9_ap = ITEMS.registerSimpleItem("ammo_standard_p9_ap");
 
+    // Black-powder Pepperbox loads, in upstream priority order.
+    public static final RegistryObject<Item> stone = ITEMS.registerSimpleItem("ammo_standard_stone");
+    public static final RegistryObject<Item> stone_ap = ITEMS.registerSimpleItem("ammo_standard_stone_ap");
+    public static final RegistryObject<Item> stone_iron = ITEMS.registerSimpleItem("ammo_standard_stone_iron");
+    public static final RegistryObject<Item> stone_shot = ITEMS.registerSimpleItem("ammo_standard_stone_shot");
+
+    // 5.56 mm, in the order upstream declares the ordinary G3 family.
+    public static final RegistryObject<Item> r556_sp = ITEMS.registerSimpleItem("ammo_standard_r556_sp");
+    public static final RegistryObject<Item> r556_fmj = ITEMS.registerSimpleItem("ammo_standard_r556_fmj");
+    public static final RegistryObject<Item> r556_jhp = ITEMS.registerSimpleItem("ammo_standard_r556_jhp");
+    public static final RegistryObject<Item> r556_ap = ITEMS.registerSimpleItem("ammo_standard_r556_ap");
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
                  ammo_debug, ammo_standard_nuke_high, m357_bp, m357_sp, m357_fmj, m357_jhp, m357_ap, m357_express,
                  m44_bp, m44_sp, m44_fmj, m44_jhp, m44_ap, m44_express,
-                 p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap}) {
+                 p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap,
+                 stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }

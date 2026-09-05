@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -33,7 +34,7 @@ import dev.golem.core.data.DataOut;
  * IPersistentNBT/IConfigurableMachine/IFluidCopiable. Port seam: heat is polled through a
  * {@link BlockDummyable} dummy cell below by resolving its core (old used proxy TEs).
  */
-public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2 {
+public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
 
     public static final int maxHeat = 12_800_000;
     public static final double diffusion = 0.1D;
@@ -214,5 +215,21 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
         tanks[1].readFromNBT(input, "steam");
         heat = input.getIntOr("heat", 0);
         hasExploded = input.getBooleanOr("exploded", false);
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "input", PREFIX_VALUE + "output"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if (hasExploded) {
+            if ((PREFIX_VALUE + "input").equals(name) || (PREFIX_VALUE + "output").equals(name)) return "0";
+            return null;
+        }
+        if ((PREFIX_VALUE + "input").equals(name)) return "" + tanks[0].getFill();
+        if ((PREFIX_VALUE + "output").equals(name)) return "" + tanks[1].getFill();
+        return null;
     }
 }

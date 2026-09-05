@@ -1,6 +1,12 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.api.item.IDepthRockTool;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Depth rock — the 1.12.2 {@code BlockDepth}. Set <b>unbreakable</b> ({@code setBlockUnbreakable()})
@@ -8,13 +14,25 @@ import net.minecraft.world.level.block.Block;
  * trivially removed by explosives. Upstream, the sole exception is a held {@code IDepthRockTool}
  * (the depth drill), which drops the relative hardness to {@code 1/100}.
  *
- * <p><b>Deferred:</b> the {@code IDepthRockTool} seam. No depth-drill item is ported yet, so depth
- * rock and every {@link BlockDepthOre} on top of it are currently explosion-only — which is exactly
- * how the original behaves without that tool. Wire the hardness override in when the drill lands.
+ * <p>The {@link IDepthRockTool} seam is live. Ordinary tools retain the unbreakable destroy speed;
+ * an opted-in tool receives the old fixed relative progress of {@code 1/100}.
  */
 public class BlockDepth extends dev.golem.core.world.CompatBlock {
 
+    public static final float DEPTH_TOOL_PROGRESS = 1F / 100F;
+
     public BlockDepth(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter level, BlockPos pos) {
+        ItemStack held = player.getMainHandItem();
+        if (!held.isEmpty() && held.getItem() instanceof IDepthRockTool tool
+                && level instanceof net.minecraft.world.level.Level realLevel
+                && tool.canBreakRock(realLevel, player, held, state, pos)) {
+            return DEPTH_TOOL_PROGRESS;
+        }
+        return super.getDestroyProgress(state, player, level, pos);
     }
 }

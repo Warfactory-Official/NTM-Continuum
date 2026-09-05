@@ -592,6 +592,11 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("nuke_tsar",
                     () -> BlockEntities.type(TileEntityNukeTsar::new, ModBombBlocks.nuke_tsar.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.bomb.TileEntityNukeMike>> NUKE_MIKE =
+            BLOCK_ENTITIES.register("nuke_mike",
+                    () -> BlockEntities.type(com.hbm.tileentity.bomb.TileEntityNukeMike::new,
+                            ModBombBlocks.nuke_mike.get()));
+
     // --- the 12 tiered anvils (OBJ-rendered; the BE exists only for the renderer) ---
 
     public static final RegistryObject<BlockEntityType<TileEntityAnvil>> ANVIL =

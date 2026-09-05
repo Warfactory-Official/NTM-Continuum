@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.client.sound.AssemblerSoundHandler;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -45,7 +47,7 @@ import java.util.Random;
  * blueprint templates, and machine upgrades (slots 2–3: SPEED/POWER/OVERDRIVE, 1.12.2 formulas).
  * Deferred (see IMPLEMENTATION.md §18): fluids, battery-item charging and item auto-IO.
  */
-public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer, IControlReceiver, IUpgradeInfoProvider {
+public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer, IControlReceiver, IUpgradeInfoProvider, IRORValueProvider, IRORInteractive {
 
     /** Slots a hopper/pipe may touch: the 12 inputs (insert) + the output (extract). */
     private static final int[] IO_SLOTS = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
@@ -206,11 +208,34 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
             int index = Tags.getIntOr(data, "index", 0);
             String selection = Tags.getStringOr(data, "selection", "null");
             if (index == 0) {
-                this.assemblerModule.recipe = selection;
+                this.assemblerModule.setRecipe(selection, false);
                 this.assemblerModule.progress = 0D;
                 setChanged();
             }
         }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active",
+                PREFIX_FUNCTION + "setrecipe" + NAME_SEPARATOR + "name"};
+    }
+
+    @Override
+    public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(assemblerModule.progress * 100);
+        if ((PREFIX_VALUE + "recipe").equals(name)) return assemblerModule.recipe;
+        if ((PREFIX_VALUE + "active").equals(name)) return "" + (didProcess ? 1 : 0);
+        return null;
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setrecipe").equals(name) && params.length == 1) {
+            assemblerModule.setRecipe(params[0], true);
+            setChanged();
+        }
+        return null;
     }
 
     // --- sync (BufPacket) + persistence ---

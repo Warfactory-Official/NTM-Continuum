@@ -50,8 +50,10 @@ public class FabricInit implements ModInitializer {
 
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> Constants.LOG.info(
-                "[HBM] Loaded {} total recipes", server.getRecipeManager().getRecipes().size()));
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            com.hbm.config.AutocalConfig.load(server);
+            Constants.LOG.info("[HBM] Loaded {} total recipes", server.getRecipeManager().getRecipes().size());
+        });
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) ->
                 com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(entity));
 

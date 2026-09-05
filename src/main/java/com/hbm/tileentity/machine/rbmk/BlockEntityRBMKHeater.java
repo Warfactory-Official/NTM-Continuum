@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
+import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.MenuRBMKHeater;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -23,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Heat-exchanger column: a fluid identifier selects the first FT_Heatable conversion step. */
-public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, MenuProvider {
+public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluidProviderMK2, IFluidReceiverMK2, MenuProvider, IRORValueProvider {
     public final FluidTankNTM feed = new FluidTankNTM(Fluids.COOLANT, 16_000);
     public final FluidTankNTM steam = new FluidTankNTM(Fluids.COOLANT_HOT, 16_000);
 
@@ -96,4 +97,10 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
     @Override public void deserialize(RegistryFriendlyByteBuf buffer) { super.deserialize(buffer); feed.deserialize(buffer); steam.deserialize(buffer); }
     @Override public Component getDisplayName() { return Component.translatable("container.rbmkHeater"); }
     @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new MenuRBMKHeater(id, inventory, this); }
+    @Override public String[] getFunctionInfo() { return new String[]{PREFIX_VALUE + "in", PREFIX_VALUE + "out"}; }
+    @Override public String provideRORValue(String name) {
+        if ((PREFIX_VALUE + "in").equals(name)) return "" + feed.getFill();
+        if ((PREFIX_VALUE + "out").equals(name)) return "" + steam.getFill();
+        return null;
+    }
 }

@@ -244,7 +244,7 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
     protected boolean keyPressed(dev.golem.core.gui.KeyInput event) {
         // While the search box has focus, let it consume typing (incl. the inventory key, e.g. 'e') so the
         // default AbstractContainerScreen behaviour of closing the menu on the inventory key doesn't fire.
-        if (this.search != null && this.search.isFocused() && event.key() != 256 /* ESC still closes */) {
+        if (this.search != null && this.search.isFocused() && event.key() != 256 && event.key() != 258 /* ESC/TAB pass through */) {
             event.keyPressed(this.search);
             return true;
         }

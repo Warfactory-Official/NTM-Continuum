@@ -198,7 +198,7 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
     @Override
     protected boolean keyPressed(KeyInput event) {
         // AbstractContainerScreen otherwise treats the inventory key as "close" before a focused field sees it.
-        if (search != null && search.isFocused() && event.key() != 256) {
+        if (search != null && search.isFocused() && event.key() != 256 && event.key() != 258) {
             event.keyPressed(search);
             return true;
         }

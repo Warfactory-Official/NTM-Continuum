@@ -1,0 +1,5 @@
+{
+  "type": "minecraft:crafting_shapeless", "category": "misc",
+  "ingredients": ["hbm:pellet_rtg_depleted_lead"],
+  "result": { "id": "hbm:ingot_lead", "count": 2 }
+}
