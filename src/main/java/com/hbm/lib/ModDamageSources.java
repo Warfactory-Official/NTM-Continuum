@@ -46,6 +46,8 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> SHRAPNEL = key("shrapnel");
     /** absolute + bypasses armor (old: {@code setDamageIsAbsolute().setDamageBypassesArmor()}) */
     public static final ResourceKey<DamageType> ELECTRICITY = key("electricity");
+    /** absolute + bypasses armor — the MASER turret's emitter */
+    public static final ResourceKey<DamageType> MICROWAVE = key("microwave");
     public static final ResourceKey<DamageType> LEAD = key("lead");
     public static final ResourceKey<DamageType> EUTHANIZED_SELF = key("euthanized_self");
     public static final ResourceKey<DamageType> EUTHANIZED_SELF2 = key("euthanized_self2");
@@ -108,6 +110,7 @@ public final class ModDamageSources {
     public static DamageSource bang(Level level) { return source(level, BANG); }
     public static DamageSource shrapnel(Level level) { return source(level, SHRAPNEL); }
     public static DamageSource electricity(Level level) { return source(level, ELECTRICITY); }
+    public static DamageSource microwave(Level level) { return source(level, MICROWAVE); }
     public static DamageSource lead(Level level) { return source(level, LEAD); }
     public static DamageSource euthanizedSelf(Level level) { return source(level, EUTHANIZED_SELF); }
     public static DamageSource euthanizedSelf2(Level level) { return source(level, EUTHANIZED_SELF2); }

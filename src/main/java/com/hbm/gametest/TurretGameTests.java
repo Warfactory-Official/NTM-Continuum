@@ -8,6 +8,7 @@ import com.hbm.inventory.container.ContainerTurretBase;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModMachineItems;
+import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
 import com.hbm.items.weapon.sedna.factory.XFactory556mm;
@@ -20,6 +21,7 @@ import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import com.hbm.tileentity.turret.TileEntityTurretHowardDamaged;
+import com.hbm.tileentity.turret.TileEntityTurretMaxwell;
 import com.hbm.tileentity.turret.TileEntityTurretSentry;
 import com.hbm.tileentity.turret.TileEntityTurretSentryDamaged;
 import com.hbm.tileentity.turret.TileEntityTurretTauon;
@@ -57,6 +59,8 @@ public final class TurretGameTests {
             TESTS.function("turret_howard", 100, 16, () -> TurretGameTests::howard);
     public static final GameTests.Function TAUON =
             TESTS.function("turret_tauon", 100, 16, () -> TurretGameTests::tauon);
+    public static final GameTests.Function MAXWELL =
+            TESTS.function("turret_maxwell", 100, 16, () -> TurretGameTests::maxwell);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
 
@@ -337,6 +341,43 @@ public final class TurretGameTests {
         helper.succeed();
     }
 
+    public static void maxwell(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_maxwell.get());
+        TileEntityTurretMaxwell maxwell = (TileEntityTurretMaxwell) helper.getLevel().getBlockEntity(core);
+        BlockState state = helper.getLevel().getBlockState(core);
+
+        long baseRange = (long) maxwell.getDetectorRange();
+        long baseDraw = maxwell.getConsumption();
+        maxwell.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
+                new ItemStack(ModUpgradeItems.upgrade_effect_3.get()));
+        maxwell.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST + 1,
+                new ItemStack(ModUpgradeItems.upgrade_power_3.get()));
+        maxwell.upgradeManager.checkSlots(maxwell.inventory,
+                TileEntityTurretBaseNT.SLOT_AMMO_FIRST, TileEntityTurretBaseNT.SLOT_AMMO_LAST);
+        helper.assertTrue(maxwell.getDetectorRange() > baseRange,
+                "An EFFECT upgrade must widen the MASER's range");
+        helper.assertTrue(maxwell.getConsumption() < baseDraw,
+                "A POWER upgrade must lower the MASER's draw");
+
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(14, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+        float before = zombie.getHealth();
+
+        maxwell.isOn = true;
+        for (int i = 0; i < 200 && zombie.getHealth() >= before; i++) {
+            maxwell.setPower(maxwell.getMaxPower());
+            TileEntityTurretMaxwell.serverTick(helper.getLevel(), core, state, maxwell);
+        }
+
+        helper.assertTrue(maxwell.target == zombie, "The MASER never acquired its target");
+        helper.assertTrue(zombie.getHealth() < before,
+                "The MASER takes no ammunition, so power alone must be enough to hurt a target");
+        helper.assertTrue(maxwell.getAmmoTypesForDisplay().size() == 15,
+                "The MASER's slot panel lists the five upgrade chains it reacts to, three tiers each");
+        helper.succeed();
+    }
+
     public static void assets(GameTestHelper helper) {
         String[] required = {
                 "assets/hbm/models/turrets/turret_chekhov.obj",
@@ -360,6 +401,11 @@ public final class TurretGameTests {
                 "assets/hbm/textures/models/turrets/rusted/carriage_ciws.png",
                 "assets/hbm/blockstates/turret_sentry.json",
                 "assets/hbm/blockstates/turret_tauon.json",
+                "assets/hbm/blockstates/turret_maxwell.json",
+                "assets/hbm/models/turrets/turret_microwave.obj",
+                "assets/hbm/textures/models/turrets/maxwell.png",
+                "assets/hbm/textures/gui/weapon/gui_turret_maxwell.png",
+                "data/hbm/damage_type/microwave.json",
                 "assets/hbm/models/turrets/turret_tauon.obj",
                 "assets/hbm/textures/models/turrets/tauon.png",
                 "assets/hbm/textures/gui/weapon/gui_turret_tau.png",
