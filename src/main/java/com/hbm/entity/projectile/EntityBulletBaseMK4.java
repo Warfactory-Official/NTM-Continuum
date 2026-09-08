@@ -92,6 +92,30 @@ public class EntityBulletBaseMK4 extends CompatEntity {
     }
 
     /**
+     * The turret constructor: no living shooter, and the heading comes straight from the turret's own
+     * aim rather than from an entity's look vector. Angles arrive in <b>radians</b> and pitch is
+     * negated, matching how a turret stores its own rotation.
+     */
+    public EntityBulletBaseMK4(Level level, BulletConfig config, float baseDamage, float gunSpread,
+            float yawRadians, float pitchRadians) {
+        this(ModEntities.BULLET_MK4.get(), level);
+        setBulletConfig(config);
+        this.damage = baseDamage * config.damageMult;
+
+        float yaw = (float) Math.toDegrees(yawRadians);
+        float pitch = (float) -Math.toDegrees(pitchRadians);
+        setYRot(yaw);
+        this.yRotO = yaw;
+        setXRot(pitch);
+        this.xRotO = pitch;
+
+        double headingX = -Math.sin(yaw * Math.PI / 180D) * Math.cos(pitch * Math.PI / 180D);
+        double headingZ = Math.cos(yaw * Math.PI / 180D) * Math.cos(pitch * Math.PI / 180D);
+        double headingY = -Math.sin(pitch * Math.PI / 180D);
+        shoot(headingX, headingY, headingZ, gunSpread);
+    }
+
+    /**
      * Aims this bullet along {@code (x, y, z)} with {@code spread} of inaccuracy, storing the result as a
      * unit heading. The gaussian-per-axis scatter and its 0.0075 scale are vanilla's own {@code shoot}
      * maths, which upstream relies on for every round's spread to mean what its config says.

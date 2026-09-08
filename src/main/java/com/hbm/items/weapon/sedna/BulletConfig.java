@@ -127,6 +127,14 @@ public class BulletConfig {
         return ammo == null ? null : ammo.get();
     }
 
+    /**
+     * Whether {@code slot} holds a round of this type. Upstream compares a metadata'd
+     * {@code ComparableStack}; here each variant is its own item, so item identity is the whole test.
+     */
+    public boolean matchesAmmo(ItemStack slot) {
+        return !slot.isEmpty() && slot.getItem() == ammoItem();
+    }
+
     /** One round of this type, for tooltips and the ammo HUD. */
     public ItemStack toStack() {
         net.minecraft.world.item.Item item = ammoItem();

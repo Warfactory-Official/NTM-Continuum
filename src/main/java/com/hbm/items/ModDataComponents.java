@@ -58,6 +58,9 @@ public final class ModDataComponents {
     /** A Watz fuel pellet's remaining yield (the old NBT double {@code "yield"}). */
     public static final GolemComponent<Double> WATZ_YIELD = GolemComponent.of(Constants.MOD_ID, "watz_yield", Codec.DOUBLE);
     public static final GolemComponent<Boolean> FUEL_WASTE_HOT = GolemComponent.of(Constants.MOD_ID, "fuel_waste_hot", Codec.BOOL);
+    /** Player names a turret biometry card protects; the 1.12.2 NBT string list. */
+    public static final GolemComponent<java.util.List<String>> TURRET_WHITELIST =
+            GolemComponent.of(Constants.MOD_ID, "turret_whitelist", Codec.STRING.listOf());
     public static final GolemComponent<ItemStack> GAS_MASK_FILTER = GolemComponent.itemStack(Constants.MOD_ID, "gas_mask_filter");
 
     /**
