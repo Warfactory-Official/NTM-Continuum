@@ -76,6 +76,10 @@ sourceSets["main"].resources.srcDir("src/generated/resources")
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
+    maven("https://maven.createmod.net") {
+        name = "CreateMod"
+        content { includeGroup("dev.engine-room.flywheel") }
+    }
     exclusiveContent {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
@@ -134,6 +138,11 @@ dependencies {
         compileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
         compileOnly("mezz.jei:jei-$jei-neoforge-api:$jeiVer")
         localRuntime("mezz.jei:jei-$jei-neoforge:$jeiVer")
+    }
+
+    propOrNull("deps.flywheel")?.let { fw ->
+        compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-$mcVersion:$fw")
+        devModJar("dev.engine-room.flywheel:flywheel-neoforge-$mcVersion:$fw")
     }
 
     // Sodium declares itself client-side, so it loads only during the client run. It goes on

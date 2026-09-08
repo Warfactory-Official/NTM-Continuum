@@ -26,6 +26,10 @@ stonecutter parameters {
     // True only where the node declares JEI coordinates, so the integration compiles out elsewhere.
     constants["jei"] = !(node.project.findProperty("deps.jei") as String?).isNullOrBlank()
 
+    // Same shape for Flywheel. Currently false on the 26.1 nodes: the engine has no 26.1 build, so
+    // every bridge class compiles out there and the vanilla BER path is the only one that exists.
+    constants["flywheel"] = !(node.project.findProperty("deps.flywheel") as String?).isNullOrBlank()
+
     // Mechanical renames, declared 26.1 -> older because 26.1 is this port's source of truth.
     replacements {
         // Id construction changed twice across the supported range. Keep it behind Golem Core so

@@ -25,6 +25,10 @@ sourceSets["main"].java {
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
+    maven("https://maven.createmod.net") {
+        name = "CreateMod"
+        content { includeGroup("dev.engine-room.flywheel") }
+    }
     exclusiveContent {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
@@ -142,6 +146,14 @@ dependencies {
         "compileOnly"("mezz.jei:jei-$jei-common-api:$jeiVer")
         "compileOnly"("mezz.jei:jei-$jei-fabric-api:$jeiVer")
         devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer")
+    }
+
+    // Flywheel: same per-node optional shape as JEI. Its API names Minecraft types, so on an
+    // obfuscated node it has to go through Loom's remapper rather than plain compileOnly.
+    propOrNull("deps.flywheel")?.let { fw ->
+        val cfg = if (obfuscated) "modCompileOnly" else "compileOnly"
+        cfg("dev.engine-room.flywheel:flywheel-fabric-api-$mcVersion:$fw")
+        devRuntime("dev.engine-room.flywheel:flywheel-fabric-$mcVersion:$fw")
     }
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.

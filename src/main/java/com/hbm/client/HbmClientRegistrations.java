@@ -206,6 +206,14 @@ public final class HbmClientRegistrations {
         com.hbm.client.BombClientRegistrations.registerBlockEntityRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
         com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
+
+        // Instanced visuals, where the engine exists for this Minecraft version. Every one of them is
+        // an acceleration for a block entity that has already registered a vanilla renderer above —
+        // the engine is an optional install and its backend is player-toggleable, so nothing may
+        // depend on it being there.
+        if (com.hbm.client.render.flywheel.FlywheelCompat.isSupportedOnThisVersion()) {
+            com.hbm.client.render.flywheel.FlywheelCompat.registerVisuals();
+        }
     }
 
     public static void installTints() {

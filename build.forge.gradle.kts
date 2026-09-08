@@ -61,6 +61,10 @@ sourceSets["main"].resources.srcDir("src/generated/resources")
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
+    maven("https://maven.createmod.net") {
+        name = "CreateMod"
+        content { includeGroup("dev.engine-room.flywheel") }
+    }
     exclusiveContent {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
@@ -80,6 +84,11 @@ dependencies {
         modCompileOnly("mezz.jei:jei-$jei-common-api:$jeiVer")
         modCompileOnly("mezz.jei:jei-$jei-forge-api:$jeiVer")
         modRuntimeOnly("mezz.jei:jei-$jei-forge:$jeiVer")
+    }
+
+    propOrNull("deps.flywheel")?.let { fw ->
+        modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-$mcVersion:$fw")
+        modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-$mcVersion:$fw")
     }
 
     // Embeddium is the Forge port of Sodium — Sodium itself ships no Forge build, so this is the
