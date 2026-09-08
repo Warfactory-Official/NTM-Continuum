@@ -13,6 +13,9 @@ public final class TurretState<T extends TileEntityTurretBaseNT> {
 
     public final TurretFrame frame = new TurretFrame();
 
+    /** Where a beam-firing turret's effect starts, filled by its emitter alongside the frame. */
+    public final org.joml.Matrix4f effect = new org.joml.Matrix4f();
+
     private final Emitter<T> emitter;
 
     public double offsetX;
@@ -21,6 +24,10 @@ public final class TurretState<T extends TileEntityTurretBaseNT> {
     public float pitch;
     public float partialTicks;
     public int connectorMask;
+    public long gameTime;
+    public boolean beam;
+    public double beamLength;
+    public int beamSegments;
 
     private @Nullable T turret;
 
@@ -37,10 +44,15 @@ public final class TurretState<T extends TileEntityTurretBaseNT> {
         yaw = (float) -Math.toDegrees(Mth.lerp(partialTicks, turret.lastRotationYaw, turret.rotationYaw));
         pitch = (float) Math.toDegrees(Mth.lerp(partialTicks, turret.lastRotationPitch, turret.rotationPitch));
         connectorMask = turret.connectorMask;
+        gameTime = turret.getLevel() != null ? turret.getLevel().getGameTime() : 0L;
     }
 
     public TurretFrame emit() {
         frame.rewind();
+        effect.identity();
+        beam = false;
+        beamLength = 0D;
+        beamSegments = 0;
         T sampled = turret;
         if (sampled != null) emitter.emit(sampled, this, frame);
         return frame;

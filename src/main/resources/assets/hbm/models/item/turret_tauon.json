@@ -1,0 +1,13 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/turrets/turret_tauon.obj",
+      "texture": "hbm:textures/models/turrets/tauon.png",
+      "scale": 0.2,
+      "yaw": 0
+    }
+  }
+}

@@ -64,6 +64,9 @@ public abstract class RenderTurretBase<T extends TileEntityTurretBaseNT>
 
     protected abstract TurretState.Emitter<T> emitter();
 
+    /** Non-rigid extras drawn in the turret's own space — a beam, say — after its parts. */
+    protected void submitEffects(TurretRenderState<T> state, PoseStack poseStack, SubmitSink sink) {}
+
     @Override
     public TurretRenderState<T> createRenderState() {
         return new TurretRenderState<>(emitter());
@@ -112,6 +115,7 @@ public abstract class RenderTurretBase<T extends TileEntityTurretBaseNT>
             poseStack.popPose();
         }
 
+        submitEffects(state, poseStack, sink);
         poseStack.popPose();
     }
 }

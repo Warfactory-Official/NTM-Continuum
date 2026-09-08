@@ -11,6 +11,7 @@ import com.hbm.items.ModMachineItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
 import com.hbm.items.weapon.sedna.factory.XFactory556mm;
+import com.hbm.items.weapon.sedna.factory.XFactoryAccelerator;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -21,6 +22,7 @@ import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import com.hbm.tileentity.turret.TileEntityTurretHowardDamaged;
 import com.hbm.tileentity.turret.TileEntityTurretSentry;
 import com.hbm.tileentity.turret.TileEntityTurretSentryDamaged;
+import com.hbm.tileentity.turret.TileEntityTurretTauon;
 import dev.golem.core.gametest.GameTests;
 import java.io.InputStream;
 import net.minecraft.core.BlockPos;
@@ -53,6 +55,8 @@ public final class TurretGameTests {
             TESTS.function("turret_sentry", 60, 8, () -> TurretGameTests::sentry);
     public static final GameTests.Function HOWARD =
             TESTS.function("turret_howard", 100, 16, () -> TurretGameTests::howard);
+    public static final GameTests.Function TAUON =
+            TESTS.function("turret_tauon", 100, 16, () -> TurretGameTests::tauon);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
 
@@ -304,6 +308,35 @@ public final class TurretGameTests {
         helper.succeed();
     }
 
+    public static void tauon(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_tauon.get());
+        TileEntityTurretTauon tauon = (TileEntityTurretTauon) helper.getLevel().getBlockEntity(core);
+        tauon.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
+                new ItemStack(ModAmmoItems.tau_uranium.get(), 64));
+        helper.assertTrue(tauon.getFirstConfigLoaded() == XFactoryAccelerator.tau_uranium,
+                "The Tauon did not resolve its uranium slug");
+
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(14, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+        float before = zombie.getHealth();
+        int rounds = tauon.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount();
+
+        BlockState state = helper.getLevel().getBlockState(core);
+        tauon.isOn = true;
+        for (int i = 0; i < 200 && zombie.getHealth() >= before; i++) {
+            tauon.setPower(tauon.getMaxPower());
+            TileEntityTurretTauon.serverTick(helper.getLevel(), core, state, tauon);
+        }
+
+        helper.assertTrue(tauon.target == zombie, "The Tauon never acquired its target");
+        helper.assertTrue(zombie.getHealth() < before,
+                "The Tauon spawns no projectile, so it must damage its target directly");
+        helper.assertTrue(tauon.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < rounds,
+                "Firing the beam must still consume a slug");
+        helper.succeed();
+    }
+
     public static void assets(GameTestHelper helper) {
         String[] required = {
                 "assets/hbm/models/turrets/turret_chekhov.obj",
@@ -326,6 +359,12 @@ public final class TurretGameTests {
                 "assets/hbm/textures/models/turrets/rusted/howard.png",
                 "assets/hbm/textures/models/turrets/rusted/carriage_ciws.png",
                 "assets/hbm/blockstates/turret_sentry.json",
+                "assets/hbm/blockstates/turret_tauon.json",
+                "assets/hbm/models/turrets/turret_tauon.obj",
+                "assets/hbm/textures/models/turrets/tauon.png",
+                "assets/hbm/textures/gui/weapon/gui_turret_tau.png",
+                "assets/hbm/sounds/weapon/taushoot.ogg",
+                "data/hbm/damage_type/electricity.json",
                 "assets/hbm/models/turrets/turret_howard.obj",
                 "assets/hbm/textures/models/turrets/howard.png",
                 "assets/hbm/textures/models/turrets/howard_barrels.png",

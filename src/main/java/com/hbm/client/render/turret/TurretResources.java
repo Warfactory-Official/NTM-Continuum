@@ -13,6 +13,7 @@ public final class TurretResources {
     public static final WavefrontObj SENTRY_MODEL = model("turret_sentry");
     public static final WavefrontObj HOWARD = model("turret_howard");
     public static final WavefrontObj HOWARD_DAMAGED = model("turret_howard_damaged");
+    public static final WavefrontObj TAUON = model("turret_tauon");
 
     public static final Identifier BASE = texture("base");
     public static final Identifier BASE_FRIENDLY = texture("base_friendly");
@@ -27,6 +28,7 @@ public final class TurretResources {
     public static final Identifier SENTRY_DAMAGED = texture("sentry_damaged");
     public static final Identifier HOWARD_BODY = texture("howard");
     public static final Identifier HOWARD_BARRELS = texture("howard_barrels");
+    public static final Identifier TAUON_BODY = texture("tauon");
     public static final Identifier BASE_RUSTED = texture("rusted/base");
     public static final Identifier CARRIAGE_CIWS_RUSTED = texture("rusted/carriage_ciws");
     public static final Identifier HOWARD_RUSTED = texture("rusted/howard");

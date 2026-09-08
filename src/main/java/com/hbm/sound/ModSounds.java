@@ -127,6 +127,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> TURRET_RICHARD_FIRE = register("turret.richard_fire");
     public static final RegistryObject<SoundEvent> TURRET_SENTRY_FIRE = register("turret.sentry_fire");
     public static final RegistryObject<SoundEvent> TURRET_SENTRY_LOCKON = register("turret.sentry_lockon");
+    public static final RegistryObject<SoundEvent> WEAPON_TAU_SHOOT = register("weapon.tau_shoot");
 
     /** Geiger click ladder, index 0..5 = old {@code geigerSounds}. */
     @SuppressWarnings("unchecked")

@@ -628,5 +628,9 @@
   "turret.sentry_lockon": {
     "category": "block",
     "sounds": [{"name": "hbm:turret/sentry_lockon", "stream": false}]
+  },
+  "weapon.tau_shoot": {
+    "category": "player",
+    "sounds": [{"name": "hbm:weapon/taushoot", "stream": false}]
   }
 }
