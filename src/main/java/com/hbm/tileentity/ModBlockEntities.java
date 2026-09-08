@@ -258,6 +258,34 @@ public final class ModBlockEntities {
                     () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityMachineDrain::new,
                             ModMachineBlocks.machine_drain.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.turret.TileEntityTurretChekhov>> TURRET_CHEKHOV =
+            BLOCK_ENTITIES.register("turret_chekhov",
+                    () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretChekhov::new,
+                            com.hbm.blocks.turret.ModTurretBlocks.turret_chekhov.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.turret.TileEntityTurretFriendly>> TURRET_FRIENDLY =
+            BLOCK_ENTITIES.register("turret_friendly",
+                    () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretFriendly::new,
+                            com.hbm.blocks.turret.ModTurretBlocks.turret_friendly.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.turret.TileEntityTurretSentry>> TURRET_SENTRY =
+            BLOCK_ENTITIES.register("turret_sentry",
+                    () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretSentry::new,
+                            com.hbm.blocks.turret.ModTurretBlocks.turret_sentry.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.turret.TileEntityTurretSentryDamaged>> TURRET_SENTRY_DAMAGED =
+            BLOCK_ENTITIES.register("turret_sentry_damaged",
+                    () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretSentryDamaged::new,
+                            com.hbm.blocks.turret.ModTurretBlocks.turret_sentry_damaged.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.turret.TileEntityTurretHoward>> TURRET_HOWARD =
+            BLOCK_ENTITIES.register("turret_howard",
+                    () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretHoward::new,
+                            com.hbm.blocks.turret.ModTurretBlocks.turret_howard.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.turret.TileEntityTurretHowardDamaged>> TURRET_HOWARD_DAMAGED =
+            BLOCK_ENTITIES.register("turret_howard_damaged",
+                    () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretHowardDamaged::new,
+                            com.hbm.blocks.turret.ModTurretBlocks.turret_howard_damaged.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityBatterySocket>> BATTERY_SOCKET =
             BLOCK_ENTITIES.register("machine_battery_socket",
                     () -> BlockEntities.type(TileEntityBatterySocket::new, ModBatteryBlocks.machine_battery_socket.get()));

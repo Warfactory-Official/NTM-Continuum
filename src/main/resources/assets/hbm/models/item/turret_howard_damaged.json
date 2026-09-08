@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/turrets/turret_howard_damaged.obj",
+      "texture": "hbm:textures/models/turrets/rusted/howard.png",
+      "partTextures": {
+        "Carriage": "hbm:textures/models/turrets/rusted/carriage_ciws.png",
+        "BarrelsTop": "hbm:textures/models/turrets/rusted/howard_barrels.png",
+        "BarrelsBottom": "hbm:textures/models/turrets/rusted/howard_barrels.png"
+      },
+      "scale": 0.15,
+      "yaw": 0
+    }
+  }
+}

@@ -42,6 +42,8 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> HARD_LANDING = key("hard_landing");
     public static final ResourceKey<DamageType> TAINT = key("taint");
     public static final ResourceKey<DamageType> BANG = key("bang");
+    /** projectile (old: {@code setProjectile()}) — the CIWS turrets' flak burst */
+    public static final ResourceKey<DamageType> SHRAPNEL = key("shrapnel");
     public static final ResourceKey<DamageType> LEAD = key("lead");
     public static final ResourceKey<DamageType> EUTHANIZED_SELF = key("euthanized_self");
     public static final ResourceKey<DamageType> EUTHANIZED_SELF2 = key("euthanized_self2");
@@ -102,6 +104,7 @@ public final class ModDamageSources {
     public static DamageSource turbofan(Level level) { return source(level, TURBOFAN); }
     public static DamageSource taint(Level level) { return source(level, TAINT); }
     public static DamageSource bang(Level level) { return source(level, BANG); }
+    public static DamageSource shrapnel(Level level) { return source(level, SHRAPNEL); }
     public static DamageSource lead(Level level) { return source(level, LEAD); }
     public static DamageSource euthanizedSelf(Level level) { return source(level, EUTHANIZED_SELF); }
     public static DamageSource euthanizedSelf2(Level level) { return source(level, EUTHANIZED_SELF2); }

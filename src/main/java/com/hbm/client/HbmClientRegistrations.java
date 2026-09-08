@@ -126,6 +126,7 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_REFINERY.get(), GUIMachineRefinery::new);
         sink.register(ModMenus.MACHINE_DIESEL.get(), GUIMachineDiesel::new);
         sink.register(ModMenus.LAUNCH_PAD.get(), com.hbm.inventory.gui.GUILaunchPad::new);
+        sink.register(ModMenus.TURRET_BASE.get(), com.hbm.inventory.gui.GUITurretBase::new);
         sink.register(ModMenus.MACHINE_TURBINE.get(), GUIMachineTurbine::new);
         sink.register(ModMenus.MACHINE_LARGE_TURBINE.get(), GUIMachineLargeTurbine::new);
         sink.register(ModMenus.MACHINE_TURBINE_GAS.get(), GUIMachineTurbineGas::new);

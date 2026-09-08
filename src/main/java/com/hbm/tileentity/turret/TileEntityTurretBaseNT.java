@@ -1,13 +1,16 @@
 package com.hbm.tileentity.turret;
 
-import com.hbm.api.energymk2.IEnergyHandlerMK2;
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemTurretBiometry;
+import com.hbm.inventory.container.ContainerTurretBase;
 import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.lib.DirPos;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -21,8 +24,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -33,7 +39,9 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.npc.Npc;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -53,12 +61,13 @@ import org.jspecify.annotations.Nullable;
  *
  * <p><b>Deviations from the fork.</b> The 1.12.2 target filter also matches {@code EntityBomber},
  * {@code EntityMissileCustom} and {@code EntityRailCarBase}; none of the three is ported yet, so
- * those branches are absent rather than stubbed. The pad-plug connector mask 1.12.2 syncs for its
- * renderer is likewise absent — it needs an energy-side {@code Library.canConnect}, which this port
- * does not have. Both are additive and change no behaviour that exists here.
+ * those branches are absent rather than stubbed. Spent casings are likewise absent: this port's
+ * {@code BulletConfig} carries no casing, so a turret that throws brass simply does not.
  */
 public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
-        implements IEnergyHandlerMK2, IControlReceiver {
+        implements IEnergyReceiverMK2, IControlReceiver, MenuProvider {
+
+    private static final Identifier TURRET_GUI_BASE = turretGui("base");
 
     public static final int SLOT_CHIP = 0;
     public static final int SLOT_AMMO_FIRST = 1;
@@ -84,6 +93,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     public boolean targetMachines = true;
     public int stattrak;
     public int casingDelay;
+    public int connectorMask;
     public @Nullable Entity target;
     public @Nullable Vec3 tPos;
     protected @Nullable List<ItemStack> ammoStacks;
@@ -143,7 +153,11 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
         if (aligned) updateFiringTick();
 
+        for (DirPos port : getConPos()) trySubscribe(level, port);
+
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, getMaxPower());
+
+        if (level instanceof ServerLevel server) connectorMask = computeConnectorMask(server);
 
         setChanged();
         networkPackNT();
@@ -339,6 +353,32 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         }
     }
 
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable(getName());
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int containerId, Inventory playerInventory, Player player) {
+        return new ContainerTurretBase(containerId, playerInventory, this);
+    }
+
+    /**
+     * 1.12.2 spells the background and label colour as a {@code GUITurret*} subclass per turret; the
+     * layout never varies, so the pair lives here and one screen serves every turret.
+     */
+    public Identifier guiTexture() {
+        return TURRET_GUI_BASE;
+    }
+
+    public int guiFontColor() {
+        return 0x808080;
+    }
+
+    protected static Identifier turretGui(String name) {
+        return dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, "textures/gui/weapon/gui_turret_" + name + ".png");
+    }
+
     public void manualSetup() {}
 
     public void spawnBullet(BulletConfig bullet, float baseDamage) {
@@ -479,6 +519,46 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         return new Vec3(x, 0D, z);
     }
 
+    protected boolean hasConnectorPlugs() {
+        return true;
+    }
+
+    /**
+     * The eight pad-edge plugs, in the order 1.12.2's {@code renderConnectors} draws them. The graph
+     * only answers on the server, so the mask is computed there and synced for the renderer.
+     */
+    /**
+     * Where a cable may feed the turret: the eight pad-edge cells plus the four beneath the footprint.
+     * The first eight are also the plugs the renderer draws, in 1.12.2's {@code renderConnectors}
+     * order, which is why the order matters and the underside comes last.
+     */
+    public DirPos[] getConPos() {
+        Vec3 offset = getHorizontalOffset();
+        int x = worldPosition.getX() + (int) offset.x;
+        int y = worldPosition.getY();
+        int z = worldPosition.getZ() + (int) offset.z;
+
+        return new DirPos[]{
+                new DirPos(x - 2, y, z, Library.NEG_X), new DirPos(x - 2, y, z - 1, Library.NEG_X),
+                new DirPos(x - 1, y, z + 1, Library.POS_Z), new DirPos(x, y, z + 1, Library.POS_Z),
+                new DirPos(x + 1, y, z, Library.POS_X), new DirPos(x + 1, y, z - 1, Library.POS_X),
+                new DirPos(x, y, z - 2, Library.NEG_Z), new DirPos(x - 1, y, z - 2, Library.NEG_Z),
+                new DirPos(x, y - 1, z, Library.NEG_Y), new DirPos(x - 1, y - 1, z, Library.NEG_Y),
+                new DirPos(x, y - 1, z - 1, Library.NEG_Y), new DirPos(x - 1, y - 1, z - 1, Library.NEG_Y),
+        };
+    }
+
+    private int computeConnectorMask(ServerLevel world) {
+        if (!hasConnectorPlugs()) return 0;
+
+        DirPos[] ports = getConPos();
+        int mask = 0;
+        for (int i = 0; i < 8 && i < ports.length; i++) {
+            if (Library.canConnect(world, ports[i].getPos(), ports[i].getDir())) mask |= 1 << i;
+        }
+        return mask;
+    }
+
     public Vec3 getEntityPos(Entity e) {
         return new Vec3(e.getX(), e.getY() + e.getBbHeight() * 0.5, e.getZ());
     }
@@ -537,6 +617,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         buf.writeBoolean(targetMobs);
         buf.writeBoolean(targetMachines);
         buf.writeInt(stattrak);
+        buf.writeByte(connectorMask);
     }
 
     @Override
@@ -552,6 +633,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         targetMobs = buf.readBoolean();
         targetMachines = buf.readBoolean();
         stattrak = buf.readInt();
+        connectorMask = buf.readByte() & 0xFF;
     }
 
     @Override

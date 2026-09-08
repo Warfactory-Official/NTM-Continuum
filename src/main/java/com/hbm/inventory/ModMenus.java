@@ -291,6 +291,11 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerLaunchPad>> LAUNCH_PAD =
             MENUS.register("launch_pad", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerLaunchPad::new));
 
+    /** Shared by every turret: the layout is identical, only the background texture differs. */
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerTurretBase>> TURRET_BASE =
+            MENUS.register("turret_base", () -> dev.golem.core.gui.Menus.typeWithPos(
+                    com.hbm.inventory.container.ContainerTurretBase::new));
+
     private static MenuType<com.hbm.inventory.container.ContainerMassStorage> massStorageMenu() {
         return MASS_STORAGE.get();
     }

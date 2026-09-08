@@ -72,13 +72,24 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> r556_jhp = ITEMS.registerSimpleItem("ammo_standard_r556_jhp");
     public static final RegistryObject<Item> r556_ap = ITEMS.registerSimpleItem("ammo_standard_r556_ap");
 
+    // .50 BMG, in the order upstream declares the M2/AMAT family. The two {@code ammo_secret} loads are
+    // absent: both hang off entities this port does not have.
+    public static final RegistryObject<Item> bmg50_sp = ITEMS.registerSimpleItem("ammo_standard_bmg50_sp");
+    public static final RegistryObject<Item> bmg50_fmj = ITEMS.registerSimpleItem("ammo_standard_bmg50_fmj");
+    public static final RegistryObject<Item> bmg50_jhp = ITEMS.registerSimpleItem("ammo_standard_bmg50_jhp");
+    public static final RegistryObject<Item> bmg50_ap = ITEMS.registerSimpleItem("ammo_standard_bmg50_ap");
+    public static final RegistryObject<Item> bmg50_du = ITEMS.registerSimpleItem("ammo_standard_bmg50_du");
+    public static final RegistryObject<Item> bmg50_he = ITEMS.registerSimpleItem("ammo_standard_bmg50_he");
+    public static final RegistryObject<Item> bmg50_sm = ITEMS.registerSimpleItem("ammo_standard_bmg50_sm");
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
                  ammo_debug, ammo_standard_nuke_high, m357_bp, m357_sp, m357_fmj, m357_jhp, m357_ap, m357_express,
                  m44_bp, m44_sp, m44_fmj, m44_jhp, m44_ap, m44_express,
                  p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap,
-                 stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap}) {
+                 stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap,
+                 bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }

@@ -337,6 +337,18 @@ public final class HbmBlockEntityRenderers {
         IntakeFanRenderers.register(sink, ModBlockEntities.MACHINE_INTAKE.get(), ModBlockEntities.MACHINE_FAN.get());
         com.hbm.smoke.SmokeChainClientRegistrations.registerRenderers(sink);
         com.hbm.foundry.FoundryExpansionClient.registerRenderers(sink);
+        regCustom(sink, ModBlockEntities.TURRET_CHEKHOV.get(),
+                ctx -> new com.hbm.client.render.turret.RenderTurretChekhov());
+        regCustom(sink, ModBlockEntities.TURRET_FRIENDLY.get(),
+                ctx -> new com.hbm.client.render.turret.RenderTurretFriendly());
+        regCustom(sink, ModBlockEntities.TURRET_SENTRY.get(),
+                ctx -> new com.hbm.client.render.turret.RenderTurretSentry<>());
+        regCustom(sink, ModBlockEntities.TURRET_SENTRY_DAMAGED.get(),
+                ctx -> new com.hbm.client.render.turret.RenderTurretSentryDamaged());
+        regCustom(sink, ModBlockEntities.TURRET_HOWARD.get(),
+                ctx -> new com.hbm.client.render.turret.RenderTurretHoward());
+        regCustom(sink, ModBlockEntities.TURRET_HOWARD_DAMAGED.get(),
+                ctx -> new com.hbm.client.render.turret.RenderTurretHowardDamaged());
     }
 
     private static <T extends BlockEntity> void reg(Sink sink, BlockEntityType<T> type, float yaw, float scale, ModelDef... defs) {

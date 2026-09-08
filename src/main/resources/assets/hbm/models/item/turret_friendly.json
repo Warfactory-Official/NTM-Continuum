@@ -1,0 +1,21 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/turrets/turret_chekhov.obj",
+      "texture": "hbm:textures/models/turrets/chekhov.png",
+      "partTextures": {
+        "Base": "hbm:textures/models/turrets/base_friendly.png",
+        "Carriage": "hbm:textures/models/turrets/carriage_friendly.png",
+        "Barrels": "hbm:textures/models/turrets/chekhov_barrels.png"
+      },
+      "exclude": [
+        "Connectors"
+      ],
+      "scale": 0.2,
+      "yaw": 0
+    }
+  }
+}

@@ -10,6 +10,7 @@
     "hbm:bullet_microwave",
     "hbm:bullet_subatomic",
     "hbm:bullet_other",
-    "hbm:bullet_piercing"
+    "hbm:bullet_piercing",
+    "hbm:shrapnel"
   ]
 }

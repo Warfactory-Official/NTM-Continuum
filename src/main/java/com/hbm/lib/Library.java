@@ -1,6 +1,8 @@
 package com.hbm.lib;
 
 import com.hbm.api.energymk2.IBatteryItem;
+import com.hbm.api.energymk2.IEnergyConnectorMK2;
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorMK2;
 import com.hbm.inventory.NTMItemHandler;
@@ -77,6 +79,27 @@ public final class Library {
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof IFluidConnectorMK2 con) {
             return con.canConnect(type, dir.getOpposite());
+        }
+
+        return false;
+    }
+
+    /**
+     * The energy twin of {@link #canConnectFluid}: whether the block at {@code pos} accepts a power
+     * connection on the face turned towards the asker, where {@code dir} points outwards from the
+     * asker. A block-level {@link IEnergyConnectorBlock} answers first, so a multiblock footprint
+     * connects without a BlockEntity in every cell.
+     */
+    public static boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+        if (dir == ForgeDirection.UNKNOWN) return false;
+
+        if (world.getBlockState(pos).getBlock() instanceof IEnergyConnectorBlock con) {
+            if (con.canConnect(world, pos, dir.getOpposite())) return true;
+        }
+
+        BlockEntity te = world.getBlockEntity(pos);
+        if (te instanceof IEnergyConnectorMK2 con) {
+            return con.canConnect(dir.getOpposite());
         }
 
         return false;

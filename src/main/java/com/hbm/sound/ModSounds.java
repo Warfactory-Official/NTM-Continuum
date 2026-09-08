@@ -119,6 +119,15 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> IRON_JUMP = register("step.iron_jump");
     public static final RegistryObject<SoundEvent> IRON_LAND = register("step.iron_land");
 
+    public static final RegistryObject<SoundEvent> TURRET_CHEKHOV_FIRE = register("turret.chekhov_fire");
+    public static final RegistryObject<SoundEvent> TURRET_HOWARD_FIRE = register("turret.howard_fire");
+    public static final RegistryObject<SoundEvent> TURRET_HOWARD_RELOAD = register("turret.howard_reload");
+    public static final RegistryObject<SoundEvent> TURRET_JEREMY_FIRE = register("turret.jeremy_fire");
+    public static final RegistryObject<SoundEvent> TURRET_JEREMY_RELOAD = register("turret.jeremy_reload");
+    public static final RegistryObject<SoundEvent> TURRET_RICHARD_FIRE = register("turret.richard_fire");
+    public static final RegistryObject<SoundEvent> TURRET_SENTRY_FIRE = register("turret.sentry_fire");
+    public static final RegistryObject<SoundEvent> TURRET_SENTRY_LOCKON = register("turret.sentry_lockon");
+
     /** Geiger click ladder, index 0..5 = old {@code geigerSounds}. */
     @SuppressWarnings("unchecked")
     public static final RegistryObject<SoundEvent>[] GEIGER_SOUNDS =
