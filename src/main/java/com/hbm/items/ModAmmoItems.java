@@ -92,6 +92,16 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> shell_du = ITEMS.registerSimpleItem("ammo_shell_apfsds_du");
     public static final RegistryObject<Item> shell_w9 = ITEMS.registerSimpleItem("ammo_shell_w9");
 
+    // 84 mm rockets, in the order upstream declares them. The incendiary and white-phosphorus loads
+    // have no bullet config yet: their impact spawns lingering fire, which needs an entity and a pair
+    // of living-props counters this port does not have.
+    public static final RegistryObject<Item> rocket_he = ITEMS.registerSimpleItem("ammo_standard_rocket_he");
+    public static final RegistryObject<Item> rocket_heat = ITEMS.registerSimpleItem("ammo_standard_rocket_heat");
+    public static final RegistryObject<Item> rocket_demo = ITEMS.registerSimpleItem("ammo_standard_rocket_demo");
+    public static final RegistryObject<Item> rocket_inc = ITEMS.registerSimpleItem("ammo_standard_rocket_inc");
+    public static final RegistryObject<Item> rocket_phosphorus =
+            ITEMS.registerSimpleItem("ammo_standard_rocket_phosphorus");
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
@@ -100,7 +110,8 @@ public final class ModAmmoItems {
                  p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap,
                  stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap,
                  bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm, tau_uranium,
-                 shell_normal, shell_explosive, shell_ap, shell_du, shell_w9}) {
+                 shell_normal, shell_explosive, shell_ap, shell_du, shell_w9,
+                 rocket_he, rocket_heat, rocket_demo, rocket_inc, rocket_phosphorus}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }

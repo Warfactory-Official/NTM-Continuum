@@ -33,5 +33,6 @@ public class GunFactory {
         XFactory50.init();
         XFactoryTurret.init();
         XFactoryAccelerator.init();
+        XFactoryRocket.init();
     }
 }

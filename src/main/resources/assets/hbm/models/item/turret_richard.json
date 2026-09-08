@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/turrets/turret_richard.obj",
+      "texture": "hbm:textures/models/turrets/richard.png",
+      "exclude": [
+        "MissileLoaded"
+      ],
+      "scale": 0.28,
+      "yaw": 0
+    }
+  }
+}

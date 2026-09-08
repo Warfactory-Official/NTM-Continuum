@@ -13,6 +13,7 @@ import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory50;
 import com.hbm.items.weapon.sedna.factory.XFactory556mm;
 import com.hbm.items.weapon.sedna.factory.XFactoryAccelerator;
+import com.hbm.items.weapon.sedna.factory.XFactoryRocket;
 import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -23,6 +24,7 @@ import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import com.hbm.tileentity.turret.TileEntityTurretHowardDamaged;
 import com.hbm.tileentity.turret.TileEntityTurretJeremy;
 import com.hbm.tileentity.turret.TileEntityTurretMaxwell;
+import com.hbm.tileentity.turret.TileEntityTurretRichard;
 import com.hbm.tileentity.turret.TileEntityTurretSentry;
 import com.hbm.tileentity.turret.TileEntityTurretSentryDamaged;
 import com.hbm.tileentity.turret.TileEntityTurretTauon;
@@ -64,6 +66,8 @@ public final class TurretGameTests {
             TESTS.function("turret_maxwell", 100, 16, () -> TurretGameTests::maxwell);
     public static final GameTests.Function JEREMY =
             TESTS.function("turret_jeremy", 100, 24, () -> TurretGameTests::jeremy);
+    public static final GameTests.Function RICHARD =
+            TESTS.function("turret_richard", 100, 24, () -> TurretGameTests::richard);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
 
@@ -410,6 +414,49 @@ public final class TurretGameTests {
         helper.succeed();
     }
 
+    public static void richard(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_richard.get());
+        TileEntityTurretRichard richard = (TileEntityTurretRichard) helper.getLevel().getBlockEntity(core);
+        BlockState state = helper.getLevel().getBlockState(core);
+
+        helper.assertTrue(XFactoryRocket.rocket_ml.length == 3,
+                "The launcher belt carries the three warheads whose impact is ported");
+        richard.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
+                new ItemStack(ModAmmoItems.rocket_heat.get(), 32));
+        helper.assertTrue(richard.getFirstConfigLoaded() == XFactoryRocket.rocket_ml[1],
+                "The launcher did not resolve its HEAT rocket");
+
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(20, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+
+        helper.assertTrue(richard.loaded == 0, "A launcher starts with an empty rack");
+        int rounds = richard.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount();
+        richard.isOn = true;
+
+        for (int i = 0; i < 400
+                && richard.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() >= rounds; i++) {
+            richard.setPower(richard.getMaxPower());
+            TileEntityTurretRichard.serverTick(helper.getLevel(), core, state, richard);
+        }
+
+        helper.assertTrue(richard.target == zombie,
+                "The launcher never acquired its target; distance "
+                        + richard.getTurretPos().distanceTo(richard.getEntityPos(zombie))
+                        + ", alive " + zombie.isAlive() + ", los " + richard.entityInLOS(zombie));
+        helper.assertTrue(richard.loaded > 0 && richard.loaded < 17,
+                "The rack must refill to seventeen and then empty as it fires; it holds " + richard.loaded);
+        helper.assertTrue(richard.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < rounds,
+                "The launcher tracked its target but never fired");
+
+        var rockets = helper.getLevel().getEntitiesOfClass(
+                com.hbm.entity.projectile.EntityBulletBaseMK4.class,
+                new net.minecraft.world.phys.AABB(core).inflate(48D));
+        helper.assertTrue(!rockets.isEmpty() && rockets.get(0).lockonTarget == zombie,
+                "A launched rocket must carry the turret's lock");
+        helper.succeed();
+    }
+
     public static void assets(GameTestHelper helper) {
         String[] required = {
                 "assets/hbm/models/turrets/turret_chekhov.obj",
@@ -435,6 +482,12 @@ public final class TurretGameTests {
                 "assets/hbm/blockstates/turret_tauon.json",
                 "assets/hbm/blockstates/turret_maxwell.json",
                 "assets/hbm/blockstates/turret_jeremy.json",
+                "assets/hbm/blockstates/turret_richard.json",
+                "assets/hbm/models/turrets/turret_richard.obj",
+                "assets/hbm/textures/models/turrets/richard.png",
+                "assets/hbm/textures/gui/weapon/gui_turret_richard.png",
+                "assets/hbm/sounds/turret/richard_fire.ogg",
+                "assets/hbm/textures/items/ammo_standard_rocket_he.png",
                 "assets/hbm/models/turrets/turret_jeremy.obj",
                 "assets/hbm/textures/models/turrets/jeremy.png",
                 "assets/hbm/textures/gui/weapon/gui_turret_cannon.png",
