@@ -85,6 +85,13 @@ public final class ModAmmoItems {
     /** The Tauon turret's uranium slug. The accelerator weapons it also feeds are unported. */
     public static final RegistryObject<Item> tau_uranium = ITEMS.registerSimpleItem("ammo_standard_tau_uranium");
 
+    // 240 mm shells, in the order the Jeremy and the artillery feed them.
+    public static final RegistryObject<Item> shell_normal = ITEMS.registerSimpleItem("ammo_shell");
+    public static final RegistryObject<Item> shell_explosive = ITEMS.registerSimpleItem("ammo_shell_explosive");
+    public static final RegistryObject<Item> shell_ap = ITEMS.registerSimpleItem("ammo_shell_apfsds_t");
+    public static final RegistryObject<Item> shell_du = ITEMS.registerSimpleItem("ammo_shell_apfsds_du");
+    public static final RegistryObject<Item> shell_w9 = ITEMS.registerSimpleItem("ammo_shell_w9");
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
@@ -92,7 +99,8 @@ public final class ModAmmoItems {
                  m44_bp, m44_sp, m44_fmj, m44_jhp, m44_ap, m44_express,
                  p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap,
                  stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap,
-                 bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm, tau_uranium}) {
+                 bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm, tau_uranium,
+                 shell_normal, shell_explosive, shell_ap, shell_du, shell_w9}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }

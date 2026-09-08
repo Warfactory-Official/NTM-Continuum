@@ -21,6 +21,7 @@ import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import com.hbm.tileentity.turret.TileEntityTurretHowardDamaged;
+import com.hbm.tileentity.turret.TileEntityTurretJeremy;
 import com.hbm.tileentity.turret.TileEntityTurretMaxwell;
 import com.hbm.tileentity.turret.TileEntityTurretSentry;
 import com.hbm.tileentity.turret.TileEntityTurretSentryDamaged;
@@ -61,6 +62,8 @@ public final class TurretGameTests {
             TESTS.function("turret_tauon", 100, 16, () -> TurretGameTests::tauon);
     public static final GameTests.Function MAXWELL =
             TESTS.function("turret_maxwell", 100, 16, () -> TurretGameTests::maxwell);
+    public static final GameTests.Function JEREMY =
+            TESTS.function("turret_jeremy", 100, 24, () -> TurretGameTests::jeremy);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
 
@@ -378,6 +381,35 @@ public final class TurretGameTests {
         helper.succeed();
     }
 
+    public static void jeremy(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_jeremy.get());
+        TileEntityTurretJeremy jeremy = (TileEntityTurretJeremy) helper.getLevel().getBlockEntity(core);
+
+        jeremy.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
+                new ItemStack(ModAmmoItems.shell_explosive.get(), 8));
+        helper.assertTrue(jeremy.getFirstConfigLoaded() == XFactoryTurret.shell_explosive,
+                "The Jeremy did not resolve its HE shell");
+        helper.assertTrue(jeremy.getAmmoTypesForDisplay().size() == 5,
+                "All five 240 mm loads must show in the ammo panel");
+
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(24, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+        int rounds = jeremy.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount();
+
+        BlockState state = helper.getLevel().getBlockState(core);
+        jeremy.isOn = true;
+        for (int i = 0; i < 200 && jeremy.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() >= rounds; i++) {
+            jeremy.setPower(jeremy.getMaxPower());
+            TileEntityTurretJeremy.serverTick(helper.getLevel(), core, state, jeremy);
+        }
+
+        helper.assertTrue(jeremy.target == zombie, "The Jeremy never acquired its target");
+        helper.assertTrue(jeremy.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < rounds,
+                "The Jeremy tracked its target but never fired a shell");
+        helper.succeed();
+    }
+
     public static void assets(GameTestHelper helper) {
         String[] required = {
                 "assets/hbm/models/turrets/turret_chekhov.obj",
@@ -402,6 +434,14 @@ public final class TurretGameTests {
                 "assets/hbm/blockstates/turret_sentry.json",
                 "assets/hbm/blockstates/turret_tauon.json",
                 "assets/hbm/blockstates/turret_maxwell.json",
+                "assets/hbm/blockstates/turret_jeremy.json",
+                "assets/hbm/models/turrets/turret_jeremy.obj",
+                "assets/hbm/textures/models/turrets/jeremy.png",
+                "assets/hbm/textures/gui/weapon/gui_turret_cannon.png",
+                "assets/hbm/sounds/turret/jeremy_fire1.ogg",
+                "assets/hbm/sounds/turret/jeremy_reload.ogg",
+                "assets/hbm/sounds/weapon/explosion_tiny1.ogg",
+                "assets/hbm/textures/items/ammo_shell_w9.png",
                 "assets/hbm/models/turrets/turret_microwave.obj",
                 "assets/hbm/textures/models/turrets/maxwell.png",
                 "assets/hbm/textures/gui/weapon/gui_turret_maxwell.png",

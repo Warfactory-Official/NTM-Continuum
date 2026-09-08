@@ -632,5 +632,9 @@
   "weapon.tau_shoot": {
     "category": "player",
     "sounds": [{"name": "hbm:weapon/taushoot", "stream": false}]
+  },
+  "weapon.explosion_tiny": {
+    "category": "block",
+    "sounds": ["hbm:weapon/explosion_tiny1", "hbm:weapon/explosion_tiny2"]
   }
 }

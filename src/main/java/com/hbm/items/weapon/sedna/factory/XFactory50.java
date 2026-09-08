@@ -8,10 +8,9 @@ import com.hbm.items.weapon.sedna.BulletConfigs;
  * The .50 BMG family. Only the rounds exist here: the calibre's guns (the M2 and the AMAT) are not
  * ported, but the Chekhov turret feeds from the same belt, so the configs are needed on their own.
  *
- * <p>Two of upstream's nine loads are absent. {@code bmg50_he} needs {@code Lego.tinyExplode}, which
- * rests on the NT piercing-damage path this port does not have; {@code bmg50_black} and
- * {@code bmg50_equestrian} are {@code ammo_secret} loads whose impact hangs off entities that are
- * likewise absent. Their items are still registered, so nothing goes missing from the ammo list.
+ * <p>Two of upstream's nine loads are absent: {@code bmg50_black} and {@code bmg50_equestrian} are
+ * {@code ammo_secret} loads whose impact hangs off entities that are not ported. Their items are
+ * still registered, so nothing goes missing from the ammo list.
  */
 public final class XFactory50 {
 
@@ -20,6 +19,7 @@ public final class XFactory50 {
     public static BulletConfig bmg50_jhp;
     public static BulletConfig bmg50_ap;
     public static BulletConfig bmg50_du;
+    public static BulletConfig bmg50_he;
     public static BulletConfig bmg50_sm;
 
     private XFactory50() {}
@@ -38,12 +38,22 @@ public final class XFactory50 {
         bmg50_du = BulletConfigs.register("bmg50_du", new BulletConfig()
                 .setItem(ModAmmoItems.bmg50_du).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setDamage(1.5F).setThresholdNegation(21F).setArmorPiercing(0.25F));
+        bmg50_he = BulletConfigs.register("bmg50_he", new BulletConfig()
+                .setItem(ModAmmoItems.bmg50_he).setWear(3F).setDamage(1.75F)
+                .setOnImpact((bullet, mop) -> {
+                    if (mop instanceof net.minecraft.world.phys.EntityHitResult hit && bullet.tickCount < 3
+                            && hit.getEntity() == bullet.getThrower()) {
+                        return;
+                    }
+                    Lego.tinyExplode(bullet, mop, 2F);
+                    bullet.discard();
+                }));
         bmg50_sm = BulletConfigs.register("bmg50_sm", new BulletConfig()
                 .setItem(ModAmmoItems.bmg50_sm).setWear(10F).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setDamage(2.5F).setThresholdNegation(30F).setArmorPiercing(0.35F));
     }
 
     public static BulletConfig[] all() {
-        return new BulletConfig[] {bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_sm};
+        return new BulletConfig[] {bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm};
     }
 }

@@ -353,6 +353,8 @@ public final class HbmBlockEntityRenderers {
                 ctx -> new com.hbm.client.render.turret.RenderTurretTauon());
         regCustom(sink, ModBlockEntities.TURRET_MAXWELL.get(),
                 ctx -> new com.hbm.client.render.turret.RenderTurretMaxwell());
+        regCustom(sink, ModBlockEntities.TURRET_JEREMY.get(),
+                ctx -> new com.hbm.client.render.turret.RenderTurretJeremy());
     }
 
     private static <T extends BlockEntity> void reg(Sink sink, BlockEntityType<T> type, float yaw, float scale, ModelDef... defs) {
