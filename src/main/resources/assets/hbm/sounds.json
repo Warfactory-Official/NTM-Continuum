@@ -636,5 +636,9 @@
   "weapon.explosion_tiny": {
     "category": "block",
     "sounds": ["hbm:weapon/explosion_tiny1", "hbm:weapon/explosion_tiny2"]
+  },
+  "weapon.flamethrower_shoot": {
+    "category": "player",
+    "sounds": [{"name": "hbm:weapon/flamethrowershoot", "stream": false}]
   }
 }

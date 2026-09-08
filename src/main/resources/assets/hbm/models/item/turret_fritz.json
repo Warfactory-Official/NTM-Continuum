@@ -1,0 +1,13 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/turrets/turret_fritz.obj",
+      "texture": "hbm:textures/models/turrets/fritz.png",
+      "scale": 0.25,
+      "yaw": 0
+    }
+  }
+}

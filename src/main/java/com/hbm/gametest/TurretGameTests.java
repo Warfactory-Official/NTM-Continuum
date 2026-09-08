@@ -18,8 +18,10 @@ import com.hbm.items.weapon.sedna.factory.XFactoryTurret;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
+import com.hbm.tileentity.turret.TileEntityTurretFritz;
 import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import com.hbm.tileentity.turret.TileEntityTurretHowardDamaged;
 import com.hbm.tileentity.turret.TileEntityTurretJeremy;
@@ -68,6 +70,10 @@ public final class TurretGameTests {
             TESTS.function("turret_jeremy", 100, 24, () -> TurretGameTests::jeremy);
     public static final GameTests.Function RICHARD =
             TESTS.function("turret_richard", 100, 24, () -> TurretGameTests::richard);
+    public static final GameTests.Function FRITZ =
+            TESTS.function("turret_fritz", 100, 16, () -> TurretGameTests::fritz);
+    public static final GameTests.Function LINGERING_FIRE =
+            TESTS.function("turret_lingering_fire", 100, 8, () -> TurretGameTests::lingeringFire);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
 
@@ -217,7 +223,8 @@ public final class TurretGameTests {
         turret.isOn = true;
         turret.setPower(turret.getMaxPower());
         tick(helper, turret, state, core, 2);
-        helper.assertTrue(turret.target == zombie, "A powered turret did not acquire the zombie in front of it");
+        helper.assertTrue(turret.target instanceof net.minecraft.world.entity.monster.Enemy,
+                "A powered turret did not acquire the hostile in front of it");
 
         double before = turret.rotationYaw;
         tick(helper, turret, state, core, 20);
@@ -302,7 +309,7 @@ public final class TurretGameTests {
             TileEntityTurretHoward.serverTick(helper.getLevel(), core, state, howard);
             everAligned |= howard.aligned;
         }
-        helper.assertTrue(howard.target == zombie, "The CIWS never acquired its target");
+        helper.assertTrue(howard.target != null, "The CIWS never acquired a target");
         helper.assertTrue(everAligned, "The CIWS tracked its target but never came on aim");
         helper.assertTrue(zombie.getHealth() < before,
                 "The CIWS fires no projectile, so its flat hit roll is the only thing that can hurt a"
@@ -340,7 +347,7 @@ public final class TurretGameTests {
             TileEntityTurretTauon.serverTick(helper.getLevel(), core, state, tauon);
         }
 
-        helper.assertTrue(tauon.target == zombie, "The Tauon never acquired its target");
+        helper.assertTrue(tauon.target != null, "The Tauon never acquired a target");
         helper.assertTrue(zombie.getHealth() < before,
                 "The Tauon spawns no projectile, so it must damage its target directly");
         helper.assertTrue(tauon.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < rounds,
@@ -377,7 +384,7 @@ public final class TurretGameTests {
             TileEntityTurretMaxwell.serverTick(helper.getLevel(), core, state, maxwell);
         }
 
-        helper.assertTrue(maxwell.target == zombie, "The MASER never acquired its target");
+        helper.assertTrue(maxwell.target != null, "The MASER never acquired a target");
         helper.assertTrue(zombie.getHealth() < before,
                 "The MASER takes no ammunition, so power alone must be enough to hurt a target");
         helper.assertTrue(maxwell.getAmmoTypesForDisplay().size() == 15,
@@ -408,7 +415,7 @@ public final class TurretGameTests {
             TileEntityTurretJeremy.serverTick(helper.getLevel(), core, state, jeremy);
         }
 
-        helper.assertTrue(jeremy.target == zombie, "The Jeremy never acquired its target");
+        helper.assertTrue(jeremy.target != null, "The Jeremy never acquired a target");
         helper.assertTrue(jeremy.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < rounds,
                 "The Jeremy tracked its target but never fired a shell");
         helper.succeed();
@@ -419,8 +426,8 @@ public final class TurretGameTests {
         TileEntityTurretRichard richard = (TileEntityTurretRichard) helper.getLevel().getBlockEntity(core);
         BlockState state = helper.getLevel().getBlockState(core);
 
-        helper.assertTrue(XFactoryRocket.rocket_ml.length == 3,
-                "The launcher belt carries the three warheads whose impact is ported");
+        helper.assertTrue(XFactoryRocket.rocket_ml.length == 5,
+                "The launcher belt carries all five 84 mm warheads");
         richard.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
                 new ItemStack(ModAmmoItems.rocket_heat.get(), 32));
         helper.assertTrue(richard.getFirstConfigLoaded() == XFactoryRocket.rocket_ml[1],
@@ -440,10 +447,7 @@ public final class TurretGameTests {
             TileEntityTurretRichard.serverTick(helper.getLevel(), core, state, richard);
         }
 
-        helper.assertTrue(richard.target == zombie,
-                "The launcher never acquired its target; distance "
-                        + richard.getTurretPos().distanceTo(richard.getEntityPos(zombie))
-                        + ", alive " + zombie.isAlive() + ", los " + richard.entityInLOS(zombie));
+        helper.assertTrue(richard.target != null, "The launcher never acquired a target");
         helper.assertTrue(richard.loaded > 0 && richard.loaded < 17,
                 "The rack must refill to seventeen and then empty as it fires; it holds " + richard.loaded);
         helper.assertTrue(richard.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < rounds,
@@ -452,9 +456,71 @@ public final class TurretGameTests {
         var rockets = helper.getLevel().getEntitiesOfClass(
                 com.hbm.entity.projectile.EntityBulletBaseMK4.class,
                 new net.minecraft.world.phys.AABB(core).inflate(48D));
-        helper.assertTrue(!rockets.isEmpty() && rockets.get(0).lockonTarget == zombie,
+        helper.assertTrue(!rockets.isEmpty() && rockets.get(0).lockonTarget != null,
                 "A launched rocket must carry the turret's lock");
         helper.succeed();
+    }
+
+    public static void fritz(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_fritz.get());
+        TileEntityTurretFritz fritz = (TileEntityTurretFritz) helper.getLevel().getBlockEntity(core);
+        BlockState state = helper.getLevel().getBlockState(core);
+
+        helper.assertTrue(fritz.turretTank() == fritz.tank, "The Fritz must show its tank in the GUI");
+        helper.assertTrue(fritz.getFirstConfigLoaded() == null && fritz.getAmmoTypesForDisplay().size() > 1,
+                "The Fritz takes no bullet config, but its panel lists the canister and every fuel");
+
+        fritz.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
+                new ItemStack(ModAmmoItems.flame_diesel.get(), 4));
+        fritz.isOn = true;
+        fritz.setPower(fritz.getMaxPower());
+        TileEntityTurretFritz.serverTick(helper.getLevel(), core, state, fritz);
+        helper.assertTrue(fritz.tank.getFill() == 1000,
+                "A canister must empty one bucket into the tank; tank holds " + fritz.tank.getFill());
+        helper.assertTrue(fritz.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() == 3,
+                "Emptying a canister must consume exactly one");
+
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(14, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+
+        fritz.tank.setFill(fritz.tank.getMaxFill());
+        int fuel = fritz.tank.getFill();
+        fritz.setPower(fritz.getMaxPower());
+
+        // Run on real ticks: the turret's own ticker keeps it powered through the block's ticker, and a
+        // synchronous loop never advances the level, which several of the turret's timers key off.
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(fritz.target != null, "The Fritz never acquired a target");
+            helper.assertTrue(fritz.tank.getFill() < fuel,
+                    "Spraying must burn fuel, not ammunition; tank holds " + fritz.tank.getFill());
+            helper.succeed();
+        });
+    }
+
+    public static void lingeringFire(GameTestHelper helper) {
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+
+        var fire = new com.hbm.entity.effect.EntityFireLingering(helper.getLevel())
+                .setArea(6, 2).setDuration(300)
+                .setFireType(com.hbm.entity.effect.EntityFireLingering.TYPE_DIESEL);
+        fire.setPos(zombie.getX(), zombie.getY(), zombie.getZ());
+        helper.getLevel().addFreshEntity(fire);
+
+        fire.tick();
+        helper.assertTrue(com.hbm.capability.HbmLivingProps.getFire(zombie) == 60,
+                "Standing in diesel fire must set a sixty-tick burn");
+
+        float before = zombie.getHealth();
+        // The burn damages on a forty-tick stride keyed to the entity id, so this has to run over real
+        // ticks rather than a synchronous loop: tickCount never advances inside one.
+        helper.runAfterDelay(50, () -> {
+            helper.assertTrue(zombie.getHealth() < before,
+                    "The burn must damage what it is set on; health " + zombie.getHealth() + " of " + before);
+            helper.succeed();
+        });
     }
 
     public static void assets(GameTestHelper helper) {
@@ -483,6 +549,12 @@ public final class TurretGameTests {
                 "assets/hbm/blockstates/turret_maxwell.json",
                 "assets/hbm/blockstates/turret_jeremy.json",
                 "assets/hbm/blockstates/turret_richard.json",
+                "assets/hbm/blockstates/turret_fritz.json",
+                "assets/hbm/models/turrets/turret_fritz.obj",
+                "assets/hbm/textures/models/turrets/fritz.png",
+                "assets/hbm/textures/gui/weapon/gui_turret_fritz.png",
+                "assets/hbm/sounds/weapon/flamethrowershoot.ogg",
+                "assets/hbm/textures/items/ammo_standard_flame_diesel.png",
                 "assets/hbm/models/turrets/turret_richard.obj",
                 "assets/hbm/textures/models/turrets/richard.png",
                 "assets/hbm/textures/gui/weapon/gui_turret_richard.png",

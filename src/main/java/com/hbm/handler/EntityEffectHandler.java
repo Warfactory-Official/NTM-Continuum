@@ -77,6 +77,7 @@ public class EntityEffectHandler {
             handleRadiation(entity);
             handleDigamma(entity);
             handleLungDisease(entity);
+            handleFire(entity);
 
             if (entity instanceof ServerPlayer player && entity.tickCount % SYNC_INTERVAL == 0) {
                 syncToPlayer(player);
@@ -106,6 +107,38 @@ public class EntityEffectHandler {
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {
             EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
+
+    /**
+     * The three burns HBM tracks separately from vanilla fire: they ignore fire resistance, tick down
+     * on their own clock and are staggered by entity id so a crowd does not all take damage on the
+     * same tick. Water puts ordinary fire out; white phosphorus and balefire keep going.
+     */
+    private static void handleFire(LivingEntity entity) {
+        if (!(entity.level() instanceof ServerLevel server)) return;
+
+        EntityHbmProps props = HbmLivingProps.getData(entity);
+        if (entity.fireImmune()) {
+            props.setFire(0);
+            props.setPhosphorus(0);
+        }
+        if (entity.isInWaterOrRain()) props.setFire(0);
+
+        DamageSource source = ModDamageSources.source(entity.level(), ModDamageSources.DamageClass.FIRE.type());
+        if (props.getFire() > 0) {
+            props.setFire(props.getFire() - 1);
+            if ((entity.tickCount + entity.getId()) % 40 == 0) Compat.hurt(entity, server, source, 2F);
+        }
+        if (props.getPhosphorus() > 0) {
+            props.setPhosphorus(props.getPhosphorus() - 1);
+            if ((entity.tickCount + entity.getId()) % 40 == 0) Compat.hurt(entity, server, source, 5F);
+        }
+        if (props.getBalefire() > 0) {
+            props.setBalefire(props.getBalefire() - 1);
+            ContaminationUtil.contaminate(entity, HazardType.RADIATION,
+                    ContaminationType.CREATIVE, 5F);
+            if ((entity.tickCount + entity.getId()) % 20 == 0) Compat.hurt(entity, server, source, 5F);
+        }
+    }
 
     private static void handleContamination(LivingEntity entity) {
         Iterator<ContaminationEffect> iterator = HbmLivingProps.getCont(entity).iterator();

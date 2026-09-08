@@ -16,6 +16,7 @@ public final class TurretResources {
     public static final WavefrontObj TAUON = model("turret_tauon");
     public static final WavefrontObj MAXWELL = model("turret_microwave");
     public static final WavefrontObj RICHARD = model("turret_richard");
+    public static final WavefrontObj FRITZ = model("turret_fritz");
 
     public static final Identifier BASE = texture("base");
     public static final Identifier BASE_FRIENDLY = texture("base_friendly");
@@ -33,6 +34,7 @@ public final class TurretResources {
     public static final Identifier TAUON_BODY = texture("tauon");
     public static final Identifier MAXWELL_BODY = texture("maxwell");
     public static final Identifier RICHARD_BODY = texture("richard");
+    public static final Identifier FRITZ_BODY = texture("fritz");
     public static final Identifier BASE_RUSTED = texture("rusted/base");
     public static final Identifier CARRIAGE_CIWS_RUSTED = texture("rusted/carriage_ciws");
     public static final Identifier HOWARD_RUSTED = texture("rusted/howard");

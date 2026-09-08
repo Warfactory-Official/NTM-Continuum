@@ -150,6 +150,34 @@ public class HbmLivingProps {
         // TODO(hud): the old red "info.asbestos" inform toast (PlayerInformPacketLegacy)
     }
 
+    public static int getFire(LivingEntity entity) {
+        return getData(entity).getFire();
+    }
+
+    /** Raises the burn to {@code ticks} without ever shortening one already running. */
+    public static void setFireAtLeast(LivingEntity entity, int ticks) {
+        EntityHbmProps props = getData(entity);
+        if (props.getFire() < ticks) props.setFire(ticks);
+    }
+
+    public static int getPhosphorus(LivingEntity entity) {
+        return getData(entity).getPhosphorus();
+    }
+
+    public static void setPhosphorusAtLeast(LivingEntity entity, int ticks) {
+        EntityHbmProps props = getData(entity);
+        if (props.getPhosphorus() < ticks) props.setPhosphorus(ticks);
+    }
+
+    public static int getBalefire(LivingEntity entity) {
+        return getData(entity).getBalefire();
+    }
+
+    public static void setBalefireAtLeast(LivingEntity entity, int ticks) {
+        EntityHbmProps props = getData(entity);
+        if (props.getBalefire() < ticks) props.setBalefire(ticks);
+    }
+
     public static void addCont(LivingEntity entity, ContaminationEffect cont) {
         getData(entity).getContaminationEffectList().add(cont);
     }

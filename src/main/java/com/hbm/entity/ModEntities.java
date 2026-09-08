@@ -65,6 +65,19 @@ public final class ModEntities {
                             .clientTrackingRange(64)
                             .updateInterval(20), key));
 
+    /**
+     * Ground fire left by an incendiary warhead. Invisible and unsaved: it is a timer with a hitbox,
+     * and each client raises its own flames from the entity's tick rather than from particle packets.
+     */
+    public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityFireLingering>> FIRE_LINGERING =
+            ENTITY_TYPES.register("entity_fire_lingering", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.effect.EntityFireLingering>of(
+                                    com.hbm.entity.effect.EntityFireLingering::new, MobCategory.MISC)
+                            .sized(1.0F, 1.0F)
+                            .fireImmune()
+                            .clientTrackingRange(64)
+                            .updateInterval(20), key));
+
     /** Collectable debris thrown from a ZIRNOX reactor meltdown. */
     public static final RegistryObject<EntityType<EntityZirnoxDebris>> ZIRNOX_DEBRIS =
             ENTITY_TYPES.register("entity_zirnox_debris", key -> dev.golem.core.registry.Entities.build(

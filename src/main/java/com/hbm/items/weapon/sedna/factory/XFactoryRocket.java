@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.entity.effect.EntityFireLingering;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
@@ -8,6 +9,7 @@ import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.items.ModAmmoItems;
+import com.hbm.mixin.FireBlockAccessor;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.lib.ModDamageSources;
@@ -15,9 +17,14 @@ import com.hbm.lib.ModDamageSources.DamageClass;
 import com.hbm.util.DamageResistanceHandler;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -26,11 +33,9 @@ import net.minecraft.world.phys.Vec3;
  * The 84 mm rockets. A rocket leaves the tube at a standstill and builds up speed under its own
  * motor, which is why its config velocity is zero and the acceleration lives on the entity.
  *
- * <p>Two of the five loads have their items but no config: the incendiary and white-phosphorus
- * warheads spawn lingering fire, which needs an entity and a pair of living-props counters that are
- * not ported. The launchers that fire the other variants ({@code rocket_rpzb}, {@code rocket_qd},
- * {@code rocket_ncrpa}) are likewise absent — only the missile launcher's belt is built here, since
- * the Richard turret is its only consumer.
+ * <p>The launchers that fire the other variants ({@code rocket_rpzb}, {@code rocket_qd},
+ * {@code rocket_ncrpa}) are absent — only the missile launcher's belt is built here, since the
+ * Richard turret is its only consumer.
  */
 public final class XFactoryRocket {
 
@@ -78,7 +83,51 @@ public final class XFactoryRocket {
         bullet.discard();
     };
 
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_STANDARD_EXPLODE_INC =
+            (bullet, mop) -> spawnFire(bullet, mop, false, 300);
+
+    public static final BiConsumer<EntityBulletBaseMK4, HitResult> LAMBDA_STANDARD_EXPLODE_PHOSPHORUS =
+            (bullet, mop) -> spawnFire(bullet, mop, true, 600);
+
     private XFactoryRocket() {}
+
+    /**
+     * A blast, a patch of lingering fire, and ordinary vanilla flame on anything nearby that will take
+     * it — the last is what makes an incendiary round set the scenery alight rather than just the mob
+     * standing in it. Flammability is read off vanilla's own burn-odds map rather than upstream's
+     * per-face Forge query, which has no Fabric counterpart; the answer differs only for a block that
+     * burns on some faces and not others, and vanilla has none.
+     */
+    private static void spawnFire(EntityBulletBaseMK4 bullet, HitResult mop, boolean phosphorus, int duration) {
+        if (mop instanceof EntityHitResult && bullet.tickCount < 3) return;
+
+        Level world = bullet.level();
+        Lego.standardExplode(bullet, mop, 3F);
+
+        EntityFireLingering fire = new EntityFireLingering(world).setArea(6, 2).setDuration(duration)
+                .setFireType(phosphorus ? EntityFireLingering.TYPE_PHOSPHORUS : EntityFireLingering.TYPE_DIESEL);
+        fire.setPos(mop.getLocation());
+        world.addFreshEntity(fire);
+        bullet.discard();
+
+        Vec3 hit = mop.getLocation();
+        BlockPos centre = BlockPos.containing(hit.x, hit.y, hit.z);
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dy = -2; dy <= 2; dy++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    BlockPos pos = centre.offset(dx, dy, dz);
+                    if (!world.getBlockState(pos).isAir()) continue;
+                    for (Direction dir : Direction.values()) {
+                        BlockState neighbour = world.getBlockState(pos.relative(dir));
+                        if (((FireBlockAccessor) Blocks.FIRE).hbm$getBurnOdds(neighbour) > 0) {
+                            world.setBlockAndUpdate(pos, Blocks.FIRE.defaultBlockState());
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     private static BulletConfig baseRocket() {
         return new BulletConfig().setLife(300).setSelfDamageDelay(10).setVel(0F).setGrav(0F)
@@ -94,6 +143,12 @@ public final class XFactoryRocket {
         BulletConfig demo = BulletConfigs.register("rocket_demo", baseRocket()
                 .setItem(ModAmmoItems.rocket_demo).setDamage(0.75F).setOnImpact(LAMBDA_STANDARD_EXPLODE_DEMO));
 
-        rocket_ml = new BulletConfig[]{he, heat, demo};
+        BulletConfig inc = BulletConfigs.register("rocket_inc", baseRocket()
+                .setItem(ModAmmoItems.rocket_inc).setDamage(0.75F).setOnImpact(LAMBDA_STANDARD_EXPLODE_INC));
+        BulletConfig phosphorus = BulletConfigs.register("rocket_phosphorus", baseRocket()
+                .setItem(ModAmmoItems.rocket_phosphorus).setDamage(0.75F)
+                .setOnImpact(LAMBDA_STANDARD_EXPLODE_PHOSPHORUS));
+
+        rocket_ml = new BulletConfig[]{he, heat, demo, inc, phosphorus};
     }
 }

@@ -38,6 +38,7 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
     private static final int PREV_X = 7, NEXT_X = 43, LIST_Y = 80, NAME_Y = 98, LIST_SIZE = 18;
     private static final int POWER_X = 152, POWER_Y = 45, POWER_W = 16, POWER_H = 52;
     private static final int AMMO_X = 79, AMMO_Y = 61, AMMO_SIZE = 54;
+    private static final int TANK_X = 134, TANK_Y = 63, TANK_W = 7, TANK_H = 52;
 
     private EditBox field;
     private int index;
@@ -102,6 +103,21 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
         }
 
         drawTally(graphics, turret.stattrak);
+        drawTank(graphics, turret);
+    }
+
+    /** Only a fuel-burning turret has one; the rest paint nothing over that part of the background. */
+    private void drawTank(GuiGraphicsExtractor graphics, TileEntityTurretBaseNT turret) {
+        com.hbm.inventory.fluid.tank.FluidTankNTM tank = turret.turretTank();
+        if (tank == null || tank.getMaxFill() <= 0) return;
+
+        int filled = (int) ((long) tank.getFill() * TANK_H / tank.getMaxFill());
+        if (filled <= 0) return;
+
+        int x = this.leftPos + TANK_X;
+        int bottom = this.topPos + TANK_Y + TANK_H;
+        graphics.fill(x, bottom - filled, x + TANK_W, bottom,
+                0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
     }
 
     private void drawTally(GuiGraphicsExtractor graphics, int tallies) {
@@ -177,6 +193,12 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
                                        .withStyle(targets[i] ? ChatFormatting.GREEN : ChatFormatting.RED);
             GuiDraw.tooltip(graphics, this.font, List.of(Component.translatable(keys[i], state)),
                     Optional.empty(), mouseX, mouseY);
+            return;
+        }
+
+        com.hbm.inventory.fluid.tank.FluidTankNTM tank = turret.turretTank();
+        if (tank != null && isHovering(TANK_X, TANK_Y, TANK_W, TANK_H, mouseX, mouseY)) {
+            GuiDraw.tooltip(graphics, this.font, GuiUtil.tankTooltip(tank), Optional.empty(), mouseX, mouseY);
             return;
         }
 

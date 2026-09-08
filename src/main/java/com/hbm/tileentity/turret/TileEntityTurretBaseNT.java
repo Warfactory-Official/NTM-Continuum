@@ -5,6 +5,7 @@ import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.interfaces.IControlReceiver;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemTurretBiometry;
 import com.hbm.inventory.container.ContainerTurretBase;
@@ -377,6 +378,11 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     protected static Identifier turretGui(String name) {
         return dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, "textures/gui/weapon/gui_turret_" + name + ".png");
+    }
+
+    /** The tank a fuel-burning turret shows in its GUI, or null for the rest. */
+    public @Nullable FluidTankNTM turretTank() {
+        return null;
     }
 
     public void manualSetup() {}
