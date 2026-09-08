@@ -62,6 +62,9 @@ public final class ModTurretBlocks {
     public static final RegistryObject<TurretHIMARS> turret_himars = BLOCKS.registerBlock(
             "turret_himars", TurretHIMARS::new, ModTurretBlocks::turretProperties);
 
+    public static final RegistryObject<TurretArty> turret_arty = BLOCKS.registerBlock(
+            "turret_arty", TurretArty::new, ModTurretBlocks::turretProperties);
+
     static {
         blockItem("turret_chekhov", turret_chekhov);
         blockItem("turret_friendly", turret_friendly);
@@ -75,6 +78,7 @@ public final class ModTurretBlocks {
         blockItem("turret_richard", turret_richard);
         blockItem("turret_fritz", turret_fritz);
         blockItem("turret_himars", turret_himars);
+        blockItem("turret_arty", turret_arty);
     }
 
     private ModTurretBlocks() {}

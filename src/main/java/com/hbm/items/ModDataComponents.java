@@ -28,6 +28,9 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
     public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
+    /** What a cargo artillery shell is carrying. It survives the flight and comes back off the shell. */
+    public static final GolemComponent<ItemStack> ARTY_CARGO =
+            GolemComponent.of(Constants.MOD_ID, "arty_cargo", dev.golem.core.world.ItemStacks.optionalCodec());
     /** The old metadata value on the long/short storage-drum waste items. */
     public static final GolemComponent<Integer> STORAGE_WASTE_CLASS =
             GolemComponent.integer(Constants.MOD_ID, "storage_waste_class");
@@ -55,6 +58,9 @@ public final class ModDataComponents {
     public static final GolemComponent<Boolean> BATTERY_REDD_MUFFLED = GolemComponent.of(
             Constants.MOD_ID, "battery_redd_muffled", Codec.BOOL);
     public static final GolemComponent<Long> RBMK_TOOL_TARGET = GolemComponent.longValue(Constants.MOD_ID, "rbmk_tool_target");
+    /** The artillery gun a designator is bound to, as a packed core position. */
+    public static final GolemComponent<Long> ARTY_DESIGNATOR_TARGET =
+            GolemComponent.longValue(Constants.MOD_ID, "arty_designator_target");
     /** A Watz fuel pellet's remaining yield (the old NBT double {@code "yield"}). */
     public static final GolemComponent<Double> WATZ_YIELD = GolemComponent.of(Constants.MOD_ID, "watz_yield", Codec.DOUBLE);
     public static final GolemComponent<Boolean> FUEL_WASTE_HOT = GolemComponent.of(Constants.MOD_ID, "fuel_waste_hot", Codec.BOOL);

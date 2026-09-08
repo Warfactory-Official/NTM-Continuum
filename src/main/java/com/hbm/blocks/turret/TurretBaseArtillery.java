@@ -105,10 +105,19 @@ public abstract class TurretBaseArtillery extends BlockMultiblockCore implements
         return ModTurretBlocks.turret_emplacement.get().defaultBlockState();
     }
 
-    /** 1.12.2's {@code standardOpenBehavior} swallows a sneak-click instead of opening the menu. */
+    /**
+     * 1.12.2's {@code standardOpenBehavior} swallows a sneak-click instead of opening the menu.
+     *
+     * <p>The designator gets out of the way first. A block's {@code useWithoutItem} runs <em>before</em>
+     * the held item's {@code useOn}, so opening the menu here would eat the click and the designator
+     * could never bind to the gun it was aimed at.
+     */
     @Override
     protected InteractionResult useAtCore(BlockState coreState, Level level, BlockPos core, Player player,
                                           BlockHitResult hit) {
+        if (player.getMainHandItem().getItem() instanceof com.hbm.items.tool.ItemDesignatorArtyRange) {
+            return InteractionResult.PASS;
+        }
         if (player.isShiftKeyDown()) return InteractionResult.SUCCESS;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(core) instanceof MenuProvider menu && player instanceof ServerPlayer serverPlayer) {

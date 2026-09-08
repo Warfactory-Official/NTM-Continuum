@@ -31,6 +31,7 @@ public final class HbmEntityRenderers {
         sink.register(ModEntities.ENTITY_EMP.get(), NoopRenderer::new);
         sink.register(ModEntities.FALLOUT_RAIN.get(), NoopRenderer::new);
         sink.register(ModEntities.FIRE_LINGERING.get(), NoopRenderer::new);
+        sink.register(ModEntities.MIST.get(), NoopRenderer::new);
         sink.register(ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
         sink.register(ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
         sink.register(ModEntities.SAWBLADE.get(), SawbladeRenderer::new);
@@ -39,6 +40,7 @@ public final class HbmEntityRenderers {
         // the moment one spawns.
         sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
         sink.register(ModEntities.HIMARS_ROCKET.get(), RenderArtilleryRocket::new);
+        sink.register(ModEntities.ARTILLERY_SHELL.get(), RenderArtilleryShell::new);
         sink.register(ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
         sink.register(ModRBMKEntities.SPEAR.get(), RenderSpear::new);
 

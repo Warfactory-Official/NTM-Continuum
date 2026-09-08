@@ -477,6 +477,15 @@
       }
     ]
   },
+  "weapon.mortar_whistle": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/mortar_whistle",
+        "stream": false
+      }
+    ]
+  },
   "item.tech_boop": {
     "category": "player",
     "sounds": [

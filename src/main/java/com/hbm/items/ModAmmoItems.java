@@ -111,6 +111,14 @@ public final class ModAmmoItems {
     public static final RegistryObject<com.hbm.items.weapon.ItemAmmoHIMARS> ammo_himars =
             ITEMS.registerItem("ammo_himars", com.hbm.items.weapon.ItemAmmoHIMARS::new);
 
+    /** The twelve 16-inch shells, on the same one-item-many-variants shape as the HIMARS pods. */
+    public static final RegistryObject<com.hbm.items.weapon.ItemAmmoArty> ammo_arty =
+            ITEMS.registerItem("ammo_arty", com.hbm.items.weapon.ItemAmmoArty::new);
+
+    /** Not ammunition, but the only thing that can hand an artillery gun a fire mission. */
+    public static final RegistryObject<com.hbm.items.tool.ItemDesignatorArtyRange> designator_arty_range =
+            ITEMS.registerItem("designator_arty_range", com.hbm.items.tool.ItemDesignatorArtyRange::new);
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
@@ -121,7 +129,7 @@ public final class ModAmmoItems {
                  bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm, tau_uranium,
                  shell_normal, shell_explosive, shell_ap, shell_du, shell_w9,
                  rocket_he, rocket_heat, rocket_demo, rocket_inc, rocket_phosphorus, flame_diesel,
-                 ammo_himars}) {
+                 ammo_himars, ammo_arty, designator_arty_range}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }

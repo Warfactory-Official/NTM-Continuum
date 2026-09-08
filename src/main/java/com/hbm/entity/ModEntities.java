@@ -119,5 +119,27 @@ public final class ModEntities {
                             .clientTrackingRange(16)
                             .updateInterval(1), key));
 
+    /**
+     * A gas cloud. Tracked far out because a chemical shell lands where the player is not, and the
+     * cloud is the only sign it did.
+     */
+    public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityMist>> MIST =
+            ENTITY_TYPES.register("entity_mist", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.effect.EntityMist>of(
+                                    com.hbm.entity.effect.EntityMist::new, MobCategory.MISC)
+                            .sized(1.0F, 1.0F)
+                            .fireImmune()
+                            .clientTrackingRange(16), key));
+
+    /** The 16-inch shell. Its flight is measured in thousands of blocks, hence the tracking range. */
+    public static final RegistryObject<EntityType<com.hbm.entity.projectile.EntityArtilleryShell>> ARTILLERY_SHELL =
+            ENTITY_TYPES.register("entity_artillery_shell", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.projectile.EntityArtilleryShell>of(
+                                    com.hbm.entity.projectile.EntityArtilleryShell::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(1), key));
+
     public static void init() {}
 }

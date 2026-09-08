@@ -316,6 +316,11 @@ public final class ModBlockEntities {
                     () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretHIMARS::new,
                             com.hbm.blocks.turret.ModTurretBlocks.turret_himars.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.turret.TileEntityTurretArty>> TURRET_ARTY =
+            BLOCK_ENTITIES.register("turret_arty",
+                    () -> BlockEntities.type(com.hbm.tileentity.turret.TileEntityTurretArty::new,
+                            com.hbm.blocks.turret.ModTurretBlocks.turret_arty.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityBatterySocket>> BATTERY_SOCKET =
             BLOCK_ENTITIES.register("machine_battery_socket",
                     () -> BlockEntities.type(TileEntityBatterySocket::new, ModBatteryBlocks.machine_battery_socket.get()));

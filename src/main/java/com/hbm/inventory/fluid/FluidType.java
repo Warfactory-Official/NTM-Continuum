@@ -134,6 +134,10 @@ public class FluidType {
             if (temperature > 0) info.add(Component.literal(temperature + "\u00b0C").withStyle(ChatFormatting.RED));
         }
 
+        com.hbm.inventory.fluid.trait.FT_Corrosive corrosive = getTrait(
+                com.hbm.inventory.fluid.trait.FT_Corrosive.class);
+        if (corrosive != null) corrosive.addInfo(info);
+
         long flammable = FluidCombustion.getFlammableEnergy(this);
         if (flammable > 0) {
             info.add(bracketed("trait.flammable", ChatFormatting.YELLOW));

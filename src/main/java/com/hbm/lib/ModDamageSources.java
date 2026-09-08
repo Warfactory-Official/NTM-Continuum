@@ -52,6 +52,12 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> EUTHANIZED_SELF = key("euthanized_self");
     public static final ResourceKey<DamageType> EUTHANIZED_SELF2 = key("euthanized_self2");
     public static final ResourceKey<DamageType> OVERDOSE = key("overdose");
+    /** Scalded by a hot fluid — a mist cloud above 100 °C. Carries {@code is_fire}. */
+    public static final ResourceKey<DamageType> BOIL = key("boil");
+    /** Frozen by a cryogenic fluid — a mist cloud below −20 °C. */
+    public static final ResourceKey<DamageType> ICE = key("ice");
+    /** Eaten by a corrosive fluid. Absolute, and it damages the whole suit on the way through. */
+    public static final ResourceKey<DamageType> ACID = key("acid");
 
     /**
      * The damage categories a bullet can belong to, ported from 1.12.2's

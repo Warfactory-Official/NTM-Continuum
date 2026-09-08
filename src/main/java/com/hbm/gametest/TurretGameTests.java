@@ -22,6 +22,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import com.hbm.tileentity.turret.TileEntityTurretFritz;
+import com.hbm.tileentity.turret.TileEntityTurretArty;
 import com.hbm.tileentity.turret.TileEntityTurretHIMARS;
 import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import com.hbm.tileentity.turret.TileEntityTurretHowardDamaged;
@@ -83,6 +84,14 @@ public final class TurretGameTests {
             TESTS.function("turret_himars_reload", 60, 16, () -> TurretGameTests::himarsReload);
     public static final GameTests.Function HIMARS_FIRE =
             TESTS.function("turret_himars_fire", 400, 16, () -> TurretGameTests::himarsFire);
+    public static final GameTests.Function ARTY_MODES =
+            TESTS.function("turret_arty_modes", 60, 16, () -> TurretGameTests::artyModes);
+    public static final GameTests.Function ARTY_FIRE =
+            TESTS.function("turret_arty_fire", 100, 16, () -> TurretGameTests::artyFire);
+    public static final GameTests.Function ARTY_MIST =
+            TESTS.function("turret_arty_mist", 100, 8, () -> TurretGameTests::artyMist);
+    public static final GameTests.Function ARTY_DESIGNATOR =
+            TESTS.function("turret_arty_designator", 60, 16, () -> TurretGameTests::artyDesignator);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
 
@@ -684,6 +693,169 @@ public final class TurretGameTests {
         });
     }
 
+    /**
+     * The three fire modes. Each one re-specifies the gun — range, grace, search interval, whether it
+     * checks line of sight, and which branch of the ballistic solution it takes — so this asserts the
+     * whole set moves together rather than that the field changed.
+     */
+    public static void artyModes(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_arty.get());
+        TileEntityTurretArty arty = (TileEntityTurretArty) helper.getLevel().getBlockEntity(core);
+
+        helper.assertTrue(arty.mode == TileEntityTurretArty.MODE_ARTILLERY, "A fresh gun starts as artillery");
+        helper.assertTrue(arty.getDetectorRange() == 3000D && arty.getV0() == 50D && !arty.doLOSCheck(),
+                "Artillery mode lobs 3000 blocks at v0 50 and does not need line of sight");
+
+        arty.handleButtonPacket(0, TileEntityTurretArty.BUTTON_MODE);
+        helper.assertTrue(arty.mode == TileEntityTurretArty.MODE_CANNON, "The mode button must step to cannon");
+        helper.assertTrue(arty.getDetectorRange() == 250D && arty.getV0() == 20D && arty.doLOSCheck(),
+                "Cannon mode is flat, short and sighted");
+        helper.assertTrue(arty.getDetectorInterval() == 20,
+                "A cannon re-scans ten times as often as artillery; got " + arty.getDetectorInterval());
+
+        arty.handleButtonPacket(0, TileEntityTurretArty.BUTTON_MODE);
+        helper.assertTrue(arty.mode == TileEntityTurretArty.MODE_MANUAL, "The mode button must step to manual");
+
+        arty.handleButtonPacket(0, TileEntityTurretArty.BUTTON_MODE);
+        helper.assertTrue(arty.mode == TileEntityTurretArty.MODE_ARTILLERY, "The third press must wrap around");
+
+        // Switching modes abandons the whole engagement, not just the aim point.
+        arty.sendCommandPosition(core.getX(), core.getY(), core.getZ() + 60);
+        helper.assertTrue(arty.queuedTargets() == 1, "The gun must accept a fire mission");
+        arty.handleButtonPacket(0, TileEntityTurretArty.BUTTON_MODE);
+        helper.assertTrue(arty.queuedTargets() == 0 && arty.target == null && arty.tPos == null,
+                "Switching modes must drop the mission, the aim point and the tracked target");
+
+        helper.assertTrue(arty.getAmmoTypesForDisplay().size() == 12,
+                "The panel must list all twelve shells; got " + arty.getAmmoTypesForDisplay().size());
+        helper.succeed();
+    }
+
+    /**
+     * A fire mission from the queue to the shell, and the ballistic solution that gets it there.
+     *
+     * <p>Driven synchronously rather than on real ticks, because the numbers do not fit in a gametest
+     * otherwise: artillery mode reloads for three hundred ticks and only counts them while aligned,
+     * and the pitch has to walk to a high-arc solution at half a degree a tick. Nothing here keys off
+     * {@code tickCount}, so the loop is faithful — the gun counts its own timer.
+     */
+    public static void artyFire(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_arty.get());
+        TileEntityTurretArty arty = (TileEntityTurretArty) helper.getLevel().getBlockEntity(core);
+        BlockState state = helper.getLevel().getBlockState(core);
+
+        arty.isOn = true;
+        arty.mode = TileEntityTurretArty.MODE_MANUAL;
+        arty.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
+                ModAmmoItems.ammo_arty.get()
+                        .of(com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO, 4));
+
+        helper.assertTrue(arty.sendCommandPosition(core.getX(), core.getY(), core.getZ() + 200),
+                "The gun must accept a fire mission inside its range");
+
+        boolean everAligned = false;
+        for (int i = 0; i < 600; i++) {
+            arty.setPower(arty.getMaxPower());
+            TileEntityTurretArty.serverTick(helper.getLevel(), core, state, arty);
+            if (arty.aligned) everAligned = true;
+            if (arty.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < 4) break;
+        }
+
+        helper.assertTrue(everAligned,
+                "The gun never settled on a solution; pitch " + arty.rotationPitch);
+        helper.assertTrue(arty.rotationPitch > 0D,
+                "Artillery mode must take the high arc; pitch " + arty.rotationPitch);
+        helper.assertTrue(arty.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() < 4,
+                "Firing must consume a shell; still holding "
+                        + arty.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount());
+
+        var shells = helper.getLevel().getEntitiesOfClass(
+                com.hbm.entity.projectile.EntityArtilleryShell.class,
+                new net.minecraft.world.phys.AABB(core).inflate(64D));
+        helper.assertTrue(!shells.isEmpty(), "A fired shell must exist in the world");
+
+        var shell = shells.get(0);
+        helper.assertTrue(shell.getShellType()
+                        == com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType.CARGO.ordinal(),
+                "The shell must carry the loaded warhead; got " + shell.getShellType());
+        helper.assertTrue(shell.getWhistle(), "A lobbed shell announces itself; a flat one does not");
+        helper.succeed();
+    }
+
+    /**
+     * The chemical payload. Chlorine is corrosive in CE, so its cloud is the one gas this port can
+     * still make lethal — phosgene and mustard route their whole effect through pollution, which is
+     * deferred.
+     */
+    public static void artyMist(GameTestHelper helper) {
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 2, 2));
+        zombie.setNoGravity(true);
+        zombie.setNoAi(true);
+        float before = zombie.getHealth();
+
+        var mist = new com.hbm.entity.effect.EntityMist(helper.getLevel());
+        mist.setType(com.hbm.inventory.fluid.Fluids.CHLORINE);
+        mist.setArea(8F, 4F);
+        mist.setDuration(200);
+        mist.setPos(zombie.getX(), zombie.getY(), zombie.getZ());
+        helper.getLevel().addFreshEntity(mist);
+
+        helper.assertTrue(com.hbm.inventory.fluid.Fluids.CHLORINE.getTrait(
+                        com.hbm.inventory.fluid.trait.FT_Corrosive.class) != null,
+                "Chlorine must carry the corrosive trait its cloud dispatches on");
+
+        helper.runAfterDelay(40, () -> {
+            helper.assertTrue(zombie.getHealth() < before,
+                    "A corrosive cloud must eat what stands in it; health " + zombie.getHealth()
+                            + " of " + before);
+            helper.assertTrue(mist.isAlive(), "The cloud must outlive its first few ticks");
+            helper.succeed();
+        });
+    }
+
+    /**
+     * The designator, which is the only thing that can hand a gun a fire mission — and therefore the
+     * only way manual mode is reachable in game. Binding is asserted through a folded emplacement
+     * cell rather than the core, because that is what a player actually clicks.
+     */
+    public static void artyDesignator(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_arty.get());
+        TileEntityTurretArty arty = (TileEntityTurretArty) helper.getLevel().getBlockEntity(core);
+        arty.mode = TileEntityTurretArty.MODE_MANUAL;
+
+        ItemStack designator = new ItemStack(ModAmmoItems.designator_arty_range.get());
+        var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, designator);
+
+        BlockPos cell = core.offset(1, 0, 1);
+        helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock()
+                        == ModTurretBlocks.turret_emplacement.get(),
+                "Expected a folded emplacement cell at " + cell);
+
+        var context = new net.minecraft.world.item.context.UseOnContext(helper.getLevel(), player,
+                net.minecraft.world.InteractionHand.MAIN_HAND, designator,
+                new net.minecraft.world.phys.BlockHitResult(
+                        net.minecraft.world.phys.Vec3.atCenterOf(cell), Direction.UP, cell, false));
+        ModAmmoItems.designator_arty_range.get().useOn(context);
+
+        Long linked = com.hbm.items.ModDataComponents.ARTY_DESIGNATOR_TARGET.get(designator).orElse(null);
+        helper.assertTrue(linked != null && BlockPos.of(linked).equals(core),
+                "Clicking any emplacement cell must bind the designator to the core; got " + linked);
+
+        // Aiming is a look-vector pick, which a mock player cannot drive; the queue itself is the contract.
+        arty.enqueueTarget(core.getX() + 0.5D, core.getY() + 0.5D, core.getZ() + 120.5D);
+        helper.assertTrue(arty.queuedTargets() == 1,
+                "A designated position must become a queued fire mission; got " + arty.queuedTargets());
+        helper.assertTrue(arty.queuedTarget(0).z == core.getZ() + 120.5D,
+                "The mission must keep the position it was given; got " + arty.queuedTarget(0));
+
+        // Out of range is refused rather than clamped.
+        arty.enqueueTarget(core.getX() + 0.5D, core.getY() + 0.5D, core.getZ() + 9000.5D);
+        helper.assertTrue(arty.queuedTargets() == 1,
+                "A mission beyond the gun's range must be refused; got " + arty.queuedTargets());
+        helper.succeed();
+    }
+
     public static void assets(GameTestHelper helper) {
         String[] required = {
                 "assets/hbm/models/turrets/turret_chekhov.obj",
@@ -732,6 +904,16 @@ public final class TurretGameTests {
                 "assets/hbm/blockstates/block_slag.json",
                 "assets/hbm/textures/blocks/block_slag.png",
                 "assets/hbm/textures/blocks/block_slag_broken.png",
+                "assets/hbm/blockstates/turret_arty.json",
+                "assets/hbm/textures/gui/weapon/gui_turret_arty.png",
+                "assets/hbm/models/projectiles/projectiles.obj",
+                "assets/hbm/textures/models/projectiles/grenade.png",
+                "assets/hbm/sounds/weapon/mortar_whistle.ogg",
+                "assets/hbm/textures/items/ammo_arty.png",
+                "assets/hbm/textures/items/ammo_arty_nuke.png",
+                "assets/hbm/textures/items/ammo_arty_chlorine.png",
+                "assets/hbm/textures/items/ammo_arty_cargo.png",
+                "assets/hbm/textures/items/designator_arty_range.png",
                 "assets/hbm/sounds/weapon/flamethrowershoot.ogg",
                 "assets/hbm/textures/items/ammo_standard_flame_diesel.png",
                 "assets/hbm/models/turrets/turret_richard.obj",

@@ -2,6 +2,7 @@ package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
+import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.inventory.fluid.trait.FT_Coolable.CoolingType;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
@@ -362,6 +363,40 @@ public class Fluids {
 
     /** Complete upstream FT_Heatable data, including conversions not yet consumed by a machine. */
     private static void registerHeatableTraits() {
+        // CE rates corrosion 0-100; above fifty eats iron, below only plastics. The whole list,
+        // at CE's own ratings.
+        UF6.addTraits(new FT_Corrosive(15));
+        PUF6.addTraits(new FT_Corrosive(15));
+        SAS3.addTraits(new FT_Corrosive(30));
+        SCHRABIDIC.addTraits(new FT_Corrosive(75));
+        PEROXIDE.addTraits(new FT_Corrosive(40));
+        WATZ.addTraits(new FT_Corrosive(60));
+        BALEFIRE.addTraits(new FT_Corrosive(50));
+        PAIN.addTraits(new FT_Corrosive(30));
+        FRACKSOL.addTraits(new FT_Corrosive(15));
+        DEATH.addTraits(new FT_Corrosive(80));
+        SULFURIC_ACID.addTraits(new FT_Corrosive(50));
+        NITRIC_ACID.addTraits(new FT_Corrosive(60));
+        SOLVENT.addTraits(new FT_Corrosive(30));
+        RADIOSOLVENT.addTraits(new FT_Corrosive(50));
+        HYDRAZINE.addTraits(new FT_Corrosive(30));
+        CHLORINE.addTraits(new FT_Corrosive(25));
+        SOURGAS.addTraits(new FT_Corrosive(10));
+        REDMUD.addTraits(new FT_Corrosive(60));
+        CHLOROCALCITE_SOLUTION.addTraits(new FT_Corrosive(60));
+        CHLOROCALCITE_MIX.addTraits(new FT_Corrosive(60));
+        CHLOROCALCITE_CLEANED.addTraits(new FT_Corrosive(60));
+        POTASSIUM_CHLORIDE.addTraits(new FT_Corrosive(60));
+        CALCIUM_CHLORIDE.addTraits(new FT_Corrosive(60));
+        CALCIUM_SOLUTION.addTraits(new FT_Corrosive(60));
+        THORIUM_SALT.addTraits(new FT_Corrosive(65));
+        THORIUM_SALT_HOT.addTraits(new FT_Corrosive(65));
+        THORIUM_SALT_DEPLETED.addTraits(new FT_Corrosive(65));
+        FULLERENE.addTraits(new FT_Corrosive(65));
+        LYE.addTraits(new FT_Corrosive(40));
+        SODIUM_ALUMINATE.addTraits(new FT_Corrosive(30));
+        BAUXITE_SOLUTION.addTraits(new FT_Corrosive(40));
+
         AIR.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).addStep(5, 1, AIRBLAST, 1));
         WATER.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 0.25D).addStep(200, 1, STEAM, 100).addStep(220, 1, HOTSTEAM, 10).addStep(238, 1, SUPERHOTSTEAM, 1).addStep(2500, 10, ULTRAHOTSTEAM, 1));
         STEAM.addTraits(new FT_Heatable().setEff(HeatingType.BOILER, 1.0D).setEff(HeatingType.HEATEXCHANGER, 0.25D).addStep(2, 10, HOTSTEAM, 1));

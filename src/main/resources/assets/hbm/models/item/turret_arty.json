@@ -1,0 +1,13 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/turrets/turret_arty.obj",
+      "texture": "hbm:textures/models/turrets/arty.png",
+      "scale": 0.11,
+      "yaw": 0
+    }
+  }
+}
