@@ -1,0 +1,28 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/turrets/turret_himars.obj",
+      "texture": "hbm:textures/models/projectiles/himars_standard.png",
+      "exclude": [
+        "Base",
+        "Carriage",
+        "Launcher",
+        "Crane",
+        "TubeSingle",
+        "CapSingle",
+        "RocketSingle",
+        "CapStandard1",
+        "CapStandard2",
+        "CapStandard3",
+        "CapStandard4",
+        "CapStandard5",
+        "CapStandard6"
+      ],
+      "scale": 0.6,
+      "yaw": 0
+    }
+  }
+}

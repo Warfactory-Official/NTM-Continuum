@@ -62,8 +62,20 @@ public final class ModBlocks {
         return ro;
     }
 
+    /** A registered block of a bespoke class, otherwise treated like {@link #block}. */
+    private static RegistryObject<Block> block(String name, HbmTab tab,
+            java.util.function.Function<BlockBehaviour.Properties, Block> factory,
+            UnaryOperator<BlockBehaviour.Properties> props) {
+        RegistryObject<Block> ro = BLOCKS.registerBlock(name, factory::apply, props);
+        ALL.add(new BlockEntry(ro, tab));
+        return ro;
+    }
+
     // --- simple full-cube blocks (Wave 1) ---
     public static final RegistryObject<Block> fatduck = block("fatduck", HbmTab.BLOCKS, p -> p);
+    /** What a blast leaves behind. 1.12.2 gives it beacon-base behaviour, which is not ported. */
+    public static final RegistryObject<Block> block_slag = block("block_slag", HbmTab.BLOCKS,
+            com.hbm.blocks.generic.BlockSlag::new, p -> p.strength(2.0F).sound(SoundType.STONE));
     public static final RegistryObject<Block> structure_anchor = block("structure_anchor", HbmTab.BLOCKS, p -> p.strength(2.5F, 10.0F));
     public static final RegistryObject<Block> crystal_hardened = block("crystal_hardened", HbmTab.BLOCKS, p -> p.strength(15.0F));
     public static final RegistryObject<Block> reinforced_stone = block("reinforced_stone", HbmTab.BLOCKS, p -> p.strength(15.0F, 100.0F));

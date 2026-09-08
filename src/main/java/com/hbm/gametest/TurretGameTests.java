@@ -22,6 +22,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import com.hbm.tileentity.turret.TileEntityTurretFritz;
+import com.hbm.tileentity.turret.TileEntityTurretHIMARS;
 import com.hbm.tileentity.turret.TileEntityTurretHoward;
 import com.hbm.tileentity.turret.TileEntityTurretHowardDamaged;
 import com.hbm.tileentity.turret.TileEntityTurretJeremy;
@@ -74,6 +75,14 @@ public final class TurretGameTests {
             TESTS.function("turret_fritz", 100, 16, () -> TurretGameTests::fritz);
     public static final GameTests.Function LINGERING_FIRE =
             TESTS.function("turret_lingering_fire", 100, 8, () -> TurretGameTests::lingeringFire);
+    public static final GameTests.Function HIMARS_STRUCTURE =
+            TESTS.function("turret_himars_structure", 60, 16, () -> TurretGameTests::himarsStructure);
+    public static final GameTests.Function HIMARS_POWER =
+            TESTS.function("turret_himars_power", 60, 16, () -> TurretGameTests::himarsPower);
+    public static final GameTests.Function HIMARS_RELOAD =
+            TESTS.function("turret_himars_reload", 60, 16, () -> TurretGameTests::himarsReload);
+    public static final GameTests.Function HIMARS_FIRE =
+            TESTS.function("turret_himars_fire", 400, 16, () -> TurretGameTests::himarsFire);
     public static final GameTests.Function ASSETS =
             TESTS.function("turret_assets", 20, () -> TurretGameTests::assets);
 
@@ -82,15 +91,14 @@ public final class TurretGameTests {
     public static void init() {}
 
     /** Places a turret the way a player does, and hands back the core position. */
-    private static BlockPos place(GameTestHelper helper, BlockPos relative,
-                                  com.hbm.blocks.turret.TurretBaseNT block) {
+    private static BlockPos place(GameTestHelper helper, BlockPos relative, BlockMultiblockCore block) {
         BlockPos clicked = helper.absolutePos(relative);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
         player.setPos(clicked.getX() - 6D, clicked.getY(), clicked.getZ() - 6D);
         helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);
         block.setPlacedBy(helper.getLevel(), clicked, block.defaultBlockState(), player, new ItemStack(block));
-        return clicked;
+        return clicked.above(block.getHeightOffset()).relative(Direction.NORTH, -block.getOffset());
     }
 
     public static void structure(GameTestHelper helper) {
@@ -523,6 +531,159 @@ public final class TurretGameTests {
         });
     }
 
+    /**
+     * The artillery emplacement: a 4x4 footprint two courses tall, thirty-one of whose thirty-two
+     * cells are folded. Unlike the gun turrets the core is not the clicked cell — the block's offset
+     * moves it one back — so this asserts where the core actually lands as well as what fills the rest.
+     */
+    public static void himarsStructure(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_himars.get());
+        BlockState coreState = helper.getLevel().getBlockState(core);
+
+        helper.assertTrue(coreState.getBlock() == ModTurretBlocks.turret_himars.get(),
+                "The core must land one block back from the clicked cell; found " + coreState.getBlock());
+        helper.assertTrue(coreState.getValue(BlockMultiblockCore.FACING) == Direction.NORTH,
+                "A gun placed at yaw 0 must face north");
+        helper.assertTrue(helper.getLevel().getBlockEntity(core) instanceof TileEntityTurretHIMARS,
+                "The core must carry the HIMARS block entity");
+
+        int cells = 0;
+        BlockPos corner = null;
+        for (int y = 0; y <= 1; y++) {
+            for (int x = -1; x <= 2; x++) {
+                for (int z = -1; z <= 2; z++) {
+                    BlockPos at = core.offset(x, y, z);
+                    if (at.equals(core)) continue;
+                    helper.assertTrue(
+                            helper.getLevel().getBlockState(at).getBlock()
+                                    == ModTurretBlocks.turret_emplacement.get(),
+                            "Emplacement cell missing at " + at);
+                    helper.assertTrue(helper.getLevel().getBlockEntity(at) == null,
+                            "A folded emplacement cell must not carry a block entity");
+                    helper.assertTrue(core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), at)),
+                            "Emplacement cell at " + at + " does not resolve to its core");
+                    cells++;
+                    corner = at;
+                }
+            }
+        }
+        helper.assertTrue(cells == 31, "A 4x4x2 emplacement folds 31 cells; found " + cells);
+
+        helper.getLevel().removeBlock(corner, false);
+        helper.assertTrue(helper.getLevel().getBlockState(core).isAir(),
+                "Breaking one emplacement cell must tear the whole gun down");
+        helper.succeed();
+    }
+
+    /**
+     * Power reaches the gun through the wall of its emplacement, on all four sides at every facing.
+     * 1.12.2 asks each neighbour about a world-constant face, which lines up at one facing only; this
+     * asserts the geometric behaviour that replaced it.
+     */
+    public static void himarsPower(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_himars.get());
+        TileEntityTurretBaseNT turret = (TileEntityTurretBaseNT) helper.getLevel().getBlockEntity(core);
+        DirPos[] ports = turret.getConPos();
+
+        helper.assertTrue(ports.length == 32,
+                "Four cells a side, four sides, two courses; got " + ports.length);
+
+        for (DirPos port : ports) {
+            ForgeDirection outward = port.getDir();
+            BlockPos cell = port.getPos().offset(-outward.offsetX, -outward.offsetY, -outward.offsetZ);
+            helper.assertTrue(Library.canConnect(helper.getLevel(), cell, outward.getOpposite()),
+                    "A cable at " + port.getPos() + " cannot reach the gun through " + cell);
+        }
+
+        helper.assertTrue(!Library.canConnect(helper.getLevel(), core.above(4), ForgeDirection.DOWN),
+                "Empty air must not read as a power connection");
+        helper.succeed();
+    }
+
+    /**
+     * The reload cycle. The crane has to run all the way out before a pod is drawn, and all the way
+     * back before the gun can fire — which is why this walks it rather than asserting a single tick.
+     */
+    public static void himarsReload(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_himars.get());
+        TileEntityTurretHIMARS himars = (TileEntityTurretHIMARS) helper.getLevel().getBlockEntity(core);
+        BlockState state = helper.getLevel().getBlockState(core);
+
+        helper.assertTrue(himars.getAmmoTypesForDisplay().size() == 8,
+                "The panel must list all eight rocket pods; got " + himars.getAmmoTypesForDisplay().size());
+        helper.assertTrue(!himars.hasAmmo(), "A fresh gun must be empty");
+
+        ItemStack pod = ModAmmoItems.ammo_himars.get()
+                .of(com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE, 2);
+        himars.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST, pod);
+        himars.isOn = true;
+
+        helper.assertTrue(himars.getSpareRocket()
+                        == com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE.ordinal(),
+                "The gun must read the variant off the stack, not the item");
+
+        boolean craneExtended = false;
+        for (int i = 0; i < 400 && !himars.hasAmmo(); i++) {
+            himars.setPower(himars.getMaxPower());
+            TileEntityTurretHIMARS.serverTick(helper.getLevel(), core, state, himars);
+            if (himars.crane >= 1F) craneExtended = true;
+        }
+
+        helper.assertTrue(craneExtended, "The crane must run all the way out before a pod is drawn");
+        helper.assertTrue(himars.hasAmmo(), "The gun never loaded; crane at " + himars.crane);
+        helper.assertTrue(himars.typeLoaded
+                        == com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL_HE.ordinal(),
+                "The loaded type must be the one that was in the slot; got " + himars.typeLoaded);
+        helper.assertTrue(himars.ammo == 6, "A small pod holds six rockets; got " + himars.ammo);
+        helper.assertTrue(himars.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount() == 1,
+                "Loading must consume exactly one pod");
+        helper.succeed();
+    }
+
+    /**
+     * A fire mission, from the radar command down to the rocket. Manual mode is the only path a test
+     * can drive: the gun's 250-block detector grace means nothing inside a test plot is ever a target.
+     */
+    public static void himarsFire(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(7, 1, 4), ModTurretBlocks.turret_himars.get());
+        TileEntityTurretHIMARS himars = (TileEntityTurretHIMARS) helper.getLevel().getBlockEntity(core);
+
+        himars.isOn = true;
+        himars.setPower(himars.getMaxPower());
+        himars.mode = TileEntityTurretHIMARS.MODE_MANUAL;
+        himars.typeLoaded = com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL.ordinal();
+        himars.ammo = 6;
+        himars.crane = 0F;
+
+        // Straight up the +z axis so the yaw is already on target and only the pitch has to travel.
+        double aimX = core.getX() + 0.5D;
+        double aimZ = core.getZ() + 60.5D;
+        helper.assertTrue(himars.sendCommandPosition(core.getX(), core.getY(), core.getZ() + 60),
+                "The gun must accept a fire mission inside its range");
+        helper.assertTrue(himars.queuedTargets() == 1,
+                "An accepted mission must be queued; got " + himars.queuedTargets());
+
+        helper.runAfterDelay(300, () -> {
+            var rockets = helper.getLevel().getEntitiesOfClass(
+                    com.hbm.entity.projectile.EntityArtilleryRocket.class,
+                    new net.minecraft.world.phys.AABB(core).inflate(128D));
+
+            helper.assertTrue(!rockets.isEmpty(),
+                    "The gun never fired; pitch " + himars.rotationPitch + ", ammo " + himars.ammo
+                            + ", queued " + himars.queuedTargets());
+            helper.assertTrue(himars.ammo < 6, "Firing must spend a rocket; ammo " + himars.ammo);
+
+            var rocket = rockets.get(0);
+            helper.assertTrue(rocket.getTypeIndex()
+                            == com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL.ordinal(),
+                    "The rocket must carry the loaded warhead; got " + rocket.getTypeIndex());
+            var aim = rocket.getLastTarget();
+            helper.assertTrue(aim != null && Math.abs(aim.x - aimX) < 1D && Math.abs(aim.z - aimZ) < 1D,
+                    "The rocket must be aimed at the mission, not the gun; aim " + aim);
+            helper.succeed();
+        });
+    }
+
     public static void assets(GameTestHelper helper) {
         String[] required = {
                 "assets/hbm/models/turrets/turret_chekhov.obj",
@@ -553,6 +714,24 @@ public final class TurretGameTests {
                 "assets/hbm/models/turrets/turret_fritz.obj",
                 "assets/hbm/textures/models/turrets/fritz.png",
                 "assets/hbm/textures/gui/weapon/gui_turret_fritz.png",
+                "assets/hbm/blockstates/turret_himars.json",
+                "assets/hbm/blockstates/turret_emplacement.json",
+                "assets/hbm/models/turrets/turret_himars.obj",
+                "assets/hbm/models/turrets/turret_arty.obj",
+                "assets/hbm/textures/models/turrets/himars.png",
+                "assets/hbm/textures/models/turrets/arty.png",
+                "assets/hbm/textures/gui/weapon/gui_turret_himars.png",
+                "assets/hbm/textures/models/projectiles/himars_standard.png",
+                "assets/hbm/textures/models/projectiles/himars_single.png",
+                "assets/hbm/textures/models/projectiles/himars_standard_he.png",
+                "assets/hbm/textures/models/projectiles/himars_standard_wp.png",
+                "assets/hbm/textures/models/projectiles/himars_standard_tb.png",
+                "assets/hbm/textures/models/projectiles/himars_single_tb.png",
+                "assets/hbm/textures/models/projectiles/himars_standard_mini_nuke.png",
+                "assets/hbm/textures/models/projectiles/himars_standard_lava.png",
+                "assets/hbm/blockstates/block_slag.json",
+                "assets/hbm/textures/blocks/block_slag.png",
+                "assets/hbm/textures/blocks/block_slag_broken.png",
                 "assets/hbm/sounds/weapon/flamethrowershoot.ogg",
                 "assets/hbm/textures/items/ammo_standard_flame_diesel.png",
                 "assets/hbm/models/turrets/turret_richard.obj",

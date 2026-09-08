@@ -21,6 +21,11 @@ public final class ModTurretBlocks {
                     .isSuffocating((state, world, pos) -> false)
                     .isViewBlocking((state, world, pos) -> false));
 
+    /** Shared by the artillery guns, and likewise never given to a player. */
+    public static final RegistryObject<BlockTurretEmplacement> turret_emplacement = BLOCKS.registerBlock(
+            "turret_emplacement", BlockTurretEmplacement::new,
+            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
+
     public static final RegistryObject<TurretChekhov> turret_chekhov = BLOCKS.registerBlock(
             "turret_chekhov", TurretChekhov::new, ModTurretBlocks::turretProperties);
 
@@ -54,6 +59,9 @@ public final class ModTurretBlocks {
     public static final RegistryObject<TurretFritz> turret_fritz = BLOCKS.registerBlock(
             "turret_fritz", TurretFritz::new, ModTurretBlocks::turretProperties);
 
+    public static final RegistryObject<TurretHIMARS> turret_himars = BLOCKS.registerBlock(
+            "turret_himars", TurretHIMARS::new, ModTurretBlocks::turretProperties);
+
     static {
         blockItem("turret_chekhov", turret_chekhov);
         blockItem("turret_friendly", turret_friendly);
@@ -66,6 +74,7 @@ public final class ModTurretBlocks {
         blockItem("turret_jeremy", turret_jeremy);
         blockItem("turret_richard", turret_richard);
         blockItem("turret_fritz", turret_fritz);
+        blockItem("turret_himars", turret_himars);
     }
 
     private ModTurretBlocks() {}

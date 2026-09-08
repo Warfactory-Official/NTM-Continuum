@@ -38,6 +38,7 @@ public final class HbmEntityRenderers {
         // LegoClient, which is a follow-up. A renderer must still be registered or the client throws
         // the moment one spawns.
         sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
+        sink.register(ModEntities.HIMARS_ROCKET.get(), RenderArtilleryRocket::new);
         sink.register(ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
         sink.register(ModRBMKEntities.SPEAR.get(), RenderSpear::new);
 

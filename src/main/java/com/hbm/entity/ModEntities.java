@@ -106,5 +106,18 @@ public final class ModEntities {
                             .clientTrackingRange(16)
                             .updateInterval(1), key));
 
+    /**
+     * The HIMARS rocket. {@code updateInterval(1)} for the same reason as the bullet above: it covers
+     * twenty-five blocks a tick, so anything slower and the client only ever sees it teleport.
+     */
+    public static final RegistryObject<EntityType<com.hbm.entity.projectile.EntityArtilleryRocket>> HIMARS_ROCKET =
+            ENTITY_TYPES.register("entity_himars_rocket", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.projectile.EntityArtilleryRocket>of(
+                                    com.hbm.entity.projectile.EntityArtilleryRocket::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(1), key));
+
     public static void init() {}
 }

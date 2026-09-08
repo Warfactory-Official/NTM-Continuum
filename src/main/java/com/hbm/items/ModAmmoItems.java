@@ -103,6 +103,14 @@ public final class ModAmmoItems {
     /** The Fritz's diesel canister: it is emptied into the turret's tank rather than fired. */
     public static final RegistryObject<Item> flame_diesel = ITEMS.registerSimpleItem("ammo_standard_flame_diesel");
 
+    /**
+     * The HIMARS pods. Unlike the Sedna rounds above these stay one registered item with eight
+     * variants, because the launcher reads the variant back off the stack to pick a warhead and a
+     * skin — see {@link com.hbm.items.weapon.ItemAmmoHIMARS}.
+     */
+    public static final RegistryObject<com.hbm.items.weapon.ItemAmmoHIMARS> ammo_himars =
+            ITEMS.registerItem("ammo_himars", com.hbm.items.weapon.ItemAmmoHIMARS::new);
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
@@ -112,7 +120,8 @@ public final class ModAmmoItems {
                  stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap,
                  bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm, tau_uranium,
                  shell_normal, shell_explosive, shell_ap, shell_du, shell_w9,
-                 rocket_he, rocket_heat, rocket_demo, rocket_inc, rocket_phosphorus, flame_diesel}) {
+                 rocket_he, rocket_heat, rocket_demo, rocket_inc, rocket_phosphorus, flame_diesel,
+                 ammo_himars}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }
