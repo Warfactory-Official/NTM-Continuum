@@ -16,6 +16,8 @@
     "hbm:lead",
     "hbm:euthanized_self",
     "hbm:euthanized_self2",
-    "hbm:overdose"
+    "hbm:overdose",
+    "hbm:electricity",
+    "hbm:microwave"
   ]
 }

@@ -70,6 +70,19 @@ public final class ModEntities {
                             .clientTrackingRange(64)
                             .updateInterval(20), key));
 
+    /**
+     * Ground fire left by an incendiary warhead. Invisible and unsaved: it is a timer with a hitbox,
+     * and each client raises its own flames from the entity's tick rather than from particle packets.
+     */
+    public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityFireLingering>> FIRE_LINGERING =
+            ENTITY_TYPES.register("entity_fire_lingering", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.effect.EntityFireLingering>of(
+                                    com.hbm.entity.effect.EntityFireLingering::new, MobCategory.MISC)
+                            .sized(1.0F, 1.0F)
+                            .fireImmune()
+                            .clientTrackingRange(64)
+                            .updateInterval(20), key));
+
     /** Collectable debris thrown from a ZIRNOX reactor meltdown. */
     public static final RegistryObject<EntityType<EntityZirnoxDebris>> ZIRNOX_DEBRIS =
             ENTITY_TYPES.register("entity_zirnox_debris", key -> dev.golem.core.registry.Entities.build(
@@ -137,6 +150,42 @@ public final class ModEntities {
                     EntityType.Builder.<EntityShrapnel>of(EntityShrapnel::new, MobCategory.MISC)
                             .sized(0.25F, 0.25F)
                             .clientTrackingRange(1000)
+                            .updateInterval(1), key));
+
+    /**
+     * The HIMARS rocket. Old-hbm registered this at a 1000-block tracking range; 64 modern chunks is
+     * the closest public equivalent before the server's view distance clamps it. {@code updateInterval(1)}
+     * keeps the twenty-five-block-per-tick flight visible instead of teleporting between updates.
+     */
+    public static final RegistryObject<EntityType<com.hbm.entity.projectile.EntityArtilleryRocket>> HIMARS_ROCKET =
+            ENTITY_TYPES.register("entity_himars_rocket", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.projectile.EntityArtilleryRocket>of(
+                                    com.hbm.entity.projectile.EntityArtilleryRocket::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(64)
+                            .updateInterval(1), key));
+
+    /**
+     * A gas cloud. Tracked far out because a chemical shell lands where the player is not, and the
+     * cloud is the only sign it did.
+     */
+    public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityMist>> MIST =
+            ENTITY_TYPES.register("entity_mist", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.effect.EntityMist>of(
+                                    com.hbm.entity.effect.EntityMist::new, MobCategory.MISC)
+                            .sized(1.0F, 1.0F)
+                            .fireImmune()
+                            .clientTrackingRange(64), key));
+
+    /** The 16-inch shell. Old-hbm registered it at a 1000-block tracking range. */
+    public static final RegistryObject<EntityType<com.hbm.entity.projectile.EntityArtilleryShell>> ARTILLERY_SHELL =
+            ENTITY_TYPES.register("entity_artillery_shell", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<com.hbm.entity.projectile.EntityArtilleryShell>of(
+                                    com.hbm.entity.projectile.EntityArtilleryShell::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(64)
                             .updateInterval(1), key));
 
     public static void init() {}

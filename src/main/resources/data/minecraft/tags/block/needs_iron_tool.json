@@ -26,6 +26,21 @@
     "hbm:fusion_klystron",
     "hbm:fusion_klystron_creative",
     "hbm:fusion_boiler",
-    "hbm:fusion_mhdt"
+    "hbm:fusion_mhdt",
+    "hbm:turret_pad",
+    "hbm:turret_emplacement",
+    "hbm:turret_chekhov",
+    "hbm:turret_friendly",
+    "hbm:turret_sentry",
+    "hbm:turret_sentry_damaged",
+    "hbm:turret_howard",
+    "hbm:turret_howard_damaged",
+    "hbm:turret_tauon",
+    "hbm:turret_maxwell",
+    "hbm:turret_jeremy",
+    "hbm:turret_richard",
+    "hbm:turret_fritz",
+    "hbm:turret_himars",
+    "hbm:turret_arty"
   ]
 }

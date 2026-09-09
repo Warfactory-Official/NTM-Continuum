@@ -7,6 +7,7 @@ import com.hbm.items.tool.ItemBlowtorch;
 import com.hbm.items.tool.ItemBoltgun;
 import com.hbm.items.tool.ItemDefuser;
 import com.hbm.items.tool.ItemTooling;
+import com.hbm.items.tool.ItemTurretMobFilter;
 import com.hbm.items.machine.DrillBitType;
 import com.hbm.items.machine.ItemDrillbit;
 import com.hbm.api.block.IToolable.ToolType;
@@ -37,6 +38,9 @@ public final class ModToolItems {
     public static final RegistryObject<ItemDefuser> defuser =
             ITEMS.registerItem("defuser", ItemDefuser::new,
                     p -> p.stacksTo(1).durability(100));
+    public static final RegistryObject<ItemTurretMobFilter> turret_mob_filter =
+            ITEMS.registerItem("turret_mob_filter", ItemTurretMobFilter::new,
+                    p -> p.stacksTo(1));
 
     public static final RegistryObject<ItemDrillbit> drillbit_steel = drillbit("drillbit_steel", DrillBitType.STEEL);
     public static final RegistryObject<ItemDrillbit> drillbit_steel_diamond = drillbit("drillbit_steel_diamond", DrillBitType.STEEL_DIAMOND);
@@ -55,6 +59,7 @@ public final class ModToolItems {
         ModTabs.addTo(HbmTab.CONSUMABLES, screwdriver);
         ModTabs.addTo(HbmTab.CONSUMABLES, hand_drill);
         ModTabs.addTo(HbmTab.BOMBS, defuser);
+        ModTabs.addTo(HbmTab.WEAPONS, turret_mob_filter);
 
         ModTabs.addTo(HbmTab.CONTROL, drillbit_steel);
         ModTabs.addTo(HbmTab.CONTROL, drillbit_steel_diamond);

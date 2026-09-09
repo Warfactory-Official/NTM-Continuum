@@ -105,6 +105,13 @@ stonecutter parameters {
             replace("net.minecraft.world.entity.monster.zombie.Zombie", "net.minecraft.world.entity.monster.Zombie")
             replace("net.minecraft.world.entity.monster.skeleton.AbstractSkeleton", "net.minecraft.world.entity.monster.AbstractSkeleton")
             replace("net.minecraft.world.entity.npc.villager.Villager", "net.minecraft.world.entity.npc.Villager")
+            // 26.1 moved the minecart family into its own subpackage. Spelled with the full path, as
+            // with the animals above: the bare type name appears inside AbstractMinecartContainer and
+            // every NTM cart class, so only the qualified form is reversible.
+            replace("net.minecraft.world.entity.vehicle.minecart.AbstractMinecart", "net.minecraft.world.entity.vehicle.AbstractMinecart")
+            // Only the PART moved into the enderdragon subpackage; EnderDragon itself lives there on
+            // every target, so the rule has to carry the full `EnderDragonPart` name to stay injective.
+            replace("net.minecraft.world.entity.boss.enderdragon.EnderDragonPart", "net.minecraft.world.entity.boss.EnderDragonPart")
             // Screen label pass: 26.1 renamed renderLabels when screen drawing became an extract pass.
             replace("extractLabels(", "renderLabels(")
             replace("getCraftingRemainder()", "getCraftingRemainingItem()")

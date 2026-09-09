@@ -211,6 +211,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
     }
 
     private static JsonObject machineObjFromSpecial(JsonObject special) {
+        if ("hbm:machine_obj".equals(string(special, "type", ""))) return special;
         if (!"minecraft:special".equals(string(special, "type", ""))) return null;
         JsonElement inner = special.get("model");
         if (inner == null || !inner.isJsonObject()) return null;
@@ -258,21 +259,36 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
     }
 
     private static MachineItemModel parse(JsonObject json, boolean blockFramed) {
-        WavefrontObj obj = WavefrontObj.load(id(json, "obj", null));
+         Identifier objId = id(json, "obj", null);
+         WavefrontObj obj = WavefrontObj.load(objId);
         Identifier texture = id(json, "texture", DEFAULT_TEXTURE);
         boolean noCull = bool(json, "noCull", false);
         Identifier overlayTexture = id(json, "overlayTexture", null);
         List<Float> pivot = floats(json, "rotatePivot");
         List<Float> spinPivot = floats(json, "spinPivot");
-        List<Float> itemTranslate = floats(json, "itemTranslate");
-        List<Float> itemPreTranslate = floats(json, "itemPreTranslate");
-        List<Float> guiTranslate = floats(json, "guiTranslate");
+         List<Float> itemTranslate = floats(json, "itemTranslate");
+         List<Float> itemPreTranslate = floats(json, "itemPreTranslate");
+         List<Float> guiTranslate = floats(json, "guiTranslate");
+         List<Float> primaryTranslate = floats(json, "translate");
+         List<MachineItemModel.ModelPass> modelPasses = new ArrayList<>();
+         JsonElement passesValue = json.get("passes");
+         if (passesValue != null && passesValue.isJsonArray()) {
+             for (JsonElement passValue : passesValue.getAsJsonArray()) {
+                 if (!passValue.isJsonObject()) continue;
+                 JsonObject pass = passValue.getAsJsonObject();
+                 Identifier passObj = id(pass, "obj", objId);
+                 Identifier passTexture = id(pass, "texture", texture);
+                 List<Float> translate = floats(pass, "translate");
+                 WavefrontObj passModel = objId.equals(passObj) ? obj : WavefrontObj.load(passObj);
+                 modelPasses.add(new MachineItemModel.ModelPass(passModel,
+                         cutout(passTexture, noCull), strings(pass, "parts"), vector(translate)));
+             }
+         }
 
          Map<String, RenderType> materialTypes = Map.of();
           if (bool(json, "mtl", false)) {
             // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
-            Identifier objId = id(json, "obj", null);
-            Map<String, Identifier> lib = WavefrontObj.loadMtl(dev.golem.core.Ids.of(
+             Map<String, Identifier> lib = WavefrontObj.loadMtl(dev.golem.core.Ids.of(
                     objId.getNamespace(), objId.getPath().replace(".obj", ".mtl")));
             Map<String, RenderType> resolved = new LinkedHashMap<>();
             for (String mat : obj.materialNames()) {
@@ -320,9 +336,10 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 pivot.size() == 3 ? new Vector3f(pivot.get(0), pivot.get(1), pivot.get(2)) : new Vector3f(),
                  strings(json, "spinParts"),
                  spinPivot.size() == 3 ? new Vector3f(spinPivot.get(0), spinPivot.get(1), spinPivot.get(2)) : new Vector3f(),
-                   materialTypes, partTypes,
-                   bool(json, "spin", false), contextTransforms, string(json, "animation", ""));
-    }
+                    materialTypes, partTypes,
+                    bool(json, "spin", false), contextTransforms, string(json, "animation", ""),
+                     strings(json, "parts"), vector(primaryTranslate), modelPasses, f(json, "guiSpinSpeed", 0F));
+     }
 
     private static RenderType cutout(Identifier texture, boolean noCull) {
         return noCull ? CompatRenderTypes.entityCutoutNoCull(texture) : CompatRenderTypes.entityCutout(texture);

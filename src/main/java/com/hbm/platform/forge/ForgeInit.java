@@ -73,6 +73,7 @@ public final class ForgeInit {
         com.hbm.gametest.AutocalGameTests.init();
         com.hbm.gametest.RadioProviderGameTests.init();
         com.hbm.gametest.RtgGameTests.init();
+        com.hbm.gametest.TurretGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -121,6 +122,8 @@ public final class ForgeInit {
                 com.hbm.gametest.RadioProviderGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.RtgGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.TurretGameTests.TESTS));
 
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();

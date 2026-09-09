@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": "hbm:tnt_ntm",
+    "G": "hbm:cordite",
+    "H": "#c:shells/steel",
+    "C": "#c:ingots/copper"
+  },
+  "pattern": [
+    " T ",
+    "GHG",
+    "CCC"
+  ],
+  "result": {
+    "id": "hbm:ammo_shell",
+    "count": 6
+  }
+}

@@ -73,6 +73,7 @@ public class NeoForgeInit {
          com.hbm.gametest.RadioProviderGameTests.init();
          com.hbm.gametest.RtgGameTests.init();
          com.hbm.gametest.SingularityGameTests.init();
+         com.hbm.gametest.TurretGameTests.init();
         //?}
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
@@ -131,6 +132,8 @@ public class NeoForgeInit {
                   com.hbm.gametest.RtgGameTests.TESTS));
           eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                   com.hbm.gametest.SingularityGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.TurretGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {

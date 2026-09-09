@@ -81,6 +81,14 @@ public final class MachineItemModel {
     private final Map<String, ContextTransform> contextTransforms;
     /** Optional named item animation. The pump animation keeps all moving parts on one rotor angle. */
     private final String animation;
+    /** Parts selected from the primary OBJ when ordered model passes are declared. */
+    private final List<String> primaryParts;
+    /** Local translation of the primary ordered pass. */
+    private final Vector3f primaryTranslation;
+    /** Additional ordered OBJ/texture passes. Empty for the existing single-OBJ contract. */
+    private final List<ModelPass> passes;
+    /** Degrees per millisecond for the old GUI-only continuous spin, zero when unused. */
+    private final float guiSpinSpeed;
 
     /** A legacy renderer adjustment applied after the context display matrix and before the model pose. */
     public record ContextTransform(Vector3f rotation, Vector3f translation, float scale) {
@@ -93,6 +101,16 @@ public final class MachineItemModel {
         }
     }
 
+    /** One ordered OBJ pass, optionally restricted to named parts and locally translated. */
+    public record ModelPass(WavefrontObj model, RenderType renderType, List<String> parts,
+                            Vector3f translation) {
+        public void apply(PoseStack poseStack) {
+            if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
+                poseStack.translate(translation.x, translation.y, translation.z);
+            }
+        }
+    }
+
     public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, boolean rawLegacyTransform,
                             boolean blockFramed,
                             float yaw, float pitch, float ty,
@@ -100,10 +118,30 @@ public final class MachineItemModel {
                             float guiYaw, Set<String> exclude,
                             @Nullable RenderType overlayType, List<String> overlayParts,
                             @Nullable RenderType blackType, List<String> blackParts,
+                              List<String> rotateParts, float rotateX, Vector3f rotatePivot,
+                              List<String> spinParts, Vector3f spinPivot, Map<String, RenderType> materialTypes,
+                              Map<String, RenderType> partTypes,
+                              boolean spin, Map<String, ContextTransform> contextTransforms, String animation) {
+        this(model, renderType, scale, rawLegacyTransform, blockFramed, yaw, pitch, ty,
+                itemTranslate, itemPreTranslate, guiTranslate, guiScale, guiYaw, exclude,
+                overlayType, overlayParts, blackType, blackParts, rotateParts, rotateX, rotatePivot,
+                spinParts, spinPivot, materialTypes, partTypes, spin, contextTransforms, animation,
+                List.of(), new Vector3f(), List.of(), 0F);
+    }
+
+    public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, boolean rawLegacyTransform,
+                             boolean blockFramed,
+                             float yaw, float pitch, float ty,
+                             Vector3f itemTranslate, Vector3f itemPreTranslate, Vector3f guiTranslate, float guiScale,
+                             float guiYaw, Set<String> exclude,
+                             @Nullable RenderType overlayType, List<String> overlayParts,
+                             @Nullable RenderType blackType, List<String> blackParts,
                              List<String> rotateParts, float rotateX, Vector3f rotatePivot,
                              List<String> spinParts, Vector3f spinPivot, Map<String, RenderType> materialTypes,
                              Map<String, RenderType> partTypes,
-                             boolean spin, Map<String, ContextTransform> contextTransforms, String animation) {
+                             boolean spin, Map<String, ContextTransform> contextTransforms, String animation,
+                             List<String> primaryParts, Vector3f primaryTranslation, List<ModelPass> passes,
+                             float guiSpinSpeed) {
         this.model = model;
         this.renderType = renderType;
         this.scale = scale;
@@ -131,6 +169,10 @@ public final class MachineItemModel {
         this.spin = spin;
         this.contextTransforms = Map.copyOf(contextTransforms);
         this.animation = animation;
+        this.primaryParts = List.copyOf(primaryParts);
+        this.primaryTranslation = primaryTranslation;
+        this.passes = List.copyOf(passes);
+        this.guiSpinSpeed = guiSpinSpeed;
         // Framing is centred on what is actually drawn, which is everything except the caller's own
         // exclusions — not the merged set below, since overlay and rotated parts are still on screen.
         this.userExclude = Set.copyOf(exclude);
@@ -193,8 +235,22 @@ public final class MachineItemModel {
             poseStack.popPose();
             return;
         }
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderExcept(pose, buffer, lightCoords, overlayCoords, exclude));
+        if (passes.isEmpty()) {
+            sink.submitCustomGeometry(poseStack, renderType,
+                    (pose, buffer) -> model.renderExcept(pose, buffer, lightCoords, overlayCoords, exclude));
+        } else {
+            poseStack.pushPose();
+            applyTranslation(poseStack, primaryTranslation);
+            submitPass(poseStack, sink, model, renderType, primaryParts, exclude, lightCoords, overlayCoords);
+            poseStack.popPose();
+            for (ModelPass pass : passes) {
+                poseStack.pushPose();
+                pass.apply(poseStack);
+                submitPass(poseStack, sink, pass.model(), pass.renderType(), pass.parts(), userExclude,
+                        lightCoords, overlayCoords);
+                poseStack.popPose();
+            }
+        }
         if (blackType != null && !blackParts.isEmpty()) {
             sink.submitCustomGeometry(poseStack, blackType, (pose, buffer) -> {
                 for (String part : blackParts) if (!isRotated(part)) {
@@ -236,6 +292,27 @@ public final class MachineItemModel {
         poseStack.popPose();
     }
 
+    private void submitPass(PoseStack poseStack, SubmitSink sink, WavefrontObj passModel, RenderType passType,
+                            List<String> parts, Set<String> excluded, int lightCoords, int overlayCoords) {
+        sink.submitCustomGeometry(poseStack, passType, (pose, buffer) -> {
+            if (parts.isEmpty()) {
+                passModel.renderExcept(pose, buffer, lightCoords, overlayCoords, excluded);
+            } else {
+                for (String part : parts) {
+                    if (!excluded.contains(part)) {
+                        passModel.renderPart(part, pose, buffer, lightCoords, overlayCoords);
+                    }
+                }
+            }
+        });
+    }
+
+    private void applyTranslation(PoseStack poseStack, Vector3f translation) {
+        if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
+            poseStack.translate(translation.x, translation.y, translation.z);
+        }
+    }
+
     private void submitPartType(String part, PoseStack poseStack, SubmitSink sink, int lightCoords,
             int overlayCoords) {
         RenderType type = partTypes.get(part);
@@ -269,7 +346,32 @@ public final class MachineItemModel {
             return;
         }
 
-        emitBounds(ps, model.boundsExcludingExact(exclude), output);
+        if (passes.isEmpty()) {
+            emitBounds(ps, model.boundsExcludingExact(exclude), output);
+        } else {
+            ps.pushPose();
+            applyTranslation(ps, primaryTranslation);
+            if (primaryParts.isEmpty()) {
+                emitBounds(ps, model.boundsExcludingExact(exclude), output);
+            } else {
+                Set<String> included = new HashSet<>(primaryParts);
+                included.removeAll(exclude);
+                emitPartBounds(ps, model, included, output);
+            }
+            ps.popPose();
+            for (ModelPass pass : passes) {
+                ps.pushPose();
+                pass.apply(ps);
+                if (pass.parts().isEmpty()) {
+                    emitBounds(ps, pass.model().boundsExcludingExact(userExclude), output);
+                } else {
+                    Set<String> included = new HashSet<>(pass.parts());
+                    included.removeAll(userExclude);
+                    emitPartBounds(ps, pass.model(), included, output);
+                }
+                ps.popPose();
+            }
+        }
         emitPartBounds(ps, blackParts.stream().filter(part -> !isRotated(part)).collect(java.util.stream.Collectors.toSet()), output);
         emitPartBounds(ps, overlayParts.stream().filter(part -> !isRotated(part)).collect(java.util.stream.Collectors.toSet()), output);
 
@@ -295,6 +397,11 @@ public final class MachineItemModel {
 
     private void emitPartBounds(PoseStack poseStack, Set<String> parts, Consumer<Vector3fc> output) {
         emitBounds(poseStack, model.boundsIncluding(parts), output);
+    }
+
+    private void emitPartBounds(PoseStack poseStack, WavefrontObj passModel, Set<String> parts,
+                                Consumer<Vector3fc> output) {
+        emitBounds(poseStack, passModel.boundsIncluding(parts), output);
     }
 
     private void emitBounds(PoseStack poseStack, @Nullable float[][] bounds, Consumer<Vector3fc> output) {
@@ -384,6 +491,9 @@ public final class MachineItemModel {
             poseStack.translate(guiTranslate.x, guiTranslate.y, guiTranslate.z);
             poseStack.scale(guiScale, guiScale, guiScale);
             poseStack.mulPose(Axis.YP.rotationDegrees(guiYaw));
+        }
+        if (context == ItemDisplayContext.GUI && guiSpinSpeed != 0F) {
+            poseStack.mulPose(Axis.YP.rotationDegrees(System.currentTimeMillis() % 3600L * guiSpinSpeed));
         }
 
         if (rawLegacyTransform || !blockFramed) {

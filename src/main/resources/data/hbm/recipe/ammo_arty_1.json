@@ -1,0 +1,30 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "items": [
+        "hbm:ball_dynamite"
+      ]
+    },
+    "S": {
+      "items": [
+        "hbm:ammo_arty"
+      ],
+      "components": {
+        "hbm:item_variant": 0
+      }
+    }
+  },
+  "pattern": [
+    " D ",
+    "DSD",
+    " D "
+  ],
+  "result": {
+    "id": "hbm:ammo_arty",
+    "components": {
+      "hbm:item_variant": 1
+    }
+  }
+}

@@ -477,6 +477,15 @@
       }
     ]
   },
+  "weapon.mortar_whistle": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/mortar_whistle",
+        "stream": false
+      }
+    ]
+  },
   "item.tech_boop": {
     "category": "player",
     "sounds": [
@@ -676,5 +685,45 @@
         "stream": false
       }
     ]
+  },
+  "turret.chekhov_fire": {
+    "category": "block",
+    "sounds": [{"name": "hbm:turret/chekhov_fire", "stream": false}]
+  },
+  "turret.howard_fire": {
+    "category": "block",
+    "sounds": [{"name": "hbm:turret/howard_fire", "stream": false}]
+  },
+  "turret.howard_reload": {
+    "category": "block",
+    "sounds": [{"name": "hbm:turret/howard_reload", "stream": false}]
+  },
+  "turret.jeremy_fire": {
+    "category": "block",
+    "sounds": ["hbm:turret/jeremy_fire1", "hbm:turret/jeremy_fire2", "hbm:turret/jeremy_fire3", "hbm:turret/jeremy_fire4", "hbm:turret/jeremy_fire5"]
+  },
+  "turret.jeremy_reload": {
+    "category": "block",
+    "sounds": [{"name": "hbm:turret/jeremy_reload", "stream": false}]
+  },
+  "turret.richard_fire": {
+    "category": "block",
+    "sounds": [{"name": "hbm:turret/richard_fire", "stream": false}]
+  },
+  "turret.sentry_fire": {
+    "category": "block",
+    "sounds": [{"name": "hbm:turret/sentry_fire", "stream": false}]
+  },
+  "turret.sentry_lockon": {
+    "category": "block",
+    "sounds": [{"name": "hbm:turret/sentry_lockon", "stream": false}]
+  },
+  "weapon.tau_shoot": {
+    "category": "player",
+    "sounds": [{"name": "hbm:weapon/taushoot", "stream": false}]
+  },
+  "weapon.explosion_tiny": {
+    "category": "block",
+    "sounds": ["hbm:weapon/explosion_tiny1", "hbm:weapon/explosion_tiny2"]
   }
 }

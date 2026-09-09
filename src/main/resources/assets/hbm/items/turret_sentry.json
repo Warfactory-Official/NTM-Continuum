@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/turrets/turret_sentry.obj",
+    "texture": "hbm:textures/models/turrets/sentry.png",
+    "rawLegacyTransform": true,
+    "itemTranslate": [0.0, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "guiTranslate": [0.0, -4.0, 0.0],
+    "guiScale": 7.0,
+    "scale": 1.0,
+    "yaw": 90.0
+  }
+}

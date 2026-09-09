@@ -37,6 +37,14 @@ public final class ModMachineItems {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
+    /** Turret targeting chip — the biometry card a turret accepts in its chip slot. */
+    public static final RegistryObject<com.hbm.items.machine.ItemTurretChip> turret_chip = ITEMS.registerItem(
+            "turret_chip", com.hbm.items.machine.ItemTurretChip::new, p -> p.stacksTo(1));
+
+    /** Handheld biometric scanner — writes the holder's name onto a turret whitelist. */
+    public static final RegistryObject<com.hbm.items.machine.ItemTurretBiometry> turret_biometry = ITEMS.registerItem(
+            "turret_biometry", com.hbm.items.machine.ItemTurretBiometry::new, p -> p.stacksTo(1));
+
     /** Assembly machine "plates" template — unlocks the metal-plate recipes. */
     public static final RegistryObject<ItemBlueprints> blueprint_plate = ITEMS.registerItem(
             "blueprint_plate", p -> new ItemBlueprints(p, AssemblyMachineRecipes.POOL_PLATES), p -> p.stacksTo(1));

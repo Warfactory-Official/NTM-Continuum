@@ -99,6 +99,9 @@ public final class HbmClientRegistrations {
     }
 
     public static void registerScreens(ScreenSink sink) {
+        com.hbm.items.tool.ItemTurretMobFilter.setClientScreenOpener(turret ->
+                net.minecraft.client.Minecraft.getInstance().setScreen(
+                        new com.hbm.inventory.gui.GUITurretMobFilter(turret)));
         com.hbm.client.sound.AssemblyFactorySoundHandler.setAssemblerCut(com.hbm.sound.ModSounds.ASSEMBLER_CUT.get());
         sink.register(ModMenus.MACHINE_BATTERY.get(), GUIMachineBattery::new);
         sink.register(ModMenus.MACHINE_WASTE_DRUM.get(), GUIWasteDrum::new);
@@ -126,6 +129,7 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_REFINERY.get(), GUIMachineRefinery::new);
         sink.register(ModMenus.MACHINE_DIESEL.get(), GUIMachineDiesel::new);
         sink.register(ModMenus.LAUNCH_PAD.get(), com.hbm.inventory.gui.GUILaunchPad::new);
+        sink.register(ModMenus.TURRET_BASE.get(), com.hbm.inventory.gui.GUITurretBase::new);
         sink.register(ModMenus.MACHINE_TURBINE.get(), GUIMachineTurbine::new);
         sink.register(ModMenus.MACHINE_LARGE_TURBINE.get(), GUIMachineLargeTurbine::new);
         sink.register(ModMenus.MACHINE_TURBINE_GAS.get(), GUIMachineTurbineGas::new);
@@ -209,6 +213,7 @@ public final class HbmClientRegistrations {
         com.hbm.client.BombClientRegistrations.registerBlockEntityRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
         com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
+
     }
 
     public static void installTints() {

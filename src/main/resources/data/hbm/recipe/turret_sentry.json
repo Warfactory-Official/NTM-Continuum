@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:plates/steel",
+    "M": "hbm:motor",
+    "L": "#c:mechanisms/gunmetal",
+    "S": "hbm:steel_scaffold",
+    "C": "hbm:circuit_basic",
+    "D": "hbm:crt_display"
+  },
+  "pattern": [
+    "PPL",
+    " MD",
+    " SC"
+  ],
+  "result": {
+    "id": "hbm:turret_sentry"
+  }
+}

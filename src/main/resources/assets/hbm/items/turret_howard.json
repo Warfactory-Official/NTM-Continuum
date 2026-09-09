@@ -1,0 +1,20 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/turrets/turret_chekhov.obj",
+    "texture": "hbm:textures/models/turrets/base.png",
+    "rawLegacyTransform": true,
+    "itemTranslate": [-0.75, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "guiTranslate": [0.0, -4.5, 0.0],
+    "guiScale": 4.0,
+    "scale": 1.0,
+    "yaw": 0.0,
+    "parts": ["Base"],
+    "passes": [
+      { "obj": "hbm:models/turrets/turret_howard.obj", "texture": "hbm:textures/models/turrets/carriage_ciws.png", "parts": ["Carriage"] },
+      { "obj": "hbm:models/turrets/turret_howard.obj", "texture": "hbm:textures/models/turrets/howard.png", "parts": ["Body"] },
+      { "obj": "hbm:models/turrets/turret_howard.obj", "texture": "hbm:textures/models/turrets/howard_barrels.png", "parts": ["BarrelsTop", "BarrelsBottom"] }
+    ]
+  }
+}

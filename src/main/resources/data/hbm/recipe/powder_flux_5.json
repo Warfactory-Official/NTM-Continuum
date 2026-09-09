@@ -2,11 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    "#c:dusts/borax",
+    "#c:dusts/calcium",
     "#minecraft:sand"
   ],
   "result": {
     "id": "hbm:powder_flux",
-    "count": 16
+    "count": 12
   }
 }

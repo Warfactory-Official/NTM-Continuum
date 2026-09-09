@@ -7,6 +7,7 @@ import java.util.function.UnaryOperator;
 import com.hbm.Constants;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.ModOutgasBlocks;
+import com.hbm.blocks.generic.BlockSlag;
 import com.hbm.blocks.generic.HbmStairBlock;
 import com.hbm.creativetabs.HbmTab;
 import dev.golem.core.registry.DeferredRegister;
@@ -38,6 +39,12 @@ public final class ModBlocks {
 
     private static RegistryObject<Block> block(String name, HbmTab tab, UnaryOperator<BlockBehaviour.Properties> props) {
         RegistryObject<Block> ro = BLOCKS.registerSimpleBlock(name, props);
+        ALL.add(new BlockEntry(ro, tab));
+        return ro;
+    }
+
+    private static RegistryObject<Block> block(String name, HbmTab tab, java.util.function.Function<BlockBehaviour.Properties, ? extends Block> factory, UnaryOperator<BlockBehaviour.Properties> props) {
+        RegistryObject<Block> ro = BLOCKS.registerBlock(name, factory, props);
         ALL.add(new BlockEntry(ro, tab));
         return ro;
     }
@@ -147,6 +154,7 @@ public final class ModBlocks {
     public static final RegistryObject<Block> brick_fire = block("brick_fire", HbmTab.BLOCKS, p -> p.strength(10.0F, 10.0F));
     public static final RegistryObject<Block> tile_lab = block("tile_lab", HbmTab.BLOCKS, p -> p.strength(1.0F, 20.0F).sound(SoundType.GLASS));
     public static final RegistryObject<Block> tile_lab_cracked = block("tile_lab_cracked", HbmTab.BLOCKS, p -> p.strength(1.0F, 20.0F).sound(SoundType.GLASS));
+    public static final RegistryObject<Block> block_slag = block("block_slag", HbmTab.BLOCKS, BlockSlag::new, p -> p.strength(5.0F, 10.0F).sound(SoundType.STONE));
 
     // --- ores (Wave 2b); XP ores drop materials, plain ores drop themselves ---
     public static final RegistryObject<Block> ore_schrabidium = block("ore_schrabidium", HbmTab.RESOURCES, p -> p.strength(15.0F, 600.0F));

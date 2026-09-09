@@ -1,5 +1,14 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.EntityProcessorCrossSmooth;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectTiny;
+import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
+import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import net.minecraft.core.Direction;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.GunAnimation;
@@ -182,6 +191,45 @@ public class Lego {
     }
 
     /** Extra spread from wear: nothing until half-worn, then ramping to full at the end of its life. */
+    /**
+     * The warhead every explosive round detonates with: linear falloff from a damage the round states
+     * itself, the shooter still liable, and a small fireball.
+     */
+    public static void standardExplode(EntityBulletBaseMK4 bullet, HitResult mop, float range) {
+        standardExplode(bullet, mop, range, 1F);
+    }
+
+    public static void standardExplode(EntityBulletBaseMK4 bullet, HitResult mop, float range, float damageMod) {
+        Vec3 hit = mop.getLocation();
+        ExplosionVNT vnt = new ExplosionVNT(bullet.level(), hit.x, hit.y, hit.z, range, bullet.getThrower());
+        vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, bullet.damage * damageMod)
+                .setupPiercing(bullet.config.armorThresholdNegation, bullet.config.armorPiercingPercent));
+        vnt.setPlayerProcessor(new PlayerProcessorStandard());
+        vnt.setSFX(new ExplosionEffectWeapon(10, 2.5F, 1F));
+        vnt.explode();
+    }
+
+    public static void tinyExplode(EntityBulletBaseMK4 bullet, HitResult mop, float range) {
+        tinyExplode(bullet, mop, range, 1F);
+    }
+
+    /** Nudged a quarter block off the face it hit, so a blast against a wall is not swallowed by it. */
+    public static void tinyExplode(EntityBulletBaseMK4 bullet, HitResult mop, float range, float damageMod) {
+        Direction dir = mop instanceof BlockHitResult block ? block.getDirection() : Direction.UP;
+        Vec3 hit = mop.getLocation();
+        double x = hit.x + dir.getStepX() * 0.25D;
+        double y = hit.y + dir.getStepY() * 0.25D;
+        double z = hit.z + dir.getStepZ() * 0.25D;
+
+        ExplosionVNT vnt = new ExplosionVNT(bullet.level(), x, y, z, range, bullet.getThrower());
+        vnt.setEntityProcessor(new EntityProcessorCrossSmooth(0.5, bullet.damage * damageMod)
+                .setupPiercing(bullet.config.armorThresholdNegation, bullet.config.armorPiercingPercent)
+                .setKnockback(0.25D));
+        vnt.setPlayerProcessor(new PlayerProcessorStandard());
+        vnt.setSFX(new ExplosionEffectTiny());
+        vnt.explode();
+    }
+
     public static float getStandardWearSpread(ItemStack stack, GunConfig config, int index) {
         float percent = ItemGunBaseNT.getWear(stack, index) / config.getDurability(stack);
         if (percent < 0.5F) return 0F;

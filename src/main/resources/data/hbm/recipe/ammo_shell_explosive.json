@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": "#c:ingots/any_plasticexplosive",
+    "G": "minecraft:gunpowder",
+    "H": "#c:shells/steel",
+    "C": "#c:ingots/copper"
+  },
+  "pattern": [
+    " T ",
+    "GHG",
+    "CCC"
+  ],
+  "result": {
+    "id": "hbm:ammo_shell_explosive",
+    "count": 4
+  }
+}

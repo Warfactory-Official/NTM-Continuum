@@ -4,6 +4,9 @@ package com.hbm.config;
 public final class WeaponConfig {
     private WeaponConfig() {}
 
+    /** Old {@code 7.03_ciwsAccuracy}: hit chance for the Howard CIWS in percent. */
+    public static int ciwsHitrate = 50;
+
     /** Old {@code 10.01_dropBHole}: dropped singularities create their configured vortex. */
     public static boolean dropSing = true;
 

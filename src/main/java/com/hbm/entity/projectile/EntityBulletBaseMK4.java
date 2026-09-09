@@ -15,6 +15,8 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.util.Mth;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,6 +61,16 @@ public class EntityBulletBaseMK4 extends CompatEntity {
     public int ricochets = 0;
     /** Rendering aids: the distance actually covered last tick. */
     public double velocity;
+    /**
+     * Extra step length a self-propelled round adds to its config velocity each tick. A rocket leaves
+     * the tube slowly and builds up, which is why it is a field on the entity and not on the config.
+     */
+    public double accel;
+    /**
+     * What a guided round steers towards. The turn rate opens up with age, so a rocket flies straight
+     * out of the launcher and only starts chasing once it has cleared it.
+     */
+    public @Nullable Entity lockonTarget;
     public double prevVelocity;
 
     public EntityBulletBaseMK4(EntityType<EntityBulletBaseMK4> type, Level level) {
@@ -84,6 +96,30 @@ public class EntityBulletBaseMK4 extends CompatEntity {
                 .xRot(-pitch * ((float) Math.PI / 180F))
                 .yRot(-yaw * ((float) Math.PI / 180F));
         setPos(shooter.getX() + offset.x, shooter.getEyeY() + offset.y, shooter.getZ() + offset.z);
+
+        double headingX = -Math.sin(yaw * Math.PI / 180D) * Math.cos(pitch * Math.PI / 180D);
+        double headingZ = Math.cos(yaw * Math.PI / 180D) * Math.cos(pitch * Math.PI / 180D);
+        double headingY = -Math.sin(pitch * Math.PI / 180D);
+        shoot(headingX, headingY, headingZ, gunSpread);
+    }
+
+    /**
+     * The turret constructor: no living shooter, and the heading comes straight from the turret's own
+     * aim rather than from an entity's look vector. Angles arrive in <b>radians</b> and pitch is
+     * negated, matching how a turret stores its own rotation.
+     */
+    public EntityBulletBaseMK4(Level level, BulletConfig config, float baseDamage, float gunSpread,
+            float yawRadians, float pitchRadians) {
+        this(ModEntities.BULLET_MK4.get(), level);
+        setBulletConfig(config);
+        this.damage = baseDamage * config.damageMult;
+
+        float yaw = (float) Math.toDegrees(yawRadians);
+        float pitch = (float) -Math.toDegrees(pitchRadians);
+        setYRot(yaw);
+        this.yRotO = yaw;
+        setXRot(pitch);
+        this.xRotO = pitch;
 
         double headingX = -Math.sin(yaw * Math.PI / 180D) * Math.cos(pitch * Math.PI / 180D);
         double headingZ = Math.cos(yaw * Math.PI / 180D) * Math.cos(pitch * Math.PI / 180D);
@@ -131,6 +167,28 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         return false;
     }
 
+    /** The distance this round covers in one tick: its config velocity plus whatever it has built up. */
+    public double step() {
+        return config.velocity + accel;
+    }
+
+    private void steerTowardsLockon() {
+        Entity locked = lockonTarget;
+        if (locked == null || !locked.isAlive()) return;
+
+        Vec3 motion = getDeltaMovement();
+        double speed = motion.length();
+        if (speed == 0D) return;
+
+        Vec3 delta = new Vec3(locked.getX() - getX(),
+                locked.getY() + locked.getBbHeight() / 2D - getY(), locked.getZ() - getZ());
+        float turn = Math.min(0.005F * tickCount, 1F);
+        setDeltaMovement(new Vec3(
+                Mth.lerp(turn, motion.x, delta.x),
+                Mth.lerp(turn, motion.y, delta.y),
+                Mth.lerp(turn, motion.z, delta.z)).normalize().scale(speed));
+    }
+
     public BulletConfig getBulletConfig() {
         return BulletConfigs.byIndex(entityData.get(BULLET_CONFIG));
     }
@@ -160,9 +218,11 @@ public class EntityBulletBaseMK4 extends CompatEntity {
             return;
         }
 
+        steerTowardsLockon();
+
         Vec3 from = position();
         Vec3 heading = getDeltaMovement();
-        Vec3 to = from.add(heading.scale(config.velocity));
+        Vec3 to = from.add(heading.scale(step()));
 
         // Blocks first: a block hit shortens the segment the entity sweep is allowed to cover, so a
         // bullet cannot reach through a wall to something standing behind it.
@@ -196,7 +256,7 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         prevVelocity = velocity;
         velocity = position().distanceTo(from);
 
-        setPos(position().add(getDeltaMovement().scale(config.velocity)));
+        setPos(position().add(getDeltaMovement().scale(step())));
         // Gravity acts on the heading, so a heavy round's arc builds up over its flight. Air drag is
         // deliberately absent — upstream's getAirDrag() returns 1.0 for bullets.
         if (config.gravity != 0F) {

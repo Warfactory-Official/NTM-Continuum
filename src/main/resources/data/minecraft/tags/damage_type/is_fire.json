@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "hbm:bullet_fire"
+    "hbm:bullet_fire",
+    "hbm:boil"
   ]
 }

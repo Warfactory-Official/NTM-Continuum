@@ -10,6 +10,8 @@ import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
+import com.hbm.blocks.machine.storage.ModStorageBlocks;
+import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.foundry.FoundryExpansion;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -23,6 +25,7 @@ import com.hbm.items.ItemEnums.EnumChunkType;
 import com.hbm.items.ItemEnums.EnumCircuitType;
 import com.hbm.items.ItemEnums.EnumExpensiveType;
 import com.hbm.items.ItemEnums.EnumPartType;
+import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModBombItems;
 import com.hbm.items.ModFuelItems;
@@ -33,6 +36,8 @@ import com.hbm.items.ModJetpackDependencyItems;
 import com.hbm.items.ModToolItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
+import com.hbm.items.weapon.ItemAmmoArty.ArtilleryShellType;
+import com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType;
 import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
@@ -50,6 +55,7 @@ public final class AssemblyMachineRecipesGenerated {
         register0(reg);
         register1(reg);
         register2(reg);
+        register3(reg);
     }
 
     private static void register0(GenericRecipes reg) {
@@ -345,6 +351,42 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.mancore").setup(1_200, 100)
                 .inputItems(PU239.nugget().count(8), BE.nugget().count(2))
                 .outputItems(new ItemStack(ModBombItems.man_core.get())));
+        reg.registerGenerated(new GenericRecipe("ass.turretchekhov").setup(200, 100)
+                .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LEAD).get()), STEEL.ingot().count(16), new ComparableStack(ModItems.motor.get(), 3), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)), STEEL.pipe().count(3), tag("c", "mechanisms/gunmetal", 3), new ComparableStack(ModStorageBlocks.crate_iron.get().asItem()), new ComparableStack(ModItems.crt_display.get()))
+                .outputItems(new ItemStack(ModTurretBlocks.turret_chekhov.get())));
+        reg.registerGenerated(new GenericRecipe("ass.turretfriendly").setup(200, 100)
+                .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LEAD).get()), STEEL.ingot().count(16), new ComparableStack(ModItems.motor.get(), 3), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC)), STEEL.pipe().count(3), tag("c", "mechanisms/gunmetal", 1), new ComparableStack(ModStorageBlocks.crate_iron.get().asItem()), new ComparableStack(ModItems.crt_display.get()))
+                .outputItems(new ItemStack(ModTurretBlocks.turret_friendly.get())));
+        reg.registerGenerated(new GenericRecipe("ass.turretjeremy").setup(200, 100)
+                .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LEAD).get()), STEEL.ingot().count(16), new ComparableStack(ModItems.motor.get(), 2), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)), new ComparableStack(ModItems.motor_desh.get()), STEEL.shell().count(3), tag("c", "mechanisms/weaponsteel", 3), new ComparableStack(ModStorageBlocks.crate_steel.get().asItem()), new ComparableStack(ModItems.crt_display.get()))
+                .outputItems(new ItemStack(ModTurretBlocks.turret_jeremy.get())));
+        reg.registerGenerated(new GenericRecipe("ass.turrettauon").setup(200, 100)
+                .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.CAPACITOR_NIOBIUM).get()), STEEL.ingot().count(16), ANY_PLASTIC.ingot().count(4), new ComparableStack(ModItems.motor.get(), 2), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)), new ComparableStack(ModItems.motor_desh.get()), CU.ingot().count(32), tag("c", "mechanisms/saturnite", 3), new ComparableStack(ModItems.crt_display.get()))
+                .outputItems(new ItemStack(ModTurretBlocks.turret_tauon.get())));
+        reg.registerGenerated(new GenericRecipe("ass.turretrichard").setup(200, 100)
+                .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LEAD).get()), STEEL.ingot().count(16), new ComparableStack(ModItems.motor.get(), 2), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)), ANY_PLASTIC.ingot().count(2), STEEL.shell().count(8), tag("c", "mechanisms/weaponsteel", 3), new ComparableStack(ModStorageBlocks.crate_steel.get().asItem()), new ComparableStack(ModItems.crt_display.get()))
+                .outputItems(new ItemStack(ModTurretBlocks.turret_richard.get())));
+        reg.registerGenerated(new GenericRecipe("ass.turrethoward").setup(200, 100)
+                .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_LEAD).get()), STEEL.ingot().count(24), new ComparableStack(ModItems.motor.get(), 2), new ComparableStack(ModItems.motor_desh.get(), 2), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 3), STEEL.pipe().count(10), tag("c", "mechanisms/weaponsteel", 3), new ComparableStack(ModStorageBlocks.crate_steel.get().asItem()), new ComparableStack(ModItems.crt_display.get()))
+                .outputItems(new ItemStack(ModTurretBlocks.turret_howard.get())));
+        reg.registerGenerated(new GenericRecipe("ass.maxwell").setup(200, 100)
+                .inputItems(new ComparableStack(ModBatteryItems.PACKS.get(EnumBatteryPack.CAPACITOR_NIOBIUM).get()), STEEL.ingot().count(24), new ComparableStack(ModItems.motor.get(), 2), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 2), STEEL.pipe().count(4), tag("c", "mechanisms/saturnite", 3), new ComparableStack(ModItems.magnetron.get(), 16), ANY_RESISTANTALLOY.ingot().count(8), new ComparableStack(ModItems.crt_display.get()))
+                .outputItems(new ItemStack(ModTurretBlocks.turret_maxwell.get())));
+        reg.registerGenerated(new GenericRecipe("ass.himarssmall").setup(100, 100)
+                .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(12), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), tag("c", "ingots/any_highexplosive", 48), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
+                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL)));
+        reg.registerGenerated(new GenericRecipe("ass.himarssmallhe").setup(100, 100)
+                .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(24), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), tag("c", "ingots/any_plasticexplosive", 18), tag("c", "ingots/any_highexplosive", 48), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
+                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_HE)));
+        reg.registerGenerated(new GenericRecipe("ass.himarssmallnuke").setup(100, 100)
+                .inputItems(STEEL.plate().count(24), ANY_PLASTIC.ingot().count(24), new ComparableStack(ModFuelItems.rocket_fuel.get(), 48), new ComparableStack(ModItems.ball_tatb.get(), 6), PU239.nugget().count(12), new ComparableStack(ModItems.neutron_reflector.get(), 12), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
+                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_MINI_NUKE)));
+        reg.registerGenerated(new GenericRecipe("ass.himarssmalllava").setup(100, 100)
+                .inputItems(STEEL.plate().count(24), ANY_HARDPLASTIC.ingot().count(12), new ComparableStack(ModFuelItems.rocket_fuel.get(), 32), new ComparableStack(ModItems.ball_tatb.get(), 4), tag("c", "gems/volcanic", 1), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 6))
+                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.SMALL_LAVA)));
+        reg.registerGenerated(new GenericRecipe("ass.himarslarge").setup(200, 100)
+                .inputItems(STEEL.plate().count(24), ANY_HARDPLASTIC.ingot().count(12), new ComparableStack(ModFuelItems.rocket_fuel.get(), 36), new ComparableStack(ModItems.ball_tatb.get(), 16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED)))
+                .outputItems(ModAmmoItems.ammo_himars.get().of(HIMARSRocketType.LARGE)));
         reg.registerGenerated(new GenericRecipe("ass.missileassembly").setup(200, 100)
                 .inputItems(AL.shell().count(2), TI.shell().count(4), ANY_PLASTIC.ingot().count(8), new ComparableStack(ModFuelItems.rocket_fuel.get(), 8), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC)))
                 .outputItems(new ItemStack(ModItems.missile_assembly.get())));
@@ -394,12 +436,27 @@ public final class AssemblyMachineRecipesGenerated {
         reg.registerGenerated(new GenericRecipe("ass.thrusternerva").setup(600, 100)
                 .inputItems(DURA.ingot().count(32), B.ingot().count(8), PB.plate().count(16), STEEL.pipe().count(4))
                 .outputItems(new ItemStack(ModItems.thruster_nuclear.get())));
+    }
+
+    private static void register3(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("ass.launchpadsilo").setup(200, 100)
                 .inputItems(STEEL.plateWelded().count(8), tag("c", "concretes", 8), ANY_HARDPLASTIC.ingot().count(16), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4))
                 .outputItems(new ItemStack(ModMachineBlocks.launch_pad.get())));
         reg.registerGenerated(new GenericRecipe("ass.mpt10xenon").setup(100, 100)
                 .inputItems(new ComparableStack(ModItems.seg_10.get()), DURA.plate().count(4), new ComparableStack(FoundryExpansion.ARC_ELECTRODE.get()))
                 .outputItems(new ItemStack(ModJetpackDependencyItems.mp_thruster_10_xenon.get())));
+        reg.registerGenerated(new GenericRecipe("chem.shellchlorine").setup(100, 1_000)
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
+                .inputFluids(new FluidStack(Fluids.CHLORINE, 4_000))
+                .outputItems(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.CHLORINE)));
+        reg.registerGenerated(new GenericRecipe("ass.shellphosgene").setup(100, 1_000)
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
+                .inputFluids(new FluidStack(Fluids.PHOSGENE, 4_000))
+                .outputItems(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.PHOSGENE)));
+        reg.registerGenerated(new GenericRecipe("ass.shellmustard").setup(100, 1_000)
+                .inputItems(new ComparableStack(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.NORMAL)), ANY_PLASTIC.ingot())
+                .inputFluids(new FluidStack(Fluids.MUSTARDGAS, 4_000))
+                .outputItems(ModAmmoItems.ammo_arty.get().of(ArtilleryShellType.MUSTARD)));
         reg.registerGenerated(new GenericRecipe("ass.lander").setup(2_400, 100)
                 .inputItems(AL.shell().count(4), RUBBER.ingot().count(16), new ComparableStack(ModFuelItems.rocket_fuel.get(), 16), new ComparableStack(ModItems.thruster_small.get(), 3), new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 3), new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 12))
                 .outputItems(new ItemStack(ModItems.missile_soyuz_lander.get()))

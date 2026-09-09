@@ -106,4 +106,23 @@ public class ArmorUtil {
         ItemStack helmet = entity.getItemBySlot(EquipmentSlot.HEAD);
         if (helmet.getItem() instanceof IGasMask mask) mask.damageFilter(helmet, damage);
     }
+
+    /**
+     * Damages every worn armour piece by the same amount — what a corrosive fluid does on its way
+     * through. Unlike ordinary damage this is not attributed to an attacker, so no enchantment or
+     * unbreaking hook applies: 1.12.2 spends the durability directly, and a piece worn through is
+     * removed rather than left at zero.
+     */
+    public static void damageWholeSuit(LivingEntity entity, int damage) {
+        if (damage <= 0) return;
+        // Named rather than filtered on the slot's type: that enum constant was renamed at 1.21.2.
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST,
+                EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+            ItemStack piece = entity.getItemBySlot(slot);
+            if (piece.isEmpty() || !piece.isDamageableItem()) continue;
+            int next = piece.getDamageValue() + damage;
+            if (next >= piece.getMaxDamage()) entity.setItemSlot(slot, ItemStack.EMPTY);
+            else piece.setDamageValue(next);
+        }
+    }
 }

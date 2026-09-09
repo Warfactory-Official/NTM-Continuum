@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/turrets/turret_chekhov.obj",
+    "texture": "hbm:textures/models/turrets/base.png",
+    "rawLegacyTransform": true,
+    "itemTranslate": [-0.5, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "guiTranslate": [0.0, -2.0, 0.0],
+    "guiScale": 2.5,
+    "scale": 1.0,
+    "yaw": 0.0,
+    "parts": ["Base"],
+    "passes": [
+      { "texture": "hbm:textures/models/turrets/carriage.png", "parts": ["Carriage"] },
+      { "obj": "hbm:models/turrets/turret_jeremy.obj", "texture": "hbm:textures/models/turrets/jeremy.png", "parts": ["Gun"] }
+    ]
+  }
+}

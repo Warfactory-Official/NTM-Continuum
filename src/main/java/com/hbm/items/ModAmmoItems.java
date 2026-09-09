@@ -72,13 +72,64 @@ public final class ModAmmoItems {
     public static final RegistryObject<Item> r556_jhp = ITEMS.registerSimpleItem("ammo_standard_r556_jhp");
     public static final RegistryObject<Item> r556_ap = ITEMS.registerSimpleItem("ammo_standard_r556_ap");
 
+    // .50 BMG, in the order upstream declares the M2/AMAT family. The two {@code ammo_secret} loads are
+    // absent: both hang off entities this port does not have.
+    public static final RegistryObject<Item> bmg50_sp = ITEMS.registerSimpleItem("ammo_standard_bmg50_sp");
+    public static final RegistryObject<Item> bmg50_fmj = ITEMS.registerSimpleItem("ammo_standard_bmg50_fmj");
+    public static final RegistryObject<Item> bmg50_jhp = ITEMS.registerSimpleItem("ammo_standard_bmg50_jhp");
+    public static final RegistryObject<Item> bmg50_ap = ITEMS.registerSimpleItem("ammo_standard_bmg50_ap");
+    public static final RegistryObject<Item> bmg50_du = ITEMS.registerSimpleItem("ammo_standard_bmg50_du");
+    public static final RegistryObject<Item> bmg50_he = ITEMS.registerSimpleItem("ammo_standard_bmg50_he");
+    public static final RegistryObject<Item> bmg50_sm = ITEMS.registerSimpleItem("ammo_standard_bmg50_sm");
+
+    /** The Tauon turret's uranium slug. The accelerator weapons it also feeds are unported. */
+    public static final RegistryObject<Item> tau_uranium = ITEMS.registerSimpleItem("ammo_standard_tau_uranium");
+
+    // 240 mm shells, in the order the Jeremy and the artillery feed them.
+    public static final RegistryObject<Item> shell_normal = ITEMS.registerSimpleItem("ammo_shell");
+    public static final RegistryObject<Item> shell_explosive = ITEMS.registerSimpleItem("ammo_shell_explosive");
+    public static final RegistryObject<Item> shell_ap = ITEMS.registerSimpleItem("ammo_shell_apfsds_t");
+    public static final RegistryObject<Item> shell_du = ITEMS.registerSimpleItem("ammo_shell_apfsds_du");
+    public static final RegistryObject<Item> shell_w9 = ITEMS.registerSimpleItem("ammo_shell_w9");
+
+    // 84 mm rockets, in the order upstream declares them.
+    public static final RegistryObject<Item> rocket_he = ITEMS.registerSimpleItem("ammo_standard_rocket_he");
+    public static final RegistryObject<Item> rocket_heat = ITEMS.registerSimpleItem("ammo_standard_rocket_heat");
+    public static final RegistryObject<Item> rocket_demo = ITEMS.registerSimpleItem("ammo_standard_rocket_demo");
+    public static final RegistryObject<Item> rocket_inc = ITEMS.registerSimpleItem("ammo_standard_rocket_inc");
+    public static final RegistryObject<Item> rocket_phosphorus =
+            ITEMS.registerSimpleItem("ammo_standard_rocket_phosphorus");
+
+    /** The Fritz's diesel canister: it is emptied into the turret's tank rather than fired. */
+    public static final RegistryObject<Item> flame_diesel = ITEMS.registerSimpleItem("ammo_standard_flame_diesel");
+
+    /**
+     * The HIMARS pods. Unlike the Sedna rounds above these stay one registered item with eight
+     * variants, because the launcher reads the variant back off the stack to pick a warhead and a
+     * skin — see {@link com.hbm.items.weapon.ItemAmmoHIMARS}.
+     */
+    public static final RegistryObject<com.hbm.items.weapon.ItemAmmoHIMARS> ammo_himars =
+            ITEMS.registerItem("ammo_himars", com.hbm.items.weapon.ItemAmmoHIMARS::new);
+
+    /** The twelve 16-inch shells, on the same one-item-many-variants shape as the HIMARS pods. */
+    public static final RegistryObject<com.hbm.items.weapon.ItemAmmoArty> ammo_arty =
+            ITEMS.registerItem("ammo_arty", com.hbm.items.weapon.ItemAmmoArty::new);
+
+    /** Not ammunition, but the only thing that can hand an artillery gun a fire mission. */
+    public static final RegistryObject<com.hbm.items.tool.ItemDesignatorArtyRange> designator_arty_range =
+            ITEMS.registerItem("designator_arty_range", com.hbm.items.tool.ItemDesignatorArtyRange::new);
+
     static {
         // Old weaponTab, which upstream also files ammo under.
         for (RegistryObject<Item> ammo : new RegistryObject[] {
                  ammo_debug, ammo_standard_nuke_high, m357_bp, m357_sp, m357_fmj, m357_jhp, m357_ap, m357_express,
                  m44_bp, m44_sp, m44_fmj, m44_jhp, m44_ap, m44_express,
                  p22_sp, p22_fmj, p22_jhp, p22_ap, p9_sp, p9_fmj, p9_jhp, p9_ap,
-                 stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap}) {
+                 stone, stone_ap, stone_iron, stone_shot, r556_sp, r556_fmj, r556_jhp, r556_ap,
+                 bmg50_sp, bmg50_fmj, bmg50_jhp, bmg50_ap, bmg50_du, bmg50_he, bmg50_sm, tau_uranium,
+                 shell_normal, shell_explosive, shell_ap, shell_du, shell_w9,
+                 rocket_he, rocket_heat, rocket_demo, rocket_inc, rocket_phosphorus, flame_diesel,
+                 ammo_himars, ammo_arty, designator_arty_range}) {
             com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, ammo);
         }
     }

@@ -68,6 +68,7 @@ public final class MainRegistry {
         com.hbm.foundry.FoundryExpansion.init();
         com.hbm.blocks.machine.DiFurnaceContent.init();
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)
+        com.hbm.blocks.turret.ModTurretBlocks.init(); // turret pad cell and the turrets on it
         ModStorageBlocks.init();   // storage crates (iron / steel / desh)
         ModBombBlocks.init();      // bomb blocks (also precede block entities)
         com.hbm.blocks.ModHazardBlocks.init(); // radioactive / rad-resistant blocks (radiation emitters)

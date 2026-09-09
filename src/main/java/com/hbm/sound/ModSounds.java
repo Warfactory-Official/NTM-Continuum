@@ -85,6 +85,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> EXPLOSION_SMALL_FAR = register("weapon.explosion_small_far");
     /** A missile leaving the pad. Old id {@code hbm:weapon.missileTakeoff}. */
     public static final RegistryObject<SoundEvent> MISSILE_TAKEOFF = register("weapon.missile_takeoff");
+    /** The incoming-shell whistle. Played at the target, not at the shell. */
+    public static final RegistryObject<SoundEvent> MORTAR_WHISTLE = register("weapon.mortar_whistle");
 
     /** Original RBMK/ZIRNOX reactor accident sound; used only by the vanilla ZIRNOX meltdown blast. */
     public static final RegistryObject<SoundEvent> RBMK_EXPLOSION = register("rbmk_explosion");
@@ -129,6 +131,16 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> IRON_JUMP = register("step.iron_jump");
     public static final RegistryObject<SoundEvent> IRON_LAND = register("step.iron_land");
 
+    public static final RegistryObject<SoundEvent> TURRET_CHEKHOV_FIRE = register("turret.chekhov_fire");
+    public static final RegistryObject<SoundEvent> TURRET_HOWARD_FIRE = register("turret.howard_fire");
+    public static final RegistryObject<SoundEvent> TURRET_HOWARD_RELOAD = register("turret.howard_reload");
+    public static final RegistryObject<SoundEvent> TURRET_JEREMY_FIRE = register("turret.jeremy_fire");
+    public static final RegistryObject<SoundEvent> TURRET_JEREMY_RELOAD = register("turret.jeremy_reload");
+    public static final RegistryObject<SoundEvent> TURRET_RICHARD_FIRE = register("turret.richard_fire");
+    public static final RegistryObject<SoundEvent> TURRET_SENTRY_FIRE = register("turret.sentry_fire");
+    public static final RegistryObject<SoundEvent> TURRET_SENTRY_LOCKON = register("turret.sentry_lockon");
+    public static final RegistryObject<SoundEvent> WEAPON_TAU_SHOOT = register("weapon.tau_shoot");
+    public static final RegistryObject<SoundEvent> EXPLOSION_TINY = register("weapon.explosion_tiny");
     /** Geiger click ladder, index 0..5 = old {@code geigerSounds}. */
     @SuppressWarnings("unchecked")
     public static final RegistryObject<SoundEvent>[] GEIGER_SOUNDS =

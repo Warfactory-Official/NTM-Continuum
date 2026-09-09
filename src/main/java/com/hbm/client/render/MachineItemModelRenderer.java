@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -64,17 +65,21 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
         model.extents(output);
     }
 
+    /** One additional ordered OBJ/texture pass; an omitted OBJ reuses the primary OBJ. */
+    public record Pass(Optional<Identifier> obj, Identifier texture, List<String> parts, List<Float> translate) {}
+
     /** The data-driven, codec-backed factory for this renderer (one entry per machine in the item JSON). */
     public record Unbaked(Identifier obj, Identifier texture, boolean noCull, float scale, boolean rawLegacyTransform,
                            float yaw, float pitch, float ty,
-                            List<Float> itemTranslate, List<Float> itemPreTranslate, List<Float> guiTranslate,
-                            float guiScale, float guiYaw, List<String> exclude, List<String> blackParts,
-                             Optional<Identifier> overlayTexture, List<String> overlayParts, boolean mtl,
-                             Map<String, Identifier> partTextures,
-                             List<String> rotateParts, float rotateX, List<Float> rotatePivot,
-                            List<String> spinParts, List<Float> spinPivot,
-                            Map<String, MachineItemModel.ContextTransform> contextTransforms, String animation)
-                implements NoDataSpecialModelRenderer.Unbaked, ItemModel.Unbaked {
+                           List<Float> itemTranslate, List<Float> itemPreTranslate, List<Float> guiTranslate,
+                           float guiScale, float guiYaw, List<String> exclude, List<String> blackParts,
+                            Optional<Identifier> overlayTexture, List<String> overlayParts, boolean mtl,
+                            Map<String, Identifier> partTextures,
+                            List<String> rotateParts, float rotateX, List<Float> rotatePivot,
+                             List<String> spinParts, List<Float> spinPivot,
+                             Map<String, MachineItemModel.ContextTransform> contextTransforms, String animation,
+                             List<String> parts, List<Float> translate, List<Pass> passes, float guiSpinSpeed)
+                 implements NoDataSpecialModelRenderer.Unbaked, ItemModel.Unbaked {
 
         private static final MapCodec<Unbaked> BASE_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Identifier.CODEC.fieldOf("obj").forGetter(Unbaked::obj),
@@ -95,9 +100,9 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                   Codec.FLOAT.listOf().optionalFieldOf("spinPivot", List.of()).forGetter(Unbaked::spinPivot)
           ).apply(i, (obj, texture, noCull, scale, yaw, pitch, ty, exclude, overlayTexture, overlayParts, mtl,
                       rotateParts, rotateX, rotatePivot, spinParts, spinPivot) ->
-                      new Unbaked(obj, texture, noCull, scale, false, yaw, pitch, ty, List.of(), List.of(), List.of(), 1.0F, 0.0F, exclude, List.of(),
-                             overlayTexture, overlayParts, mtl, Map.of(), rotateParts, rotateX, rotatePivot, spinParts, spinPivot,
-                             Map.of(), "")));
+                       new Unbaked(obj, texture, noCull, scale, false, yaw, pitch, ty, List.of(), List.of(), List.of(), 1.0F, 0.0F, exclude, List.of(),
+                              overlayTexture, overlayParts, mtl, Map.of(), rotateParts, rotateX, rotatePivot, spinParts, spinPivot,
+                              Map.of(), "", List.of(), List.of(), List.of(), 0F)));
 
         private static final MapCodec<Map<String, Identifier>> PART_TEXTURES =
                 Codec.unboundedMap(Codec.STRING, Identifier.CODEC).optionalFieldOf("partTextures", Map.of());
@@ -123,9 +128,44 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                          Codec.FLOAT.optionalFieldOf("scale", 1F).forGetter(MachineItemModel.ContextTransform::scale)
                  ).apply(i, (rotation, translation, scale) -> new MachineItemModel.ContextTransform(
                          vector(rotation), vector(translation), scale)));
-         private static final MapCodec<Map<String, MachineItemModel.ContextTransform>> CONTEXT_TRANSFORMS =
-                 Codec.unboundedMap(Codec.STRING, CONTEXT_TRANSFORM_CODEC).optionalFieldOf("contextTransforms", Map.of());
-         private static final MapCodec<String> ANIMATION = Codec.STRING.optionalFieldOf("animation", "");
+          private static final MapCodec<Map<String, MachineItemModel.ContextTransform>> CONTEXT_TRANSFORMS =
+                  Codec.unboundedMap(Codec.STRING, CONTEXT_TRANSFORM_CODEC).optionalFieldOf("contextTransforms", Map.of());
+          private static final MapCodec<String> ANIMATION = Codec.STRING.optionalFieldOf("animation", "");
+           private static final MapCodec<List<String>> PARTS =
+                   Codec.STRING.listOf().optionalFieldOf("parts", List.of());
+           private static final MapCodec<List<Float>> TRANSLATE =
+                   Codec.FLOAT.listOf().optionalFieldOf("translate", List.of());
+          private static final Codec<Pass> PASS_CODEC = RecordCodecBuilder.create(i -> i.group(
+                  Identifier.CODEC.optionalFieldOf("obj").forGetter(Pass::obj),
+                  Identifier.CODEC.fieldOf("texture").forGetter(Pass::texture),
+                  Codec.STRING.listOf().optionalFieldOf("parts", List.of()).forGetter(Pass::parts),
+                  Codec.FLOAT.listOf().optionalFieldOf("translate", List.of()).forGetter(Pass::translate)
+          ).apply(i, Pass::new));
+          private static final MapCodec<List<Pass>> PASSES =
+                  PASS_CODEC.listOf().optionalFieldOf("passes", List.of());
+          private static final MapCodec<Float> GUI_SPIN_SPEED = Codec.FLOAT.optionalFieldOf("guiSpinSpeed", 0F);
+          private record Extensions(Map<String, Identifier> partTextures, List<Float> itemTranslate,
+                                    List<Float> itemPreTranslate, List<Float> guiTranslate, float guiScale,
+                                    boolean rawLegacyTransform, float guiYaw, List<String> blackParts,
+                                    Map<String, MachineItemModel.ContextTransform> contextTransforms,
+                                    String animation, List<String> parts, List<Float> translate,
+                                    List<Pass> passes, float guiSpinSpeed) {}
+          private static final MapCodec<Extensions> EXTENSIONS_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                  PART_TEXTURES.forGetter(Extensions::partTextures),
+                  ITEM_TRANSLATE.forGetter(Extensions::itemTranslate),
+                  ITEM_PRE_TRANSLATE.forGetter(Extensions::itemPreTranslate),
+                  GUI_TRANSLATE.forGetter(Extensions::guiTranslate),
+                  GUI_SCALE.forGetter(Extensions::guiScale),
+                  RAW_LEGACY_TRANSFORM.forGetter(Extensions::rawLegacyTransform),
+                  GUI_YAW.forGetter(Extensions::guiYaw),
+                  BLACK_PARTS.forGetter(Extensions::blackParts),
+                  CONTEXT_TRANSFORMS.forGetter(Extensions::contextTransforms),
+                  ANIMATION.forGetter(Extensions::animation),
+                  PARTS.forGetter(Extensions::parts),
+                  TRANSLATE.forGetter(Extensions::translate),
+                  PASSES.forGetter(Extensions::passes),
+                  GUI_SPIN_SPEED.forGetter(Extensions::guiSpinSpeed)
+          ).apply(i, Extensions::new));
 
          /** Adds the legacy transform extensions without exceeding RecordCodecBuilder's 16-field limit. */
         public static final MapCodec<Unbaked> MAP_CODEC = MapCodec.of(
@@ -135,26 +175,16 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                                                                                   com.mojang.serialization.DynamicOps<T> ops,
                                                                                   com.mojang.serialization.RecordBuilder<T> prefix) {
                          prefix = BASE_CODEC.encode(value, ops, prefix);
-                         prefix = PART_TEXTURES.encode(value.partTextures(), ops, prefix);
-                        prefix = ITEM_TRANSLATE.encode(value.itemTranslate(), ops, prefix);
-                        prefix = ITEM_PRE_TRANSLATE.encode(value.itemPreTranslate(), ops, prefix);
-                        prefix = GUI_TRANSLATE.encode(value.guiTranslate(), ops, prefix);
-                         prefix = GUI_SCALE.encode(value.guiScale(), ops, prefix);
-                          prefix = RAW_LEGACY_TRANSFORM.encode(value.rawLegacyTransform(), ops, prefix);
-                          prefix = GUI_YAW.encode(value.guiYaw(), ops, prefix);
-                         prefix = BLACK_PARTS.encode(value.blackParts(), ops, prefix);
-                         prefix = CONTEXT_TRANSFORMS.encode(value.contextTransforms(), ops, prefix);
-                         return ANIMATION.encode(value.animation(), ops, prefix);
+                         return EXTENSIONS_CODEC.encode(new Extensions(value.partTextures(), value.itemTranslate(),
+                                 value.itemPreTranslate(), value.guiTranslate(), value.guiScale(),
+                                 value.rawLegacyTransform(), value.guiYaw(), value.blackParts(),
+                                 value.contextTransforms(), value.animation(), value.parts(), value.translate(),
+                                 value.passes(), value.guiSpinSpeed()), ops, prefix);
                     }
 
                     @Override
                     public <T> java.util.stream.Stream<T> keys(com.mojang.serialization.DynamicOps<T> ops) {
-                        return java.util.stream.Stream.concat(BASE_CODEC.keys(ops),
-                                 java.util.stream.Stream.of(ops.createString("partTextures"), ops.createString("itemTranslate"), ops.createString("itemPreTranslate"),
-                                          ops.createString("guiTranslate"), ops.createString("guiScale"), ops.createString("guiYaw"),
-                                          ops.createString("rawLegacyTransform"),
-                                          ops.createString("blackParts"), ops.createString("contextTransforms"),
-                                         ops.createString("animation")));
+                         return java.util.stream.Stream.concat(BASE_CODEC.keys(ops), EXTENSIONS_CODEC.keys(ops));
                     }
 
                     @Override
@@ -167,30 +197,17 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                     public <T> com.mojang.serialization.DataResult<Unbaked> decode(com.mojang.serialization.DynamicOps<T> ops,
                                                                                       com.mojang.serialization.MapLike<T> input) {
                          return BASE_CODEC.decode(ops, input).flatMap(base ->
-                                         PART_TEXTURES.decode(ops, input).flatMap(partTextures ->
-                                         ITEM_TRANSLATE.decode(ops, input).flatMap(itemTranslate ->
-                                                 ITEM_PRE_TRANSLATE.decode(ops, input).flatMap(itemPreTranslate ->
-                                                         GUI_TRANSLATE.decode(ops, input).flatMap(guiTranslate ->
-                                                                  GUI_SCALE.decode(ops, input).flatMap(guiScale ->
-                                                                          RAW_LEGACY_TRANSFORM.decode(ops, input).flatMap(rawLegacyTransform ->
-                                                                                  GUI_YAW.decode(ops, input).flatMap(guiYaw ->
-                                                                                          BLACK_PARTS.decode(ops, input).flatMap(blackParts ->
-                                                                                                  CONTEXT_TRANSFORMS.decode(ops, input).flatMap(contextTransforms ->
-                                                                                                          ANIMATION.decode(ops, input).map(animation ->
-                                                                                                                   withItemTranslations(base, rawLegacyTransform,
-                                                                                                                           partTextures, itemTranslate, itemPreTranslate,
-                                                                                                                          guiTranslate, guiScale, guiYaw, blackParts,
-                                                                                                                            contextTransforms, animation))))))))))));
+                                 EXTENSIONS_CODEC.decode(ops, input).map(extra ->
+                                         withItemTranslations(base, extra.rawLegacyTransform(), extra.partTextures(),
+                                                 extra.itemTranslate(), extra.itemPreTranslate(), extra.guiTranslate(),
+                                                 extra.guiScale(), extra.guiYaw(), extra.blackParts(),
+                                                 extra.contextTransforms(), extra.animation(), extra.parts(),
+                                                 extra.translate(), extra.passes(), extra.guiSpinSpeed())));
                     }
 
                     @Override
                     public <T> java.util.stream.Stream<T> keys(com.mojang.serialization.DynamicOps<T> ops) {
-                         return java.util.stream.Stream.concat(BASE_CODEC.keys(ops),
-                                 java.util.stream.Stream.of(ops.createString("partTextures"), ops.createString("itemTranslate"), ops.createString("itemPreTranslate"),
-                                          ops.createString("guiTranslate"), ops.createString("guiScale"), ops.createString("guiYaw"),
-                                          ops.createString("rawLegacyTransform"),
-                                          ops.createString("blackParts"), ops.createString("contextTransforms"),
-                                         ops.createString("animation")));
+                         return java.util.stream.Stream.concat(BASE_CODEC.keys(ops), EXTENSIONS_CODEC.keys(ops));
                     }
 
                     @Override
@@ -256,36 +273,48 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
              }
              Map<String, RenderType> partTypes = Map.of();
              if (!partTextures.isEmpty()) {
-                 java.util.Map<String, RenderType> resolved = new java.util.LinkedHashMap<>();
+                  java.util.Map<String, RenderType> resolved = new java.util.LinkedHashMap<>();
                  resolved.put("Body", cutout(texture, noCull));
                  for (Map.Entry<String, Identifier> entry : partTextures.entrySet()) {
                      resolved.put(entry.getKey(), cutout(entry.getValue(), noCull));
                  }
-                 partTypes = resolved;
-             }
-             return new MachineItemModel(loaded, cutout(texture, noCull),
+                  partTypes = resolved;
+              }
+              List<MachineItemModel.ModelPass> modelPasses = new ArrayList<>();
+              for (Pass pass : passes) {
+                  Identifier passObj = pass.obj().orElse(obj);
+                  Vector3f translation = vector(pass.translate());
+                  WavefrontObj passModel = obj.equals(passObj) ? loaded : WavefrontObj.load(passObj);
+                  modelPasses.add(new MachineItemModel.ModelPass(passModel,
+                          cutout(pass.texture(), noCull), List.copyOf(pass.parts()), translation));
+              }
+              Vector3f primaryTranslation = vector(translate);
+              return new MachineItemModel(loaded, cutout(texture, noCull),
                     scale, rawLegacyTransform, blockFramed, yaw, pitch, ty,
                     itemTranslation, itemPreTranslation, guiTranslation, guiScale, guiYaw,
                     Set.copyOf(exclude), overlay, List.copyOf(overlayParts), black, List.copyOf(blackParts),
                      List.copyOf(rotateParts), rotateX, pivot, List.copyOf(spinParts), spinningPivot, types, partTypes,
-                    !spinParts.isEmpty(), contextTransforms, animation);
-        }
-    }
+                      !spinParts.isEmpty(), contextTransforms, animation, List.copyOf(parts), primaryTranslation,
+                      modelPasses, guiSpinSpeed);
+         }
+     }
 
     private static Unbaked withItemTranslations(Unbaked base, boolean rawLegacyTransform,
                                                  Map<String, Identifier> partTextures,
                                                  List<Float> itemTranslate, List<Float> itemPreTranslate,
-                                                 List<Float> guiTranslate, float guiScale, float guiYaw,
-                                                 List<String> blackParts,
-                                                 Map<String, MachineItemModel.ContextTransform> contextTransforms,
-                                                 String animation) {
-        return new Unbaked(base.obj(), base.texture(), base.noCull(), base.scale(), rawLegacyTransform,
-                base.yaw(), base.pitch(), base.ty(),
-                 itemTranslate, itemPreTranslate, guiTranslate, guiScale, guiYaw, base.exclude(), blackParts,
-                 base.overlayTexture(), base.overlayParts(), base.mtl(), partTextures,
-                base.rotateParts(), base.rotateX(), base.rotatePivot(), base.spinParts(), base.spinPivot(),
-                contextTransforms, animation);
-    }
+                                                  List<Float> guiTranslate, float guiScale, float guiYaw,
+                                                  List<String> blackParts,
+                                                  Map<String, MachineItemModel.ContextTransform> contextTransforms,
+                                                   String animation, List<String> parts, List<Float> translate,
+                                                   List<Pass> passes,
+                                                   float guiSpinSpeed) {
+         return new Unbaked(base.obj(), base.texture(), base.noCull(), base.scale(), rawLegacyTransform,
+                 base.yaw(), base.pitch(), base.ty(),
+                  itemTranslate, itemPreTranslate, guiTranslate, guiScale, guiYaw, base.exclude(), blackParts,
+                  base.overlayTexture(), base.overlayParts(), base.mtl(), partTextures,
+                 base.rotateParts(), base.rotateX(), base.rotatePivot(), base.spinParts(), base.spinPivot(),
+                  contextTransforms, animation, parts, translate, passes, guiSpinSpeed);
+     }
 
     private static Vector3f vector(List<Float> values) {
         return values.size() == 3
