@@ -291,6 +291,7 @@ public final class HbmClientRegistrations {
     public static void installKeybinds() {
         HbmKeybindsClient.register();
         QMAWClient.register();
+        ArmorModTooltips.register();
         com.hbm.client.anim.GunRecoil.register();
         CraneKeybindHandler.register();
     }

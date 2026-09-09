@@ -71,4 +71,15 @@ public abstract class JetpackFueledBase extends JetpackBase implements IFillable
     public int getLoadSpeed(ItemStack stack) {
         return 10;
     }
+
+    @Override
+    public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
+        // Old JetpackFueledBase reads the module back from the chest slot before showing its fuel line.
+        ItemStack jetpack = com.hbm.handler.ArmorModHandler.pryMod(armor,
+                com.hbm.handler.ArmorModHandler.plate_only);
+        if (jetpack.isEmpty()) return;
+        tooltip.add(Component.literal("  ").append(stack.getHoverName().copy().withStyle(ChatFormatting.RED))
+                .append(Component.literal(" (" + fuel.getDisplayNameString() + ": " + getFuel(jetpack)
+                        + "mB / " + maxFuel + "mB)").withStyle(ChatFormatting.RED)));
+    }
 }

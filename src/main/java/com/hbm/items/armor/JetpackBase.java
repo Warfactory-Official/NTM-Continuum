@@ -56,4 +56,9 @@ public abstract class JetpackBase extends ArmorFSB {
     public final boolean isActive(Player player) {
         return JetpackHandler.isJetpackActive(player);
     }
+
+    /** Fueled packs override ItemArmorMod's plain name with the old red indented installed-mod line. */
+    public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
+        tooltip.add(Component.literal("  ").append(stack.getHoverName().copy().withStyle(ChatFormatting.RED)));
+    }
 }

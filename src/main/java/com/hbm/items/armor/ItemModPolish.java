@@ -27,4 +27,10 @@ public final class ItemModPolish extends ItemArmorMod {
     public void modDamage(DamageEvents.DamageEvent event, ItemStack armor) {
         if (event.entity().getRandom().nextInt(20) == 0) event.setAmount(0F);
     }
+
+    @Override
+    public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
+        tooltip.add(Component.literal("  ").append(stack.getHoverName().copy().withStyle(ChatFormatting.BLUE))
+                .append(Component.literal(" (5% chance to nullify damage)").withStyle(ChatFormatting.BLUE)));
+    }
 }

@@ -106,7 +106,7 @@ public final class JetpackColladaModel {
         for (Node node : nodes) {
             pose.pushPose();
             Transform[] frames = animated.get(node.name);
-            if (frames == null) dev.golem.core.render.Poses.multiply(pose, node.base);
+            if (frames == null) dev.golem.core.render.Poses.mulPose(pose, node.base);
             else frames[first].interpolate(frames[next], interpolation).apply(pose);
             if (node.geometry != null) visitor.accept(node.name, pose);
             visitNodes(node.children, pose, first, next, interpolation, visitor);
@@ -213,7 +213,7 @@ public final class JetpackColladaModel {
             // and Transform.scale's row scaling rather than silently normalizing the track.
             float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
             float sx = scale.x, sy = scale.y, sz = scale.z;
-            dev.golem.core.render.Poses.multiply(pose, new Matrix4f(
+            dev.golem.core.render.Poses.mulPose(pose, new Matrix4f(
                     (1F - 2F*y*y - 2F*z*z)*sx, (2F*x*y + 2F*z*w)*sy, (2F*x*z - 2F*y*w)*sz, 0F,
                     (2F*x*y - 2F*z*w)*sx, (1F - 2F*x*x - 2F*z*z)*sy, (2F*y*z + 2F*x*w)*sz, 0F,
                     (2F*x*z + 2F*y*w)*sx, (2F*y*z - 2F*x*w)*sy, (1F - 2F*x*x - 2F*y*y)*sz, 0F,

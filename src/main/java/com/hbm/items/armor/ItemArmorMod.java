@@ -63,4 +63,9 @@ public class ItemArmorMod extends ItemCustomLore {
     public void modDamage(DamageEvents.DamageEvent event, ItemStack armor) {}
 
     public void modUpdate(LivingEntity entity, ItemStack armor) {}
+
+    /** Old {@code addDesc}: one installed-module line in an armor piece's shift tooltip. */
+    public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
+        tooltip.add(stack.getHoverName());
+    }
 }
