@@ -214,6 +214,11 @@ public final class HbmClientRegistrations {
         com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
         com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
 
+        // Every instanced visual is optional acceleration beside an already-registered vanilla BER.
+        if (com.hbm.client.render.flywheel.FlywheelCompat.isSupportedOnThisVersion()) {
+            com.hbm.client.render.flywheel.FlywheelCompat.registerVisuals();
+        }
+
     }
 
     public static void installTints() {

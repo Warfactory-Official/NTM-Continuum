@@ -69,6 +69,7 @@ public class NeoForgeInit {
          com.hbm.gametest.RadioGameTests.init();
          com.hbm.gametest.CounterControllerGameTests.init();
          com.hbm.gametest.TelexGameTests.init();
+         com.hbm.gametest.FlywheelGameTests.init();
          com.hbm.gametest.AutocalGameTests.init();
          com.hbm.gametest.RadioProviderGameTests.init();
          com.hbm.gametest.RtgGameTests.init();
@@ -134,6 +135,8 @@ public class NeoForgeInit {
                   com.hbm.gametest.SingularityGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.TurretGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.FlywheelGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {
