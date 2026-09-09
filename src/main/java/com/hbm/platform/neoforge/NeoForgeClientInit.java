@@ -34,6 +34,9 @@ public final class NeoForgeClientInit {
 
     public static void init(IEventBus modBus) {
         HbmPackets.registerClientHandlers();
+        // The vendored 26.1 engine is a library and must be subscribed from the constructor: two of
+        // its listeners are mod-bus registry events. No-op where the engine is a mod, or absent.
+        com.hbm.client.render.flywheel.FlywheelCompat.startEngine();
         com.hbm.client.particle.HbmParticleHandlers.register();
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
