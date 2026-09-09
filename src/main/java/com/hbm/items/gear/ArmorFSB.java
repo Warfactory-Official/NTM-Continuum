@@ -2,6 +2,9 @@ package com.hbm.items.gear;
 
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.api.fluidmk2.IFillableItem;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.ModGearItems;
 import com.hbm.lib.ModDamageSources;
@@ -64,7 +67,7 @@ import net.minecraft.world.phys.Vec3;
  *     on both sides — see {@link #armorTick}.
  * </ul>
  */
-public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel {
+public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFillableItem {
 
     /** The material this piece belongs to. Set membership is reference equality on this object. */
     public final GolemArmorMaterial material;
@@ -94,6 +97,72 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel {
         super(material, slot, properties);
         this.material = material;
         this.slot = slot;
+    }
+
+    // Legacy FluidLoaderFillableItem exposed attached reservoirs to every machine container slot.
+    @Override
+    public boolean acceptsFluid(FluidType type, ItemStack stack) {
+        for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+            if (mod.getItem() instanceof IFillableItem fillable && fillable.acceptsFluid(type, mod)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int tryFill(FluidType type, int amount, ItemStack stack) {
+        if (stack.getCount() != 1 || amount <= 0) return amount;
+        for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+            if (mod.getItem() instanceof IFillableItem fillable && fillable.acceptsFluid(type, mod)) {
+                int remaining = fillable.tryFill(type, amount, mod);
+                if (remaining < amount) ArmorModHandler.applyMod(stack, mod);
+                amount = remaining;
+                if (amount == 0) break;
+            }
+        }
+        return amount;
+    }
+
+    @Override
+    public boolean providesFluid(FluidType type, ItemStack stack) {
+        for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+            if (mod.getItem() instanceof IFillableItem fillable && fillable.providesFluid(type, mod)) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public int tryEmpty(FluidType type, int amount, ItemStack stack) {
+        if (stack.getCount() != 1 || amount <= 0) return 0;
+        int drained = 0;
+        for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+            if (mod.getItem() instanceof IFillableItem fillable && fillable.providesFluid(type, mod)) {
+                int moved = fillable.tryEmpty(type, amount - drained, mod);
+                if (moved > 0) ArmorModHandler.applyMod(stack, mod);
+                drained += moved;
+                if (drained == amount) break;
+            }
+        }
+        return drained;
+    }
+
+    @Override
+    public FluidType getFirstFluidType(ItemStack stack) {
+        for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+            if (mod.getItem() instanceof IFillableItem fillable) {
+                FluidType type = fillable.getFirstFluidType(mod);
+                if (type != null && type != Fluids.NONE) return type;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public int getFill(ItemStack stack) {
+        int fill = 0;
+        for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+            if (mod.getItem() instanceof IFillableItem fillable) fill += fillable.getFill(mod);
+        }
+        return fill;
     }
 
     // ---------------------------------------------------------------- set detection
@@ -275,6 +344,14 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel {
         if (chestplate != null && chestplate.jump != null) {
             entity.playSound(chestplate.jump.get(), 1.0F, 1.0F);
         }
+    }
+
+    /** Damage hook implemented by suits whose legacy class intercepted LivingAttackEvent. */
+    public void handleAttack(dev.golem.core.world.DamageEvents.DamageEvent event) {
+    }
+
+    /** Damage hook implemented by suits whose legacy class mutated LivingHurtEvent. */
+    public void handleHurt(dev.golem.core.world.DamageEvents.DamageEvent event) {
     }
 
     /**

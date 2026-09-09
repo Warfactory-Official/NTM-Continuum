@@ -52,7 +52,19 @@ public enum HbmEffectNT {
     /** The drifting cooling-tower smoke puff. */
     Tower,
     /** One vanilla critical particle used while a refueler fills an item. */
-    FluidFill;
+    FluidFill,
+    /** Exhaust from a fuelled jetpack. */
+    Jetpack,
+    /** Purple exhaust from the BJ winged power armour. */
+    Jetpack_BJ,
+    /** Cyan exhaust from the DNT nano suit. */
+    Jetpack_DNS,
+    /** The old block-destruction particle burst sent when rubble lands. */
+    BlockBurst,
+    /** The large explosion's drifting smoke cloud. */
+    Smoke_Cloud,
+    /** The large explosion's radial shock smoke. */
+    Smoke_Shock;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

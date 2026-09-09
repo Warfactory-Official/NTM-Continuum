@@ -83,9 +83,13 @@ public final class MainRegistry {
         com.hbm.blocks.ModLadderBlocks.init();  // vanilla LadderBlock family, including ladder_red_top
         com.hbm.blocks.machine.rbmk.ModRBMKBlocks.init(); // reactor columns/peripherals before their block items and BE types
         ModDataComponents.init();  // custom item data components (referenced by hand items below)
+        com.hbm.items.special.ItemHot.init(); // declare the hot-item component before Fabric's registry flush
         com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModJetpackDependencyItems.init(); // hot steel and the functional xenon thruster part
+        com.hbm.items.ModSingularityItems.init(); // dropped singularity capsules and Spark progression
+        com.hbm.items.ModSelfchargerItems.init(); // deprecated powered-armour auxiliary batteries
         com.hbm.items.ModRtgContent.init(); // RTG pellet state, block entity, and menu registrations
         com.hbm.items.ModChemicalDyeItems.init(); // flattened chemical-dye and crayon variants
         com.hbm.items.ModStorageDrumItems.init();
@@ -134,6 +138,9 @@ public final class MainRegistry {
         ModTabs.init();
         com.hbm.handler.neutron.NeutronLifecycle.init();
         com.hbm.world.chunk.ChunkLoadingManager.init();   // forced-chunk bookkeeping + restart reconciliation
+        dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> com.hbm.handler.JetpackHandler.clear(level));
+        dev.golem.core.platform.Lifecycle.onServerTick(server ->
+                server.getAllLevels().forEach(com.hbm.handler.JetpackHandler::cleanup));
         // Needs both the tool items and the convertible blocks, so it runs after every registry.
         com.hbm.handler.NTMToolHandler.register();
     }

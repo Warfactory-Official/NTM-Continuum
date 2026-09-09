@@ -26,5 +26,12 @@ public class HbmKeybindsServer {
                 receiver.handleKeybind(player, stack, keybind, state);
             }
         }
+        // Jetpacks are worn, not held. Keep the existing hand scan for guns and route only the
+        // appended flight keys to the server-side flight state.
+        if (keybind == EnumKeybind.JETPACK || keybind == EnumKeybind.JETPACK_HOVER
+                || keybind == EnumKeybind.JETPACK_HUD || keybind == EnumKeybind.TOGGLE_JETPACK
+                || keybind == EnumKeybind.TOGGLE_HEAD) {
+            JetpackHandler.handleKeybind(player, keybind, state);
+        }
     }
 }

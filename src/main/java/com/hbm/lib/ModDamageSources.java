@@ -32,6 +32,14 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> ASBESTOS = key("asbestos");
     /** absolute + bypasses armor */
     public static final ResourceKey<DamageType> BLACKLUNG = key("blacklung");
+    /** The BJ helmet's self-ejection failure (old {@code ModDamageSource.lunar}). */
+    public static final ResourceKey<DamageType> LUNAR = key("lunar");
+    /** Absolute, armour-bypassing pull damage from an active black hole. */
+    public static final ResourceKey<DamageType> BLACKHOLE = key("blackhole");
+    /** Projectile damage from a tumbling block fragment. */
+    public static final ResourceKey<DamageType> RUBBLE = key("rubble");
+    /** Projectile damage from the old shrapnel entity. */
+    public static final ResourceKey<DamageType> SHRAPNEL = key("shrapnel");
     /** The sawmill's operating blade: absolute and bypasses armor (old damage id: {@code blender}). */
     public static final ResourceKey<DamageType> TURBOFAN = key("blender");
     /**
@@ -99,6 +107,10 @@ public final class ModDamageSources {
     public static DamageSource monoxide(Level level) { return source(level, MONOXIDE); }
     public static DamageSource asbestos(Level level) { return source(level, ASBESTOS); }
     public static DamageSource blacklung(Level level) { return source(level, BLACKLUNG); }
+    public static DamageSource lunar(Level level) { return source(level, LUNAR); }
+    public static DamageSource blackhole(Level level) { return source(level, BLACKHOLE); }
+    public static DamageSource rubble(Level level) { return source(level, RUBBLE); }
+    public static DamageSource shrapnel(Level level) { return source(level, SHRAPNEL); }
     public static DamageSource turbofan(Level level) { return source(level, TURBOFAN); }
     public static DamageSource taint(Level level) { return source(level, TAINT); }
     public static DamageSource bang(Level level) { return source(level, BANG); }

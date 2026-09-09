@@ -1,0 +1,35 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "items": [
+        "hbm:cell"
+      ],
+      "absent_components": [
+        "hbm:fluid_id",
+        "hbm:fluid_amount",
+        "hbm:item_variant"
+      ]
+    },
+    "T": {
+      "items": [
+        "hbm:mike_deut"
+      ]
+    }
+  },
+  "pattern": [
+    "DDD",
+    "DTD",
+    "DDD"
+  ],
+  "result": {
+    "id": "hbm:cell",
+    "count": 8,
+    "components": {
+      "hbm:fluid_id": 8,
+      "hbm:fluid_amount": 1000,
+      "hbm:item_variant": 8
+    }
+  }
+}

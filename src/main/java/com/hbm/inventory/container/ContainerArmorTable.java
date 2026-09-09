@@ -1,7 +1,7 @@
 package com.hbm.inventory.container;
 
 import com.hbm.handler.ArmorModHandler;
-import com.hbm.items.armor.ItemArmorMod;
+import com.hbm.items.armor.JetpackBase;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatArmorItem;
 import net.minecraft.core.BlockPos;
@@ -116,16 +116,17 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
             if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
         } else if (index < PLAYER_START) {
             if (!moveItemStackTo(source, PLAYER_START, PLAYER_END, true)) return ItemStack.EMPTY;
-        } else if (source.getItem() instanceof CompatArmorItem) {
+        } else if (source.getItem() instanceof CompatArmorItem && !(source.getItem() instanceof JetpackBase)) {
             if (!moveItemStackTo(source, ARMOR_SLOT, ARMOR_SLOT + 1, false)) return ItemStack.EMPTY;
-        } else if (source.getItem() instanceof ItemArmorMod module
-                && module.type >= 0 && module.type < MODULE_SLOTS
-                && slots.get(module.type).mayPlace(source)) {
-            if (!moveItemStackTo(source, module.type, module.type + 1, false)) return ItemStack.EMPTY;
-        } else if (index < PLAYER_START + 27) {
-            if (!moveItemStackTo(source, PLAYER_START + 27, PLAYER_END, false)) return ItemStack.EMPTY;
-        } else if (!moveItemStackTo(source, PLAYER_START, PLAYER_START + 27, false)) {
-            return ItemStack.EMPTY;
+        } else {
+            int moduleSlot = ArmorModHandler.getModuleSlot(source);
+            if (moduleSlot >= 0 && moduleSlot < MODULE_SLOTS && slots.get(moduleSlot).mayPlace(source)) {
+                if (!moveItemStackTo(source, moduleSlot, moduleSlot + 1, false)) return ItemStack.EMPTY;
+            } else if (index < PLAYER_START + 27) {
+                if (!moveItemStackTo(source, PLAYER_START + 27, PLAYER_END, false)) return ItemStack.EMPTY;
+            } else if (!moveItemStackTo(source, PLAYER_START, PLAYER_START + 27, false)) {
+                return ItemStack.EMPTY;
+            }
         }
 
         if (source.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
@@ -149,8 +150,7 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
         @Override
         public boolean mayPlace(ItemStack stack) {
             ItemStack target = armor.getItem(0);
-            return !target.isEmpty() && stack.getItem() instanceof ItemArmorMod module
-                    && module.type == moduleIndex
+            return !target.isEmpty() && ArmorModHandler.getModuleSlot(stack) == moduleIndex
                     && ArmorModHandler.isApplicable(target, stack);
         }
 

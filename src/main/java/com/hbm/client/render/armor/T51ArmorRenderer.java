@@ -49,26 +49,26 @@ public class T51ArmorRenderer extends ArmorRenderer {
         WavefrontObj obj = model();
 
         switch (slot) {
-            case HELMET -> submitPart(sink, pose, type(HELMET_TEX), obj, "Helmet", parts.head(), light, overlay);
+            case HELMET -> submitPart(sink, pose, type(HELMET_TEX), obj, "Helmet", parts.head(), Pivot.HEAD, parts.sneaking, light, overlay);
 
             case CHESTPLATE -> {
-                submitPart(sink, pose, type(CHEST_TEX), obj, "Chest", parts.body(), light, overlay);
+                submitPart(sink, pose, type(CHEST_TEX), obj, "Chest", parts.body(), Pivot.BODY, parts.sneaking, light, overlay);
                 RenderType arm = type(ARM_TEX);
-                submitPart(sink, pose, arm, obj, "LeftArm", parts.leftArm(), light, overlay);
-                submitPart(sink, pose, arm, obj, "RightArm", parts.rightArm(), light, overlay);
+                submitPart(sink, pose, arm, obj, "LeftArm", parts.leftArm(), Pivot.LEFT_ARM, parts.sneaking, light, overlay);
+                submitPart(sink, pose, arm, obj, "RightArm", parts.rightArm(), Pivot.RIGHT_ARM, parts.sneaking, light, overlay);
             }
 
             case LEGGINGS -> {
                 RenderType leg = type(LEG_TEX);
-                submitPart(sink, pose, leg, obj, "LeftLeg", parts.leftLeg(), light, overlay);
-                submitPart(sink, pose, leg, obj, "RightLeg", parts.rightLeg(), light, overlay);
+                submitPart(sink, pose, leg, obj, "LeftLeg", parts.leftLeg(), Pivot.LEFT_LEG, parts.sneaking, light, overlay);
+                submitPart(sink, pose, leg, obj, "RightLeg", parts.rightLeg(), Pivot.RIGHT_LEG, parts.sneaking, light, overlay);
             }
 
             // The boots ride the leg bones — see the class comment.
             case BOOTS -> {
                 RenderType leg = type(LEG_TEX);
-                submitPart(sink, pose, leg, obj, "LeftBoot", parts.leftLeg(), light, overlay);
-                submitPart(sink, pose, leg, obj, "RightBoot", parts.rightLeg(), light, overlay);
+                submitPart(sink, pose, leg, obj, "LeftBoot", parts.leftLeg(), Pivot.LEFT_LEG, parts.sneaking, light, overlay);
+                submitPart(sink, pose, leg, obj, "RightBoot", parts.rightLeg(), Pivot.RIGHT_LEG, parts.sneaking, light, overlay);
             }
         }
     }

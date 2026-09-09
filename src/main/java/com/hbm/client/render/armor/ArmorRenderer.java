@@ -19,19 +19,32 @@ import net.minecraft.client.renderer.rendertype.RenderType;
  * the bone's pivot is used only as a <i>centre of rotation</i> — translate to it, rotate, translate
  * straight back. Move the geometry as well and every limb ends up at twice its offset.
  *
- * <p><b>One thing upstream did that is deliberately not ported:</b> {@code ModelArmorBase} carries a
- * table of hand-tuned crouch offsets ({@code head.offsetY = 4.24}, {@code body.offsetY = 3.425}, legs
- * {@code offsetZ = 4} / {@code rotationPointY = 12} …). Those exist because 1.12 crouched the player by
- * translating in {@code RenderPlayer}, outside the model, so an armour model had to reproduce the shift
- * itself. Modern {@code HumanoidModel.setupAnim} folds the crouch into the parts — {@code head.y += 4.2},
- * {@code body.y += 3.2}, arms {@code += 3.2}, legs shifted down and back — which are the same numbers.
- * Reading the live part therefore gives the crouch pose already applied, and re-adding the offsets would
- * apply it twice.
+ * <p>Crouching changes each live bone pivot, but the OBJ remains authored around the fixed rest pivots.
+ * The old {@code ModelRendererObj} therefore translated to the live pivot and back from the base pivot;
+ * using the live pivot in both directions cancels the crouch translation and detaches the armour.
  */
 public abstract class ArmorRenderer {
 
     /** Vanilla model space is sixteen units to the block; OBJ vertices are authored in those units. */
     private static final float UNIT = 1F / 16F;
+
+    protected enum Pivot {
+        HEAD(0F, 0F, 0F, 1F), BODY(0F, 0F, 0F, 0F),
+        LEFT_ARM(5F, 2F, 0F, 2F), RIGHT_ARM(-5F, 2F, 0F, 2F),
+        LEFT_LEG(1.9F, 12F, 0F, 9F), RIGHT_LEG(-1.9F, 12F, 0F, 9F);
+
+        private final float x;
+        private final float y;
+        private final float z;
+        private final float crouchY;
+
+        Pivot(float x, float y, float z, float crouchY) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.crouchY = crouchY;
+        }
+    }
 
     /** Draws the piece worn in {@code slot}. Slots this suit does not model simply return. */
     public abstract void submit(ArmorSlot slot, PoseStack pose, SubmitSink sink, int light, int overlay,
@@ -45,23 +58,42 @@ public abstract class ArmorRenderer {
      * changing it visibly twists limbs at the extremes of the walk cycle.
      */
     protected static void submitPart(SubmitSink sink, PoseStack pose, RenderType type, WavefrontObj model,
-            String part, ModelPart bone, int light, int overlay) {
+            String part, ModelPart bone, Pivot pivot, boolean crouching, int light, int overlay) {
 
         if (!bone.visible) return;
 
         pose.pushPose();
 
-        pose.translate(bone.x * UNIT, bone.y * UNIT, bone.z * UNIT);
+        pose.translate(bone.x * UNIT, (crouching ? pivot.crouchY : bone.y) * UNIT, bone.z * UNIT);
         if (bone.zRot != 0F) pose.mulPose(Axis.ZP.rotation(bone.zRot));
         if (bone.yRot != 0F) pose.mulPose(Axis.YP.rotation(bone.yRot));
         if (bone.xRot != 0F) pose.mulPose(Axis.XP.rotation(bone.xRot));
-        pose.translate(-bone.x * UNIT, -bone.y * UNIT, -bone.z * UNIT);
+        pose.translate(-pivot.x * UNIT, -pivot.y * UNIT, -pivot.z * UNIT);
 
         pose.scale(UNIT, UNIT, UNIT);
 
         sink.submitCustomGeometry(pose, type,
                 (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, overlay));
 
+        pose.popPose();
+    }
+
+    /**
+     * Submits a model rooted at a humanoid bone, preserving ModelRenderer's rooted-model transform.
+     * Unlike an absolute armour part, the model's vertices are local to the bone and the pivot is not
+     * translated back after rotation. This is the transform used by the legacy ModelJetPack root.
+     */
+    public static void submitRootedModel(SubmitSink sink, PoseStack pose, RenderType type, WavefrontObj model,
+            ModelPart bone, int light, int overlay) {
+        if (!bone.visible) return;
+        pose.pushPose();
+        pose.translate(bone.x * UNIT, bone.y * UNIT, bone.z * UNIT);
+        if (bone.zRot != 0F) pose.mulPose(Axis.ZP.rotation(bone.zRot));
+        if (bone.yRot != 0F) pose.mulPose(Axis.YP.rotation(bone.yRot));
+        if (bone.xRot != 0F) pose.mulPose(Axis.XP.rotation(bone.xRot));
+        pose.scale(UNIT, UNIT, UNIT);
+        sink.submitCustomGeometry(pose, type,
+                (drawPose, buffer) -> model.renderAll(drawPose, buffer, light, overlay));
         pose.popPose();
     }
 }

@@ -7,6 +7,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.ModGlassBlocks;
 import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.foundry.FoundryExpansion;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
@@ -158,6 +159,14 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.HEATINGOIL, 100))
                 .outputItems(new ItemStack(ModFuelItems.solid_fuel.get()))
                 .setPools("alt..biosolidfuel"));
+        reg.registerGenerated(new GenericRecipe("chem.oilelectrodes").setup(600, 100)
+                .inputFluids(new FluidStack(Fluids.HEATINGOIL, 4_000))
+                .outputItems(new ItemStack(FoundryExpansion.ARC_ELECTRODE.get()))
+                .setPools("alt..electrodes"));
+        reg.registerGenerated(new GenericRecipe("chem.lubeelectrodes").setup(600, 100)
+                .inputFluids(new FluidStack(Fluids.LUBRICANT, 8_000))
+                .outputItems(new ItemStack(FoundryExpansion.ARC_ELECTRODE.get()))
+                .setPools("alt..electrodes"));
         reg.registerGenerated(new GenericRecipe("chem.peroxide").setup(50, 100)
                 .inputFluids(new FluidStack(Fluids.WATER, 1_000))
                 .outputFluids(new FluidStack(Fluids.PEROXIDE, 1_000)));
@@ -194,6 +203,9 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputFluids(new FluidStack(Fluids.PAIN, 1000), new FluidStack(Fluids.PEROXIDE, 500))
                 .outputItems(new ItemStack(ModItems.gem_tantalium.get()), new ItemStack(ModItems.dust.get(), 3))
                 .outputFluids(new FluidStack(Fluids.WATER, 250)));
+    }
+
+    private static void register1(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("chem.cordite").setup(40, 100)
                 .inputItems(KNO.dust().count(2), new ComparableStack(ModItems.powder_sawdust.get(), 2))
                 .inputFluids(new FluidStack(Fluids.GAS, 200))
@@ -202,9 +214,6 @@ public final class ChemicalPlantRecipesGenerated {
                 .inputItems(new ComparableStack(ModFuelItems.solid_fuel.get(), 2))
                 .inputFluids(new FluidStack(Fluids.PETROLEUM, 200), new FluidStack(Fluids.NITRIC_ACID, 100))
                 .outputItems(new ItemStack(ModFuelItems.rocket_fuel.get(), 4)));
-    }
-
-    private static void register1(GenericRecipes reg) {
         reg.registerGenerated(new GenericRecipe("chem.dynamite").setup(50, 100)
                 .inputItems(new ComparableStack(Items.SUGAR), KNO.dust(), tag("minecraft", "sand", 1))
                 .outputItems(new ItemStack(ModItems.ball_dynamite.get(), 2)));

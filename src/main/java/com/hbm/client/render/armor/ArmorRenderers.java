@@ -19,6 +19,15 @@ public final class ArmorRenderers {
 
     public static void init() {
         RENDERERS.put("t51", new T51ArmorRenderer());
+        ArmorRenderer bj = new BJArmorRenderer();
+        RENDERERS.put("bj", bj);
+        RENDERERS.put("bj_jetpack", bj);
+        RENDERERS.put("dns", new DNTArmorRenderer());
+    }
+
+    public static void reload() {
+        RENDERERS.clear();
+        init();
     }
 
     /** The renderer for {@code name}, or null if the suit has none (and so draws nothing). */

@@ -24,6 +24,8 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> MAT_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "mat_amount");
     public static final GolemComponent<Long> BATTERY_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "battery_charge");
     public static final GolemComponent<Integer> PLATE_FUEL_LIFE = GolemComponent.integer(Constants.MOD_ID, "plate_fuel_life");
+    /** Fixed-fuel amount carried by ordinary jetpacks. */
+    public static final GolemComponent<Integer> JETPACK_FUEL = GolemComponent.integer(Constants.MOD_ID, "jetpack_fuel");
     public static final GolemComponent<Float> HAZARD_RADIATION = GolemComponent.floatValue(Constants.MOD_ID, "hazard_radiation");
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
@@ -83,9 +85,13 @@ public final class ModDataComponents {
      */
     public static final GolemComponent<Long> ARMOR_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "armor_charge");
 
+    /** State saved on the advanced glider stack (the old {@code hbmJetpackAdvanced} compound). */
+    public static final GolemComponent<net.minecraft.nbt.CompoundTag> JETPACK_STATE =
+            GolemComponent.compound(Constants.MOD_ID, "jetpack_state");
+
     /** Nine ordered armor-module slots, replacing the legacy {@code ntm_armor_mods.mod_slot_*} tag. */
-    public static final GolemComponent<java.util.List<ItemStack>> ARMOR_MODS =
-            GolemComponent.of(Constants.MOD_ID, "armor_mods", ItemStack.CODEC.listOf());
+    public static final GolemComponent<dev.golem.core.data.ItemContents> ARMOR_MODS =
+            GolemComponent.of(Constants.MOD_ID, "armor_mods", dev.golem.core.data.ItemContents.CODEC);
 
     /**
      * A gun's state-machine scratch space — timer, state, animation timer, button flags. Rewritten

@@ -1,6 +1,8 @@
 {
   "replace": false,
   "values": [
+    "hbm:rubble",
+    "hbm:shrapnel",
     "hbm:bullet_physical",
     "hbm:bullet_fire",
     "hbm:bullet_explosive",

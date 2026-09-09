@@ -196,6 +196,9 @@ public final class HbmClientRegistrations {
         sink.register("nuke_flash", NukeScreenEffects::render);
         sink.register("gun_hud", GunHudOverlay::render);
         sink.register("armor_hud", ArmorHudOverlay::render);
+        sink.register("jetpack_hud", com.hbm.client.jetpack.JetpackHudOverlay::render);
+        if (System.getenv("HBM_JETPACK_SCREENSHOTS") != null && dev.golem.core.platform.Platform.isDevelopment())
+            sink.register("jetpack_visual_check", com.hbm.client.jetpack.JetpackSmokeClient::render);
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
@@ -232,8 +235,56 @@ public final class HbmClientRegistrations {
      */
     public static void installArmorLayers() {
         com.hbm.client.render.armor.ArmorRenderers.init();
+        installJetpackBridge();
+        dev.golem.core.render.HeatDistortionRenderType.configure(
+                "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
+        com.hbm.client.jetpack.JetpackClientVisuals.init();
+        com.hbm.client.jetpack.JetpackSmokeClient.register();
+        dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "jetpack_visuals",
+                () -> {
+                    com.hbm.client.render.armor.ArmorRenderers.reload();
+                    com.hbm.client.jetpack.JetpackClientVisuals.reload();
+                });
+        dev.golem.core.client.PlayerRenderHooks.register(
+                com.hbm.client.jetpack.JetpackClientVisuals::applyPlayerPose);
+        dev.golem.core.client.PlayerRenderHooks.registerModel(
+                com.hbm.client.jetpack.JetpackClientVisuals::applyPlayerModelPose);
+        dev.golem.core.client.CameraHooks.register(
+                com.hbm.client.jetpack.JetpackClientVisuals::lowerThirdPersonCamera);
         dev.golem.core.render.HumanoidLayers.register(
                 com.hbm.client.render.armor.ArmorRenderLayer::new);
+        dev.golem.core.render.HumanoidLayers.register(
+                com.hbm.client.jetpack.JetpackRenderLayer::new);
+    }
+
+    /** Connects the client-owned visuals to the common JetpackHandler without making it import client APIs. */
+    private static void installJetpackBridge() {
+        com.hbm.handler.JetpackHandler.setClientExhaustCallback((level, payload) ->
+                com.hbm.client.jetpack.JetpackClientVisuals.spawnExhaustCue(level, payload.playerId(), payload.mode()));
+        com.hbm.client.jetpack.JetpackClientBridge.install(player -> {
+            com.hbm.handler.JetpackHandler.JetpackInfo info = com.hbm.handler.JetpackHandler.getState(player);
+            if (info == null) return null;
+            return new com.hbm.client.jetpack.JetpackClientBridge.State() {
+                @Override public boolean opening() { return info.opening; }
+                @Override public boolean hover() { return info.hover; }
+                @Override public float thrust() { return info.thrust; }
+                @Override public float prevThrust() { return info.prevThrust; }
+                @Override public int jetpackFlyTime() { return info.jetpackFlyTime; }
+                @Override public int prevJetpackFlyTime() { return info.prevJetpackFlyTime; }
+                @Override public int failureTicks() { return info.failureTicks; }
+                @Override public boolean useCompactHUD() { return info.useCompactHUD; }
+                @Override public long animTime() { return info.animTime; }
+                @Override public boolean active() {
+                    return com.hbm.handler.JetpackHandler.isJetpackActive(player);
+                }
+            };
+        }, stack -> {
+            if (stack.isEmpty()) return null;
+            com.hbm.inventory.fluid.FluidType type = com.hbm.handler.JetpackHandler.getFuelType(stack);
+            return new com.hbm.client.jetpack.JetpackClientBridge.Fuel(type == null ? "" : type.getName(),
+                    com.hbm.handler.JetpackHandler.getFuel(stack),
+                    com.hbm.handler.JetpackHandler.getMaxFuel(stack));
+        });
     }
 
     /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */

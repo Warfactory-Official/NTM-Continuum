@@ -4,8 +4,15 @@ import com.hbm.blocks.material.MaterialCompletionRegistrations;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
 import com.hbm.items.ModChemicalDyeItems;
 import com.hbm.items.ModDataComponents;
+import com.hbm.items.ModFluidItems;
+import com.hbm.items.ModItems;
+import com.hbm.items.ModMedicineItems;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.food.ItemCrayon;
 import com.hbm.items.machine.ItemChemicalDye;
+import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.inventory.material.Mats;
+import com.hbm.items.ModAutogenItems;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.ItemStacks;
 import dev.golem.core.world.Recipes;
@@ -87,6 +94,21 @@ public final class ChemicalDyeAndComponentRecipeGameTests {
         helper.assertTrue(tile.is(MaterialCompletionRegistrations.LIGHTSTONE_ITEM.get().asItem())
                         && ModDataComponents.ITEM_VARIANT.getOr(tile, -1) == 1 && tile.getCount() == 4,
                 "component-shaped lightstone tile recipe did not preserve its result component");
+
+        List<ItemStack> tankRecipe = new ArrayList<>();
+        for (int i = 0; i < 9; i++) tankRecipe.add(ItemStack.EMPTY);
+        tankRecipe.set(1, new ItemStack(ModItems.plate_steel.get()));
+        tankRecipe.set(3, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_STEEL)));
+        tankRecipe.set(4, ModFluidItems.fluid_tank.get().make(Fluids.KEROSENE, 1_000));
+        tankRecipe.set(5, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_STEEL)));
+        tankRecipe.set(7, new ItemStack(ModItems.plate_steel.get()));
+        ItemStack tankResult = Recipes.craftingResult(helper.getLevel(), 3, 3, tankRecipe).orElse(ItemStack.EMPTY);
+        List<ItemStack> remainders = Recipes.craftingRemainders(helper.getLevel(), 3, 3, tankRecipe)
+                .orElse(List.of());
+        helper.assertTrue(tankResult.is(ModMedicineItems.jetpack_tank.get()) && remainders.size() == 9
+                        && remainders.get(4).is(ModFluidItems.fluid_tank.get())
+                        && ModFluidItems.fluid_tank.get().getFill(remainders.get(4)) == 0,
+                "filled fluid tank recipe did not return one empty tank remainder");
         helper.succeed();
     }
 

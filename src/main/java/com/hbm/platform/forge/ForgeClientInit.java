@@ -26,7 +26,11 @@ final class ForgeClientInit {
 
     static void init(IEventBus modBus) {
         HbmPackets.registerClientHandlers();
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
+                (net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
+                        com.hbm.handler.JetpackHandler.clearClientState());
         com.hbm.client.particle.HbmParticleHandlers.register();
+        com.hbm.client.particle.SingularityParticleHandlers.register();
         GolemNetwork.setClientContextSupplier(() -> new GolemNetwork.ClientContext(
                 Minecraft.getInstance().level, Minecraft.getInstance().player));
         GolemNetwork.flushClientRegistrations();

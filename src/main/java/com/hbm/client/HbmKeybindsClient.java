@@ -33,6 +33,17 @@ public final class HbmKeybindsClient {
     public static KeyMappings.Mapping gunSecondaryKey;
     public static KeyMappings.Mapping gunTertiaryKey;
     public static KeyMappings.Mapping qmawKey;
+    public static KeyMappings.Mapping jetpackActivateKey;
+    public static KeyMappings.Mapping jetpackHoverKey;
+    public static KeyMappings.Mapping jetpackHudKey;
+    public static KeyMappings.Mapping toggleJetpackKey;
+    public static KeyMappings.Mapping toggleHeadKey;
+
+    private static boolean lastJetpack;
+    private static boolean lastJetpackHover;
+    private static boolean lastJetpackHud;
+    private static boolean lastToggleJetpack;
+    private static boolean lastToggleHead;
 
     /** Last reported state per keybind, so only edges go over the wire. */
     private static final boolean[] LAST_STATE = new boolean[EnumKeybind.VALUES.length];
@@ -46,6 +57,11 @@ public final class HbmKeybindsClient {
         gunTertiaryKey = KeyMappings.register(CATEGORY, "key.hbm.gunTertiary",
                 InputConstants.Type.MOUSE, 2, CATEGORY);
         qmawKey = KeyMappings.register(CATEGORY, "key.hbm.qmaw", InputConstants.KEY_F1, CATEGORY);
+        jetpackActivateKey = KeyMappings.register(CATEGORY, "key.jetpack_activate", InputConstants.KEY_J, CATEGORY);
+        jetpackHoverKey = KeyMappings.register(CATEGORY, "key.jetpack_hover", InputConstants.KEY_H, CATEGORY);
+        jetpackHudKey = KeyMappings.register(CATEGORY, "key.jetpack_hud", InputConstants.KEY_U, CATEGORY);
+        toggleJetpackKey = KeyMappings.register(CATEGORY, "key.hbm.toggleBack", InputConstants.KEY_C, CATEGORY);
+        toggleHeadKey = KeyMappings.register(CATEGORY, "key.hbm.toggleHUD", InputConstants.KEY_V, CATEGORY);
 
         MouseInput.onButton(HbmKeybindsClient::onMouseButton);
         ClientTicks.onEndTick(HbmKeybindsClient::onEndTick);
@@ -53,12 +69,37 @@ public final class HbmKeybindsClient {
 
     private static void onEndTick() {
         Minecraft mc = Minecraft.getInstance();
+        com.hbm.client.jetpack.JetpackClientVisuals.tick();
         LocalPlayer player = mc.player;
         if (player == null || mc.level == null) {
             // Leaving a world must not leave the server believing a trigger is still held.
             java.util.Arrays.fill(LAST_STATE, false);
+            lastJetpack = lastJetpackHover = lastJetpackHud = false;
+            lastToggleJetpack = lastToggleHead = false;
             return;
         }
+
+        dev.golem.core.client.PlayerInputs.State input = dev.golem.core.client.PlayerInputs.read(player);
+        com.hbm.handler.JetpackHandler.sendInput(player, input.forward(), input.strafe(), input.jump(),
+                input.sneak(), input.sprint());
+
+        // Legacy HbmKeybinds.JETPACK follows vanilla Jump; only the advanced glider has a J toggle.
+        boolean jetpack = mc.screen == null && (com.hbm.handler.JetpackHandler.hasGlider(player)
+                ? jetpackActivateKey.isHeld() : KeyMappings.isHeld(mc.options.keyJump));
+        boolean hover = mc.screen == null && jetpackHoverKey.isHeld();
+        boolean hud = mc.screen == null && jetpackHudKey.isHeld();
+        boolean toggleJetpack = mc.screen == null && toggleJetpackKey.isHeld();
+        boolean toggleHead = mc.screen == null && toggleHeadKey.isHeld();
+        reportJetpack(player, EnumKeybind.JETPACK, jetpack, lastJetpack);
+        reportJetpack(player, EnumKeybind.JETPACK_HOVER, hover, lastJetpackHover);
+        reportJetpack(player, EnumKeybind.JETPACK_HUD, hud, lastJetpackHud);
+        reportJetpack(player, EnumKeybind.TOGGLE_JETPACK, toggleJetpack, lastToggleJetpack);
+        reportJetpack(player, EnumKeybind.TOGGLE_HEAD, toggleHead, lastToggleHead);
+        lastJetpack = jetpack;
+        lastJetpackHover = hover;
+        lastJetpackHud = hud;
+        lastToggleJetpack = toggleJetpack;
+        lastToggleHead = toggleHead;
 
         boolean holdingGun = isGun(player.getMainHandItem()) || isGun(player.getOffhandItem());
         // A screen is open: report everything released, so opening the inventory mid-burst stops it.
@@ -153,6 +194,13 @@ public final class HbmKeybindsClient {
     private static void report(EnumKeybind keybind, boolean state) {
         if (LAST_STATE[keybind.ordinal()] == state) return;
         LAST_STATE[keybind.ordinal()] = state;
+        GolemNetwork.sendToServer(KeybindPayload.CODEC, new KeybindPayload(keybind.ordinal(), state));
+    }
+
+    private static void reportJetpack(LocalPlayer player, EnumKeybind keybind, boolean state, boolean previous) {
+        if (state == previous) return;
+        // Predict the edge locally; the glider's normal armor tick remains the single local movement tick.
+        com.hbm.handler.JetpackHandler.handleKeybind(player, keybind, state);
         GolemNetwork.sendToServer(KeybindPayload.CODEC, new KeybindPayload(keybind.ordinal(), state));
     }
 

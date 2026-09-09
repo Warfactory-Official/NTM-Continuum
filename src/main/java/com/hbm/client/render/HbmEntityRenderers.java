@@ -5,6 +5,7 @@ import com.hbm.entity.ModRBMKEntities;
 import com.hbm.entity.missile.ModMissileEntities;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.FallingBlockRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 
@@ -37,6 +38,11 @@ public final class HbmEntityRenderers {
         // LegoClient, which is a follow-up. A renderer must still be registered or the client throws
         // the moment one spawns.
         sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
+        sink.register(ModEntities.BLACK_HOLE.get(), BlackHoleRenderer::new);
+        sink.register(ModEntities.VORTEX.get(), BlackHoleRenderer::new);
+        sink.register(ModEntities.RAGING_VORTEX.get(), BlackHoleRenderer::new);
+        sink.register(ModEntities.RUBBLE.get(), HbmEntityRenderers::rubbleRenderer);
+        sink.register(ModEntities.SHRAPNEL.get(), NoopRenderer::new);
         sink.register(ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
         sink.register(ModRBMKEntities.SPEAR.get(), RenderSpear::new);
 
@@ -69,5 +75,11 @@ public final class HbmEntityRenderers {
 
     private static <T extends Entity & com.hbm.entity.missile.IMissilePitch> void missile(Sink sink, EntityType<T> type, String model, String texture, float scale) {
         sink.register(type, context -> new MissileRenderer<>(context, model, texture, scale));
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static net.minecraft.client.renderer.entity.EntityRenderer rubbleRenderer(
+            EntityRendererProvider.Context context) {
+        return new FallingBlockRenderer(context);
     }
 }

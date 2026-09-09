@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rune_blank",
+    "hbm:powder_spark_mix",
+    "hbm:black_hole"
+  ],
+  "result": {
+    "id": "hbm:rune_thurisaz"
+  }
+}

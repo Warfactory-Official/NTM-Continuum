@@ -305,14 +305,14 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return entity.getBoundingBox().intersects(getLadderAABB());
     }
 
-    /** The 8 network-connection positions around the 3×3 footprint edges (ported verbatim). */
+    /** The 8 network-connection positions just outside the 5×3×5 footprint edges. */
     public DirPos[] getConPos() {
         int x = getBlockPos().getX(), y = getBlockPos().getY(), z = getBlockPos().getZ();
         return new DirPos[]{
-                new DirPos(x + 2, y, z - 1, Library.POS_X), new DirPos(x + 2, y, z + 1, Library.POS_X),
-                new DirPos(x - 2, y, z - 1, Library.NEG_X), new DirPos(x - 2, y, z + 1, Library.NEG_X),
-                new DirPos(x - 1, y, z + 2, Library.POS_Z), new DirPos(x + 1, y, z + 2, Library.POS_Z),
-                new DirPos(x - 1, y, z - 2, Library.NEG_Z), new DirPos(x + 1, y, z - 2, Library.NEG_Z)};
+                new DirPos(x + 3, y, z - 1, Library.POS_X), new DirPos(x + 3, y, z + 1, Library.POS_X),
+                new DirPos(x - 3, y, z - 1, Library.NEG_X), new DirPos(x - 3, y, z + 1, Library.NEG_X),
+                new DirPos(x - 1, y, z + 3, Library.POS_Z), new DirPos(x + 1, y, z + 3, Library.POS_Z),
+                new DirPos(x - 1, y, z - 3, Library.NEG_Z), new DirPos(x + 1, y, z - 3, Library.NEG_Z)};
     }
 
     protected FluidNode createNode(FluidType type) {

@@ -1,0 +1,31 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/armor/dnt.obj",
+      "texture": "hbm:textures/armor/dnt_leg.png",
+      "noCull": true,
+      "scale": 0.099,
+      "pitch": 180.0,
+      "yaw": 155.0,
+      "animation": "armor_dnt_legs",
+      "partTextures": {
+        "LeftLeg": "hbm:textures/armor/dnt_leg.png",
+        "RightLeg": "hbm:textures/armor/dnt_leg.png"
+      },
+      "exclude": [
+        "Body",
+        "Head",
+        "Jetpack",
+        "LeftArm",
+        "LeftBoot",
+        "LeftFoot",
+        "RightArm",
+        "RightBoot",
+        "RightFoot"
+      ]
+    }
+  }
+}

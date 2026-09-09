@@ -49,6 +49,16 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> SYRINGE = register("item.syringe");
     public static final RegistryObject<SoundEvent> RADAWAY = register("item.radaway");
     public static final RegistryObject<SoundEvent> JETPACK_TANK = register("item.jetpack_tank");
+    /** Fuel-jetpack thrust loop/effect sound (old {@code weapon.flamethrowerShoot}). */
+    public static final RegistryObject<SoundEvent> FLAMETHROWER_IGNITE = register("weapon.flamethrower_ignite");
+    public static final RegistryObject<SoundEvent> FLAMETHROWER_SHOOT = register("weapon.flamethrower_shoot");
+    /** Powered-suit jetpack thrust sound (old {@code weapon.immolatorShoot}). */
+    public static final RegistryObject<SoundEvent> IMMOLATOR_IGNITE = register("weapon.immolator_ignite");
+    public static final RegistryObject<SoundEvent> IMMOLATOR_SHOOT = register("weapon.immolator_shoot");
+    /** Advanced glider engine loop (old {@code weapon.jetpack}). */
+    public static final RegistryObject<SoundEvent> JETPACK = register("weapon.jetpack");
+    /** Block fragment impact sounds used by the black-hole rubble entity. */
+    public static final RegistryObject<SoundEvent> DEBRIS = register("block.debris");
     public static final RegistryObject<SoundEvent> VICE = register("item.vice");
     /** Looping hum of the current BigInteger FEnSU. */
     public static final RegistryObject<SoundEvent> FENSU_HUM = SOUNDS.register("block.fensu_hum",

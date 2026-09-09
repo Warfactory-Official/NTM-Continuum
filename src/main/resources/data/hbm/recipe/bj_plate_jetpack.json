@@ -1,0 +1,49 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "N": {
+      "items": [
+        "hbm:plate_armor_lunar"
+      ]
+    },
+    "F": {
+      "items": [
+        "hbm:fins_quad_titanium"
+      ]
+    },
+    "T": {
+      "items": [
+        "hbm:fluid_tank"
+      ],
+      "components": {
+        "hbm:fluid_id": 40,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:fluid_tank"
+    },
+    "P": {
+      "items": [
+        "hbm:bj_plate"
+      ]
+    },
+    "I": {
+      "items": [
+        "hbm:mp_thruster_10_xenon"
+      ]
+    },
+    "C": {
+      "items": [
+        "hbm:crystal_phosphorus"
+      ]
+    }
+  },
+  "pattern": [
+    "NFN",
+    "TPT",
+    "ICI"
+  ],
+  "result": {
+    "id": "hbm:bj_plate_jetpack"
+  }
+}

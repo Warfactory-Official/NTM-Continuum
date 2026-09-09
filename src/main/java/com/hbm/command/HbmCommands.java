@@ -1,6 +1,7 @@
 package com.hbm.command;
 
 import com.hbm.handler.radiation.ChunkRadiationManager;
+import com.hbm.handler.JetpackHandler;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import net.minecraft.commands.CommandSourceStack;
@@ -9,6 +10,7 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 
 /**
  * Debug/testing commands (op-only). Registered per loader (NeoForge {@code RegisterCommandsEvent} /
@@ -20,6 +22,7 @@ import net.minecraft.server.level.ServerLevel;
  * <li>{@code /hbm rad add <pos> <val>} — add to it</li>
  * <li>{@code /hbm rad get <pos>} — read it</li>
  * <li>{@code /hbm rad here} — read at the caller's feet</li>
+ * <li>{@code /hbm jetpack_smoke} — development-only disposable client smoke setup</li>
  * </ul>
  */
 public final class HbmCommands {
@@ -28,6 +31,24 @@ public final class HbmCommands {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("hbm").requires(dev.golem.core.command.Permissions.gamemasters())
+                .then(Commands.literal("jetpack_smoke")
+                        .requires(source -> dev.golem.core.platform.Platform.isDevelopment())
+                        .then(Commands.literal("stop")
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    boolean stopped = JetpackHandler.stopSmoke(player);
+                                    ctx.getSource().sendSuccess(() -> Component.literal(stopped
+                                            ? "Development jetpack smoke stopped"
+                                            : "No development jetpack smoke session was active"), false);
+                                    return stopped ? 1 : 0;
+                                }))
+                        .executes(ctx -> {
+                            ServerPlayer player = ctx.getSource().getPlayerOrException();
+                            JetpackHandler.startSmoke(player);
+                            ctx.getSource().sendSuccess(() -> Component.literal(
+                                    "Development jetpack smoke setup active for 10 seconds"), false);
+                            return 1;
+                        }))
                 .then(Commands.literal("rad")
                         .then(Commands.literal("set")
                                 .then(Commands.argument("pos", BlockPosArgument.blockPos())

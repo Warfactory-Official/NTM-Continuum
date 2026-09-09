@@ -1,0 +1,29 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "items": [
+        "hbm:fluid_tank"
+      ],
+      "components": {
+        "hbm:fluid_id": 22,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:fluid_tank"
+    },
+    "T": {
+      "items": [
+        "hbm:ingot_steel"
+      ]
+    }
+  },
+  "pattern": [
+    " S ",
+    "STS",
+    " S "
+  ],
+  "result": {
+    "id": "hbm:flame_conspiracy"
+  }
+}

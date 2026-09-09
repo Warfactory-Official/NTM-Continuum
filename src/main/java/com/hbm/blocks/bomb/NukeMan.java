@@ -65,12 +65,12 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
     @Override
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        // BlockHorizontal used the placer-facing opposite in 1.12.2; retain its numeric direction values.
-        int facing = switch (context.getHorizontalDirection().getOpposite()) {
-            case SOUTH -> 3;
-            case WEST -> 4;
-            case EAST -> 5;
-            default -> 2; // NORTH
+        // NukeMan has its own legacy placement map, not BlockHorizontal's opposite-facing rule.
+        int facing = switch (context.getHorizontalDirection()) {
+            case SOUTH -> 5;
+            case WEST -> 3;
+            case NORTH -> 4;
+            default -> 2; // EAST
         };
         return this.defaultBlockState().setValue(FACING, facing);
     }

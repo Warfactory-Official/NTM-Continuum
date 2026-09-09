@@ -41,6 +41,18 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial T51 = new GolemArmorMaterial(
             Constants.MOD_ID, "t51", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/t51");
 
+    /** Legacy Blackjack armor material: the separate identity is required for full-set detection. */
+    public static final GolemArmorMaterial BJ = new GolemArmorMaterial(
+            Constants.MOD_ID, "bj", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/bj");
+
+    /** Legacy DNT nanosuit material: the separate identity is required for full-set detection. */
+    public static final GolemArmorMaterial DNS = new GolemArmorMaterial(
+            Constants.MOD_ID, "dns", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/dns");
+
+    /** Jetpack modules were not armor themselves in 1.12; this material keeps direct wear non-protective. */
+    public static final GolemArmorMaterial JETPACK = new GolemArmorMaterial(
+            Constants.MOD_ID, "jetpack", 1, 0, 0, 0, 0, 0, 0.0F, 0.0F, "repairs/steel");
+
     /** 1.12.2 {@code aMatCobalt}: multiplier 70, defense {3, 6, 8, 3}, enchantability 25. */
     public static final GolemArmorMaterial COBALT = new GolemArmorMaterial(
             Constants.MOD_ID, "cobalt", 70, 3, 8, 6, 3, 25, 2.0F, 0.0F, "repairs/cobalt");

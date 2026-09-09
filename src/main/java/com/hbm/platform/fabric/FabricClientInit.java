@@ -27,7 +27,10 @@ public class FabricClientInit implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         HbmPackets.registerClientHandlers();
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                com.hbm.handler.JetpackHandler.clearClientState());
         com.hbm.client.particle.HbmParticleHandlers.register();
+        com.hbm.client.particle.SingularityParticleHandlers.register();
         GolemNetwork.flushClientRegistrations();
 
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and

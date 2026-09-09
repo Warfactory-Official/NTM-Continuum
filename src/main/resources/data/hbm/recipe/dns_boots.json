@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "hbm:plate_armor_dnt",
+    "S": "hbm:ingot_chainsteel",
+    "B": "hbm:bj_boots",
+    "C": "hbm:demon_core_closed"
+  },
+  "pattern": [
+    "PCP",
+    "PBP",
+    "PSP"
+  ],
+  "result": {
+    "id": "hbm:dns_boots"
+  }
+}

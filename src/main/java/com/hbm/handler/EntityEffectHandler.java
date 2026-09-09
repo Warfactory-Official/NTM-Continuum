@@ -13,6 +13,9 @@ import com.hbm.entity.EntityHbmProps;
 import com.hbm.entity.EntityHbmProps.ContaminationEffect;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.items.gear.ArmorFSB;
+import com.hbm.items.armor.JetpackBase;
+import com.hbm.items.armor.ArmorDNT;
+import com.hbm.items.gear.JetpackGlider;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import com.hbm.lib.ModDamageSources;
@@ -101,7 +104,22 @@ public class EntityEffectHandler {
             if (stack.getItem() instanceof ArmorFSB piece) {
                 piece.armorTick(player.level(), player, stack);
             }
+            if (ArmorModHandler.hasMods(stack)) {
+                for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+                    ItemStack before = mod.copy();
+                    if (mod.getItem() instanceof JetpackBase jetpack) {
+                        jetpack.armorTick(player.level(), player, mod);
+                        JetpackHandler.resetFlightTime(player);
+                        if (!ItemStack.matches(before, mod)) ArmorModHandler.applyMod(stack, mod);
+                    } else if (mod.getItem() instanceof JetpackGlider glider) {
+                        glider.tickFlight(player, mod);
+                        if (!ItemStack.matches(before, mod)) ArmorModHandler.applyMod(stack, mod);
+                    }
+                }
+            }
         }
+        ArmorDNT.updateSprintSpeed(player);
+        if (player instanceof ServerPlayer serverPlayer) JetpackHandler.serverTick(serverPlayer);
     }
 
     private static final EquipmentSlot[] ARMOR_SLOTS = {

@@ -19,7 +19,17 @@ public class HbmKeybinds {
         GUN_SECONDARY,
         /** Tertiary — aim down sights on the standard configuration. */
         GUN_TERTIARY,
-        RELOAD;
+        RELOAD,
+        /** Advanced glider activation (J). */
+        JETPACK,
+        /** Advanced glider hover toggle (H). */
+        JETPACK_HOVER,
+        /** Advanced glider compact-HUD toggle (U). */
+        JETPACK_HUD,
+        /** General backpack enable/disable toggle (C). */
+        TOGGLE_JETPACK,
+        /** General HUD enable/disable toggle (V). */
+        TOGGLE_HEAD;
 
         public static final EnumKeybind[] VALUES = values();
 

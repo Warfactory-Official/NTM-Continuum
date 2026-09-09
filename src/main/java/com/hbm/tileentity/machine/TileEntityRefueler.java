@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.handler.ArmorModHandler;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
@@ -30,8 +31,6 @@ import java.util.List;
  * {@code KEROSENE 100} tank. Each tick it fills any {@link IFillableItem} in the inventory of players
  * standing on it (AABB expanded ±0.5), playing the extinguish sound every 20 op-ticks. Fluid enters via
  * a pipe on the side opposite the facing.
- *
- * <p>Deferred (§20): the {@code ArmorModHandler} jetpack-mod branch (armor mods unported).
  */
 public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
 
@@ -67,7 +66,30 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
             for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
                 ItemStack stack = player.getInventory().getItem(i);
                 if (stack.isEmpty()) continue;
-                if (te.fillFillable(stack)) te.isOperating = true;
+                te.isOperating |= te.fillFillable(stack);
+                if (ArmorModHandler.hasMods(stack)) {
+                    for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+                        if (mod.isEmpty() || !te.fillFillable(mod)) continue;
+                        ArmorModHandler.applyMod(stack, mod);
+                        te.isOperating = true;
+                    }
+                }
+            }
+
+            // Armor inventory is separate from Inventory's 36 carried slots on modern Minecraft.
+            for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[] {
+                    net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+                    net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET}) {
+                ItemStack stack = player.getItemBySlot(slot);
+                if (stack.isEmpty()) continue;
+                te.isOperating |= te.fillFillable(stack);
+                if (ArmorModHandler.hasMods(stack)) {
+                    for (ItemStack mod : ArmorModHandler.pryMods(stack)) {
+                        if (mod.isEmpty() || !te.fillFillable(mod)) continue;
+                        ArmorModHandler.applyMod(stack, mod);
+                        te.isOperating = true;
+                    }
+                }
             }
         }
 

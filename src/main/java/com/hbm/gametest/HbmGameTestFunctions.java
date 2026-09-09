@@ -24,6 +24,36 @@ public final class HbmGameTestFunctions {
 
     public static final GameTests.Function COOLING_RECIPES =
             TESTS.function("cooling_recipes", 20, () -> HbmGameTestFunctions::coolingRecipes);
+    public static final GameTests.Function JETPACK_REGISTRATIONS =
+            TESTS.function("jetpack_registrations", 20, () -> JetpackGameTests::registrationsAndFuelRates);
+    public static final GameTests.Function JETPACK_GLIDER_STATE =
+            TESTS.function("jetpack_glider_state", 20, () -> JetpackGameTests::gliderFuelAndDelayedState);
+    public static final GameTests.Function JETPACK_WEARABILITY =
+            TESTS.function("jetpack_wearability", 20, () -> JetpackGameTests::directAndModuleWearability);
+    public static final GameTests.Function JETPACK_REFUEL =
+            TESTS.function("jetpack_refuel", 20, () -> JetpackGameTests::reserveTankRefuelsRegularJetpack);
+    public static final GameTests.Function JETPACK_DEPENDENCIES =
+            TESTS.function("jetpack_dependencies", 40, () -> JetpackGameTests::dependencyItemsAndHotAnvil);
+    public static final GameTests.Function JETPACK_INPUT_SANITIZE =
+            TESTS.function("jetpack_input_sanitize", 20, () -> JetpackGameTests::inputPayloadIsBounded);
+    public static final GameTests.Function JETPACK_CLIENT_SOURCE =
+            TESTS.function("jetpack_client_source", 20, () -> JetpackGameTests::equivalentClientSnapshotKeepsSource);
+    public static final GameTests.Function JETPACK_FUEL_CADENCE =
+            TESTS.function("jetpack_fuel_cadence", 20, () -> JetpackGameTests::ordinaryFuelCadenceAndRelease);
+    public static final GameTests.Function JETPACK_LOCKOUT =
+            TESTS.function("jetpack_lockout", 20, () -> JetpackGameTests::gliderLockoutAndFlyTimeRestart);
+    public static final GameTests.Function JETPACK_SOURCE_SWAP =
+            TESTS.function("jetpack_source_swap", 20, () -> JetpackGameTests::sourceSwapLoadsNewGliderState);
+    public static final GameTests.Function JETPACK_REPORTED_INPUT =
+            TESTS.function("jetpack_reported_input", 20, () -> JetpackGameTests::gliderUsesReportedInputForMotion);
+    public static final GameTests.Function JETPACK_BJ_GLIDER =
+            TESTS.function("jetpack_bj_glider", 20, () -> JetpackGameTests::bjGliderMotionIncludesVerticalBrake);
+    public static final GameTests.Function JETPACK_MURK_STRAFE =
+            TESTS.function("jetpack_murk_strafe", 20, () -> JetpackGameTests::murkStrafeUsesLegacyPositiveRotation);
+    public static final GameTests.Function JETPACK_STATE_SCOPE =
+            TESTS.function("jetpack_state_scope", 20, () -> JetpackGameTests::stateScopeCleansOnLevelRemoval);
+    public static final GameTests.Function JETPACK_SMOKE_CLEANUP =
+            TESTS.function("jetpack_smoke_cleanup", 20, () -> JetpackGameTests::smokeSessionRestoresOwnedState);
     public static final GameTests.Function COMPONENT_COPY_EXACT_MULTISET =
             TESTS.function("component_copy_exact_multiset", 20, () -> ComponentCopyRecipeGameTests::exactMultiset);
     public static final GameTests.Function COMPONENT_COPY_SOURCE_STATE =

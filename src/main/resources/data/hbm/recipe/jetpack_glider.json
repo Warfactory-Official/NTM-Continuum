@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "J": "hbm:jetpack_boost",
+    "C": "hbm:circuit_advanced",
+    "D": "hbm:plate_desh",
+    "T": "hbm:thruster_nuclear",
+    "S": "hbm:motor"
+  },
+  "pattern": [
+    "CSC",
+    "DJD",
+    "T T"
+  ],
+  "result": {
+    "id": "hbm:jetpack_glider"
+  }
+}

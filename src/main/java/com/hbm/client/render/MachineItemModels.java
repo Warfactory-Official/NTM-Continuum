@@ -47,7 +47,8 @@ public final class MachineItemModels {
 
     /^ Item id -> its OBJ model. Rebuilt on every resource reload; empty until the first one. ^/
 private static Map<Identifier, MachineItemModel> models = Map.of();
-private static Map<Identifier, Map<Integer, MachineItemModel>> variantModels = Map.of();
+ private static Map<Identifier, Map<Integer, MachineItemModel>> variantModels = Map.of();
+    private static Map<Identifier, com.hbm.client.jetpack.JetpackGliderItemModel> gliders = Map.of();
     private static Map<Identifier, RBMKColumnItemModel> rbmkColumns = Map.of();
     private static Map<Identifier, RBMKBlockColumnItemModel> blockColumns = Map.of();
 
@@ -66,8 +67,10 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
 
     /^ Whether any OBJ item models are loaded (used to skip work when a pack removes them all). ^/
     public static boolean isEmpty() {
-        return models.isEmpty() && rbmkColumns.isEmpty() && blockColumns.isEmpty();
+        return models.isEmpty() && gliders.isEmpty() && rbmkColumns.isEmpty() && blockColumns.isEmpty();
     }
+
+    public static boolean isGlider(Identifier item) { return gliders.containsKey(item); }
 
     /^ The dedicated four-section fuel-channel model, or null for every other item. ^/
     public static RBMKColumnItemModel rbmkColumn(Identifier item) { return rbmkColumns.get(item); }
@@ -84,6 +87,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         Map<Identifier, Map<Integer, MachineItemModel>> builtVariants = new HashMap<>();
         Map<Identifier, RBMKColumnItemModel> columns = new HashMap<>();
         Map<Identifier, RBMKBlockColumnItemModel> blocks = new HashMap<>();
+        Map<Identifier, com.hbm.client.jetpack.JetpackGliderItemModel> gliderItems = new HashMap<>();
         for (Map.Entry<Identifier, Resource> entry :
                 resources.listResources("items", path -> path.getPath().endsWith(".json")).entrySet()) {
             Identifier file = entry.getKey();
@@ -94,6 +98,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 String path = file.getPath();
                 String name = path.substring("items/".length(), path.length() - ".json".length());
                 Identifier item = dev.golem.core.Ids.of(file.getNamespace(), name);
+                if (jetpackGliderOf(root) != null) gliderItems.put(item,
+                        new com.hbm.client.jetpack.JetpackGliderItemModel());
                 if (machine != null) built.put(item, parse(machine, isBlockFramed(root)));
                 Map<Integer, JsonObject> variantJson = machineObjVariantsOf(root);
                 if (!variantJson.isEmpty()) {
@@ -116,9 +122,24 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         variantModels = Map.copyOf(builtVariants);
         rbmkColumns = Map.copyOf(columns);
         blockColumns = Map.copyOf(blocks);
+        gliders = Map.copyOf(gliderItems);
         // Logged at info, not debug: a silently-empty map renders every machine as an invisible item and
         // produces no warning anywhere, so the count is the only positive signal that this worked.
         Constants.LOG.info("Loaded {} OBJ item model(s) and {} RBMK fuel-column item model(s)", models.size(), rbmkColumns.size());
+    }
+
+    private static JsonObject jetpackGliderOf(JsonElement root) {
+        if (!root.isJsonObject()) return null;
+        JsonElement model = root.getAsJsonObject().get("model");
+        if (model == null || !model.isJsonObject()
+                ) return null;
+        if ("hbm:jetpack_glider".equals(string(model.getAsJsonObject(), "type", "")))
+            return model.getAsJsonObject();
+        if (!"minecraft:special".equals(string(model.getAsJsonObject(), "type", ""))) return null;
+        JsonElement inner = model.getAsJsonObject().get("model");
+        return inner != null && inner.isJsonObject()
+                && "hbm:jetpack_glider".equals(string(inner.getAsJsonObject(), "type", ""))
+                ? inner.getAsJsonObject() : null;
     }
 
      /^ 

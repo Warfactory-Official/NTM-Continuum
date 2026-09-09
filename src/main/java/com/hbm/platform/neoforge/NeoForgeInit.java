@@ -26,6 +26,7 @@ import net.neoforged.neoforge.event.level.ChunkEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -36,6 +37,7 @@ import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 
@@ -70,6 +72,7 @@ public class NeoForgeInit {
          com.hbm.gametest.AutocalGameTests.init();
          com.hbm.gametest.RadioProviderGameTests.init();
          com.hbm.gametest.RtgGameTests.init();
+         com.hbm.gametest.SingularityGameTests.init();
         //?}
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
@@ -124,8 +127,10 @@ public class NeoForgeInit {
                  com.hbm.gametest.AutocalGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.RadioProviderGameTests.TESTS));
-         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
-                 com.hbm.gametest.RtgGameTests.TESTS));
+          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                  com.hbm.gametest.RtgGameTests.TESTS));
+          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                  com.hbm.gametest.SingularityGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {
@@ -165,7 +170,14 @@ public class NeoForgeInit {
         NeoForge.EVENT_BUS.addListener((ItemTooltipEvent event) ->
                 HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
         NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) ->
-                com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
+                 com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
+        NeoForge.EVENT_BUS.addListener((EntityTickEvent.Post event) -> {
+            if (event.getEntity() instanceof ItemEntity item) {
+                com.hbm.items.special.ItemSingularity.tickDropped(item);
+                com.hbm.items.special.ItemCell.tickDropped(item);
+                com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
+            }
+        });
 
         // Debug commands (/hbm rad ...).
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) ->

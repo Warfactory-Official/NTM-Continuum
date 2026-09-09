@@ -58,6 +58,11 @@ legacyForge {
 
 sourceSets["main"].resources.srcDir("src/generated/resources")
 
+// A one-off smoke launch must not leave Quick Play in ModDev's cached argument file.
+tasks.matching { it.name == "prepareClientRun" }.configureEach {
+    inputs.property("hbmQuickPlayWorld", providers.gradleProperty("quickPlayWorld").orElse(""))
+}
+
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }

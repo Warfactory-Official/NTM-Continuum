@@ -46,19 +46,18 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
 
     /**
      * Whether tank cell {@code (x,y,z)} exposes a fluid port on face {@code dir}. The tank's network node
-     * occupies the four corner cells {@code (±1, 0, ±1)} relative to the core (= each
-     * {@code getConPos} entry's {@code pos − dir}); a duct's neighbour is one of those corners, and the
-     * port faces outward from it. Only the corners on the multiblock's short ends are reachable from
-     * outside, so this yields the tank's 4 working ports for any facing.
+     * occupies the boundary cells {@code (±2, 0, ±1)} or {@code (±1, 0, ±2)} relative to the core
+     * (= each {@code getConPos} entry's {@code pos − dir}); a duct sits one block beyond that boundary
+     * and the port face points outward from it.
      */
     private static boolean isPort(BlockPos c, int x, int y, int z, ForgeDirection dir) {
         int dx = x - c.getX(), dy = y - c.getY(), dz = z - c.getZ();
         if (dy != 0) return false;
         return switch (dir) {
-            case EAST -> dx == 1 && (dz == -1 || dz == 1);   // +X (Library.POS_X)
-            case WEST -> dx == -1 && (dz == -1 || dz == 1);  // -X (Library.NEG_X)
-            case SOUTH -> dz == 1 && (dx == -1 || dx == 1);  // +Z (Library.POS_Z)
-            case NORTH -> dz == -1 && (dx == -1 || dx == 1); // -Z (Library.NEG_Z)
+            case EAST -> dx == 2 && (dz == -1 || dz == 1);   // +X (Library.POS_X)
+            case WEST -> dx == -2 && (dz == -1 || dz == 1);  // -X (Library.NEG_X)
+            case SOUTH -> dz == 2 && (dx == -1 || dx == 1);  // +Z (Library.POS_Z)
+            case NORTH -> dz == -2 && (dx == -1 || dx == 1); // -Z (Library.NEG_Z)
             default -> false;
         };
     }

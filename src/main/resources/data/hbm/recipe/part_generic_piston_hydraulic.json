@@ -1,0 +1,35 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "items": [
+        "hbm:ingot_steel"
+      ]
+    },
+    "C": {
+      "items": [
+        "hbm:ingot_titanium"
+      ]
+    },
+    "P": {
+      "items": [
+        "hbm:fluid_tank"
+      ],
+      "components": {
+        "hbm:fluid_id": 18,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:fluid_tank"
+    }
+  },
+  "pattern": [
+    " I ",
+    "CPC",
+    " I "
+  ],
+  "result": {
+    "id": "hbm:part_generic_piston_hydraulic",
+    "count": 4
+  }
+}

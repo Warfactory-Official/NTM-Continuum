@@ -34,7 +34,11 @@ public final class NeoForgeClientInit {
 
     public static void init(IEventBus modBus) {
         HbmPackets.registerClientHandlers();
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+                (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
+                        com.hbm.handler.JetpackHandler.clearClientState());
         com.hbm.client.particle.HbmParticleHandlers.register();
+        com.hbm.client.particle.SingularityParticleHandlers.register();
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
@@ -81,6 +85,9 @@ public final class NeoForgeClientInit {
         modBus.addListener((RegisterSpecialModelRendererEvent event) ->
                 event.register(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC));
         modBus.addListener((RegisterSpecialModelRendererEvent event) ->
+                event.register(com.hbm.client.jetpack.JetpackGliderItemModelRenderer.ID,
+                        com.hbm.client.jetpack.JetpackGliderItemModelRenderer.Unbaked.MAP_CODEC));
+        modBus.addListener((RegisterSpecialModelRendererEvent event) ->
                 event.register(com.hbm.client.render.RBMKColumnItemModelRenderer.ID,
                         com.hbm.client.render.RBMKColumnItemModelRenderer.Unbaked.MAP_CODEC));
         modBus.addListener((RegisterSpecialModelRendererEvent event) ->
@@ -93,6 +100,9 @@ public final class NeoForgeClientInit {
                         com.hbm.client.render.weapon.GunItemModel.Unbaked.MAP_CODEC));
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
                 event.register(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC));
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
+                event.register(com.hbm.client.jetpack.JetpackGliderItemModelRenderer.ID,
+                        com.hbm.client.jetpack.JetpackGliderItemModelRenderer.Unbaked.MAP_CODEC));
         //?} else {
         /*modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent event) ->
                 event.registerReloadListener(

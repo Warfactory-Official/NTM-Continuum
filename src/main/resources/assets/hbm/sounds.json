@@ -571,11 +571,15 @@
   },
   "block.storage_open": {
     "category": "block",
-    "sounds": ["hbm:block/storageopen"]
+    "sounds": [
+      "hbm:block/storageopen"
+    ]
   },
   "block.storage_close": {
     "category": "block",
-    "sounds": ["hbm:block/storageclose"]
+    "sounds": [
+      "hbm:block/storageclose"
+    ]
   },
   "rbmk_shutdown": {
     "category": "block",
@@ -583,18 +587,94 @@
   },
   "weapon.fire.blackpowder": {
     "category": "player",
-    "sounds": ["hbm:weapon/fire/blackpowder"]
+    "sounds": [
+      "hbm:weapon/fire/blackpowder"
+    ]
   },
   "weapon.fire.assault": {
     "category": "player",
-    "sounds": ["hbm:weapon/fire/assault"]
+    "sounds": [
+      "hbm:weapon/fire/assault"
+    ]
   },
   "weapon.switchmode1": {
     "category": "player",
-    "sounds": [{"name": "hbm:weapon/switchmode1", "stream": false}]
+    "sounds": [
+      {
+        "name": "hbm:weapon/switchmode1",
+        "stream": false
+      }
+    ]
   },
   "weapon.switchmode2": {
     "category": "player",
-    "sounds": [{"name": "hbm:weapon/switchmode2", "stream": false}]
+    "sounds": [
+      {
+        "name": "hbm:weapon/switchmode2",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.jetpack": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/jetpack",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.flamethrower_ignite": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/flamethrowerignite",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.flamethrower_shoot": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/flamethrowershoot",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.immolator_ignite": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/immolatorignite",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.immolator_shoot": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/immolatorshoot",
+        "stream": false
+      }
+    ]
+  },
+  "block.debris": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/debris1",
+        "stream": false
+      },
+      {
+        "name": "hbm:block/debris2",
+        "stream": false
+      },
+      {
+        "name": "hbm:block/debris3",
+        "stream": false
+      }
+    ]
   }
 }

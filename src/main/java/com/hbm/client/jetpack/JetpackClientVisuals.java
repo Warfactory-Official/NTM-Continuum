@@ -1,0 +1,728 @@
+package com.hbm.client.jetpack;
+
+import com.hbm.handler.ArmorModHandler;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.hbm.client.render.armor.ArmorRenderer;
+import dev.golem.core.Ids;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.HumanoidPose;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.WorldEffects;
+import dev.golem.core.render.HeatDistortionRenderType;
+import dev.golem.core.render.Particles;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+/** Client-side jetpack model selection, exhaust spawning, and the two HUD compositions. */
+public final class JetpackClientVisuals {
+
+    public static final String GLIDER = "glider";
+    public static final String BJ = "bj";
+    public static final String DNS = "dns";
+
+    private static final Identifier JETPACK_MODEL = Ids.of("hbm", "models/armor/jetpack.obj");
+    private static final Identifier BJ_MODEL = Ids.of("hbm", "models/armor/bj.obj");
+    private static final Identifier WINGS_MODEL = Ids.of("hbm", "models/armor/murk.obj");
+    private static final Identifier MASK = Ids.of("hbm", "textures/models/bfg/fresnel_ms.png");
+    private static final Identifier NOISE = Ids.of("hbm", "textures/misc/noise_2.png");
+
+    private static final RenderType BJ_TYPE = CompatRenderTypes.entityCutoutCull(
+            Ids.of("hbm", "textures/armor/bj_jetpack.png"));
+
+    private static com.hbm.client.model.WavefrontObj standardModel;
+    private static com.hbm.client.model.WavefrontObj bjModel;
+    private static com.hbm.client.model.WavefrontObj wingsModel;
+    private static JetpackColladaModel gliderModel;
+
+    private static final Map<UUID, Effects> EFFECTS = new HashMap<>();
+    private static final Map<UUID, GliderAnimation> GLIDER_ANIMATIONS = new HashMap<>();
+    private static ClientLevel activeLevel;
+
+    private JetpackClientVisuals() {}
+
+    public static void init() {
+        dev.golem.core.render.PlasmaGlowRenderType.init();
+        WorldEffects.init();
+        // The client texture manager is not constructed during mod-container construction. The render
+        // type installs its scene texture lazily on the first submitted heat particle.
+    }
+
+    /** Drops client-only state when a world or resource set is replaced. */
+    public static void clear() {
+        EFFECTS.clear();
+        GLIDER_ANIMATIONS.clear();
+        activeLevel = null;
+        standardModel = null;
+        bjModel = null;
+        wingsModel = null;
+        gliderModel = null;
+        JetpackSound.clearAll();
+    }
+
+    /** Invalidates model instances after a client resource reload. */
+    public static void reload() {
+        clear();
+    }
+
+    public static String kind(Player player) {
+        if (player == null) return null;
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        String direct = itemKind(chest);
+        if (direct != null) return direct;
+        ItemStack module = ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only);
+        return itemKind(module);
+    }
+
+    public static String kindFromStack(ItemStack stack) {
+        return itemKind(stack);
+    }
+
+    public static String path(ItemStack stack) {
+        return stack == null || stack.isEmpty() ? null
+                : BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath();
+    }
+
+    public static ItemStack sourceStack(ItemStack chest) {
+        if (chest == null || chest.isEmpty()) return ItemStack.EMPTY;
+        return itemKind(chest) == null
+                ? ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only) : chest;
+    }
+
+    private static String itemKind(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return null;
+        String path = path(stack);
+        if (path.equals("jetpack_glider")) return GLIDER;
+        if (path.equals("bj_plate_jetpack")) return BJ;
+        if (path.equals("dns_plate")) return DNS;
+        if (path.equals("wings_murk") || path.equals("wings_limp")) return "wings";
+        if (path.equals("jetpack_fly") || path.equals("jetpack_break")
+                || path.equals("jetpack_vector") || path.equals("jetpack_boost")) return "standard";
+        return null;
+    }
+
+    public static void tick() {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.level != activeLevel) {
+            clear();
+            activeLevel = minecraft.level;
+        }
+        if (minecraft.level == null) {
+            return;
+        }
+        Set<UUID> tracked = new HashSet<>();
+        for (Player player : minecraft.level.players()) {
+            tracked.add(player.getUUID());
+            Effects effects = EFFECTS.computeIfAbsent(player.getUUID(), ignored -> new Effects());
+            tickHeat(effects);
+            String kind = kind(player);
+            JetpackClientBridge.State state = JetpackClientBridge.state(player);
+            if (kind == null) JetpackSound.clear(player.getUUID());
+            else JetpackSound.tick(player, state);
+            if (!GLIDER.equals(kind)) {
+                effects.clear();
+                EFFECTS.remove(player.getUUID());
+                GLIDER_ANIMATIONS.remove(player.getUUID());
+                continue;
+            }
+            if (GLIDER.equals(kind) && active(state) && !player.onGround() && state.thrust() > 0.05F) {
+                spawnExhaust(player, state, effects);
+            }
+            if (effects.empty() && !trailEligible(player, state, fuel(player))) EFFECTS.remove(player.getUUID());
+        }
+        Iterator<Map.Entry<UUID, Effects>> stale = EFFECTS.entrySet().iterator();
+        while (stale.hasNext()) {
+            UUID id = stale.next().getKey();
+            if (!tracked.contains(id)) {
+                JetpackSound.clear(id);
+                GLIDER_ANIMATIONS.remove(id);
+                stale.remove();
+            }
+        }
+        GLIDER_ANIMATIONS.keySet().removeIf(id -> !tracked.contains(id));
+    }
+
+    private static boolean active(JetpackClientBridge.State state) {
+        return state != null && state.active() && state.failureTicks() <= 0;
+    }
+
+    private static void tickHeat(Effects effects) {
+        effects.plasma.removeIf(particle -> !particle.tick());
+        effects.brightness.removeIf(particle -> !particle.tick());
+        Iterator<ParticleHeatDistortion> iterator = effects.heat.iterator();
+        while (iterator.hasNext()) if (!iterator.next().tick()) iterator.remove();
+        if (effects.trails[0] != null && !effects.trails[0].tick()) effects.trails[0] = null;
+        if (effects.trails[1] != null && !effects.trails[1].tick()) effects.trails[1] = null;
+    }
+
+    private static void spawnExhaust(Player player, JetpackClientBridge.State state, Effects effects) {
+        float thrust = state.thrust() - 0.4F;
+        float speed = -1F - 2F * thrust;
+        float scale = 4F + 2F * thrust;
+        JetpackGradient gradient = gradient(fuelType(player));
+        float[] brightness = brightnessColor(fuelType(player));
+        int count = 3;
+        for (int i = 0; i < count; i++) {
+            float fraction = i / (float) count;
+            for (int side : new int[] {-1, 1}) {
+                Vec3 motion = new Vec3(player.getRandom().nextGaussian() * 0.05F + side * 0.1F,
+                        speed, player.getRandom().nextGaussian() * 0.05F);
+                effects.plasma.add(new ParticleRocketPlasma(new Vec3(side * 1.8F, fraction * speed, 4F),
+                        motion, scale, gradient));
+            }
+        }
+        if (player.level().getGameTime() % (2 - player.level().getRandom().nextInt(2)) == 0) {
+            float alpha = Mth.clamp(0.05F + thrust * 0.1F, 0F, 1F);
+            for (int side : new int[] {-1, 1}) effects.brightness.add(new ParticleFakeBrightness(
+                    new Vec3(side * 1.8F, -1F, 4F), 20F + thrust * 10F,
+                    6 + player.getRandom().nextInt(2), brightness, alpha));
+        }
+        if (player.level().getRandom().nextBoolean()) {
+            effects.heat.add(new ParticleHeatDistortion(1.8F, -1F, 4F, 5F + thrust,
+                    1.5F + thrust * 3F, 5, player.level().getRandom().nextFloat() * 20F,
+                    0.1F, speed * 0.5F, 0F));
+        }
+        if (player.level().getRandom().nextBoolean()) {
+            effects.heat.add(new ParticleHeatDistortion(-1.8F, -1F, 4F, 5F + thrust,
+                    1.5F + thrust * 3F, 5, player.level().getRandom().nextFloat() * 20F,
+                    -0.1F, speed * 0.5F, 0F));
+        }
+    }
+
+    private static boolean trailEligible(Player player, JetpackClientBridge.State state,
+            JetpackClientBridge.Fuel fuel) {
+        double horizontalSpeed = player.getDeltaMovement().x * player.getDeltaMovement().x
+                + player.getDeltaMovement().z * player.getDeltaMovement().z;
+        return active(state) && !state.hover() && !player.onGround() && !player.isFallFlying()
+                && state.thrust() > 0.05F && horizontalSpeed > 1.5D * 1.5D
+                && fuel != null && fuel.amount() > 0;
+    }
+
+    /** Handles the common gameplay packet for the ordinary/BJ/DNS families. */
+    public static void spawnExhaustCue(net.minecraft.world.level.Level level, int playerId, int mode) {
+        if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel clientLevel)) return;
+        if (mode != com.hbm.handler.JetpackHandler.EXHAUST_REGULAR
+                && mode != com.hbm.handler.JetpackHandler.EXHAUST_VECTOR
+                && Particles.quality() == Particles.Quality.MINIMAL) return;
+        net.minecraft.world.entity.Entity entity = clientLevel.getEntity(playerId);
+        if (!(entity instanceof Player player)) return;
+        double baseY = mode == com.hbm.handler.JetpackHandler.EXHAUST_BJ ? player.getEyeY() - 0.9375D
+                : mode == com.hbm.handler.JetpackHandler.EXHAUST_DNS ? player.getY() - 0.5D
+                : player.getEyeY() - 1D;
+        float yaw = (float) Math.toRadians(player.yBodyRot);
+        Vec3 side = new Vec3(Math.cos(yaw), 0D, Math.sin(yaw));
+        Vec3 back = new Vec3(Math.sin(yaw), 0D, -Math.cos(yaw));
+        double backOffset = mode == com.hbm.handler.JetpackHandler.EXHAUST_REGULAR
+                || mode == com.hbm.handler.JetpackHandler.EXHAUST_VECTOR ? 0.25D
+                : mode == com.hbm.handler.JetpackHandler.EXHAUST_BJ ? 0.3125D : 0D;
+        Vec3 base = new Vec3(player.getX(), baseY, player.getZ()).add(back.scale(backOffset));
+        if (mode == com.hbm.handler.JetpackHandler.EXHAUST_REGULAR
+                || mode == com.hbm.handler.JetpackHandler.EXHAUST_VECTOR) {
+            Vec3 look = player.getViewVector(1F);
+            Vec3 flameVelocity = mode == com.hbm.handler.JetpackHandler.EXHAUST_REGULAR
+                    ? player.getDeltaMovement().add(0D, -0.4D, 0D)
+                    : player.getDeltaMovement().subtract(look.scale(0.2D));
+            Vec3 smokeVelocity = mode == com.hbm.handler.JetpackHandler.EXHAUST_REGULAR
+                    ? player.getDeltaMovement().add(0D, -0.6D, 0D)
+                    : player.getDeltaMovement().subtract(look.scale(0.3D));
+            for (int sign : new int[] {-1, 1}) {
+                Vec3 position = base.add(side.scale(sign * 0.125D));
+                clientLevel.addParticle(net.minecraft.core.particles.ParticleTypes.FLAME, position.x, position.y,
+                        position.z, flameVelocity.x, flameVelocity.y, flameVelocity.z);
+                clientLevel.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE, position.x, position.y,
+                        position.z, smokeVelocity.x, smokeVelocity.y, smokeVelocity.z);
+            }
+        } else {
+            float red = mode == com.hbm.handler.JetpackHandler.EXHAUST_BJ ? 0.8F : 0.01F;
+            float green = mode == com.hbm.handler.JetpackHandler.EXHAUST_BJ ? 0.5F : 1F;
+            float blue = 1F;
+            for (int sign : new int[] {-1, 1}) {
+                Vec3 position = base.add(side.scale(sign * 0.125D));
+                Particles.dust(clientLevel, position.x, position.y, position.z, red, green, blue,
+                        1F, player.getDeltaMovement().x, player.getDeltaMovement().y, player.getDeltaMovement().z);
+            }
+            if (Particles.quality() == Particles.Quality.ALL) spawnKickup(clientLevel, player, base);
+        }
+    }
+
+    private static void spawnKickup(ClientLevel level, Player player, Vec3 origin) {
+        Vec3 target = origin.add(0D, -10D, 0D);
+        net.minecraft.world.phys.BlockHitResult hit = dev.golem.core.world.Compat.clip(level, origin, target,
+                net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                net.minecraft.world.level.ClipContext.Fluid.NONE);
+        if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK
+                || hit.getDirection() != net.minecraft.core.Direction.UP) return;
+        Vec3 location = hit.getLocation();
+        double distance = origin.distanceTo(location);
+        int count = Math.max(0, (int) (10D - distance));
+        Vec3 velocity = new Vec3(Math.max(0D, 0.75D - distance * 0.075D), 0D, 0D);
+        var state = level.getBlockState(hit.getBlockPos());
+        for (int i = 0; i < count; i++) {
+            velocity = velocity.yRot(level.getRandom().nextFloat() * (float) (Math.PI * 2D));
+            level.addParticle(new net.minecraft.core.particles.BlockParticleOption(
+                    net.minecraft.core.particles.ParticleTypes.BLOCK, state), location.x,
+                    location.y + 0.1D, location.z, velocity.x, 0.1D, velocity.z);
+        }
+    }
+
+    private static String fuelType(Player player) {
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        ItemStack module = itemKind(chest) == null ? ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only) : chest;
+        JetpackClientBridge.Fuel fuel = JetpackClientBridge.fuel(module);
+        return fuel == null ? "KEROSENE" : fuel.type();
+    }
+
+    public static JetpackClientBridge.Fuel fuel(Player player) {
+        if (player == null) return null;
+        ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+        ItemStack module = itemKind(chest) == null ? ArmorModHandler.pryMod(chest, ArmorModHandler.plate_only) : chest;
+        return JetpackClientBridge.fuel(module);
+    }
+
+    public static void submitGlider(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
+            boolean inventory, boolean opening, long animTime) {
+        if (gliderModel == null) gliderModel = JetpackColladaModel.load();
+        if (!inventory) {
+            pose.pushPose();
+            applyGliderRoot(pose, parts.sneaking && !flying(parts.player()));
+            GliderAnimation animation = gliderAnimation(parts.player(), opening, animTime);
+            gliderModel.submit(pose, sink, light, animation.elapsed(), !animation.opening());
+            pose.popPose();
+        } else {
+            pose.pushPose();
+            pose.translate(-5F, -6F, 0F);
+            pose.scale(1.5F, 1.5F, 1.5F);
+            gliderModel.submit(pose, sink, light, gliderModelLength(), false);
+            pose.popPose();
+        }
+    }
+
+    private static GliderAnimation gliderAnimation(Player player, boolean opening, long gameplayStart) {
+        long now = System.currentTimeMillis();
+        if (player == null) {
+            long elapsed = gameplayStart == 0L ? gliderModelLength() : now - gameplayStart;
+            return new GliderAnimation(opening, Math.max(0L, Math.min(gliderModelLength(), elapsed)));
+        }
+        GliderAnimation animation = GLIDER_ANIMATIONS.get(player.getUUID());
+        if (animation == null) {
+            long elapsed = gameplayStart == 0L ? gliderModelLength() : now - gameplayStart;
+            animation = new GliderAnimation(opening, now, Math.max(0L, Math.min(gliderModelLength(), elapsed)));
+            GLIDER_ANIMATIONS.put(player.getUUID(), animation);
+        } else if (animation.opening != opening) {
+            // State changes begin at the previous endpoint. Ignore later duplicate packet timestamps.
+            animation = new GliderAnimation(opening, now, 0L);
+            GLIDER_ANIMATIONS.put(player.getUUID(), animation);
+        }
+        return new GliderAnimation(animation.opening, Math.min(gliderModelLength(),
+                animation.initialElapsed + Math.max(0L, now - animation.start)));
+    }
+
+    private static long gliderModelLength() {
+        return 1000L;
+    }
+
+    public static void submitStandard(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
+            String kind) {
+        if (standardModel == null) standardModel = com.hbm.client.model.WavefrontObj.load(JETPACK_MODEL);
+        Identifier texture = switch (kind) {
+            case "standard_blue" -> Ids.of("hbm", "textures/armor/jetpackblue.png");
+            case "standard_green" -> Ids.of("hbm", "textures/armor/jetpackgreen.png");
+            case "standard_boost" -> Ids.of("hbm", "textures/armor/jetpack.png");
+            default -> Ids.of("hbm", "textures/armor/jetpackred.png");
+        };
+        RenderType type = CompatRenderTypes.entityCutoutCull(texture);
+        ArmorRenderer.submitRootedModel(sink, pose, type, standardModel, parts.body(), light, OverlayTexture.NO_OVERLAY);
+    }
+
+    public static void submitBJ(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts) {
+        if (bjModel == null) bjModel = com.hbm.client.model.WavefrontObj.load(BJ_MODEL);
+        submitAbsolutePart(pose, sink, BJ_TYPE, bjModel, "Jetpack", parts.body(), light, OverlayTexture.NO_OVERLAY, 0F, 0F, -0.1F);
+    }
+
+    public static void submitWings(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
+            ItemStack source) {
+        if (wingsModel == null) wingsModel = com.hbm.client.model.WavefrontObj.load(WINGS_MODEL);
+        Player player = parts.player();
+        if (player == null) return;
+        boolean limp = source != null && source.getItem() instanceof com.hbm.items.armor.WingsMurk wings && !wings.murk;
+        RenderType wingsType = CompatRenderTypes.entityCutoutCull(
+                Ids.of("hbm", "textures/armor/wings_murk.png"));
+        float rot = (float) Math.sin(player.tickCount * 0.2D) * 20F;
+        float rot2 = (float) Math.sin(player.tickCount * 0.2D - Math.PI * 0.5D) * 50F + 30F;
+        if (!limp && player.onGround()) {
+            rot = 20F;
+            rot2 = 160F;
+        }
+        if (limp) {
+            if (player.onGround()) {
+                rot = 30F;
+                rot2 = -30F;
+            } else if (player.getDeltaMovement().y < -0.1D) {
+                rot = 0F;
+                rot2 = 10F;
+            } else {
+                rot = 30F;
+                rot2 = 20F;
+            }
+        }
+        submitWingParts(pose, sink, parts.body(), light, rot, rot2, wingsType);
+    }
+
+    private static void submitWingParts(PoseStack pose, SubmitSink sink, ModelPart body, int light,
+            float rot, float rot2, RenderType wingsType) {
+        float px = 0.0625F;
+        int pivotSideOffset = 1;
+        int pivotFrontOffset = 5;
+        int pivotZOffset = 3;
+        int tipSideOffset = 16;
+        int tipZOffset = 2;
+        float inwardAngle = 10F;
+
+        pose.pushPose();
+        pose.translate(body.x / 16F, body.y / 16F, body.z / 16F);
+        pose.mulPose(com.mojang.math.Axis.ZP.rotation(body.zRot));
+        pose.mulPose(com.mojang.math.Axis.YP.rotation(body.yRot));
+        pose.mulPose(com.mojang.math.Axis.XP.rotation(body.xRot));
+        pose.translate(0F, -2F * px, 0F);
+
+        pose.pushPose();
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-inwardAngle));
+        pose.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rot * 0.5F));
+        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot + 5F));
+        pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(45F));
+        pose.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+
+        pose.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot));
+        pose.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+        part(sink, pose, wingsType, wingsModel, "LeftBase", light);
+
+        pose.translate(tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rot2));
+        if (doesRotateZ()) pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot2 * 0.25F + 5F));
+        pose.translate(-tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
+        part(sink, pose, wingsType, wingsModel, "LeftTip", light);
+        pose.popPose();
+
+        pose.pushPose();
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(inwardAngle));
+        pose.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-rot * 0.5F));
+        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-rot - 5F));
+        pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(45F));
+        pose.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+
+        pose.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
+        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-rot));
+        pose.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
+        part(sink, pose, wingsType, wingsModel, "RightBase", light);
+
+        pose.translate(-tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-rot2));
+        if (doesRotateZ()) pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-rot2 * 0.25F - 5F));
+        pose.translate(tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
+        part(sink, pose, wingsType, wingsModel, "RightTip", light);
+        pose.popPose();
+        pose.popPose();
+    }
+
+    private static boolean doesRotateZ() {
+        return true;
+    }
+
+    private static void part(SubmitSink sink, PoseStack pose, RenderType type,
+            com.hbm.client.model.WavefrontObj model, String part, int light) {
+        // ModelRendererObj scales only the geometry, after the block-space hinge transforms.
+        pose.pushPose();
+        pose.scale(1F / 16F, 1F / 16F, 1F / 16F);
+        sink.submitCustomGeometry(pose, type,
+                (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, OverlayTexture.NO_OVERLAY));
+        pose.popPose();
+    }
+
+    private static void submitAbsolutePart(PoseStack pose, SubmitSink sink, RenderType type,
+            com.hbm.client.model.WavefrontObj model, String part, ModelPart bone, int light, int overlay,
+            float tx, float ty, float tz) {
+        pose.pushPose();
+        pose.translate(bone.x / 16F, bone.y / 16F, bone.z / 16F);
+        if (bone.zRot != 0F) pose.mulPose(com.mojang.math.Axis.ZP.rotation(bone.zRot));
+        if (bone.yRot != 0F) pose.mulPose(com.mojang.math.Axis.YP.rotation(bone.yRot));
+        if (bone.xRot != 0F) pose.mulPose(com.mojang.math.Axis.XP.rotation(bone.xRot));
+        pose.translate(tx, ty, tz);
+        pose.scale(1F / 16F, 1F / 16F, 1F / 16F);
+        sink.submitCustomGeometry(pose, type,
+                (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, overlay));
+        pose.popPose();
+    }
+
+    public static void submitLocalEffects(PoseStack pose, CameraInfo camera,
+            boolean sneaking, Player player) {
+        if (!WorldEffects.isCollecting() || player == null || !GLIDER.equals(kind(player))) return;
+        Effects effects = EFFECTS.get(player.getUUID());
+        if (effects == null) return;
+        float partial = dev.golem.core.client.FrameTime.partialTick();
+        pose.pushPose();
+        applyGliderRoot(pose, sneaking && !flying(player));
+        for (ParticleHeatDistortion heat : effects.heat) {
+            Vec3 point = heat.position(partial);
+            float size = 0.1F * heat.scale;
+            if (size <= 0F) continue;
+            Vec3[] corners = billboardCorners(pose, camera, point, size);
+            float amount = heat.heatAmount * heat.fade(partial) * 0.15F;
+            float timeOffset = heat.timeOffset / 20F;
+            WorldEffects.submit(pose, HeatDistortionRenderType.of(MASK, NOISE), 0,
+                    (drawPose, buffer) -> {
+                        HeatDistortionRenderType.vertex(buffer, drawPose, (float) corners[0].x,
+                                (float) corners[0].y, (float) corners[0].z, 1F, 1F, amount, timeOffset);
+                        HeatDistortionRenderType.vertex(buffer, drawPose, (float) corners[1].x,
+                                (float) corners[1].y, (float) corners[1].z, 1F, 0F, amount, timeOffset);
+                        HeatDistortionRenderType.vertex(buffer, drawPose, (float) corners[2].x,
+                                (float) corners[2].y, (float) corners[2].z, 0F, 0F, amount, timeOffset);
+                        HeatDistortionRenderType.vertex(buffer, drawPose, (float) corners[3].x,
+                                (float) corners[3].y, (float) corners[3].z, 0F, 1F, amount, timeOffset);
+                     });
+        }
+        for (ParticleRocketPlasma plasma : effects.plasma)
+            submitGlow(pose, 1, camera, plasma.position(partial), plasma.size(partial), plasma.color(partial));
+        for (ParticleFakeBrightness brightness : effects.brightness)
+            submitGlow(pose, 2, camera, brightness.position, brightness.size(partial), brightness.color);
+        JetpackClientBridge.Fuel fuel = fuel(player);
+        JetpackClientBridge.State state = JetpackClientBridge.state(player);
+        if (trailEligible(player, state, fuel)
+                && player.level().getGameTime() != effects.lastTrailCaptureTick
+                ) {
+            if (effects.trails[0] == null) effects.trails[0] = new JetpackTrail();
+            if (effects.trails[1] == null) effects.trails[1] = new JetpackTrail();
+            effects.trails[0].tryAddNewPos(worldPoint(pose, camera, 5.25F, 0.2F, 2.75F));
+            effects.trails[1].tryAddNewPos(worldPoint(pose, camera, -5.25F, 0.2F, 2.75F));
+            effects.lastTrailCaptureTick = player.level().getGameTime();
+        } else if (!trailEligible(player, state, fuel)) {
+            effects.trails[0] = null;
+            effects.trails[1] = null;
+        }
+        if (effects.trails[0] != null) effects.trails[0].submit(pose, camera);
+        if (effects.trails[1] != null) effects.trails[1].submit(pose, camera);
+        pose.popPose();
+    }
+
+    /** Captures a local glider nozzle after the player pose/root and converts it to world space. */
+    private static void submitGlow(PoseStack pose, int order, CameraInfo camera, Vec3 center, float size, float[] color) {
+        if (size <= 0F || color[3] <= 0F) return;
+        Vec3[] corners = billboardCorners(pose, camera, center, size);
+        WorldEffects.submit(pose, dev.golem.core.render.PlasmaGlowRenderType.of(MASK), order, (drawPose, buffer) -> {
+            for (int i = 0; i < 4; i++) {
+                Vec3 vertex = corners[i];
+                dev.golem.core.render.Vertexes.vertex(buffer, drawPose, (float) vertex.x, (float) vertex.y,
+                        (float) vertex.z, color[0], color[1], color[2], color[3], i < 2 ? 1F : 0F,
+                        i == 0 || i == 3 ? 1F : 0F, OverlayTexture.NO_OVERLAY, 0xF000F0, 0F, 0F, 1F);
+            }
+        });
+    }
+
+    private static Vec3 worldPoint(PoseStack pose, CameraInfo camera, float x, float y, float z) {
+        Vector3f world = camera.renderToWorld(new Vector3f(x, y, z).mulPosition(pose.last().pose()));
+        return camera.pos.add(world.x(), world.y(), world.z());
+    }
+
+    private static Vec3[] billboardCorners(PoseStack pose, CameraInfo camera, Vec3 point, float size) {
+        Matrix4f localToView = new Matrix4f(pose.last().pose());
+        Matrix4f viewToLocal = new Matrix4f(localToView).invert();
+        Vector3f center = new Vector3f((float) point.x, (float) point.y, (float) point.z)
+                .mulPosition(localToView);
+        // Entity layer matrices end in camera-relative WORLD space. The camera rotation lives in
+        // the global view matrix; treating this as view space turns plumes edge-on at other yaws.
+        Vector3f right = camera.worldToRender(new Vector3f(size, 0F, 0F).rotate(camera.orientation));
+        Vector3f up = camera.worldToRender(new Vector3f(0F, size, 0F).rotate(camera.orientation));
+        return new Vec3[] {
+                localPoint(viewToLocal, center.x-right.x-up.x, center.y-right.y-up.y, center.z-right.z-up.z),
+                localPoint(viewToLocal, center.x-right.x+up.x, center.y-right.y+up.y, center.z-right.z+up.z),
+                localPoint(viewToLocal, center.x+right.x+up.x, center.y+right.y+up.y, center.z+right.z+up.z),
+                localPoint(viewToLocal, center.x+right.x-up.x, center.y+right.y-up.y, center.z+right.z-up.z)
+        };
+    }
+
+    private static Vec3 localPoint(Matrix4f viewToLocal, float x, float y, float z) {
+        Vector3f point = new Vector3f(x, y, z).mulPosition(viewToLocal);
+        return new Vec3(point.x(), point.y(), point.z());
+    }
+
+    private static void applyGliderRoot(PoseStack pose, boolean sneaking) {
+        pose.translate(0F, 0.9F, 1.25F);
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180F));
+        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(180F));
+        pose.scale(0.25F, 0.25F, 0.25F);
+        if (sneaking) {
+            pose.translate(0F, 5.4F, 1F);
+            pose.mulPose(com.mojang.math.Axis.XP.rotation(0.5F));
+            pose.translate(0F, -4F, 0F);
+        }
+    }
+
+    /** Applies the old in-flight body tilt before vanilla submits the humanoid model. */
+    public static void applyPlayerPose(Player player, PoseStack pose, float partialTick) {
+        if (!flying(player)) return;
+        JetpackClientBridge.State state = JetpackClientBridge.state(player);
+        if (state == null) return;
+        if (state.hover()) {
+            float motionX = (float) (player.getX() - player.xo);
+            float motionZ = (float) (player.getZ() - player.zo);
+            float angle = (float) (Math.atan2(motionX, motionZ) + Math.PI * 0.5D);
+            float amount = Mth.clamp((float) Math.sqrt(motionX * motionX + motionZ * motionZ), 0F, 2F);
+            org.joml.Quaternionf rotation = new org.joml.Quaternionf().fromAxisAngleRad(
+                    (float) Math.sin(angle), 0F, (float) Math.cos(angle), amount * (float) Math.toRadians(22.5D));
+            pose.mulPose(rotation);
+            return;
+        }
+        JetpackClientBridge.Fuel fuel = fuel(player);
+        if (fuel == null || fuel.amount() <= 0) return;
+        float renderYaw = Mth.rotLerp(partialTick, player.yBodyRotO, player.yBodyRot);
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(180F - renderYaw));
+        float time = state.jetpackFlyTime() + partialTick;
+        float mult = Mth.clamp(time * time * 0.5F / 100F, 0F, 1F);
+        pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees((-player.getXRot() - 90F) * mult));
+        Vec3 look = player.getViewVector(partialTick);
+        float lookLength = (float) Math.sqrt(look.x * look.x + look.z * look.z);
+        if (lookLength > 0F) {
+            float lookX = (float) look.x / lookLength;
+            float lookZ = (float) look.z / lookLength;
+            float bodyX = (float) Math.cos(Math.toRadians(renderYaw + 90F));
+            float bodyZ = (float) Math.sin(Math.toRadians(renderYaw + 90F));
+            float dot = Math.max(lookX * bodyX + lookZ * bodyZ, 0F);
+            float angle = (float) Math.acos(dot);
+            if (!Float.isNaN(angle)) {
+                float cross = lookZ * bodyX - bodyZ * lookX;
+                pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(
+                        (float) Math.toDegrees(angle) * Math.signum(cross) * mult));
+            }
+        }
+        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-(180F - renderYaw)));
+    }
+
+    private static boolean flying(Player player) {
+        if (player == null || !GLIDER.equals(kind(player)) || player.onGround() || player.isFallFlying()) return false;
+        JetpackClientBridge.Fuel fuel = fuel(player);
+        return active(JetpackClientBridge.state(player)) && fuel != null && fuel.amount() > 0;
+    }
+
+    public static boolean freezesPlayerPose(Player player) {
+        return flying(player);
+    }
+
+    /** Freeze the flight silhouette, not grounded walking/crouching or hover-mode head tracking. */
+    public static void applyPlayerModelPose(HumanoidPose parts) {
+        if (!flying(parts.player())) return;
+        parts.body().resetPose();
+        parts.leftArm().resetPose();
+        parts.rightArm().resetPose();
+        parts.leftLeg().resetPose();
+        parts.rightLeg().resetPose();
+        float headPitch = parts.head().xRot;
+        float headYaw = parts.head().yRot;
+        parts.head().resetPose();
+        boolean hover = JetpackClientBridge.state(parts.player()).hover();
+        parts.head().xRot = hover ? headPitch : -(float) Math.PI / 4F;
+        parts.head().yRot = hover ? headYaw : 0F;
+    }
+
+    /** The old third-person camera offset, used only for regular glider flight. */
+    public static boolean lowerThirdPersonCamera(Player player) {
+        JetpackClientBridge.State state = JetpackClientBridge.state(player);
+        return GLIDER.equals(kind(player)) && active(state) && !state.hover() && !player.onGround()
+                && !player.isFallFlying();
+    }
+
+    private static JetpackGradient gradient(String fuel) {
+        if (fuel != null && fuel.toUpperCase().contains("REFORM")) {
+            return new JetpackGradient(new float[] {1F, .95F, .85F, 1F, 0F},
+                    new float[] {.55F, .75F, 1F, 1F, .15F},
+                    new float[] {.25F, .55F, .9F, 1F, .4F},
+                    new float[] {.15F, .3F, .7F, 1F, .8F},
+                    new float[] {.1F, .05F, .2F, 0F, 1F});
+        }
+        if (fuel != null && fuel.toUpperCase().contains("BALEFIRE")) {
+            return new JetpackGradient(new float[] {1F, .95F, .279F, 1F, 0F}, new float[] {1F, .9F, .1F, 1F, .122F},
+                    new float[] {.013F, 1F, .068F, 1F, .389F}, new float[] {.2F, 1F, .3F, 1F, .891F},
+                    new float[] {0F, 1F, .4F, 0F, 1F});
+        }
+        if (fuel != null && fuel.toUpperCase().contains("NITAN")) {
+            return new JetpackGradient(new float[] {.845F, .779F, 1F, 1F, 0F}, new float[] {1F, .3F, 1F, 1F, .122F},
+                    new float[] {.7F, .4F, 1F, 1F, .389F}, new float[] {.35F, .2F, 1F, 1F, .891F},
+                    new float[] {.1F, .1F, 1F, 0F, 1F});
+        }
+        return new JetpackGradient(new float[] {1F, .918F, .882F, 1F, 0F}, new float[] {.887F, 1F, 0F, 1F, .177F},
+                new float[] {1F, .19F, 0F, 1F, .336F}, new float[] {1F, .14F, 0F, 1F, .85F},
+                new float[] {1F, .14F, 0F, 0F, 1F});
+    }
+
+    private static float[] brightnessColor(String fuel) {
+        if (fuel != null && fuel.toUpperCase().contains("BALEFIRE")) return new float[] {.4F, 1F, .7F};
+        if (fuel != null && fuel.toUpperCase().contains("NITAN")) return new float[] {1F, .5F, 1F};
+        if (fuel != null && fuel.toUpperCase().contains("REFORM")) return new float[] {.55F, .75F, .95F};
+        return new float[] {1F, .6F, .5F};
+    }
+
+    public static int fuelColor(String fuel) {
+        float[] color = brightnessColor(fuel);
+        return 0xFF000000 | ((int) (color[0] * 255F) << 16) | ((int) (color[1] * 255F) << 8)
+                | (int) (color[2] * 255F);
+    }
+
+    private static final class Effects {
+        private final java.util.List<ParticleRocketPlasma> plasma = new java.util.ArrayList<>();
+        private final java.util.List<ParticleFakeBrightness> brightness = new java.util.ArrayList<>();
+        private final java.util.List<ParticleHeatDistortion> heat = new java.util.ArrayList<>();
+        private final JetpackTrail[] trails = new JetpackTrail[2];
+        private long lastTrailCaptureTick = Long.MIN_VALUE;
+
+        private void clear() {
+            plasma.clear();
+            brightness.clear();
+            heat.clear();
+            trails[0] = null;
+            trails[1] = null;
+        }
+
+        private boolean empty() {
+            return heat.isEmpty() && plasma.isEmpty() && brightness.isEmpty() && trails[0] == null && trails[1] == null;
+        }
+    }
+
+    private static final class GliderAnimation {
+        private final boolean opening;
+        private final long start;
+        private final long initialElapsed;
+
+        private GliderAnimation(boolean opening, long elapsed) {
+            this(opening, 0L, elapsed);
+        }
+
+        private GliderAnimation(boolean opening, long start, long initialElapsed) {
+            this.opening = opening;
+            this.start = start;
+            this.initialElapsed = initialElapsed;
+        }
+
+        private boolean opening() { return opening; }
+        private long elapsed() { return initialElapsed; }
+    }
+}

@@ -56,6 +56,14 @@ public class FabricInit implements ModInitializer {
         });
         ServerEntityEvents.ENTITY_LOAD.register((entity, level) ->
                 com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(entity));
+        dev.golem.core.platform.Lifecycle.onServerTick(server -> server.getAllLevels().forEach(level ->
+                level.getAllEntities().forEach(entity -> {
+                    if (entity instanceof net.minecraft.world.entity.item.ItemEntity item) {
+                        com.hbm.items.special.ItemSingularity.tickDropped(item);
+                        com.hbm.items.special.ItemCell.tickDropped(item);
+                        com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
+                    }
+                })));
 
         // Worldgen: inject the oil bubble placed feature into all overworld biomes (the NeoForge side
         // does this with a data-driven neoforge:add_features biome modifier; Fabric uses the biome API).

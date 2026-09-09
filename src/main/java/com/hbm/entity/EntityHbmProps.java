@@ -41,6 +41,9 @@ public class EntityHbmProps {
     private final List<ContaminationEffect> contamination = new ArrayList<>();
     /** Live crane input only; deliberately excluded from persistence and entity sync. */
     private final boolean[] craneKeysPressed = new boolean[EnumCraneKey.VALUES.length];
+    /** Persistent general backpack/HUD toggles formerly carried by HbmCapability. */
+    private boolean enableBackpack = true;
+    private boolean enableHUD = true;
 
     public double getRads() { return rads; }
     /** Clamped to [0, 2500] exactly like the old capability setter. */
@@ -88,6 +91,11 @@ public class EntityHbmProps {
 
     public void setCraneKeyPressed(EnumCraneKey key, boolean pressed) { craneKeysPressed[key.ordinal()] = pressed; }
 
+    public boolean getEnableBackpack() { return enableBackpack; }
+    public void setEnableBackpack(boolean enabled) { enableBackpack = enabled; }
+    public boolean getEnableHUD() { return enableHUD; }
+    public void setEnableHUD(boolean enabled) { enableHUD = enabled; }
+
     // ---- persistence (entity NBT child "HbmLivingProps") ----
 
     public void save(DataOut out) {
@@ -105,6 +113,8 @@ public class EntityHbmProps {
         out.putInt("fire", fire);
         out.putInt("phosphorus", phosphorus);
         out.putInt("balefire", balefire);
+        out.putBoolean("enableBackpack", enableBackpack);
+        out.putBoolean("enableHUD", enableHUD);
         DataOut.ChildList list = out.childrenList("cont");
         for (ContaminationEffect effect : contamination) effect.save(list.addChild());
     }
@@ -123,6 +133,8 @@ public class EntityHbmProps {
         this.fire = in.getIntOr("fire", 0);
         this.phosphorus = in.getIntOr("phosphorus", 0);
         this.balefire = in.getIntOr("balefire", 0);
+        this.enableBackpack = in.getBooleanOr("enableBackpack", true);
+        this.enableHUD = in.getBooleanOr("enableHUD", true);
         contamination.clear();
         for (DataIn child : in.childrenListOrEmpty("cont")) {
             contamination.add(ContaminationEffect.load(child));
@@ -146,6 +158,8 @@ public class EntityHbmProps {
         buf.writeInt(phosphorus);
         buf.writeInt(fire);
         buf.writeInt(balefire);
+        buf.writeBoolean(enableBackpack);
+        buf.writeBoolean(enableHUD);
         buf.writeInt(contamination.size());
         for (ContaminationEffect e : contamination) e.writeTo(buf);
     }
@@ -165,6 +179,10 @@ public class EntityHbmProps {
         this.phosphorus = buf.readInt();
         this.fire = buf.readInt();
         this.balefire = buf.readInt();
+        if (buf.readableBytes() >= 2) {
+            this.enableBackpack = buf.readBoolean();
+            this.enableHUD = buf.readBoolean();
+        }
         contamination.clear();
         int size = buf.readInt();
         for (int i = 0; i < size; i++) contamination.add(ContaminationEffect.readFrom(buf));

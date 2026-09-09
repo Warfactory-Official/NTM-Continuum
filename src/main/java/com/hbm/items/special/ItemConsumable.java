@@ -3,6 +3,8 @@ package com.hbm.items.special;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.potion.ModEffects;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.armor.JetpackFueledBase;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatItem;
@@ -150,8 +152,16 @@ public final class ItemConsumable extends CompatItem {
                 add(target, MobEffects.MINING_FATIGUE, 30 * 20, 9);
             }
             case "jetpack_tank" -> {
-                // The powered-jetpack item family is not ported yet, so the old handler's type check
-                // cannot succeed. Keep this a no-op rather than consuming fuel for an unrelated item.
+                ItemStack jetpack = target.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST);
+                if (jetpack.getItem() instanceof JetpackFueledBase jetItem && jetItem.fuel == Fluids.KEROSENE) {
+                    int oldFuel = JetpackFueledBase.getFuel(jetpack);
+                    int newFuel = Math.min(oldFuel + 1000, jetItem.maxFuel);
+                    if (oldFuel != newFuel) {
+                        JetpackFueledBase.setFuel(jetpack, newFuel);
+                        play(level, target, ModSounds.JETPACK_TANK.get());
+                        user.getItemInHand(hand).shrink(1);
+                    }
+                }
             }
             default -> {
             }

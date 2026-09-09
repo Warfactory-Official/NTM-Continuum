@@ -13,7 +13,9 @@ import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModIntermediateItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.ModJetpackDependencyItems;
 import com.hbm.items.machine.ModStampItems;
+import com.hbm.items.special.ItemSteelDusted;
 import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.ItemTags;
@@ -98,6 +100,18 @@ public final class AnvilRecipes {
             smithingRecipes.add(new AnvilSmithingRecipe(1, new ItemStack(ModAnvilBlocks.anvil_dnt.get()), new ComparableStack(base.asItem()), DNT.ingot().count(10)));
             smithingRecipes.add(new AnvilSmithingRecipe(1, new ItemStack(ModAnvilBlocks.anvil_osmiridium.get()), new ComparableStack(base.asItem()), OSMIRIDIUM.ingot().count(10)));
         }
+
+        // 1.12.2 AnvilRecipes.java:75-80. The input is two equally hot dusted-steel stages; the output
+        // inherits their averaged heat, and the final stage becomes chainsteel.
+        for (int variant = 0; variant < 9; variant++) {
+            smithingRecipes.add(new AnvilSmithingHotRecipe(3, ItemSteelDusted.stack(variant + 1),
+                    new ComparableStack(ItemSteelDusted.stack(variant)),
+                    new ComparableStack(ItemSteelDusted.stack(variant))));
+        }
+        smithingRecipes.add(new AnvilSmithingHotRecipe(3,
+                new ItemStack(ModJetpackDependencyItems.ingot_chainsteel.get()),
+                new ComparableStack(ItemSteelDusted.stack(9)),
+                new ComparableStack(ItemSteelDusted.stack(9))));
 
         smithingRecipes.add(new AnvilSmithingRecipe(1, new ItemStack(ModItems.ingot_gunmetal.get()), CU.ingot(), AL.ingot()));
 

@@ -165,6 +165,16 @@ public final class MachineItemModel {
             poseStack.popPose();
             return;
         }
+        if ("armor_bj_jetpack_chest".equals(animation) && !partTypes.isEmpty()) {
+            for (String part : List.of("Body", "LeftArm", "RightArm")) submitPartType(part, poseStack, sink,
+                    lightCoords, overlayCoords);
+            poseStack.pushPose();
+            poseStack.translate(0F, 0F, -0.1F);
+            submitPartType("Jetpack", poseStack, sink, lightCoords, overlayCoords);
+            poseStack.popPose();
+            poseStack.popPose();
+            return;
+        }
         if (!partTypes.isEmpty()) {
             for (Map.Entry<String, RenderType> entry : partTypes.entrySet()) {
                 if (userExclude.contains(entry.getKey())) continue;
@@ -224,6 +234,15 @@ public final class MachineItemModel {
             poseStack.popPose();
         }
         poseStack.popPose();
+    }
+
+    private void submitPartType(String part, PoseStack poseStack, SubmitSink sink, int lightCoords,
+            int overlayCoords) {
+        RenderType type = partTypes.get(part);
+        if (type != null && !userExclude.contains(part)) {
+            sink.submitCustomGeometry(poseStack, type,
+                    (pose, buffer) -> model.renderPart(part, pose, buffer, lightCoords, overlayCoords));
+        }
     }
 
     /** The eight transformed corners of the model's bounding box (26.1 uses these to size the icon). */
@@ -349,6 +368,10 @@ public final class MachineItemModel {
     }
 
     private void applyTransform(PoseStack poseStack, @Nullable ItemDisplayContext context) {
+        if (!blockFramed && animation.startsWith("armor_")) {
+            applyArmorItemTransform(poseStack, context);
+            return;
+        }
         // The old item renderer inserted its inventory adjustment after the perspective matrix but before
         // renderCommon. The context-aware path has already applied that perspective matrix to the pose.
         ContextTransform contextTransform = context == null || context == ItemDisplayContext.NONE ? null
@@ -392,6 +415,42 @@ public final class MachineItemModel {
         if (pitch != 0F) poseStack.mulPose(Axis.XP.rotationDegrees(pitch));
         poseStack.scale(scale, scale, scale);
         poseStack.translate(-cx, -cy, -cz);
+    }
+
+    /** Reproduces ArmorFSB.setupRender* followed by renderStandard for a BJ/DNS item icon. */
+    private void applyArmorItemTransform(PoseStack poseStack, @Nullable ItemDisplayContext context) {
+        boolean inventory = context == ItemDisplayContext.GUI;
+        if (inventory) {
+            if (animation.endsWith("_head") && animation.startsWith("armor_dnt_"))
+                poseStack.translate(0F, -1F, 0F);
+            poseStack.translate(0F, -1.5F, 0F);
+            poseStack.scale(3.25F, 3.25F, 3.25F);
+            poseStack.mulPose(Axis.XP.rotationDegrees(180F));
+            poseStack.mulPose(Axis.YP.rotationDegrees(-135F));
+            poseStack.mulPose(Axis.XP.rotationDegrees(-20F));
+        } else {
+            poseStack.mulPose(Axis.XP.rotationDegrees(180F));
+            poseStack.scale(0.75F, 0.75F, 0.75F);
+            poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
+        }
+
+        if (animation.endsWith("_head")) {
+            poseStack.scale(0.3125F, 0.3125F, 0.3125F);
+            poseStack.translate(0F, 1F, 0F);
+        } else if (animation.endsWith("_chest")) {
+            if (animation.equals("armor_bj_jetpack_chest"))
+                poseStack.scale(0.6875F, 0.6875F, 0.6875F);
+            else if (animation.startsWith("armor_bj_"))
+                poseStack.scale(0.875F, 0.875F, 0.875F);
+            poseStack.scale(0.225F, 0.225F, 0.225F);
+            poseStack.translate(0F, -10F, 0F);
+        } else if (animation.endsWith("_legs")) {
+            poseStack.scale(0.25F, 0.25F, 0.25F);
+            poseStack.translate(0F, -20F, 0F);
+        } else if (animation.endsWith("_feet")) {
+            poseStack.scale(0.25F, 0.25F, 0.25F);
+            poseStack.translate(0F, -22F, 0F);
+        }
     }
 
     /** The old pump item renderer moves every pump part from one shared millisecond-derived rotor angle. */

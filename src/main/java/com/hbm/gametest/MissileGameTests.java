@@ -667,14 +667,15 @@ public final class MissileGameTests {
     }
 
     /**
-     * A missile whose warhead is not ported must be refused by the slot, not accepted and then silently
-     * un-launchable. The black-hole missile is a representative remaining blocked payload.
+     * A missile whose payload path is not ported must be refused by the slot, not accepted and then silently
+     * un-launchable. The black-hole missile's missile-specific launch path remains blocked even though the
+     * shared EntityBlackHole field is now available.
      */
     public static void unportedMissileRefused(GameTestHelper helper) {
         TileEntityLaunchPadBase.registerLaunchables();
         TileEntityLaunchPad pad = pad(helper);
 
-        // missile_bhole remains blocked because its EntityBlackHole payload is not ported.
+        // missile_bhole remains blocked because its missile-specific black-hole payload is not ported.
         ItemStack blackHole = new ItemStack(ModMissileItems.missile_bhole.get());
         helper.assertFalse(pad.isMissileValid(blackHole),
                 "a missile with no flying entity was accepted as valid");

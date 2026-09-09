@@ -1,0 +1,62 @@
+package com.hbm.items.armor;
+
+import com.hbm.handler.JetpackHandler;
+import com.hbm.items.gear.ArmorFSB;
+import dev.golem.core.world.ArmorSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+
+/** Direct-wear Murk wings and limp-wing glider, preserving their separate old flight rules. */
+public class WingsMurk extends JetpackBase {
+
+    public final boolean murk;
+
+    public WingsMurk(boolean murk, Properties properties) {
+        super(properties);
+        this.murk = murk;
+    }
+
+    @Override
+    protected void tickFlight(Level level, Player player, ItemStack stack) {
+        if (player.onGround()) return;
+        JetpackHandler.resetFlightTime(player);
+        player.fallDistance = 0;
+        Vec3 motion = player.getDeltaMovement();
+        if (motion.y < -0.4D) motion = new Vec3(motion.x, -0.4D, motion.z);
+
+        if (!murk) {
+            if (player.isShiftKeyDown() && motion.y < -0.08D) {
+                double amount = motion.y * -0.2D;
+                motion = motion.add(0, amount, 0).add(player.getViewVector(1.0F).scale(amount));
+            }
+            player.setDeltaMovement(motion);
+            return;
+        }
+
+        if (JetpackHandler.isJetpackActive(player)) {
+            if (motion.y < 0.6D) motion = motion.add(0, 0.2D, 0);
+            else motion = new Vec3(motion.x, 0.8D, motion.z);
+        } else if (JetpackHandler.isBackpackEnabled(player) && !player.isShiftKeyDown()) {
+            double y = motion.y;
+            if (y < -1D) y += 0.4D;
+            else if (y < -0.1D) y += 0.2D;
+            else if (y < 0D) y = 0D;
+            motion = new Vec3(motion.x, y, motion.z);
+        }
+
+        if (JetpackHandler.isBackpackEnabled(player)) {
+            Vec3 look = player.getViewVector(1.0F);
+            Vec3 horizontal = new Vec3(look.x, 0, look.z);
+            if (horizontal.lengthSqr() > 0D) horizontal = horizontal.normalize();
+            double modifier = player.isShiftKeyDown() ? 0.25D : 1D;
+            float forward = JetpackHandler.getForwardInput(player);
+            float strafe = JetpackHandler.getStrafeInput(player);
+            if (forward != 0F) motion = motion.add(horizontal.scale(0.35D * forward * modifier));
+            if (strafe != 0F) motion = motion.add(new Vec3(horizontal.z, 0, -horizontal.x)
+                    .scale(0.15D * strafe * modifier));
+        }
+        player.setDeltaMovement(motion);
+    }
+}

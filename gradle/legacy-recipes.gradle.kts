@@ -56,6 +56,10 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
                         val new = toLegacyIngredient(old)
                         if (new !== old) { json["ingredient"] = new; changed = true }
                     }
+                    json["copy_from"]?.let { old ->
+                        val new = toLegacyIngredient(old)
+                        if (new !== old) { json["copy_from"] = new; changed = true }
+                    }
                     (json["result"] as? MutableMap<String, Any?>)?.let { result ->
                         if (needsLegacyItemStacks(mcVersion)) {
                             @Suppress("UNCHECKED_CAST")

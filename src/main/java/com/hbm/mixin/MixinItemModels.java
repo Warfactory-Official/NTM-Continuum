@@ -5,6 +5,7 @@ package com.hbm.mixin;
 //? if fabric && >=26.1 {
 
 /*import com.hbm.client.render.MachineItemModelRenderer;
+ import com.hbm.client.jetpack.JetpackGliderItemModelRenderer;
  import com.hbm.client.render.weapon.GunItemModel;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.client.renderer.item.ItemModel;
@@ -21,9 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /^*
  * Fabric has no API for registering a custom item-model type (NeoForge uses
  * {@code RegisterItemModelsEvent}). The id→{@code MapCodec} map is the private static
- * {@code ItemModels.ID_MAPPER}, populated once in {@code bootstrap()}; the gun model is appended at the
- * tail. Sibling of {@link MixinSpecialModelRenderers}, and required for the same reason: no vanilla or
- * Fabric hook exists.
+ * {@code ItemModels.ID_MAPPER}, populated once in {@code bootstrap()}; the gun and glider models are
+ * appended at the tail. Sibling of {@link MixinSpecialModelRenderers}, and required for the same reason:
+ * no vanilla or Fabric hook exists.
  ^/
 @Mixin(ItemModels.class)
 public class MixinItemModels {
@@ -36,6 +37,7 @@ public class MixinItemModels {
     private static void hbm$registerGunModel(CallbackInfo ci) {
         ID_MAPPER.put(dev.golem.core.Ids.of("hbm", "gun"), GunItemModel.Unbaked.MAP_CODEC);
         ID_MAPPER.put(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC);
+        ID_MAPPER.put(JetpackGliderItemModelRenderer.ID, JetpackGliderItemModelRenderer.Unbaked.MAP_CODEC);
     }
 }
 *///?}

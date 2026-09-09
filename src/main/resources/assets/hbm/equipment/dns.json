@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "hbm:dns"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "hbm:dns"
+      }
+    ]
+  }
+}

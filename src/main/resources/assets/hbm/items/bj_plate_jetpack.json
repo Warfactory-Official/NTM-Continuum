@@ -1,0 +1,31 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/armor/bj.obj",
+      "texture": "hbm:textures/armor/bj_chest.png",
+      "noCull": false,
+      "scale": 0.044,
+      "pitch": 180.0,
+      "yaw": 155.0,
+      "animation": "armor_bj_jetpack_chest",
+      "partTextures": {
+        "Body": "hbm:textures/armor/bj_chest.png",
+        "LeftArm": "hbm:textures/armor/bj_arm.png",
+        "RightArm": "hbm:textures/armor/bj_arm.png",
+        "Jetpack": "hbm:textures/armor/bj_jetpack.png"
+      },
+      "exclude": [
+        "Head",
+        "LeftBoot",
+        "LeftFoot",
+        "LeftLeg",
+        "RightBoot",
+        "RightFoot",
+        "RightLeg"
+      ]
+    }
+  }
+}

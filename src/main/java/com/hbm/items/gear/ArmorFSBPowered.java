@@ -3,6 +3,7 @@ package com.hbm.items.gear;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.armor.ItemModBattery;
+import com.hbm.items.machine.ItemSelfcharger;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.Library;
 import dev.golem.core.world.ArmorSlot;
@@ -34,10 +35,8 @@ import net.minecraft.world.level.Level;
  *     does anything in creative.
  * </ul>
  *
- * <p><b>Deferred:</b> {@code getMaxCharge} does not yet consult an installed {@code ItemModBattery}
- * (×1.25/×1.5/×2 capacity) because the armour-mod system is not ported, and {@code onArmorTick} does not
- * subtract a held {@code ItemSelfcharger}'s output because that item is not ported either. Both are
- * multiplicative/additive adjustments to values that are otherwise exact.
+     * <p>The deprecated held {@code ItemSelfcharger} subtraction is retained: its fixed discharge rate is
+     * divided by four before the complete-set drain, including the old negative-drain edge case.
  */
 public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
 
@@ -117,7 +116,17 @@ public class ArmorFSBPowered extends ArmorFSB implements IBatteryItem {
     public void armorTick(Level level, Player player, ItemStack stack) {
         if (player.isCreative() || this.drain <= 0) return;
         if (!ArmorFSB.hasFSBArmor(player)) return;
-        dischargeBattery(stack, drain);
+        long netDrain = drain;
+        ItemSelfcharger selfcharger = heldSelfcharger(player);
+        if (selfcharger != null) netDrain -= selfcharger.getDischargeRate(stack) / 4L;
+        dischargeBattery(stack, netDrain);
+    }
+
+    private static ItemSelfcharger heldSelfcharger(Player player) {
+        ItemStack main = player.getMainHandItem();
+        if (main.getItem() instanceof ItemSelfcharger battery) return battery;
+        ItemStack off = player.getOffhandItem();
+        return off.getItem() instanceof ItemSelfcharger battery ? battery : null;
     }
 
     // --- the charge shown on the item's durability bar ---

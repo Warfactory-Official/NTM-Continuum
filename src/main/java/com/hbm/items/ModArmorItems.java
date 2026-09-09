@@ -5,14 +5,27 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.handler.ArmorUtil;
+import com.hbm.items.armor.ArmorBJ;
+import com.hbm.items.armor.ArmorBJJetpack;
+import com.hbm.items.armor.ArmorDNT;
+import com.hbm.items.armor.WingsMurk;
+import com.hbm.items.armor.JetpackBase;
+import com.hbm.items.gear.JetpackRegular;
+import com.hbm.items.gear.JetpackBreak;
+import com.hbm.items.gear.JetpackVectorized;
+import com.hbm.items.gear.JetpackBooster;
+import com.hbm.items.gear.JetpackGlider;
 import com.hbm.items.gear.IArmorDisableModel.EnumPlayerPart;
 import com.hbm.sound.ModSounds;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.util.ArmorRegistry.HazardClass;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
+import net.minecraft.world.item.Item;
 
 /**
  * Hand-registered armour. Kept out of the generated {@link ModItems} so codegen never clobbers these
@@ -130,12 +143,88 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSBPowered> t51_boots =
             powered("t51_boots", HbmArmorMaterials.T51, ArmorSlot.BOOTS);
 
+    // ---- Blackjack electric armor and its jetpack chest variant ----
+    private static final long BJ_POWER = 10_000_000L;
+    private static final long BJ_CHARGE_RATE = 10_000L;
+    private static final long BJ_CONSUMPTION = 1_000L;
+    private static final long BJ_DRAIN = 100L;
+
+    public static final RegistryObject<ArmorBJ> bj_helmet = bj("bj_helmet", ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorBJ> bj_plate = bj("bj_plate", ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorBJJetpack> bj_plate_jetpack =
+            ITEMS.registerItem("bj_plate_jetpack",
+                    p -> new ArmorBJJetpack(HbmArmorMaterials.BJ, ArmorSlot.CHESTPLATE, p,
+                            BJ_POWER, BJ_CHARGE_RATE, BJ_CONSUMPTION, BJ_DRAIN), p -> p.stacksTo(1));
+    public static final RegistryObject<ArmorBJ> bj_legs = bj("bj_legs", ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorBJ> bj_boots = bj("bj_boots", ArmorSlot.BOOTS);
+
+    // ---- DNT nanosuit ----
+    private static final long DNS_POWER = 1_000_000_000L;
+    private static final long DNS_CHARGE_RATE = 1_000_000L;
+    private static final long DNS_CONSUMPTION = 100_000L;
+    private static final long DNS_DRAIN = 115L;
+
+    public static final RegistryObject<ArmorDNT> dns_helmet = dns("dns_helmet", ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorDNT> dns_plate = dns("dns_plate", ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorDNT> dns_legs = dns("dns_legs", ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorDNT> dns_boots = dns("dns_boots", ArmorSlot.BOOTS);
+
+    // ---- direct-wear and armor-module jetpacks ----
+    public static final RegistryObject<JetpackRegular> jetpack_fly =
+            jetpack("jetpack_fly", p -> new JetpackRegular(Fluids.KEROSENE, 12_000, p));
+    public static final RegistryObject<JetpackBreak> jetpack_break =
+            jetpack("jetpack_break", p -> new JetpackBreak(Fluids.KEROSENE, 12_000, p));
+    public static final RegistryObject<JetpackVectorized> jetpack_vector =
+            jetpack("jetpack_vector", p -> new JetpackVectorized(Fluids.KEROSENE, 16_000, p));
+    public static final RegistryObject<JetpackBooster> jetpack_boost =
+            jetpack("jetpack_boost", p -> new JetpackBooster(Fluids.BALEFIRE, 32_000, p));
+    public static final RegistryObject<JetpackGlider> jetpack_glider =
+            glider("jetpack_glider", p -> new JetpackGlider(20_000, p));
+    public static final RegistryObject<WingsMurk> wings_murk =
+            jetpack("wings_murk", p -> new WingsMurk(true, p));
+    public static final RegistryObject<WingsMurk> wings_limp =
+            jetpack("wings_limp", p -> new WingsMurk(false, p));
+
+    static {
+        ModTabs.addTo(HbmTab.CONSUMABLES, bj_plate_jetpack);
+    }
+
     private static RegistryObject<ArmorFSBPowered> powered(String name, GolemArmorMaterial material,
             ArmorSlot slot) {
         RegistryObject<ArmorFSBPowered> ro = ITEMS.registerItem(name,
                 p -> new ArmorFSBPowered(material, slot, p, T51_POWER, T51_CHARGE_RATE, T51_CONSUMPTION,
                         T51_DRAIN),
                 p -> p.stacksTo(1));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static RegistryObject<ArmorBJ> bj(String name, ArmorSlot slot) {
+        RegistryObject<ArmorBJ> ro = ITEMS.registerItem(name,
+                p -> new ArmorBJ(HbmArmorMaterials.BJ, slot, p, BJ_POWER, BJ_CHARGE_RATE, BJ_CONSUMPTION, BJ_DRAIN),
+                p -> p.stacksTo(1));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static RegistryObject<ArmorDNT> dns(String name, ArmorSlot slot) {
+        RegistryObject<ArmorDNT> ro = ITEMS.registerItem(name,
+                p -> new ArmorDNT(HbmArmorMaterials.DNS, slot, p, DNS_POWER, DNS_CHARGE_RATE, DNS_CONSUMPTION, DNS_DRAIN),
+                p -> p.stacksTo(1));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static <T extends JetpackBase> RegistryObject<T> jetpack(String name,
+                                                                       java.util.function.Function<Item.Properties, T> factory) {
+        RegistryObject<T> ro = ITEMS.registerItem(name, factory, p -> p.stacksTo(1));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static RegistryObject<JetpackGlider> glider(String name,
+                                                         java.util.function.Function<Item.Properties, JetpackGlider> factory) {
+        RegistryObject<JetpackGlider> ro = ITEMS.registerItem(name, factory, p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
@@ -202,6 +291,60 @@ public final class ModArmorItems {
         t51_plate.get().cloneStats(helmet);
         t51_legs.get().cloneStats(helmet);
         t51_boots.get().cloneStats(helmet);
+
+        ArmorBJ bjHelmet = bj_helmet.get();
+        bjHelmet.enableVATS(true)
+                .enableThermalSight(true)
+                .setHasHardLanding(true)
+                .setHasGeigerSound(true)
+                .addEffect(Effects.instance(Effects.speed(), 30, 1))
+                .addEffect(Effects.instance(Effects.jumpBoost(), 30, 0))
+                .addEffect(Effects.instance(net.minecraft.world.effect.MobEffects.SATURATION, 30, 0))
+                 .addEffect(Effects.instanceRegistered(com.hbm.potion.ModEffects.RADX.get(), 30, 0))
+                .setStep(ModSounds.METAL_STEP)
+                .setJump(ModSounds.IRON_JUMP)
+                .setFall(ModSounds.IRON_LAND)
+                .setRadResist(1D);
+        bj_plate.get().cloneStats(bjHelmet);
+        bj_plate_jetpack.get().cloneStats(bjHelmet);
+        bj_legs.get().cloneStats(bjHelmet);
+        bj_boots.get().cloneStats(bjHelmet);
+
+        ArmorDNT dnsHelmet = dns_helmet.get();
+        dnsHelmet.setHasGeigerSound(true)
+                .enableVATS(true)
+                .enableThermalSight(true)
+                .setHasHardLanding(true)
+                .addEffect(Effects.instance(Effects.strength(), 20, 9))
+                .addEffect(Effects.instance(Effects.haste(), 20, 7))
+                .addEffect(Effects.instance(Effects.jumpBoost(), 20, 2))
+                .setHides(EnumPlayerPart.HAT)
+                .setHazardClass(FULL_PACKAGE)
+                .setRadResist(5D)
+                .setStep(ModSounds.METAL_STEP)
+                .setJump(ModSounds.IRON_JUMP)
+                .setFall(ModSounds.IRON_LAND);
+        dns_plate.get().cloneStats(dnsHelmet);
+        dns_legs.get().cloneStats(dnsHelmet);
+        dns_boots.get().cloneStats(dnsHelmet);
+        ArmorUtil.registerHazmat2Set(dns_helmet.get(), dns_plate.get(), dns_legs.get(), dns_boots.get());
+
+        // Client render registration consumes these neutral model names; the gameplay classes stay client-free.
+        bjHelmet.setArmorModel("bj");
+        bj_plate.get().setArmorModel("bj");
+        bj_plate_jetpack.get().setArmorModel("bj_jetpack");
+        bj_legs.get().setArmorModel("bj");
+        bj_boots.get().setArmorModel("bj");
+        dnsHelmet.setArmorModel("dns");
+        dns_plate.get().setArmorModel("dns");
+        dns_legs.get().setArmorModel("dns");
+        dns_boots.get().setArmorModel("dns");
+        jetpack_fly.get().setArmorModel("jetpack_regular");
+        jetpack_break.get().setArmorModel("jetpack_break");
+        jetpack_vector.get().setArmorModel("jetpack_vector");
+        jetpack_boost.get().setArmorModel("jetpack_booster");
+        wings_murk.get().setArmorModel("wings_murk");
+        wings_limp.get().setArmorModel("wings_limp");
     }
 
     private static void configurePlainSet(ArmorFSB helmet, ArmorFSB plate, ArmorFSB legs, ArmorFSB boots,

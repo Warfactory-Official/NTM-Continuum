@@ -204,4 +204,20 @@ public class HbmLivingProps {
     public static void setOil(LivingEntity entity, int oil) {
         getData(entity).setOil(oil);
     }
+
+    public static boolean getEnableBackpack(LivingEntity entity) {
+        return getData(entity).getEnableBackpack();
+    }
+
+    public static void setEnableBackpack(LivingEntity entity, boolean enabled) {
+        getData(entity).setEnableBackpack(enabled);
+    }
+
+    public static boolean getEnableHUD(LivingEntity entity) {
+        return getData(entity).getEnableHUD();
+    }
+
+    public static void setEnableHUD(LivingEntity entity, boolean enabled) {
+        getData(entity).setEnableHUD(enabled);
+    }
 }

@@ -5,6 +5,11 @@ import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.logic.EntityEMP;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntitySawblade;
+import com.hbm.entity.projectile.EntityRubble;
+import com.hbm.entity.projectile.EntityShrapnel;
+import com.hbm.entity.effect.EntityBlackHole;
+import com.hbm.entity.effect.EntityVortex;
+import com.hbm.entity.effect.EntityRagingVortex;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -91,6 +96,47 @@ public final class ModEntities {
                             .sized(0.5F, 0.5F)
                             .fireImmune()
                             .clientTrackingRange(16)
+                            .updateInterval(1), key));
+
+    /** Base black-hole field used by the dropped capsules and the vortex subclasses. */
+    public static final RegistryObject<EntityType<EntityBlackHole>> BLACK_HOLE =
+            ENTITY_TYPES.register("entity_black_hole", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityBlackHole>of(EntityBlackHole::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .fireImmune()
+                            .clientTrackingRange(1000)
+                            .updateInterval(1), key));
+
+    public static final RegistryObject<EntityType<EntityVortex>> VORTEX =
+            ENTITY_TYPES.register("entity_vortex", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityVortex>of(EntityVortex::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .fireImmune()
+                            .clientTrackingRange(1000)
+                            .updateInterval(1), key));
+
+    public static final RegistryObject<EntityType<EntityRagingVortex>> RAGING_VORTEX =
+            ENTITY_TYPES.register("entity_raging_vortex", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityRagingVortex>of(EntityRagingVortex::new, MobCategory.MISC)
+                            .sized(0.6F, 1.8F)
+                            .fireImmune()
+                            .clientTrackingRange(1000)
+                            .updateInterval(1), key));
+
+    /** The block-textured projectile fragment emitted by a black-hole field. */
+    public static final RegistryObject<EntityType<EntityRubble>> RUBBLE =
+            ENTITY_TYPES.register("entity_rubble", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityRubble>of(EntityRubble::new, MobCategory.MISC)
+                            .sized(0.25F, 0.25F)
+                            .fireImmune()
+                            .clientTrackingRange(1000)
+                            .updateInterval(1), key));
+
+    public static final RegistryObject<EntityType<EntityShrapnel>> SHRAPNEL =
+            ENTITY_TYPES.register("entity_shrapnel", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityShrapnel>of(EntityShrapnel::new, MobCategory.MISC)
+                            .sized(0.25F, 0.25F)
+                            .clientTrackingRange(1000)
                             .updateInterval(1), key));
 
     public static void init() {}

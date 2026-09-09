@@ -1,0 +1,39 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "Q": {
+      "items": [
+        "hbm:glass_quartz"
+      ]
+    },
+    "B": {
+      "items": [
+        "hbm:ingot_combine_steel"
+      ]
+    },
+    "C": {
+      "items": [
+        "hbm:ingot_schrabidate"
+      ]
+    },
+    "S": {
+      "items": [
+        "hbm:cell"
+      ],
+      "components": {
+        "hbm:fluid_id": 33,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:cell"
+    }
+  },
+  "pattern": [
+    "QBQ",
+    "CSC",
+    "QBQ"
+  ],
+  "result": {
+    "id": "hbm:laser_crystal_cmb"
+  }
+}

@@ -5,6 +5,7 @@ import com.hbm.handler.ArmorModHandler;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModGearItems;
 import com.hbm.items.armor.ItemArmorMod;
+import com.hbm.items.gear.ArmorFSBPowered;
 import dev.golem.core.world.DamageEvents;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -94,6 +95,19 @@ public final class DamageResistanceHandler {
                         .addExact("fall", 0F, 1F)
                         .setOther(0F, 0.1F));
 
+        ResistanceStats bj = new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F)
+                .addCategory(CATEGORY_FIRE, 2.5F, 0.5F).addCategory(CATEGORY_EXPLOSION, 10F, 0.25F)
+                .addExact("fall", 0F, 1F).setOther(2F, 0.15F);
+        registerSet(ModArmorItems.bj_helmet.get(), ModArmorItems.bj_plate.get(),
+                ModArmorItems.bj_legs.get(), ModArmorItems.bj_boots.get(), bj);
+        registerSet(ModArmorItems.bj_helmet.get(), ModArmorItems.bj_plate_jetpack.get(),
+                ModArmorItems.bj_legs.get(), ModArmorItems.bj_boots.get(), bj);
+        registerSet(ModArmorItems.dns_helmet.get(), ModArmorItems.dns_plate.get(),
+                ModArmorItems.dns_legs.get(), ModArmorItems.dns_boots.get(),
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 1000F, 1F)
+                        .addCategory(CATEGORY_EXPLOSION, 100F, 0.99F)
+                        .addCategory(CATEGORY_FIRE, 0F, 1F).setOther(1000F, 1F));
+
         // The four legacy hazmat sets have intentionally empty resistance profiles; registering them
         // keeps full-set identity available to the tooltip and to future profile overrides.
         registerSet(ModGearItems.hazmat_helmet.get(), ModGearItems.hazmat_plate.get(),
@@ -182,6 +196,11 @@ public final class DamageResistanceHandler {
     }
 
     private static void onEntityAttacked(DamageEvents.DamageEvent event) {
+        if (event.entity() instanceof net.minecraft.world.entity.player.Player player) {
+            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+            if (chest.getItem() instanceof com.hbm.items.gear.ArmorFSB fsb) fsb.handleAttack(event);
+            if (event.isCanceled()) return;
+        }
         DamageSource source = event.source();
         if (isAbsolute(source)) return;
 
@@ -197,9 +216,15 @@ public final class DamageResistanceHandler {
 
     private static void onEntityHurt(DamageEvents.DamageEvent event) {
         applyArmorModules(event);
+        if (event.entity() instanceof net.minecraft.world.entity.player.Player player) {
+            ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
+            if (chest.getItem() instanceof com.hbm.items.gear.ArmorFSB fsb) fsb.handleHurt(event);
+            if (event.isCanceled()) return;
+        }
         float amount = calculateDamage(event.entity(), event.source(), event.amount(),
                 event.piercingThreshold(), event.piercingResistance());
         event.setAmount(amount);
+        dischargePoweredArmor(event.entity(), amount);
         if (event.entity() instanceof IResistanceProvider provider) {
             provider.onDamageDealt(event.source(), amount);
         }
@@ -211,6 +236,20 @@ public final class DamageResistanceHandler {
             if (armor.isEmpty() || !ArmorModHandler.hasMods(armor)) continue;
             for (ItemStack mod : ArmorModHandler.pryMods(armor)) {
                 if (mod.getItem() instanceof ItemArmorMod armorMod) armorMod.modDamage(event, armor);
+            }
+        }
+    }
+
+    /** Replaces vanilla durability wear for powered suits with their configured HE drain. */
+    private static void dischargePoweredArmor(LivingEntity entity, float amount) {
+        if (amount <= 0F || entity instanceof net.minecraft.world.entity.player.Player player && player.isCreative()) return;
+        int damage = (int) amount;
+        if (damage <= 0) return;
+        for (EquipmentSlot slot : ARMOR_SLOTS) {
+            ItemStack stack = entity.getItemBySlot(slot);
+            if (stack.getItem() instanceof ArmorFSBPowered powered) {
+                powered.dischargeBattery(stack, (long) damage * powered.consumption);
+                stack.setDamageValue(0);
             }
         }
     }

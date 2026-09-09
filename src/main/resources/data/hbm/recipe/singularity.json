@@ -1,0 +1,34 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "items": [
+        "hbm:nugget_euphemium"
+      ]
+    },
+    "S": {
+      "items": [
+        "hbm:cell"
+      ],
+      "components": {
+        "hbm:fluid_id": 33,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:cell"
+    },
+    "B": {
+      "items": [
+        "hbm:block_schrabidium"
+      ]
+    }
+  },
+  "pattern": [
+    "ESE",
+    "SBS",
+    "ESE"
+  ],
+  "result": {
+    "id": "hbm:singularity"
+  }
+}

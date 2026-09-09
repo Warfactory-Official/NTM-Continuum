@@ -46,7 +46,7 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
         }
     }
 
-    private record Part(WavefrontObj model, RenderType renderType, float yOffset, Set<String> exclude) {}
+    private record Part(WavefrontObj model, RenderType renderType, Identifier texture, float yOffset, Set<String> exclude) {}
 
     private final List<Part> parts;
     private final float baseYaw;
@@ -89,7 +89,7 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
             RenderType renderType = d.noCull()
                     ? CompatRenderTypes.entityCutoutNoCull(d.texture())
                     : CompatRenderTypes.entityCutout(d.texture());
-            built.add(new Part(WavefrontObj.load(d.obj()), renderType, d.yOffset(), d.exclude()));
+            built.add(new Part(WavefrontObj.load(d.obj()), renderType, d.texture(), d.yOffset(), d.exclude()));
         }
         this.parts = built;
     }
@@ -161,7 +161,8 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
             poseStack.mulPose(Axis.YP.rotationDegrees(baseYaw + state.yaw));
             if (offsetX != 0F || offsetZ != 0F) poseStack.translate(offsetX, 0F, offsetZ); // footprint offset (post-rotation)
             if (scale != 1.0F) poseStack.scale(scale, scale, scale);
-            collector.submitCustomGeometry(poseStack, part.renderType(),
+            collector.submitCustomGeometry(poseStack,
+                    doubleSided ? CompatRenderTypes.entityCutoutCull(part.texture()) : part.renderType(),
                     (pose, buffer) -> part.model().renderExcept(pose, buffer, state.lightCoords,
                             OverlayTexture.NO_OVERLAY, exclude, doubleSided));
             poseStack.popPose();

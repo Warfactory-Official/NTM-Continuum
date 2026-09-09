@@ -28,9 +28,8 @@ import net.minecraft.world.item.ItemStack;
  * <p><b>Hidden in creative</b>, unlike upstream. The drain skips creative entirely, so the bars there
  * would be four permanently full readouts of a number that never moves.
  *
- * <p><b>Deferred:</b> bars contributed by installed armour mods, and the fuelled-jetpack fuel bar. Both
- * belong to systems that are not ported, and both would appear as extra bars sharing a row — which is
- * what the {@code bars.size() > 1} splitting in the old code is for.
+ * <p><b>Deferred:</b> bars contributed by installed armour mods. The direct-wear fuelled-jetpack bar is
+ * present; the advanced glider owns its own two-gauge HUD.
  */
 public final class ArmorHudOverlay {
 
@@ -74,7 +73,10 @@ public final class ArmorHudOverlay {
         // would sit permanently full and tell the player nothing. Hiding them is a deliberate departure
         // from upstream, which draws them regardless; do not "restore" it for faithfulness.
         if (player.isCreative()) return;
-        if (!ArmorFSB.hasFSBArmorIgnoreCharge(player)) return;
+        boolean directJetpack = com.hbm.client.jetpack.JetpackClientVisuals.kind(player) != null
+                && !com.hbm.client.jetpack.JetpackClientVisuals.kind(player).equals(
+                com.hbm.client.jetpack.JetpackClientVisuals.GLIDER);
+        if (!ArmorFSB.hasFSBArmorIgnoreCharge(player) && !directJetpack) return;
 
         List<Row> rows = new ArrayList<>();
         for (EquipmentSlot slot : SLOTS) {
@@ -111,6 +113,15 @@ public final class ArmorHudOverlay {
             long max = powered.getMaxCharge(stack);
             float fill = max <= 0 ? 0F : (float) powered.getCharge(stack) / max;
             return new Row(Math.max(0F, Math.min(1F, fill)), 0xFF00FF00);
+        }
+        String path = com.hbm.client.jetpack.JetpackClientVisuals.path(stack);
+        if (path != null && path.startsWith("jetpack_")) {
+            com.hbm.client.jetpack.JetpackClientBridge.Fuel fuel =
+                    com.hbm.client.jetpack.JetpackClientBridge.fuel(stack);
+            if (fuel != null && fuel.capacity() > 0) {
+                float fill = Math.max(0F, Math.min(1F, fuel.amount() / (float) fuel.capacity()));
+                return new Row(fill, com.hbm.client.jetpack.JetpackClientVisuals.fuelColor(fuel.type()));
+            }
         }
         return null;
     }

@@ -31,6 +31,10 @@ public final class HbmPackets {
                 (payload, player) -> handleAnvilCraft(player, payload));
         GolemNetwork.declarePlayToClient(GunAnimationPayload.CODEC);
         GolemNetwork.declarePlayToClient(ParticlePayload.CODEC);
+        GolemNetwork.declarePlayToClient(JetpackSyncPayload.CODEC);
+        GolemNetwork.declarePlayToClient(JetpackExhaustPayload.CODEC);
+        GolemNetwork.registerPlayToServer(JetpackInputPayload.CODEC,
+                (payload, player) -> com.hbm.handler.JetpackHandler.handleInput(player, payload));
         GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
                 (payload, player) -> com.hbm.handler.HbmKeybindsServer.onPressedServer(player,
                         com.hbm.handler.HbmKeybinds.EnumKeybind.byOrdinal(payload.keybind()), payload.state()));
@@ -56,6 +60,10 @@ public final class HbmPackets {
                 (payload, context) -> com.hbm.client.anim.GunAnimationHandler.handle(payload));
         GolemNetwork.registerPlayToClient(ParticlePayload.CODEC,
                 (payload, context) -> handleParticle(context.level(), payload));
+        GolemNetwork.registerPlayToClient(JetpackSyncPayload.CODEC,
+                (payload, context) -> com.hbm.handler.JetpackHandler.dispatchClientSync(context.level(), payload));
+        GolemNetwork.registerPlayToClient(JetpackExhaustPayload.CODEC,
+                (payload, context) -> com.hbm.handler.JetpackHandler.dispatchClientExhaust(context.level(), payload));
     }
 
     /**

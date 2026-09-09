@@ -2,6 +2,8 @@ package com.hbm.handler;
 
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.armor.ItemArmorMod;
+import com.hbm.items.armor.JetpackBase;
+import com.hbm.items.gear.JetpackGlider;
 import dev.golem.core.world.CompatArmorItem;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,9 +41,15 @@ public final class ArmorModHandler {
     private ArmorModHandler() {}
 
     public static boolean isApplicable(ItemStack armor, ItemStack mod) {
-        if (armor == null || armor.isEmpty() || !(armor.getItem() instanceof CompatArmorItem armorItem)) return false;
-        if (mod == null || mod.isEmpty() || !(mod.getItem() instanceof ItemArmorMod armorMod)) return false;
+        if (armor == null || armor.isEmpty() || armor.getItem() instanceof JetpackBase
+                || !(armor.getItem() instanceof CompatArmorItem armorItem)) return false;
+        if (mod == null || mod.isEmpty()) return false;
 
+        int type = getModuleSlot(mod);
+        if (type == plate_only && (mod.getItem() instanceof JetpackBase || mod.getItem() instanceof JetpackGlider)) {
+            return armorItem.armorSlot() == dev.golem.core.world.ArmorSlot.CHESTPLATE;
+        }
+        if (!(mod.getItem() instanceof ItemArmorMod armorMod)) return false;
         return switch (armorItem.armorSlot()) {
             case HELMET -> armorMod.helmet;
             case CHESTPLATE -> armorMod.chestplate;
@@ -53,12 +61,21 @@ public final class ArmorModHandler {
     /** Stores one copy in its type slot. Callers validate applicability before calling this method. */
     public static void applyMod(ItemStack armor, ItemStack mod) {
         if (armor == null || armor.isEmpty() || mod == null || mod.isEmpty()) return;
-        if (!(mod.getItem() instanceof ItemArmorMod armorMod)) return;
-        if (armorMod.type < 0 || armorMod.type >= MOD_SLOTS) return;
+        int type = getModuleSlot(mod);
+        if (type < 0 || type >= MOD_SLOTS) return;
 
         List<ItemStack> values = read(armor);
-        values.set(armorMod.type, mod.copyWithCount(1));
-        ModDataComponents.ARMOR_MODS.set(armor, values);
+        values.set(type, mod.copyWithCount(1));
+        ModDataComponents.ARMOR_MODS.set(armor, new dev.golem.core.data.ItemContents(values));
+    }
+
+    /** Returns the ordered armor-table slot for a supported module, or -1 for a normal item. */
+    public static int getModuleSlot(ItemStack mod) {
+        if (mod == null || mod.isEmpty()) return -1;
+        if (mod.getItem() instanceof ItemArmorMod armorMod) return armorMod.type;
+        if (mod.getItem() instanceof JetpackBase) return plate_only;
+        if (mod.getItem() instanceof JetpackGlider) return plate_only;
+        return -1;
     }
 
     public static void removeMod(ItemStack armor, int slot) {
@@ -89,7 +106,8 @@ public final class ArmorModHandler {
     }
 
     private static List<ItemStack> read(ItemStack armor) {
-        List<ItemStack> stored = armor == null ? List.of() : ModDataComponents.ARMOR_MODS.getOr(armor, List.of());
+        List<ItemStack> stored = armor == null ? List.of() : ModDataComponents.ARMOR_MODS
+                .getOr(armor, dev.golem.core.data.ItemContents.EMPTY).copies();
         List<ItemStack> values = new ArrayList<>(MOD_SLOTS);
         for (int i = 0; i < MOD_SLOTS; i++) {
             values.add(i < stored.size() && !stored.get(i).isEmpty() ? stored.get(i).copy() : ItemStack.EMPTY);
@@ -106,6 +124,6 @@ public final class ArmorModHandler {
             }
         }
         if (empty) clearMods(armor);
-        else ModDataComponents.ARMOR_MODS.set(armor, values);
+        else ModDataComponents.ARMOR_MODS.set(armor, new dev.golem.core.data.ItemContents(values));
     }
 }

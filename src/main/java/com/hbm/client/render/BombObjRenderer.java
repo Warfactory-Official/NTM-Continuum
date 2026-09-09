@@ -32,9 +32,10 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
     private final float preTranslateY;
     private final float preTranslateZ;
     private final float[] yawsByFacing;
+    private final boolean doubleSided;
 
     public BombObjRenderer(Identifier obj, Identifier texture, float scale) {
-        this(obj, texture, scale, NukeMan.FACING, 0F, 0F, 0F, 270F, 90F, 0F, 180F);
+        this(obj, texture, scale, false, NukeMan.FACING, 0F, 0F, 0F, 270F, 90F, 0F, 180F);
     }
 
     /**
@@ -42,8 +43,17 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
      */
     public BombObjRenderer(Identifier obj, Identifier texture, float scale, IntegerProperty facingProperty,
                            float preTranslateX, float preTranslateY, float preTranslateZ, float... yawsByFacing) {
+        this(obj, texture, scale, true, facingProperty, preTranslateX, preTranslateY, preTranslateZ, yawsByFacing);
+    }
+
+    private BombObjRenderer(Identifier obj, Identifier texture, float scale, boolean doubleSided,
+                           IntegerProperty facingProperty, float preTranslateX, float preTranslateY,
+                           float preTranslateZ, float... yawsByFacing) {
         this.model = WavefrontObj.load(obj);
-        this.renderType = CompatRenderTypes.entityCutoutNoCull(texture);
+        // Reversed faces need culling: otherwise both coplanar normals compete in the depth buffer.
+        // Fat Man is the one legacy spec that did not request reversed faces at all.
+        this.renderType = CompatRenderTypes.entityCutoutCull(texture);
+        this.doubleSided = doubleSided;
         this.scale = scale;
         this.facingProperty = facingProperty;
         this.preTranslateX = preTranslateX;
@@ -90,7 +100,7 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
         }
         if (scale != 1.0F) poseStack.scale(scale, scale, scale);
         collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, true));
+                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, doubleSided));
         poseStack.popPose();
     }
 }

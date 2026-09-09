@@ -1,0 +1,39 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "Q": {
+      "items": [
+        "hbm:glass_quartz"
+      ]
+    },
+    "D": {
+      "items": [
+        "hbm:ingot_desh"
+      ]
+    },
+    "N": {
+      "items": [
+        "hbm:ingot_niobium"
+      ]
+    },
+    "C": {
+      "items": [
+        "hbm:fluid_tank"
+      ],
+      "components": {
+        "hbm:fluid_id": 55,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:fluid_tank"
+    }
+  },
+  "pattern": [
+    "QDQ",
+    "NCN",
+    "QDQ"
+  ],
+  "result": {
+    "id": "hbm:laser_crystal_co2"
+  }
+}
