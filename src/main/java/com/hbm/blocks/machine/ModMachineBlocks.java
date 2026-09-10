@@ -3,6 +3,12 @@ package com.hbm.blocks.machine;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockToolConvertible;
+import com.hbm.blocks.machine.albion.BlockPABeamline;
+import com.hbm.blocks.machine.albion.BlockPADetector;
+import com.hbm.blocks.machine.albion.BlockPADipole;
+import com.hbm.blocks.machine.albion.BlockPAQuadrupole;
+import com.hbm.blocks.machine.albion.BlockPARFC;
+import com.hbm.blocks.machine.albion.BlockPASource;
 import com.hbm.blocks.machine.struct.BlockStruct;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.struct.TileEntityWatzStruct;
@@ -588,6 +594,25 @@ public final class ModMachineBlocks {
     public static final RegistryObject<Block> sandbags = BLOCKS.registerBlock(
             "sandbags", Block::new, p -> p.strength(5.0F, 30.0F));
 
+    public static final RegistryObject<BlockPASource> pa_source = BLOCKS.registerBlock(
+            "pa_source", BlockPASource::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<BlockPABeamline> pa_beamline = BLOCKS.registerBlock(
+            "pa_beamline", BlockPABeamline::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<BlockPARFC> pa_rfc = BLOCKS.registerBlock(
+            "pa_rfc", BlockPARFC::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<BlockPAQuadrupole> pa_quadrupole = BLOCKS.registerBlock(
+            "pa_quadrupole", BlockPAQuadrupole::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<BlockPADipole> pa_dipole = BLOCKS.registerBlock(
+            "pa_dipole", BlockPADipole::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<BlockPADetector> pa_detector = BLOCKS.registerBlock(
+            "pa_detector", BlockPADetector::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     static {
         tabItem("machine_battery", machine_battery);
         tabItem("machine_radgen", machine_radgen);
@@ -603,6 +628,12 @@ public final class ModMachineBlocks {
         tabItem("barrel_tcalloy", barrel_tcalloy);
         tabItem("barrel_antimatter", barrel_antimatter);
         tabItem("cargo_elevator", cargo_elevator);
+        tabItem("pa_source", pa_source);
+        tabItem("pa_beamline", pa_beamline);
+        tabItem("pa_rfc", pa_rfc);
+        tabItem("pa_quadrupole", pa_quadrupole);
+        tabItem("pa_dipole", pa_dipole);
+        tabItem("pa_detector", pa_detector);
         tabItem("capacitor_bus", capacitor_bus);
         tabItem("machine_capacitor_copper", machine_capacitor_copper);
         tabItem("machine_capacitor_gold", machine_capacitor_gold);

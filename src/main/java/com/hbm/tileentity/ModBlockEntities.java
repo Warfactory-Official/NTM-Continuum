@@ -29,6 +29,12 @@ import com.hbm.tileentity.machine.TileEntityMachineMiniRTG;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 import com.hbm.tileentity.machine.TileEntityRadSensor;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
+import com.hbm.tileentity.machine.albion.TileEntityPABeamline;
+import com.hbm.tileentity.machine.albion.TileEntityPADetector;
+import com.hbm.tileentity.machine.albion.TileEntityPADipole;
+import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
+import com.hbm.tileentity.machine.albion.TileEntityPARFC;
+import com.hbm.tileentity.machine.albion.TileEntityPASource;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
@@ -460,6 +466,30 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityMachinePrecAss>> MACHINE_PREC_ASS =
             BLOCK_ENTITIES.register("machine_precass",
                     () -> BlockEntities.type(TileEntityMachinePrecAss::new, ModMachineBlocks.machine_precass.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPASource>> PA_SOURCE =
+            BLOCK_ENTITIES.register("pa_source",
+                    () -> BlockEntities.type(TileEntityPASource::new, ModMachineBlocks.pa_source.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPABeamline>> PA_BEAMLINE =
+            BLOCK_ENTITIES.register("pa_beamline",
+                    () -> BlockEntities.type(TileEntityPABeamline::new, ModMachineBlocks.pa_beamline.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPARFC>> PA_RFC =
+            BLOCK_ENTITIES.register("pa_rfc",
+                    () -> BlockEntities.type(TileEntityPARFC::new, ModMachineBlocks.pa_rfc.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPAQuadrupole>> PA_QUADRUPOLE =
+            BLOCK_ENTITIES.register("pa_quadrupole",
+                    () -> BlockEntities.type(TileEntityPAQuadrupole::new, ModMachineBlocks.pa_quadrupole.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPADipole>> PA_DIPOLE =
+            BLOCK_ENTITIES.register("pa_dipole",
+                    () -> BlockEntities.type(TileEntityPADipole::new, ModMachineBlocks.pa_dipole.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPADetector>> PA_DETECTOR =
+            BLOCK_ENTITIES.register("pa_detector",
+                    () -> BlockEntities.type(TileEntityPADetector::new, ModMachineBlocks.pa_detector.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineChemicalPlant>> MACHINE_CHEMICAL_PLANT =
             BLOCK_ENTITIES.register("machine_chemical_plant",

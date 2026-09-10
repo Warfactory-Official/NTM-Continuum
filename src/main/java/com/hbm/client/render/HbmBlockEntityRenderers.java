@@ -340,6 +340,21 @@ public final class HbmBlockEntityRenderers {
         IntakeFanRenderers.register(sink, ModBlockEntities.MACHINE_INTAKE.get(), ModBlockEntities.MACHINE_FAN.get());
         com.hbm.smoke.SmokeChainClientRegistrations.registerRenderers(sink);
         com.hbm.foundry.FoundryExpansionClient.registerRenderers(sink);
+        reg(sink, ModBlockEntities.PA_SOURCE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/source.obj"), tex("particleaccelerator/source.png"), -1F));
+        reg(sink, ModBlockEntities.PA_BEAMLINE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/beamline.obj"), tex("particleaccelerator/beamline.png")));
+        reg(sink, ModBlockEntities.PA_RFC.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/rfc.obj"), tex("particleaccelerator/rfc.png"), -1F));
+        reg(sink, ModBlockEntities.PA_QUADRUPOLE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/quadrupole.obj"), tex("particleaccelerator/quadrupole.png"), -1F));
+        regCustom(sink, ModBlockEntities.PA_DIPOLE.get(),
+                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.albion.TileEntityPADipole>(0F, 1F,
+                        new ModelDef(obj("particleaccelerator/dipole.obj"), tex("particleaccelerator/dipole.png"), -1F))
+                        .ignoreFacing());
+        reg(sink, ModBlockEntities.PA_DETECTOR.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/detector.obj"), tex("particleaccelerator/detector.png"), -2F));
+
         regCustom(sink, ModBlockEntities.TURRET_CHEKHOV.get(),
                 ctx -> new com.hbm.client.render.turret.RenderTurretChekhov());
         regCustom(sink, ModBlockEntities.TURRET_FRIENDLY.get(),

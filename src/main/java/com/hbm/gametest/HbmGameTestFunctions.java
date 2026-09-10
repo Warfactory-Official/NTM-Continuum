@@ -518,6 +518,38 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function GIANT_TANK_DROPS =
             TESTS.function("giant_tank_drops", 100, 8, () -> GiantTankGameTests::dropsAndReplacesWithFluid);
 
+    // --- Albion particle accelerator ---
+    public static final GameTests.Function PA_STRUCTURE =
+            TESTS.function("pa_structure", 40, 16, () -> AlbionGameTests::structure);
+    public static final GameTests.Function PA_SOURCE_FIRES =
+            TESTS.function("pa_source_fires", 40, 16, () -> AlbionGameTests::sourceFires);
+    public static final GameTests.Function PA_BEAM_WALKS =
+            TESTS.function("pa_beam_walks", 40, 24, () -> AlbionGameTests::beamWalks);
+    public static final GameTests.Function PA_BEAMLINE =
+            TESTS.function("pa_beamline", 40, 16, () -> AlbionGameTests::beamlineCarries);
+    public static final GameTests.Function PA_RFC =
+            TESTS.function("pa_rfc", 40, 20, () -> AlbionGameTests::rfcAccelerates);
+    public static final GameTests.Function PA_QUADRUPOLE =
+            TESTS.function("pa_quadrupole", 40, 16, () -> AlbionGameTests::quadrupoleFocuses);
+    public static final GameTests.Function PA_DIPOLE =
+            TESTS.function("pa_dipole", 40, 16, () -> AlbionGameTests::dipoleSteers);
+    public static final GameTests.Function PA_DETECTOR =
+            TESTS.function("pa_detector", 40, 20, () -> AlbionGameTests::detectorRuns);
+    public static final GameTests.Function PA_COOLING =
+            TESTS.function("pa_cooling", 40, 8, () -> AlbionGameTests::coolingAndTanks);
+    public static final GameTests.Function PA_RADIO =
+            TESTS.function("pa_radio", 40, 16, () -> AlbionGameTests::redstoneOverRadio);
+    public static final GameTests.Function PA_PARTICLE_USERS =
+            TESTS.function("pa_particle_users", 40, 16, () -> AlbionGameTests::componentsAreParticleUsers);
+    public static final GameTests.Function PA_RECIPES =
+            TESTS.function("pa_recipes", 20, () -> AlbionGameTests::recipes);
+    public static final GameTests.Function PA_CONSTRUCTION =
+            TESTS.function("pa_construction", 40, () -> AlbionGameTests::construction);
+    public static final GameTests.Function PA_COILS =
+            TESTS.function("pa_coils", 20, () -> AlbionGameTests::coils);
+    public static final GameTests.Function PA_ASSETS =
+            TESTS.function("pa_assets", 20, () -> AlbionGameTests::assets);
+
     // --- Exposure Chamber ---
     public static final GameTests.Function EXPOSURE_CHAMBER_RECIPES =
             TESTS.function("exposure_chamber_recipes", 20, () -> ExposureChamberGameTests::recipes);
