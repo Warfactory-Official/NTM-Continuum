@@ -3,6 +3,8 @@ package com.hbm.gametest;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.radio.ModRadioBlocks;
 import com.hbm.radio.RadioTargets;
@@ -11,14 +13,17 @@ import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.TileEntityRadioTorchController;
 import com.hbm.tileentity.network.TileEntityRadioTorchCounter;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
+import com.hbm.tileentity.turret.TileEntityTurretChekhov;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -41,6 +46,9 @@ public final class CounterControllerGameTests {
             "radio_counter_vanilla_chest", 40, 8, () -> CounterControllerGameTests::counterReadsVanillaChest);
     public static final GameTests.Function CONTROLLER_STATE = TESTS.function(
             "radio_controller_state", 40, 8, () -> CounterControllerGameTests::controllerStateAndParsing);
+    public static final GameTests.Function CONTROLLER_FOLDED = TESTS.function(
+            "radio_controller_folded_multiblock", 60, 8,
+            () -> CounterControllerGameTests::controllerResolvesFoldedMultiblock);
 
     public static void init() {}
 
@@ -105,6 +113,38 @@ public final class CounterControllerGameTests {
                         && ModulePatternMatcher.MODE_EXACT.equals(copy.matcher.modes[0])
                         && copy.inventory.getStackInSlot(0).is(Items.IRON_INGOT),
                 "Counter inventory, channels, counts, polling and matcher mode did not persist");
+        helper.succeed();
+    }
+
+    /**
+     * The other half of {@link #counterResolvesMultiblock}: a folded multiblock has no dummy blocks to
+     * walk, only cells with no block entity at all, and 1.12.2 had no such thing to port a rule from.
+     */
+    public static void controllerResolvesFoldedMultiblock(GameTestHelper helper) {
+        BlockMultiblockCore block = ModTurretBlocks.turret_chekhov.get();
+        BlockPos clicked = helper.absolutePos(new BlockPos(2, 1, 2));
+        Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        player.setYRot(0F);
+        player.setPos(clicked.getX() - 6D, clicked.getY(), clicked.getZ() - 6D);
+        helper.getLevel().setBlock(clicked, block.defaultBlockState(), 3);
+        block.setPlacedBy(helper.getLevel(), clicked, block.defaultBlockState(), player, new ItemStack(block));
+
+        BlockPos corePos = clicked.above(block.getHeightOffset()).relative(Direction.NORTH, -block.getOffset());
+        BlockPos cell = corePos.east();
+        helper.assertTrue(helper.getLevel().getBlockEntity(cell) == null,
+                "This test is meaningless unless the cell really has no block entity");
+
+        TileEntityTurretChekhov turret = (TileEntityTurretChekhov) helper.getLevel().getBlockEntity(corePos);
+        helper.assertTrue(turret != null, "Expected a turret block entity at the folded core");
+
+        IRORInteractive resolved = RadioTargets.interactive(helper.getLevel(), cell);
+        helper.assertTrue(resolved == turret,
+                "A torch on a folded cell must resolve to the block entity that owns the multiblock");
+        helper.assertTrue(RadioTargets.interactive(helper.getLevel(), corePos) == turret,
+                "The core must still resolve to itself");
+
+        resolved.runRORFunction("FUN:setActive", new String[]{"1"});
+        helper.assertTrue(turret.isOn, "An ROR command through a folded cell must reach the core");
         helper.succeed();
     }
 

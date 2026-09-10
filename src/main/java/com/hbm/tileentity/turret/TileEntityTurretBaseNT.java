@@ -2,6 +2,7 @@ package com.hbm.tileentity.turret;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.entity.IRadarDetectableNT;
+import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
@@ -68,9 +69,17 @@ import org.jspecify.annotations.Nullable;
  * hierarchy covers the missile branch, while the bomber and rail-car branches are not ported yet.
  * Spent casings are likewise absent: this port's
  * {@code BulletConfig} carries no casing, so a turret that throws brass simply does not.
+ *
+ * <p>The fork's redstone-over-radio surface is ten functions; this port carries the seven whose state
+ * exists here. The other three — {@code toggleBlacklistMobFilter}, {@code addMobFilter} and
+ * {@code removeMobFilter} — drive a per-entity-id target filter that is not ported, so they are absent
+ * rather than accepted and dropped. {@code addWhitelist} also guards its list where 1.12.2 does not:
+ * {@link #getWhitelist} answers null both for a missing chip and for a chip with an empty roster, so the
+ * fork throws on the first name written to a fresh chip. Adding on null is the reading that makes the
+ * command work, and a turret with no chip is still a no-op because {@link #addName} checks for one.
  */
 public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IControlReceiver, MenuProvider {
+        implements IEnergyReceiverMK2, IControlReceiver, MenuProvider, IRORInteractive {
 
     private static final Identifier TURRET_GUI_BASE = turretGui("base");
 
@@ -517,6 +526,54 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
             default -> {
             }
         }
+    }
+
+    @Override
+    public String[] getFunctionInfo() {
+        return new String[]{PREFIX_FUNCTION + "setActive" + NAME_SEPARATOR + "active (0 or 1)",
+                PREFIX_FUNCTION + "targetPlayers" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetAnimals" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetMobs" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "targetMachines" + NAME_SEPARATOR + "enabled (0 or 1)",
+                PREFIX_FUNCTION + "addWhitelist" + NAME_SEPARATOR + "name",
+                PREFIX_FUNCTION + "removeWhitelist" + NAME_SEPARATOR + "name"};
+    }
+
+    @Override
+    public String runRORFunction(String name, String[] params) {
+        if ((PREFIX_FUNCTION + "setActive").equals(name) && params.length > 0) {
+            isOn = IRORInteractive.parseInt(params[0], 0, 1) == 1;
+            markChanged();
+        }
+        if ((PREFIX_FUNCTION + "targetPlayers").equals(name) && params.length > 0) {
+            targetPlayers = IRORInteractive.parseInt(params[0], 0, 1) == 1;
+            markChanged();
+        }
+        if ((PREFIX_FUNCTION + "targetAnimals").equals(name) && params.length > 0) {
+            targetAnimals = IRORInteractive.parseInt(params[0], 0, 1) == 1;
+            markChanged();
+        }
+        if ((PREFIX_FUNCTION + "targetMobs").equals(name) && params.length > 0) {
+            targetMobs = IRORInteractive.parseInt(params[0], 0, 1) == 1;
+            markChanged();
+        }
+        if ((PREFIX_FUNCTION + "targetMachines").equals(name) && params.length > 0) {
+            targetMachines = IRORInteractive.parseInt(params[0], 0, 1) == 1;
+            markChanged();
+        }
+        if ((PREFIX_FUNCTION + "addWhitelist").equals(name) && params.length > 0) {
+            List<String> whitelist = getWhitelist();
+            if (whitelist == null || !whitelist.contains(params[0])) addName(params[0]);
+            markChanged();
+        }
+        if ((PREFIX_FUNCTION + "removeWhitelist").equals(name) && params.length > 0) {
+            List<String> whitelist = getWhitelist();
+            if (whitelist != null && whitelist.contains(params[0])) {
+                removeName(whitelist.indexOf(params[0]));
+            }
+            markChanged();
+        }
+        return null;
     }
 
     public double getAcceptableInaccuracy() {
