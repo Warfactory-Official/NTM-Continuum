@@ -25,6 +25,10 @@ import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 
 import static com.hbm.inventory.OreDictManager.*;
 
+import com.hbm.blocks.machine.pile.ModPileBlocks;
+import com.hbm.inventory.material.Mats;
+import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
+
 /**
  * Assembly machine recipes — a faithful but <b>feasibility-limited</b> slice of the 1.12.2 catalogue.
  * Recipes are picked by the player in the in-GUI recipe selector ({@link com.hbm.inventory.gui
@@ -52,6 +56,11 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     public static final String POOL_PLATES = POOL_PREFIX_ALT + "plates";
     private static final String GROUP_PLATES = "plates";
     private static final String GROUP_CYCLOTRON = "cyclotron";
+    private static final String GROUP_PILE_ROD = "pilerod";
+
+    private static ItemStack pileRod(EnumPileRod type, int count) {
+        return ModPileBlocks.pile_rod.get().of(type, count);
+    }
 
     @Override
     public void registerRecipes() {
@@ -231,6 +240,32 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                         DURA.pipe().count(3), STEEL.pipe().count(4),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 4))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_industrial_turbine.get())));
+
+        // --- chicago pile (1.12.2 "ass.pile*") ---
+        register(new GenericRecipe("ass.pileblock").setup(20, 250)
+                .inputItems(new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.ItemTags.PLANKS, 1),
+                        Mats.MAT_GRAPHITE.ingot().count(4), STEEL.bolt().count(2))
+                .outputItems(new ItemStack(ModPileBlocks.pile_brick.get())));
+        register(new GenericRecipe("ass.pilepabe").setup(40, 200)
+                .inputItems(new ComparableStack(ModItems.billet_ra226be.get(), 3))
+                .outputItems(pileRod(EnumPileRod.RA226BE, 1))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilepobe").setup(40, 200)
+                .inputItems(new ComparableStack(ModItems.billet_po210be.get(), 3))
+                .outputItems(pileRod(EnumPileRod.PO210BE, 1))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilezr").setup(40, 200)
+                .inputItems(ZR.billet().count(1))
+                .outputItems(pileRod(EnumPileRod.ZR, 3))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilenu").setup(40, 200)
+                .inputItems(U.billet().count(3))
+                .outputItems(pileRod(EnumPileRod.NU, 1))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilethorium").setup(40, 200)
+                .inputItems(TH232.billet().count(3))
+                .outputItems(pileRod(EnumPileRod.THORIUM, 1))
+                .setGroup(GROUP_PILE_ROD, this));
 
         // --- leviathan steam turbine (1.12.2 "ass.leviturbine") ---
         register(new GenericRecipe("ass.leviturbine").setup(600, 100)

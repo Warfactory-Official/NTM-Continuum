@@ -178,6 +178,27 @@ public final class ModBlockEntities {
                     () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine::new,
                             ModMachineBlocks.machine_industrial_turbine.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2>> PILE_BLOCK =
+            BLOCK_ENTITIES.register("pile_block",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2::new,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_block.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileCore>> PILE_CORE =
+            BLOCK_ENTITIES.register("pile_core",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.pile.TileEntityPileCore::new,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_block.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileLoader>> PILE_LOADER =
+            BLOCK_ENTITIES.register("pile_loader",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.pile.TileEntityPileLoader::new,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileVent>> PILE_VENT =
+            BLOCK_ENTITIES.register("pile_vent",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.pile.TileEntityPileVent::new,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileControl>> PILE_CONTROL =
+            BLOCK_ENTITIES.register("pile_control",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.pile.TileEntityPileControl::new,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityChungus>> MACHINE_CHUNGUS =
             BLOCK_ENTITIES.register("machine_chungus",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityChungus::new,

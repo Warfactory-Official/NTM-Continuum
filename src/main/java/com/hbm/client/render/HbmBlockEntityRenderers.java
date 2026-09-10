@@ -79,6 +79,9 @@ public final class HbmBlockEntityRenderers {
                 new ModelDef(obj("machines/blast_furnace.obj"), tex("machines/blast_furnace.png"))).doubleSided());
         regCustom(sink, ModBlockEntities.MACHINE_INDUSTRIAL_TURBINE.get(), ctx -> new IndustrialTurbineRenderer());
         regCustom(sink, ModBlockEntities.MACHINE_CHUNGUS.get(), ctx -> new ChungusRenderer());
+        regCustom(sink, ModBlockEntities.PILE_CONTROL.get(), ctx -> new PileDeviceRenderers.Control());
+        regCustom(sink, ModBlockEntities.PILE_LOADER.get(), ctx -> new PileDeviceRenderers.Loader());
+        regCustom(sink, ModBlockEntities.PILE_VENT.get(), ctx -> new PileDeviceRenderers.Vent());
          regCustom(sink, ModBlockEntities.MACHINE_LARGE_TURBINE.get(), ctx -> new LargeTurbineRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_TURBINE_GAS.get(), ctx -> new GasTurbineRenderer());
          regCustom(sink, ModBlockEntities.MACHINE_TURBOFAN.get(), ctx -> new TurbofanRenderer());

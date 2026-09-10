@@ -138,6 +138,20 @@ public final class HbmGameTestFunctions {
             TESTS.function("industrial_turbine_ports", 100, 8, () -> IndustrialTurbineGameTests::ports);
     public static final GameTests.Function INDUSTRIAL_TURBINE_CONVERSION =
             TESTS.function("industrial_turbine_conversion", 100, 8, () -> IndustrialTurbineGameTests::conversion);
+    public static final GameTests.Function PILE_ASSEMBLY =
+            TESTS.function("pile_assembly", 100, 12, () -> PileGameTests::assembly);
+    public static final GameTests.Function PILE_CHANNELS =
+            TESTS.function("pile_channels", 100, 12, () -> PileGameTests::channels);
+    public static final GameTests.Function PILE_REACTION =
+            TESTS.function("pile_reaction", 100, 12, () -> PileGameTests::reaction);
+    public static final GameTests.Function PILE_DEVICES =
+            TESTS.function("pile_devices", 100, 12, () -> PileGameTests::devices);
+    public static final GameTests.Function PILE_COLLAPSE =
+            TESTS.function("pile_collapse", 100, 12, () -> PileGameTests::collapse);
+    public static final GameTests.Function PILE_RODS =
+            TESTS.function("pile_rods", 20, () -> PileGameTests::rods);
+    public static final GameTests.Function PILE_ASSETS =
+            TESTS.function("pile_assets", 20, () -> PileGameTests::assets);
     public static final GameTests.Function CHUNGUS_STRUCTURE =
             TESTS.function("chungus_structure", 100, 24, () -> ChungusGameTests::structure);
     public static final GameTests.Function CHUNGUS_PORTS =

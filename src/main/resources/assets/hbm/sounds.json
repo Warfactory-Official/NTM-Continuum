@@ -339,6 +339,15 @@
       }
     ]
   },
+  "weapon.reload.boltopen": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/reload/boltopen",
+        "stream": false
+      }
+    ]
+  },
   "weapon.reload.dryfireclick": {
     "category": "player",
     "sounds": [

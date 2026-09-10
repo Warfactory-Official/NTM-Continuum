@@ -1,0 +1,75 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "hbm:item_variant",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "hbm:item/pile_rod_ra226be"
+    },
+    "cases": [
+      {
+        "when": "0",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_ra226be"
+        }
+      },
+      {
+        "when": "1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_po210be"
+        }
+      },
+      {
+        "when": "2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_zr"
+        }
+      },
+      {
+        "when": "3",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_nu"
+        }
+      },
+      {
+        "when": "4",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_pu239"
+        }
+      },
+      {
+        "when": "5",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_rgp"
+        }
+      },
+      {
+        "when": "6",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_waste"
+        }
+      },
+      {
+        "when": "7",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_thorium"
+        }
+      },
+      {
+        "when": "8",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pile_rod_thorium_fuel"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "variants": {
+    "meta=0": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=1": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=2": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=3": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=4": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=5": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=6": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=7": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=8": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=9": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=10": {
+      "model": "hbm:block/pile_device"
+    },
+    "meta=11": {
+      "model": "hbm:block/pile_device"
+    }
+  }
+}

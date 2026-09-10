@@ -115,6 +115,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> FIRE_RIFLE_HEAVY = register("weapon.fire.rifleheavy");
     public static final RegistryObject<SoundEvent> SHOOT_44 = register("weapon.44shoot");
     public static final RegistryObject<SoundEvent> DRY_FIRE_CLICK = register("weapon.reload.dryfireclick");
+    public static final RegistryObject<SoundEvent> BOLT_OPEN = register("weapon.reload.boltopen");
     public static final RegistryObject<SoundEvent> RELOAD_REVOLVER = register("weapon.revolverreload");
     public static final RegistryObject<SoundEvent> LASER_BANG = register("weapon.laser_bang");
 

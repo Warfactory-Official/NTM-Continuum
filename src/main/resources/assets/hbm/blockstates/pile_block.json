@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "meta=0": {
+      "model": "hbm:block/pile_block"
+    },
+    "meta=1": {
+      "model": "hbm:block/pile_block_core"
+    },
+    "meta=2": {
+      "model": "hbm:block/pile_block"
+    },
+    "meta=3": {
+      "model": "hbm:block/pile_block_input"
+    },
+    "meta=4": {
+      "model": "hbm:block/pile_block_output"
+    },
+    "meta=5": {
+      "model": "hbm:block/pile_block_input"
+    },
+    "meta=6": {
+      "model": "hbm:block/pile_block_output"
+    },
+    "meta=7": {
+      "model": "hbm:block/pile_block_control"
+    },
+    "meta=8": {
+      "model": "hbm:block/pile_block"
+    }
+  }
+}

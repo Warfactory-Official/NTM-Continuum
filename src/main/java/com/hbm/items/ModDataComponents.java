@@ -30,6 +30,8 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
     public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
+    public static final GolemComponent<Double> PILE_ROD_DEPLETION =
+            GolemComponent.of(Constants.MOD_ID, "pile_rod_depletion", Codec.DOUBLE);
     /** What a cargo artillery shell is carrying. It survives the flight and comes back off the shell. */
     public static final GolemComponent<ItemStack> ARTY_CARGO =
             GolemComponent.of(Constants.MOD_ID, "arty_cargo", dev.golem.core.world.ItemStacks.optionalCodec());

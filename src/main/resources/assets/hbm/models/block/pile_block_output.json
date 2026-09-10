@@ -1,0 +1,9 @@
+{
+  "parent": "block/cube_bottom_top",
+  "textures": {
+    "top": "hbm:blocks/pile_block_top",
+    "side": "hbm:blocks/pile_block_output",
+    "bottom": "hbm:blocks/pile_block_top",
+    "particle": "hbm:blocks/pile_block_output"
+  }
+}

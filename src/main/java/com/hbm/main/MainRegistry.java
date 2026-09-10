@@ -65,6 +65,7 @@ public final class MainRegistry {
         com.hbm.items.solar.ModSolarItems.init();
         com.hbm.tileentity.machine.solar.ModSolarBlockEntities.init();
         com.hbm.smoke.SmokeChainRegistration.init();
+        com.hbm.blocks.machine.pile.ModPileBlocks.init();
         com.hbm.foundry.FoundryExpansion.init();
         com.hbm.blocks.machine.DiFurnaceContent.init();
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)
@@ -122,6 +123,7 @@ public final class MainRegistry {
         // The bullet configs must exist before a gun's magazine names them; the gun items themselves are
         // built lazily at registration, well after this.
         com.hbm.items.weapon.sedna.factory.GunFactory.init();
+        com.hbm.tileentity.machine.pile.TileEntityPileCore.initDebris();
         com.hbm.items.ModGunItems.init();   // the Sedna guns
         com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them
         com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)

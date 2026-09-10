@@ -133,6 +133,8 @@ public final class RadioProviderGameTests {
                 "FUN:setauto!auto", "FUN:setthrottle!percent", "FUN:setstate!state");
         assertInfo(helper, new TileEntityMachineIndustrialTurbine(pos(9), state(ModMachineBlocks.machine_industrial_turbine.get())), "VAL:output", "VAL:flywheel");
         assertInfo(helper, new com.hbm.tileentity.machine.TileEntityChungus(pos(33), state(ModMachineBlocks.machine_chungus.get())), "VAL:output");
+        assertInfo(helper, new com.hbm.tileentity.machine.pile.TileEntityPileLoader(pos(34), state(com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get())),
+                "VAL:meta", "VAL:depletion", "VAL:deppercent", "VAL:lifetime", "VAL:temp");
         assertInfo(helper, new TileEntityMachinePUREX(pos(10), state(ModMachineBlocks.machine_purex.get())), "VAL:progress", "VAL:recipe", "VAL:active");
         assertInfo(helper, new TileEntityWatz(pos(11), state(ModMachineBlocks.watz.get())),
                 "VAL:heat", "VAL:flux", "VAL:mud", "VAL:coolant_hot", "VAL:coolant_cold");
@@ -176,6 +178,8 @@ public final class RadioProviderGameTests {
                 "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
                 "FUN:targetAnimals!enabled (0 or 1)", "FUN:targetMobs!enabled (0 or 1)",
                 "FUN:targetMachines!enabled (0 or 1)", "FUN:addWhitelist!name", "FUN:removeWhitelist!name");
+        assertInteractive(helper, new com.hbm.tileentity.machine.pile.TileEntityPileControl(pos(35), state(com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get())),
+                "FUN:setrods!percent", "FUN:extendrods!percent");
         assertInteractive(helper, new TileEntityTurretArty(pos(26), state(ModTurretBlocks.turret_arty.get())),
                 "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
                 "FUN:targetAnimals!enabled (0 or 1)", "FUN:targetMobs!enabled (0 or 1)",
