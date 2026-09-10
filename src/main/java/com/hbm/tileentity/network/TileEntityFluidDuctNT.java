@@ -38,7 +38,12 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     protected FluidType type = Fluids.NONE;
 
     public TileEntityFluidDuctNT(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.FLUID_DUCT.get(), pos, state);
+        this(ModBlockEntities.FLUID_DUCT.get(), pos, state);
+    }
+
+    protected TileEntityFluidDuctNT(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+            BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFluidDuctNT duct) {

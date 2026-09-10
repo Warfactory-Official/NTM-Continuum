@@ -1,0 +1,11 @@
+{
+  "parent": "hbm:block/capacitor",
+  "textures": {
+    "top": "hbm:blocks/capacitor_schrabidate_top",
+    "side": "hbm:blocks/capacitor_schrabidate_side",
+    "bottom": "hbm:blocks/capacitor_schrabidate_bottom",
+    "inner_top": "hbm:blocks/capacitor_schrabidate_inner_top",
+    "inner_side": "hbm:blocks/capacitor_schrabidate_inner_side",
+    "particle": "hbm:blocks/capacitor_schrabidate_inner_side"
+  }
+}

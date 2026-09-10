@@ -57,6 +57,70 @@ public final class ModMachineBlocks {
             "radsensor", RadSensor::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
 
+    public static final RegistryObject<MachineCapacitorBus> capacitor_bus = BLOCKS.registerBlock(
+            "capacitor_bus", MachineCapacitorBus::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_copper = BLOCKS.registerBlock(
+            "machine_capacitor_copper", p -> new MachineCapacitor(1000000L, p),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_gold = BLOCKS.registerBlock(
+            "machine_capacitor_gold", p -> new MachineCapacitor(5000000L, p),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_niobium = BLOCKS.registerBlock(
+            "machine_capacitor_niobium", p -> new MachineCapacitor(25000000L, p),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_tantalium = BLOCKS.registerBlock(
+            "machine_capacitor_tantalium", p -> new MachineCapacitor(150000000L, p),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_schrabidate = BLOCKS.registerBlock(
+            "machine_capacitor_schrabidate", p -> new MachineCapacitor(50000000000L, p),
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
+    public static final RegistryObject<BlockCargoElevator> cargo_elevator = BLOCKS.registerBlock(
+            "cargo_elevator", BlockCargoElevator::new,
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<BlockFluidBarrel> barrel_plastic = BLOCKS.registerBlock(
+            "barrel_plastic", p -> new BlockFluidBarrel(12000, p),
+            p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<BlockFluidBarrel> barrel_corroded = BLOCKS.registerBlock(
+            "barrel_corroded", p -> new BlockFluidBarrel(6000, p),
+            p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<BlockFluidBarrel> barrel_iron = BLOCKS.registerBlock(
+            "barrel_iron", p -> new BlockFluidBarrel(8000, p),
+            p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<BlockFluidBarrel> barrel_steel = BLOCKS.registerBlock(
+            "barrel_steel", p -> new BlockFluidBarrel(16000, p),
+            p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<BlockFluidBarrel> barrel_tcalloy = BLOCKS.registerBlock(
+            "barrel_tcalloy", p -> new BlockFluidBarrel(24000, p),
+            p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<BlockFluidBarrel> barrel_antimatter = BLOCKS.registerBlock(
+            "barrel_antimatter", p -> new BlockFluidBarrel(16000, p),
+            p -> p.strength(2.0F, 5.0F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<GeigerCounter> geiger = BLOCKS.registerBlock(
+            "geiger", GeigerCounter::new,
+            p -> p.strength(15.0F, 0.25F).sound(SoundType.METAL).noOcclusion());
+
+    public static final RegistryObject<com.hbm.blocks.network.FluidDuctGauge> fluid_duct_gauge =
+            BLOCKS.registerBlock("fluid_duct_gauge", com.hbm.blocks.network.FluidDuctGauge::new,
+                    p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
+    public static final RegistryObject<com.hbm.blocks.network.BlockCableGauge> red_cable_gauge =
+            BLOCKS.registerBlock("red_cable_gauge", com.hbm.blocks.network.BlockCableGauge::new,
+                    p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+
     public static final RegistryObject<BlockCable> red_cable = BLOCKS.registerBlock(
             "red_cable", BlockCable::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
@@ -225,6 +289,10 @@ public final class ModMachineBlocks {
     public static final RegistryObject<FluidValve> fluid_valve = BLOCKS.registerBlock(
             "fluid_valve", FluidValve::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+
+    public static final RegistryObject<com.hbm.blocks.network.FluidCounterValve> fluid_counter_valve =
+            BLOCKS.registerBlock("fluid_counter_valve", com.hbm.blocks.network.FluidCounterValve::new,
+                    p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
 
     public static final RegistryObject<MachineDrain> machine_drain = BLOCKS.registerBlock(
             "machine_drain", MachineDrain::new,
@@ -527,7 +595,23 @@ public final class ModMachineBlocks {
         tabItem("rtg_polonium", rtg_polonium);
         ModTabs.addTo(HbmTab.MACHINES, machine_rtg_grey_item);
         tabItem("radsensor", radsensor);
+        tabItem("geiger", geiger);
+        tabItem("barrel_plastic", barrel_plastic);
+        tabItem("barrel_corroded", barrel_corroded);
+        tabItem("barrel_iron", barrel_iron);
+        tabItem("barrel_steel", barrel_steel);
+        tabItem("barrel_tcalloy", barrel_tcalloy);
+        tabItem("barrel_antimatter", barrel_antimatter);
+        tabItem("cargo_elevator", cargo_elevator);
+        tabItem("capacitor_bus", capacitor_bus);
+        tabItem("machine_capacitor_copper", machine_capacitor_copper);
+        tabItem("machine_capacitor_gold", machine_capacitor_gold);
+        tabItem("machine_capacitor_niobium", machine_capacitor_niobium);
+        tabItem("machine_capacitor_tantalium", machine_capacitor_tantalium);
+        tabItem("machine_capacitor_schrabidate", machine_capacitor_schrabidate);
         tabItem("red_cable", red_cable);
+        tabItem("red_cable_gauge", red_cable_gauge);
+        tabItem("fluid_duct_gauge", fluid_duct_gauge);
         tabItem("creative_generator", creative_generator);
         tabItem("machine_turbine", machine_turbine);
         tabItem("machine_large_turbine", machine_large_turbine);
@@ -575,6 +659,7 @@ public final class ModMachineBlocks {
          tabItem("machine_bigasstank", machine_bigasstank);
          tabItem("machine_bat9000", machine_bat9000);
         tabItem("fluid_valve", fluid_valve);
+        tabItem("fluid_counter_valve", fluid_counter_valve);
         tabItem("machine_drain", machine_drain);
         tabItem("machine_electric_furnace_off", machine_electric_furnace_off);
         tabItem("machine_furnace_brick_off", machine_furnace_brick_off);

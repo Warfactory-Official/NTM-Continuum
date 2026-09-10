@@ -26,7 +26,12 @@ public class TileEntityFluidValve extends CompatBlockEntity implements IFluidPip
     protected FluidType type = Fluids.NONE;
 
     public TileEntityFluidValve(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.FLUID_VALVE.get(), pos, state);
+        this(ModBlockEntities.FLUID_VALVE.get(), pos, state);
+    }
+
+    protected TileEntityFluidValve(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+            BlockPos pos, BlockState state) {
+        super(type, pos, state);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFluidValve valve) {

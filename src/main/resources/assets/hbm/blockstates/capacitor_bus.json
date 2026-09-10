@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down":  { "model": "hbm:block/capacitor_bus", "x": 180 },
+    "facing=up":    { "model": "hbm:block/capacitor_bus" },
+    "facing=north": { "model": "hbm:block/capacitor_bus", "x": 90 },
+    "facing=south": { "model": "hbm:block/capacitor_bus", "x": 270 },
+    "facing=west":  { "model": "hbm:block/capacitor_bus", "x": 90, "y": 270 },
+    "facing=east":  { "model": "hbm:block/capacitor_bus", "x": 90, "y": 90 }
+  }
+}

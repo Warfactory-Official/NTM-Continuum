@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "hbm:blocks/deco_steel",
+    "front": "hbm:blocks/pipe_gauge",
+    "side": "hbm:blocks/deco_steel"
+  }
+}

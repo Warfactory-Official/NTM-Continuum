@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "hbm:blocks/barrel_steel"
+  }
+}

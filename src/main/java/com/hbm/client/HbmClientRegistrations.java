@@ -189,9 +189,13 @@ public final class HbmClientRegistrations {
         sink.register(com.hbm.blocks.machine.DiFurnaceContent.DI_FURNACE_MENU.get(),
                 com.hbm.inventory.gui.GUIDiFurnace::new);
         sink.register(ModMenus.MASS_STORAGE.get(), com.hbm.inventory.gui.GUIMassStorage::new);
+        sink.register(ModMenus.BARREL.get(), com.hbm.inventory.gui.GUIBarrel::new);
         sink.register(ModMenus.CRATE_TEMPLATE.get(), com.hbm.inventory.gui.GUICrateTemplate::new);
         RBMKClientScreens.register(sink);
         RBMKGauge.OPEN_SCREEN = com.hbm.inventory.gui.ScreenRBMKGauge::new;
+        com.hbm.blocks.machine.rbmk.RBMKTerminal.OPEN_SCREEN = terminal ->
+                net.minecraft.client.Minecraft.getInstance().setScreen(
+                        new com.hbm.inventory.gui.ScreenRBMKTerminal(terminal));
     }
 
     public static void registerHud(HudSink sink) {

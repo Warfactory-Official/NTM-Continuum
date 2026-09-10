@@ -87,6 +87,38 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("radsensor",
                     () -> BlockEntities.type(TileEntityRadSensor::new, ModMachineBlocks.radsensor.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCapacitor>>
+            CAPACITOR = BLOCK_ENTITIES.register("capacitor",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityCapacitor::new,
+                            ModMachineBlocks.machine_capacitor_copper.get(), ModMachineBlocks.machine_capacitor_gold.get(),
+                            ModMachineBlocks.machine_capacitor_niobium.get(), ModMachineBlocks.machine_capacitor_tantalium.get(),
+                            ModMachineBlocks.machine_capacitor_schrabidate.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCargoElevator>>
+            CARGO_ELEVATOR = BLOCK_ENTITIES.register("cargo_elevator",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityCargoElevator::new,
+                            ModMachineBlocks.cargo_elevator.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityBarrel>> BARREL =
+            BLOCK_ENTITIES.register("barrel",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityBarrel::new,
+                            ModMachineBlocks.barrel_plastic.get(), ModMachineBlocks.barrel_corroded.get(), ModMachineBlocks.barrel_iron.get(), ModMachineBlocks.barrel_steel.get(), ModMachineBlocks.barrel_tcalloy.get(), ModMachineBlocks.barrel_antimatter.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityGeiger>> GEIGER =
+            BLOCK_ENTITIES.register("geiger",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityGeiger::new,
+                            ModMachineBlocks.geiger.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.network.TileEntityPipeGauge>>
+            PIPE_GAUGE = BLOCK_ENTITIES.register("fluid_duct_gauge",
+                    () -> BlockEntities.type(com.hbm.tileentity.network.TileEntityPipeGauge::new,
+                            ModMachineBlocks.fluid_duct_gauge.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.network.TileEntityCableGauge>>
+            CABLE_GAUGE = BLOCK_ENTITIES.register("red_cable_gauge",
+                    () -> BlockEntities.type(com.hbm.tileentity.network.TileEntityCableGauge::new,
+                            ModMachineBlocks.red_cable_gauge.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityCableBaseNT>> RED_CABLE =
             BLOCK_ENTITIES.register("red_cable",
                     () -> BlockEntities.type(TileEntityCableBaseNT::new, ModMachineBlocks.red_cable.get()));
@@ -252,6 +284,11 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityFluidValve>> FLUID_VALVE =
             BLOCK_ENTITIES.register("fluid_valve",
                     () -> BlockEntities.type(TileEntityFluidValve::new, ModMachineBlocks.fluid_valve.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.network.TileEntityFluidCounterValve>>
+            FLUID_COUNTER_VALVE = BLOCK_ENTITIES.register("fluid_counter_valve",
+                    () -> BlockEntities.type(com.hbm.tileentity.network.TileEntityFluidCounterValve::new,
+                            ModMachineBlocks.fluid_counter_valve.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineDrain>> MACHINE_DRAIN =
             BLOCK_ENTITIES.register("machine_drain",

@@ -1,0 +1,11 @@
+{
+  "parent": "hbm:block/capacitor",
+  "textures": {
+    "top": "hbm:blocks/capacitor_niobium_top",
+    "side": "hbm:blocks/capacitor_niobium_side",
+    "bottom": "hbm:blocks/capacitor_niobium_bottom",
+    "inner_top": "hbm:blocks/capacitor_niobium_inner_top",
+    "inner_side": "hbm:blocks/capacitor_niobium_inner_side",
+    "particle": "hbm:blocks/capacitor_niobium_inner_side"
+  }
+}

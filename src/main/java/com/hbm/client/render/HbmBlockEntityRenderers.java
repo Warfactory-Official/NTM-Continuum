@@ -52,6 +52,9 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModRBMKBlockEntities.RBMK_OUTGASSER.get(), ctx -> new RBMKColumnShellRenderer<>("rbmk_outgasser", RBMKColumnShellRenderer.Kind.PLAIN));
         regCustom(sink, ModRBMKBlockEntities.RBMK_CONSOLE.get(), RBMKConsoleRenderer::new);
         regCustom(sink, ModRBMKBlockEntities.RBMK_GAUGE.get(), RBMKGaugeRenderer::new);
+        regCustom(sink, ModRBMKBlockEntities.RBMK_TERMINAL.get(), RBMKTerminalRenderer::new);
+        regCustom(sink, ModBlockEntities.CARGO_ELEVATOR.get(), CargoElevatorRenderer::new);
+        regCustom(sink, ModBlockEntities.BARREL.get(), BarrelRenderer::new);
         regCustom(sink, ModRBMKBlockEntities.RBMK_CRANE_CONSOLE.get(), ctx -> new RBMKCraneConsoleRenderer());
         regCustom(sink, ModRBMKBlockEntities.RBMK_DEBRIS.get(), ctx -> new RBMKDebrisBlockRenderer());
          // The assembly machine has its own animated renderer (spinning ring + two robotic arms).

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down":  { "model": "hbm:block/machine_capacitor_tantalium", "x": 180 },
+    "facing=up":    { "model": "hbm:block/machine_capacitor_tantalium" },
+    "facing=north": { "model": "hbm:block/machine_capacitor_tantalium", "x": 90 },
+    "facing=south": { "model": "hbm:block/machine_capacitor_tantalium", "x": 270 },
+    "facing=west":  { "model": "hbm:block/machine_capacitor_tantalium", "x": 90, "y": 270 },
+    "facing=east":  { "model": "hbm:block/machine_capacitor_tantalium", "x": 90, "y": 90 }
+  }
+}

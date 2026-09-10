@@ -246,6 +246,10 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerMachineShredder>> MACHINE_SHREDDER =
             MENUS.register("machine_shredder", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineShredder::new));
 
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerBarrel>> BARREL =
+            MENUS.register("barrel",
+                    () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerBarrel::new));
+
     public static final RegistryObject<MenuType<ContainerMachineFluidTank>> FLUID_TANK =
             MENUS.register("machine_fluidtank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineFluidTank::new));
 

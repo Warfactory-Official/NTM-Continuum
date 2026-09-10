@@ -42,6 +42,7 @@ public final class ModRBMKBlocks {
     public static final RegistryObject<RBMKConsole> rbmk_console = nonColumn("rbmk_console", RBMKConsole::new);
     public static final RegistryObject<RBMKCraneConsole> rbmk_crane_console = nonColumn("rbmk_crane_console", RBMKCraneConsole::new);
     public static final RegistryObject<RBMKGauge> rbmk_gauge = nonColumn("rbmk_gauge", RBMKGauge::new);
+    public static final RegistryObject<RBMKTerminal> rbmk_terminal = nonColumn("rbmk_terminal", RBMKTerminal::new);
 
     public static final RegistryObject<RBMKDebrisBlock> rbmk_debris = debris("rbmk_debris", RBMKDebrisBlock::new);
     public static final RegistryObject<RBMKDebrisBurning> rbmk_debris_burning = debris("rbmk_debris_burning", RBMKDebrisBurning::new);
@@ -59,7 +60,7 @@ public final class ModRBMKBlocks {
     private static <B extends Block> RegistryObject<B> nonColumn(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory) { return BLOCKS.registerBlock(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops().noOcclusion()); }
     private static <B extends Block> RegistryObject<B> debris(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory) { return BLOCKS.registerBlock(id, factory, p -> p.strength(50F, 600F).requiresCorrectToolForDrops().noOcclusion()); }
     static {
-        for (RegistryObject<? extends Block> block : java.util.List.of(rbmk_fuel_rod, rbmk_control, rbmk_control_mod, rbmk_control_auto, rbmk_control_reasim, rbmk_control_reasim_auto, rbmk_boiler, rbmk_moderator, rbmk_reflector, rbmk_absorber, rbmk_blank, rbmk_fuel_rod_moderated, rbmk_fuel_rod_reasim, rbmk_fuel_rod_reasim_moderated, rbmk_cooler, rbmk_storage, rbmk_heater, rbmk_outgasser, rbmk_steam_inlet, rbmk_steam_outlet, rbmk_console, rbmk_crane_console, rbmk_gauge, rbmk_debris, rbmk_debris_burning, rbmk_debris_radiating, rbmk_debris_digamma, foam_layer)) {
+        for (RegistryObject<? extends Block> block : java.util.List.of(rbmk_fuel_rod, rbmk_control, rbmk_control_mod, rbmk_control_auto, rbmk_control_reasim, rbmk_control_reasim_auto, rbmk_boiler, rbmk_moderator, rbmk_reflector, rbmk_absorber, rbmk_blank, rbmk_fuel_rod_moderated, rbmk_fuel_rod_reasim, rbmk_fuel_rod_reasim_moderated, rbmk_cooler, rbmk_storage, rbmk_heater, rbmk_outgasser, rbmk_steam_inlet, rbmk_steam_outlet, rbmk_console, rbmk_crane_console, rbmk_gauge, rbmk_terminal, rbmk_debris, rbmk_debris_burning, rbmk_debris_radiating, rbmk_debris_digamma, foam_layer)) {
             RegistryObject<BlockItem> item = ITEMS.registerBlockItem(block.getId().getPath(), block::get);
             ModTabs.addTo(HbmTab.MACHINES, item);
         }
