@@ -178,6 +178,11 @@ public final class ModBlockEntities {
                     () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine::new,
                             ModMachineBlocks.machine_industrial_turbine.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityChungus>> MACHINE_CHUNGUS =
+            BLOCK_ENTITIES.register("machine_chungus",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityChungus::new,
+                            ModMachineBlocks.machine_chungus.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCondenser>> MACHINE_CONDENSER =
             BLOCK_ENTITIES.register("machine_condenser",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityCondenser::new, ModMachineBlocks.machine_condenser.get()));

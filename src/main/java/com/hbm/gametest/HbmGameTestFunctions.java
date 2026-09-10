@@ -138,6 +138,16 @@ public final class HbmGameTestFunctions {
             TESTS.function("industrial_turbine_ports", 100, 8, () -> IndustrialTurbineGameTests::ports);
     public static final GameTests.Function INDUSTRIAL_TURBINE_CONVERSION =
             TESTS.function("industrial_turbine_conversion", 100, 8, () -> IndustrialTurbineGameTests::conversion);
+    public static final GameTests.Function CHUNGUS_STRUCTURE =
+            TESTS.function("chungus_structure", 100, 24, () -> ChungusGameTests::structure);
+    public static final GameTests.Function CHUNGUS_PORTS =
+            TESTS.function("chungus_ports", 100, 24, () -> ChungusGameTests::ports);
+    public static final GameTests.Function CHUNGUS_CONVERSION =
+            TESTS.function("chungus_conversion", 100, 24, () -> ChungusGameTests::conversion);
+    public static final GameTests.Function CHUNGUS_LEVER =
+            TESTS.function("chungus_lever", 100, 24, () -> ChungusGameTests::lever);
+    public static final GameTests.Function CHUNGUS_ASSETS =
+            TESTS.function("chungus_assets", 20, () -> ChungusGameTests::assets);
     public static final GameTests.Function LARGE_TURBINE_LAYOUT =
             TESTS.function("large_turbine_layout", 100, 8, () -> LargeTurbineGameTests::layout);
     public static final GameTests.Function LARGE_TURBINE_PORTS =

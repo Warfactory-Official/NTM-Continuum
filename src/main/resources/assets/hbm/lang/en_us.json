@@ -1964,6 +1964,8 @@
   "block.hbm.machine_sawmill": "Sawmill",
   "item.hbm.machine_sawmill": "Sawmill",
   "block.hbm.machine_industrial_turbine": "Industrial Steam Turbine",
+  "block.hbm.machine_chungus": "Leviathan Steam Turbine",
+  "tile.machine_chungus.desc": "Efficiency: 85%",
   "container.machineLargeTurbine": "Large Steam Turbine",
   "block.hbm.machine_waste_drum": "Spent Fuel Pool Drum",
   "block.hbm.machine_storage_drum": "Nuclear Waste Disposal Drum",

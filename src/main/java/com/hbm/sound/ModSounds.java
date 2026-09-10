@@ -99,6 +99,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> TURBINE_GAS_RUNNING = register("block.turbinegas_running");
     public static final RegistryObject<SoundEvent> INDUSTRIAL_TURBINE = register("block.industrial_turbine");
     public static final RegistryObject<SoundEvent> CHUNGUS_LEVER = register("block.chungus_lever");
+    public static final RegistryObject<SoundEvent> CHUNGUS_TURBINE = register("block.chungus_turbine");
     public static final RegistryObject<SoundEvent> PYRO_OPERATE = SOUNDS.register("block.pyro_operate",
             () -> SoundEvent.createFixedRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.pyro_operate"), 15F));
     public static final RegistryObject<SoundEvent> IGENERATOR_OPERATE = SOUNDS.register("block.igenerator_operate",

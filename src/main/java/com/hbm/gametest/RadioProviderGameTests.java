@@ -132,6 +132,7 @@ public final class RadioProviderGameTests {
                 "VAL:temp", "VAL:power", "VAL:fuel", "VAL:lubricant", "VAL:water", "VAL:steam",
                 "FUN:setauto!auto", "FUN:setthrottle!percent", "FUN:setstate!state");
         assertInfo(helper, new TileEntityMachineIndustrialTurbine(pos(9), state(ModMachineBlocks.machine_industrial_turbine.get())), "VAL:output", "VAL:flywheel");
+        assertInfo(helper, new com.hbm.tileentity.machine.TileEntityChungus(pos(33), state(ModMachineBlocks.machine_chungus.get())), "VAL:output");
         assertInfo(helper, new TileEntityMachinePUREX(pos(10), state(ModMachineBlocks.machine_purex.get())), "VAL:progress", "VAL:recipe", "VAL:active");
         assertInfo(helper, new TileEntityWatz(pos(11), state(ModMachineBlocks.watz.get())),
                 "VAL:heat", "VAL:flux", "VAL:mud", "VAL:coolant_hot", "VAL:coolant_cold");

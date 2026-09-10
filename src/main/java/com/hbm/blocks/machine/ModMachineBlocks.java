@@ -169,6 +169,9 @@ public final class ModMachineBlocks {
     public static final RegistryObject<MachineIndustrialTurbine> machine_industrial_turbine = BLOCKS.registerBlock(
             "machine_industrial_turbine", MachineIndustrialTurbine::new,
             p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+    public static final RegistryObject<MachineChungus> machine_chungus = BLOCKS.registerBlock(
+            "machine_chungus", MachineChungus::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
     public static final RegistryObject<MachineCondenser> machine_condenser = BLOCKS.registerBlock(
             "machine_condenser", MachineCondenser::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
@@ -655,6 +658,7 @@ public final class ModMachineBlocks {
         tabItem("machine_stirling_steel", machine_stirling_steel);
         tabItem("machine_stirling_creative", machine_stirling_creative);
          tabItem("machine_industrial_turbine", machine_industrial_turbine);
+         tabItem("machine_chungus", machine_chungus);
          tabItem("machine_condenser", machine_condenser);
          tabItem("machine_condenser_powered", machine_condenser_powered);
         tabItem("machine_zirnox", machine_zirnox);

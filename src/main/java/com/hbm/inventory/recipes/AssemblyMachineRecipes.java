@@ -232,6 +232,16 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 4))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_industrial_turbine.get())));
 
+        // --- leviathan steam turbine (1.12.2 "ass.leviturbine") ---
+        register(new GenericRecipe("ass.leviturbine").setup(600, 100)
+                .inputItems(STEEL.shell().count(6), STEEL.plateWelded().count(16), TI.plate().count(12),
+                        ANY_RESISTANTALLOY.ingot().count(16),
+                        new ComparableStack(ModItems.turbine_tungsten.get(), 5),
+                        new ComparableStack(ModItems.turbine_titanium.get(), 3),
+                        new ComparableStack(ModItems.flywheel_beryllium.get()),
+                        GOLD.wireDense().count(48), DURA.pipe().count(16), STEEL.pipe().count(16))
+                .outputItems(new ItemStack(ModMachineBlocks.machine_chungus.get())));
+
         // --- gas turbine and turbofan (1.12.2 "ass.gasturbine" / "ass.turbofan") ---
         register(new GenericRecipe("ass.gasturbine").setup(400, 100)
                 .inputItems(STEEL.shell().count(10), GOLD.wireDense().count(12), DURA.pipe().count(4),

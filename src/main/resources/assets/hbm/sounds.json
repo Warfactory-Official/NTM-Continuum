@@ -454,6 +454,15 @@
     "category": "block",
     "sounds": [
       {
+        "name": "hbm:block/largeturbine",
+        "stream": false
+      }
+    ]
+  },
+  "block.chungus_turbine": {
+    "category": "block",
+    "sounds": [
+      {
         "name": "hbm:block/chungusturbine",
         "stream": false
       }
