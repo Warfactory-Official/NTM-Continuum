@@ -1,0 +1,110 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "hbm:item_variant",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "hbm:item/satellite_spy"
+    },
+    "cases": [
+      {
+        "when": "0",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_spy"
+        }
+      },
+      {
+        "when": "1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_scanner"
+        }
+      },
+      {
+        "when": "2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_radar"
+        }
+      },
+      {
+        "when": "3",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_miner_astro"
+        }
+      },
+      {
+        "when": "4",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_miner_lunar"
+        }
+      },
+      {
+        "when": "5",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_precision_laser"
+        }
+      },
+      {
+        "when": "6",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_death_ray"
+        }
+      },
+      {
+        "when": "7",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_xenium_resonator"
+        }
+      },
+      {
+        "when": "8",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_relay"
+        }
+      },
+      {
+        "when": "9",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_detector"
+        }
+      },
+      {
+        "when": "10",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_ray_scan"
+        }
+      },
+      {
+        "when": "11",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_science"
+        }
+      },
+      {
+        "when": "12",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_science_assembler"
+        }
+      },
+      {
+        "when": "13",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/satellite_science_sensor"
+        }
+      }
+    ]
+  }
+}

@@ -35,6 +35,9 @@ public final class ModDataComponents {
     /** How far a stabiliser lens has been burned through; upstream keeps it in the stack's NBT. */
     public static final GolemComponent<Long> AMS_LENS_DAMAGE =
             GolemComponent.of(Constants.MOD_ID, "ams_lens_damage", Codec.LONG);
+    /** The satellite frequency an {@link com.hbm.items.ISatChip} addresses. */
+    public static final GolemComponent<Integer> SAT_FREQUENCY =
+            GolemComponent.integer(Constants.MOD_ID, "sat_frequency");
     /** What a cargo artillery shell is carrying. It survives the flight and comes back off the shell. */
     public static final GolemComponent<ItemStack> ARTY_CARGO =
             GolemComponent.of(Constants.MOD_ID, "arty_cargo", dev.golem.core.world.ItemStacks.optionalCodec());

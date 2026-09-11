@@ -174,6 +174,7 @@ public final class HbmBlockEntityRenderers {
                 new ModelDef(obj("machines/silex.obj"), tex("machines/silex.png")));
         // FEL: its own renderer — the static emitter plus the BeamPronter beam out to the hit block.
         regCustom(sink, ModBlockEntities.MACHINE_FEL.get(), ctx -> new FELRenderer());
+        regCustom(sink, ModBlockEntities.MACHINE_SATLINK.get(), ctx -> new SatLinkRenderer());
 
         regCustom(sink, ModBlockEntities.DFC_EMITTER.get(), ctx -> new CoreComponentRenderers.Emitter());
         regCustom(sink, ModBlockEntities.DFC_RECEIVER.get(), ctx -> new CoreComponentRenderers.Receiver());

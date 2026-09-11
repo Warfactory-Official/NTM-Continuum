@@ -19,6 +19,7 @@ import com.hbm.items.machine.ItemPWRFuel;
 import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -53,8 +54,7 @@ import java.util.Map;
  * search done at assembly time, and a control block between two rods moves that pair's contribution
  * behind the control level, which is why withdrawing rods scales the reaction rather than gating it.
  *
- * <p>Deviations from CE, both forced by what is and is not ported here: a running reactor does not
- * report to ray-scan satellites (no satellite subsystem), and the OpenComputers component is absent.
+ * <p>Deviation from CE: the OpenComputers component is absent.
  */
 public class TileEntityPWRController extends TileEntityMachineBase
         implements MenuProvider, IControlReceiver, WorldlyContainer, IFluidStandardTransceiverMK2,
@@ -254,6 +254,12 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
                 this.amountLoaded--;
                 setChanged();
+            }
+
+            if (level.getGameTime() % 100 == 0) {
+                BlockPos pos = getBlockPos();
+                SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
+                        SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
             }
         }
 

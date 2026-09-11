@@ -107,6 +107,7 @@ public class FabricInit implements ModInitializer {
         dev.golem.core.platform.Lifecycle.onServerTick(server -> {
             UniNodespace.updateNodespace(server);
             RadiationSystemNT.tickServer(server);
+            com.hbm.saveddata.satellites.SatelliteSystems.tickServer(server);
         });
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> {
             UniNodespace.clearLevel(level);

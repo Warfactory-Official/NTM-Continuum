@@ -10,11 +10,15 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ItemEnums.EnumCircuitType;
+import com.hbm.items.ItemEnums.EnumPartType;
 import com.hbm.items.ItemEnums.EnumExpensiveType;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModIntermediateItems;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModUpgradeItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -58,6 +62,20 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     private static final String GROUP_PLATES = "plates";
     private static final String GROUP_CYCLOTRON = "cyclotron";
     private static final String GROUP_PILE_ROD = "pilerod";
+
+    private static ItemStack satellite(EnumSatType type) {
+        return com.hbm.items.ModSatelliteItems.satellite.get().of(type);
+    }
+
+    /** A full fluid barrel as a recipe input; the barrel itself comes back. */
+    private static ComparableStack barrel(com.hbm.inventory.fluid.FluidType fluid) {
+        return new ComparableStack(com.hbm.items.ModFluidItems.fluid_barrel.get().make(fluid, 16_000));
+    }
+
+    private static ComparableStack lithiumPack() {
+        return new ComparableStack(com.hbm.items.ModBatteryItems.PACKS
+                .get(com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_LITHIUM).get());
+    }
 
     /** The {@code c:concretes} tag; concrete has no {@link com.hbm.inventory.material.NTMMaterial}. */
     private static com.hbm.inventory.RecipesCommon.AStack concrete(int count) {
@@ -274,6 +292,52 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .inputItems(TH232.billet().count(3))
                 .outputItems(pileRod(EnumPileRod.THORIUM, 1))
                 .setGroup(GROUP_PILE_ROD, this));
+
+        // --- satellites and the ground station ---
+        register(new GenericRecipe("ass.satlink").setup(100, 1_000)
+                .inputItems(new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 16),
+                        AL.plate().count(16), new ComparableStack(ModItems.magnetron.get(), 3),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 1))
+                .outputItems(new ItemStack(ModMachineBlocks.machine_satlink.get())));
+
+        register(new GenericRecipe("ass.satelliterelay").setup(600, 100)
+                .inputItems(TI.shell().count(3), new ComparableStack(ModItems.plate_desh.get(), 8),
+                        barrel(Fluids.HYDROGEN), new ComparableStack(ModItems.photo_panel.get(), 16),
+                        new ComparableStack(ModItems.thruster_nuclear.get(), 1),
+                        new ComparableStack(ModItems.ingot_uranium_fuel.get(), 6),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 24),
+                        new ComparableStack(ModItems.magnetron.get(), 3), lithiumPack())
+                .outputItems(satellite(EnumSatType.RELAY)));
+        register(new GenericRecipe("ass.satelliteasteroidminer").setup(600, 100)
+                .inputItems(BIGMT.plate().count(24), new ComparableStack(ModItems.motor_desh.get(), 2),
+                        new ComparableStack(ModItems.drill_titanium.get(), 2),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 12),
+                        barrel(Fluids.KEROSENE), new ComparableStack(ModItems.thruster_small.get(), 1),
+                        new ComparableStack(ModItems.photo_panel.get(), 12),
+                        new ComparableStack(ModItems.centrifuge_element.get(), 4), lithiumPack())
+                .outputItems(satellite(EnumSatType.MINER_ASTRO)));
+        register(new GenericRecipe("ass.satellitelunarminer").setup(600, 100)
+                .inputItems(new ComparableStack(ModItems.plate_desh.get(), 4),
+                        new ComparableStack(ModItems.motor.get(), 2),
+                        new ComparableStack(ModItems.drill_titanium.get(), 2),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 8),
+                        barrel(Fluids.KEROSENE), new ComparableStack(ModItems.thruster_small.get(), 1),
+                        new ComparableStack(ModItems.photo_panel.get(), 12), lithiumPack())
+                .outputItems(satellite(EnumSatType.MINER_LUNAR)));
+        register(new GenericRecipe("ass.detectorsat").setup(1_200, 25_000)
+                .inputItems(GOLD.plateCast().count(16), new ComparableStack(ModItems.photo_panel.get(), 64),
+                        BSCCO.wireDense().count(16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 24),
+                        new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 1))
+                .outputItems(satellite(EnumSatType.DETECTOR)));
+        register(new GenericRecipe("ass.rayscansat").setup(1_200, 25_000)
+                .inputItems(BIGMT.shell().count(16), new ComparableStack(ModItems.photo_panel.get(), 32),
+                        SBD.wireDense().count(16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 16),
+                        new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 3))
+                .outputItems(satellite(EnumSatType.RAY_SCAN)));
 
         // --- pressurised water reactor ---
         register(new GenericRecipe("ass.pwrfuel").setup(200, 500)

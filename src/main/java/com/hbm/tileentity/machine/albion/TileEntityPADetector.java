@@ -6,6 +6,8 @@ import com.hbm.inventory.container.ContainerPADetector;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes.ParticleAcceleratorRecipe;
 import com.hbm.lib.DirPos;
+import com.hbm.saveddata.satellites.SatelliteDetector;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
@@ -35,8 +37,8 @@ import java.util.List;
  *
  * <p>Ported from 1.12.2's {@code albion/TileEntityPADetector}.
  *
- * <p>Deviations from CE: a successful run does not report to the detector or ray-scan satellites and
- * does not grant the digamma advancement — neither satellites nor the advancement manager are ported.
+ * <p>Deviation from CE: a successful run does not grant the digamma advancement — the advancement manager
+ * is not ported.
  * Sided automation exposes the same slots to every face for the reason given on
  * {@link TileEntityPASource}.
  */
@@ -157,6 +159,11 @@ public class TileEntityPADetector extends TileEntityCooledBase
                 }
             }
 
+            BlockPos pos = getBlockPos();
+            SatelliteDetector.reportEvent(level, SatelliteDetector.DURATION_MEDIUM,
+                    SatelliteDetector.BurstIntensity.MEDIUM, pos.getX(), pos.getZ());
+            SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
+                    SatelliteRayScan.RayEvent.INFO_PARTICLE, 600);
             particle.crash(PAState.SUCCESS);
             return;
         }

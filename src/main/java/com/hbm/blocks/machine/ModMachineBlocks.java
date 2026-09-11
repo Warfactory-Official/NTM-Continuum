@@ -35,6 +35,10 @@ public final class ModMachineBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
+    public static final RegistryObject<MachineSatLink> machine_satlink = BLOCKS.registerBlock(
+            "machine_satlink", MachineSatLink::new,
+            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     public static final RegistryObject<BlockMachineBattery> machine_battery = BLOCKS.registerBlock(
             "machine_battery", BlockMachineBattery::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());

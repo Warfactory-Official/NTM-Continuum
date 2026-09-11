@@ -13,6 +13,7 @@ import com.hbm.items.ItemEnums.EnumPartType;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.items.ModMissileItems;
 import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
@@ -151,8 +152,19 @@ public final class ArcWelderRecipes {
                 new ComparableStack(ModItems.warhead_volcano.get()),
                 new ComparableStack(ModItems.fuel_tank_large.get()), new ComparableStack(ModItems.thruster_large.get(), 3));
 
-        // The five satellite outputs remain deferred: the current tree has the deco blocks but no
-        // corresponding sat_mapper/sat_scanner/sat_radar/sat_laser/sat_resonator item IDs.
+        add(satellite(EnumSatType.SCANNER), 600, 10_000,
+                new ComparableStack(ModItems.sat_base.get()),
+                new ComparableStack(ModItems.sat_head_scanner.get()));
+        add(satellite(EnumSatType.XENIUM_RESONATOR), 600, 50_000,
+                new ComparableStack(ModItems.sat_base.get()),
+                new ComparableStack(ModItems.sat_head_resonator.get()));
+
+        // The spy, radar and death-ray satellites stay deferred with their satellite classes, so that
+        // nothing craftable here can be launched into a registry slot that is still empty.
+    }
+
+    private static ItemStack satellite(EnumSatType type) {
+        return com.hbm.items.ModSatelliteItems.satellite.get().of(type);
     }
 
     private static void addDenseWire(NTMMaterial material, int duration, long consumption, AStack input) {

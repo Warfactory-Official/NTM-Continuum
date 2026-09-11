@@ -78,6 +78,7 @@ public final class PWRGameTests {
         controller.rodLevel = 0;
         controller.rodTarget = 0;
 
+        forceSurroundingChunks(helper);
         tick(helper, controller);
         helper.assertTrue(controller.unloadDelay == 0,
                 "Reactor idled itself: the chunks around the test plot read as unloaded");
@@ -238,6 +239,21 @@ public final class PWRGameTests {
         ModPWRBlocks.pwr_controller.get().assemble(helper.getLevel(), helper.absolutePos(CONTROLLER),
                 state(helper, CONTROLLER), player);
         return controller;
+    }
+
+    /**
+     * The reactor refuses to run when the chunks two out from it are missing, which is a real guard and not
+     * a test artefact. Whether the framework has those chunks loaded depends on where in its chunk the plot
+     * landed, so the test pins them rather than hoping.
+     */
+    private static void forceSurroundingChunks(GameTestHelper helper) {
+        BlockPos absolute = helper.absolutePos(CONTROLLER);
+        for (int dx = -32; dx <= 32; dx += 32) {
+            for (int dz = -32; dz <= 32; dz += 32) {
+                BlockPos near = absolute.offset(dx, 0, dz);
+                helper.getLevel().setChunkForced(near.getX() >> 4, near.getZ() >> 4, true);
+            }
+        }
     }
 
     private static void tick(GameTestHelper helper, TileEntityPWRController controller) {

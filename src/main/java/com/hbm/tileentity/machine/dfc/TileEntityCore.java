@@ -11,6 +11,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemCatalyst;
 import com.hbm.items.special.ItemAMSCore;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.EntityDamageUtil;
@@ -42,9 +43,9 @@ import org.jspecify.annotations.Nullable;
  * heat from becoming a crater — the core spends one point of field per tick, so a reaction that outruns
  * its stabilisers detonates on the tick the field runs out.
  *
- * <p>Deviations from CE: a running core does not report to ray-scan satellites and does not grant the
- * dark-fusion advancement, neither of which is ported. The detonation uses
- * {@link EntityNukeExplosionMK5}, this port's nuke entity, in place of upstream's MK3.
+ * <p>Deviations from CE: a running core does not grant the dark-fusion advancement, which is not ported,
+ * and the detonation uses {@link EntityNukeExplosionMK5}, this port's nuke entity, in place of upstream's
+ * MK3.
  */
 public class TileEntityCore extends TileEntityMachineBase implements MenuProvider {
 
@@ -101,7 +102,13 @@ public class TileEntityCore extends TileEntityMachineBase implements MenuProvide
             color = 0;
         }
 
-        if (heat > 0) radiation(level);
+        if (heat > 0) {
+            radiation(level);
+            if (level.getGameTime() % 100 == 0) {
+                SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
+                        SatelliteRayScan.RayEvent.INFO_PARTICLE, 200);
+            }
+        }
 
         prevHeat = heat;
         networkPackNT();

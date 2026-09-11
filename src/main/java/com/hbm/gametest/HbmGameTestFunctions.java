@@ -152,6 +152,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("pile_rods", 20, () -> PileGameTests::rods);
     public static final GameTests.Function PILE_ASSETS =
             TESTS.function("pile_assets", 20, () -> PileGameTests::assets);
+    public static final GameTests.Function SATELLITE_REGISTRY =
+            TESTS.function("satellite_registry", 20, () -> SatelliteGameTests::registry);
+    public static final GameTests.Function SATELLITE_ORBIT =
+            TESTS.function("satellite_orbit", 20, () -> SatelliteGameTests::orbit);
+    public static final GameTests.Function SATELLITE_LINK =
+            TESTS.function("satellite_link", 100, 8, () -> SatelliteGameTests::link);
+    public static final GameTests.Function SATELLITE_EMISSIONS =
+            TESTS.function("satellite_emissions", 20, () -> SatelliteGameTests::emissions);
+    public static final GameTests.Function SATELLITE_CHIP =
+            TESTS.function("satellite_chip", 100, 8, () -> SatelliteGameTests::chip);
+    public static final GameTests.Function SATELLITE_ASSETS =
+            TESTS.function("satellite_assets", 20, () -> SatelliteGameTests::assets);
     public static final GameTests.Function DFC_BEAM =
             TESTS.function("dfc_beam", 100, 12, () -> DFCGameTests::beam);
     public static final GameTests.Function DFC_REACTION =

@@ -150,6 +150,7 @@ public class NeoForgeInit {
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
             UniNodespace.updateNodespace(event.getServer());
             RadiationSystemNT.tickServer(event.getServer());
+            com.hbm.saveddata.satellites.SatelliteSystems.tickServer(event.getServer());
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {

@@ -276,6 +276,11 @@ public final class ModBlockEntities {
                     () -> BlockEntities.type(com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer::new,
                             com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_stabilizer.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineSatLink>> MACHINE_SATLINK =
+            BLOCK_ENTITIES.register("machine_satlink",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityMachineSatLink::new,
+                            ModMachineBlocks.machine_satlink.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pwr.TileEntityPWRController>> PWR_CONTROLLER =
             BLOCK_ENTITIES.register("pwr_controller",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.pwr.TileEntityPWRController::new,
