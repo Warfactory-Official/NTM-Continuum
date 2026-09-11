@@ -174,6 +174,12 @@ public final class HbmBlockEntityRenderers {
                 new ModelDef(obj("machines/silex.obj"), tex("machines/silex.png")));
         // FEL: its own renderer — the static emitter plus the BeamPronter beam out to the hit block.
         regCustom(sink, ModBlockEntities.MACHINE_FEL.get(), ctx -> new FELRenderer());
+
+        regCustom(sink, ModBlockEntities.DFC_EMITTER.get(), ctx -> new CoreComponentRenderers.Emitter());
+        regCustom(sink, ModBlockEntities.DFC_RECEIVER.get(), ctx -> new CoreComponentRenderers.Receiver());
+        regCustom(sink, ModBlockEntities.DFC_INJECTOR.get(), ctx -> new CoreComponentRenderers.Injector());
+        regCustom(sink, ModBlockEntities.DFC_STABILIZER.get(), ctx -> new CoreComponentRenderers.Stabilizer());
+        regCustom(sink, ModBlockEntities.DFC_CORE.get(), ctx -> new CoreRenderer());
         // Oil derrick: static OBJ; old yaw map (N180/S0/W270/E90) = base yaw 180 + the standard map.
         reg(sink, ModBlockEntities.MACHINE_OIL_WELL.get(), 180F, 1F,
                 new ModelDef(obj("machines/derrick.obj"), tex("machines/derrick.png")));

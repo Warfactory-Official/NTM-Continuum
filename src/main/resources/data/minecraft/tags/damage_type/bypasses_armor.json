@@ -18,6 +18,8 @@
     "hbm:euthanized_self2",
     "hbm:overdose",
     "hbm:electricity",
-    "hbm:microwave"
+    "hbm:microwave",
+    "hbm:ams",
+    "hbm:ams_core"
   ]
 }

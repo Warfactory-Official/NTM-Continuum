@@ -290,6 +290,11 @@ public final class WavefrontObj {
         for (Group g : groups) if (g.name.equals(name)) drawColorGroup(g, pose, buffer, color);
     }
 
+    /** Draws every part with only position and vertex colour, for models used as untextured solids. */
+    public void renderAllColor(PoseStack.Pose pose, VertexConsumer buffer, int color) {
+        for (Group g : groups) drawColorGroup(g, pose, buffer, color);
+    }
+
     /**
      * Draws a named part with the texture scrolled by {@code (uOffset, vOffset)} and, optionally, both
      * faces emitted.

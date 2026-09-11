@@ -152,6 +152,20 @@ public final class HbmGameTestFunctions {
             TESTS.function("pile_rods", 20, () -> PileGameTests::rods);
     public static final GameTests.Function PILE_ASSETS =
             TESTS.function("pile_assets", 20, () -> PileGameTests::assets);
+    public static final GameTests.Function DFC_BEAM =
+            TESTS.function("dfc_beam", 100, 12, () -> DFCGameTests::beam);
+    public static final GameTests.Function DFC_REACTION =
+            TESTS.function("dfc_reaction", 100, 12, () -> DFCGameTests::reaction);
+    public static final GameTests.Function DFC_STABILIZER =
+            TESTS.function("dfc_stabilizer", 100, 12, () -> DFCGameTests::stabilizer);
+    public static final GameTests.Function DFC_INJECTOR =
+            TESTS.function("dfc_injector", 100, 12, () -> DFCGameTests::injector);
+    public static final GameTests.Function DFC_MELTDOWN =
+            TESTS.function("dfc_meltdown", 100, 24, () -> DFCGameTests::meltdown);
+    public static final GameTests.Function DFC_CORES =
+            TESTS.function("dfc_cores", 20, () -> DFCGameTests::cores);
+    public static final GameTests.Function DFC_ASSETS =
+            TESTS.function("dfc_assets", 20, () -> DFCGameTests::assets);
     public static final GameTests.Function PWR_ASSEMBLY =
             TESTS.function("pwr_assembly", 100, 12, () -> PWRGameTests::assembly);
     public static final GameTests.Function PWR_REACTION =
@@ -1802,8 +1816,8 @@ public final class HbmGameTestFunctions {
     private static void fusionPlasmaForgeRecipes(GameTestHelper helper) {
         var recipes = com.hbm.inventory.recipes.PlasmaForgeRecipes.INSTANCE;
         recipes.registerRecipes();
-        helper.assertTrue(recipes.recipeOrderedList.size() == 15,
-                "Expected 15 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
+        helper.assertTrue(recipes.recipeOrderedList.size() == 20,
+                "Expected 20 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
         helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", java.util.List.of()).size() == 11,
                 "Expected 11 welded-plate variants in the auto-switch group");
 
@@ -1812,6 +1826,14 @@ public final class HbmGameTestFunctions {
                         && euphemium.duration == 600 && euphemium.power == 10_000_000L
                         && euphemium.outputItem[0].getCount() == 4,
                 "Euphemium plate recipe lost its legacy timing, ignition, power, or output");
+
+        var dfcCore = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.dfccore");
+        helper.assertTrue(dfcCore != null && dfcCore.ignitionTemp == 50_000_000L
+                        && dfcCore.duration == 12_000 && dfcCore.power == 100_000_000L
+                        && dfcCore.inputFluid.length == 1
+                        && dfcCore.inputFluid[0].type == com.hbm.inventory.fluid.Fluids.STELLAR_FLUX
+                        && dfcCore.inputFluid[0].fill == 12_000,
+                "Dark fusion core recipe lost its legacy timing, ignition, power, or stellar flux");
 
         var hde = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.hde");
         helper.assertTrue(hde != null && hde.inputFluid.length == 1

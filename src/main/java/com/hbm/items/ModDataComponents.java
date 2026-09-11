@@ -32,6 +32,9 @@ public final class ModDataComponents {
     public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
     public static final GolemComponent<Double> PILE_ROD_DEPLETION =
             GolemComponent.of(Constants.MOD_ID, "pile_rod_depletion", Codec.DOUBLE);
+    /** How far a stabiliser lens has been burned through; upstream keeps it in the stack's NBT. */
+    public static final GolemComponent<Long> AMS_LENS_DAMAGE =
+            GolemComponent.of(Constants.MOD_ID, "ams_lens_damage", Codec.LONG);
     /** What a cargo artillery shell is carrying. It survives the flight and comes back off the shell. */
     public static final GolemComponent<ItemStack> ARTY_CARGO =
             GolemComponent.of(Constants.MOD_ID, "arty_cargo", dev.golem.core.world.ItemStacks.optionalCodec());

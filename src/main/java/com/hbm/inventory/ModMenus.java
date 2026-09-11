@@ -66,6 +66,17 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPADetector>> PA_DETECTOR =
             MENUS.register("pa_detector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADetector::new));
 
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCore>> DFC_CORE =
+            MENUS.register("dfc_core", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCore::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreEmitter>> DFC_EMITTER =
+            MENUS.register("dfc_emitter", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreEmitter::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreReceiver>> DFC_RECEIVER =
+            MENUS.register("dfc_receiver", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreReceiver::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreInjector>> DFC_INJECTOR =
+            MENUS.register("dfc_injector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreInjector::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreStabilizer>> DFC_STABILIZER =
+            MENUS.register("dfc_stabilizer", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreStabilizer::new));
+
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPWR>> PWR_CONTROLLER =
             MENUS.register("pwr_controller", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPWR::new));
 

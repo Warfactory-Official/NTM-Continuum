@@ -67,6 +67,7 @@ public final class MainRegistry {
         com.hbm.smoke.SmokeChainRegistration.init();
         com.hbm.blocks.machine.pile.ModPileBlocks.init();
         com.hbm.blocks.machine.pwr.ModPWRBlocks.init();
+        com.hbm.blocks.machine.dfc.ModDFCBlocks.init();
         com.hbm.foundry.FoundryExpansion.init();
         com.hbm.blocks.machine.DiFurnaceContent.init();
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)

@@ -255,6 +255,27 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("struct_watz_core",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.struct.TileEntityWatzStruct::new, ModMachineBlocks.struct_watz_core.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCore>> DFC_CORE =
+            BLOCK_ENTITIES.register("dfc_core",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.dfc.TileEntityCore::new,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_core.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter>> DFC_EMITTER =
+            BLOCK_ENTITIES.register("dfc_emitter",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter::new,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_emitter.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver>> DFC_RECEIVER =
+            BLOCK_ENTITIES.register("dfc_receiver",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver::new,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_receiver.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreInjector>> DFC_INJECTOR =
+            BLOCK_ENTITIES.register("dfc_injector",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.dfc.TileEntityCoreInjector::new,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_injector.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer>> DFC_STABILIZER =
+            BLOCK_ENTITIES.register("dfc_stabilizer",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer::new,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_stabilizer.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pwr.TileEntityPWRController>> PWR_CONTROLLER =
             BLOCK_ENTITIES.register("pwr_controller",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.pwr.TileEntityPWRController::new,
