@@ -502,6 +502,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     @Override
     public boolean hasPermission(Player player) {
+        // Turret controls intentionally retain the old proximity-based remote policy.
         return stillValid(player);
     }
 

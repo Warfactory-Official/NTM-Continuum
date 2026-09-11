@@ -68,6 +68,7 @@ public class EntityFalloutRain extends CompatEntity {
     private static final int MIN_ANGLE_STEPS = 18;
     private static final int SPOKE_STEP_BLOCKS = 8;
     private static final int MAX_CLAIM_WINDOW_PER_WORKER = 256;
+    private static final int MAX_SCAN_FAILURE_RETRIES = 3;
 
     private int scale = 1;
     /** Radius 0, as upstream's {@code EntityExplosionChunkloading}: the sweep keeps its own chunk up so
@@ -104,6 +105,10 @@ public class EntityFalloutRain extends CompatEntity {
     private int activeScans;
     /** Scan results awaiting application, produced by pool workers. */
     private final ConcurrentLinkedQueue<ChunkScan> completedScans = new ConcurrentLinkedQueue<>();
+    /** Server-thread retry counts; a permanently failing chunk must abort the sweep, not vanish. */
+    private final it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap scanFailures =
+            new it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap();
+    private boolean failed;
     /** The scan currently being applied (may span ticks if the budget runs out mid-chunk). */
     private ChunkScan applying;
 
@@ -202,6 +207,11 @@ public class EntityFalloutRain extends CompatEntity {
     public void tick() {
         super.tick();
         if (!(level() instanceof ServerLevel server)) return;
+
+        if (failed) {
+            discard();
+            return;
+        }
 
         chunkLoader.tick();
 
@@ -367,20 +377,26 @@ public class EntityFalloutRain extends CompatEntity {
         activeScans++;
         double ex = getX(), ez = getZ();
         int sc = getScale();
-        ForkJoinPool.commonPool().execute(() -> {
-            ChunkScan scan = new ChunkScan(packed);
-            // Handed over even if the scan threw: the pool slot is only released when a scan is
-            // applied, so losing one would stall the sweep on a permanently-full pool.
+        ChunkScan scan = new ChunkScan(packed);
+        try {
+            ForkJoinPool.commonPool().execute(() -> {
             try {
                 scanChunk(scan, chunk, clamp, ex, ez, sc);
-            } catch (RuntimeException | Error e) {
-                com.hbm.Constants.LOG.error("[FALLOUT] chunk scan failed; skipping that chunk", e);
-                scan.clearWrites();
-                scan.biomes.clear();
+                scan.completed = true;
+            } catch (Throwable e) {
+                // The scan is deliberately published as failed, never as an empty successful scan.
+                // Its local writes are discarded; the server thread decides whether to retry or abort.
+                scan.failure = e;
             } finally {
                 completedScans.add(scan);
             }
-        });
+            });
+        } catch (Throwable e) {
+            // Rejection happens before the worker wrapper can publish a result. Publish the same
+            // explicit failure here so activeScans/claims are released by the normal retry/abort path.
+            scan.failure = e;
+            completedScans.add(scan);
+        }
     }
 
     /** Last-to-first like the old removeLong(size-1) processing order, skipping in-flight chunks. */
@@ -455,6 +471,28 @@ public class EntityFalloutRain extends CompatEntity {
             if (applying == null) applying = completedScans.poll();
             if (applying == null) return;
 
+            if (!applying.completed) {
+                long failedChunk = applying.chunkPos;
+                int attempts = scanFailures.addTo(failedChunk, 1) + 1;
+                activeScans--;
+                inFlight.remove(failedChunk);
+                dropClaim(failedChunk);
+                Throwable failure = applying.failure;
+                applying = null;
+                if (attempts <= MAX_SCAN_FAILURE_RETRIES) {
+                    com.hbm.Constants.LOG.error("[FALLOUT] chunk scan failed for [{}, {}]; retry {}/{}",
+                            ChunkPos.getX(failedChunk), ChunkPos.getZ(failedChunk), attempts,
+                            MAX_SCAN_FAILURE_RETRIES, failure);
+                } else {
+                    com.hbm.Constants.LOG.error("[FALLOUT] chunk scan failed {} times for [{}, {}]; aborting sweep",
+                            attempts, ChunkPos.getX(failedChunk), ChunkPos.getZ(failedChunk), failure);
+                    failed = true;
+                    discard();
+                    return;
+                }
+                continue;
+            }
+
             lastApplyParked = false;
             if (!applyWrites(server, applying, deadline)) {
                 if (!lastApplyParked) return; // budget exhausted mid-chunk
@@ -472,6 +510,7 @@ public class EntityFalloutRain extends CompatEntity {
             dropClaim(packed);
             chunksToProcess.rem(packed);
             outerChunksToProcess.rem(packed);
+            scanFailures.remove(packed);
             applying = null;
         }
     }
@@ -495,6 +534,8 @@ public class EntityFalloutRain extends CompatEntity {
         final List<BiomeWrite> biomes = new ArrayList<>();
         int duplicateStateWrites;
         int duplicateFallingMarkers;
+        boolean completed;
+        Throwable failure;
         int stateAppliedUpTo = 0;
         int fallingAppliedUpTo = 0;
 

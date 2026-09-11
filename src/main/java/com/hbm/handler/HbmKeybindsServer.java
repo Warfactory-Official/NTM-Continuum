@@ -18,6 +18,7 @@ public class HbmKeybindsServer {
     private HbmKeybindsServer() {}
 
     public static void onPressedServer(ServerPlayer player, EnumKeybind keybind, boolean state) {
+        if (player == null || keybind == null) return;
         for (InteractionHand hand : InteractionHand.values()) {
             ItemStack stack = player.getItemInHand(hand);
             if (stack.isEmpty()) continue;

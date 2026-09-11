@@ -36,8 +36,13 @@ public final class HbmPackets {
         GolemNetwork.registerPlayToServer(JetpackInputPayload.CODEC,
                 (payload, player) -> com.hbm.handler.JetpackHandler.handleInput(player, payload));
         GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
-                (payload, player) -> com.hbm.handler.HbmKeybindsServer.onPressedServer(player,
-                        com.hbm.handler.HbmKeybinds.EnumKeybind.byOrdinal(payload.keybind()), payload.state()));
+                (payload, player) -> {
+                    com.hbm.handler.HbmKeybinds.EnumKeybind keybind =
+                            com.hbm.handler.HbmKeybinds.EnumKeybind.byOrdinal(payload.keybind());
+                    if (keybind != null) {
+                        com.hbm.handler.HbmKeybindsServer.onPressedServer(player, keybind, payload.state());
+                    }
+                });
         GolemNetwork.registerPlayToServer(CraneKeyPayload.CODEC,
                 (payload, player) -> handleCraneKey(player, payload));
     }
@@ -176,7 +181,8 @@ public final class HbmPackets {
     }
 
     public static void handleControl(ServerPlayer player, net.minecraft.core.BlockPos pos, net.minecraft.nbt.CompoundTag data) {
-        if (player == null) return;
+        if (player == null || pos == null || data == null || data.sizeInBytes() > 16 * 1024
+                || containsNestedCompound(data)) return;
         if (player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) > 24D * 24D) return;
         Level level = player.level();
         BlockEntity be = level.getBlockEntity(pos);
@@ -188,5 +194,14 @@ public final class HbmPackets {
                 Constants.LOG.warn("Failed to apply ControlEventPayload at {}: {}", pos, e.toString());
             }
         }
+    }
+
+    /** Control packets are flat key/value schemas; nested tags have no receiver contract. */
+    private static boolean containsNestedCompound(net.minecraft.nbt.CompoundTag data) {
+        for (String key : data.keySet()) {
+            if (data.get(key) instanceof net.minecraft.nbt.CompoundTag
+                    || data.get(key) instanceof net.minecraft.nbt.ListTag) return true;
+        }
+        return false;
     }
 }

@@ -233,6 +233,11 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
         return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active"};
     }
 
+    @Override public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachinePUREX menu
+                && menu.getPurex() == this && menu.stillValid(player);
+    }
+
     @Override
     public String provideRORValue(String name) {
         if ((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(purexModule.progress * 100);

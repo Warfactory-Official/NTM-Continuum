@@ -275,6 +275,12 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         }
     }
 
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachinePlasmaForge menu
+                && menu.getForge() == this && menu.stillValid(player);
+    }
+
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ContainerMachinePlasmaForge(id, inventory, this);
     }

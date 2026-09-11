@@ -443,7 +443,10 @@ public class TileEntityWatz extends TileEntityMachineBase
 
     // --- GUI control ---
 
-    @Override public boolean hasPermission(Player player) { return stillValid(player); }
+    @Override public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerWatz menu
+                && menu.getWatz() == this && menu.stillValid(player);
+    }
 
     @Override
     public void receiveControl(CompoundTag data) {

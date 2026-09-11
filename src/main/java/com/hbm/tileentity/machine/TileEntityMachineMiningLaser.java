@@ -502,6 +502,12 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         }
     }
 
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineMiningLaser menu
+                && menu.getLaser() == this && menu.stillValid(player);
+    }
+
     // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---
 
     @Override

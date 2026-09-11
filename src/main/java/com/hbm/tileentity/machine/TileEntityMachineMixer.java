@@ -254,8 +254,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
-                worldPosition.getZ() + 0.5D) <= 256D;
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMixer menu
+                && menu.getMixer() == this && menu.stillValid(player);
     }
 
     @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_mixer"); }

@@ -175,7 +175,8 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
 
     @Override
     public boolean hasPermission(Player player) {
-        return stillValid(player);
+        return player.containerMenu instanceof ContainerMachineAmmoPress menu
+                && menu.getPress() == this && menu.stillValid(player);
     }
 
     @Override

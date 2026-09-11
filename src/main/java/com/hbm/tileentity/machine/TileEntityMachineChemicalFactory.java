@@ -369,6 +369,12 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     }
 
     @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineChemicalFactory menu
+                && menu.getFactory() == this && menu.stillValid(player);
+    }
+
+    @Override
     public String[] getFunctionInfo() {
         return new String[]{PREFIX_VALUE + "progress1", PREFIX_VALUE + "progress2", PREFIX_VALUE + "progress3", PREFIX_VALUE + "progress4",
                 PREFIX_VALUE + "recipe1", PREFIX_VALUE + "recipe2", PREFIX_VALUE + "recipe3", PREFIX_VALUE + "recipe4",

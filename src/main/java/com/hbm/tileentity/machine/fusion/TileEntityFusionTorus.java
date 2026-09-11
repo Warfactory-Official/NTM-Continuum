@@ -311,7 +311,10 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         return ports;
     }
 
-    @Override public boolean hasPermission(Player player) { return stillValid(player); }
+    @Override public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerFusionTorus menu
+                && menu.getTorus() == this && menu.stillValid(player);
+    }
 
     @Override
     public void receiveControl(CompoundTag data) {

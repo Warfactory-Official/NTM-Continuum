@@ -49,7 +49,6 @@ public class NeoForgeInit {
         Constants.LOG.info("Hello NeoForge world!");
 
         // Test functions are a NeoForge-only dev registry. Do not initialize this common class on Fabric.
-        //? if >=26.1 {
         com.hbm.gametest.HbmGameTestFunctions.init();
         com.hbm.gametest.FoodCatalystGameTests.init();
         com.hbm.gametest.OutgasGameTests.init();
@@ -75,7 +74,6 @@ public class NeoForgeInit {
          com.hbm.gametest.RtgGameTests.init();
          com.hbm.gametest.SingularityGameTests.init();
          com.hbm.gametest.TurretGameTests.init();
-        //?}
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
 

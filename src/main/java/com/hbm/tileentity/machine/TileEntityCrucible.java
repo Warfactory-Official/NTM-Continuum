@@ -452,7 +452,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
     @Override
     public boolean hasPermission(Player player) {
-        return stillValid(player);
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerCrucible menu
+                && menu.getCrucible() == this && menu.stillValid(player);
     }
 
     @Override

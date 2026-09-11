@@ -133,15 +133,27 @@ public final class RadiationSystemNT {
         for (WorldRadiationData data : worlds) data.prepare();
 
         // 2) parallel phase (joined): the density-exchange sweeps + decay — pure array math, no MC access.
-        for (WorldRadiationData data : worlds) data.runParallelSimulation(workEpoch);
+        for (WorldRadiationData data : worlds) {
+            if (!data.runParallelSimulation(workEpoch)) {
+                // The failed step was rolled back. Leave the world live and retry on the next gate;
+                // reporting failure here is important because a joined worker failure is not success.
+                com.hbm.Constants.LOG.error("[HBM] radiation step {} failed; retrying", workEpoch);
+            }
+        }
     }
 
     /** Submits a parallel task to {@link #RAD_POOL} and blocks the (server) thread until it completes. */
     static void submitJoin(Runnable task) {
         try {
             RAD_POOL.submit(task).get();
-        } catch (Exception e) {
-            com.hbm.Constants.LOG.error("[HBM] radiation sweep failed", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("radiation worker interrupted", e);
+        } catch (java.util.concurrent.ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof Error error) throw error;
+            if (cause instanceof RuntimeException runtime) throw runtime;
+            throw new RuntimeException("radiation worker failed", cause);
         }
     }
 
@@ -320,28 +332,62 @@ public final class RadiationSystemNT {
          * axis) and {@code yPar = epoch&4} (the Y sweep's starting parity) — then the decay pass
          * ({@code postSweepDecayAndEffects}).
          */
-        void runParallelSimulation(long epoch) {
+        boolean runParallelSimulation(long epoch) {
             List<ChunkRad> all = snapshot;
-            if (all.isEmpty()) return;
+            if (all.isEmpty()) return true;
 
-            int s = (int) epoch;
-            boolean fx = (s & 1) != 0, fz = (s & 2) != 0;
-            int yPar = (s & 4) != 0 ? 1 : 0;
-            int perm = s % 6;
-            if (perm < 0) perm += 6;
-
-            switch (perm) {
-                case 0 -> { sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); }
-                case 1 -> { sweepAxis(all, Axis.X, fx); sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); }
-                case 2 -> { sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); }
-                case 3 -> { sweepY(all, yPar); sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); }
-                case 4 -> { sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); sweepY(all, yPar); }
-                default -> { sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); sweepAxis(all, Axis.X, fx); }
+            // A worker can fail after earlier disjoint passes have already changed densities. Keep the
+            // whole simulation step transactional so the next gate retries the old state, not a partial
+            // step with a misleadingly successful result.
+            List<double[][]> before = new ArrayList<>(all.size());
+            for (ChunkRad cr : all) {
+                double[][] sections = new double[cr.sections.length][];
+                for (int i = 0; i < cr.sections.length; i++) {
+                    SectionRad sr = cr.sections[i];
+                    if (sr != null && sr.density != null) sections[i] = sr.density.clone();
+                }
+                before.add(sections);
             }
+            List<int[]> queuedBefore = new ArrayList<>(destructionQueue);
 
-            // decay (per-chunk disjoint) — postSweepDecayAndEffects.
-            double retention = retentionDt();
-            submitJoin(() -> all.parallelStream().forEach(cr -> cr.decay(retention)));
+            try {
+                int s = (int) epoch;
+                boolean fx = (s & 1) != 0, fz = (s & 2) != 0;
+                int yPar = (s & 4) != 0 ? 1 : 0;
+                int perm = s % 6;
+                if (perm < 0) perm += 6;
+
+                switch (perm) {
+                    case 0 -> { sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); }
+                    case 1 -> { sweepAxis(all, Axis.X, fx); sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); }
+                    case 2 -> { sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); }
+                    case 3 -> { sweepY(all, yPar); sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); }
+                    case 4 -> { sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); sweepY(all, yPar); }
+                    default -> { sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); sweepAxis(all, Axis.X, fx); }
+                }
+
+                // decay (per-chunk disjoint) — postSweepDecayAndEffects.
+                double retention = retentionDt();
+                submitJoin(() -> all.parallelStream().forEach(cr -> cr.decay(retention)));
+                return true;
+            } catch (RuntimeException | Error failure) {
+                for (int c = 0; c < all.size(); c++) {
+                    ChunkRad cr = all.get(c);
+                    double[][] sections = before.get(c);
+                    for (int i = 0; i < cr.sections.length; i++) {
+                        SectionRad sr = cr.sections[i];
+                        if (sr != null && sections[i] != null) {
+                            sr.density = sections[i];
+                            sr.recomputeMax();
+                        }
+                    }
+                }
+                destructionQueue.clear();
+                destructionQueue.addAll(queuedBefore);
+                destructionQueueSize.set(queuedBefore.size());
+                com.hbm.Constants.LOG.error("[HBM] radiation worker failed; rolled back simulation step", failure);
+                return false;
+            }
         }
 
         /**

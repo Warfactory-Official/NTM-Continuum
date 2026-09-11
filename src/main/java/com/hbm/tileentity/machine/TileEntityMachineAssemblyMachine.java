@@ -222,6 +222,12 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     }
 
     @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof ContainerMachineAssemblyMachine menu
+                && menu.getAssembler() == this && menu.stillValid(player);
+    }
+
+    @Override
     public String provideRORValue(String name) {
         if ((PREFIX_VALUE + "progress").equals(name)) return "" + (int) Math.round(assemblerModule.progress * 100);
         if ((PREFIX_VALUE + "recipe").equals(name)) return assemblerModule.recipe;

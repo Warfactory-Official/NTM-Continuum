@@ -39,7 +39,8 @@ public class BlockEntityRBMKBoiler extends BlockEntityRBMKBase implements IFluid
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{feed}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{steam}; }
     public void cycleCompressor() { FluidType f = steam.getTankType(); if (f == Fluids.STEAM) { steam.setTankType(Fluids.HOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.HOTSTEAM) { steam.setTankType(Fluids.SUPERHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.SUPERHOTSTEAM) { steam.setTankType(Fluids.ULTRAHOTSTEAM); steam.setFill(steam.getFill()/10); } else if (f == Fluids.ULTRAHOTSTEAM) { steam.setTankType(Fluids.STEAM); steam.setFill(Math.min(steam.getFill()*1000, steam.getMaxFill())); } setChanged(); }
-    @Override public void receiveControl(CompoundTag data) { if (Tags.getBooleanOr(data, "compression", false)) cycleCompressor(); }
+     @Override public boolean hasPermission(Player player) { return player.containerMenu instanceof MenuRBMKBoiler menu && menu.blockEntity() == this && menu.stillValid(player); }
+     @Override public void receiveControl(CompoundTag data) { if (Tags.getBooleanOr(data, "compression", false)) cycleCompressor(); }
     @Override public RBMKColumn getConsoleData() { RBMKColumn.BoilerColumn data=(RBMKColumn.BoilerColumn)super.getConsoleData(); data.water=feed.getFill(); data.maxWater=feed.getMaxFill(); data.steam=steam.getFill(); data.maxSteam=steam.getMaxFill(); data.steamType=RBMKColumn.fluidId(steam.getTankType()); return data; }
     @Override public long getFluidAvailable(FluidType t, int p) { return t == steam.getTankType() && p == steam.getPressure() ? steam.getFill() : 0; }
     @Override public void useUpFluid(FluidType t, int p, long a) { if (getFluidAvailable(t,p)>0) { steam.setFill(steam.getFill()-(int)Math.min(a,steam.getFill())); setChanged(); } }
