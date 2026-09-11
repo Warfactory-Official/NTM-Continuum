@@ -2,13 +2,19 @@ package com.hbm.client.render.flywheel;
 
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.client.render.TorexCloudletRenderData;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.effect.EntityNukeTorex;
+import dev.golem.core.render.Billboards;
 import dev.golem.core.render.Instancing;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import org.joml.Quaternionfc;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -107,6 +113,21 @@ public final class FlywheelCompat {
                             + "call site on FlywheelCompat.isSupportedOnThisVersion() and let the block "
                             + "entity draw through its vanilla CompatBER.");
         }
+        Billboards.register(ModEntities.NUKE_TOREX.get(), List.of(
+                        new Billboards.Layer("hbm:textures/particle/particle_base.png",
+                                Billboards.Mode.DEPTH_WRITING_TRANSLUCENT),
+                        new Billboards.Layer("hbm:textures/particle/flare.png",
+                                Billboards.Mode.SOURCE_ALPHA_ADDITIVE)),
+                TorexCloudletRenderData::writeInstanced);
+        //?}
+    }
+
+    /** Whether Core atomically owns one Torex's cloudlet and flare billboards for this frame. */
+    public static boolean isTorexBillboardsActive(EntityNukeTorex torex) {
+        //? if flywheel {
+        /*return false;
+        *///?} else {
+        return Billboards.owns(torex);
         //?}
     }
 

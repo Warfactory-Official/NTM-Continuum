@@ -250,6 +250,7 @@ public final class HbmClientRegistrations {
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
         com.hbm.client.jetpack.JetpackClientVisuals.init();
         com.hbm.client.jetpack.JetpackSmokeClient.register();
+        com.hbm.client.render.TorexBenchmarkClient.register();
         dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "jetpack_visuals",
                 () -> {
                     com.hbm.client.render.armor.ArmorRenderers.reload();

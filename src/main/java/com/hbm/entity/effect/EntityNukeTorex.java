@@ -123,6 +123,7 @@ public class EntityNukeTorex extends CompatEntity {
     private long nextCloudletOrdinal;
     private long clientTimelineFingerprint = Long.MIN_VALUE;
     private final EntityChunkLoader chunkLoader = new EntityChunkLoader(this, 0);
+    private boolean benchmarkFixture;
 
     public EntityNukeTorex(EntityType<?> type, Level level) {
         super(type, level);
@@ -933,6 +934,30 @@ public class EntityNukeTorex extends CompatEntity {
             torex.setVisualSeed(level.getRandom().nextLong());
         }
         return torex;
+    }
+
+    /** Development-only deterministic cloud used by the client render benchmark. */
+    public static EntityNukeTorex benchmarkFac(Level level, double x, double y, double z) {
+        return benchmarkFac(level, x, y, z, 1_200);
+    }
+
+    /** Development-only deterministic cloud replayed to the requested animation age. */
+    public static EntityNukeTorex benchmarkFac(Level level, double x, double y, double z, int age) {
+        EntityNukeTorex torex = statFac(level, x, y, z, 500F);
+        torex.benchmarkFixture = true;
+        if (!level.isClientSide()) {
+            torex.tickCount = age;
+            torex.entityData.set(ANIMATION_AGE, age);
+            long start = level.getGameTime() - age;
+            torex.entityData.set(START_TIME_LOW, (int) start);
+            torex.entityData.set(START_TIME_HIGH, (int) (start >>> 32));
+            torex.setVisualSeed(0x48424D544F524558L);
+        }
+        return torex;
+    }
+
+    public boolean isBenchmarkFixture() {
+        return benchmarkFixture;
     }
 
     private void setVisualSeed(long seed) {

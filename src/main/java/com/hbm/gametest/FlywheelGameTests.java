@@ -8,6 +8,8 @@ import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.client.render.flywheel.FlywheelCompat;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.effect.EntityNukeTorex;
 import dev.golem.core.render.Instancing;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -58,6 +60,9 @@ public final class FlywheelGameTests {
                 "A server level must never report as visualized");
         helper.assertTrue(!FlywheelCompat.isAvailable(helper.getLevel()),
                 "FlywheelCompat.isAvailable must follow it and refuse a server level");
+        EntityNukeTorex torex = new EntityNukeTorex(ModEntities.NUKE_TOREX.get(), helper.getLevel());
+        helper.assertTrue(!FlywheelCompat.isTorexBillboardsActive(torex),
+                "A dedicated server must always retain Torex fallback ownership");
         helper.assertTrue(!Instancing.isVisualizing(null), "A null level must not report as visualized");
         helper.succeed();
     }

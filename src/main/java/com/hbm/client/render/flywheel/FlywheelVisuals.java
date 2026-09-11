@@ -2,8 +2,10 @@ package com.hbm.client.render.flywheel;
 
 //? if flywheel {
 
-/*import dev.engine_room.flywheel.api.visualization.VisualizationManager;
+/*import com.hbm.entity.effect.EntityNukeTorex;
+import dev.engine_room.flywheel.api.visualization.VisualizationManager;
 import net.minecraft.world.level.LevelAccessor;
+import org.joml.Quaternionfc;
 import org.jspecify.annotations.Nullable;
 
 /^* Published-Flywheel bridge for the 1.20.1 and 1.21.1 nodes. ^/
@@ -16,7 +18,12 @@ final class FlywheelVisuals {
     }
 
     static void register() {
-        // HBM visuals register here as they land; every one retains its vanilla BER fallback.
+        // Torex remains on vanilla: Flywheel 1.0.6 does not preserve the required depth-writing row order.
+    }
+
+    static boolean renderTorexCloudlets(EntityNukeTorex torex, float partialTicks,
+                                         Quaternionfc cameraOrientation) {
+        return false;
     }
 }
 *///?}
