@@ -17,6 +17,15 @@
       }
     ]
   },
+  "block.reactor_loop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/reactorloop",
+        "stream": false
+      }
+    ]
+  },
   "block.reactor_start": {
     "category": "block",
     "sounds": [

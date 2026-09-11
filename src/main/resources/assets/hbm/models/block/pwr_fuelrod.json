@@ -1,0 +1,7 @@
+{
+  "parent": "block/cube_column",
+  "textures": {
+    "end": "hbm:blocks/pwr_fuelrod_top",
+    "side": "hbm:blocks/pwr_fuelrod_side"
+  }
+}

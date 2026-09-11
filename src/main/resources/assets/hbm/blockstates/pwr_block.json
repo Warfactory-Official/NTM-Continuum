@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "io=false": { "model": "hbm:block/pwr_block" },
+    "io=true": { "model": "hbm:block/pwr_casing_port" }
+  }
+}

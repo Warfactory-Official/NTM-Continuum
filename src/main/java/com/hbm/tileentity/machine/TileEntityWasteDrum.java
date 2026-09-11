@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.machine.pwr.ModPWRBlocks;
 import com.hbm.inventory.container.ContainerWasteDrum;
 import com.hbm.items.machine.ItemZirnoxWaste;
 import com.hbm.tileentity.ModBlockEntities;
@@ -17,7 +18,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** Cools hot ZIRNOX waste at the historical rate, accelerated by adjacent water faces. */
+/**
+ * Cools spent fuel at the historical rate, accelerated by adjacent water faces. Upstream drives this
+ * off a {@code WasteDrumRecipes} table; here the two families that have a cooled form — ZIRNOX waste,
+ * which flips a flag, and PWR pellets, which become a different item — are resolved by
+ * {@link #cooled(ItemStack)} instead, since a two-entry registry would cost more than it carries.
+ */
 public class TileEntityWasteDrum extends TileEntityMachineBase implements WorldlyContainer, MenuProvider {
 
     private static final int[] SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
@@ -34,7 +40,21 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements Worldl
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
-        return stack.getItem() instanceof ItemZirnoxWaste && ItemZirnoxWaste.isHot(stack);
+        return !cooled(stack).isEmpty();
+    }
+
+    /** The stack {@code hot} becomes once cooled, or empty when it is not something the drum cools. */
+    public static ItemStack cooled(ItemStack hot) {
+        if (hot.getItem() instanceof ItemZirnoxWaste && ItemZirnoxWaste.isHot(hot)) {
+            ItemStack cooled = hot.copy();
+            ItemZirnoxWaste.setHot(cooled, false);
+            return cooled;
+        }
+        if (hot.getItem() == ModPWRBlocks.pwr_fuel_hot.get()) {
+            return ModPWRBlocks.pwr_fuel_depleted.get()
+                    .of(ModPWRBlocks.pwr_fuel_hot.get().getType(hot), hot.getCount());
+        }
+        return ItemStack.EMPTY;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityWasteDrum drum) {
@@ -44,10 +64,9 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements Worldl
         int coolingTicks = BASE_COOLING_TICKS / waterFaces;
         for (int slot : SLOTS) {
             ItemStack stack = drum.inventory.getStackInSlot(slot);
-            if (stack.getItem() instanceof ItemZirnoxWaste && ItemZirnoxWaste.isHot(stack)
-                    && level.getRandom().nextInt(coolingTicks) == 0) {
-                ItemZirnoxWaste.setHot(stack, false);
-                drum.inventory.setStackInSlot(slot, stack);
+            ItemStack cooled = cooled(stack);
+            if (!cooled.isEmpty() && level.getRandom().nextInt(coolingTicks) == 0) {
+                drum.inventory.setStackInSlot(slot, cooled);
             }
         }
     }
@@ -72,7 +91,7 @@ public class TileEntityWasteDrum extends TileEntityMachineBase implements Worldl
 
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
-        return stack.getItem() instanceof ItemZirnoxWaste && !ItemZirnoxWaste.isHot(stack);
+        return cooled(stack).isEmpty();
     }
 
     @Override

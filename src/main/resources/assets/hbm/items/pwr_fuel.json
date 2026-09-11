@@ -1,0 +1,117 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "hbm:item_variant",
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "hbm:item/pwr_fuel_meu"
+    },
+    "cases": [
+      {
+        "when": "0",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_meu"
+        }
+      },
+      {
+        "when": "1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_heu233"
+        }
+      },
+      {
+        "when": "2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_heu235"
+        }
+      },
+      {
+        "when": "3",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_men"
+        }
+      },
+      {
+        "when": "4",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_hen237"
+        }
+      },
+      {
+        "when": "5",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_mox"
+        }
+      },
+      {
+        "when": "6",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_mep"
+        }
+      },
+      {
+        "when": "7",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_hep239"
+        }
+      },
+      {
+        "when": "8",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_hep241"
+        }
+      },
+      {
+        "when": "9",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_mea"
+        }
+      },
+      {
+        "when": "10",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_hea242"
+        }
+      },
+      {
+        "when": "11",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_hes326"
+        }
+      },
+      {
+        "when": "12",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_hes327"
+        }
+      },
+      {
+        "when": "13",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_bfb_am_mix"
+        }
+      },
+      {
+        "when": "14",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/pwr_fuel_bfb_pu241"
+        }
+      }
+    ]
+  }
+}

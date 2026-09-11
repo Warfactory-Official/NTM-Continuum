@@ -66,6 +66,9 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPADetector>> PA_DETECTOR =
             MENUS.register("pa_detector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADetector::new));
 
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPWR>> PWR_CONTROLLER =
+            MENUS.register("pwr_controller", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPWR::new));
+
     public static final RegistryObject<MenuType<ContainerMachineBattery>> MACHINE_BATTERY =
             MENUS.register("machine_battery", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineBattery::new));
 

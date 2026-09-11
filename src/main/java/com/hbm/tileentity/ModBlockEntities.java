@@ -255,6 +255,15 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("struct_watz_core",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.struct.TileEntityWatzStruct::new, ModMachineBlocks.struct_watz_core.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pwr.TileEntityPWRController>> PWR_CONTROLLER =
+            BLOCK_ENTITIES.register("pwr_controller",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.pwr.TileEntityPWRController::new,
+                            com.hbm.blocks.machine.pwr.ModPWRBlocks.pwr_controller.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pwr.TileEntityBlockPWR>> PWR_BLOCK =
+            BLOCK_ENTITIES.register("pwr_block",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.pwr.TileEntityBlockPWR::new,
+                            com.hbm.blocks.machine.pwr.ModPWRBlocks.pwr_block.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityReactorZirnox>> MACHINE_ZIRNOX =
             BLOCK_ENTITIES.register("machine_zirnox",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityReactorZirnox::new, ModMachineBlocks.machine_zirnox.get()));

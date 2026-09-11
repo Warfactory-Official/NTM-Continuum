@@ -138,6 +138,10 @@ public class FluidType {
                 com.hbm.inventory.fluid.trait.FT_Corrosive.class);
         if (corrosive != null) corrosive.addInfo(info);
 
+        com.hbm.inventory.fluid.trait.FT_PWRModerator moderator = getTrait(
+                com.hbm.inventory.fluid.trait.FT_PWRModerator.class);
+        if (moderator != null) moderator.addInfo(info);
+
         long flammable = FluidCombustion.getFlammableEnergy(this);
         if (flammable > 0) {
             info.add(bracketed("trait.flammable", ChatFormatting.YELLOW));

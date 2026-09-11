@@ -26,6 +26,7 @@ import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import static com.hbm.inventory.OreDictManager.*;
 
 import com.hbm.blocks.machine.pile.ModPileBlocks;
+import com.hbm.blocks.machine.pwr.ModPWRBlocks;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
 
@@ -57,6 +58,13 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     private static final String GROUP_PLATES = "plates";
     private static final String GROUP_CYCLOTRON = "cyclotron";
     private static final String GROUP_PILE_ROD = "pilerod";
+
+    /** The {@code c:concretes} tag; concrete has no {@link com.hbm.inventory.material.NTMMaterial}. */
+    private static com.hbm.inventory.RecipesCommon.AStack concrete(int count) {
+        return new com.hbm.inventory.RecipesCommon.TagStack(
+                net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
+                        dev.golem.core.Ids.of("c", "concretes")), count);
+    }
 
     private static ItemStack pileRod(EnumPileRod type, int count) {
         return ModPileBlocks.pile_rod.get().of(type, count);
@@ -266,6 +274,43 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .inputItems(TH232.billet().count(3))
                 .outputItems(pileRod(EnumPileRod.THORIUM, 1))
                 .setGroup(GROUP_PILE_ROD, this));
+
+        // --- pressurised water reactor ---
+        register(new GenericRecipe("ass.pwrfuel").setup(200, 500)
+                .inputItems(PB.plateCast().count(4), ZR.plateWelded().count(2))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_fuelrod.get(), 4)));
+        register(new GenericRecipe("ass.pwrcontrol").setup(200, 500)
+                .inputItems(STEEL.plateCast().count(2), B.ingot().count(4),
+                        new ComparableStack(ModItems.motor.get(), 1))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_control.get(), 4)));
+        register(new GenericRecipe("ass.pwrchannel").setup(200, 500)
+                .inputItems(STEEL.pipe().count(4), CU.plate().count(4))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_channel.get(), 4)));
+        register(new GenericRecipe("ass.pwrheatex").setup(200, 500)
+                .inputItems(CU.plateCast().count(4), new ComparableStack(ModItems.motor.get(), 1))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_heatex.get(), 4)));
+        register(new GenericRecipe("ass.pwrheatsink").setup(200, 500)
+                .inputItems(BIGMT.plateCast().count(4), CU.plateCast().count(4))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_heatsink.get(), 4)));
+        register(new GenericRecipe("ass.pwrreflector").setup(200, 500)
+                .inputItems(STEEL.plateCast().count(2), new ComparableStack(ModItems.neutron_reflector.get(), 4))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_reflector.get(), 4)));
+        register(new GenericRecipe("ass.pwrreflectoralt").setup(200, 500)
+                .inputItems(STEEL.plateCast().count(2), WEAPONSTEEL.plate().count(16))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_reflector.get(), 4)));
+        register(new GenericRecipe("ass.pwrcasing").setup(200, 500)
+                .inputItems(PB.plate().count(4), concrete(4))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_casing.get(), 4)));
+        register(new GenericRecipe("ass.pwrport").setup(200, 500)
+                .inputItems(PB.plate().count(4), concrete(4), STEEL.pipe().count(4))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_port.get(), 4)));
+        register(new GenericRecipe("ass.pwrcontroller").setup(200, 500)
+                .inputItems(PB.plateCast().count(4), RUBBER.ingot().count(4),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 4))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_controller.get(), 1)));
+        register(new GenericRecipe("ass.pwrneutronsource").setup(200, 500)
+                .inputItems(ZR.plateWelded().count(1), new ComparableStack(ModItems.billet_ra226be.get(), 3))
+                .outputItems(new ItemStack(ModPWRBlocks.pwr_neutron_source.get(), 1)));
 
         // --- leviathan steam turbine (1.12.2 "ass.leviturbine") ---
         register(new GenericRecipe("ass.leviturbine").setup(600, 100)

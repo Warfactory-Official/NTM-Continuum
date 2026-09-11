@@ -152,6 +152,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("pile_rods", 20, () -> PileGameTests::rods);
     public static final GameTests.Function PILE_ASSETS =
             TESTS.function("pile_assets", 20, () -> PileGameTests::assets);
+    public static final GameTests.Function PWR_ASSEMBLY =
+            TESTS.function("pwr_assembly", 100, 12, () -> PWRGameTests::assembly);
+    public static final GameTests.Function PWR_REACTION =
+            TESTS.function("pwr_reaction", 100, 12, () -> PWRGameTests::reaction);
+    public static final GameTests.Function PWR_RODS =
+            TESTS.function("pwr_rods", 100, 12, () -> PWRGameTests::rods);
+    public static final GameTests.Function PWR_DISASSEMBLY =
+            TESTS.function("pwr_disassembly", 100, 12, () -> PWRGameTests::disassembly);
+    public static final GameTests.Function PWR_FUEL =
+            TESTS.function("pwr_fuel", 20, () -> PWRGameTests::fuel);
+    public static final GameTests.Function PWR_ASSETS =
+            TESTS.function("pwr_assets", 20, () -> PWRGameTests::assets);
     public static final GameTests.Function CHUNGUS_STRUCTURE =
             TESTS.function("chungus_structure", 100, 24, () -> ChungusGameTests::structure);
     public static final GameTests.Function CHUNGUS_PORTS =
