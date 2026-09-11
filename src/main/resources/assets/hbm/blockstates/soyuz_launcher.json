@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "meta=0": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=1": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=2": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=3": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=4": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=5": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=6": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=7": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=8": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=9": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=10": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=11": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=12": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=13": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=14": {
+      "model": "hbm:block/soyuz_launcher"
+    },
+    "meta=15": {
+      "model": "hbm:block/soyuz_launcher"
+    }
+  }
+}

@@ -24,6 +24,9 @@ public final class ModSounds {
     /** Shared switch-on sound used by the legacy fluid valve and other toggles. */
     public static final RegistryObject<SoundEvent> REACTOR_START = register("block.reactor_start");
     public static final RegistryObject<SoundEvent> REACTOR_LOOP = register("block.reactor_loop");
+    public static final RegistryObject<SoundEvent> SOYUZ_READY = register("block.soyuz_ready");
+    public static final RegistryObject<SoundEvent> SOYUZ_TAKEOFF = register("entity.soyuz_takeoff");
+    public static final RegistryObject<SoundEvent> ALARM_HATCH = register("alarm.hatch");
     public static final RegistryObject<SoundEvent> ASSEMBLER_STRIKE = register("block.assembler_strike");
     public static final RegistryObject<SoundEvent> ASSEMBLER_START = register("block.assembler_start");
     public static final RegistryObject<SoundEvent> ASSEMBLER_STOP = register("block.assembler_stop");

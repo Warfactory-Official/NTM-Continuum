@@ -627,6 +627,7 @@ public final class ModMachineBlocks {
         tabItem("rtg_polonium", rtg_polonium);
         ModTabs.addTo(HbmTab.MACHINES, machine_rtg_grey_item);
         tabItem("radsensor", radsensor);
+        tabItem("machine_satlink", machine_satlink);
         tabItem("geiger", geiger);
         tabItem("barrel_plastic", barrel_plastic);
         tabItem("barrel_corroded", barrel_corroded);

@@ -34,6 +34,8 @@ public final class HbmEntityRenderers {
         sink.register(ModEntities.FIRE_LINGERING.get(), NoopRenderer::new);
         sink.register(ModEntities.MIST.get(), NoopRenderer::new);
         sink.register(ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
+        sink.register(ModEntities.SOYUZ.get(), SoyuzRenderer::new);
+        sink.register(ModEntities.CLOUD_FLEIJA_RAINBOW.get(), NoopRenderer::new);
         sink.register(ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
         sink.register(ModEntities.SAWBLADE.get(), SawbladeRenderer::new);
         // Bullets are invisible for now: upstream draws them through ~30 per-ammo tracer styles in

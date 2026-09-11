@@ -118,6 +118,7 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.PA_DIPOLE.get(), com.hbm.inventory.gui.GUIPADipole::new);
         sink.register(ModMenus.PA_DETECTOR.get(), com.hbm.inventory.gui.GUIPADetector::new);
         sink.register(ModMenus.PWR_CONTROLLER.get(), com.hbm.inventory.gui.GUIPWR::new);
+        sink.register(ModMenus.SOYUZ_LAUNCHER.get(), com.hbm.inventory.gui.GUISoyuzLauncher::new);
         sink.register(ModMenus.DFC_CORE.get(), com.hbm.inventory.gui.GUICore::new);
         sink.register(ModMenus.DFC_EMITTER.get(), com.hbm.inventory.gui.GUICoreEmitter::new);
         sink.register(ModMenus.DFC_RECEIVER.get(), com.hbm.inventory.gui.GUICoreReceiver::new);

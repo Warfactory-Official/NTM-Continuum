@@ -276,6 +276,15 @@ public final class ModBlockEntities {
                     () -> BlockEntities.type(com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer::new,
                             com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_stabilizer.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher>> SOYUZ_LAUNCHER =
+            BLOCK_ENTITIES.register("soyuz_launcher",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher::new,
+                            com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.soyuz_launcher.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct>> STRUCT_SOYUZ_CORE =
+            BLOCK_ENTITIES.register("struct_soyuz_core",
+                    () -> BlockEntities.type(com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct::new,
+                            com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.struct_soyuz_core.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineSatLink>> MACHINE_SATLINK =
             BLOCK_ENTITIES.register("machine_satlink",
                     () -> BlockEntities.type(com.hbm.tileentity.machine.TileEntityMachineSatLink::new,

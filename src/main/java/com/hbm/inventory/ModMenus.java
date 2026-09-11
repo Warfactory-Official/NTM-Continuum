@@ -77,6 +77,9 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreStabilizer>> DFC_STABILIZER =
             MENUS.register("dfc_stabilizer", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreStabilizer::new));
 
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerSoyuzLauncher>> SOYUZ_LAUNCHER =
+            MENUS.register("soyuz_launcher", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSoyuzLauncher::new));
+
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPWR>> PWR_CONTROLLER =
             MENUS.register("pwr_controller", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPWR::new));
 

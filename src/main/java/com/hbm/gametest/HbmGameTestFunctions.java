@@ -152,6 +152,14 @@ public final class HbmGameTestFunctions {
             TESTS.function("pile_rods", 20, () -> PileGameTests::rods);
     public static final GameTests.Function PILE_ASSETS =
             TESTS.function("pile_assets", 20, () -> PileGameTests::assets);
+    public static final GameTests.Function SOYUZ_READINESS =
+            TESTS.function("soyuz_readiness", 100, 8, () -> SoyuzGameTests::readiness);
+    public static final GameTests.Function SOYUZ_LIFTOFF =
+            TESTS.function("soyuz_liftoff", 100, 16, () -> SoyuzGameTests::liftoff);
+    public static final GameTests.Function SOYUZ_ORBIT =
+            TESTS.function("soyuz_orbit", 100, 16, () -> SoyuzGameTests::orbit);
+    public static final GameTests.Function SOYUZ_ASSETS =
+            TESTS.function("soyuz_assets", 20, () -> SoyuzGameTests::assets);
     public static final GameTests.Function SATELLITE_REGISTRY =
             TESTS.function("satellite_registry", 20, () -> SatelliteGameTests::registry);
     public static final GameTests.Function SATELLITE_ORBIT =

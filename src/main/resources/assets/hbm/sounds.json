@@ -17,6 +17,33 @@
       }
     ]
   },
+  "block.soyuz_ready": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/soyuzready",
+        "stream": false
+      }
+    ]
+  },
+  "entity.soyuz_takeoff": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:entity/soyuztakeoff",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.hatch": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:alarm/lpfhaiwg",
+        "stream": false
+      }
+    ]
+  },
   "block.reactor_loop": {
     "category": "block",
     "sounds": [

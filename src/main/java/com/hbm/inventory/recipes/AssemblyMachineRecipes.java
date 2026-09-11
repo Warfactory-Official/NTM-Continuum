@@ -293,6 +293,17 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                 .outputItems(pileRod(EnumPileRod.THORIUM, 1))
                 .setGroup(GROUP_PILE_ROD, this));
 
+        // --- the satellite launch vehicle ---
+        register(new GenericRecipe("ass.soyuz").setup(6_000, 100)
+                .inputItems(TI.shell().count(32), RUBBER.ingot().count(64),
+                        new ComparableStack(com.hbm.items.ModFuelItems.rocket_fuel.get(), 64),
+                        new ComparableStack(ModItems.thruster_small.get(), 12),
+                        new ComparableStack(ModItems.thruster_medium.get(), 12),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 4),
+                        new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 32))
+                .outputItems(com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.get()
+                        .of(com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL)));
+
         // --- satellites and the ground station ---
         register(new GenericRecipe("ass.satlink").setup(100, 1_000)
                 .inputItems(new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 16),
