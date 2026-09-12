@@ -10,7 +10,9 @@ import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import com.hbm.uninos.UniNodespace;
 import dev.golem.core.gametest.GameTests;
+import dev.golem.core.world.EnergyCompat;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 
@@ -57,6 +59,8 @@ public final class PowerNetworkGameTests {
             TESTS.function("power_net_conservation", 20, () -> PowerNetworkGameTests::conservation);
     public static final GameTests.Function OVERFLOW =
             TESTS.function("power_net_share_overflow", 20, () -> PowerNetworkGameTests::shareOverflow);
+    public static final GameTests.Function FOREIGN =
+            TESTS.function("power_net_foreign_lookup", 20, () -> PowerNetworkGameTests::foreignLookup);
 
     private static final int CABLE_Z = 10;
     private static final int CABLE_FROM = 4;
@@ -196,6 +200,24 @@ public final class PowerNetworkGameTests {
         helper.assertTrue(capped == 1_000L, "A weighted share ignored its cap and returned " + capped);
 
         helper.assertTrue(PowerNetMK2.weightedShare(0L, 1L, 1L, 1L) == 0L, "An empty round still handed out power");
+        helper.succeed();
+    }
+
+    /**
+     * The foreign-energy seam answers on this node and answers nothing where nothing is exposed. Three
+     * capability systems hide behind {@code find}, and only the one this node was built against is
+     * compiled in, so linking it at all is most of what there is to check until we expose our own.
+     */
+    private static void foreignLookup(GameTestHelper helper) {
+        helper.assertTrue(EnergyCompat.supported(),
+                "The gametest runner is a forge-like node, so foreign energy must be supported");
+        BlockPos empty = helper.absolutePos(new BlockPos(2, 1, 2));
+        helper.getLevel().removeBlock(empty, false);
+        helper.assertTrue(EnergyCompat.find(helper.getLevel(), empty, Direction.NORTH) == null,
+                "Empty air answered a foreign energy lookup");
+        helper.assertTrue(EnergyCompat.find(helper.getLevel(), empty, null) == null,
+                "Empty air answered a sideless foreign energy lookup");
+        EnergyCompat.invalidate(helper.getLevel(), empty);
         helper.succeed();
     }
 
