@@ -1,6 +1,6 @@
 package com.hbm.api.fluidmk2;
 
-import com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority;
+import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.energymk2.PowerNetMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.uninos.NodeNet;

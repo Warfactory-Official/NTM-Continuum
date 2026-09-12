@@ -5,20 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-/** If it sends energy, use this. */
+/** If it sends energy, use this. The contract is on {@link IEnergyHandlerMK2}; this adds provision. */
 public interface IEnergyProviderMK2 extends IEnergyHandlerMK2 {
-
-    /**
-     * Uses up available power. No sanity checking — ensure the requested power is &lt;= the current power.
-     */
-    default void usePower(long power) {
-        this.setPower(this.getPower() - power);
-    }
-
-    /** Max speed at which this provider can send energy. Defaults to its capacity. */
-    default long getProviderSpeed() {
-        return this.getMaxPower();
-    }
 
     /**
      * Attempts to provide energy to the target tile entity at the given coordinates. Connects to a

@@ -6,32 +6,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-/** If it receives energy, use this. */
+/** If it receives energy, use this. The contract is on {@link IEnergyHandlerMK2}; this adds subscription. */
 public interface IEnergyReceiverMK2 extends IEnergyHandlerMK2 {
-
-    /**
-     * Transfers a specified amount of energy to this receiver. Absorbs as much as it can and returns
-     * the excess.
-     */
-    default long transferPower(long power, boolean simulate) {
-        if (power + this.getPower() <= this.getMaxPower()) {
-            if (!simulate) this.setPower(power + this.getPower());
-            return 0;
-        }
-        long capacity = this.getMaxPower() - this.getPower();
-        long overshoot = power - capacity;
-        if (!simulate) this.setPower(this.getMaxPower());
-        return overshoot;
-    }
-
-    default long getReceiverSpeed() {
-        return this.getMaxPower();
-    }
-
-    /** Whether a provider can provide power by touching the block (via proxies), bypassing the network. */
-    default boolean allowDirectProvision() {
-        return true;
-    }
 
     default void trySubscribe(Level world, DirPos pos) {
         trySubscribe(world, pos.getPos(), pos.getDir());
@@ -67,18 +43,4 @@ public interface IEnergyReceiverMK2 extends IEnergyHandlerMK2 {
         }
     }
 
-    default ConnectionPriority getPriority() {
-        return ConnectionPriority.NORMAL;
-    }
-
-    /** More is better-er. */
-    enum ConnectionPriority {
-        LOWEST,
-        LOW,
-        NORMAL,
-        HIGH,
-        HIGHEST;
-
-        public static final ConnectionPriority[] VALUES = new ConnectionPriority[]{LOWEST, LOW, NORMAL, HIGH, HIGHEST};
-    }
 }

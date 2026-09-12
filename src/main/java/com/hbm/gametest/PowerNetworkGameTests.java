@@ -1,14 +1,17 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.energymk2.EnergyBus;
+import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority;
+import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.energymk2.PowerNetMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.Distribution;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.EnergyCompat;
 import net.minecraft.core.BlockPos;
@@ -61,6 +64,8 @@ public final class PowerNetworkGameTests {
             TESTS.function("power_net_share_overflow", 20, () -> PowerNetworkGameTests::shareOverflow);
     public static final GameTests.Function FOREIGN =
             TESTS.function("power_net_foreign_lookup", 20, () -> PowerNetworkGameTests::foreignLookup);
+    public static final GameTests.Function BUS =
+            TESTS.function("power_bus_matches_contracts", 20, () -> PowerNetworkGameTests::busMatchesContracts);
 
     private static final int CABLE_Z = 10;
     private static final int CABLE_FROM = 4;
@@ -219,6 +224,58 @@ public final class PowerNetworkGameTests {
                 "Empty air answered a sideless foreign energy lookup");
         EnergyCompat.invalidate(helper.getLevel(), empty);
         helper.succeed();
+    }
+
+    /**
+     * The ported arbitration, held to the same figures the bench tests pin on {@link PowerNetMK2}.
+     * This is the whole point of having pinned them: it says the graph's law agrees with the one
+     * running today, before a single machine moves onto it.
+     *
+     * <p>The one known divergence cannot be seen here and is not meant to be. UNINOS rotates a cursor
+     * through a tier between rounds and the bus does not, which 1.7 agrees with; with two receivers
+     * and a last-takes-the-rest rule the totals come out the same either way.
+     */
+    private static void busMatchesContracts(GameTestHelper helper) {
+        int normal = ConnectionPriority.NORMAL.ordinal();
+        Endpoint wide = endpoint(CAP - 30_000L, ConnectionPriority.NORMAL);
+        Endpoint narrow = endpoint(CAP - 10_000L, ConnectionPriority.NORMAL);
+        List<Distribution.Share<IEnergyHandlerMK2>>[] tiers = tiers();
+        tiers[normal] = List.of(new Distribution.Share<>(wide, 30_000L),
+                new Distribution.Share<>(narrow, 10_000L));
+        long[] demand = new long[ConnectionPriority.VALUES.length];
+        demand[normal] = 40_000L;
+
+        long delivered = EnergyBus.serveShortage(tiers, demand, 20_000L, PowerNetworkGameTests::deliver);
+
+        helper.assertTrue(delivered == 20_000L, "The bus delivered " + delivered + " of an available 20000");
+        long toWide = wide.power - (CAP - 30_000L);
+        long toNarrow = narrow.power - (CAP - 10_000L);
+        helper.assertTrue(toWide == 15_000L && toNarrow == 5_000L,
+                "The bus split a 3:1 demand as " + toWide + ":" + toNarrow + " rather than 15000:5000");
+
+        Endpoint high = endpoint(CAP - 10_000L, ConnectionPriority.HIGH);
+        Endpoint low = endpoint(CAP - 10_000L, ConnectionPriority.LOW);
+        List<Distribution.Share<IEnergyHandlerMK2>>[] tiered = tiers();
+        tiered[ConnectionPriority.HIGH.ordinal()] = List.of(new Distribution.Share<>(high, 10_000L));
+        tiered[ConnectionPriority.LOW.ordinal()] = List.of(new Distribution.Share<>(low, 10_000L));
+        long[] tieredDemand = new long[ConnectionPriority.VALUES.length];
+        tieredDemand[ConnectionPriority.HIGH.ordinal()] = 10_000L;
+        tieredDemand[ConnectionPriority.LOW.ordinal()] = 10_000L;
+
+        EnergyBus.serveShortage(tiered, tieredDemand, 10_000L, PowerNetworkGameTests::deliver);
+
+        helper.assertTrue(high.power == CAP, "The bus did not fill the high tier first");
+        helper.assertTrue(low.power == CAP - 10_000L, "The bus served the low tier out of turn");
+        helper.succeed();
+    }
+
+    private static long deliver(IEnergyHandlerMK2 handler, long amount) {
+        return amount - handler.transferPower(amount, false);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Distribution.Share<IEnergyHandlerMK2>>[] tiers() {
+        return new List[ConnectionPriority.VALUES.length];
     }
 
     private static Endpoint endpoint(long power, ConnectionPriority priority) {
