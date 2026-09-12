@@ -34,6 +34,13 @@ public final class MachineCaps {
     public static final int ITEMS_AT_CELLS = 1 << 5;
     public static final int FE = 1 << 6;
 
+    /**
+     * Every face open, as a {@code 1 << Direction.ordinal()} mask. Upstream keeps this on
+     * {@code BlockMultiblockCore} beside its cell visitor; Continuum's multiblock core has no such
+     * visitor, and a face mask belongs with the class that owns face semantics anyway.
+     */
+    public static final int FACE_MASK_ALL = 0b111111;
+
     final boolean powerIn, powerOut, fluidIn, fluidOut, items, itemsAtCells, fe;
     final boolean selfProvided;
     private final BiPredicate<BlockEntity, Direction> faces;
