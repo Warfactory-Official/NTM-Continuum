@@ -89,20 +89,6 @@ public class MachineHeatBoilerIndustrial extends BlockDummyable implements IFlui
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_INDUSTRIAL_BOILER.get(), TileEntityHeatBoilerIndustrial::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(findCoreTE(level, pos) instanceof TileEntityHeatBoilerIndustrial boiler)) return null;
         List<String> text = new ArrayList<>();

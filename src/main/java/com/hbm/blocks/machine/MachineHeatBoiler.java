@@ -99,20 +99,6 @@ public class MachineHeatBoiler extends BlockDummyable implements IFluidConnector
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.HEAT_BOILER.get(), TileEntityHeatBoiler::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(findCoreTE(level, pos) instanceof TileEntityHeatBoiler boiler)) return null;
 

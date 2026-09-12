@@ -45,17 +45,4 @@ public final class MachineAshpit extends BlockDummyable implements WorldlyContai
         return core != null && level.getBlockEntity(core) instanceof TileEntityAshpit ashpit ? ashpit : null;
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                             BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, SmokeChainRegistration.ASHPIT.get(), TileEntityAshpit::clientTick)
-                : createTickerHelper(type, SmokeChainRegistration.ASHPIT.get(), TileEntityAshpit::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

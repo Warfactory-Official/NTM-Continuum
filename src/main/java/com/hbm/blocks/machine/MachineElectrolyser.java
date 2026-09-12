@@ -108,16 +108,4 @@ public final class MachineElectrolyser extends BlockDummyable
         return true;
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? ticker(type, ModBlockEntities.MACHINE_ELECTROLYSER.get(), TileEntityMachineElectrolyser::clientTick)
-                : ticker(type, ModBlockEntities.MACHINE_ELECTROLYSER.get(), TileEntityMachineElectrolyser::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> ticker(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

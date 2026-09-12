@@ -70,16 +70,4 @@ public class MachineBigAssTank9000 extends MachineGiantTank {
                         new int[]{4, 0, 1, 1, -2, 2}, x, y, z, dir);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_BAT9000.get(), TileEntityMachineBAT9000::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

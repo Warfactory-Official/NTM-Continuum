@@ -120,22 +120,6 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu ? fensu : null;
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FENSU.get(), TileEntityMachineFENSU::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FENSU.get(), TileEntityMachineFENSU::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     /** The old detailed MBB hitbox rotates around the core's half-block centre. */
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
@@ -167,7 +151,7 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
                                                                Player player, net.minecraft.world.InteractionHand hand,
                                                                ItemStack stack, BlockHitResult hit) {
         if (level.isClientSide()) return net.minecraft.world.InteractionResult.SUCCESS;
-        if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.PASS;
         DyeColor dyeColor = dyeColor(stack);
         if (dyeColor != null) {
             BlockPos core = findCore(level, pos);

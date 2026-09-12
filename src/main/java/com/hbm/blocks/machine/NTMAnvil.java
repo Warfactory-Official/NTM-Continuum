@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.inventory.container.ContainerAnvil;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.TileEntityAnvil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -38,7 +39,7 @@ import org.jspecify.annotations.Nullable;
   * {@code getBoundingBox}. <b>Deferred:</b> the old {@code BlockFalling} gravity (a falling-block entity
   * would render nothing for an INVISIBLE block).
  */
-public class NTMAnvil extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class NTMAnvil extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

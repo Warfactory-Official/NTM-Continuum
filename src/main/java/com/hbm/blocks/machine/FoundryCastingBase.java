@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
@@ -33,7 +34,7 @@ import java.util.List;
  * right-click with a shovel empties the molten content to scraps. The look-overlay shows the installed
  * mold + fill state.
  */
-public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBlock implements EntityBlock, ICrucibleAcceptor, ILookOverlay {
+public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
 
     protected FoundryCastingBase(Properties properties) {
         super(properties);
@@ -72,7 +73,7 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         TileEntityFoundryCastingBase cast = getTE(level, pos);
-        if (cast == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (cast == null) return InteractionResult.PASS;
 
         // take the finished item first, regardless of what's held
         if (!cast.inventory.getStackInSlot(1).isEmpty()) {

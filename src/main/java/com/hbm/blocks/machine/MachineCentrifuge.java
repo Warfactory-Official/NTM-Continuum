@@ -46,21 +46,6 @@ public class MachineCentrifuge extends BlockDummyable implements IEnergyConnecto
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_CENTRIFUGE.get(), TileEntityMachineCentrifuge::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CENTRIFUGE.get(), TileEntityMachineCentrifuge::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public int[] getDimensions() {
         return new int[]{3, 0, 0, 0, 0, 0};
     }

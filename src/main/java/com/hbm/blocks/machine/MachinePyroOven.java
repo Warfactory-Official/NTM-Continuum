@@ -67,18 +67,4 @@ public class MachinePyroOven extends BlockDummyable implements IEnergyConnectorB
                 && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_PYROOVEN.get(), TileEntityMachinePyroOven::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_PYROOVEN.get(), TileEntityMachinePyroOven::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

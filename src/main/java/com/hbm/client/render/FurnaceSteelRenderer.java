@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -48,7 +49,7 @@ public final class FurnaceSteelRenderer implements CompatBER<TileEntityFurnaceSt
         collector.submitCustomGeometry(poseStack, bodyType,
                 (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
         if (state.burning) {
-            float flicker = (float) Math.sin(System.currentTimeMillis() * 0.001D);
+            float flicker = (float) Math.sin(GameTime.now() * 0.001D);
             int color = ((int) (128F * 0.875F) << 24)
                     | ((int) ((0.875F + flicker * 0.125F) * 255F) << 16)
                     | ((int) ((0.625F + flicker * 0.375F) * 255F) << 8);

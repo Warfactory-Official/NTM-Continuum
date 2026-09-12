@@ -77,20 +77,6 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
         return findCoreTE(level, pos) instanceof TileEntityBatterySocket socket ? socket.getComparatorPower() : 0;
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.BATTERY_SOCKET.get(), TileEntityBatterySocket::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     /** Look-overlay: the carried battery item's charge / max (or "Empty" when no battery is inserted). */
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {

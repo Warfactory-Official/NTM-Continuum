@@ -45,20 +45,6 @@ public class MachineEPress extends BlockDummyable implements IEnergyConnectorBlo
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_EPRESS.get(), TileEntityMachineEPress::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public int[] getDimensions() {
         return new int[]{2, 0, 0, 0, 0, 0};
     }

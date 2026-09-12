@@ -79,15 +79,4 @@ public class MachineFusionBreeder extends BlockDummyable implements IFluidConnec
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.FUSION_BREEDER.get(), TileEntityFusionBreeder::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

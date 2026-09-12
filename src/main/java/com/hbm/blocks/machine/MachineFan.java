@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.IBlowable;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.block.IToolable;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
@@ -38,7 +39,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.function.Supplier;
 
 /** The six-way redstone fan with the legacy obstruction, force, particle, and tool-mode behavior. */
-public class MachineFan extends dev.golem.core.world.CompatBlock implements EntityBlock, IToolable {
+public class MachineFan extends dev.golem.core.world.CompatBlock implements TickingBlock, IToolable {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
@@ -122,20 +123,6 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Enti
         }
 
         return false;
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> actualType) {
-        return createTickerHelper(actualType, type.get(), TileEntityFan::tick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     /** Legacy nested type retained so the old block/entity relationship stays visible to integrations. */

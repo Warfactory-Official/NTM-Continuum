@@ -191,16 +191,4 @@ public class MachineStrandCaster extends BlockDummyable
         return new ILookOverlay.Data("Strand Caster", 0xFF4000, 0x401000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : ticker(type, FoundryExpansion.STRAND_CASTER_BE.get(), TileEntityMachineStrandCaster::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> ticker(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

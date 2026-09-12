@@ -8,6 +8,6 @@ public final class ExposureChamberRenderState extends CompatRenderState {
     public float rotation;
     public boolean isOn;
     public long gameTime;
-    public long wallClockMillis;
+    public long gameMillis;
     public float partialTick;
 }

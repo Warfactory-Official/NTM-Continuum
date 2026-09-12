@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
@@ -64,8 +65,8 @@ public class DieselGenRenderer implements CompatBER<TileEntityMachineDiesel, Die
                 (pose, buffer) -> model.renderPart("Generator", pose, buffer, light, OverlayTexture.NO_OVERLAY));
 
         if (s.running) {
-            double swingSide = Math.sin(System.currentTimeMillis() / 50D) * 0.005;
-            double swingFront = Math.sin(System.currentTimeMillis() / 25D) * 0.005;
+            double swingSide = Math.sin(GameTime.now() / 50D) * 0.005;
+            double swingFront = Math.sin(GameTime.now() / 25D) * 0.005;
             ps.translate((float) swingFront, 0F, (float) swingSide);
         }
         col.submitCustomGeometry(ps, renderType,

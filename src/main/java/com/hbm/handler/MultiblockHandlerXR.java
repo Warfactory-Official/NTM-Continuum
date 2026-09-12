@@ -60,7 +60,7 @@ public final class MultiblockHandlerXR {
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         int count = 0;
 
-        BlockDummyable.safeRem = true;
+        BlockDummyable.safeRem(true);
         for (int a = x - rot[4]; a <= x + rot[5]; a++) {
             for (int b = y - rot[1]; b <= y + rot[0]; b++) {
                 for (int c = z - rot[2]; c <= z + rot[3]; c++) {
@@ -75,13 +75,13 @@ public final class MultiblockHandlerXR {
 
                     world.setBlock(pos.set(a, b, c), block.defaultBlockState().setValue(BlockDummyable.META, meta), 3);
                     if (++count > 2000) {
-                        BlockDummyable.safeRem = false;
+                        BlockDummyable.safeRem(false);
                         return;
                     }
                 }
             }
         }
-        BlockDummyable.safeRem = false;
+        BlockDummyable.safeRem(false);
     }
 
     /** Rotates the south-oriented dimensions to the placement direction. */

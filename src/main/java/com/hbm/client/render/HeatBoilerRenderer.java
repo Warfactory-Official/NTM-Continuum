@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CompatBER;
@@ -55,7 +56,7 @@ public class HeatBoilerRenderer implements CompatBER<TileEntityHeatBoiler, HeatB
         };
         state.hasExploded = be.hasExploded;
         state.sine = !be.hasExploded && be.tanks[1].getFill() > be.tanks[1].getMaxFill() * 0.9
-                ? (float) (Math.sin(System.currentTimeMillis() / 50D % (Math.PI * 2)) * 0.01D) : 0F;
+                ? (float) (Math.sin(GameTime.now() / 50D % (Math.PI * 2)) * 0.01D) : 0F;
     }
 
     @Override

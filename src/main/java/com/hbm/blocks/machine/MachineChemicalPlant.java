@@ -58,22 +58,6 @@ public class MachineChemicalPlant extends BlockDummyable implements IEnergyConne
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Server: power/fluids/processing. Client: the slider/spinner animation + sound (gated by didProcess).
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), TileEntityMachineChemicalPlant::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), TileEntityMachineChemicalPlant::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public int[] getDimensions() {
         return new int[]{2, 0, 1, 1, 1, 1};
     }

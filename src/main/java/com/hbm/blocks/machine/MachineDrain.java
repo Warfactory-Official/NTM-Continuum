@@ -54,7 +54,7 @@ public class MachineDrain extends BlockDummyable implements IFluidConnectorBlock
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (!(stack.getItem() instanceof IItemFluidId identifier)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(stack.getItem() instanceof IItemFluidId identifier)) return InteractionResult.PASS;
 
         if (!level.isClientSide() && !player.isShiftKeyDown()
                 && findCoreTE(level, pos) instanceof TileEntityMachineDrain drain) {
@@ -95,18 +95,4 @@ public class MachineDrain extends BlockDummyable implements IFluidConnectorBlock
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.MACHINE_DRAIN.get(), TileEntityMachineDrain::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

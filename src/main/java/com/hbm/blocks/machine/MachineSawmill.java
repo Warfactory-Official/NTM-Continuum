@@ -229,22 +229,6 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_SAWMILL.get(), TileEntitySawmill::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_SAWMILL.get(), TileEntitySawmill::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         if (!level.isClientSide() && state.getValue(META) >= offset + 2
                 && level.getBlockEntity(pos) instanceof TileEntitySawmill sawmill) {

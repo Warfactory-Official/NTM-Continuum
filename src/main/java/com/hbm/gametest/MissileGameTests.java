@@ -181,8 +181,13 @@ public final class MissileGameTests {
 
         helper.assertTrue(steepest < -90F,
                 "missile pitch never passed horizontal on the way down (steepest was " + steepest + ")");
-        helper.assertTrue(missile.getXRot() >= -90F,
-                "xRot held a value outside vanilla's clamp, so this test is no longer testing anything");
+        // PITCH exists because the vanilla field cannot hold this value — but that is only true where
+        // setXRot clamps, which is 26.1 and up. Below it xRot legitimately carries the same number,
+        // and asserting the clamp there would be asserting something vanilla never promised.
+        if (dev.golem.core.registry.Entities.clampsXRot()) {
+            helper.assertTrue(missile.getXRot() >= -90F,
+                    "xRot held a value outside vanilla's clamp, so this test is no longer testing anything");
+        }
 
         missile.discard();
         helper.succeed();

@@ -1,6 +1,7 @@
 package com.hbm.blocks;
 
 import com.hbm.handler.MultiblockHandlerXR;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,7 +45,7 @@ import java.util.ArrayDeque;
  * real space. Deferred vs the 1.12.2 original: detailed rotated hitboxes, NBT copy/transform, and the
  * advanced "extra"-meta core routing (see IMPLEMENTATION.md §18).
  */
-public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
@@ -53,7 +54,11 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
     /** meta offset from dummy direction to "extra" dummy meta. */
     public static final int extra = 6;
     /** Re-entry guard: suppresses the break cascade while we tear the structure down ourselves. */
-    public static boolean safeRem = false;
+    private static final ThreadLocal<Boolean> SAFE_REM = ThreadLocal.withInitial(() -> false);
+
+    public static boolean safeRem() { return SAFE_REM.get(); }
+
+    public static void safeRem(boolean value) { SAFE_REM.set(value); }
 
     /**
      * Optional whole-structure hitboxes (the old {@code bounding} list): boxes in core-relative
@@ -280,9 +285,9 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         if (world.isClientSide() || !(placer instanceof Player player)) return;
 
-        safeRem = true;
+        safeRem(true);
         world.removeBlock(pos, false); // remove the single placeholder block; we rebuild the real structure
-        safeRem = false;
+        safeRem(false);
 
         Placement p = resolvePlacement(player, pos);
         if (!checkRequirement(world, p.x, p.y, p.z, p.dir, p.o)) return; // double-check; getStateForPlacement already gated
@@ -337,9 +342,9 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
         if (s.getBlock() != this) return;
         int meta = s.getValue(META);
         if (meta > 5) return;
-        safeRem = true;
+        safeRem(true);
         world.setBlock(pos, s.setValue(META, meta + extra), 3);
-        safeRem = false;
+        safeRem(false);
     }
 
     // --- breaking: removing any part tears down the whole structure ---
@@ -347,9 +352,9 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
         if (level.isClientSide()) return;
-        if (safeRem) return;
+        if (safeRem()) return;
         int meta = state.getValue(META);
-        safeRem = true;
+        safeRem(true);
         try {
             // If a dummy was broken, remove its core first; the now-coreless dummies become orphans below.
             if (meta < 12) {
@@ -365,7 +370,7 @@ public abstract class BlockDummyable extends dev.golem.core.world.CompatBlock im
             // whose cells still reach their own intact core (so they are not orphans).
             cascadeOrphans(level, pos);
         } finally {
-            safeRem = false;
+            safeRem(false);
         }
     }
 

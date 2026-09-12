@@ -54,23 +54,6 @@ public class MachineFEL extends BlockDummyable implements IEnergyConnectorBlock,
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Client ticks too: the FEL runs its own audio ramp and triggers a render update when the
-        // beam length changes.
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_FEL.get(), TileEntityFEL::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_FEL.get(), TileEntityFEL::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public int[] getDimensions() {
         return new int[]{2, 0, 4, 2, 1, 1};
     }

@@ -44,17 +44,4 @@ public final class RadioTelex extends BlockDummyable {
         return super.onUseWithoutItem(state, level, pos, player, hit);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModRadioBlockEntities.RADIO_TELEX.get(),
-                (tickLevel, pos, tickState, blockEntity) -> ((TileEntityRadioTelex) blockEntity).serverTick());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

@@ -22,11 +22,4 @@ public class HeaterOven extends HeaterFirebox {
         return new TileEntityHeaterOven(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.HEATER_OVEN.get(), TileEntityHeaterOven::clientTick)
-                : createTickerHelper(type, ModBlockEntities.HEATER_OVEN.get(), TileEntityHeaterOven::serverTick);
-    }
 }

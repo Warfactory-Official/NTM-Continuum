@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
@@ -39,7 +40,7 @@ import org.jspecify.annotations.Nullable;
  * facing this block), which drives both the JSON model variant and the shape. Right-click with a shovel
  * empties the content to scraps. Molten level is drawn by the channel BER.
  */
-public class FoundryChannel extends dev.golem.core.world.CompatBlock implements EntityBlock, ICrucibleAcceptor {
+public class FoundryChannel extends dev.golem.core.world.CompatBlock implements TickingBlock, ICrucibleAcceptor {
 
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
@@ -103,20 +104,6 @@ public class FoundryChannel extends dev.golem.core.world.CompatBlock implements 
     @Nullable
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityFoundryChannel(pos, state);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.FOUNDRY_CHANNEL.get(), TileEntityFoundryChannel::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     /** Shovel right-click empties the content to scraps. */

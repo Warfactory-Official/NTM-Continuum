@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.Vertexes;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -77,7 +78,7 @@ public final class FoundryRenderHelper {
         float vMin = 0.0F;
         float vMax = length;
 
-        float add = (int) (System.currentTimeMillis() / 100 % 16) / 16F;
+        float add = (int) (GameTime.now() / 100 % 16) / 16F;
 
         // Each quad is emitted DOUBLE-wound (front + reversed): drawn on entitySolid (which culls, and
         // uses the vertex normal — all up — for uniform brightness), the cull keeps exactly the outward

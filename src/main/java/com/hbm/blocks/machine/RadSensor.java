@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.sound.ModSounds;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityRadSensor;
 import net.minecraft.core.BlockPos;
@@ -19,7 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import org.jspecify.annotations.Nullable;
 
 /** Radiation sensor with the legacy dose reset, redstone ladder, and comparator ladder. */
-public class RadSensor extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class RadSensor extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public RadSensor(Properties properties) {
         super(properties);
@@ -77,18 +78,4 @@ public class RadSensor extends dev.golem.core.world.CompatBlock implements Entit
         return level.getBlockEntity(pos) instanceof TileEntityRadSensor sensor ? sensor.comparatorOutput : 0;
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.RAD_SENSOR.get(), TileEntityRadSensor::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

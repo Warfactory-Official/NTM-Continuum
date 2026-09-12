@@ -114,7 +114,7 @@ public class Watz extends BlockDummyable implements IFluidConnectorBlockMK2, Wor
      */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && !BlockDummyable.safeRem && state.getValue(META) >= 12 && drop) {
+        if (!level.isClientSide() && !BlockDummyable.safeRem() && state.getValue(META) >= 12 && drop) {
             drop(level, pos, new ItemStack(ModMachineBlocks.watz_casing_tooled.get(), 48));
             for (int i = 0; i < 3; i++) {
                 drop(level, pos, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_DURA), 64));
@@ -131,15 +131,4 @@ public class Watz extends BlockDummyable implements IFluidConnectorBlockMK2, Wor
         Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.WATZ.get(), TileEntityWatz::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

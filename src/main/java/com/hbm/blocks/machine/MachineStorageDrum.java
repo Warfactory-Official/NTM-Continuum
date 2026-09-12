@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import dev.golem.core.gui.Menus;
 import net.minecraft.core.BlockPos;
@@ -22,7 +23,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /** The 24-slot nuclear waste disposal drum from the 1.12.2 source. */
-public class MachineStorageDrum extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class MachineStorageDrum extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     private static final VoxelShape SHAPE = net.minecraft.world.level.block.Block.box(2, 0, 2, 14, 16, 14);
 
@@ -47,13 +48,6 @@ public class MachineStorageDrum extends dev.golem.core.world.CompatBlock impleme
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_STORAGE_DRUM.get(), TileEntityStorageDrum::serverTick);
-    }
-
-    @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
         if (!level.isClientSide() && !player.isShiftKeyDown() && player instanceof ServerPlayer serverPlayer
@@ -71,9 +65,4 @@ public class MachineStorageDrum extends dev.golem.core.world.CompatBlock impleme
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

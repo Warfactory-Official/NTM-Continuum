@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.tileentity.deco.TileEntityDeco;
+import dev.golem.core.registry.TickingBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
@@ -14,7 +15,7 @@ import org.jspecify.annotations.Nullable;
  * {@link TileEntityDeco} so the block-entity renderer runs — the same invisible-block + BER pattern the
  * machines and the Fat Man use. Collision/facing come from {@link BlockDeco} (these all use {@code FULL}).
  */
-public class BlockDecoObj extends BlockDeco implements EntityBlock {
+public class BlockDecoObj extends BlockDeco implements TickingBlock {
 
     public BlockDecoObj(Properties properties, Shape shape) {
         super(properties, shape);

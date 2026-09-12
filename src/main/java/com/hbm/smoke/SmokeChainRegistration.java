@@ -1,6 +1,7 @@
 package com.hbm.smoke;
 
 import com.hbm.Constants;
+import com.hbm.tileentity.machine.TileEntityChimneyBase;
 import com.hbm.blocks.machine.MachineAshpit;
 import com.hbm.blocks.machine.MachineChimneyBrick;
 import com.hbm.blocks.machine.MachineChimneyIndustrial;
@@ -49,14 +50,11 @@ public final class SmokeChainRegistration {
     }
 
     public static final RegistryObject<BlockEntityType<TileEntityChimneyBrick>> CHIMNEY_BRICK =
-            BLOCK_ENTITIES.register("chimney_brick", () -> BlockEntities.type(
-                    TileEntityChimneyBrick::new, chimney_brick.get()));
+            BLOCK_ENTITIES.register("chimney_brick", () -> BlockEntities.ticking(TileEntityChimneyBrick::new, TileEntityChimneyBase::clientTick, TileEntityChimneyBase::serverTick, chimney_brick.get()));
     public static final RegistryObject<BlockEntityType<TileEntityChimneyIndustrial>> CHIMNEY_INDUSTRIAL =
-            BLOCK_ENTITIES.register("chimney_industrial", () -> BlockEntities.type(
-                    TileEntityChimneyIndustrial::new, chimney_industrial.get()));
+            BLOCK_ENTITIES.register("chimney_industrial", () -> BlockEntities.ticking(TileEntityChimneyIndustrial::new, TileEntityChimneyBase::clientTick, TileEntityChimneyBase::serverTick, chimney_industrial.get()));
     public static final RegistryObject<BlockEntityType<TileEntityAshpit>> ASHPIT =
-            BLOCK_ENTITIES.register("machine_ashpit", () -> BlockEntities.type(
-                    TileEntityAshpit::new, machine_ashpit.get()));
+            BLOCK_ENTITIES.register("machine_ashpit", () -> BlockEntities.ticking(TileEntityAshpit::new, TileEntityAshpit::clientTick, TileEntityAshpit::serverTick, machine_ashpit.get()));
 
     public static final RegistryObject<MenuType<ContainerAshpit>> ASHPIT_MENU = MENUS.register(
             "ashpit", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerAshpit::new));

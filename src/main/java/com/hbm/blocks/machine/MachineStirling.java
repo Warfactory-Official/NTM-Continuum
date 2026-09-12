@@ -159,19 +159,4 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_STIRLING.get(), TileEntityStirling::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_STIRLING.get(), TileEntityStirling::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

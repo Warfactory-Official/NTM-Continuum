@@ -103,13 +103,6 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CATALYTIC_CRACKER.get(), TileEntityMachineCatalyticCracker::serverTick);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         BlockPos core = findCore(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineCatalyticCracker cracker)) return null;
@@ -121,10 +114,4 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

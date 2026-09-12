@@ -37,8 +37,7 @@ public final class AssemblyFactoryRegistrations {
             "machine_assembly_factory", MACHINE_ASSEMBLY_FACTORY);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineAssemblyFactory>> MACHINE_ASSEMBLY_FACTORY_BE =
-            BLOCK_ENTITIES.register("machine_assembly_factory", () -> BlockEntities.type(
-                    TileEntityMachineAssemblyFactory::new, MACHINE_ASSEMBLY_FACTORY.get()));
+            BLOCK_ENTITIES.register("machine_assembly_factory", () -> BlockEntities.ticking(TileEntityMachineAssemblyFactory::new, TileEntityMachineAssemblyFactory::clientTick, TileEntityMachineAssemblyFactory::serverTick, MACHINE_ASSEMBLY_FACTORY.get()));
 
     public static final RegistryObject<MenuType<ContainerMachineAssemblyFactory>> MACHINE_ASSEMBLY_FACTORY_MENU =
             MENUS.register("machine_assembly_factory", () -> Menus.typeWithPos(ContainerMachineAssemblyFactory::new));

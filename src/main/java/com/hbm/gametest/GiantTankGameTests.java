@@ -157,24 +157,46 @@ public final class GiantTankGameTests {
         helper.assertTrue(bigBlock.defaultBlockState().is(PICKAXE) && batBlock.defaultBlockState().is(PICKAXE),
                 "Both giant tanks must be in the mineable/pickaxe tag");
 
-        TileEntityMachineBigAssTank big = placeBigAss(helper, new BlockPos(8, 1, 8));
+        // One core, reused four times. A Big Ass Tank reaches four blocks out and five up, and the
+        // four placements used to sit at x = 8, 24, 40 and 56 — three of them past the 24-wide plot,
+        // in whatever the runner packed alongside. Clearing between placements keeps it all at home.
+        BlockPos core = new BlockPos(12, 1, 12);
+
+        TileEntityMachineBigAssTank big = placeBigAss(helper, core);
         big.setTankType(Fluids.WATER);
         big.tankNew.withPressure(2);
         big.tankNew.setFill(12_345);
         big.mode = 1;
         ItemStack bigDrop = bigBlock.getDrops(big.getBlockState(), lootParams(level, big.getBlockPos())).get(0);
         assertDrop(helper, bigDrop, bigBlock, 12_345, 2, 1);
-        placeAndAssertBig(helper, level, bigBlock, bigDrop, helper.absolutePos(new BlockPos(24, 1, 2)));
+        clearTanks(helper, bigBlock, batBlock, helper.absolutePos(core));
+        placeAndAssertBig(helper, level, bigBlock, bigDrop, helper.absolutePos(core.north(6)));
+        clearTanks(helper, bigBlock, batBlock, helper.absolutePos(core));
 
-        TileEntityMachineBAT9000 bat = placeBat(helper, new BlockPos(40, 1, 8));
+        TileEntityMachineBAT9000 bat = placeBat(helper, core);
         bat.setTankType(Fluids.WATER);
         bat.tankNew.withPressure(3);
         bat.tankNew.setFill(6_789);
         bat.mode = 2;
         ItemStack batDrop = batBlock.getDrops(bat.getBlockState(), lootParams(level, bat.getBlockPos())).get(0);
         assertDrop(helper, batDrop, batBlock, 6_789, 3, 2);
-        placeAndAssertBat(helper, level, batBlock, batDrop, helper.absolutePos(new BlockPos(56, 1, 2)));
+        clearTanks(helper, bigBlock, batBlock, helper.absolutePos(core));
+        placeAndAssertBat(helper, level, batBlock, batDrop, helper.absolutePos(core.north(2)));
         helper.succeed();
+    }
+
+    /** Removes both tanks' blocks around a core, so the next placement sees an empty plot. */
+    private static void clearTanks(GameTestHelper helper, MachineBigAssTank bigBlock,
+                                   MachineBigAssTank9000 batBlock, BlockPos core) {
+        for (int x = -6; x <= 6; x++) {
+            for (int y = -1; y <= 7; y++) {
+                for (int z = -8; z <= 8; z++) {
+                    BlockPos pos = core.offset(x, y, z);
+                    Block block = helper.getLevel().getBlockState(pos).getBlock();
+                    if (block == bigBlock || block == batBlock) helper.getLevel().removeBlock(pos, false);
+                }
+            }
+        }
     }
 
     private static LootParams.Builder lootParams(ServerLevel level, BlockPos origin) {

@@ -92,19 +92,4 @@ public class MachineMiningLaser extends BlockDummyable implements IEnergyConnect
                 && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Server: mining/power/fluid. No client ticker (the beam is interpolated purely in the renderer).
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_MINING_LASER.get(), TileEntityMachineMiningLaser::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
 }

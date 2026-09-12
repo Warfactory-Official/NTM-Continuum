@@ -62,7 +62,6 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     protected abstract BlockEntityType<? extends BlockEntityRBMKBase> beType();
     protected abstract BlockEntityRBMKBase createCore(BlockPos pos, BlockState state);
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return state.getValue(PART) == Part.CORE ? createCore(pos, state) : null; }
-    @Override public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) { return RBMKTickers.ticker(level, type, beType()); }
     @Override public boolean canConnect(com.hbm.inventory.fluid.FluidType type, net.minecraft.world.level.BlockGetter world, int x, int y, int z, com.hbm.lib.ForgeDirection dir) {
         if (!(world instanceof Level level) || dir == com.hbm.lib.ForgeDirection.UNKNOWN) return false;
         BlockPos surface = new BlockPos(x, y, z), core = MultiblockSurface.coreOfAny(level, surface);

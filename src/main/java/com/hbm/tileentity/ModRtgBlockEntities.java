@@ -17,8 +17,7 @@ public final class ModRtgBlockEntities {
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineRTG>> MACHINE_RTG =
-            BLOCK_ENTITIES.register("machine_rtg_grey", () -> BlockEntities.type(
-                    TileEntityMachineRTG::new, ModMachineBlocks.machine_rtg_grey.get()));
+            BLOCK_ENTITIES.register("machine_rtg_grey", () -> BlockEntities.serverTicking(TileEntityMachineRTG::new, TileEntityMachineRTG::serverTick, ModMachineBlocks.machine_rtg_grey.get()));
 
     public static void init() {}
 }

@@ -105,20 +105,6 @@ public final class MachineBatteryREDD extends BlockDummyable implements IEnergyC
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                            BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.BATTERY_REDD.get(), TileEntityBatteryREDD::clientTick)
-                : createTickerHelper(type, ModBlockEntities.BATTERY_REDD.get(), TileEntityBatteryREDD::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         BlockPos pos = BlockPos.containing(params.getParameter(LootContextParams.ORIGIN));
         BlockPos core = findCore(params.getLevel(), pos);

@@ -86,20 +86,6 @@ public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor
         return super.onUseItem(state, level, pos, player, hand, stack, hit);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CRUCIBLE.get(), TileEntityCrucible::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     // --- ICrucibleAcceptor: delegate to the core (pour from the top only) ---
 
     @Override

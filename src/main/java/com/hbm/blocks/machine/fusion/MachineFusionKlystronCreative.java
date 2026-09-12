@@ -39,16 +39,4 @@ public class MachineFusionKlystronCreative extends BlockDummyable {
                 new int[]{4, -3, 4, 3, 1, 1}, this, dir);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FUSION_KLYSTRON_CREATIVE.get(), TileEntityFusionKlystronCreative::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FUSION_KLYSTRON_CREATIVE.get(), TileEntityFusionKlystronCreative::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

@@ -95,20 +95,4 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
                 ? tank.tank.getRedstoneComparatorPower() : 0;
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Both sides: the side-ladder must be registered on the client too (onClimbable is checked there
-        // for the local player). The server tick also runs the network/identifier logic.
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FLUID_TANK.get(), TileEntityMachineFluidTank::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FLUID_TANK.get(), TileEntityMachineFluidTank::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

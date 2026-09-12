@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
@@ -43,7 +44,7 @@ public final class CyclotronRenderer implements CompatBER<TileEntityMachineCyclo
         state.book = be.getPlug(1);
         state.gavel = be.getPlug(2);
         state.coin = be.getPlug(3);
-        state.rotation = (float) (System.currentTimeMillis() * 0.025D % 360D);
+        state.rotation = (float) (GameTime.now() * 0.025D % 360D);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
@@ -25,7 +26,7 @@ import java.util.List;
 
 /** Single-block heavy-water extractor. */
 public class MachineDeuteriumExtractor extends dev.golem.core.world.CompatBlock
-        implements EntityBlock, IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
+        implements TickingBlock, IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineDeuteriumExtractor(Properties properties) {
         super(properties);
@@ -35,14 +36,6 @@ public class MachineDeuteriumExtractor extends dev.golem.core.world.CompatBlock
     @Nullable
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityDeuteriumExtractor(pos, state);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_DEUTERIUM_EXTRACTOR.get(),
-                TileEntityDeuteriumExtractor::serverTick);
     }
 
     @Override
@@ -67,10 +60,4 @@ public class MachineDeuteriumExtractor extends dev.golem.core.world.CompatBlock
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

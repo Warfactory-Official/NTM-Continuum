@@ -58,22 +58,6 @@ public class MachineCrystallizer extends BlockDummyable implements IEnergyConnec
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Server: power/fluid/processing. Client: the spinner animation + looping sound (gated by isOn).
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_CRYSTALLIZER.get(), TileEntityMachineCrystallizer::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CRYSTALLIZER.get(), TileEntityMachineCrystallizer::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public int[] getDimensions() {
         return new int[]{5, 0, 1, 1, 1, 1};
     }

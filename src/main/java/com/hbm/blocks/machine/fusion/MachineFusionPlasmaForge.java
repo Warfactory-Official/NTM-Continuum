@@ -89,17 +89,4 @@ public class MachineFusionPlasmaForge extends BlockDummyable
         return findCoreTE(level, pos) instanceof TileEntityFusionPlasmaForge forge ? forge : null;
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                              BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FUSION_PLASMA_FORGE.get(), TileEntityFusionPlasmaForge::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FUSION_PLASMA_FORGE.get(), TileEntityFusionPlasmaForge::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

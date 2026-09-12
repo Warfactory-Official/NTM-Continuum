@@ -41,13 +41,4 @@ public final class MachinePUREX extends BlockDummyable implements IEnergyConnect
         z += dir.offsetZ * offset;
         for (int i = -2; i <= 2; i++) for (int j = -2; j <= 2; j++) if (Math.abs(i) == 2 || Math.abs(j) == 2) makeExtra(level, x + i, y, z + j);
     }
-    @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? ticker(type, ModBlockEntities.MACHINE_PUREX.get(), TileEntityMachinePUREX::clientTick)
-                : ticker(type, ModBlockEntities.MACHINE_PUREX.get(), TileEntityMachinePUREX::serverTick);
     }
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> ticker(BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-}

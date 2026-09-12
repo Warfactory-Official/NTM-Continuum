@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.recipes.FusionRecipe;
@@ -86,7 +87,7 @@ public class FusionTorusRenderer implements CompatBER<TileEntityFusionTorus, Fus
 
         // Upstream offsets each reactor's clock by a random amount so neighbouring ones do not pulse in
         // lockstep. Deriving it from the position instead keeps that without a synced field.
-        long time = System.currentTimeMillis() + Math.floorMod(be.getBlockPos().hashCode(), 30_000);
+        long time = GameTime.now() + Math.floorMod(be.getBlockPos().hashCode(), 30_000);
 
         state.plasmaAlpha = 0.35F + (float) (Math.sin(time / 1000D) * 0.25D);
         state.mainScroll = (float) (sps(time / 1000D) % 1D);

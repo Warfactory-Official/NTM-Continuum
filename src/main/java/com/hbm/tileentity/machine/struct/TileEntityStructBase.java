@@ -36,14 +36,14 @@ public abstract class TileEntityStructBase extends TileEntityLoadedBase {
         if (!te.pattern().matches(level, pos)) return;
 
         BlockDummyable machine = te.target();
-        BlockDummyable.safeRem = true;
+        BlockDummyable.safeRem(true);
         try {
             // META 12 = ForgeDirection.NORTH (2) + BlockDummyable.offset (10). Assembly is not direction
             // sensitive upstream, so a struct-built machine always ends up facing north.
             level.setBlock(pos, machine.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
             machine.formStructure(level, pos, ForgeDirection.NORTH);
         } finally {
-            BlockDummyable.safeRem = false;
+            BlockDummyable.safeRem(false);
         }
         // `te` no longer exists — setBlock above destroyed this BlockEntity. Touch nothing after here.
     }

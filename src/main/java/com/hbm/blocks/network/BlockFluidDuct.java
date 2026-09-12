@@ -1,6 +1,9 @@
 package com.hbm.blocks.network;
 
 import com.hbm.interfaces.ILookOverlay;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.IItemFluidId;
@@ -55,7 +58,7 @@ import java.util.Map;
  * a {@code fluid_identifier}: the connection flags are then recomputed against that one fluid, so a typed
  * duct only links to neighbours carrying the same fluid.
  */
-public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements EntityBlock, SimpleWaterloggedBlock, ILookOverlay {
+public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements TickingBlock, SimpleWaterloggedBlock, ILookOverlay {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -211,7 +214,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
     /** Right-click with a fluid identifier → set the duct's fluid type and recompute its connections. */
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.PASS;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             if (type != duct.getFluidType()) {
@@ -234,20 +237,6 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         return new TileEntityFluidDuctNT(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.FLUID_DUCT.get(), TileEntityFluidDuctNT::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     /** Look-overlay: the duct's carried fluid type, tinted by its colour. */
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
@@ -256,5 +245,15 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         List<String> text = new ArrayList<>();
         text.add("&[" + type.getColor() + "&]" + type.getDisplayNameString());
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return ConnectionRing.rotate(state, rotation, PROPERTY_BY_DIRECTION);
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return ConnectionRing.mirror(state, mirror, PROPERTY_BY_DIRECTION);
     }
 }

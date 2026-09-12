@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +35,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Right-click opens the menu. It needs two {@link com.hbm.items.machine.ItemBlades blades} to run —
  * see {@link TileEntityMachineShredder}.
  */
-public class MachineShredder extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class MachineShredder extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -47,20 +48,6 @@ public class MachineShredder extends dev.golem.core.world.CompatBlock implements
     @Nullable
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachineShredder(pos, state);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_SHREDDER.get(), TileEntityMachineShredder::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override

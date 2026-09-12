@@ -32,10 +32,4 @@ public class TurretSentryDamaged extends TurretSentry {
         return new TileEntityTurretSentryDamaged(pos, state);
     }
 
-    @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return TurretBaseNT.ticker(level, type, ModBlockEntities.TURRET_SENTRY_DAMAGED.get());
-    }
-
 }

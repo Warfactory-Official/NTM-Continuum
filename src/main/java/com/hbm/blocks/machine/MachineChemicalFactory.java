@@ -110,24 +110,6 @@ public class MachineChemicalFactory extends BlockDummyable
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_BE.get(),
-                TileEntityMachineChemicalFactory::clientTick)
-                : createTickerHelper(type, ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_BE.get(),
-                TileEntityMachineChemicalFactory::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
         if (!(findCoreTE(level, pos) instanceof TileEntityMachineChemicalFactory factory)) return null;
         for (DirPos port : factory.getCoolPos()) {

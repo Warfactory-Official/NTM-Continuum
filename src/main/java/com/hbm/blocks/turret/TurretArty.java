@@ -21,9 +21,4 @@ public class TurretArty extends TurretBaseArtillery {
         return new TileEntityTurretArty(pos, state);
     }
 
-    @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return ticker(level, type, ModBlockEntities.TURRET_ARTY.get());
-    }
 }

@@ -21,9 +21,4 @@ public class TurretTauon extends TurretBaseNT {
         return new TileEntityTurretTauon(pos, state);
     }
 
-    @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return ticker(level, type, ModBlockEntities.TURRET_TAUON.get());
-    }
 }

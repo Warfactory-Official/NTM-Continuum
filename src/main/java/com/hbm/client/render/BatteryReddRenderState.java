@@ -8,6 +8,6 @@ public final class BatteryReddRenderState extends CompatRenderState {
     public float rotation;
     public float speed;
     public long gameTime;
-    public long wallClockMillis;
+    public long gameMillis;
     public boolean sparkleNearby;
 }

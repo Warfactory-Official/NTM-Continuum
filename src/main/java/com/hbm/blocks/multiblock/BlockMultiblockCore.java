@@ -1,6 +1,9 @@
 package com.hbm.blocks.multiblock;
 
 import dev.golem.core.world.CompatBlock;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import dev.golem.core.registry.TickingBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -26,7 +29,7 @@ import org.jspecify.annotations.Nullable;
  * Folded multiblock core. Cells carry no core pointer; ownership is persisted before their placement is
  * considered complete, and removal consults that record so neighbouring structures cannot be consumed.
  */
-public abstract class BlockMultiblockCore extends CompatBlock implements EntityBlock {
+public abstract class BlockMultiblockCore extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final int MASK_NONE = 0;
@@ -200,4 +203,14 @@ public abstract class BlockMultiblockCore extends CompatBlock implements EntityB
 
     @FunctionalInterface public interface CellVisitor { void cell(BlockPos pos, int mask); }
     public record FoldedOwner(BlockPos pos, BlockState state, BlockMultiblockCore block, Direction facing) {}
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING, rotation.rotate(state.getValue(FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(FACING)));
+    }
 }

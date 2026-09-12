@@ -26,17 +26,4 @@ public final class MachineChimneyBrick extends MachineChimneyBase {
     @Override public int[] getDimensions() { return new int[]{12, 0, 1, 1, 1, 1}; }
     @Override public int getOffset() { return 1; }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                              BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, SmokeChainRegistration.CHIMNEY_BRICK.get(), TileEntityChimneyBase::clientTick)
-                : createTickerHelper(type, SmokeChainRegistration.CHIMNEY_BRICK.get(), TileEntityChimneyBase::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

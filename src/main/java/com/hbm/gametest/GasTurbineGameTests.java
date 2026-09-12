@@ -5,8 +5,8 @@ import com.hbm.blocks.machine.MachineTurbineGas;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.inventory.gui.GUIMachineTurbineGas;
-import com.hbm.inventory.gui.GuiUtil;
+import com.hbm.inventory.container.ContainerMachineTurbineGas;
+import com.hbm.inventory.gui.TankDisplay;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
@@ -115,7 +115,7 @@ public final class GasTurbineGameTests {
 
         List<Component> expectedFluidInfo = new ArrayList<>();
         tank.getTankType().addInfo(expectedFluidInfo);
-        List<Component> tooltip = GuiUtil.tankTooltip(tank);
+        List<Component> tooltip = TankDisplay.tooltip(tank);
 
         helper.assertTrue(tooltip.size() == expectedFluidInfo.size() + 3,
                 "Gas turbine tank tooltip must include name, fill, pressure, and fluid info");
@@ -138,26 +138,26 @@ public final class GasTurbineGameTests {
         try {
             FluidTankNTM fuel = new FluidTankNTM(Fluids.GAS, 1_000);
             fuel.setFill(500);
-            assertTankFill(helper, fuel, 8, GUIMachineTurbineGas.FUEL_TANK_TOP, 16, 48,
+            assertTankFill(helper, fuel, 8, ContainerMachineTurbineGas.FUEL_TANK_TOP, 16, 48,
                     8, 41, 16, 65, "fuel");
 
             FluidTankNTM lubricant = new FluidTankNTM(Fluids.LUBRICANT, 1_000);
             lubricant.setFill(1_000);
-            assertTankFill(helper, lubricant, 8, GUIMachineTurbineGas.LUBRICANT_TANK_TOP, 16, 32,
+            assertTankFill(helper, lubricant, 8, ContainerMachineTurbineGas.LUBRICANT_TANK_TOP, 16, 32,
                     8, 71, 16, 103, "lubricant");
 
             FluidTankNTM water = new FluidTankNTM(Fluids.WATER, 1_000);
             water.setFill(1_000);
-            assertTankFill(helper, water, 147, GUIMachineTurbineGas.WATER_TANK_TOP, 16, 36,
+            assertTankFill(helper, water, 147, ContainerMachineTurbineGas.WATER_TANK_TOP, 16, 36,
                     147, 62, 16, 98, "water");
 
             FluidTankNTM steam = new FluidTankNTM(Fluids.STEAM, 1_000);
             steam.setFill(1_000);
-            assertTankFill(helper, steam, 147, GUIMachineTurbineGas.STEAM_TANK_TOP, 16, 36,
+            assertTankFill(helper, steam, 147, ContainerMachineTurbineGas.STEAM_TANK_TOP, 16, 36,
                     147, 22, 16, 58, "steam");
 
-            helper.assertTrue(GUIMachineTurbineGas.tankTint(fuel) == 0xFFB2C3D4
-                            && (GUIMachineTurbineGas.tankTint(fuel) >>> 24) == 0xFF,
+            helper.assertTrue(TankDisplay.tint(fuel) == 0xFFB2C3D4
+                            && (TankDisplay.tint(fuel) >>> 24) == 0xFF,
                     "Gas turbine tank fill tint must use opaque FluidType.getTint()");
         } finally {
             Fluids.GAS.setTint(originalTint);
@@ -167,7 +167,7 @@ public final class GasTurbineGameTests {
     private static void assertTankFill(GameTestHelper helper, FluidTankNTM tank, int x, int top,
                                        int width, int height, int expectedX, int expectedTop,
                                        int expectedWidth, int expectedBottom, String name) {
-        GUIMachineTurbineGas.TankFill fill = GUIMachineTurbineGas.visibleTankFill(tank, x, top, width, height);
+        TankDisplay.Fill fill = TankDisplay.visibleFill(tank, x, top, width, height);
         helper.assertTrue(fill != null && fill.x() == expectedX && fill.top() == expectedTop
                         && fill.width() == expectedWidth && fill.bottom() == expectedBottom,
                 "Gas turbine " + name + " visible fill rectangle changed");

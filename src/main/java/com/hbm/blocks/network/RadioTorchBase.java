@@ -1,6 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.interfaces.ILookOverlay;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.network.RadioTorchTicking;
 import com.hbm.tileentity.network.TileEntityRadioTorchBase;
 import dev.golem.core.gui.Menus;
@@ -37,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Six-direction, non-colliding radio torch base with the legacy attachment dimensions. */
-public abstract class RadioTorchBase extends CompatBlock implements EntityBlock, ILookOverlay {
+public abstract class RadioTorchBase extends CompatBlock implements TickingBlock, ILookOverlay {
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
@@ -137,12 +138,4 @@ public abstract class RadioTorchBase extends CompatBlock implements EntityBlock,
         return state.rotate(mirror.getRotation(state.getValue(FACING)));
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return (tickLevel, pos, tickState, blockEntity) -> {
-            if (blockEntity instanceof RadioTorchTicking radio) radio.serverTick();
-        };
-    }
 }

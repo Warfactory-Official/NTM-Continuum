@@ -119,7 +119,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
 
         if (outputOps == 0 && canExplode) {
             this.hasExploded = true;
-            BlockDummyable.safeRem = true;
+            BlockDummyable.safeRem(true);
 
             BlockPos base = this.worldPosition;
             for (int x = base.getX() - 1; x <= base.getX() + 1; x++) {
@@ -138,7 +138,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
             // per destroyed cell ("drops multiple of itself") and, with safeRem up, orphaned dummies.
             this.level.explode(null, base.getX() + 0.5D, base.getY() + 2D, base.getZ() + 0.5D, 5F, Level.ExplosionInteraction.NONE);
 
-            BlockDummyable.safeRem = false;
+            BlockDummyable.safeRem(false);
         }
     }
 

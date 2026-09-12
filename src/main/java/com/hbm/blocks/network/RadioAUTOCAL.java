@@ -42,16 +42,4 @@ public final class RadioAUTOCAL extends BlockDummyable {
                 : super.onUseWithoutItem(state, level, pos, player, hit);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type,
-                ModRadioBlockEntities.RADIO_AUTOCAL.get(), (tickLevel, pos, tickState, autocal) -> autocal.serverTick());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

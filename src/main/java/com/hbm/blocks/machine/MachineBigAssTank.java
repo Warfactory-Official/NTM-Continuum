@@ -88,7 +88,7 @@ public class MachineBigAssTank extends MachineGiantTank {
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!player.isShiftKeyDown() || !(stack.getItem() instanceof IItemFluidId identifier)) {
-            return InteractionResult.TRY_WITH_EMPTY_HAND;
+            return InteractionResult.PASS;
         }
         if (!level.isClientSide() && findCoreTE(level, pos) instanceof TileEntityMachineBigAssTank tank) {
             var type = identifier.getType(level, tank.getBlockPos().getX(), tank.getBlockPos().getY(),
@@ -100,16 +100,4 @@ public class MachineBigAssTank extends MachineGiantTank {
         return InteractionResult.SUCCESS;
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_BIG_ASS_TANK.get(), TileEntityMachineBigAssTank::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

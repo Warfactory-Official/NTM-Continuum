@@ -379,7 +379,7 @@ public class TileEntityWatz extends TileEntityMachineBase
     private void disassemble(Level level, BlockPos pos) {
         // The reactor is being destroyed, not mined: no component drop.
         Watz.drop = false;
-        BlockDummyable.safeRem = true;
+        BlockDummyable.safeRem(true);
         try {
             Block mud = com.hbm.blocks.ModHazardBlocks.mud_block.get();
             for (int i = 0; i < 3; i++) level.setBlock(pos.above(i), mud.defaultBlockState(), 3);
@@ -406,7 +406,7 @@ public class TileEntityWatz extends TileEntityMachineBase
             setBrokenColumn(level, pos, 1, casing, -2, 2);
             setBrokenColumn(level, pos, 1, casing, -2, -2);
         } finally {
-            BlockDummyable.safeRem = false;
+            BlockDummyable.safeRem(false);
             Watz.drop = true;
         }
     }

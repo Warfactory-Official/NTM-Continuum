@@ -46,20 +46,6 @@ public class LaunchPad extends BlockDummyable implements IBomb, IEnergyConnector
         return new TileEntityLaunchPad(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.LAUNCH_PAD.get(), TileEntityLaunchPad::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     /** Cables connect only at the pad's true power ports (the core's {@code getConPos} positions). */
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {

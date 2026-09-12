@@ -48,19 +48,4 @@ public class MachineFurnaceCombination extends BlockDummyable
                 && com.hbm.api.energymk2.IEnergyConnectorBlock.isPort(furnace.getConPos(), new BlockPos(x, y, z), dir);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                   BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FURNACE_COMBINATION.get(), TileEntityFurnaceCombination::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FURNACE_COMBINATION.get(), TileEntityFurnaceCombination::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

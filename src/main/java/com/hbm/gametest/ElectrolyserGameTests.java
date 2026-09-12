@@ -51,18 +51,23 @@ public final class ElectrolyserGameTests {
         helper.succeed();
     }
 
-    /** The complete legacy footprint, metadata write order, and all six distance-six ports. */
+    /**
+     * The complete legacy footprint, metadata write order, and all six distance-six ports.
+     *
+     * <p>All four facings are built at the same core, one after another, rather than side by side.
+     * An electrolyser reaches six blocks out in every horizontal direction, so four of them spread
+     * across a grid covered 2..30 — outside the 24-wide plot, in a neighbour's space, which made
+     * this test's result depend on what the runner happened to pack next to it. Reusing one core and
+     * clearing between facings keeps every block this test writes inside its own plot.
+     */
     public static void layoutAndPorts(GameTestHelper helper) {
         MachineElectrolyser block = ModMachineBlocks.machine_electrolyser.get();
         ForgeDirection[] facings = {ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST};
-        BlockPos[] cores = {
-                new BlockPos(8, 1, 8), new BlockPos(24, 1, 8),
-                new BlockPos(8, 1, 24), new BlockPos(24, 1, 24)
-        };
+        BlockPos relativeCore = new BlockPos(12, 1, 12);
 
         for (int i = 0; i < facings.length; i++) {
             ForgeDirection facing = facings[i];
-            BlockPos core = helper.absolutePos(cores[i]);
+            BlockPos core = helper.absolutePos(relativeCore);
             int placementOffset = -block.getOffset();
             BlockPos base = core.offset(facing.offsetX * block.getOffset(), 0,
                     facing.offsetZ * block.getOffset());
@@ -75,7 +80,7 @@ public final class ElectrolyserGameTests {
                             facing, placementOffset), "electrolyser extra volume was not checked for " + facing);
             helper.getLevel().removeBlock(obstruction, false);
 
-            helper.setBlock(cores[i], block.defaultBlockState().setValue(BlockDummyable.META,
+            helper.setBlock(relativeCore, block.defaultBlockState().setValue(BlockDummyable.META,
                     facing.ordinal() + BlockDummyable.offset));
             block.formStructure(helper.getLevel(), core, facing);
             TileEntityMachineElectrolyser electrolyser =
@@ -90,8 +95,23 @@ public final class ElectrolyserGameTests {
                         "wrong electrolyser footprint metadata at " + entry.getKey() + " for " + facing);
             }
             assertPorts(helper, block, electrolyser, core, facing);
+            clearStructure(helper, block, core);
         }
         helper.succeed();
+    }
+
+    /** Removes every block this machine placed, so the next facing starts from the empty plot again. */
+    private static void clearStructure(GameTestHelper helper, MachineElectrolyser block, BlockPos core) {
+        for (int x = -7; x <= 7; x++) {
+            for (int y = -1; y <= 4; y++) {
+                for (int z = -7; z <= 7; z++) {
+                    BlockPos pos = core.offset(x, y, z);
+                    if (helper.getLevel().getBlockState(pos).getBlock() == block) {
+                        helper.getLevel().removeBlock(pos, false);
+                    }
+                }
+            }
+        }
     }
 
     public static void fluidProcessing(GameTestHelper helper) {

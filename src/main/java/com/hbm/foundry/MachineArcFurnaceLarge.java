@@ -137,17 +137,4 @@ public class MachineArcFurnaceLarge extends BlockDummyable implements IEnergyCon
         super.onBlockRemoved(state, level, pos, movedByPiston);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? ticker(type, FoundryExpansion.ARC_FURNACE_BE.get(), TileEntityMachineArcFurnaceLarge::clientTick)
-                : ticker(type, FoundryExpansion.ARC_FURNACE_BE.get(), TileEntityMachineArcFurnaceLarge::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> ticker(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

@@ -44,12 +44,12 @@ public class MachineZirnoxDestroyed extends BlockDummyable {
     public void formWreck(Level level, BlockPos pos, int coreMeta) {
         int meta = coreMeta >= 12 && coreMeta <= 15 ? coreMeta : 12;
         ForgeDirection facing = ForgeDirection.getOrientation(meta - offset);
-        BlockDummyable.safeRem = true;
+        BlockDummyable.safeRem(true);
         try {
             level.setBlock(pos, defaultBlockState().setValue(META, meta), 3);
             MultiblockHandlerXR.fillSpace(level, pos.getX(), pos.getY(), pos.getZ(), getDimensions(), this, facing);
         } finally {
-            BlockDummyable.safeRem = false;
+            BlockDummyable.safeRem(false);
         }
     }
 
@@ -70,16 +70,4 @@ public class MachineZirnoxDestroyed extends BlockDummyable {
         }
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.ZIRNOX_DESTROYED.get(), TileEntityZirnoxDestroyed::clientTick)
-                : createTickerHelper(type, ModBlockEntities.ZIRNOX_DESTROYED.get(), TileEntityZirnoxDestroyed::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

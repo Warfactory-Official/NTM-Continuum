@@ -65,21 +65,6 @@ public class MachineSolarBoiler extends BlockDummyable implements IFluidConnecto
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModSolarBlockEntities.SOLAR_BOILER.get(), TileEntitySolarBoiler::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(findCoreTE(level, pos) instanceof TileEntitySolarBoiler boiler)) return null;
 

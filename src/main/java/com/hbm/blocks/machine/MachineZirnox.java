@@ -78,11 +78,4 @@ public class MachineZirnox extends BlockDummyable implements IFluidConnectorBloc
         }
         reactor.setRedstonePowered(powered);
     }
-    @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntities.MACHINE_ZIRNOX.get(), TileEntityReactorZirnox::serverTick);
     }
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-}

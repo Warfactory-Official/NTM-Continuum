@@ -96,20 +96,4 @@ public class MachineExposureChamber extends BlockDummyable implements IEnergyCon
                 && IEnergyConnectorBlock.isPort(chamber.getConPos(), pos, dir);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_EXPOSURE_CHAMBER.get(),
-                TileEntityMachineExposureChamber::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_EXPOSURE_CHAMBER.get(),
-                TileEntityMachineExposureChamber::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

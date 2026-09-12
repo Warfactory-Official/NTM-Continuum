@@ -36,6 +36,7 @@ public class FabricClientInit implements ClientModInitializer {
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
+        com.hbm.client.ClientGameTime.install();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
@@ -40,7 +41,7 @@ import org.jspecify.annotations.Nullable;
  * fuel pad drawn by {@code RefuelerRenderer}. Fluid-ID right-click retypes the tank. Collision is a
  * 12/16-tall slab (the old directional slab is simplified to a uniform pad — §20).
  */
-public class BlockRefueler extends dev.golem.core.world.CompatBlock implements EntityBlock, IFluidConnectorBlockMK2 {
+public class BlockRefueler extends dev.golem.core.world.CompatBlock implements TickingBlock, IFluidConnectorBlockMK2 {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 12, 16);
@@ -64,21 +65,6 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements E
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.REFUELER.get(), TileEntityRefueler::clientTick)
-                : createTickerHelper(type, ModBlockEntities.REFUELER.get(), TileEntityRefueler::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override

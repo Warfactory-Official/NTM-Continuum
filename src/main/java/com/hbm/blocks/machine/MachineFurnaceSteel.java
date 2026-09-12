@@ -25,12 +25,4 @@ public class MachineFurnaceSteel extends BlockDummyable implements WorldlyContai
         BlockPos core = findCore(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityFurnaceSteel furnace ? furnace : null;
     }
-    @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? createTickerHelper(type, ModBlockEntities.FURNACE_STEEL.get(), TileEntityFurnaceSteel::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FURNACE_STEEL.get(), TileEntityFurnaceSteel::serverTick);
     }
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-}

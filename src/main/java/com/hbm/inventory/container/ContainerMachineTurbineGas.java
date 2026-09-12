@@ -20,6 +20,19 @@ import org.jspecify.annotations.Nullable;
 /** Menu for the gas turbine: battery and gas-fluid identifier. */
 public class ContainerMachineTurbineGas extends AbstractContainerMenu {
 
+    /**
+     * Where the screen draws each tank.
+     *
+     * <p>These are screen coordinates and they belong to the screen, but the screen is client-only and
+     * a dedicated-server GameTest pins them, so they live on the menu — the half of this machine's UI
+     * that both sides can load. A test that hard-coded the numbers instead would keep passing after
+     * the screen moved a tank.
+     */
+    public static final int FUEL_TANK_TOP = 17;
+    public static final int LUBRICANT_TANK_TOP = 71;
+    public static final int WATER_TANK_TOP = 62;
+    public static final int STEAM_TANK_TOP = 22;
+
     private static final int MACHINE_SLOTS = 2;
     private final Container machine;
     private final @Nullable TileEntityMachineTurbineGas turbine;

@@ -44,8 +44,7 @@ public final class DiFurnaceContent {
             "machine_difurnace_ext", MACHINE_DIFURNACE_EXTENSION);
 
     public static final RegistryObject<BlockEntityType<TileEntityDiFurnace>> DI_FURNACE = BLOCK_ENTITIES.register(
-            "machine_difurnace_off", () -> BlockEntities.type(
-                    TileEntityDiFurnace::new, MACHINE_DIFURNACE.get()));
+            "machine_difurnace_off", () -> BlockEntities.serverTicking(TileEntityDiFurnace::new, TileEntityDiFurnace::serverTick, MACHINE_DIFURNACE.get()));
 
     public static final RegistryObject<MenuType<ContainerDiFurnace>> DI_FURNACE_MENU = MENUS.register(
             "machine_difurnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerDiFurnace::new));

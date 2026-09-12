@@ -17,12 +17,10 @@ public final class ModSolarBlockEntities {
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<TileEntitySolarBoiler>> SOLAR_BOILER =
-            BLOCK_ENTITIES.register("machine_solar_boiler", () -> BlockEntities.type(
-                    TileEntitySolarBoiler::new, ModSolarBlocks.machine_solar_boiler.get()));
+            BLOCK_ENTITIES.register("machine_solar_boiler", () -> BlockEntities.serverTicking(TileEntitySolarBoiler::new, TileEntitySolarBoiler::serverTick, ModSolarBlocks.machine_solar_boiler.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntitySolarMirror>> SOLAR_MIRROR =
-            BLOCK_ENTITIES.register("solar_mirror", () -> BlockEntities.type(
-                    TileEntitySolarMirror::new, ModSolarBlocks.solar_mirror.get()));
+            BLOCK_ENTITIES.register("solar_mirror", () -> BlockEntities.serverTicking(TileEntitySolarMirror::new, TileEntitySolarMirror::serverTick, ModSolarBlocks.solar_mirror.get()));
 
     public static void init() {}
 }

@@ -47,16 +47,6 @@ public abstract class TurretBaseArtillery extends BlockMultiblockCore implements
         super(properties);
     }
 
-    @SuppressWarnings("unchecked")
-    protected static <A extends BlockEntity, E extends BlockEntity> @Nullable BlockEntityTicker<A> ticker(
-            Level level, BlockEntityType<A> actual, BlockEntityType<E> expected) {
-        if (actual != expected) return null;
-        BlockEntityTicker<TileEntityTurretBaseNT> turretTicker = level.isClientSide()
-                ? TileEntityTurretBaseNT::clientTick
-                : TileEntityTurretBaseNT::serverTick;
-        return (BlockEntityTicker<A>) turretTicker;
-    }
-
     @Override
     public int[] getDimensions() {
         return DIMENSIONS;

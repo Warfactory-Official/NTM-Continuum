@@ -49,22 +49,6 @@ public class MachineAssemblyMachine extends BlockDummyable implements WorldlyCon
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Server: power + recipe processing. Client: the arm/ring animation (gated by didProcess).
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), TileEntityMachineAssemblyMachine::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_ASSEMBLY_MACHINE.get(), TileEntityMachineAssemblyMachine::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public int[] getDimensions() {
         return new int[]{2, 0, 1, 1, 1, 1};
     }

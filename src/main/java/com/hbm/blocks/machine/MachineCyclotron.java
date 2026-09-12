@@ -64,7 +64,7 @@ public class MachineCyclotron extends BlockDummyable
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (player.isShiftKeyDown()) return InteractionResult.PASS;
 
         BlockPos core = findCore(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineCyclotron cyclotron) {
@@ -88,22 +88,6 @@ public class MachineCyclotron extends BlockDummyable
                                                   BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return super.onUseWithoutItem(state, level, pos, player, hit);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_CYCLOTRON.get(), TileEntityMachineCyclotron::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CYCLOTRON.get(), TileEntityMachineCyclotron::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override public int[] getDimensions() { return new int[]{2, 0, 2, 2, 2, 2}; }

@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -59,7 +60,7 @@ public final class ExposureChamberRenderer
         state.rotation = be.prevRotation + (be.rotation - be.prevRotation) * partialTicks;
         state.isOn = be.isOn;
         state.gameTime = be.getLevel() == null ? 0L : be.getLevel().getGameTime();
-        state.wallClockMillis = System.currentTimeMillis();
+        state.gameMillis = GameTime.now();
         state.partialTick = partialTicks;
     }
 
@@ -87,10 +88,10 @@ public final class ExposureChamberRenderer
 
             Random random = new Random(state.gameTime / 8L);
             int color = state.gameTime % 8L >= 4L ? 0x80D0FF : 0xFFFFFF;
-            int animation = (int) (state.wallClockMillis % 1_000L) / 50;
+            int animation = (int) (state.gameMillis % 1_000L) / 50;
             // Preserve the upstream precedence quirk: only the literal 5 is reduced modulo 1000.
-            int delayedAnimation = (int) (state.wallClockMillis + 5L % 1_000L) / 50;
-            int rotation = (int) (state.wallClockMillis % 360L);
+            int delayedAnimation = (int) (state.gameMillis + 5L % 1_000L) / 50;
+            int rotation = (int) (state.gameMillis % 360L);
             random.nextInt(2);
             beamIf(random.nextInt(2) == 0, poseStack, collector, 0F, 3.675F, -7.5F, color, animation);
             beamIf(random.nextInt(2) == 0, poseStack, collector, 1.1875F, 2.5F, -7.5F, color, animation);

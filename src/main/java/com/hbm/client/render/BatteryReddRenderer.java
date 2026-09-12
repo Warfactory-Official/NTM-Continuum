@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -73,7 +74,7 @@ public final class BatteryReddRenderer implements CompatBER<TileEntityBatteryRED
                 + (blockEntity.rotation - blockEntity.prevRotation) * partialTicks;
         state.speed = blockEntity.getSpeed();
         state.gameTime = blockEntity.getLevel() == null ? 0L : blockEntity.getLevel().getGameTime();
-        state.wallClockMillis = System.currentTimeMillis();
+        state.gameMillis = GameTime.now();
         state.sparkleNearby = cameraPosition.distanceToSqr(blockEntity.getBlockPos().getX() + 0.5D,
                 blockEntity.getBlockPos().getY() + 2.5D, blockEntity.getBlockPos().getZ() + 0.5D) < 100D * 100D;
     }
@@ -100,15 +101,15 @@ public final class BatteryReddRenderer implements CompatBER<TileEntityBatteryRED
 
     private void renderPlasma(BatteryReddRenderState state, PoseStack poseStack, SubmitSink collector) {
         float speed = state.speed / 15F;
-        int color = argb((0.45F + (float) Math.sin(state.wallClockMillis / 1000D) * 0.15F) * speed,
+        int color = argb((0.45F + (float) Math.sin(state.gameMillis / 1000D) * 0.15F) * speed,
                 PLASMA_R, PLASMA_G, PLASMA_B);
-        float mainOsc = (float) (sps(state.wallClockMillis / 1000D) % 1D);
+        float mainOsc = (float) (sps(state.gameMillis / 1000D) % 1D);
         collector.submitCustomGeometry(poseStack, plasma,
                 (pose, buffer) -> model.renderPart("Plasma", pose, buffer, FULLBRIGHT,
                         OverlayTexture.NO_OVERLAY, color, 0F, mainOsc, false));
 
         if (state.sparkleNearby) {
-            long time = state.wallClockMillis;
+            long time = state.gameMillis;
             float spin = (float) ((time / 250D * -1D) % 1D);
             float oscillation = (float) (Math.sin(time / 1000D) * 0.5D % 1D);
             int sparkleColor = argb(0.75F * speed, PLASMA_R * 2F, PLASMA_G * 2F, PLASMA_B * 2F);
@@ -175,7 +176,7 @@ public final class BatteryReddRenderer implements CompatBER<TileEntityBatteryRED
     private void renderZaps(BatteryReddRenderState state, PoseStack poseStack, SubmitSink collector) {
         Random random = new Random(state.gameTime / 5L);
         random.nextBoolean();
-        int animation = (int) (state.wallClockMillis % 1000L) / 50;
+        int animation = (int) (state.gameMillis % 1000L) / 50;
         zap(random.nextBoolean(), state, poseStack, collector, 3.125F, 0F,
                 new Vec3(-1.375D, -2.625D, 3.75D), animation);
         zap(random.nextBoolean(), state, poseStack, collector, -3.125F, 0F,

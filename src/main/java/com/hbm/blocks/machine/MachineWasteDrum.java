@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityWasteDrum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,7 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** Water-cooled storage for hot ZIRNOX spent fuel. */
-public class MachineWasteDrum extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class MachineWasteDrum extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public MachineWasteDrum(Properties properties) {
         super(properties);
@@ -27,19 +28,6 @@ public class MachineWasteDrum extends dev.golem.core.world.CompatBlock implement
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityWasteDrum(pos, state);
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_WASTE_DRUM.get(), TileEntityWasteDrum::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override

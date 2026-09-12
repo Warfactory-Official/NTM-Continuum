@@ -115,19 +115,4 @@ public class MachineTurbineGas extends BlockDummyable
         return x == hit.getX() && y == hit.getY() && z == hit.getZ();
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_TURBINE_GAS.get(), TileEntityMachineTurbineGas::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_TURBINE_GAS.get(), TileEntityMachineTurbineGas::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

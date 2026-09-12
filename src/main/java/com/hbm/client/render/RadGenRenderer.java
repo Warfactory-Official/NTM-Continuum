@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -62,7 +63,7 @@ public final class RadGenRenderer implements CompatBER<TileEntityMachineRadGen, 
             default -> 0F;
         };
         state.on = blockEntity.isOn;
-        state.rotor = state.on ? -(System.currentTimeMillis() % 3600L) * 0.1F : 0F;
+        state.rotor = state.on ? -(GameTime.now() % 3600L) * 0.1F : 0F;
     }
 
     @Override

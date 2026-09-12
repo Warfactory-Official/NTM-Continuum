@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -281,7 +282,7 @@ public final class MachineItemModel {
             submitStirlingAnimation(poseStack, sink, lightCoords, overlayCoords);
         } else if (spin && !spinParts.isEmpty()) {
             poseStack.pushPose();
-            spinAround(poseStack, spinPivot, System.currentTimeMillis() % 3600L * 0.1F);
+            spinAround(poseStack, spinPivot, GameTime.now() % 3600L * 0.1F);
             sink.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
                 for (String part : spinParts) if (!userExclude.contains(part)) {
                     model.renderPart(part, pose, buffer, lightCoords, overlayCoords);
@@ -389,7 +390,7 @@ public final class MachineItemModel {
             Set<String> rendered = new HashSet<>(spinParts);
             rendered.removeAll(userExclude);
             ps.pushPose();
-            spinAround(ps, spinPivot, System.currentTimeMillis() % 3600L * 0.1F);
+            spinAround(ps, spinPivot, GameTime.now() % 3600L * 0.1F);
             emitPartBounds(ps, rendered, output);
             ps.popPose();
         }
@@ -418,7 +419,7 @@ public final class MachineItemModel {
 
     private void pumpExtents(PoseStack poseStack, Consumer<Vector3fc> output) {
         emitPartBounds(poseStack, Set.of("Base"), output);
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
+        float rotation = GameTime.now() % 3600L * 0.1F;
 
         poseStack.pushPose();
         poseStack.translate(0F, 2.25F, 0F);
@@ -447,7 +448,7 @@ public final class MachineItemModel {
     }
 
     private void stirlingExtents(PoseStack poseStack, Consumer<Vector3fc> output) {
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
+        float rotation = GameTime.now() % 3600L * 0.1F;
         if (!userExclude.contains("Cog")) {
             poseStack.pushPose();
             spinAround(poseStack, new Vector3f(0F, 1.375F, 0F), -rotation);
@@ -566,7 +567,7 @@ public final class MachineItemModel {
     /** The old pump item renderer moves every pump part from one shared millisecond-derived rotor angle. */
     private void submitPumpAnimation(PoseStack poseStack, SubmitSink sink, int lightCoords, int overlayCoords) {
         submitPart(poseStack, sink, "Base", lightCoords, overlayCoords);
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
+        float rotation = GameTime.now() % 3600L * 0.1F;
 
         poseStack.pushPose();
         poseStack.translate(0F, 2.25F, 0F);
@@ -604,7 +605,7 @@ public final class MachineItemModel {
 
     /** The legacy Stirling inventory icon animates its three moving parts independently. */
     private void submitStirlingAnimation(PoseStack poseStack, SubmitSink sink, int lightCoords, int overlayCoords) {
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
+        float rotation = GameTime.now() % 3600L * 0.1F;
         if (!userExclude.contains("Cog")) {
             poseStack.pushPose();
             spinAround(poseStack, new Vector3f(0F, 1.375F, 0F), -rotation);

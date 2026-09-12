@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import dev.golem.core.registry.BlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -25,7 +26,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Each machine supplies its own BlockEntity via a {@link BlockEntities.Factory}, so no per-machine
  * block subclass is needed for the scaffold.
  */
-public class BlockMachine extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class BlockMachine extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 

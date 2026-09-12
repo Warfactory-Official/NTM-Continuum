@@ -70,19 +70,4 @@ public class MachineIntake extends BlockDummyable implements IEnergyConnectorBlo
                 0xffff00, 0x404000, lines);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> actualType) {
-        return level.isClientSide()
-                ? createTickerHelper(actualType, type.get(), TileEntityMachineIntake::clientTick)
-                : createTickerHelper(actualType, type.get(), TileEntityMachineIntake::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

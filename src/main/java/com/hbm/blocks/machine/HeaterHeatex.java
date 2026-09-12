@@ -89,7 +89,7 @@ public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlock
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (player.isShiftKeyDown()) {
             if (!(stack.getItem() instanceof com.hbm.items.machine.IItemFluidId identifier)) {
-                return InteractionResult.TRY_WITH_EMPTY_HAND;
+                return InteractionResult.PASS;
             }
             if (level.isClientSide()) return InteractionResult.SUCCESS;
 
@@ -128,7 +128,7 @@ public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlock
 
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!BlockDummyable.safeRem && level.getBlockEntity(pos) instanceof TileEntityHeaterHeatex heater) {
+        if (!BlockDummyable.safeRem() && level.getBlockEntity(pos) instanceof TileEntityHeaterHeatex heater) {
             Containers.dropContents(level, pos, heater);
         }
         super.onBlockRemoved(state, level, pos, movedByPiston);
@@ -150,19 +150,4 @@ public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlock
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? null
-                : createTickerHelper(type, ModBlockEntities.HEATER_HEATEX.get(), TileEntityHeaterHeatex::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

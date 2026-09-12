@@ -35,6 +35,7 @@ final class ForgeClientInit {
                 Minecraft.getInstance().level, Minecraft.getInstance().player));
         GolemNetwork.flushClientRegistrations();
 
+        com.hbm.client.ClientGameTime.install();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();

@@ -40,21 +40,6 @@ public class MachinePress extends BlockDummyable implements WorldlyContainerHold
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Server only: fuel burn + pressing. The renderer reads the synced progress for the head position.
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_PRESS.get(), TileEntityMachinePress::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public int[] getDimensions() {
         return new int[]{2, 0, 0, 0, 0, 0};
     }

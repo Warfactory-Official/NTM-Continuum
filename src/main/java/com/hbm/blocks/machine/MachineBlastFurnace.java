@@ -48,20 +48,6 @@ public class MachineBlastFurnace extends BlockDummyable implements IFluidConnect
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                              BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_BLAST_FURNACE.get(), TileEntityMachineBlastFurnace::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_BLAST_FURNACE.get(), TileEntityMachineBlastFurnace::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
         super.fillSpace(level, x, y, z, dir, offset);
 

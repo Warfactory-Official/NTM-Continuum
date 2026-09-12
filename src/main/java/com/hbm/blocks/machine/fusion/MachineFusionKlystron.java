@@ -68,16 +68,4 @@ public class MachineFusionKlystron extends BlockDummyable implements IEnergyConn
                 && te.getConPos().stream().anyMatch(p -> p.getPos().equals(outside) && p.getDir() == dir);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FUSION_KLYSTRON.get(), TileEntityFusionKlystron::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FUSION_KLYSTRON.get(), TileEntityFusionKlystron::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

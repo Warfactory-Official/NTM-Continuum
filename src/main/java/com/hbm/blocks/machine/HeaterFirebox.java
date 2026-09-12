@@ -43,21 +43,6 @@ public class HeaterFirebox extends BlockDummyable implements ILookOverlay {
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.HEATER_FIREBOX.get(), TileEntityHeaterFirebox::clientTick)
-                : createTickerHelper(type, ModBlockEntities.HEATER_FIREBOX.get(), TileEntityHeaterFirebox::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    protected static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
         if (!(findCoreTE(level, pos) instanceof TileEntityFireboxBase heater)) return null;
 

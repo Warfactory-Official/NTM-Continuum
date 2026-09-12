@@ -120,28 +120,4 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
         return System.currentTimeMillis() % 1000 < 500 ? 0xff0000 : 0xffff00;
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        if (steam) {
-            return level.isClientSide()
-                    ? createTickerHelper(type, ModBlockEntities.MACHINE_PUMP_STEAM.get(),
-                            TileEntityMachinePumpSteam::clientTick)
-                    : createTickerHelper(type, ModBlockEntities.MACHINE_PUMP_STEAM.get(),
-                            TileEntityMachinePumpSteam::serverTick);
-        }
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_PUMP_ELECTRIC.get(),
-                        TileEntityMachinePumpElectric::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_PUMP_ELECTRIC.get(),
-                        TileEntityMachinePumpElectric::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

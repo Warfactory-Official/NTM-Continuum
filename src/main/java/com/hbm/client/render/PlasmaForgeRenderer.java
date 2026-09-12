@@ -1,5 +1,6 @@
 package com.hbm.client.render;
 
+import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -80,7 +81,7 @@ public class PlasmaForgeRenderer implements CompatBER<TileEntityFusionPlasmaForg
         state.plasmaB = be.plasmaBlue;
 
         if (state.burning) {
-            long time = System.currentTimeMillis() + be.timeOffset;
+            long time = GameTime.now() + be.timeOffset;
             state.plasmaAlpha = PlasmaForgeRenderMath.plasmaAlpha(time);
             state.mainScroll = PlasmaForgeRenderMath.mainScroll(time);
             state.glowScroll = PlasmaForgeRenderMath.firstGlowScroll(time);

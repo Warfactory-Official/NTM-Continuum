@@ -1,6 +1,10 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.config.BombConfig;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.interfaces.IBomb;
@@ -37,7 +41,7 @@ import java.util.UUID;
  *
  * <p>{@code FACING} (2–5, the old ForgeDirection horizontal ordinals N/S/W/E) drives the model yaw.
  */
-public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityBlock, IBomb {
+public class NukeMan extends dev.golem.core.world.CompatBlock implements TickingBlock, IBomb {
 
     public static final IntegerProperty FACING = IntegerProperty.create("facing", 2, 5);
 
@@ -150,5 +154,17 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements EntityB
                     pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, BombConfig.manRadius);
             if (level.addFreshEntity(torex)) torex.startChunkLoading();
         }
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING,
+                rotation.rotate(Direction.from3DDataValue(state.getValue(FACING))).get3DDataValue());
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.setValue(FACING,
+                mirror.mirror(Direction.from3DDataValue(state.getValue(FACING))).get3DDataValue());
     }
 }

@@ -198,7 +198,7 @@ public final class HbmPackets {
 
     /** Control packets are flat key/value schemas; nested tags have no receiver contract. */
     private static boolean containsNestedCompound(net.minecraft.nbt.CompoundTag data) {
-        for (String key : data.keySet()) {
+        for (String key : dev.golem.core.data.Tags.keys(data)) {
             if (data.get(key) instanceof net.minecraft.nbt.CompoundTag
                     || data.get(key) instanceof net.minecraft.nbt.ListTag) return true;
         }

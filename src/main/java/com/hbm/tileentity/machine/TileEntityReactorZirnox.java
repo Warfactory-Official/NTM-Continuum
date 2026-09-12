@@ -211,7 +211,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
 
         int meta = state.getValue(com.hbm.blocks.BlockDummyable.META);
         // Remove the upper live shell and core before forming the two-block-tall wreck.
-        BlockDummyable.safeRem = true;
+        BlockDummyable.safeRem(true);
         try {
             for (int dx = -2; dx <= 2; dx++) {
                 for (int dy = 2; dy <= 5; dy++) {
@@ -225,7 +225,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             }
             level.removeBlock(pos, false);
         } finally {
-            BlockDummyable.safeRem = false;
+            BlockDummyable.safeRem(false);
         }
 
         level.playSound(null, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D,

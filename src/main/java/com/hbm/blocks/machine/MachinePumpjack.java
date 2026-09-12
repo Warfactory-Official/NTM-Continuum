@@ -77,19 +77,4 @@ public class MachinePumpjack extends BlockDummyable implements IEnergyConnectorB
                 && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_PUMPJACK.get(), TileEntityMachinePumpjack::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_PUMPJACK.get(),
-                        (BlockEntityTicker<TileEntityMachinePumpjack>) com.hbm.tileentity.machine.oil.TileEntityOilDrillBase::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

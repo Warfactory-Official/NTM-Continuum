@@ -143,7 +143,7 @@ public class MachineFusionTorus extends BlockDummyable
     public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
         int x = core.getX(), y = core.getY(), z = core.getZ();
 
-        BlockDummyable.safeRem = true;
+        BlockDummyable.safeRem(true);
         try {
             for (int iy = 0; iy < HEIGHT; iy++) {
                 int[][] layer = layerFor(iy);
@@ -170,7 +170,7 @@ public class MachineFusionTorus extends BlockDummyable
                 }
             }
         } finally {
-            BlockDummyable.safeRem = false;
+            BlockDummyable.safeRem(false);
         }
 
         // "is that enough ports?" — upstream. Six per side at both ring heights, plus the centre-top.
@@ -211,16 +211,4 @@ public class MachineFusionTorus extends BlockDummyable
                 && torus.getConPos().stream().anyMatch(port -> port.getPos().equals(outside) && port.getDir() == direction);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FUSION_TORUS.get(), TileEntityFusionTorus::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FUSION_TORUS.get(), TileEntityFusionTorus::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }
