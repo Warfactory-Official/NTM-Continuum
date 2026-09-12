@@ -75,6 +75,7 @@ public final class ForgeInit {
         com.hbm.gametest.RadioProviderGameTests.init();
         com.hbm.gametest.RtgGameTests.init();
         com.hbm.gametest.TurretGameTests.init();
+        com.hbm.gametest.PowerNetworkGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -125,6 +126,8 @@ public final class ForgeInit {
                 com.hbm.gametest.RtgGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.TurretGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.PowerNetworkGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FlywheelGameTests.TESTS));
 

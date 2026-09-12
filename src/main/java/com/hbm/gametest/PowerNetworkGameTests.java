@@ -1,0 +1,295 @@
+package com.hbm.gametest;
+
+import com.hbm.Constants;
+import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.energymk2.IEnergyReceiverMK2.ConnectionPriority;
+import com.hbm.api.energymk2.PowerNetMK2;
+import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.tileentity.machine.TileEntityMachineBattery;
+import com.hbm.tileentity.network.TileEntityCableBaseNT;
+import com.hbm.uninos.UniNodespace;
+import dev.golem.core.gametest.GameTests;
+import net.minecraft.core.BlockPos;
+import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerLevel;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * The energy contracts that must survive the move off UNINOS onto the node graph: what the network
+ * does, never how it is built.
+ *
+ * <p>Two behaviours the current network has are deliberately <b>not</b> asserted, because the graph
+ * replaces them and a test of either would have to fail for the port to be correct. The first is the
+ * three-second subscription timeout, which exists only because machines push themselves into a net
+ * every tick; the graph pulls endpoints from a registry and has no timeout. The second is the
+ * rotation of receivers within a priority tier, which the graph drops to match 1.7 — every figure
+ * asserted below holds whichever end of a tier is served first.
+ *
+ * <p>The split between world tests and bench tests is forced rather than chosen. A gametest plot is
+ * a live server: the block entities placed in it keep ticking and the server keeps walking the
+ * nodespace, so any number of distribution rounds can land between placing a machine and reading its
+ * buffer. That is fine for asking whether power crossed a cable run and useless for asking how much.
+ * So topology is asserted in the world, and arbitration is asserted against a net built by hand with
+ * endpoints that are not block entities, where one round means one round.
+ *
+ * <p>The four bench tests name {@link PowerNetMK2} directly, which is the one thing here that does
+ * not survive the port. When the graph lands they keep their figures and change their first two
+ * lines to build the graph's net instead.
+ */
+public final class PowerNetworkGameTests {
+
+    public static final GameTests.Suite TESTS = GameTests.suite(Constants.MOD_ID);
+
+    public static final GameTests.Function JOIN =
+            TESTS.function("power_net_join", 40, () -> PowerNetworkGameTests::join);
+    public static final GameTests.Function SPLIT =
+            TESTS.function("power_net_split", 40, () -> PowerNetworkGameTests::split);
+    public static final GameTests.Function PRIORITY =
+            TESTS.function("power_net_priority", 20, () -> PowerNetworkGameTests::priority);
+    public static final GameTests.Function SHARE =
+            TESTS.function("power_net_weighted_share", 20, () -> PowerNetworkGameTests::weightedShareWithinTier);
+    public static final GameTests.Function DEBIT =
+            TESTS.function("power_net_provider_debit", 20, () -> PowerNetworkGameTests::providerDebit);
+    public static final GameTests.Function CONSERVATION =
+            TESTS.function("power_net_conservation", 20, () -> PowerNetworkGameTests::conservation);
+    public static final GameTests.Function OVERFLOW =
+            TESTS.function("power_net_share_overflow", 20, () -> PowerNetworkGameTests::shareOverflow);
+
+    private static final int CABLE_Z = 10;
+    private static final int CABLE_FROM = 4;
+    private static final int CABLE_TO = 12;
+    private static final long CAP = TileEntityMachineBattery.MAX_POWER;
+    /** Both battery speeds are capped at a twentieth of the buffer, so a round can move no more. */
+    private static final long SPEED = CAP / 20L;
+
+    private PowerNetworkGameTests() {}
+
+    public static void init() {}
+
+    /** Cables in a line are one network: a provider at one end reaches a receiver at the other. */
+    private static void join(GameTestHelper helper) {
+        Rig rig = new Rig(helper);
+        rig.cables(CABLE_FROM, CABLE_TO);
+        TileEntityMachineBattery source = rig.battery(4, 9, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
+        TileEntityMachineBattery sink = rig.battery(10, 11, TileEntityMachineBattery.MODE_INPUT, 0L);
+
+        rig.settle();
+
+        helper.assertTrue(sink.power > 0L, "A receiver nine cables from a provider received nothing");
+        helper.assertTrue(source.power < SPEED, "The provider was never debited for what it sent");
+        helper.succeed();
+    }
+
+    /** Breaking a cable in the middle of the run severs the two halves. */
+    private static void split(GameTestHelper helper) {
+        Rig rig = new Rig(helper);
+        rig.cables(CABLE_FROM, CABLE_TO);
+        TileEntityMachineBattery source = rig.battery(4, 9, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
+        TileEntityMachineBattery sink = rig.battery(10, 11, TileEntityMachineBattery.MODE_INPUT, 0L);
+        rig.settle();
+        helper.assertTrue(sink.power > 0L, "The split test could not establish a working network first");
+
+        rig.breakCable(8);
+        source.power = SPEED;
+        sink.power = 0L;
+        rig.settle();
+
+        helper.assertTrue(sink.power == 0L, "A receiver kept drawing across a broken cable");
+        helper.assertTrue(source.power == SPEED, "A provider kept paying across a broken cable");
+        helper.succeed();
+    }
+
+    /** A short supply fills the higher tier before the lower one sees anything. */
+    private static void priority(GameTestHelper helper) {
+        PowerNetMK2 net = new PowerNetMK2();
+        Endpoint source = endpoint(10_000L, ConnectionPriority.NORMAL);
+        Endpoint high = endpoint(CAP - 10_000L, ConnectionPriority.HIGH);
+        Endpoint low = endpoint(CAP - 10_000L, ConnectionPriority.LOW);
+        net.addProvider(source);
+        net.addReceiver(high);
+        net.addReceiver(low);
+
+        net.update();
+
+        helper.assertTrue(high.power == CAP, "The high-priority receiver was not filled first");
+        helper.assertTrue(low.power == CAP - 10_000L, "The low-priority receiver was served out of turn");
+        helper.succeed();
+    }
+
+    /** Inside one tier a short supply is split in proportion to what each receiver asked for. */
+    private static void weightedShareWithinTier(GameTestHelper helper) {
+        PowerNetMK2 net = new PowerNetMK2();
+        Endpoint source = endpoint(20_000L, ConnectionPriority.NORMAL);
+        Endpoint wide = endpoint(CAP - 30_000L, ConnectionPriority.NORMAL);
+        Endpoint narrow = endpoint(CAP - 10_000L, ConnectionPriority.NORMAL);
+        net.addProvider(source);
+        net.addReceiver(wide);
+        net.addReceiver(narrow);
+
+        net.update();
+
+        long toWide = wide.power - (CAP - 30_000L);
+        long toNarrow = narrow.power - (CAP - 10_000L);
+        helper.assertTrue(toWide + toNarrow == 20_000L,
+                "A tier delivered " + (toWide + toNarrow) + " of an available 20000");
+        helper.assertTrue(toWide == 15_000L && toNarrow == 5_000L,
+                "A 3:1 demand split 20000 as " + toWide + ":" + toNarrow + " rather than 15000:5000");
+        helper.succeed();
+    }
+
+    /** What a round costs is charged across the providers in proportion to what each offered. */
+    private static void providerDebit(GameTestHelper helper) {
+        PowerNetMK2 net = new PowerNetMK2();
+        Endpoint rich = endpoint(30_000L, ConnectionPriority.NORMAL);
+        Endpoint poor = endpoint(10_000L, ConnectionPriority.NORMAL);
+        Endpoint sink = endpoint(CAP - 20_000L, ConnectionPriority.NORMAL);
+        net.addProvider(rich);
+        net.addProvider(poor);
+        net.addReceiver(sink);
+
+        net.update();
+
+        long fromRich = 30_000L - rich.power;
+        long fromPoor = 10_000L - poor.power;
+        helper.assertTrue(fromRich + fromPoor == 20_000L,
+                "Providers were charged " + (fromRich + fromPoor) + " for a 20000 round");
+        helper.assertTrue(fromRich == 15_000L && fromPoor == 5_000L,
+                "A 3:1 supply was charged as " + fromRich + ":" + fromPoor + " rather than 15000:5000");
+        helper.succeed();
+    }
+
+    /** Whatever leaves the providers arrives at the receivers; a round neither mints nor burns. */
+    private static void conservation(GameTestHelper helper) {
+        PowerNetMK2 net = new PowerNetMK2();
+        Endpoint a = endpoint(25_000L, ConnectionPriority.NORMAL);
+        Endpoint b = endpoint(25_000L, ConnectionPriority.NORMAL);
+        Endpoint x = endpoint(CAP - 40_000L, ConnectionPriority.HIGH);
+        Endpoint y = endpoint(CAP - 40_000L, ConnectionPriority.LOW);
+        net.addProvider(a);
+        net.addProvider(b);
+        net.addReceiver(x);
+        net.addReceiver(y);
+
+        net.update();
+
+        long paid = (25_000L - a.power) + (25_000L - b.power);
+        long got = (x.power - (CAP - 40_000L)) + (y.power - (CAP - 40_000L));
+        helper.assertTrue(paid == got, "Providers paid " + paid + " but receivers gained " + got);
+        helper.assertTrue(paid == 50_000L, "A 50000 supply against 80000 of demand moved " + paid);
+        helper.assertTrue(x.power == CAP, "The high tier was not satisfied before the low tier was served");
+        helper.succeed();
+    }
+
+    /**
+     * The share is taken on {@code long} buffers that reach {@link Long#MAX_VALUE} in normal play, so
+     * the plain multiply this replaced handed out a negative share.
+     */
+    private static void shareOverflow(GameTestHelper helper) {
+        long huge = Long.MAX_VALUE / 2L;
+        long share = PowerNetMK2.weightedShare(huge, huge, Long.MAX_VALUE, huge);
+        helper.assertTrue(share >= 0L && share <= huge, "A huge weighted share overflowed to " + share);
+
+        long capped = PowerNetMK2.weightedShare(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE, 1_000L);
+        helper.assertTrue(capped == 1_000L, "A weighted share ignored its cap and returned " + capped);
+
+        helper.assertTrue(PowerNetMK2.weightedShare(0L, 1L, 1L, 1L) == 0L, "An empty round still handed out power");
+        helper.succeed();
+    }
+
+    private static Endpoint endpoint(long power, ConnectionPriority priority) {
+        return new Endpoint(power, priority);
+    }
+
+    /**
+     * A provider and receiver that is not a block entity, so a bench round is exactly one round. The
+     * net only reads the map it is iterating, so one class serves both roles.
+     */
+    private static final class Endpoint implements IEnergyReceiverMK2, IEnergyProviderMK2 {
+
+        private final ConnectionPriority priority;
+        long power;
+
+        Endpoint(long power, ConnectionPriority priority) {
+            this.power = power;
+            this.priority = priority;
+        }
+
+        @Override public long getPower() { return power; }
+        @Override public void setPower(long power) { this.power = power; }
+        @Override public long getMaxPower() { return CAP; }
+        @Override public long getReceiverSpeed() { return CAP; }
+        @Override public long getProviderSpeed() { return CAP; }
+        @Override public ConnectionPriority getPriority() { return priority; }
+        @Override public boolean isLoaded() { return true; }
+    }
+
+    /** One test's blocks, and the tick order that gets a network built and a round run. */
+    private static final class Rig {
+
+        private final GameTestHelper helper;
+        private final ServerLevel level;
+        private final List<BlockPos> cables = new ArrayList<>();
+        private final List<BlockPos> batteries = new ArrayList<>();
+
+        Rig(GameTestHelper helper) {
+            this.helper = helper;
+            this.level = helper.getLevel();
+        }
+
+        void cables(int fromX, int toX) {
+            for (int x = fromX; x <= toX; x++) {
+                BlockPos pos = helper.absolutePos(new BlockPos(x, 1, CABLE_Z));
+                level.setBlock(pos, ModMachineBlocks.red_cable.get().defaultBlockState(), 3);
+                cables.add(pos);
+            }
+        }
+
+        void breakCable(int x) {
+            BlockPos pos = helper.absolutePos(new BlockPos(x, 1, CABLE_Z));
+            level.removeBlock(pos, false);
+            cables.remove(pos);
+        }
+
+        TileEntityMachineBattery battery(int x, int z, int mode, long power) {
+            BlockPos pos = helper.absolutePos(new BlockPos(x, 1, z));
+            level.setBlock(pos, ModMachineBlocks.machine_battery.get().defaultBlockState(), 3);
+            TileEntityMachineBattery battery = (TileEntityMachineBattery) level.getBlockEntity(pos);
+            helper.assertTrue(battery != null, "A battery block entity failed to appear at " + pos);
+            battery.redLow = (short) mode;
+            battery.redHigh = (short) mode;
+            battery.power = power;
+            batteries.add(pos);
+            return battery;
+        }
+
+        /**
+         * Cables mint their nodes on their own tick, so the nodespace has to be walked once before a
+         * machine can find a network to subscribe to, and again to run the round it subscribed for.
+         */
+        void settle() {
+            tickCables();
+            UniNodespace.updateNodespace(level.getServer());
+            tickBatteries();
+            UniNodespace.updateNodespace(level.getServer());
+        }
+
+        private void tickCables() {
+            for (BlockPos pos : cables) {
+                if (level.getBlockEntity(pos) instanceof TileEntityCableBaseNT cable) {
+                    TileEntityCableBaseNT.serverTick(level, pos, cable.getBlockState(), cable);
+                }
+            }
+        }
+
+        private void tickBatteries() {
+            for (BlockPos pos : batteries) {
+                if (level.getBlockEntity(pos) instanceof TileEntityMachineBattery battery) {
+                    TileEntityMachineBattery.serverTick(level, pos, battery.getBlockState(), battery);
+                }
+            }
+        }
+    }
+}
