@@ -1,17 +1,23 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.energymk2.CableData;
 import com.hbm.api.energymk2.EnergyBus;
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.energymk2.PowerNetMK2;
+import com.hbm.api.energymk2.PowerGraph;
+import com.hbm.api.energymk2.PowerNetwork;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.capability.MachineCaps;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
 import com.hbm.tileentity.network.TileEntityCableBaseNT;
 import com.hbm.uninos.UniNodespace;
 import com.hbm.uninos.graph.Distribution;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.EnergyCompat;
 import net.minecraft.core.BlockPos;
@@ -66,6 +72,8 @@ public final class PowerNetworkGameTests {
             TESTS.function("power_net_foreign_lookup", 20, () -> PowerNetworkGameTests::foreignLookup);
     public static final GameTests.Function BUS =
             TESTS.function("power_bus_matches_contracts", 20, () -> PowerNetworkGameTests::busMatchesContracts);
+    public static final GameTests.Function GRAPH_ROUND =
+            TESTS.function("power_graph_round", 40, () -> PowerNetworkGameTests::graphRound);
 
     private static final int CABLE_Z = 10;
     private static final int CABLE_FROM = 4;
@@ -269,6 +277,47 @@ public final class PowerNetworkGameTests {
         helper.succeed();
     }
 
+    /**
+     * A round over the node graph itself, end to end: nodes, a probe pass that finds the machines at
+     * the edge faces, and the bus serving them. Cables still mint UNINOS nodes, so the graph is fed
+     * by hand here — which is the only way to run this path at all until they move over.
+     *
+     * <p>Sited at y = 3 so the graph's cells never coincide with the y = 1 blocks the world tests
+     * place; the graph is level-wide save data and outlives any one plot.
+     */
+    private static void graphRound(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        LevelNodeGraph<CableData> graph = PowerGraph.get(level);
+        for (int x = CABLE_FROM; x <= CABLE_TO; x++) {
+            BlockPos cell = helper.absolutePos(new BlockPos(x, 3, CABLE_Z));
+            graph.addNode(cell.asLong(), CableData.INSTANCE, MachineCaps.FACE_MASK_ALL);
+        }
+
+        Rig rig = new Rig(helper);
+        TileEntityMachineBattery source = rig.batteryAt(4, 3, 9, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
+        TileEntityMachineBattery sink = rig.batteryAt(10, 3, 11, TileEntityMachineBattery.MODE_INPUT, 0L);
+
+        NodeNetwork<CableData> net =
+                graph.networkAt(helper.absolutePos(new BlockPos(CABLE_FROM, 3, CABLE_Z)).asLong());
+        helper.assertTrue(net != null, "Nine cable cells did not form a network");
+        helper.assertTrue(net.size() == (CABLE_TO - CABLE_FROM + 1),
+                "The network holds " + net.size() + " cells rather than " + (CABLE_TO - CABLE_FROM + 1));
+
+        // Two passes on purpose. The source hangs off a run END, which is first-class already; the
+        // sink hangs off a run INTERIOR, which lives in a segment's bitset. A segment face that
+        // probes PRESENT promotes that cell to first-class and re-queues it, and the node drain has
+        // already run by then, so the promoted face is not gathered until the pass after.
+        PowerNetwork.distribute(level, graph, net);
+        source.power = SPEED;
+        sink.power = 0L;
+        PowerNetwork.distribute(level, graph, net);
+
+        helper.assertTrue(sink.power > 0L, "The graph moved nothing to a receiver on its own net");
+        helper.assertTrue(source.power + sink.power == SPEED,
+                "The graph round created or destroyed energy: " + source.power + " + " + sink.power);
+        helper.succeed();
+    }
+
     private static long deliver(IEnergyHandlerMK2 handler, long amount) {
         return amount - handler.transferPower(amount, false);
     }
@@ -333,7 +382,11 @@ public final class PowerNetworkGameTests {
         }
 
         TileEntityMachineBattery battery(int x, int z, int mode, long power) {
-            BlockPos pos = helper.absolutePos(new BlockPos(x, 1, z));
+            return batteryAt(x, 1, z, mode, power);
+        }
+
+        TileEntityMachineBattery batteryAt(int x, int y, int z, int mode, long power) {
+            BlockPos pos = helper.absolutePos(new BlockPos(x, y, z));
             level.setBlock(pos, ModMachineBlocks.machine_battery.get().defaultBlockState(), 3);
             TileEntityMachineBattery battery = (TileEntityMachineBattery) level.getBlockEntity(pos);
             helper.assertTrue(battery != null, "A battery block entity failed to appear at " + pos);
