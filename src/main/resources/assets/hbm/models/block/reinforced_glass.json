@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "hbm:blocks/reinforced_glass"
-  },
-  "render_type": "minecraft:cutout"
-}

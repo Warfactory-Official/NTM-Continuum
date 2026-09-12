@@ -1,6 +1,0 @@
-{
-  "type": "neoforge:add_features",
-  "biomes": "#minecraft:is_end",
-  "features": "hbm:end_ores",
-  "step": "underground_ores"
-}

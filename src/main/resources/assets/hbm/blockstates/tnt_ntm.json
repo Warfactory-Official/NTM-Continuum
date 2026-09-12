@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "armed=false": { "model": "hbm:block/tnt_ntm" },
-    "armed=true": { "model": "hbm:block/tnt_ntm" }
-  }
-}

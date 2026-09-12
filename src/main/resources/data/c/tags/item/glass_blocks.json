@@ -1,7 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "hbm:glass_boron",
-    "hbm:glass_lead"
-  ]
-}

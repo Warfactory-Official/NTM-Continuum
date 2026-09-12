@@ -1,7 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "hbm:fragment_niobium",
-    "hbm:nugget_niobium"
-  ]
-}

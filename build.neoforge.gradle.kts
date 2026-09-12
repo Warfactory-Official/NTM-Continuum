@@ -197,6 +197,7 @@ apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-biomes.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
+apply(from = rootProject.file("gradle/dejson.gradle.kts"))
 
 apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
 

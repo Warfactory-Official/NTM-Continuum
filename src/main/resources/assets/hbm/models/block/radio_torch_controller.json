@@ -1,1 +1,0 @@
-{ "parent": "hbm:block/radio_torch_template", "textures": { "torch": "hbm:blocks/rtty_controller" } }

@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/inner_stairs",
-  "textures": {
-    "bottom": "hbm:blocks/concrete_colored_ext.indigo",
-    "top": "hbm:blocks/concrete_colored_ext.indigo",
-    "side": "hbm:blocks/concrete_colored_ext.indigo"
-  }
-}

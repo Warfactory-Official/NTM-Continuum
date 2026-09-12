@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "hbm:blocks/glass_polarized"
-  },
-  "render_type": "minecraft:cutout"
-}

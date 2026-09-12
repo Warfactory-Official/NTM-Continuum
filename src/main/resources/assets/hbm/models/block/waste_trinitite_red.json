@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "hbm:blocks/contamination/waste_trinitite_red_0"
-  }
-}

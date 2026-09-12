@@ -704,6 +704,38 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function BLOCK_FAMILY_BEHAVIOUR =
             TESTS.function("block_family_behaviour", 40, () -> BlockFamilyGameTests::familyBehaviour);
 
+    // --- rotation (implementations live in RotationGameTests) ---
+    public static final GameTests.Function ROTATION_DIRECTIONAL_BLOCKS =
+            TESTS.function("rotation_directional_blocks", 40, () -> RotationGameTests::everyDirectionalBlockStatesItsRotation);
+
+    // --- tickers declared at registration (implementations live in TickerGameTests) ---
+    public static final GameTests.Function TICKER_BLOCKS_ANSWER =
+            TESTS.function("ticker_blocks_answer", 40, () -> TickerGameTests::everyTickingBlockAnswersWithItsTicker);
+    public static final GameTests.Function TICKER_DECLARATIONS_USED =
+            TESTS.function("ticker_declarations_used", 40, () -> TickerGameTests::everyDeclaredTickerBelongsToABlock);
+
+    // --- code-declared block models (implementations live in DejsonGameTests) ---
+    public static final GameTests.Function DEJSON_STATE_COVERAGE =
+            TESTS.function("dejson_state_coverage", 40, () -> DejsonGameTests::coversEveryBlockState);
+    public static final GameTests.Function DEJSON_BLOCKSTATE_PARITY =
+            TESTS.function("dejson_blockstate_parity", 40, () -> DejsonGameTests::matchesShippedBlockStates);
+    public static final GameTests.Function DEJSON_MODEL_PARITY =
+            TESTS.function("dejson_model_parity", 40, () -> DejsonGameTests::matchesShippedModels);
+    public static final GameTests.Function DEJSON_ITEM_PARITY =
+            TESTS.function("dejson_item_parity", 40, () -> DejsonGameTests::matchesShippedItems);
+    public static final GameTests.Function DEJSON_DATA_PARITY =
+            TESTS.function("dejson_data_parity", 40, () -> DejsonGameTests::matchesShippedData);
+
+    // --- code-declared material tags (implementations live in MaterialTagGameTests) ---
+    public static final GameTests.Function MATERIAL_TAG_COMPLETENESS =
+            TESTS.function("material_tag_completeness", 40, () -> MaterialTagGameTests::everyShapeItemIsTagged);
+    public static final GameTests.Function MATERIAL_TAGS_LOADED =
+            TESTS.function("material_tags_loaded", 40, () -> MaterialTagGameTests::declaredTagsAreLoaded);
+
+    // --- code-declared damage types (implementations live in DamageTypeGameTests) ---
+    public static final GameTests.Function DAMAGE_TYPES_KEYED =
+            TESTS.function("damage_types_keyed", 40, () -> DamageTypeGameTests::everyDamageTypeIsKeyedAndTagged);
+
     // --- chunk loading + missiles (implementations live in MissileGameTests) ---
     public static final GameTests.Function CHUNK_REFCOUNTING =
             TESTS.function("chunk_refcounting", 40, () -> MissileGameTests::chunkRefcounting);

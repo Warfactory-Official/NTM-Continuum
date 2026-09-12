@@ -1,8 +1,0 @@
-{
-  "type": "minecraft:smelting",
-  "category": "misc",
-  "cookingtime": 200,
-  "experience": 3.0,
-  "ingredient": "hbm:arc_electrode_burnt",
-  "result": { "id": "hbm:ingot_graphite" }
-}

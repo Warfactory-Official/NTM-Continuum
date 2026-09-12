@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "armed=false": { "model": "hbm:block/semtex" },
-    "armed=true": { "model": "hbm:block/semtex" }
-  }
-}

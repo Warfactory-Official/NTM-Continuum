@@ -1,6 +1,0 @@
-{
-  "variants": {
-    "armed=false": { "model": "hbm:block/dynamite" },
-    "armed=true": { "model": "hbm:block/dynamite" }
-  }
-}

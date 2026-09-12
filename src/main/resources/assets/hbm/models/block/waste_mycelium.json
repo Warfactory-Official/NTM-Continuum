@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "top": "hbm:blocks/contamination/waste_mycelium_top",
-    "side": "hbm:blocks/contamination/waste_mycelium_side_0",
-    "bottom": "minecraft:block/dirt"
-  }
-}

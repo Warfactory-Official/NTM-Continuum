@@ -54,6 +54,13 @@ public final class MainRegistry {
         com.hbm.inventory.material.Mats.init(); // material registry (tag-based ore-dict replacement)
         // Order matters: blocks before items (block items reference blocks), tabs last.
         ModBlocks.init();
+        com.hbm.blocks.ModBlockModels.declare();
+        com.hbm.items.ModItemModels.declare();
+        com.hbm.blocks.ModBlockDrops.declare();
+        com.hbm.inventory.material.ModMaterialTags.declare();
+        com.hbm.lib.ModDamageTypes.declare();
+        com.hbm.world.gen.ModBiomeModifiers.declare();
+        com.hbm.inventory.recipes.ModCraftingRecipes.declare();
         com.hbm.blocks.machine.ModArmorTableBlocks.init();
         com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)

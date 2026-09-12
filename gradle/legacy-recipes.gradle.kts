@@ -97,7 +97,19 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
     }
 }
 
-/** Converts data-component-era crate drops to the equivalent legacy BlockEntityTag payload. */
+/**
+ * Converts data-component-era loot tables to their pre-1.20.5 shape: crate drops to the equivalent
+ * legacy BlockEntityTag payload, and `match_tool` predicates back to the flat `ItemPredicate`.
+ *
+ * The predicate half matters more than it looks. A `match_tool` predicate is an `ItemPredicate`, and
+ * `ItemPredicate` became component-based in the same release that gave items components — so a
+ * silk-touch check is `{"predicates": {"minecraft:enchantments": [{"enchantments": …}]}}` from
+ * 1.20.5 on and `{"enchantments": [{"enchantment": …}]}` below it. The old parser reads its own keys
+ * and ignores the rest, so the modern spelling does not fail on 1.20.1: it parses as an
+ * `ItemPredicate` with no constraints, which matches every tool and every empty hand. Every
+ * silk-touch ore then always takes the silk branch and drops the ore block instead of its mineral,
+ * silently, on that node alone.
+ */
 fun convertLegacyLootTables(root: File): Int {
     var converted = 0
     root.walkTopDown()
@@ -105,7 +117,7 @@ fun convertLegacyLootTables(root: File): Int {
         .forEach { file ->
             @Suppress("UNCHECKED_CAST")
             val json = JsonSlurper().parse(file) as? MutableMap<String, Any?> ?: return@forEach
-            var changed = false
+            var changed = convertLegacyToolPredicates(json)
             (json["pools"] as? List<*>)?.forEach { poolValue ->
                 val pool = poolValue as? MutableMap<*, *> ?: return@forEach
                 (pool["entries"] as? List<*>)?.forEach { entryValue ->
@@ -151,6 +163,40 @@ fun convertLegacyLootTables(root: File): Int {
             }
         }
     return converted
+}
+
+/**
+ * Rewrites every `minecraft:match_tool` predicate in a loot table, wherever it sits. Conditions
+ * appear at pool level, at entry level, and inside an `alternatives` entry's children, so this walks
+ * the whole tree rather than the three places these tables happen to use today.
+ */
+fun convertLegacyToolPredicates(node: Any?): Boolean {
+    var changed = false
+    when (node) {
+        is MutableList<*> -> node.forEach { if (convertLegacyToolPredicates(it)) changed = true }
+        is MutableMap<*, *> -> {
+            @Suppress("UNCHECKED_CAST")
+            val map = node as MutableMap<String, Any?>
+            map.values.toList().forEach { if (convertLegacyToolPredicates(it)) changed = true }
+            if (map["condition"] == "minecraft:match_tool") {
+                @Suppress("UNCHECKED_CAST")
+                val predicate = map["predicate"] as? MutableMap<String, Any?>
+                @Suppress("UNCHECKED_CAST")
+                val predicates = predicate?.remove("predicates") as? Map<String, Any?>
+                @Suppress("UNCHECKED_CAST")
+                val enchantments = predicates?.get("minecraft:enchantments") as? List<Map<String, Any?>>
+                if (enchantments != null) {
+                    predicate["enchantments"] = enchantments.map { entry ->
+                        entry.entries.associate { (key, value) ->
+                            (if (key == "enchantments") "enchantment" else key) to value
+                        }
+                    }
+                    changed = true
+                }
+            }
+        }
+    }
+    return changed
 }
 
 /** Advancement icons used an `item` key before item-stack codecs adopted `id`. */

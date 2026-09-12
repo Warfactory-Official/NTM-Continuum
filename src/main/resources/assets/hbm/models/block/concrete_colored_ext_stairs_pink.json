@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/stairs",
-  "textures": {
-    "bottom": "hbm:blocks/concrete_colored_ext.pink",
-    "top": "hbm:blocks/concrete_colored_ext.pink",
-    "side": "hbm:blocks/concrete_colored_ext.pink"
-  }
-}
