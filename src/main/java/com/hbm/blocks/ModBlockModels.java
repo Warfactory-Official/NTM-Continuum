@@ -44,8 +44,52 @@ public final class ModBlockModels {
         slabs();
         stairs();
         renderedMachines();
+        handBuilt();
         everythingElse();
     }
+
+    /** Ladders, which are rungs and a rail: hand-built {@code elements} rotated four ways. */
+    private static final String[] LADDERS = {
+            "ladder_aluminium", "ladder_cobalt", "ladder_copper", "ladder_gold", "ladder_iron",
+            "ladder_lead", "ladder_red", "ladder_red_top", "ladder_steel", "ladder_sturdy",
+            "ladder_titanium", "ladder_tungsten",
+    };
+
+    private static final String[] SINGLE_STATE = {
+            "fallout", "foundry_mold", "gas_asbestos", "gas_meltdown", "gas_monoxide",
+            "gas_radon", "gas_radon_dense", "gas_radon_tomb",
+    };
+
+    /**
+     * Blocks whose blockstate is regular but whose model is hand-built geometry. Only the
+     * boilerplate around the model is declared; the model itself stays a file.
+     */
+    private static void handBuilt() {
+        for (String name : LADDERS) {
+            Dejson.block(NS, name).statesOnly().states(Variants.facing()).register();
+        }
+        for (String name : SINGLE_STATE) {
+            Dejson.block(NS, name).statesOnly().states(Variants.simple()).register();
+        }
+        Dejson.block(NS, "fire_digamma").statesOnly("hbm:block/fire_digamma_floor")
+                .states(Variants.simple()).register();
+        Dejson.block(NS, "steel_beam").statesOnly()
+                .states(Variants.uniform("facing", "north", "east", "south", "west")).register();
+        Dejson.block(NS, "steel_scaffold").statesOnly()
+                .states(Variants.product(
+                        Variants.uniform("orient", "horizontal_north_south", "horizontal_east_west",
+                                "vertical_north_south", "vertical_east_west"),
+                        Variants.uniform("variant", "steel", "red", "white", "yellow")))
+                .register();
+        Dejson.block(NS, "steel_grate").statesOnly().states(Variants.select("height", GRATE_HEIGHTS))
+                .register();
+    }
+
+    /** Ten walkable heights, each its own hand-built model suffixed with the bare number. */
+    private static final String[] GRATE_HEIGHTS = {
+            "0", "0", "1", "1", "2", "2", "3", "3", "4", "4",
+            "5", "5", "6", "6", "7", "7", "8", "8", "9", "9",
+    };
 
     private static final String[] CUBES_DIRECT = {
             "ancient_scrap", "basalt_brick", "basalt_polished", "basalt_smooth", "basalt_tiles",

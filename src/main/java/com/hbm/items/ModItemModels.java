@@ -3,6 +3,7 @@ package com.hbm.items;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Slots;
+import dev.golem.core.dejson.Tints;
 import dev.golem.core.render.display.DisplaySlot;
 import dev.golem.core.render.display.Pose17;
 import org.joml.Matrix4f;
@@ -44,10 +45,72 @@ public final class ModItemModels {
         sprites();
         renamedSprites();
         layeredSprites();
+        tinted();
+        shared();
         tools();
         blockItems();
         machineFrames();
     }
+
+    /**
+     * The sixteen dye colours, as {@code chemical_dye} and {@code crayon} carry them. Both families
+     * paint the same overlay in the same sixteen colours, so one table serves both.
+     */
+    private static final int[] DYES = {
+            0x1E1B1B, 0x253192, 0x51301A, 0x287697, 0x434343, 0x3B511A, 0x6689D3, 0x41CD34,
+            0xC354CD, 0xEB8844, 0xD88198, 0x7B2FBE, 0xB3312C, 0xABABAB, 0xF0F0F0, 0xDECF2A,
+    };
+
+    private static final String[] DYE_NAMES = {
+            "black", "blue", "brown", "cyan", "gray", "green", "lightblue", "lime",
+            "magenta", "orange", "pink", "purple", "red", "silver", "white", "yellow",
+    };
+
+    /**
+     * Items whose overlay takes a colour from the stack. The base layer is pinned white so only the
+     * overlay tints; where an item is one layer there is nothing to pin and the tint list is one
+     * entry long.
+     */
+    private static void tinted() {
+        for (int i = 0; i < DYE_NAMES.length; i++) {
+            dyed("chemical_dye_" + DYE_NAMES[i], "hbm:items/chemical_dye", DYES[i]);
+            dyed("crayon_" + DYE_NAMES[i], "hbm:items/crayon", DYES[i]);
+        }
+        fluidTinted("fluid_barrel", "hbm:items/fluid_barrel", "hbm:items/fluid_barrel_overlay");
+        fluidTinted("fluid_bucket", "minecraft:item/bucket", "hbm:items/fluid_bucket_fill");
+        fluidTinted("fluid_identifier", "hbm:items/fluid_identifier_multi", "hbm:items/fluid_identifier_overlay");
+        fluidTinted("fluid_tank", "hbm:items/fluid_tank", "hbm:items/fluid_tank_overlay");
+        Dejson.item(NS, "fluid_icon")
+                .models(Models.generated("hbm:items/fluid_icon"))
+                .tints(Tints.customModelData(0, 0xFFFFFF))
+                .register();
+    }
+
+    private static void dyed(String item, String base, int colour) {
+        Dejson.item(NS, item)
+                .models(Models.generated(base, base + "_overlay"))
+                .tints(Tints.constant(-1), Tints.customModelData(0, colour))
+                .register();
+    }
+
+    private static void fluidTinted(String item, String base, String overlay) {
+        Dejson.item(NS, item)
+                .models(Models.generated(base, overlay))
+                .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF))
+                .register();
+    }
+
+    /** Items that show a model another item already declares. */
+    private static void shared() {
+        for (String waste : ZIRNOX_WASTE) {
+            Dejson.item(NS, waste).shares("hbm:item/zirnox_waste").register();
+        }
+    }
+
+    private static final String[] ZIRNOX_WASTE = {
+            "waste_les", "waste_mox", "waste_natural_uranium", "waste_plutonium", "waste_schrabidium",
+            "waste_thorium", "waste_u233", "waste_u235", "waste_uranium", "waste_zfb_mox",
+    };
 
     private static final String[] SPRITE_ITEMS_0 = {
             "ammo_arty", "ammo_debug", "ammo_dgk", "ammo_secret_m44_equestrian", "ammo_shell",

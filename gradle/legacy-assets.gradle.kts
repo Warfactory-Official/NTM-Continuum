@@ -536,6 +536,8 @@ fun Project.registerMachineObjTransformChecks() {
     val validation = tasks.register("validateMachineObjTransforms") {
         group = "verification"
         description = "Checks the legacy machine OBJ item transform contract."
+        // By name: dejson.gradle.kts is applied after this script, so the task does not exist yet.
+        dependsOn("dejsonGenerate")
         doLast {
             val directory = rootProject.file("src/main/resources/assets/hbm/items")
             fun close(actual: Any?, expected: Double, label: String) {
@@ -648,10 +650,15 @@ fun Project.registerMachineObjTransformChecks() {
                 }
             }
 
-            val blockstateDirectory = rootProject.file("src/main/resources/assets/hbm/blockstates")
+            // These three are declared in ModBlockModels.RENDERED_2 rather than written, so the
+            // generated copy is the one to check and the authored path is only a fallback for a
+            // blockstate somebody has taken back into a file.
+            val authoredBlockstates = rootProject.file("src/main/resources/assets/hbm/blockstates")
+            val declaredBlockstates = layout.buildDirectory.dir("generated/dejson/assets/hbm/blockstates").get().asFile
             RTG_BLOCKSTATE_IDS.forEach { name ->
-                val file = File(blockstateDirectory, "$name.json")
-                check(file.isFile) { "Missing RTG blockstate: $file" }
+                val declared = File(declaredBlockstates, "$name.json")
+                val file = if (declared.isFile) declared else File(authoredBlockstates, "$name.json")
+                check(file.isFile) { "Missing RTG blockstate: $name (neither declared nor authored)" }
                 @Suppress("UNCHECKED_CAST")
                 val root = JsonSlurper().parse(file) as? Map<String, Any?>
                     ?: error("Invalid JSON object: $file")
