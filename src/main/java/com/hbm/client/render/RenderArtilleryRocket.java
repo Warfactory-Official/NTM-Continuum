@@ -3,34 +3,61 @@ package com.hbm.client.render;
 import com.hbm.client.render.turret.TurretResources;
 import com.hbm.entity.projectile.EntityArtilleryRocket;
 import com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatEntityRenderState;
-import dev.golem.core.render.CompatEntityRenderer;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import java.util.HashMap;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemEntityRenderer;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Surface;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 /**
  * The rocket in flight: the launcher's own rocket meshes, flown nose-first, wearing whichever skin the
  * loaded pod carries.
+ *
+ * <p>Both the mesh and the skin come off the rocket type, so the model declares one slot and lets the
+ * state fill it. That is one part that moves between buckets rather than a part per type with all but
+ * one of them hidden.
  */
 public class RenderArtilleryRocket
-        extends CompatEntityRenderer<EntityArtilleryRocket, RenderArtilleryRocket.State> {
+        extends GemEntityRenderer<EntityArtilleryRocket, RenderArtilleryRocket.State> {
 
-    private static final Map<Identifier, RenderType> TYPES = new HashMap<>();
-    private static final String[] MESH = {"RocketStandard", "RocketSingle"};
+    /** Indexed by {@link HIMARSRocketType#modelType}: 0 is the sixfold pod, 1 the single rocket. */
+    private static final Geometry[] MESHES = {
+            TurretResources.HIMARS.part("RocketStandard"),
+            TurretResources.HIMARS.part("RocketSingle"),
+    };
+
+    private static final Map<HIMARSRocketType, Surface> SKINS = skins();
+
+    private static Map<HIMARSRocketType, Surface> skins() {
+        Map<HIMARSRocketType, Surface> built = new EnumMap<>(HIMARSRocketType.class);
+        for (HIMARSRocketType type : HIMARSRocketType.values()) {
+            built.put(type, Surface.cutout(type.texture.toString()));
+        }
+        return built;
+    }
+
+    private static Geometry meshOf(HIMARSRocketType type) {
+        return MESHES[Math.floorMod(type.modelType, MESHES.length)];
+    }
 
     public RenderArtilleryRocket(EntityRendererProvider.Context context) {
         super(context);
         this.shadowRadius = 0F;
+    }
+
+    @Override
+    protected void setup(Gem.Model<State> declaration) {
+        declaration.part(meshOf(State.DEFAULT), SKINS.get(State.DEFAULT))
+                .mesh(state -> meshOf(state.rocket))
+                .skin(state -> SKINS.get(state.rocket))
+                .angle(Gem.Axes.Y, state -> state.yaw - 90F)
+                .angle(Gem.Axes.Z, state -> state.pitch - 90F)
+                .rotate(Gem.Axes.Y, 90F)
+                .rotate(Gem.Axes.X, 90F);
     }
 
     @Override
@@ -42,32 +69,16 @@ public class RenderArtilleryRocket
     public void extract(EntityArtilleryRocket rocket, State state, float partialTicks) {
         state.yaw = Mth.rotLerp(partialTicks, rocket.yRotO, rocket.getYRot());
         state.pitch = Mth.lerp(partialTicks, rocket.xRotO, rocket.getXRot());
-        HIMARSRocketType type = rocket.getRocket();
-        state.mesh = MESH[Math.floorMod(type.modelType, MESH.length)];
-        state.type = TYPES.computeIfAbsent(type.texture, CompatRenderTypes::entityCutout);
-    }
-
-    @Override
-    public void submit(State state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        RenderType type = state.type;
-        String mesh = state.mesh;
-        if (type == null || mesh == null) return;
-
-        int light = state.lightCoords;
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw - 90F));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.pitch - 90F));
-        poseStack.mulPose(Axis.YP.rotationDegrees(90F));
-        poseStack.mulPose(Axis.XP.rotationDegrees(90F));
-        sink.submitCustomGeometry(poseStack, type, (pose, buffer) ->
-                TurretResources.HIMARS.renderPart(mesh, pose, buffer, light, OverlayTexture.NO_OVERLAY));
-        poseStack.popPose();
+        state.rocket = rocket.getRocket();
     }
 
     public static final class State extends CompatEntityRenderState {
+
+        /** The mesh and skin choosers must always answer, so the state starts on a real type. */
+        static final HIMARSRocketType DEFAULT = HIMARSRocketType.values()[0];
+
         public float yaw;
         public float pitch;
-        public String mesh;
-        public RenderType type;
+        public HIMARSRocketType rocket = DEFAULT;
     }
 }

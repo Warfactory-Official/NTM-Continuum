@@ -1,35 +1,31 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Generic {@link BlockEntityRenderer} that draws one or more OBJ models for a HBM machine, replacing
- * the old per-machine {@code TileEntitySpecialRenderer}s. It renders a <b>static</b> pose (the whole
- * model via {@link WavefrontObj#renderAll}); the animated arms/heads/etc. return once the machine's
- * processing logic is ported (see IMPLEMENTATION.md §18).
+ * Generic renderer for a HBM machine that is one or more OBJ bodies standing still, replacing the old
+ * per-machine {@code TileEntitySpecialRenderer}s. Animated arms/heads belong to their own renderers.
  *
- * <p>It is attached only to the multiblock <b>core</b> BlockEntity, so it draws once per machine and
+ * <p>It is attached only to the multiblock <b>core</b> BlockEntity, so it declares once per machine and
  * the model spans the dummy footprint. Facing comes from the core's {@link BlockDummyable#META} state.
+ *
+ * <p>A machine that {@linkplain #ignoreFacing does not turn with its facing} states its base yaw as a
+ * fixed rotation rather than reading a render state that is always zero, which keeps its model rigid.
  */
-public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, MachineRenderState> {
+public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, MachineRenderState> {
 
     /**
      * A model file + the standalone texture it samples + its own vertical offset (block units) + the
@@ -46,9 +42,9 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
         }
     }
 
-    private record Part(WavefrontObj model, RenderType renderType, Identifier texture, float yOffset, Set<String> exclude) {}
+    private record Body(WavefrontObj model, Identifier texture, float yOffset, Set<String> exclude, boolean noCull) {}
 
-    private final List<Part> parts;
+    private final List<Body> bodies;
     private final float baseYaw;
     private final float scale;
     private final float offsetX;
@@ -81,17 +77,11 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
         this.offsetZ = offsetZ;
         this.frameParts = frameParts;
         this.frameHeight = frameHeight;
-        List<Part> built = new ArrayList<>();
+        List<Body> built = new ArrayList<>();
         for (ModelDef d : defs) {
-            // entityCutout (alpha test) not entitySolid: the old TESRs ran with GL alpha-test on, so
-            // fully-transparent texels (e.g. the chemical plant's glass) are discarded instead of being
-            // drawn as opaque black.
-            RenderType renderType = d.noCull()
-                    ? CompatRenderTypes.entityCutoutNoCull(d.texture())
-                    : CompatRenderTypes.entityCutout(d.texture());
-            built.add(new Part(WavefrontObj.load(d.obj()), renderType, d.texture(), d.yOffset(), d.exclude()));
+            built.add(new Body(WavefrontObj.load(d.obj()), d.texture(), d.yOffset(), d.exclude(), d.noCull()));
         }
-        this.parts = built;
+        this.bodies = built;
     }
 
     /** Old machines whose StaticTesrBakedModels yaw map is all zeros render facing-independent. */
@@ -106,73 +96,85 @@ public class MachineObjRenderer<T extends BlockEntity> implements CompatBER<T, M
         return this;
     }
 
+    /**
+     * Each body twice where a machine has a conditional frame: once without those parts, once with only
+     * them behind the condition. A bucket's contents have to be settled before the first frame, so the
+     * choice is a visibility flag on a second bucket rather than a per-frame group subtraction.
+     */
+    @Override
+    protected void setup(Gem.Model<MachineRenderState> declaration) {
+        declaration.offScreen().viewDistance(256);
+        for (Body body : bodies) {
+            Surface surface = surfaceOf(body);
+            place(declaration.part(body.model().allExcept(hiddenIn(body), doubleSided), surface), body);
+            Set<String> frame = frameIn(body);
+            if (!frame.isEmpty()) {
+                place(declaration.part(body.model().parts(frame, doubleSided), surface), body)
+                        .visibleIf(state -> state.showFrame);
+            }
+        }
+    }
+
+    /** Centre on the cell, turn to face, step off the centre, then scale. */
+    private Gem.Part<MachineRenderState> place(Gem.Part<MachineRenderState> part, Body body) {
+        part.translate(0.5F, body.yOffset(), 0.5F);
+        if (ignoreFacing) {
+            part.rotate(Gem.Axes.Y, baseYaw);
+        } else {
+            part.angle(Gem.Axes.Y, state -> baseYaw + state.yaw);
+        }
+        if (offsetX != 0F || offsetZ != 0F) part.translate(offsetX, 0F, offsetZ);
+        if (scale != 1F) part.scale(scale);
+        return part;
+    }
+
+    /**
+     * entityCutout (alpha test) not entitySolid: the old TESRs ran with GL alpha-test on, so
+     * fully-transparent texels (e.g. the chemical plant's glass) are discarded instead of being drawn
+     * as opaque black. A double-sided body carries its reversed faces in the mesh, so it wants the
+     * culling type rather than the no-cull one.
+     */
+    private Surface surfaceOf(Body body) {
+        if (doubleSided) return Surface.cutoutCull(body.texture().toString());
+        return body.noCull() ? Surface.cutoutNoCull(body.texture().toString())
+                : Surface.cutout(body.texture().toString());
+    }
+
+    private Set<String> hiddenIn(Body body) {
+        if (frameParts.isEmpty()) return body.exclude();
+        Set<String> hidden = new LinkedHashSet<>(body.exclude());
+        hidden.addAll(frameParts);
+        return hidden;
+    }
+
+    private Set<String> frameIn(Body body) {
+        Set<String> frame = new LinkedHashSet<>(frameParts);
+        frame.retainAll(body.model().partNames());
+        frame.removeAll(body.exclude());
+        return frame;
+    }
+
     @Override
     public MachineRenderState createRenderState() {
         return new MachineRenderState();
     }
 
-    @Override
-    public boolean shouldRenderOffScreen() {
-        // The OBJ model spans several blocks past the 1×1×1 core; without this the BlockEntity is only
-        // drawn while its core block's chunk section is on-screen, so it vanishes the moment that block
-        // scrolls off. Returning true adds it to the level's "globally rendered" set (like the beacon),
-        // which is drawn every frame regardless of frustum/section visibility.
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(T blockEntity, Vec3 cameraPosition) {
-        // Never distance/visibility-cull the machine itself; the off-screen path above handles drawing.
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
-    }
-
+    /**
+     * {@code meta - offset} is the ForgeDirection ordinal of the facing: N=2, S=3, W=4, E=5. The frame,
+     * where a machine has one, shows only when a block sits {@code frameHeight} above the core, which is
+     * the 1.12.2 {@code frame = blockState(pos.up(3)) != AIR} check.
+     */
     @Override
     public void extract(T blockEntity, MachineRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState bs = blockEntity.getBlockState();
         int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        // meta - offset gives the ForgeDirection ordinal of the facing: N=2, S=3, W=4, E=5.
-        state.yaw = ignoreFacing ? 0F : switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH (2)
+        state.yaw = switch (meta - BlockDummyable.offset) {
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
-        // The frame (if this machine has one) shows only when a block sits `frameHeight` above the core,
-        // matching the 1.12.2 `frame = blockState(pos.up(3)) != AIR` check.
         state.showFrame = frameParts.isEmpty() || (blockEntity.getLevel() != null
                 && !blockEntity.getLevel().getBlockState(blockEntity.getBlockPos().above(frameHeight)).isAir());
-    }
-
-    @Override
-    public void submit(MachineRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        // Skip the always-excluded parts (e.g. a dynamic fluid overlay) plus, when no block is above,
-        // the conditional frame.
-        Set<String> hidden = state.showFrame ? Set.of() : frameParts;
-        for (Part part : parts) {
-            Set<String> exclude = hidden.isEmpty() ? part.exclude()
-                    : union(part.exclude(), hidden);
-            poseStack.pushPose();
-            poseStack.translate(0.5F, part.yOffset(), 0.5F);
-            poseStack.mulPose(Axis.YP.rotationDegrees(baseYaw + state.yaw));
-            if (offsetX != 0F || offsetZ != 0F) poseStack.translate(offsetX, 0F, offsetZ); // footprint offset (post-rotation)
-            if (scale != 1.0F) poseStack.scale(scale, scale, scale);
-            collector.submitCustomGeometry(poseStack,
-                    doubleSided ? CompatRenderTypes.entityCutoutCull(part.texture()) : part.renderType(),
-                    (pose, buffer) -> part.model().renderExcept(pose, buffer, state.lightCoords,
-                            OverlayTexture.NO_OVERLAY, exclude, doubleSided));
-            poseStack.popPose();
-        }
-    }
-
-    private static Set<String> union(Set<String> a, Set<String> b) {
-        if (a.isEmpty()) return b;
-        java.util.HashSet<String> s = new java.util.HashSet<>(a);
-        s.addAll(b);
-        return s;
     }
 }

@@ -8,6 +8,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 
@@ -25,6 +26,10 @@ public final class BAT9000Renderer extends GiantTankRenderer<TileEntityMachineBA
     protected void extractMachine(TileEntityMachineBAT9000 tank, GiantTankRenderState state) {
         state.yaw = 0F;
         state.tilted = false;
+    }
+
+    @Override
+    protected void placeMachine(Gem.Part<GiantTankRenderState> part) {
     }
 
     @Override

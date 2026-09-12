@@ -4,38 +4,47 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.phys.Vec3;
 
-/** Animated OBJ renderer for the Mixer, including its translucent fluid volume. */
-public final class MixerRenderer implements CompatBER<TileEntityMachineMixer, MixerRenderState> {
+/**
+ * Mixer: a static vessel, the paddle turning in it, and the contents scaled to the combined fill.
+ *
+ * <p>The legacy TESR disabled texturing for the fluid and supplied only its colour, which is a white
+ * texture carrying a vertex tint here.
+ */
+public final class MixerRenderer extends GemBER<TileEntityMachineMixer, MixerRenderState> {
 
-    private final WavefrontObj model;
-    private final RenderType baseType;
-    private final RenderType fluidType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mixer.obj"));
+    private final Surface body = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/mixer.png");
+    private final Surface fluid = Surface.translucent(
+            Constants.MOD_ID + ":textures/models/misc/white.png");
 
-    public MixerRenderer() {
-        Identifier obj = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mixer.obj");
-        Identifier texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mixer.png");
-        model = WavefrontObj.load(obj);
-        baseType = CompatRenderTypes.entityCutout(texture);
-        // The legacy TESR disabled texturing for this part and supplied only the fluid colour.
-        fluidType = CompatRenderTypes.entityTranslucent(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/misc/white.png"), false);
+    @Override
+    protected void setup(Gem.Model<MixerRenderState> declaration) {
+        Gem.Part<MixerRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F);
+
+        machine.child(model.part("Main"), body);
+        machine.child(model.part("Mixer"), body)
+                .angle(Gem.Axes.Y, state -> -state.rotation);
+        machine.child(model.part("Fluid"), fluid)
+                .visibleIf(state -> state.fillScale > 0F)
+                .translate(0F, 1F, 0F)
+                .stretch(Gem.Axes.Y, state -> state.fillScale)
+                .translate(0F, -1F, 0F)
+                .tint(state -> 0xBF000000 | (state.fluidColor & 0xFFFFFF));
     }
 
-    @Override public MixerRenderState createRenderState() { return new MixerRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachineMixer be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    public MixerRenderState createRenderState() {
+        return new MixerRenderState();
+    }
 
     @Override
     public void extract(TileEntityMachineMixer be, MixerRenderState state, float partialTicks, Vec3 cameraPosition) {
@@ -50,35 +59,5 @@ public final class MixerRenderer implements CompatBER<TileEntityMachineMixer, Mi
         }
         state.fillScale = capacity <= 0 ? 0F : (float) fill / capacity * 0.99F;
         state.fluidColor = be.tanks[2].getTankType().getColor();
-    }
-
-    @Override
-    public void submit(MixerRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        int light = state.lightCoords;
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        part(collector, poseStack, "Main", light, baseType);
-
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(-state.rotation));
-        part(collector, poseStack, "Mixer", light, baseType);
-        poseStack.popPose();
-
-        if (state.fillScale > 0F) {
-            poseStack.pushPose();
-            poseStack.translate(0F, 1F, 0F);
-            poseStack.scale(1F, state.fillScale, 1F);
-            poseStack.translate(0F, -1F, 0F);
-            int color = 0xBF000000 | (state.fluidColor & 0xFFFFFF);
-            collector.submitCustomGeometry(poseStack, fluidType,
-                    (pose, buffer) -> model.renderPart("Fluid", pose, buffer, light, OverlayTexture.NO_OVERLAY, color));
-            poseStack.popPose();
-        }
-        poseStack.popPose();
-    }
-
-    private void part(SubmitSink collector, PoseStack poseStack, String name, int light, RenderType type) {
-        collector.submitCustomGeometry(poseStack, type,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 }

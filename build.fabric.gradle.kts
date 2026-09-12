@@ -180,7 +180,8 @@ fun checkGolemJarIsFresh() {
         throw GradleException(
             "Golem Core's sources are newer than ${jar.name}, and Loom has already remapped that jar. " +
                 "This node would compile against a stale Golem Core and fail on symbols that exist. " +
-                "Build Golem Core first:  (cd ../Golem-Core && ./gradlew :$mcVersion-fabric:build)"
+                "Build Golem Core first:  (cd ../Golem-Core && sh gradlew :$mcVersion-fabric:build)\n" +
+                "To launch the client, ./client does both in the right order."
         )
     }
 }

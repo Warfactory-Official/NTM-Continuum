@@ -1,77 +1,57 @@
 package com.hbm.client.render;
 
-import com.hbm.util.GameTime;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.MachineDiesel;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import com.hbm.util.GameTime;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 
-/**
- * Diesel generator renderer — port of the 1.12.2 {@code RenderDieselGen}: the static {@code Generator}
- * part plus the {@code Engine} part, which jitters slightly while running (the old sine swing). Yaw
- * from the block's {@code FACING} (old meta map: S0/E90/N180/W270 → base yaws below).
- */
-public class DieselGenRenderer implements CompatBER<TileEntityMachineDiesel, DieselGenRenderState> {
+/** Diesel generator: a static frame and the engine block jittering on it while it runs. */
+public class DieselGenRenderer extends GemBER<TileEntityMachineDiesel, DieselGenRenderState> {
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
-
-    public DieselGenRenderer() {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/dieselgen.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/dieselgen.png"));
-    }
-
-    @Override public DieselGenRenderState createRenderState() { return new DieselGenRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachineDiesel be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/dieselgen.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/dieselgen.png");
 
     @Override
+    protected void setup(Gem.Model<DieselGenRenderState> declaration) {
+        Gem.Part<DieselGenRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+
+        machine.child(model.part("Generator"), surface);
+        machine.child(model.part("Engine"), surface)
+                .slide(Gem.Axes.X, state -> state.swingFront)
+                .slide(Gem.Axes.Z, state -> state.swingSide);
+    }
+
+    @Override
+    public DieselGenRenderState createRenderState() {
+        return new DieselGenRenderState();
+    }
+
+    /** Old meta yaw map (meta = EnumFacing ordinal): S(3)=0, E(5)=90, N(2)=180, W(4)=270. */
+    @Override
     public void extract(TileEntityMachineDiesel be, DieselGenRenderState state, float partialTicks,
-                                   Vec3 cameraPosition) {
+                        Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
         Direction facing = bs.hasProperty(MachineDiesel.FACING) ? bs.getValue(MachineDiesel.FACING) : Direction.NORTH;
-        // Old meta yaw map (meta = EnumFacing ordinal): S(3)=0, E(5)=90, N(2)=180, W(4)=270.
         state.yaw = switch (facing) {
             case EAST -> 90F;
             case NORTH -> 180F;
             case WEST -> 270F;
-            default -> 0F; // SOUTH
+            default -> 0F;
         };
         state.running = be.wasOn;
-    }
-
-    @Override
-    public void submit(DieselGenRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
-        ps.pushPose();
-        ps.translate(0.5F, 0F, 0.5F);
-        ps.mulPose(Axis.YP.rotationDegrees(s.yaw));
-
-        col.submitCustomGeometry(ps, renderType,
-                (pose, buffer) -> model.renderPart("Generator", pose, buffer, light, OverlayTexture.NO_OVERLAY));
-
-        if (s.running) {
-            double swingSide = Math.sin(GameTime.now() / 50D) * 0.005;
-            double swingFront = Math.sin(GameTime.now() / 25D) * 0.005;
-            ps.translate((float) swingFront, 0F, (float) swingSide);
-        }
-        col.submitCustomGeometry(ps, renderType,
-                (pose, buffer) -> model.renderPart("Engine", pose, buffer, light, OverlayTexture.NO_OVERLAY));
-
-        ps.popPose();
+        state.swingFront = state.running ? (float) (Math.sin(GameTime.now() / 25D) * 0.005D) : 0F;
+        state.swingSide = state.running ? (float) (Math.sin(GameTime.now() / 50D) * 0.005D) : 0F;
     }
 }

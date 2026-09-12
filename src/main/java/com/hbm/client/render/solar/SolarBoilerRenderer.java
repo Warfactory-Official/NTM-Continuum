@@ -4,43 +4,33 @@ import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.solar.TileEntitySolarBoiler;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Static solar-boiler renderer, retaining the old Base-only model pass and yaw map. */
-public final class SolarBoilerRenderer implements CompatBER<TileEntitySolarBoiler, SolarBoilerRenderState> {
+import java.util.Set;
+
+/** The solar boiler tower stands still; only its facing is read. */
+public final class SolarBoilerRenderer extends GemBER<TileEntitySolarBoiler, SolarBoilerRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/solar_boiler.obj"));
-    private final RenderType renderType = CompatRenderTypes.entityCutout(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/solar_boiler.png"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/solar_boiler.png");
+
+    @Override
+    protected void setup(Gem.Model<SolarBoilerRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(model.parts(Set.of("Base"), true), surface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> 90F + state.yaw);
+    }
 
     @Override
     public SolarBoilerRenderState createRenderState() {
         return new SolarBoilerRenderState();
-    }
-
-    @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(TileEntitySolarBoiler blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
     }
 
     @Override
@@ -55,16 +45,5 @@ public final class SolarBoilerRenderer implements CompatBER<TileEntitySolarBoile
             case 5 -> 270F;
             default -> 0F;
         };
-    }
-
-    @Override
-    public void submit(SolarBoilerRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(90F + state.yaw));
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart("Base", pose, buffer, state.lightCoords,
-                        OverlayTexture.NO_OVERLAY, -1, 0F, 0F, true));
-        poseStack.popPose();
     }
 }

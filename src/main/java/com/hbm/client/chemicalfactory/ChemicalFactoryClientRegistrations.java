@@ -16,7 +16,7 @@ public final class ChemicalFactoryClientRegistrations {
     }
 
     public static void registerRenderer(com.hbm.client.render.HbmBlockEntityRenderers.Sink sink) {
-        sink.register(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_BE.get(),
-                context -> new ChemicalFactoryRenderer());
+        com.hbm.client.render.HbmBlockEntityRenderers.regGem(sink,
+                ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_BE.get(), ChemicalFactoryRenderer::new);
     }
 }

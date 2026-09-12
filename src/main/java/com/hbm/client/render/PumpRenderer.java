@@ -5,39 +5,55 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.PumpAnimationState;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Faithful split-part renderer for both legacy groundwater pump variants. */
+/** Faithful split-part declaration for both legacy groundwater pump variants. */
 public final class PumpRenderer<T extends BlockEntity & PumpAnimationState>
-        implements CompatBER<T, PumpRenderState> {
+        extends GemBER<T, PumpRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/pump.obj"));
-    private final RenderType renderType;
+    private final Surface surface;
 
     public PumpRenderer(Identifier texture) {
-        this.renderType = CompatRenderTypes.entityCutoutNoCull(texture);
+        this.surface = Surface.cutoutNoCull(texture.toString());
     }
 
-    @Override public PumpRenderState createRenderState() { return new PumpRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(T be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    protected void setup(Gem.Model<PumpRenderState> declaration) {
+        Gem.Part<PumpRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+
+        machine.child(model.part("Base"), surface);
+        machine.child(model.part("Rotor"), surface)
+                .spin(Gem.Axes.Z, 0F, 2.25F, 0F, state -> state.rotation - 90F);
+        machine.child(model.part("Arms"), surface)
+                .slide(Gem.Axes.Y, state -> state.lift)
+                .spin(Gem.Axes.Z, 0F, 4.75F, 0F, state -> -state.armAngle);
+        machine.child(model.part("Piston"), surface)
+                .slide(Gem.Axes.Y, state -> state.lift);
+    }
 
     @Override
-    public void extract(T be, PumpRenderState state, float partialTicks,
-                        Vec3 cameraPosition) {
+    public PumpRenderState createRenderState() {
+        return new PumpRenderState();
+    }
+
+    /**
+     * The crank geometry upstream solves inline: the piston rides the sine of the rotor while the arms
+     * swing by the angle that keeps their fixed length spanning the gap. It is resolved here rather than
+     * in the declaration so the trigonometry runs once a frame instead of once per part that reads it.
+     */
+    @Override
+    public void extract(T be, PumpRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState blockState = be.getBlockState();
         int meta = blockState.hasProperty(BlockDummyable.META)
                 ? blockState.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
@@ -48,44 +64,11 @@ public final class PumpRenderer<T extends BlockEntity & PumpAnimationState>
             default -> 0F;
         };
         state.rotation = be.getLastRotor() + (be.getRotor() - be.getLastRotor()) * partialTicks;
-    }
-
-    @Override
-    public void submit(PumpRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        part(sink, poseStack, "Base", state.lightCoords);
-
-        poseStack.pushPose();
-        poseStack.translate(0F, 2.25F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.rotation - 90F));
-        poseStack.translate(0F, -2.25F, 0F);
-        part(sink, poseStack, "Rotor", state.lightCoords);
-        poseStack.popPose();
 
         double sin = Math.sin(state.rotation * Math.PI / 180D) * 0.5D - 0.5D;
         double cos = Math.cos(state.rotation * Math.PI / 180D) * 0.5D;
-        double angle = Math.acos(cos / 2D) * 180D / Math.PI - 90D;
         double cath = Math.sqrt(1D + (cos * cos) / 2D);
-
-        poseStack.pushPose();
-        poseStack.translate(0D, 1D - cath + sin, 0D);
-        poseStack.translate(0D, 4.75D, 0D);
-        poseStack.mulPose(Axis.ZN.rotationDegrees((float) angle));
-        poseStack.translate(0D, -4.75D, 0D);
-        part(sink, poseStack, "Arms", state.lightCoords);
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(0D, 1D - cath + sin, 0D);
-        part(sink, poseStack, "Piston", state.lightCoords);
-        poseStack.popPose();
-        poseStack.popPose();
-    }
-
-    private void part(SubmitSink sink, PoseStack poseStack, String name, int light) {
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
+        state.armAngle = (float) (Math.acos(cos / 2D) * 180D / Math.PI - 90D);
+        state.lift = (float) (1D - cath + sin);
     }
 }

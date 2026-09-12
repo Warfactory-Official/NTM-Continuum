@@ -4,39 +4,47 @@ import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePyroOven;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Animated legacy pyro oven renderer, including the exact Slider and Fan pivots. */
-public final class PyroOvenRenderer implements CompatBER<TileEntityMachinePyroOven, PyroOvenRenderState> {
+/**
+ * Pyro oven: the housing, the door sliding across it, and the extractor fan in the far corner.
+ *
+ */
+public final class PyroOvenRenderer extends GemBER<TileEntityMachinePyroOven, PyroOvenRenderState> {
 
     private static final float BASE_YAW = 180F;
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/pyrooven.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/pyrooven.png");
 
-    public PyroOvenRenderer() {
-        model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/pyrooven.obj"));
-        renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID,
-                "textures/models/machines/pyrooven.png"));
+    @Override
+    protected void setup(Gem.Model<PyroOvenRenderState> declaration) {
+        Gem.Part<PyroOvenRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+
+        machine.child(model.part("Oven"), surface);
+        machine.child(model.part("Slider"), surface)
+                .slide(Gem.Axes.X, state -> (float) (sps(state.anim * 0.125D) / 2D - 0.5D));
+        machine.child(model.part("Fan"), surface)
+                .spin(Gem.Axes.Y, 1.5F, 0F, 1.5F, state -> (float) (state.anim * 45D % 360D));
     }
-
-    @Override public PyroOvenRenderState createRenderState() { return new PyroOvenRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachinePyroOven be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
 
     /** The old {@code BobMathUtil.sps}: a sine of a cosine, not a plain sine wave. */
     private static double sps(double x) {
         return Math.sin(Math.PI / 2D * Math.cos(x));
+    }
+
+    @Override
+    public PyroOvenRenderState createRenderState() {
+        return new PyroOvenRenderState();
     }
 
     @Override
@@ -46,40 +54,11 @@ public final class PyroOvenRenderer implements CompatBER<TileEntityMachinePyroOv
         int meta = bs.hasProperty(BlockDummyable.META)
                 ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
         state.yaw = BASE_YAW + switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
         state.anim = be.prevAnim + (be.anim - be.prevAnim) * partialTicks;
-    }
-
-    @Override
-    public void submit(PyroOvenRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        int light = state.lightCoords;
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-
-        part(sink, poseStack, "Oven", light);
-
-        poseStack.pushPose();
-        poseStack.translate((float) (sps(state.anim * 0.125D) / 2D - 0.5D), 0F, 0F);
-        part(sink, poseStack, "Slider", light);
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(1.5F, 0F, 1.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees((float) (state.anim * -15D % 360D)));
-        poseStack.translate(-1.5F, 0F, -1.5F);
-        part(sink, poseStack, "Fan", light);
-        poseStack.popPose();
-
-        poseStack.popPose();
-    }
-
-    private void part(SubmitSink sink, PoseStack poseStack, String name, int light) {
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 }

@@ -1,9 +1,5 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -12,8 +8,11 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityFEL;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -29,22 +28,23 @@ import org.jspecify.annotations.Nullable;
  * <p>The beam gate here uses {@code pow(4)}, matching the server. (The GUI and the audio ramp use
  * {@code pow(2)} — an upstream inconsistency, preserved on all three sides.)
  */
-public class FELRenderer implements CompatBER<TileEntityFEL, FELRenderState> {
+public class FELRenderer extends GemBER<TileEntityFEL, FELRenderState> {
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fel.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/fel.png");
 
-    public FELRenderer() {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fel.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/fel.png"));
+    /** The beam can be 24 blocks long, so the machine must stay visible from well outside its own cell. */
+    @Override
+    protected void setup(Gem.Model<FELRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(model.all(), surface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
     }
 
     @Override public FELRenderState createRenderState() { return new FELRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityFEL be, Vec3 cameraPosition) { return true; }
-    /** The beam can be 24 blocks long, so the machine must stay visible from well outside its own cell. */
-    @Override public int getViewDistance() { return 256; }
 
     @Override
     public void extract(TileEntityFEL be, FELRenderState state, float partialTicks,
@@ -73,15 +73,12 @@ public class FELRenderer implements CompatBER<TileEntityFEL, FELRenderState> {
         return be.getLevel() != null ? be.getLevel().getGameTime() : 0L;
     }
 
+    /** The beam is built to reach whatever it hit, so its length is its geometry. */
     @Override
-    public void submit(FELRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
+    protected void submitUndeclared(FELRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
         ps.pushPose();
         ps.translate(0.5F, 0F, 0.5F);
         ps.mulPose(Axis.YP.rotationDegrees(s.yaw));
-
-        col.submitCustomGeometry(ps, renderType,
-                (pose, buffer) -> model.renderAll(pose, buffer, light, OverlayTexture.NO_OVERLAY));
 
         if (s.beam) {
             ps.pushPose();

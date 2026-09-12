@@ -1,34 +1,41 @@
 package com.hbm.client.render;
 
-import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityFurnaceSteel;
+import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 /** Steel furnace renderer, including the animated additive heat sheet from the old TESR. */
-public final class FurnaceSteelRenderer implements CompatBER<TileEntityFurnaceSteel, FurnaceRenderState> {
+public final class FurnaceSteelRenderer extends GemBER<TileEntityFurnaceSteel, FurnaceRenderState> {
     private static final Identifier OBJ = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/furnace_steel.obj");
     private static final Identifier TEXTURE = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/furnace_steel.png");
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType bodyType = CompatRenderTypes.entityCutout(TEXTURE);
+    private final Surface surface = Surface.cutout(TEXTURE.toString());
     private final RenderType heatType = CompatRenderTypes.lightning();
 
+    @Override
+    protected void setup(Gem.Model<FurnaceRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(model.all(), surface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+    }
+
     @Override public FurnaceRenderState createRenderState() { return new FurnaceRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityFurnaceSteel be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
 
     @Override public void extract(TileEntityFurnaceSteel furnace, FurnaceRenderState state, float partialTicks, Vec3 cameraPosition) {
         int facing = furnace.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
@@ -42,12 +49,14 @@ public final class FurnaceSteelRenderer implements CompatBER<TileEntityFurnaceSt
         state.burning = furnace.wasOn;
     }
 
-    @Override public void submit(FurnaceRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
+    /**
+     * The heat shimmer over the vents is four hand-built quads whose colour flickers with the clock,
+     * not a mesh either backend could hold.
+     */
+    @Override protected void submitUndeclared(FurnaceRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        collector.submitCustomGeometry(poseStack, bodyType,
-                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
         if (state.burning) {
             float flicker = (float) Math.sin(GameTime.now() * 0.001D);
             int color = ((int) (128F * 0.875F) << 24)

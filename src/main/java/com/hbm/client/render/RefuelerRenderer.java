@@ -1,86 +1,75 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.BlockRefueler;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityRefueler;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 
-/**
- * Refueler renderer — port of the 1.12.2 {@code RenderRefueler}. The refueler is a single
- * {@code FACING} block (not a {@link com.hbm.blocks.BlockDummyable}), so it needs its own renderer:
- * the generic {@code MachineObjRenderer} reads {@code BlockDummyable.META} and would leave it stuck
- * facing north. Old transform: {@code rotate(90)} then the meta map W90/S180/E270/N0 — i.e. base 90 +
- * the standard facing map. Draws the static {@code Fueler} part, then the {@code Fluid} part offset by
- * {@code (1 − fillLevel) · −0.625} and tinted with the tank fluid's colour.
- *
- * <p>Deviation (§20): the old fluid part used a GL clip plane (cutting below y=0.125), which has no
- * clean submit-pipeline equivalent and remains omitted. Its texture-disabled SRC_ALPHA/ONE pass is
- * represented by the shared textureless lightning render type.
- */
-public class RefuelerRenderer implements CompatBER<TileEntityRefueler, RefuelerRenderState> {
+/** Refueler: the static body, and the fuel level glowing inside it. */
+public class RefuelerRenderer extends GemBER<TileEntityRefueler, RefuelerRenderState> {
 
-    private final WavefrontObj model;
-    private final RenderType baseType;
-    private final RenderType fluidType;
-
-    public RefuelerRenderer() {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/refueler.obj"));
-        Identifier texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/refueler.png");
-        this.baseType = CompatRenderTypes.entityCutout(texture);
-        // The old pass disabled texturing and used SRC_ALPHA/ONE additive blending.
-        this.fluidType = CompatRenderTypes.lightning();
-    }
-
-    @Override public RefuelerRenderState createRenderState() { return new RefuelerRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityRefueler be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/refueler.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/refueler.png");
+    /** The old pass disabled texturing and used SRC_ALPHA/ONE additive blending. */
+    private final RenderType fluidType = CompatRenderTypes.lightning();
 
     @Override
+    protected void setup(Gem.Model<RefuelerRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(model.part("Fueler"), surface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+    }
+
+    @Override
+    public RefuelerRenderState createRenderState() {
+        return new RefuelerRenderState();
+    }
+
+    /** Old: a base rotate(90) then the meta map W(4)=90, S(3)=180, E(5)=270, N(2)=0. */
+    @Override
     public void extract(TileEntityRefueler be, RefuelerRenderState state, float partialTicks,
-                                   Vec3 cameraPosition) {
+                        Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
         Direction facing = bs.hasProperty(BlockRefueler.FACING) ? bs.getValue(BlockRefueler.FACING) : Direction.NORTH;
-        // Old: a base rotate(90) then the meta map W(4)=90, S(3)=180, E(5)=270, N(2)=0.
         state.yaw = 90F + switch (facing) {
             case WEST -> 90F;
             case SOUTH -> 180F;
             case EAST -> 270F;
-            default -> 0F; // NORTH
+            default -> 0F;
         };
         state.fillLevel = be.prevFillLevel + (be.fillLevel - be.prevFillLevel) * partialTicks;
         state.fluidColor = be.tank.getTankType().getColor();
     }
 
+    /**
+     * The fuel column is drawn with position and colour only — no texture and no normal — so it is not a
+     * surface either backend could bucket, and it keeps the vanilla path.
+     */
     @Override
-    public void submit(RefuelerRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
-        ps.pushPose();
-        ps.translate(0.5F, 0F, 0.5F);
-        ps.mulPose(Axis.YP.rotationDegrees(s.yaw));
-
-        col.submitCustomGeometry(ps, baseType,
-                (pose, buffer) -> model.renderPart("Fueler", pose, buffer, light, OverlayTexture.NO_OVERLAY));
-
-        // Fluid level: old translate(0, (1 - fillLevel) * -0.625, 0), tinted by the tank fluid.
-        ps.translate(0F, (float) ((1D - s.fillLevel) * -0.625D), 0F);
-        int argb = 0xBF000000 | (s.fluidColor & 0xFFFFFF); // 0.75 alpha, as the old color(..., 0.75F)
-        col.submitCustomGeometry(ps, fluidType,
+    protected void submitUndeclared(RefuelerRenderState state, PoseStack poseStack, SubmitSink collector,
+                                    CameraInfo camera) {
+        poseStack.pushPose();
+        poseStack.translate(0.5F, 0F, 0.5F);
+        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
+        poseStack.translate(0F, (float) ((1D - state.fillLevel) * -0.625D), 0F);
+        int argb = 0xBF000000 | (state.fluidColor & 0xFFFFFF);
+        collector.submitCustomGeometry(poseStack, fluidType,
                 (pose, buffer) -> model.renderPartColor("Fluid", pose, buffer, argb));
-
-        ps.popPose();
+        poseStack.popPose();
     }
 }

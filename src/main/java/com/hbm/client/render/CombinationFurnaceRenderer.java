@@ -7,30 +7,38 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.Poses;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 /** Static combination-oven OBJ plus the legacy fullbright, camera-facing RBMK flame quad. */
-public final class CombinationFurnaceRenderer implements CompatBER<TileEntityFurnaceCombination, CombinationFurnaceRenderState> {
+public final class CombinationFurnaceRenderer extends GemBER<TileEntityFurnaceCombination, CombinationFurnaceRenderState> {
 
     private static final Identifier OBJ = Ids.of(Constants.MOD_ID, "models/machines/combination_oven.obj");
     private static final Identifier MACHINE_TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/machines/combination_oven.png");
     private static final Identifier FLAME_TEXTURE = Ids.of(Constants.MOD_ID, "textures/particle/rbmk_fire.png");
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType modelType = CompatRenderTypes.entityCutout(MACHINE_TEXTURE);
+    private final Surface surface = Surface.cutout(MACHINE_TEXTURE.toString());
 
-    @Override public CombinationFurnaceRenderState createRenderState() { return new CombinationFurnaceRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityFurnaceCombination be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    protected void setup(Gem.Model<CombinationFurnaceRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(model.all(), surface)
+                .translate(0.5F, 0F, 0.5F);
+    }
+
+    @Override
+    public CombinationFurnaceRenderState createRenderState() {
+        return new CombinationFurnaceRenderState();
+    }
 
     @Override
     public void extract(TileEntityFurnaceCombination furnace, CombinationFurnaceRenderState state,
@@ -40,13 +48,7 @@ public final class CombinationFurnaceRenderer implements CompatBER<TileEntityFur
     }
 
     @Override
-    public void submit(CombinationFurnaceRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        collector.submitCustomGeometry(poseStack, modelType,
-                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        poseStack.popPose();
-
+    protected void submitUndeclared(CombinationFurnaceRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
         if (!state.burning) return;
         collector.order(1).submitCustomGeometry(poseStack, CompatRenderTypes.energySwirl(FLAME_TEXTURE, 0F, 0F),
                 (pose, buffer) -> {

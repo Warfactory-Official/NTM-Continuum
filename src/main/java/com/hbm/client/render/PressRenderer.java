@@ -1,66 +1,71 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 
-import java.util.Set;
 import java.util.function.ToIntFunction;
 
 /**
- * Renderer for the burner / electric press: a static <b>body</b> plus a <b>head</b> that descends with
- * the machine's {@code progress}, ported from the 1.12.2 {@code RenderPress}/{@code RenderEPress}. The
- * head travels {@code 0.875} blocks down over a full stroke (the original {@code progress*(1-0.125)/max}).
+ * A press: a static body and a stamp head that descends with the machine's progress.
  *
- * <p>The two presses differ slightly: the burner press always faces one way (base yaw 180, no facing
- * rotation) with its head seated at +0.875 and scaled 0.95 in X/Z; the electric press rotates with its
- * placement (base yaw 90 + the standard facing map) with its head at +1.875. Both are expressed through
- * the constructor params. The floating pressed-item display above the head is deferred (see §18).
+ * <p>Whether the head turns with the body is per-machine: the e-press repeats the body's facing switch
+ * on its head, the press does not.
  */
-public class PressRenderer<T extends BlockEntity> implements CompatBER<T, PressRenderState> {
+public class PressRenderer<T extends BlockEntity> extends GemBER<T, PressRenderState> {
 
     private final WavefrontObj body;
     private final WavefrontObj head;
-    private final RenderType bodyType;
-    private final RenderType headType;
+    private final Surface bodySurface;
+    private final Surface headSurface;
     private final float baseYaw;
     private final boolean applyFacing;
     private final float headBaseOffset;
     private final float headScaleXZ;
+    private final boolean headTurnsWithBody;
     private final int maxProgress;
     private final ToIntFunction<T> progress;
 
     public PressRenderer(Identifier bodyObj, Identifier bodyTex, Identifier headObj, Identifier headTex,
                          float baseYaw, boolean applyFacing, float headBaseOffset, float headScaleXZ,
-                         int maxProgress, ToIntFunction<T> progress) {
+                         boolean headTurnsWithBody, int maxProgress, ToIntFunction<T> progress) {
         this.body = WavefrontObj.load(bodyObj);
         this.head = WavefrontObj.load(headObj);
-        this.bodyType = CompatRenderTypes.entityCutout(bodyTex);
-        this.headType = CompatRenderTypes.entityCutout(headTex);
+        this.bodySurface = Surface.cutout(bodyTex.toString());
+        this.headSurface = Surface.cutout(headTex.toString());
         this.baseYaw = baseYaw;
         this.applyFacing = applyFacing;
         this.headBaseOffset = headBaseOffset;
         this.headScaleXZ = headScaleXZ;
+        this.headTurnsWithBody = headTurnsWithBody;
         this.maxProgress = maxProgress;
         this.progress = progress;
     }
 
-    @Override public PressRenderState createRenderState() { return new PressRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(T be, Vec3 cam) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    protected void setup(Gem.Model<PressRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(body.all(), bodySurface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> baseYaw + state.yaw);
+
+        Gem.Part<PressRenderState> stamp = declaration.part(head.all(), headSurface)
+                .translate(0.5F, headBaseOffset, 0.5F)
+                .slide(Gem.Axes.Y, state -> -state.progress * 0.875F / maxProgress);
+        if (headTurnsWithBody) stamp.angle(Gem.Axes.Y, state -> baseYaw + state.yaw);
+        if (headScaleXZ != 1.0F) stamp.scale(headScaleXZ, 1.0F, headScaleXZ);
+    }
+
+    @Override
+    public PressRenderState createRenderState() {
+        return new PressRenderState();
+    }
 
     @Override
     public void extract(T be, PressRenderState state, float partialTicks, Vec3 cameraPosition) {
@@ -68,37 +73,14 @@ public class PressRenderer<T extends BlockEntity> implements CompatBER<T, PressR
             BlockState bs = be.getBlockState();
             int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
             state.yaw = switch (meta - BlockDummyable.offset) {
-                case 4 -> 90F;   // WEST
-                case 3 -> 180F;  // SOUTH
-                case 5 -> 270F;  // EAST
-                default -> 0F;   // NORTH
+                case 4 -> 90F;
+                case 3 -> 180F;
+                case 5 -> 270F;
+                default -> 0F;
             };
         } else {
             state.yaw = 0F;
         }
         state.progress = progress.applyAsInt(be);
-    }
-
-    @Override
-    public void submit(PressRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        float yaw = baseYaw + state.yaw;
-
-        // Body (static).
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
-        collector.submitCustomGeometry(poseStack, bodyType,
-                (pose, buffer) -> body.renderExcept(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, Set.of()));
-        poseStack.popPose();
-
-        // Head (descends with progress).
-        float travel = state.progress * 0.875F / maxProgress;
-        poseStack.pushPose();
-        poseStack.translate(0.5F, headBaseOffset - travel, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
-        if (headScaleXZ != 1.0F) poseStack.scale(headScaleXZ, 1.0F, headScaleXZ);
-        collector.submitCustomGeometry(poseStack, headType,
-                (pose, buffer) -> head.renderExcept(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, Set.of()));
-        poseStack.popPose();
     }
 }

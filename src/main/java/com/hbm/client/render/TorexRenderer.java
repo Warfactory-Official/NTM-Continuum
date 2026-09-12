@@ -5,6 +5,7 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.Ids;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
 import com.hbm.Constants;
 import com.hbm.client.NukeScreenEffects;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -42,7 +43,8 @@ import org.joml.Vector3f;
  * It also latches the HUD {@link NukeScreenEffects} flash/shake timestamps and the local player's
  * hurt-camera-tilt when the blast is close, exactly like the original.
  */
-public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<EntityNukeTorex, TorexRenderState> {
+public class TorexRenderer
+        extends dev.golem.core.render.gem.GemEntityRenderer<EntityNukeTorex, TorexRenderState> {
 
     private static final Identifier CLOUDLET_TEX = Ids.of(Constants.MOD_ID, "textures/particle/particle_base.png");
     private static final Identifier FLARE_TEX = Ids.of(Constants.MOD_ID, "textures/particle/flare.png");
@@ -82,10 +84,15 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
         return new TorexRenderState();
     }
 
-    /** Always render — the cloud has no meaningful bounding box and must be visible at any distance. */
+    /**
+     * Nothing here is a resident mesh — the cloudlets and flare are camera-facing billboards and the
+     * flash is three hundred rays rebuilt each frame — so the declaration holds no parts. What it does
+     * carry is the one property of the model rather than of a frame: the cloud reaches far outside its
+     * own bounding box and must never be culled with it.
+     */
     @Override
-    public boolean culled(EntityNukeTorex entity) {
-        return false;
+    protected void setup(Gem.Model<TorexRenderState> declaration) {
+        declaration.offScreen();
     }
 
     @Override
@@ -96,7 +103,8 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
     }
 
     @Override
-    public void submit(TorexRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
+    protected void submitUndeclared(TorexRenderState state, PoseStack poseStack, SubmitSink collector,
+                                    CameraInfo camera) {
         EntityNukeTorex cloud = state.torex;
         if (cloud == null || !cloud.isClientAnimationReady()) return;
 

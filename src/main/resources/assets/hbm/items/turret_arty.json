@@ -14,5 +14,6 @@
     "rotateParts": ["Cannon", "Barrel"],
     "rotateX": 45.0,
     "rotatePivot": [0.0, 3.0, 0.0]
-  }
+  },
+  "oversized_in_gui": true
 }

@@ -1,41 +1,49 @@
 package com.hbm.client.render.weapon;
 
-import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import dev.golem.core.render.gem.Gem;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The first-person body of a Sedna weapon.
  *
- * <p>Ported from 1.12.2 {@code ItemRenderWeaponBase}. The essential thing this class does — and the thing
- * that makes a first-person weapon look right rather than like a floating item — is
- * <b>{@link PoseStack#setIdentity()} followed by the camera's rotation</b>. A held weapon is not posed by
- * vanilla's item display transforms at all: it is drawn in camera space, exactly as 1.12's cancelled
- * {@code RenderHandEvent} did. Trying to express it as a {@code display{}} slot produces a gun that is
- * the wrong size, in the wrong place, and rotating with the wrong pivot.
- *
- * <p>On top of that frame come the same three layers upstream applies, in order: the turn lag (the
- * weapon trails the crosshair when you look around), the walk sway, and finally the gun's own
- * {@code setupFirstPerson} offset with its aim-down-sights lerp.
+ * <p>A held weapon is not posed by vanilla's item display transforms at all: it is drawn in camera
+ * space, as 1.12's cancelled {@code RenderHandEvent} did — {@link PoseStack#setIdentity()} then the
+ * camera's rotation. Expressed as a {@code display{}} slot instead it is the wrong size, in the wrong
+ * place, rotating about the wrong pivot. On that frame come upstream's three layers in order: turn
+ * lag, walk sway, then the weapon's own offset with its aim-down-sights lerp.
  */
 public abstract class WeaponRenderer {
 
-    /** Partial tick of the current frame; the aiming lerp and the sway both read it. */
     protected static float interp;
 
-    /**
-     * Draws this weapon in the player's hands.
-     *
-     * <p>The pose arrives carrying vanilla's item transform, which is discarded outright: everything
-     * below is built from the camera.
-     */
+    private final WeaponPose pose = new WeaponPose();
+    private Gem.@Nullable Model<WeaponPose> model;
+
+    protected abstract void setup(Gem.Model<WeaponPose> declaration);
+
+    /** Built on first use, which is after resources load and so after {@link #setup} can name groups. */
+    public final Gem.Model<WeaponPose> gem() {
+        Gem.Model<WeaponPose> built = model;
+        if (built == null) {
+            built = Gem.model();
+            built.overlay(state -> state.overlay);
+            setup(built);
+            built.seal();
+            model = built;
+        }
+        return built;
+    }
+
+    /** The pose arrives carrying vanilla's item transform, which is discarded: this is camera space. */
     public void submitFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector, int light,
             int overlay, boolean otherArm) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -45,9 +53,7 @@ public abstract class WeaponRenderer {
         interp = dev.golem.core.client.Frames.partialTick();
 
         pose.pushPose();
-        // Camera space, however this version expresses it — see HandSpace for why that differs.
         dev.golem.core.client.HandSpace.enterCameraSpace(pose);
-        // The off hand is the right hand's body mirrored through the view plane.
         if (otherArm) pose.scale(-1F, 1F, 1F);
         setupTransformsAndSubmit(stack, player, pose, collector, light, overlay);
         pose.popPose();
@@ -61,8 +67,6 @@ public abstract class WeaponRenderer {
         float swayPeriod = getSwayPeriod(stack);
         float turnMagnitude = getTurnMagnitude(stack);
 
-        // The weapon lags behind the camera when you turn: the difference between where you are looking
-        // and where the arms have caught up to.
         float armPitch = Mth.lerp(interp, player.xBobO, player.xBob);
         float armYaw = Mth.lerp(interp, player.yBobO, player.yBob);
         pose.mulPose(Axis.XP.rotationDegrees((player.getViewXRot(interp) - armPitch) * 0.1F * turnMagnitude));
@@ -109,18 +113,13 @@ public abstract class WeaponRenderer {
     /** Lerps between the hip position and the sighted one by how far the aim transition has run. */
     public static void standardAimingTransform(ItemStack stack, PoseStack pose,
             double sX, double sY, double sZ, double aX, double aY, double aZ) {
-        float aimingProgress = ItemGunBaseNT.prevAimingProgress
-                + (ItemGunBaseNT.aimingProgress - ItemGunBaseNT.prevAimingProgress) * interp;
-        pose.translate(sX + (aX - sX) * aimingProgress,
-                sY + (aY - sY) * aimingProgress,
-                sZ + (aZ - sZ) * aimingProgress);
+        pose.translate(aimLerp(sX, aX), aimLerp(sY, aY), aimLerp(sZ, aZ));
     }
 
-    /** Submits one named OBJ part at the current pose. */
-    protected static void submitPart(SubmitSink collector, PoseStack pose, RenderType type,
-            WavefrontObj model, String part, int light, int overlay) {
-        collector.submitCustomGeometry(pose, type,
-                (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, overlay));
+    protected static float aimLerp(double hip, double sighted) {
+        float aimingProgress = ItemGunBaseNT.prevAimingProgress
+                + (ItemGunBaseNT.aimingProgress - ItemGunBaseNT.prevAimingProgress) * interp;
+        return (float) (hip + (sighted - hip) * aimingProgress);
     }
 
     protected float getSwayMagnitude(ItemStack stack) {
@@ -135,30 +134,34 @@ public abstract class WeaponRenderer {
         return 2.75F;
     }
 
-    /** The weapon's own geometry, drawn with its animation buses applied. */
-    public abstract void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay);
+    public final void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
+            int light, int overlay) {
+        replay(stack, true, pose, collector, light, overlay, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+    }
 
-    /** The same geometry at rest, for the inventory icon, the ground and third person. */
-    public abstract void renderStatic(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay);
+    public final void renderStatic(ItemStack stack, PoseStack pose, SubmitSink collector,
+            int light, int overlay) {
+        replay(stack, false, pose, collector, light, overlay, staticContext);
+    }
 
-    /**
-     * Extra framing for the non-first-person draws. Identity by default, and normally left that way.
-     *
-     * <p>Those contexts are framed by the base model's {@code display{}} block, which is where upstream's
-     * {@code setupInv}/{@code setupThirdPerson}/{@code setupEntity} op chains belong once composed: they
-     * are written in 1.12's GUI space (sixteenths of a slot), so replaying the calls against a modern
-     * {@link PoseStack} puts the weapon somewhere off screen. First person is the exception — that body
-     * is genuinely code, because it is rebuilt from the camera every frame.
-     */
-    public void setupStatic(PoseStack pose, net.minecraft.world.item.ItemDisplayContext context) {}
+    private void replay(ItemStack stack, boolean animated, PoseStack poseStack, SubmitSink collector,
+            int light, int overlay, ItemDisplayContext context) {
+        pose.begin(stack, animated, overlay, context);
+        Gem.replay(gem(), pose, poseStack, collector, light);
+    }
 
     /**
-     * The corners of this weapon's bounding box, in model units.
-     *
-     * <p>26.1 sizes and bounds a GUI item from these; a layer left with no extents reports an empty box,
-     * which is enough on its own for the icon not to appear.
+     * Extra framing for the non-first-person draws, normally left identity: those contexts are framed
+     * by the base model's {@code display{}} block. Upstream's {@code setupInv}/{@code setupThirdPerson}
+     * chains are written in 1.12 GUI space and put the weapon off screen if replayed as calls.
      */
+    public void setupStatic(PoseStack pose, ItemDisplayContext context) {
+        staticContext = context;
+    }
+
+    /** Recorded because {@code renderStatic} is not handed it and Dani's rest pose depends on it. */
+    private ItemDisplayContext staticContext = ItemDisplayContext.NONE;
+
+    /** 26.1 sizes a GUI item from these; no extents means an empty box and no icon at all. */
     public abstract org.joml.Vector3fc[] extents();
 }

@@ -1,20 +1,22 @@
 package com.hbm.client.render;
 
-import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
+import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -25,7 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /** OBJ renderer for the plasma forge, preserving the legacy machine, plasma, plume, beam and item passes. */
-public class PlasmaForgeRenderer implements CompatBER<TileEntityFusionPlasmaForge, PlasmaForgeRenderState> {
+public class PlasmaForgeRenderer extends GemBER<TileEntityFusionPlasmaForge, PlasmaForgeRenderState> {
 
     private static final int FULLBRIGHT = 0xF000F0;
     private static final int BLACK = 0xFF000000;
@@ -37,6 +39,9 @@ public class PlasmaForgeRenderer implements CompatBER<TileEntityFusionPlasmaForg
 
     private final WavefrontObj model;
     private final WavefrontObj torusModel;
+    private final Surface shell;
+    private final Surface torusShell;
+    private final Surface coldPlasma;
     private final RenderType body;
     private final RenderType inactivePlasma;
     private final RenderType plasma;
@@ -47,6 +52,9 @@ public class PlasmaForgeRenderer implements CompatBER<TileEntityFusionPlasmaForg
     public PlasmaForgeRenderer() {
         model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/fusion/plasma_forge.obj"));
         torusModel = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/fusion/torus.obj"));
+        shell = Surface.cutout(Constants.MOD_ID + ":textures/models/fusion/plasma_forge.png");
+        torusShell = Surface.cutout(Constants.MOD_ID + ":textures/models/fusion/torus.png");
+        coldPlasma = Surface.solid(Constants.MOD_ID + ":textures/models/misc/white.png");
         body = CompatRenderTypes.entityCutout(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_forge.png"));
         inactivePlasma = CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png"));
         plasma = CompatRenderTypes.plasmaGlow(Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
@@ -55,10 +63,90 @@ public class PlasmaForgeRenderer implements CompatBER<TileEntityFusionPlasmaForg
         plume = CompatRenderTypes.lightning();
     }
 
+    /**
+     * The shell, the neighbouring torus bolt when one is coupled, the cold plasma bulb, and the two
+     * arms riding the ring. Everything that glows is built from the clock and stays drawn.
+     */
+    @Override
+    protected void setup(Gem.Model<PlasmaForgeRenderState> declaration) {
+        Gem.Part<PlasmaForgeRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> 90F + state.yaw);
+
+        machine.child(torusModel.part("Bolts1"), torusShell)
+                .visibleIf(state -> state.connected)
+                .translate(-2F, 0F, 0F);
+        machine.child(model.part("Body"), shell);
+        machine.child(model.part("Plasma"), coldPlasma)
+                .visibleIf(state -> !state.burning)
+                .light(state -> FULLBRIGHT)
+                .tint(state -> BLACK);
+
+        Gem.Part<PlasmaForgeRenderState> ring = machine.joint()
+                .angle(Gem.Axes.Y, state -> (float) state.ring);
+        striker(ring);
+        jet(ring);
+    }
+
+    private void striker(Gem.Part<PlasmaForgeRenderState> ring) {
+        ring.child(model.part("SliderStriker"), shell);
+
+        Gem.Part<PlasmaForgeRenderState> lower = ring.joint()
+                .translate(-2.75F, 2.5F, 0F)
+                .angle(Gem.Axes.Z, state -> (float) -state.striker[0])
+                .translate(2.75F, -2.5F, 0F);
+        lower.child(model.part("ArmLowerStriker"), shell);
+
+        Gem.Part<PlasmaForgeRenderState> upper = lower.joint()
+                .translate(-2.75F, 3.75F, 0F)
+                .angle(Gem.Axes.Z, state -> (float) -state.striker[1])
+                .translate(2.75F, -3.75F, 0F);
+        upper.child(model.part("ArmUpperStriker"), shell);
+
+        Gem.Part<PlasmaForgeRenderState> mount = upper.joint()
+                .translate(-1.5F, 3.75F, 0F)
+                .angle(Gem.Axes.Z, state -> (float) -state.striker[2])
+                .translate(1.5F, -3.75F, 0F);
+        mount.child(model.part("StrikerMount"), shell);
+
+        hammer(mount, "Right", 0.5F, 1F, 4);
+        hammer(mount, "Left", -0.5F, -1F, 5);
+    }
+
+    private void hammer(Gem.Part<PlasmaForgeRenderState> mount, String side, float z, float sign, int piston) {
+        Gem.Part<PlasmaForgeRenderState> arm = mount.joint()
+                .translate(0F, 3.375F, z)
+                .angle(Gem.Axes.X, state -> sign * (float) state.striker[3])
+                .translate(0F, -3.375F, -z);
+        arm.child(model.part("Striker" + side), shell);
+        arm.child(model.part("Piston" + side), shell)
+                .slide(Gem.Axes.Y, state -> (float) -state.striker[piston]);
+    }
+
+    private void jet(Gem.Part<PlasmaForgeRenderState> ring) {
+        ring.child(model.part("SliderJet"), shell);
+
+        Gem.Part<PlasmaForgeRenderState> lower = ring.joint()
+                .translate(2.75F, 2.5F, 0F)
+                .angle(Gem.Axes.Z, state -> (float) state.jet[0])
+                .translate(-2.75F, -2.5F, 0F);
+        lower.child(model.part("ArmLowerJet"), shell);
+
+        Gem.Part<PlasmaForgeRenderState> upper = lower.joint()
+                .translate(2.75F, 3.75F, 0F)
+                .angle(Gem.Axes.Z, state -> (float) state.jet[1])
+                .translate(-2.75F, -3.75F, 0F);
+        upper.child(model.part("ArmUpperJet"), shell);
+
+        upper.joint()
+                .translate(1.5F, 3.75F, 0F)
+                .angle(Gem.Axes.Z, state -> (float) state.jet[2])
+                .translate(-1.5F, -3.75F, 0F)
+                .child(model.part("Jet"), shell);
+    }
+
     @Override public PlasmaForgeRenderState createRenderState() { return new PlasmaForgeRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityFusionPlasmaForge be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
 
     @Override
     public void extract(TileEntityFusionPlasmaForge be, PlasmaForgeRenderState state, float partialTicks,
@@ -133,72 +221,38 @@ public class PlasmaForgeRenderer implements CompatBER<TileEntityFusionPlasmaForg
     }
 
     @Override
-    public void submit(PlasmaForgeRenderState state, PoseStack ps, SubmitSink sink, CameraInfo camera) {
+    protected void submitUndeclared(PlasmaForgeRenderState state, PoseStack ps, SubmitSink sink, CameraInfo camera) {
         ps.pushPose();
         ps.translate(0.5F, 0F, 0.5F);
         ps.mulPose(Axis.YP.rotationDegrees(90F + state.yaw));
 
-        if (state.connected) {
-            ps.pushPose();
-            ps.translate(-2F, 0F, 0F);
-            sink.submitCustomGeometry(ps, CompatRenderTypes.entityCutout(
-                            Ids.of(Constants.MOD_ID, "textures/models/fusion/torus.png")),
-                    (pose, buffer) -> torusModel.renderPart("Bolts1", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-            ps.popPose();
-        }
-        part(sink, ps, "Body", state.lightCoords);
         renderPlasma(state, ps, sink);
         renderRecipeItem(state, ps, sink);
         if (state.showBeam) renderBeam(state, ps, sink);
 
-        ps.pushPose();
-        ps.mulPose(Axis.YP.rotationDegrees((float) state.ring));
-        renderStriker(state, ps, sink);
-        renderJet(state, ps, sink);
-        ps.popPose();
+        if (state.jetPlume) {
+            ps.pushPose();
+            ps.mulPose(Axis.YP.rotationDegrees((float) state.ring));
+            ps.translate(2.75F, 2.5F, 0F);
+            ps.mulPose(Axis.ZP.rotationDegrees((float) state.jet[0]));
+            ps.translate(-2.75F, -2.5F, 0F);
+            ps.translate(2.75F, 3.75F, 0F);
+            ps.mulPose(Axis.ZP.rotationDegrees((float) state.jet[1]));
+            ps.translate(-2.75F, -3.75F, 0F);
+            ps.translate(1.5F, 3.75F, 0F);
+            ps.mulPose(Axis.ZP.rotationDegrees((float) state.jet[2]));
+            ps.translate(-1.5F, -3.75F, 0F);
+            renderJetPlume(state, ps, sink);
+            ps.popPose();
+        }
         ps.popPose();
     }
 
     private void renderPlasma(PlasmaForgeRenderState state, PoseStack ps, SubmitSink sink) {
-        if (!state.burning) {
-            sink.submitCustomGeometry(ps, inactivePlasma, (pose, buffer) ->
-                    model.renderPart("Plasma", pose, buffer, FULLBRIGHT, OverlayTexture.NO_OVERLAY, BLACK));
-            return;
-        }
+        if (!state.burning) return;
         plasmaLayer(state, ps, sink, plasma, state.mainScroll, state.plasmaAlpha);
         plasmaLayer(state, ps, sink, glow, state.glowScroll, PlasmaForgeRenderMath.GLOW_COLOR_SCALE);
         plasmaLayer(state, ps, sink, glow, state.secondGlowScroll, PlasmaForgeRenderMath.GLOW_COLOR_SCALE);
-    }
-
-    private void renderStriker(PlasmaForgeRenderState s, PoseStack ps, SubmitSink sink) {
-        part(sink, ps, "SliderStriker", s.lightCoords);
-        ps.pushPose();
-        ps.translate(-2.75F, 2.5F, 0F); ps.mulPose(Axis.ZP.rotationDegrees((float) -s.striker[0])); ps.translate(2.75F, -2.5F, 0F);
-        part(sink, ps, "ArmLowerStriker", s.lightCoords);
-        ps.translate(-2.75F, 3.75F, 0F); ps.mulPose(Axis.ZP.rotationDegrees((float) -s.striker[1])); ps.translate(2.75F, -3.75F, 0F);
-        part(sink, ps, "ArmUpperStriker", s.lightCoords);
-        ps.translate(-1.5F, 3.75F, 0F); ps.mulPose(Axis.ZP.rotationDegrees((float) -s.striker[2])); ps.translate(1.5F, -3.75F, 0F);
-        part(sink, ps, "StrikerMount", s.lightCoords);
-        ps.pushPose();
-        ps.translate(0F, 3.375F, 0.5F); ps.mulPose(Axis.XP.rotationDegrees((float) s.striker[3])); ps.translate(0F, -3.375F, -0.5F);
-        part(sink, ps, "StrikerRight", s.lightCoords); ps.translate(0F, -s.striker[4], 0F); part(sink, ps, "PistonRight", s.lightCoords); ps.popPose();
-        ps.pushPose();
-        ps.translate(0F, 3.375F, -0.5F); ps.mulPose(Axis.XP.rotationDegrees((float) -s.striker[3])); ps.translate(0F, -3.375F, 0.5F);
-        part(sink, ps, "StrikerLeft", s.lightCoords); ps.translate(0F, -s.striker[5], 0F); part(sink, ps, "PistonLeft", s.lightCoords); ps.popPose();
-        ps.popPose();
-    }
-
-    private void renderJet(PlasmaForgeRenderState s, PoseStack ps, SubmitSink sink) {
-        part(sink, ps, "SliderJet", s.lightCoords);
-        ps.pushPose();
-        ps.translate(2.75F, 2.5F, 0F); ps.mulPose(Axis.ZP.rotationDegrees((float) s.jet[0])); ps.translate(-2.75F, -2.5F, 0F);
-        part(sink, ps, "ArmLowerJet", s.lightCoords);
-        ps.translate(2.75F, 3.75F, 0F); ps.mulPose(Axis.ZP.rotationDegrees((float) s.jet[1])); ps.translate(-2.75F, -3.75F, 0F);
-        part(sink, ps, "ArmUpperJet", s.lightCoords);
-        ps.translate(1.5F, 3.75F, 0F); ps.mulPose(Axis.ZP.rotationDegrees((float) s.jet[2])); ps.translate(-1.5F, -3.75F, 0F);
-        part(sink, ps, "Jet", s.lightCoords);
-        if (s.jetPlume) renderJetPlume(s, ps, sink);
-        ps.popPose();
     }
 
     private void renderJetPlume(PlasmaForgeRenderState s, PoseStack ps, SubmitSink sink) {
@@ -282,11 +336,6 @@ public class PlasmaForgeRenderer implements CompatBER<TileEntityFusionPlasmaForg
                     -BEAM_IN, bottom, -BEAM_IN, bottomUv, 1F, solid,
                     -BEAM_IN, height, -BEAM_IN, topUv, 1F, fade);
         });
-    }
-
-    private void part(SubmitSink sink, PoseStack ps, String name, int light) {
-        sink.submitCustomGeometry(ps, body,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 
     private void plasmaLayer(PlasmaForgeRenderState s, PoseStack ps, SubmitSink sink, RenderType type,

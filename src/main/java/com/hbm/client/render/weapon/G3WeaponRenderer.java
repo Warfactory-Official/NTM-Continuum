@@ -1,31 +1,22 @@
 package com.hbm.client.render.weapon;
 
-import com.hbm.client.anim.HbmAnimations;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import dev.golem.core.Ids;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.item.ItemStack;
 
 /** The unmodified G3 renderer; optional weapon-mod geometry is intentionally not claimed. */
 public final class G3WeaponRenderer extends WeaponRenderer {
 
     private WavefrontObj model;
-    private RenderType body;
 
     private WavefrontObj model() {
-        if (model == null) {
-            model = WavefrontObj.load(Ids.of("hbm", "models/weapons/g3.obj"));
-            body = CompatRenderTypes.entityCutout(Ids.of("hbm", "textures/models/weapons/g3.png"));
-        }
+        if (model == null) model = WavefrontObj.load(Ids.of("hbm", "models/weapons/g3.obj"));
         return model;
     }
-
-    private RenderType body() { model(); return body; }
 
     @Override public org.joml.Vector3fc[] extents() {
         WavefrontObj obj = model();
@@ -54,72 +45,59 @@ public final class G3WeaponRenderer extends WeaponRenderer {
                 0, -3.5625 / 8D, 1.75);
     }
 
-    @Override public void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink sink,
-            int light, int overlay) {
-        pose.scale(0.375F, 0.375F, 0.375F);
-        double[] equip = bus("EQUIP"), lift = bus("LIFT"), recoil = bus("RECOIL");
-        double[] mag = bus("MAG"), speen = bus("SPEEN"), bolt = bus("BOLT");
-        double[] plug = bus("PLUG"), handle = bus("HANDLE"), bullet = bus("BULLET");
-        pose.translate(0, -2, -6);
-        pose.mulPose(Axis.XP.rotationDegrees((float) equip[0]));
-        pose.translate(0, 2, 6);
-        pose.translate(0, 0, -4);
-        pose.mulPose(Axis.XP.rotationDegrees((float) lift[0]));
-        pose.translate(0, 0, 4 + recoil[2]);
+    /**
+     * The chambered round and the cocking plug are held-only: they were never in
+     * {@code ItemRenderG3.renderOther}'s part list, so an icon does not show them.
+     */
+    @Override
+    protected void setup(Gem.Model<WeaponPose> declaration) {
+        WavefrontObj obj = model();
+        Surface body = Surface.cutout("hbm:textures/models/weapons/g3.png");
 
-        submit("Rifle", pose, sink, light, overlay);
-        submit("Stock", pose, sink, light, overlay);
-        submit("Flash_Hider", pose, sink, light, overlay);
-        submit("Trigger", pose, sink, light, overlay);
-        pose.pushPose();
-        pose.translate(mag[0], mag[1], mag[2]);
-        pose.translate(0, -1.75, -0.5);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) speen[2]));
-        pose.mulPose(Axis.YP.rotationDegrees((float) speen[1]));
-        pose.translate(0, 1.75, 0.5);
-        submit("Magazine", pose, sink, light, overlay);
-        if (bullet[0] == 0) submit("Bullet", pose, sink, light, overlay);
-        pose.popPose();
-        pose.pushPose();
-        pose.translate(0, 0, bolt[2]);
-        submit("Guide_And_Bolt", pose, sink, light, overlay);
-        pose.popPose();
-        pose.pushPose();
-        pose.translate(0, 0.625, plug[2]);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) handle[2]));
-        pose.translate(0, -0.625, 0);
-        submit("Plug", pose, sink, light, overlay);
-        pose.translate(0, 0.625, 5.25);
-        pose.mulPose(Axis.ZP.rotationDegrees(22.5F));
-        pose.mulPose(Axis.YP.rotationDegrees((float) handle[1]));
-        pose.mulPose(Axis.ZN.rotationDegrees(22.5F));
-        pose.translate(0, -0.625, -5.25);
-        submit("Handle", pose, sink, light, overlay);
-        pose.popPose();
-        pose.pushPose();
-        pose.translate(0, -0.875, -3.5);
-        pose.mulPose(Axis.XP.rotationDegrees(-30F * (1 - ItemGunBaseNT.getMode(stack, 0))));
-        pose.translate(0, 0.875, 3.5);
-        submit("Selector", pose, sink, light, overlay);
-        pose.popPose();
-    }
+        Gem.Part<WeaponPose> gun = declaration.joint()
+                .stretch(state -> state.animated ? 0.375F : 1F)
+                .spin(Gem.Axes.X, 0F, -2F, -6F, state -> (float) state.bus("EQUIP")[0])
+                .spin(Gem.Axes.X, 0F, 0F, -4F, state -> (float) state.bus("LIFT")[0])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL")[2]);
 
-    @Override public void renderStatic(ItemStack stack, PoseStack pose, SubmitSink sink,
-            int light, int overlay) {
         for (String part : G3StaticLayout.PARTS) {
-            submit(part, pose, sink, light, overlay);
+            if (part.equals("Magazine") || part.equals("Guide_And_Bolt") || part.equals("Handle")) continue;
+            gun.child(obj.part(part), body);
         }
-        pose.pushPose();
-        pose.translate(0, -0.875, -3.5);
-        pose.mulPose(Axis.XN.rotationDegrees(30F));
-        pose.translate(0, 0.875, 3.5);
-        submit("Selector", pose, sink, light, overlay);
-        pose.popPose();
-    }
 
-    private void submit(String part, PoseStack pose, SubmitSink sink, int light, int overlay) {
-        submitPart(sink, pose, body(), model(), part, light, overlay);
-    }
+        Gem.Part<WeaponPose> magazine = gun.joint()
+                .slide(Gem.Axes.X, state -> (float) state.bus("MAG")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("MAG")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("MAG")[2])
+                .translate(0F, -1.75F, -0.5F)
+                .angle(Gem.Axes.Z, state -> (float) state.bus("SPEEN")[2])
+                .angle(Gem.Axes.Y, state -> (float) state.bus("SPEEN")[1])
+                .translate(0F, 1.75F, 0.5F);
+        magazine.child(obj.part("Magazine"), body);
+        magazine.child(obj.part("Bullet"), body)
+                .visibleIf(state -> state.animated && state.bus("BULLET")[0] == 0);
 
-    private static double[] bus(String name) { return HbmAnimations.getRelevantTransformation(name); }
+        gun.child(obj.part("Guide_And_Bolt"), body)
+                .slide(Gem.Axes.Z, state -> (float) state.bus("BOLT")[2]);
+
+        Gem.Part<WeaponPose> plug = gun.joint()
+                .translate(0F, 0.625F, 0F)
+                .slide(Gem.Axes.Z, state -> (float) state.bus("PLUG")[2])
+                .angle(Gem.Axes.Z, state -> (float) state.bus("HANDLE")[2])
+                .translate(0F, -0.625F, 0F);
+        plug.child(obj.part("Plug"), body).visibleIf(state -> state.animated);
+
+        plug.joint()
+                .translate(0F, 0.625F, 5.25F)
+                .rotate(Gem.Axes.Z, 22.5F)
+                .angle(Gem.Axes.Y, state -> (float) state.bus("HANDLE")[1])
+                .rotate(Gem.Axes.Z, -22.5F)
+                .translate(0F, -0.625F, -5.25F)
+                .child(obj.part("Handle"), body);
+
+        gun.child(obj.part("Selector"), body)
+                .spin(Gem.Axes.X, 0F, -0.875F, -3.5F, state -> state.animated
+                        ? -30F * (1 - ItemGunBaseNT.getMode(state.stack, 0))
+                        : -30F);
+    }
 }

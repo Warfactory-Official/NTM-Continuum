@@ -100,11 +100,13 @@ public final class PlasmaForgeRenderGameTests {
         try (InputStream stream = PlasmaForgeRenderGameTests.class.getClassLoader()
                 .getResourceAsStream("assets/hbm/items/fusion_plasma_forge.json")) {
             if (stream == null) return false;
-            JsonObject special = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
+            JsonObject outer = JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
                     .getAsJsonObject().getAsJsonObject("model");
-            if (special == null || !"minecraft:special".equals(special.get("type").getAsString())
-                    || !"hbm:item/machine_obj_base".equals(special.get("base").getAsString())) return false;
-            JsonObject model = special.getAsJsonObject("model");
+            if (outer == null) return false;
+            JsonObject model = "hbm:machine_obj".equals(outer.get("type").getAsString()) ? outer
+                    : "minecraft:special".equals(outer.get("type").getAsString())
+                            && "hbm:item/machine_obj_base".equals(outer.get("base").getAsString())
+                    ? outer.getAsJsonObject("model") : null;
             if (model == null || !"hbm:machine_obj".equals(model.get("type").getAsString())) return false;
             return contains(model.getAsJsonArray("exclude"), PlasmaForgeRenderMath.ITEM_BLACK_PART)
                     && contains(model.getAsJsonArray("blackParts"), PlasmaForgeRenderMath.ITEM_BLACK_PART);

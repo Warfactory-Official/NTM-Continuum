@@ -75,9 +75,14 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         texture = "hbm:textures/models/machines/fensus/fensu_light_blue.png",
     ),
     "machine_bigasstank" to MachineObjTransformExpectation(
-        0.0807692308, 0.0,
+        0.5, 0.0,
         obj = "hbm:models/machines/bigasstank.obj",
         texture = "hbm:textures/models/machines/bigasstank.png",
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.0, 0.0),
+        guiScale = 2.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
     "machine_bat9000" to MachineObjTransformExpectation(
         0.2, 0.0,
@@ -85,83 +90,272 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         texture = "hbm:textures/models/machines/bat9000.png",
     ),
     "machine_battery_redd" to MachineObjTransformExpectation(
-        0.1024390244, 270.0,
+        0.5, -90.0,
         obj = "hbm:models/machines/fensu2.obj",
         texture = "hbm:textures/models/machines/fensu2.png",
         exclude = listOf("Plasma"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 2.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "fusion_breeder" to MachineObjTransformExpectation(0.21, 90.0, exclude = listOf("BreederAlt")),
+    "fusion_breeder" to MachineObjTransformExpectation(
+        0.5, 90.0,
+        exclude = listOf("BreederAlt"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 5.0,
+        guiYaw = 90.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "fusion_plasma_forge" to MachineObjTransformExpectation(
-        0.095454545, 90.0,
+        0.5, 90.0,
         obj = "hbm:models/fusion/plasma_forge.obj",
         texture = "hbm:textures/models/fusion/plasma_forge.png",
         exclude = listOf("Plasma"),
         blackParts = listOf("Plasma"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.0, 0.0),
+        guiScale = 2.75,
+        guiYaw = 90.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "machine_turbine_gas" to MachineObjTransformExpectation(0.105, 90.0),
+    "machine_turbine_gas" to MachineObjTransformExpectation(
+        0.75, 90.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.0, 1.5),
+        guiScale = 2.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_turbofan" to MachineObjTransformExpectation(
-        0.15, 0.0,
+        1.0, 0.0,
         overlayTexture = "hbm:textures/models/machines/turbofan_back.png",
         overlayParts = listOf("Afterburner"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, 0.0, 0.0),
+        guiScale = 2.25,
+        guiYaw = 90.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
     "machine_radgen" to MachineObjTransformExpectation(0.171428571, 0.0, exclude = listOf("Glass")),
-    "machine_industrial_boiler" to MachineObjTransformExpectation(0.21, 90.0),
-    "heat_boiler" to MachineObjTransformExpectation(0.2625, 0.0),
-    "heater_oven" to MachineObjTransformExpectation(0.329411765, 180.0),
-    "heater_heatex" to MachineObjTransformExpectation(0.35, 90.0),
-    "machine_arc_welder" to MachineObjTransformExpectation(0.28, 0.0),
-    "machine_assembly_factory" to MachineObjTransformExpectation(0.35, 180.0),
-    "machine_chemical_factory" to MachineObjTransformExpectation(
-        0.35, 180.0, exclude = listOf("Plane.001"),
+    "machine_industrial_boiler" to MachineObjTransformExpectation(
+        1.0, 90.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 2.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "machine_autosaw" to MachineObjTransformExpectation(0.15, -90.0),
+    "heat_boiler" to MachineObjTransformExpectation(
+        1.0, 90.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 3.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "heater_oven" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.0, 0.0),
+        guiScale = 3.25,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "heater_heatex" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.0, 0.0),
+        guiScale = 3.25,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_arc_welder" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -2.0, 0.0),
+        guiScale = 4.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_assembly_factory" to MachineObjTransformExpectation(
+        0.75, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.5, 0.0),
+        guiScale = 3.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_chemical_factory" to MachineObjTransformExpectation(
+        0.75, 0.0,
+        exclude = listOf("Plane.001"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.5, 0.0),
+        guiScale = 3.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_autosaw" to MachineObjTransformExpectation(
+        0.5, -90.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.5, -3.0),
+        guiScale = 5.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_solar_boiler" to MachineObjTransformExpectation(0.2625, 0.0),
-    "machine_intake" to MachineObjTransformExpectation(0.525, 0.0),
-    "fan" to MachineObjTransformExpectation(1.05, 0.0),
-    "chimney_brick" to MachineObjTransformExpectation(0.5, 0.0),
-    "chimney_industrial" to MachineObjTransformExpectation(0.25, 0.0),
-    "machine_ashpit" to MachineObjTransformExpectation(0.329411765, 180.0),
-    "machine_strand_caster" to MachineObjTransformExpectation(0.15, 0.0),
-    "machine_arc_furnace" to MachineObjTransformExpectation(0.161538461538462, 0.0),
+    "machine_intake" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, 0.0, 0.0),
+        guiScale = 5.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "fan" to MachineObjTransformExpectation(
+        2.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -2.5, 0.0),
+        guiScale = 5.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "chimney_brick" to MachineObjTransformExpectation(
+        0.5, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -5.0, 0.0),
+        guiScale = 2.25,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "chimney_industrial" to MachineObjTransformExpectation(
+        0.25, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -5.0, 0.0),
+        guiScale = 2.75,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_ashpit" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.0, 0.0),
+        guiScale = 3.25,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_strand_caster" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(2.0, 0.0, 2.0),
+        guiScale = 2.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_arc_furnace" to MachineObjTransformExpectation(
+        0.5, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 3.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_difurnace_ext" to MachineObjTransformExpectation(
         1.0, 0.0,
         obj = "hbm:models/block/difurnace_extension.obj",
         texture = "hbm:textures/blocks/difurnace_extension.png",
     ),
     "furnace_iron" to MachineObjTransformExpectation(0.525, 90.0, exclude = listOf("On")),
-    "furnace_steel" to MachineObjTransformExpectation(0.35, 0.0),
-    "machine_wood_burner" to MachineObjTransformExpectation(0.266666667, 90.0),
+    "furnace_steel" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.5, 0.0),
+        guiScale = 3.25,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_wood_burner" to MachineObjTransformExpectation(
+        1.0, 90.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -4.0, 0.0),
+        guiScale = 3.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_gascent" to MachineObjTransformExpectation(0.2625, 0.0),
-    "machine_electrolyser" to MachineObjTransformExpectation(0.091290059, 0.0),
+    "machine_electrolyser" to MachineObjTransformExpectation(
+        0.5, 0.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(-1.0, -1.0, 0.0),
+        guiScale = 2.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_deuterium_tower" to MachineObjTransformExpectation(0.099275384, 180.0),
     "machine_uf6_tank" to MachineObjTransformExpectation(0.525, 270.0),
     "machine_puf6_tank" to MachineObjTransformExpectation(0.525, 270.0),
-    "machine_mixer" to MachineObjTransformExpectation(0.35, 180.0, exclude = listOf("Fluid")),
-    "machine_exposure_chamber" to MachineObjTransformExpectation(0.095454545, 90.0),
+    "machine_mixer" to MachineObjTransformExpectation(
+        1.0, 180.0,
+        exclude = listOf("Fluid"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -5.0, 0.0),
+        guiScale = 5.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_exposure_chamber" to MachineObjTransformExpectation(
+        0.5, 90.0,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.5, 0.0),
+        guiScale = 3.0,
+        itemTranslate = listOf(1.5, 0.0, 0.0),
+    ),
     "radio_telex" to MachineObjTransformExpectation(
         1.0, 0.0,
         obj = "hbm:models/machines/telex.obj",
         texture = "hbm:textures/models/machines/telex.png",
         noCull = true,
+        directModel = true,
+        rawLegacyTransform = true,
         guiTranslate = listOf(0.0, -2.0, 0.0),
         guiScale = 6.0,
-        rawLegacyTransform = true,
-        itemTranslate = listOf(0.0, 0.0, 0.0),
-        itemPreTranslate = listOf(0.0, 0.0, -0.5),
+        itemTranslate = listOf(0.0, 0.0, -0.5),
     ),
     "radio_autocal" to MachineObjTransformExpectation(
         1.0, 0.0,
         obj = "hbm:models/machines/autocal.obj",
         texture = "hbm:textures/models/machines/autocal.png",
         noCull = true,
+        directModel = true,
+        rawLegacyTransform = true,
         guiTranslate = listOf(0.0, -4.0, 0.0),
         guiScale = 6.25,
-        rawLegacyTransform = true,
         itemTranslate = listOf(0.0, 0.0, 0.0),
-        itemPreTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "machine_pump_electric" to MachineObjTransformExpectation(0.21, 0.0, animation = "pump"),
-    "machine_pump_steam" to MachineObjTransformExpectation(0.21, 0.0, animation = "pump"),
+    "machine_pump_electric" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        animation = "pump",
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 2.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    "machine_pump_steam" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        animation = "pump",
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 2.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_minirtg" to MachineObjTransformExpectation(
         1.0, 0.0,
         obj = "hbm:models/machines/rtg.obj",
@@ -243,6 +437,11 @@ fun Project.applyLegacyItemAssets() {
                 definitions.listFiles()?.filter { it.extension == "json" }?.forEach { definition ->
                     val target = File(itemModels, definition.name)
                     val parent = parentModelOf(definition) ?: return@forEach
+                    // A model that is its own definition's target. The two machine_obj frame markers are
+                    // declared through the item vocabulary, so each gets an item definition naming itself;
+                    // writing that parent out would replace the model with one inheriting from itself and
+                    // drop the display block it exists to carry.
+                    if (parent == "${namespace.name}:item/${definition.nameWithoutExtension}") return@forEach
                     // A self-rendered item's model MUST be the builtin/entity marker, so it overwrites
                     // any existing file: a couple of ducts still carry a flat sprite model that 26.1 no
                     // longer references (their definitions point at the OBJ renderer), and leaving it in
@@ -286,12 +485,16 @@ fun Project.applyLegacyItemAssets() {
                 if (!definitions.isDirectory) return@forEach
                 definitions.listFiles()?.filter { it.extension == "json" }?.forEach { definition ->
                     val branches = itemVariantSelectOf(definition) ?: return@forEach
-                    val (fallback, cases) = branches
-                    val target = File(namespace, "models/item/" + fallback.substringAfter("item/") + ".json")
+                    val (_, cases) = branches
+                    // The item's OWN model, not the fallback's: overrides are not inherited through
+                    // `parent`, so they have to sit on the file vanilla resolves for the item itself.
+                    val target = File(namespace, "models/item/" + definition.nameWithoutExtension + ".json")
                     if (!target.isFile) return@forEach
                     @Suppress("UNCHECKED_CAST")
                     val model = JsonSlurper().parse(target) as MutableMap<String, Any?>
-                    model["overrides"] = cases.map { (value, selectedModel) ->
+                    // Ascending: vanilla scans overrides from the end and takes the first whose
+                    // threshold the value clears, so a case out of order would shadow the ones after it.
+                    model["overrides"] = cases.sortedBy { it.first }.map { (value, selectedModel) ->
                         mapOf("predicate" to mapOf("hbm:item_variant" to value), "model" to selectedModel)
                     }
                     target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(model)))
@@ -363,14 +566,16 @@ fun Project.registerMachineObjTransformChecks() {
                 @Suppress("UNCHECKED_CAST")
                 val rootModel = root["model"] as? Map<String, Any?>
                     ?: error("Missing model object: $file")
-                check(rootModel["type"] == "minecraft:special") {
-                    "$file must use a minecraft:special wrapper"
-                }
-                check(rootModel["base"] == expected.specialBase) {
-                    "$file must use ${expected.specialBase} as its special-model base"
-                }
                 check((rootModel["type"] == "hbm:machine_obj") == expected.directModel) {
                     "$file has the wrong item-model form"
+                }
+                if (!expected.directModel) {
+                    check(rootModel["type"] == "minecraft:special") {
+                        "$file must use a minecraft:special wrapper"
+                    }
+                    check(rootModel["base"] == expected.specialBase) {
+                        "$file must use ${expected.specialBase} as its special-model base"
+                    }
                 }
                 @Suppress("UNCHECKED_CAST")
                 val model = when (rootModel["type"]) {
@@ -588,6 +793,12 @@ fun itemVariantSelectOf(definition: File): Pair<String, List<Pair<Float, String>
     return fallback to (parsed.takeIf { it.isNotEmpty() } ?: return null)
 }
 
+fun isMachineObjDirect(model: Any?): Boolean {
+    @Suppress("UNCHECKED_CAST")
+    val json = model as? Map<String, Any?> ?: return false
+    return json["type"] == "hbm:machine_obj"
+}
+
 fun isMachineObjSpecial(model: Any?): Boolean {
     @Suppress("UNCHECKED_CAST")
     val json = model as? Map<String, Any?> ?: return false
@@ -627,9 +838,21 @@ fun parentModelOf(definition: File): String? {
             val fallback = model["fallback"]
             @Suppress("UNCHECKED_CAST")
             val cases = model["cases"] as? List<Map<String, Any?>> ?: emptyList()
-            if (isMachineObjSpecial(fallback) || cases.any { isMachineObjSpecial(it["model"]) }) {
+            if (isMachineObjDirect(fallback) || cases.any { isMachineObjDirect(it["model"]) }) {
+                // A variant select whose branches are context-aware machine_obj models: same frame the
+                // unwrapped form gets, or the item resolves no model at all below 1.21.4.
+                MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+            } else if (isMachineObjSpecial(fallback) || cases.any { isMachineObjSpecial(it["model"]) }) {
                 MACHINE_OBJ_LEGACY_MODEL
-            } else null
+            } else {
+                // A select over ordinary sprite models still needs a model at the ITEM's own path.
+                // Nothing below 1.21.4 reads the definition, so the item resolves
+                // models/item/<id>.json and finds nothing at all — which is a missing texture, not a
+                // wrong variant. Parent it to the branch the definition falls back to; the overrides
+                // that pick the other branches are added below.
+                @Suppress("UNCHECKED_CAST")
+                ((fallback as? Map<String, Any?>)?.get("model") as? String)
+            }
         }
         else -> null
     }

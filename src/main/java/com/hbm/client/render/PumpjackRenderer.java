@@ -1,11 +1,5 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.Ids;
-import dev.golem.core.render.Vertexes;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
@@ -13,6 +7,14 @@ import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -30,18 +32,18 @@ import org.jspecify.annotations.Nullable;
  * {@code disableCull} (see IMPLEMENTATION.md §13q pass 4). Old yaw map = base 90° + the standard
  * facing map. Beam rotation is integrated client-side from the server-synced speed.
  */
-public class PumpjackRenderer implements CompatBER<TileEntityMachinePumpjack, PumpjackRenderState> {
+public class PumpjackRenderer extends GemBER<TileEntityMachinePumpjack, PumpjackRenderState> {
 
     private static final float BASE_YAW = 90F;
     private static final int FULLBRIGHT = 0xF000F0; // packed skylight/blocklight 15/15 (see FoundryRenderHelper)
 
     private final WavefrontObj model;
-    private final RenderType baseType;
+    private final Surface surface;
     private final RenderType colorType;
 
     public PumpjackRenderer() {
         this.model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/pumpjack.obj"));
-        this.baseType = CompatRenderTypes.entityCutout(Ids.of(Constants.MOD_ID, "textures/models/machines/pumpjack.png"));
+        this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/pumpjack.png");
         // The untextured crank/rope geometry is drawn on entitySolid (opaque, depth-writing, culls) —
         // its faces are double-wound below so the cull keeps exactly the outward copy, giving the flat
         // uniform shading the old disableCull+disableLighting POSITION_COLOR pass had. entityCutout would
@@ -49,10 +51,24 @@ public class PumpjackRenderer implements CompatBER<TileEntityMachinePumpjack, Pu
         this.colorType = CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png"));
     }
 
+    @Override
+    protected void setup(Gem.Model<PumpjackRenderState> declaration) {
+        Gem.Part<PumpjackRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> BASE_YAW + state.yaw);
+
+        machine.child(model.part("Base"), surface);
+        machine.child(model.part("Rotor"), surface)
+                .spin(Gem.Axes.X, 0F, 1.5F, -5.5F, state -> state.rotation - 90F);
+        machine.child(model.part("Head"), surface)
+                .spin(Gem.Axes.X, 0F, 3.5F, -3.5F, state ->
+                        (float) (Math.toDegrees(Math.sin(Math.toRadians(state.rotation))) * 0.25));
+        machine.child(model.part("Carriage"), surface)
+                .slide(Gem.Axes.Y, state -> (float) -Math.sin(Math.toRadians(state.rotation)));
+    }
+
     @Override public PumpjackRenderState createRenderState() { return new PumpjackRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachinePumpjack be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
 
     @Override
     public void extract(TileEntityMachinePumpjack be, PumpjackRenderState state, float partialTicks,
@@ -60,56 +76,26 @@ public class PumpjackRenderer implements CompatBER<TileEntityMachinePumpjack, Pu
         BlockState bs = be.getBlockState();
         int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
         state.yaw = switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
         state.rotation = be.prevRot + (be.rot - be.prevRot) * partialTicks;
     }
 
+    /**
+     * The crank, pitman beams and bridle ropes are built from the rotor angle every frame — the old
+     * immediate-mode POSITION_COLOR pass, with lighting off, so they are fullbright and untextured.
+     */
     @Override
-    public void submit(PumpjackRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
+    protected void submitUndeclared(PumpjackRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
         float rotation = s.rotation;
-
         ps.pushPose();
         ps.translate(0.5F, 0F, 0.5F);
         ps.mulPose(Axis.YP.rotationDegrees(BASE_YAW + s.yaw));
-
-        part(col, ps, "Base", light);
-
-        // Rotor: continuous X spin about the crank axle (0, 1.5, -5.5).
-        ps.pushPose();
-        ps.translate(0F, 1.5F, -5.5F);
-        ps.mulPose(Axis.XP.rotationDegrees(rotation - 90F));
-        ps.translate(0F, -1.5F, 5.5F);
-        part(col, ps, "Rotor", light);
-        ps.popPose();
-
-        // Head: see-saw about the samson-post bearing (0, 3.5, -3.5).
-        ps.pushPose();
-        ps.translate(0F, 3.5F, -3.5F);
-        ps.mulPose(Axis.XP.rotationDegrees((float) (Math.toDegrees(Math.sin(Math.toRadians(rotation))) * 0.25)));
-        ps.translate(0F, -3.5F, 3.5F);
-        part(col, ps, "Head", light);
-        ps.popPose();
-
-        // Carriage: vertical bob.
-        ps.pushPose();
-        ps.translate(0F, (float) -Math.sin(Math.toRadians(rotation)), 0F);
-        part(col, ps, "Carriage", light);
-        ps.popPose();
-
-        // Untextured crank/beam/rope geometry (old POSITION_COLOR pass, lighting off = fullbright).
         col.submitCustomGeometry(ps, colorType, (pose, buffer) -> drawColorGeometry(pose, buffer, rotation));
-
         ps.popPose();
-    }
-
-    private void part(SubmitSink col, PoseStack ps, String name, int light) {
-        col.submitCustomGeometry(ps, baseType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 
     /** The old immediate-mode POSITION_COLOR pass, verbatim math (RenderPumpjack L68-162). */

@@ -2,98 +2,102 @@ package com.hbm.client.render.armor;
 
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import dev.golem.core.render.HumanoidPose;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Surface;
 import dev.golem.core.world.ArmorSlot;
+import java.util.function.Function;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import org.joml.Matrix4f;
+import org.jspecify.annotations.Nullable;
 
 /**
- * The worn body of one modelled armour set: an OBJ drawn over the wearer's skeleton.
+ * The worn body of one modelled armour set: an OBJ declared over the wearer's skeleton.
  *
- * <p>Ported from 1.12.2's {@code ModelArmorBase} + {@code ModelRendererObj}. The transform in
- * {@link #submitPart} is that class's {@code render(float)} verbatim, and its one non-obvious property
- * is worth stating plainly: <b>the geometry is never moved to the bone</b>. An armour OBJ is authored in
- * absolute biped space (helmet around y ≈ −8…1, boots around y ≈ 18…24, sixteen units to the block), so
- * the bone's pivot is used only as a <i>centre of rotation</i> — translate to it, rotate, translate
- * straight back. Move the geometry as well and every limb ends up at twice its offset.
- *
- * <p>Crouching changes each live bone pivot, but the OBJ remains authored around the fixed rest pivots.
- * The old {@code ModelRendererObj} therefore translated to the live pivot and back from the base pivot;
- * using the live pivot in both directions cancels the crouch translation and detaches the armour.
+ * <p>An armour OBJ is authored in absolute biped space, so a bone's pivot is a centre of rotation and
+ * nothing more — <b>the geometry is never moved to the bone</b>, or every limb lands at twice its
+ * offset. Crouching moves the live pivot but not the authored geometry, so the translate back uses the
+ * rest pivot; using the live one in both directions cancels the crouch and detaches the suit.
  */
 public abstract class ArmorRenderer {
 
-    /** Vanilla model space is sixteen units to the block; OBJ vertices are authored in those units. */
     private static final float UNIT = 1F / 16F;
 
+    /** A bone, the rest pivot the OBJ was authored around, and the crouched height that replaces it. */
     protected enum Pivot {
-        HEAD(0F, 0F, 0F, 1F), BODY(0F, 0F, 0F, 0F),
-        LEFT_ARM(5F, 2F, 0F, 2F), RIGHT_ARM(-5F, 2F, 0F, 2F),
-        LEFT_LEG(1.9F, 12F, 0F, 9F), RIGHT_LEG(-1.9F, 12F, 0F, 9F);
+        HEAD(HumanoidPose::head, 0F, 0F, 0F, 1F),
+        BODY(HumanoidPose::body, 0F, 0F, 0F, 0F),
+        LEFT_ARM(HumanoidPose::leftArm, 5F, 2F, 0F, 2F),
+        RIGHT_ARM(HumanoidPose::rightArm, -5F, 2F, 0F, 2F),
+        LEFT_LEG(HumanoidPose::leftLeg, 1.9F, 12F, 0F, 9F),
+        RIGHT_LEG(HumanoidPose::rightLeg, -1.9F, 12F, 0F, 9F);
 
+        private final Function<HumanoidPose, ModelPart> bone;
         private final float x;
         private final float y;
         private final float z;
         private final float crouchY;
 
-        Pivot(float x, float y, float z, float crouchY) {
+        Pivot(Function<HumanoidPose, ModelPart> bone, float x, float y, float z, float crouchY) {
+            this.bone = bone;
             this.x = x;
             this.y = y;
             this.z = z;
             this.crouchY = crouchY;
         }
+
+        ModelPart bone(HumanoidPose wearer) {
+            return bone.apply(wearer);
+        }
+
+        /**
+         * The scale out of model units is deliberately not folded in here: a pose stack handed a
+         * matrix that scales recomputes its normal matrix as the inverse transpose, leaving normals
+         * sixteen times too long. 1.20.1 does not normalise afterwards. Stated as an op it is
+         * recognised as uniform and the normals are left alone.
+         */
+        Matrix4f pose(HumanoidPose wearer) {
+            ModelPart part = bone(wearer);
+            return new Matrix4f()
+                    .translate(part.x * UNIT, (wearer.sneaking ? crouchY : part.y) * UNIT, part.z * UNIT)
+                    .rotateZ(part.zRot)
+                    .rotateY(part.yRot)
+                    .rotateX(part.xRot)
+                    .translate(-x * UNIT, -y * UNIT, -z * UNIT);
+        }
     }
 
-    /** Draws the piece worn in {@code slot}. Slots this suit does not model simply return. */
-    public abstract void submit(ArmorSlot slot, PoseStack pose, SubmitSink sink, int light, int overlay,
-            HumanoidPose parts);
+    private final ArmorPose pose = new ArmorPose();
+    private Gem.@Nullable Model<ArmorPose> model;
 
-    /**
-     * Submits one named OBJ part, posed by one of the wearer's bones.
-     *
-     * <p>{@code ModelRendererObj.render} in modern form: rotate about the bone's pivot without moving
-     * the geometry there, then scale out of model units. Rotation order is Z, Y, X — vanilla's, and
-     * changing it visibly twists limbs at the extremes of the walk cycle.
-     */
-    protected static void submitPart(SubmitSink sink, PoseStack pose, RenderType type, WavefrontObj model,
-            String part, ModelPart bone, Pivot pivot, boolean crouching, int light, int overlay) {
+    protected abstract void setup(Gem.Model<ArmorPose> declaration);
 
-        if (!bone.visible) return;
-
-        pose.pushPose();
-
-        pose.translate(bone.x * UNIT, (crouching ? pivot.crouchY : bone.y) * UNIT, bone.z * UNIT);
-        if (bone.zRot != 0F) pose.mulPose(Axis.ZP.rotation(bone.zRot));
-        if (bone.yRot != 0F) pose.mulPose(Axis.YP.rotation(bone.yRot));
-        if (bone.xRot != 0F) pose.mulPose(Axis.XP.rotation(bone.xRot));
-        pose.translate(-pivot.x * UNIT, -pivot.y * UNIT, -pivot.z * UNIT);
-
-        pose.scale(UNIT, UNIT, UNIT);
-
-        sink.submitCustomGeometry(pose, type,
-                (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, overlay));
-
-        pose.popPose();
+    /** Built on first use, which is after resources load and so after {@link #setup} can name groups. */
+    public final Gem.Model<ArmorPose> gem() {
+        Gem.Model<ArmorPose> built = model;
+        if (built == null) {
+            built = Gem.model();
+            setup(built);
+            built.seal();
+            model = built;
+        }
+        return built;
     }
 
-    /**
-     * Submits a model rooted at a humanoid bone, preserving ModelRenderer's rooted-model transform.
-     * Unlike an absolute armour part, the model's vertices are local to the bone and the pivot is not
-     * translated back after rotation. This is the transform used by the legacy ModelJetPack root.
-     */
-    public static void submitRootedModel(SubmitSink sink, PoseStack pose, RenderType type, WavefrontObj model,
-            ModelPart bone, int light, int overlay) {
-        if (!bone.visible) return;
-        pose.pushPose();
-        pose.translate(bone.x * UNIT, bone.y * UNIT, bone.z * UNIT);
-        if (bone.zRot != 0F) pose.mulPose(Axis.ZP.rotation(bone.zRot));
-        if (bone.yRot != 0F) pose.mulPose(Axis.YP.rotation(bone.yRot));
-        if (bone.xRot != 0F) pose.mulPose(Axis.XP.rotation(bone.xRot));
-        pose.scale(UNIT, UNIT, UNIT);
-        sink.submitCustomGeometry(pose, type,
-                (drawPose, buffer) -> model.renderAll(drawPose, buffer, light, overlay));
-        pose.popPose();
+    /** Draws the piece worn in {@code slot}. Slots this suit does not model draw nothing. */
+    public final void submit(ArmorSlot slot, PoseStack poseStack, SubmitSink sink, int light,
+            HumanoidPose wearer) {
+        pose.slot = slot;
+        pose.wearer = wearer;
+        Gem.replay(gem(), pose, poseStack, sink, light);
+    }
+
+    protected final Gem.Part<ArmorPose> piece(Gem.Model<ArmorPose> declaration, ArmorSlot slot,
+            WavefrontObj model, String group, Surface surface, Pivot pivot) {
+        return declaration.part(model.part(group), surface)
+                .visibleIf(state -> state.slot == slot && pivot.bone(state.wearer).visible)
+                .pose(state -> pivot.pose(state.wearer))
+                .scale(UNIT);
     }
 }

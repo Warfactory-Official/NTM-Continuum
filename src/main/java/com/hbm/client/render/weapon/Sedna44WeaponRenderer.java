@@ -1,14 +1,12 @@
 package com.hbm.client.render.weapon;
 
-import com.hbm.client.anim.HbmAnimations;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
@@ -34,36 +32,22 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
         }
     }
 
-    private static final double[] IDENTITY = {
-            0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 2
-    };
-
     private final Variant variant;
     private final Identifier modelId;
-    private final Identifier textureId;
-    private final Identifier scopeId = Ids.of("hbm", "textures/misc/scope_44.png");
+    private static final Surface SCOPE = Surface.cutout("hbm:textures/misc/scope_44.png");
+
+    private final Surface body;
     private WavefrontObj model;
-    private RenderType body;
-    private RenderType scope;
 
     public Sedna44WeaponRenderer(Variant variant) {
         this.variant = variant;
         this.modelId = Ids.of("hbm", "models/weapons/" + variant.model + ".obj");
-        this.textureId = Ids.of("hbm", "textures/models/weapons/" + variant.texture + ".png");
+        this.body = Surface.cutout("hbm:textures/models/weapons/" + variant.texture + ".png");
     }
 
     private WavefrontObj model() {
-        if (model == null) {
-            model = WavefrontObj.load(modelId);
-            body = CompatRenderTypes.entityCutout(textureId);
-            if (variant.scoped) scope = CompatRenderTypes.entityCutout(scopeId);
-        }
+        if (model == null) model = WavefrontObj.load(modelId);
         return model;
-    }
-
-    private RenderType body() {
-        model();
-        return body;
     }
 
     @Override
@@ -114,212 +98,128 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
         return aimingFov(stack, fov, partialTick, variant.scoped ? 0.66F : 0.33F);
     }
 
+    /**
+     * The heavy revolver's recoil runs backwards from the hip and sideways from the sights, so it is
+     * the aiming lerp applied to two different axes of the same value.
+     */
     @Override
-    public void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
-        switch (variant) {
-            case HENRY, HENRY_LINCOLN -> renderHenry(stack, pose, collector, light, overlay);
-            case HEAVY_REVOLVER, LILMAC, PROTEGE -> renderHeavyRevolver(stack, pose, collector, light, overlay);
-            case HANGMAN -> renderHangman(stack, pose, collector, light, overlay);
-        }
-    }
-
-    @Override
-    public void renderStatic(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
+    protected void setup(Gem.Model<WeaponPose> declaration) {
         switch (variant) {
             case HENRY, HENRY_LINCOLN -> {
-                submitPart(collector, pose, body(), model(), "Gun", light, overlay);
-                submitPart(collector, pose, body(), model(), "Sight", light, overlay);
-                submitPart(collector, pose, body(), model(), "Hammer", light, overlay);
-                submitPart(collector, pose, body(), model(), "Lever", light, overlay);
-                submitPart(collector, pose, body(), model(), "Front", light, overlay);
-                submitPart(collector, pose, body(), model(), "Bullet", light, overlay);
+                henry(declaration);
+                rest(declaration, "Gun", "Sight", "Hammer", "Lever", "Front", "Bullet");
             }
             case HEAVY_REVOLVER, LILMAC, PROTEGE -> {
-                submitPart(collector, pose, body(), model(), "Gun", light, overlay);
-                submitPart(collector, pose, body(), model(), "Pivot", light, overlay);
-                submitPart(collector, pose, body(), model(), "Cylinder", light, overlay);
-                submitPart(collector, pose, body(), model(), "Bullets", light, overlay);
-                submitPart(collector, pose, body(), model(), "Hammer", light, overlay);
-                if (variant.scoped) submitPart(collector, pose, scope(), model(), "Scope", light, overlay);
+                heavyRevolver(declaration);
+                rest(declaration, "Gun", "Pivot", "Cylinder", "Bullets", "Hammer");
+                if (variant.scoped) {
+                    declaration.part(model().part("Scope"), SCOPE).visibleIf(state -> !state.animated);
+                }
             }
             case HANGMAN -> {
-                submitPart(collector, pose, body(), model(), "Rifle", light, overlay);
-                submitPart(collector, pose, body(), model(), "Internals", light, overlay);
-                submitPart(collector, pose, body(), model(), "Lid", light, overlay);
-                submitPart(collector, pose, body(), model(), "Magazine", light, overlay);
-                submitPart(collector, pose, body(), model(), "Bullets", light, overlay);
+                hangman(declaration);
+                rest(declaration, "Rifle", "Internals", "Lid", "Magazine", "Bullets");
             }
         }
     }
 
-    private RenderType scope() {
-        model();
-        return scope;
+    private static Gem.Part<WeaponPose> held(Gem.Model<WeaponPose> declaration) {
+        return declaration.joint().visibleIf(state -> state.animated);
     }
 
-    private void renderHenry(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
-        pose.scale(0.375F, 0.375F, 0.375F);
-        double[] equip = bus("EQUIP");
-        double[] sight = bus("SIGHT");
-        double[] recoil = bus("RECOIL");
-        double[] hammer = bus("HAMMER");
-        double[] lever = bus("LEVER");
-        double[] turn = bus("TURN");
-        double[] lift = bus("LIFT");
-        double[] twist = bus("TWIST");
-        double[] bullet = bus("BULLET");
-        double[] yeet = bus("YEET");
-        double[] roll = bus("ROLL");
-
-        pose.translate(recoil[0] * 2, recoil[1], recoil[2]);
-        pose.mulPose(Axis.XP.rotationDegrees((float) (recoil[2] * 5)));
-        pose.mulPose(Axis.ZP.rotationDegrees((float) turn[2]));
-        pose.translate(yeet[0], yeet[1], yeet[2]);
-
-        pose.translate(0, 1, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) roll[2]));
-        pose.translate(0, -1, 0);
-
-        pose.translate(0, -4, 4);
-        pose.mulPose(Axis.XP.rotationDegrees((float) lift[0]));
-        pose.translate(0, 4, -4);
-
-        pose.translate(0, 2, -4);
-        pose.mulPose(Axis.XN.rotationDegrees((float) equip[0]));
-        pose.translate(0, -2, 4);
-
-        submitPart(collector, pose, body(), model(), "Gun", light, overlay);
-
-        pose.pushPose();
-        pose.translate(0, 1.25, -0.1875);
-        pose.mulPose(Axis.XP.rotationDegrees((float) sight[0]));
-        pose.translate(0, -1.25, 0.1875);
-        submitPart(collector, pose, body(), model(), "Sight", light, overlay);
-        pose.popPose();
-
-        pose.pushPose();
-        pose.translate(0, 0.625, -3);
-        pose.mulPose(Axis.XP.rotationDegrees((float) (-30 + hammer[0])));
-        pose.translate(0, -0.625, 3);
-        submitPart(collector, pose, body(), model(), "Hammer", light, overlay);
-        pose.popPose();
-
-        pose.pushPose();
-        pose.translate(0, 0.25, -2.3125);
-        pose.mulPose(Axis.XP.rotationDegrees((float) lever[0]));
-        pose.translate(0, -0.25, 2.3125);
-        submitPart(collector, pose, body(), model(), "Lever", light, overlay);
-        pose.popPose();
-
-        pose.pushPose();
-        pose.translate(0, 1, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) twist[2]));
-        pose.translate(0, -1, 0);
-        submitPart(collector, pose, body(), model(), "Front", light, overlay);
-        pose.popPose();
-
-        pose.pushPose();
-        pose.translate(bullet[0], bullet[1], bullet[2] - 1);
-        submitPart(collector, pose, body(), model(), "Bullet", light, overlay);
-        pose.popPose();
+    private void rest(Gem.Model<WeaponPose> declaration, String... parts) {
+        declaration.part(model().parts(parts), body).visibleIf(state -> !state.animated);
     }
 
-    private void renderHeavyRevolver(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
-        pose.scale(0.125F, 0.125F, 0.125F);
-        pose.mulPose(Axis.YP.rotationDegrees(90));
+    private void henry(Gem.Model<WeaponPose> declaration) {
+        WavefrontObj obj = model();
+        Gem.Part<WeaponPose> gun = held(declaration)
+                .scale(0.375F)
+                .slide(Gem.Axes.X, state -> (float) (state.bus("RECOIL")[0] * 2))
+                .slide(Gem.Axes.Y, state -> (float) state.bus("RECOIL")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL")[2])
+                .angle(Gem.Axes.X, state -> (float) (state.bus("RECOIL")[2] * 5))
+                .angle(Gem.Axes.Z, state -> (float) state.bus("TURN")[2])
+                .slide(Gem.Axes.X, state -> (float) state.bus("YEET")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("YEET")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("YEET")[2])
+                .spin(Gem.Axes.Z, 0F, 1F, 0F, state -> (float) state.bus("ROLL")[2])
+                .spin(Gem.Axes.X, 0F, -4F, 4F, state -> (float) state.bus("LIFT")[0])
+                .spin(Gem.Axes.X, 0F, 2F, -4F, state -> (float) -state.bus("EQUIP")[0]);
 
-        double[] equipSpin = bus("ROTATE");
-        double[] spin = bus("SPIN");
-        double[] recoil = bus("RECOIL");
-        double[] reloadLift = bus("RELOAD_LIFT");
-        double[] reloadJolt = bus("RELOAD_JOLT");
-        double[] reloadTilt = bus("RELAOD_TILT");
-        double[] cylinderFlip = bus("RELOAD_CYLINDER");
-        double[] reloadBullets = bus("RELOAD_BULLETS");
-
-        pose.mulPose(Axis.ZP.rotationDegrees((float) spin[0]));
-        pose.translate(6, -3, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) equipSpin[0]));
-        pose.translate(-6, 3, 0);
-
-        standardAimingTransform(stack, pose, 0, 0, recoil[2], -recoil[2], 0, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) (recoil[2] * 10)));
-        pose.mulPose(Axis.ZP.rotationDegrees((float) reloadLift[0]));
-        pose.translate(reloadJolt[0], 0, 0);
-        pose.mulPose(Axis.XP.rotationDegrees((float) reloadTilt[0]));
-
-        submitPart(collector, pose, body(), model(), "Gun", light, overlay);
-
-        pose.pushPose();
-        pose.mulPose(Axis.XP.rotationDegrees((float) cylinderFlip[0]));
-        submitPart(collector, pose, body(), model(), "Pivot", light, overlay);
-        pose.translate(0, 1.75, 0);
-        pose.mulPose(Axis.XP.rotationDegrees((float) (bus("DRUM")[2] * -60)));
-        pose.translate(0, -1.75, 0);
-        submitPart(collector, pose, body(), model(), "Cylinder", light, overlay);
-        pose.translate(reloadBullets[0], reloadBullets[1], reloadBullets[2]);
-        if (bus("RELOAD_BULLETS_CON")[0] != 1) {
-            submitPart(collector, pose, body(), model(), "Bullets", light, overlay);
-        }
-        // Casings are deliberately omitted until the shared spent-casing system is ported.
-        pose.popPose();
-
-        pose.pushPose();
-        pose.translate(4, 1.25, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) (-30 + 30 * bus("HAMMER")[2])));
-        pose.translate(-4, -1.25, 0);
-        submitPart(collector, pose, body(), model(), "Hammer", light, overlay);
-        pose.popPose();
-
-        if (variant.scoped) submitPart(collector, pose, scope(), model(), "Scope", light, overlay);
+        gun.child(obj.part("Gun"), body);
+        gun.child(obj.part("Sight"), body)
+                .spin(Gem.Axes.X, 0F, 1.25F, -0.1875F, state -> (float) state.bus("SIGHT")[0]);
+        gun.child(obj.part("Hammer"), body)
+                .spin(Gem.Axes.X, 0F, 0.625F, -3F, state -> (float) (-30 + state.bus("HAMMER")[0]));
+        gun.child(obj.part("Lever"), body)
+                .spin(Gem.Axes.X, 0F, 0.25F, -2.3125F, state -> (float) state.bus("LEVER")[0]);
+        gun.child(obj.part("Front"), body)
+                .spin(Gem.Axes.Z, 0F, 1F, 0F, state -> (float) state.bus("TWIST")[2]);
+        gun.child(obj.part("Bullet"), body)
+                .translate(0F, 0F, -1F)
+                .slide(Gem.Axes.X, state -> (float) state.bus("BULLET")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("BULLET")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("BULLET")[2]);
     }
 
-    private void renderHangman(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
+    private void heavyRevolver(Gem.Model<WeaponPose> declaration) {
+        WavefrontObj obj = model();
+        Gem.Part<WeaponPose> gun = held(declaration)
+                .scale(0.125F)
+                .rotate(Gem.Axes.Y, 90F)
+                .angle(Gem.Axes.Z, state -> (float) state.bus("SPIN")[0])
+                .spin(Gem.Axes.Z, 6F, -3F, 0F, state -> (float) state.bus("ROTATE")[0])
+                .slide(Gem.Axes.X, state -> aimLerp(0, -state.bus("RECOIL")[2]))
+                .slide(Gem.Axes.Z, state -> aimLerp(state.bus("RECOIL")[2], 0))
+                .angle(Gem.Axes.Z, state -> (float) (state.bus("RECOIL")[2] * 10))
+                .angle(Gem.Axes.Z, state -> (float) state.bus("RELOAD_LIFT")[0])
+                .slide(Gem.Axes.X, state -> (float) state.bus("RELOAD_JOLT")[0])
+                .angle(Gem.Axes.X, state -> (float) state.bus("RELAOD_TILT")[0]);
+
+        gun.child(obj.part("Gun"), body);
+
+        Gem.Part<WeaponPose> pivot = gun.child(obj.part("Pivot"), body)
+                .angle(Gem.Axes.X, state -> (float) state.bus("RELOAD_CYLINDER")[0]);
+
+        Gem.Part<WeaponPose> cylinder = pivot.child(obj.part("Cylinder"), body)
+                .spin(Gem.Axes.X, 0F, 1.75F, 0F, state -> (float) (state.bus("DRUM")[2] * -60));
+
+        cylinder.child(obj.part("Bullets"), body)
+                .visibleIf(state -> state.bus("RELOAD_BULLETS_CON")[0] != 1)
+                .slide(Gem.Axes.X, state -> (float) state.bus("RELOAD_BULLETS")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("RELOAD_BULLETS")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("RELOAD_BULLETS")[2]);
+
+        gun.child(obj.part("Hammer"), body)
+                .spin(Gem.Axes.Z, 4F, 1.25F, 0F,
+                        state -> (float) (-30 + 30 * state.bus("HAMMER")[2]));
+
+        if (variant.scoped) gun.child(obj.part("Scope"), SCOPE);
+    }
+
+    private void hangman(Gem.Model<WeaponPose> declaration) {
+        WavefrontObj obj = model();
         float offset = 0.8F;
-        double[] equip = bus("EQUIP");
-        double[] recoil = bus("RECOIL");
-        double[] roll = bus("ROLL");
-        double[] turn = bus("TURN");
-        double[] smack = bus("SMACK");
-        double[] lid = bus("LID");
-        double[] mag = bus("MAG");
-        double[] bullets = bus("BULLETS");
+        Gem.Part<WeaponPose> gun = held(declaration)
+                .spin(Gem.Axes.Y, 1.5F * offset, 0F, -1F, state -> (float) state.bus("TURN")[1])
+                .angle(Gem.Axes.Z, state -> (float) state.bus("ROLL")[2])
+                .slide(Gem.Axes.X, state -> (float) state.bus("SMACK")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("SMACK")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("SMACK")[2])
+                .scale(0.125F)
+                .spin(Gem.Axes.X, 0F, -4F, -10F, state -> (float) state.bus("EQUIP")[0])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL")[2]);
 
-        pose.translate(1.5F * offset, 0, -1);
-        pose.mulPose(Axis.YP.rotationDegrees((float) turn[1]));
-        pose.translate(-1.5F * offset, 0, 1);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) roll[2]));
-        pose.translate(smack[0], smack[1], smack[2]);
+        gun.child(obj.parts("Rifle", "Internals"), body);
+        gun.child(obj.part("Lid"), body)
+                .spin(Gem.Axes.Z, -2.1875F, -1.75F, 0F, state -> (float) state.bus("LID")[2]);
 
-        pose.scale(0.125F, 0.125F, 0.125F);
-        pose.translate(0, -4, -10);
-        pose.mulPose(Axis.XP.rotationDegrees((float) equip[0]));
-        pose.translate(0, 4, 10);
-        pose.translate(0, 0, recoil[2]);
-
-        submitPart(collector, pose, body(), model(), "Rifle", light, overlay);
-        submitPart(collector, pose, body(), model(), "Internals", light, overlay);
-
-        pose.pushPose();
-        pose.translate(-2.1875, -1.75, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) lid[2]));
-        pose.translate(2.1875, 1.75, 0);
-        submitPart(collector, pose, body(), model(), "Lid", light, overlay);
-        pose.popPose();
-
-        pose.pushPose();
-        pose.translate(mag[0], mag[1], mag[2]);
-        submitPart(collector, pose, body(), model(), "Magazine", light, overlay);
-        if (bullets[0] == 0) submitPart(collector, pose, body(), model(), "Bullets", light, overlay);
-        pose.popPose();
-    }
-
-    private static double[] bus(String name) {
-        return HbmAnimations.getRelevantTransformation(name);
+        Gem.Part<WeaponPose> magazine = gun.joint()
+                .slide(Gem.Axes.X, state -> (float) state.bus("MAG")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("MAG")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("MAG")[2]);
+        magazine.child(obj.part("Magazine"), body);
+        magazine.child(obj.part("Bullets"), body).visibleIf(state -> state.bus("BULLETS")[0] == 0);
     }
 }

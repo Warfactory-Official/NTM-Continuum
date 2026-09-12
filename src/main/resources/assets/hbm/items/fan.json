@@ -1,14 +1,16 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "hbm:item/machine_obj_base",
-    "model": {
-      "type": "hbm:machine_obj",
-      "obj": "hbm:models/machines/fan.obj",
-      "texture": "hbm:textures/models/machines/fan.png",
-      "scale": 1.05,
-      "yaw": 0,
-      "ty": 0.0
-    }
-  }
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/fan.obj",
+    "texture": "hbm:textures/models/machines/fan.png",
+    "scale": 2.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [0.0, -2.5, 0.0],
+    "guiScale": 5.0,
+    "itemTranslate": [0.0, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
 }

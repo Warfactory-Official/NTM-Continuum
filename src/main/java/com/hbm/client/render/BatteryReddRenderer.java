@@ -1,18 +1,20 @@
 package com.hbm.client.render;
 
-import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
+import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.level.block.state.BlockState;
@@ -21,7 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Random;
 
 /** Faithful current FEnSU renderer: Base/Wheel/Lights plus the additive plasma and legacy zaps. */
-public final class BatteryReddRenderer implements CompatBER<TileEntityBatteryREDD, BatteryReddRenderState> {
+public final class BatteryReddRenderer extends GemBER<TileEntityBatteryREDD, BatteryReddRenderState> {
 
     private static final int FULLBRIGHT = 0xF000F0;
     private static final float PLASMA_R = 1F;
@@ -30,31 +32,34 @@ public final class BatteryReddRenderer implements CompatBER<TileEntityBatteryRED
 
     private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fensu2.obj"));
-    private final RenderType body = CompatRenderTypes.entityCutout(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/fensu2.png"));
+    private final Surface body = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/fensu2.png");
     private final RenderType plasma = CompatRenderTypes.plasmaGlow(
             dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
     private final RenderType sparkle = CompatRenderTypes.plasmaGlow(
             dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_sparkle.png"));
 
     @Override
+    protected void setup(Gem.Model<BatteryReddRenderState> declaration) {
+        Gem.Part<BatteryReddRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+
+        machine.child(model.part("Base"), body);
+
+        Gem.Part<BatteryReddRenderState> wheel = machine.joint()
+                .translate(0F, 5.5F, 0F)
+                .angle(Gem.Axes.X, state -> state.rotation)
+                .translate(0F, -5.5F, 0F);
+        wheel.child(model.part("Wheel"), body);
+        wheel.child(model.part("Lights"), body)
+                .light(state -> FULLBRIGHT);
+    }
+
+    @Override
     public BatteryReddRenderState createRenderState() {
         return new BatteryReddRenderState();
-    }
-
-    @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(TileEntityBatteryREDD blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
     }
 
     @Override
@@ -79,19 +84,20 @@ public final class BatteryReddRenderer implements CompatBER<TileEntityBatteryRED
                 blockEntity.getBlockPos().getY() + 2.5D, blockEntity.getBlockPos().getZ() + 0.5D) < 100D * 100D;
     }
 
+    /**
+     * The motion trails, the scrolling plasma sheet and the arcing zaps are all built from the clock
+     * every frame; none of them is a mesh a backend could hold.
+     */
     @Override
-    public void submit(BatteryReddRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
+    protected void submitUndeclared(BatteryReddRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
         poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        part(collector, poseStack, "Base", state.lightCoords);
 
         poseStack.pushPose();
         poseStack.translate(0F, 5.5F, 0F);
         poseStack.mulPose(Axis.XP.rotationDegrees(state.rotation));
         poseStack.translate(0F, -5.5F, 0F);
-        part(collector, poseStack, "Wheel", state.lightCoords);
-        part(collector, poseStack, "Lights", FULLBRIGHT);
         renderTrails(state, poseStack, collector);
         renderPlasma(state, poseStack, collector);
         poseStack.popPose();
@@ -197,11 +203,6 @@ public final class BatteryReddRenderer implements CompatBER<TileEntityBatteryRED
         BeamPronter.prontBeam(poseStack, collector, end, BeamPronter.EnumWaveType.RANDOM,
                 BeamPronter.EnumBeamType.SOLID, animation, 1, 0F, 0x404040, 0x002040, 3, 0.0625F);
         poseStack.popPose();
-    }
-
-    private void part(SubmitSink collector, PoseStack poseStack, String name, int light) {
-        collector.submitCustomGeometry(poseStack, body,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 
     private static int argb(float alpha, float red, float green, float blue) {

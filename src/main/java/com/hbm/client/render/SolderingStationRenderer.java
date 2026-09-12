@@ -1,18 +1,18 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatItemRenderState;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineSolderingStation;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatItemRenderState;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
@@ -31,16 +31,23 @@ import java.util.Set;
  * built in {@code extractRenderState}, submitted above the model). The output is the synced
  * {@link TileEntityMachineSolderingStation#display}.
  */
-public class SolderingStationRenderer implements CompatBER<TileEntityMachineSolderingStation, SolderingRenderState> {
+public class SolderingStationRenderer extends GemBER<TileEntityMachineSolderingStation, SolderingRenderState> {
 
     private static final float BASE_YAW = 90F;
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/soldering_station.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/soldering_station.png");
 
-    public SolderingStationRenderer() {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/soldering_station.obj"));
-        this.renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/soldering_station.png"));
+    /** The trailing shift is the asymmetric-footprint offset, as in the generic-renderer registration. */
+    @Override
+    protected void setup(Gem.Model<SolderingRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(model.all(), surface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> BASE_YAW + state.yaw)
+                .translate(-0.5F, 0F, 0.5F);
     }
 
     @Override
@@ -49,30 +56,15 @@ public class SolderingStationRenderer implements CompatBER<TileEntityMachineSold
     }
 
     @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(TileEntityMachineSolderingStation be, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
-    }
-
-    @Override
     public void extract(TileEntityMachineSolderingStation be, SolderingRenderState state, float partialTicks,
                                    Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
         int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
         state.yaw = switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
 
         // Floating product display: the current recipe's output, shown within 35 blocks (1.12.2), built the
@@ -94,35 +86,28 @@ public class SolderingStationRenderer implements CompatBER<TileEntityMachineSold
         if (!state.showItem) state.outputItem.clear();
     }
 
+    /**
+     * The floating product is a recipe-chosen item model with no mesh of its own; the transforms are
+     * the 1.12.2 ones, matching the assembly machine's floating output.
+     */
     @Override
-    public void submit(SolderingRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
+    protected void submitUndeclared(SolderingRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
+        if (!s.showItem) return;
         ps.pushPose();
         ps.translate(0.5F, 0F, 0.5F);
         ps.mulPose(Axis.YP.rotationDegrees(BASE_YAW + s.yaw));
-        ps.translate(-0.5F, 0F, 0.5F); // asymmetric-footprint offset (same as the generic-renderer registration)
-
-        col.submitCustomGeometry(ps, renderType,
-                (pose, buffer) -> model.renderExcept(pose, buffer, light, OverlayTexture.NO_OVERLAY, Set.of()));
-
-        // Floating product: the recipe output hovering above the machine centre (1.12.2 transforms, matching
-        // the assembly machine's floating output).
-        if (s.showItem) {
-            ps.pushPose();
-            ps.translate(0F, 1.1F, 0F);
-            if (s.itemIs3d) {
-                ps.translate(0F, 0.125F, 0F);
-                ps.scale(1.25F, 1.25F, 1.25F);
-            } else {
-                ps.translate(0F, 0.015F, 0F);
-                ps.mulPose(Axis.XP.rotationDegrees(-90F));
-                ps.mulPose(Axis.ZP.rotationDegrees(-90F));
-                ps.scale(0.85F, 0.85F, 0.85F);
-            }
-            col.submitItem(ps, s.outputItem, light, OverlayTexture.NO_OVERLAY, 0);
-            ps.popPose();
+        ps.translate(-0.5F, 0F, 0.5F);
+        ps.translate(0F, 1.1F, 0F);
+        if (s.itemIs3d) {
+            ps.translate(0F, 0.125F, 0F);
+            ps.scale(1.25F, 1.25F, 1.25F);
+        } else {
+            ps.translate(0F, 0.015F, 0F);
+            ps.mulPose(Axis.XP.rotationDegrees(-90F));
+            ps.mulPose(Axis.ZP.rotationDegrees(-90F));
+            ps.scale(0.85F, 0.85F, 0.85F);
         }
-
+        col.submitItem(ps, s.outputItem, s.lightCoords, OverlayTexture.NO_OVERLAY, 0);
         ps.popPose();
     }
 }

@@ -1,9 +1,10 @@
 package com.hbm.client.model;
 
-import dev.golem.core.Ids;
-import dev.golem.core.render.Vertexes;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.golem.core.Ids;
+import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Geometry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 
@@ -47,6 +48,7 @@ public final class WavefrontObj {
     private final List<Group> groups;
     private final float[] min;
     private final float[] max;
+    private Identifier source = Ids.of("minecraft", "unknown");
 
     private WavefrontObj(List<float[]> pos, List<float[]> uv, List<float[]> norm, List<Group> groups) {
         this.positions = pos.toArray(new float[0][]);
@@ -204,7 +206,9 @@ public final class WavefrontObj {
         } catch (IOException e) {
             throw new RuntimeException("Failed to load OBJ model " + location, e);
         }
-        return new WavefrontObj(pos, uv, norm, groups);
+        WavefrontObj model = new WavefrontObj(pos, uv, norm, groups);
+        model.source = location;
+        return model;
     }
 
     /** The distinct material names used by this model, in first-use order (empty string = untextured runs). */
@@ -304,6 +308,172 @@ public final class WavefrontObj {
                            int color, float uOffset, float vOffset, boolean doubleSided) {
         for (Group g : groups) {
             if (g.name.equals(name)) drawGroup(g, pose, buffer, light, overlay, color, doubleSided, uOffset, vOffset);
+        }
+    }
+
+    /** This model's parts as {@link Geometry}, the shape a {@code Gem} declaration names. */
+    public Geometry part(String name) {
+        return parts(name);
+    }
+
+    /** Unlike {@link #renderPart}, a name this model does not have throws rather than drawing nothing. */
+    public Geometry parts(String... names) {
+        return parts(Set.of(names), false);
+    }
+
+    /** The same selection, optionally with each triangle emitted a second time wound the other way. */
+    public Geometry parts(Set<String> names, boolean doubleSided) {
+        Set<String> known = partNames();
+        for (String name : names) {
+            if (!known.contains(name)) {
+                throw new IllegalArgumentException(
+                        source + " has no part named " + name + "; it has " + known);
+            }
+        }
+        return new ObjGeometry(Set.copyOf(names), Set.of(), doubleSided);
+    }
+
+    public Geometry all() {
+        return all(false);
+    }
+
+    /**
+     * Every part, optionally with each triangle emitted a second time wound the other way. That is
+     * reversed geometry, not a no-cull material — the duplicate carries a flipped normal and shades
+     * differently, which is what {@code doubleSided()} looked like in 1.12.2.
+     */
+    public Geometry all(boolean doubleSided) {
+        return new ObjGeometry(null, Set.of(), doubleSided);
+    }
+
+    /** Every face run wearing one material, for an OBJ whose runs split by {@code usemtl} not {@code o}. */
+    public Geometry material(String name) {
+        if (!materialNames().contains(name)) {
+            throw new IllegalArgumentException(
+                    source + " has no material named " + name + "; it has " + materialNames());
+        }
+        return new ObjGeometry(null, Set.of(), false, name);
+    }
+
+    /** Every part except those named — a fluid overlay or a conditional frame drawn separately. */
+    public Geometry allExcept(Set<String> exclude) {
+        return new ObjGeometry(null, Set.copyOf(exclude), false);
+    }
+
+    public Geometry allExcept(Set<String> exclude, boolean doubleSided) {
+        return new ObjGeometry(null, Set.copyOf(exclude), doubleSided);
+    }
+
+    /** The names of every group this model actually holds, for declarations to be checked against. */
+    public Set<String> partNames() {
+        Set<String> names = new java.util.LinkedHashSet<>();
+        for (Group g : groups) if (!g.faces.isEmpty()) names.add(g.name);
+        return names;
+    }
+
+    private final class ObjGeometry implements Geometry {
+
+        private final @Nullable Set<String> include;
+        private final Set<String> exclude;
+        private final boolean doubleSided;
+        private final @Nullable String material;
+        private final String name;
+        private float @Nullable [] vertices;
+        private int @Nullable [] indices;
+        private int vertexCount;
+
+        private ObjGeometry(@Nullable Set<String> include, Set<String> exclude, boolean doubleSided) {
+            this(include, exclude, doubleSided, null);
+        }
+
+        private ObjGeometry(@Nullable Set<String> include, Set<String> exclude, boolean doubleSided,
+                            @Nullable String material) {
+            this.include = include;
+            this.exclude = exclude;
+            this.doubleSided = doubleSided;
+            this.material = material;
+            String selection = material != null ? "=" + material
+                    : include != null ? "+" + String.join(",", new java.util.TreeSet<>(include))
+                    : exclude.isEmpty() ? "*" : "-" + String.join(",", new java.util.TreeSet<>(exclude));
+            this.name = source + "#" + selection + (doubleSided ? "#2" : "");
+        }
+
+        private boolean selected(Group group) {
+            if (material != null) return group.material.equals(material);
+            return include != null ? include.contains(group.name) : !exclude.contains(group.name);
+        }
+
+        @Override
+        public void draw(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
+            for (Group g : groups) {
+                if (selected(g)) drawGroup(g, pose, buffer, light, overlay, color, doubleSided);
+            }
+        }
+
+        @Override
+        public float[] vertices() {
+            build();
+            return vertices;
+        }
+
+        @Override
+        public int[] indices() {
+            build();
+            return indices;
+        }
+
+        @Override
+        public int vertexCount() {
+            build();
+            return vertexCount;
+        }
+
+        @Override
+        public String name() {
+            return name;
+        }
+
+        private void build() {
+            if (vertices != null) return;
+            List<Float> data = new ArrayList<>();
+            for (Group g : groups) {
+                if (!selected(g)) continue;
+                for (int[][] face : g.faces) {
+                    for (int i = 1; i + 1 < face.length; i++) {
+                        append(data, face[0], false);
+                        append(data, face[i], false);
+                        append(data, face[i + 1], false);
+                        if (doubleSided) {
+                            append(data, face[i + 1], true);
+                            append(data, face[i], true);
+                            append(data, face[0], true);
+                        }
+                    }
+                }
+            }
+            float[] flat = new float[data.size()];
+            for (int i = 0; i < flat.length; i++) flat[i] = data.get(i);
+            int count = flat.length / 8;
+            int[] order = new int[count];
+            for (int i = 0; i < count; i++) order[i] = i;
+            vertexCount = count;
+            indices = order;
+            vertices = flat;
+        }
+
+        private void append(List<Float> data, int[] ref, boolean reverseNormal) {
+            float[] p = positions[ref[0]];
+            float u = ref[1] >= 0 ? uvs[ref[1]][0] : 0F;
+            float v = ref[1] >= 0 ? uvs[ref[1]][1] : 0F;
+            float nx = 0F, ny = 1F, nz = 0F;
+            if (ref[2] >= 0) {
+                float[] nrm = normals[ref[2]];
+                nx = nrm[0]; ny = nrm[1]; nz = nrm[2];
+            }
+            if (reverseNormal) { nx = -nx; ny = -ny; nz = -nz; }
+            data.add(p[0]); data.add(p[1]); data.add(p[2]);
+            data.add(u); data.add(v);
+            data.add(nx); data.add(ny); data.add(nz);
         }
     }
 

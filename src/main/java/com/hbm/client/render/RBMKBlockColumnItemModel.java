@@ -4,10 +4,13 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
-import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
-import net.minecraft.resources.Identifier;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Quads;
+import dev.golem.core.render.gem.Surface;
+import java.util.Set;
 import java.util.function.Consumer;
+import net.minecraft.resources.Identifier;
 import org.joml.Vector3fc;
 
 /**
@@ -18,75 +21,83 @@ import org.joml.Vector3fc;
  * {@code BakedModelTransforms.rbmkColumn()} display verbatim, exactly as a baked model received it.
  */
 public final class RBMKBlockColumnItemModel {
+
     private static final WavefrontObj RODS = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/rbmk_rods.obj"));
     private static final int SECTIONS = 4;
     private static final float PIPE_Y = 4F, LID_Y = 3F;
+    private static final float[] STUBS = {.0625F, .5625F};
+    private static final float STUB = .375F;
+    private static final float STUB_HEIGHT = .125F;
 
-    private final Identifier side, top, bottom, pipeSide, pipeTop, lidTexture;
     private final float scale, yaw, lift;
+    private final ItemGem body;
 
     public RBMKBlockColumnItemModel(Identifier side, Identifier top, Identifier bottom,
                                     Identifier pipeSide, Identifier pipeTop, Identifier lidTexture,
                                     float scale, float yaw, float lift) {
-        this.side = RBMKColumnItemModel.normalize(side);
-        this.top = RBMKColumnItemModel.normalize(top);
-        this.bottom = RBMKColumnItemModel.normalize(bottom != null ? bottom : top);
-        this.pipeSide = RBMKColumnItemModel.normalize(pipeSide);
-        this.pipeTop = RBMKColumnItemModel.normalize(pipeTop);
-        this.lidTexture = RBMKColumnItemModel.normalize(lidTexture);
-        this.scale = scale; this.yaw = yaw; this.lift = lift;
+        this.scale = scale;
+        this.yaw = yaw;
+        this.lift = lift;
+        this.body = declare(RBMKColumnItemModel.skin(side), RBMKColumnItemModel.skin(top),
+                pipeSide == null || pipeTop == null ? null : RBMKColumnItemModel.skin(pipeSide),
+                pipeSide == null || pipeTop == null ? null : RBMKColumnItemModel.skin(pipeTop),
+                lidTexture == null ? null : RBMKColumnItemModel.skin(lidTexture));
+    }
+
+    /**
+     * Four casing sections, then the pipe stubs, then the lid.
+     *
+     * <p>The casing is one extent rather than four: the sections tile exactly, so the column's box is
+     * recorded against the first of them, and the four stubs likewise share the box that encloses them.
+     * The Lid OBJ is authored centred on the origin, like every old HBM part, while the casing here is in
+     * block space — hence the same +0.5/+0.5 shift the world renderers bake in.
+     */
+    private static ItemGem declare(Surface side, Surface top, Surface pipeSide, Surface pipeTop, Surface lid) {
+        ItemGem.Builder builder = ItemGem.builder();
+        float[][] column = RBMKColumnGeometry.bounds(0F, 0F, 0F, 1F, SECTIONS, 1F);
+        for (int section = 0; section < SECTIONS; section++) {
+            builder.part(shell(section, false), side, section == 0 ? column : null);
+            builder.part(shell(section, true), top, null);
+        }
+        if (pipeSide != null) {
+            builder.part(stubs(false), pipeSide, RBMKColumnGeometry.bounds(STUBS[0], PIPE_Y, STUBS[0],
+                    STUBS[1] + STUB, PIPE_Y + STUB_HEIGHT, STUBS[1] + STUB));
+            builder.part(stubs(true), pipeTop, null);
+        }
+        if (lid != null) {
+            builder.part(RODS.part("Lid"), lid, RODS.boundsIncluding(Set.of("Lid")))
+                    .translate(.5F, LID_Y, .5F);
+        }
+        return builder.build();
+    }
+
+    private static Geometry shell(int section, boolean caps) {
+        Quads.Builder faces = Quads.named(
+                Constants.MOD_ID + ":rbmk_column_" + (caps ? "cap_" : "side_") + section);
+        return (caps
+                ? RBMKColumnGeometry.caps(faces, 0F, section, 0F, 1F, section + 1F, 1F)
+                : RBMKColumnGeometry.sides(faces, 0F, section, 0F, 1F, section + 1F, 1F)).build();
+    }
+
+    private static Geometry stubs(boolean caps) {
+        Quads.Builder faces = Quads.named(Constants.MOD_ID + ":rbmk_column_pipe_" + (caps ? "cap" : "side"));
+        for (float x : STUBS) for (float z : STUBS) {
+            if (caps) RBMKColumnGeometry.caps(faces, x, PIPE_Y, z, x + STUB, PIPE_Y + STUB_HEIGHT, z + STUB);
+            else RBMKColumnGeometry.sides(faces, x, PIPE_Y, z, x + STUB, PIPE_Y + STUB_HEIGHT, z + STUB);
+        }
+        return faces.build();
     }
 
     public void submit(PoseStack pose, SubmitSink sink, int light, int overlay) {
         pose.pushPose();
         RBMKItemModelBounds.applyColumnTransform(pose, scale, yaw, lift);
-        var sideType = CompatRenderTypes.entityCutout(side);
-        var topType = CompatRenderTypes.entityCutout(top);
-        for (int i = 0; i < SECTIONS; i++) {
-            final int y = i;
-            sink.submitCustomGeometry(pose, sideType,
-                    (last, buffer) -> RBMKColumnGeometry.box(last, buffer, 0, y, 0, 1, y + 1, 1, light, false));
-            sink.submitCustomGeometry(pose, topType,
-                    (last, buffer) -> RBMKColumnGeometry.box(last, buffer, 0, y, 0, 1, y + 1, 1, light, light, true));
-        }
-        if (pipeSide != null && pipeTop != null) {
-            var pipeSideType = CompatRenderTypes.entityCutout(pipeSide);
-            var pipeTopType = CompatRenderTypes.entityCutout(pipeTop);
-            sink.submitCustomGeometry(pose, pipeSideType, (last, buffer) -> {
-                for (float x : new float[]{.0625F, .5625F}) for (float z : new float[]{.0625F, .5625F})
-                    RBMKColumnGeometry.box(last, buffer, x, PIPE_Y, z, x + .375F, PIPE_Y + .125F, z + .375F, light, false);
-            });
-            sink.submitCustomGeometry(pose, pipeTopType, (last, buffer) -> {
-                for (float x : new float[]{.0625F, .5625F}) for (float z : new float[]{.0625F, .5625F})
-                    RBMKColumnGeometry.box(last, buffer, x, PIPE_Y, z, x + .375F, PIPE_Y + .125F, z + .375F, light, light, true);
-            });
-        }
-        if (lidTexture != null) {
-            // The Lid OBJ is authored centred on the origin, like every old HBM part; the casing here
-            // is in block space, so it needs the same +0.5/+0.5 shift the world renderers bake in.
-            pose.pushPose(); pose.translate(.5F, LID_Y, .5F);
-            sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(lidTexture),
-                    (last, buffer) -> RODS.renderPart("Lid", last, buffer, light, overlay));
-            pose.popPose();
-        }
+        body.submit(pose, sink, light, overlay);
         pose.popPose();
     }
 
     public void extents(Consumer<Vector3fc> output) {
         PoseStack pose = new PoseStack();
         RBMKItemModelBounds.applyColumnTransform(pose, scale, yaw, lift);
-        RBMKItemModelBounds.emitBox(pose, 0F, 0F, 0F, 1F, 4F, 1F, output);
-        if (pipeSide != null && pipeTop != null) {
-            for (float x : new float[]{.0625F, .5625F}) for (float z : new float[]{.0625F, .5625F}) {
-                RBMKItemModelBounds.emitBox(pose, x, PIPE_Y, z,
-                        x + .375F, PIPE_Y + .125F, z + .375F, output);
-            }
-        }
-        if (lidTexture != null) {
-            pose.pushPose();
-            pose.translate(.5F, LID_Y, .5F);
-            RBMKItemModelBounds.emitPart(pose, RODS, "Lid", output);
-            pose.popPose();
-        }
+        body.extents(pose, output);
     }
 }

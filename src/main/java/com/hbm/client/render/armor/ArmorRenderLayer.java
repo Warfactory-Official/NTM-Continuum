@@ -8,7 +8,6 @@ import dev.golem.core.render.HumanoidPose;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Worn;
 import dev.golem.core.world.ArmorSlot;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -55,7 +54,7 @@ public class ArmorRenderLayer extends CompatHumanoidLayer {
             ArmorRenderer renderer = ArmorRenderers.get(modelName);
             if (renderer == null) continue;
 
-            renderer.submit(slot, pose, sink, light, OverlayTexture.NO_OVERLAY, armorPose);
+            renderer.submit(slot, pose, sink, light, armorPose);
         }
         pose.popPose();
     }

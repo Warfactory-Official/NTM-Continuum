@@ -40,18 +40,12 @@ public final class JetpackClientVisuals {
     public static final String BJ = "bj";
     public static final String DNS = "dns";
 
-    private static final Identifier JETPACK_MODEL = Ids.of("hbm", "models/armor/jetpack.obj");
-    private static final Identifier BJ_MODEL = Ids.of("hbm", "models/armor/bj.obj");
-    private static final Identifier WINGS_MODEL = Ids.of("hbm", "models/armor/murk.obj");
+    static final Identifier JETPACK_MODEL = Ids.of("hbm", "models/armor/jetpack.obj");
+    static final Identifier BJ_MODEL = Ids.of("hbm", "models/armor/bj.obj");
+    static final Identifier WINGS_MODEL = Ids.of("hbm", "models/armor/murk.obj");
     private static final Identifier MASK = Ids.of("hbm", "textures/models/bfg/fresnel_ms.png");
     private static final Identifier NOISE = Ids.of("hbm", "textures/misc/noise_2.png");
 
-    private static final RenderType BJ_TYPE = CompatRenderTypes.entityCutoutCull(
-            Ids.of("hbm", "textures/armor/bj_jetpack.png"));
-
-    private static com.hbm.client.model.WavefrontObj standardModel;
-    private static com.hbm.client.model.WavefrontObj bjModel;
-    private static com.hbm.client.model.WavefrontObj wingsModel;
     private static JetpackColladaModel gliderModel;
 
     private static final Map<UUID, Effects> EFFECTS = new HashMap<>();
@@ -72,10 +66,8 @@ public final class JetpackClientVisuals {
         EFFECTS.clear();
         GLIDER_ANIMATIONS.clear();
         activeLevel = null;
-        standardModel = null;
-        bjModel = null;
-        wingsModel = null;
         gliderModel = null;
+        JetpackWornModels.clear();
         JetpackSound.clearAll();
     }
 
@@ -342,137 +334,42 @@ public final class JetpackClientVisuals {
 
     public static void submitStandard(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
             String kind) {
-        if (standardModel == null) standardModel = com.hbm.client.model.WavefrontObj.load(JETPACK_MODEL);
-        Identifier texture = switch (kind) {
-            case "standard_blue" -> Ids.of("hbm", "textures/armor/jetpackblue.png");
-            case "standard_green" -> Ids.of("hbm", "textures/armor/jetpackgreen.png");
-            case "standard_boost" -> Ids.of("hbm", "textures/armor/jetpack.png");
-            default -> Ids.of("hbm", "textures/armor/jetpackred.png");
-        };
-        RenderType type = CompatRenderTypes.entityCutoutCull(texture);
-        ArmorRenderer.submitRootedModel(sink, pose, type, standardModel, parts.body(), light, OverlayTexture.NO_OVERLAY);
+        JetpackWornModels.standard().submit(pose, sink, light, parts.body(), JetpackWornModels.pack(kind));
     }
 
     public static void submitBJ(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts) {
-        if (bjModel == null) bjModel = com.hbm.client.model.WavefrontObj.load(BJ_MODEL);
-        submitAbsolutePart(pose, sink, BJ_TYPE, bjModel, "Jetpack", parts.body(), light, OverlayTexture.NO_OVERLAY, 0F, 0F, -0.1F);
+        JetpackWornModels.bj().submit(pose, sink, light, parts.body());
     }
 
+    /**
+     * The wings flap on a sine of the wearer's own tick count, with fixed poses for standing and for a
+     * limp pair that has lost its murk.
+     */
     public static void submitWings(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
             ItemStack source) {
-        if (wingsModel == null) wingsModel = com.hbm.client.model.WavefrontObj.load(WINGS_MODEL);
         Player player = parts.player();
         if (player == null) return;
-        boolean limp = source != null && source.getItem() instanceof com.hbm.items.armor.WingsMurk wings && !wings.murk;
-        RenderType wingsType = CompatRenderTypes.entityCutoutCull(
-                Ids.of("hbm", "textures/armor/wings_murk.png"));
-        float rot = (float) Math.sin(player.tickCount * 0.2D) * 20F;
-        float rot2 = (float) Math.sin(player.tickCount * 0.2D - Math.PI * 0.5D) * 50F + 30F;
+        boolean limp = source != null && source.getItem() instanceof com.hbm.items.armor.WingsMurk wings
+                && !wings.murk;
+        float sweep = (float) Math.sin(player.tickCount * 0.2D) * 20F;
+        float trail = (float) Math.sin(player.tickCount * 0.2D - Math.PI * 0.5D) * 50F + 30F;
         if (!limp && player.onGround()) {
-            rot = 20F;
-            rot2 = 160F;
+            sweep = 20F;
+            trail = 160F;
         }
         if (limp) {
             if (player.onGround()) {
-                rot = 30F;
-                rot2 = -30F;
+                sweep = 30F;
+                trail = -30F;
             } else if (player.getDeltaMovement().y < -0.1D) {
-                rot = 0F;
-                rot2 = 10F;
+                sweep = 0F;
+                trail = 10F;
             } else {
-                rot = 30F;
-                rot2 = 20F;
+                sweep = 30F;
+                trail = 20F;
             }
         }
-        submitWingParts(pose, sink, parts.body(), light, rot, rot2, wingsType);
-    }
-
-    private static void submitWingParts(PoseStack pose, SubmitSink sink, ModelPart body, int light,
-            float rot, float rot2, RenderType wingsType) {
-        float px = 0.0625F;
-        int pivotSideOffset = 1;
-        int pivotFrontOffset = 5;
-        int pivotZOffset = 3;
-        int tipSideOffset = 16;
-        int tipZOffset = 2;
-        float inwardAngle = 10F;
-
-        pose.pushPose();
-        pose.translate(body.x / 16F, body.y / 16F, body.z / 16F);
-        pose.mulPose(com.mojang.math.Axis.ZP.rotation(body.zRot));
-        pose.mulPose(com.mojang.math.Axis.YP.rotation(body.yRot));
-        pose.mulPose(com.mojang.math.Axis.XP.rotation(body.xRot));
-        pose.translate(0F, -2F * px, 0F);
-
-        pose.pushPose();
-        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-inwardAngle));
-        pose.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rot * 0.5F));
-        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot + 5F));
-        pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(45F));
-        pose.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-
-        pose.translate(pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot));
-        pose.translate(-pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-        part(sink, pose, wingsType, wingsModel, "LeftBase", light);
-
-        pose.translate(tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
-        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(rot2));
-        if (doesRotateZ()) pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rot2 * 0.25F + 5F));
-        pose.translate(-tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
-        part(sink, pose, wingsType, wingsModel, "LeftTip", light);
-        pose.popPose();
-
-        pose.pushPose();
-        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(inwardAngle));
-        pose.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-rot * 0.5F));
-        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-rot - 5F));
-        pose.mulPose(com.mojang.math.Axis.XP.rotationDegrees(45F));
-        pose.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-
-        pose.translate(-pivotSideOffset * px, pivotFrontOffset * px, pivotZOffset * px);
-        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-rot));
-        pose.translate(pivotSideOffset * px, -pivotFrontOffset * px, -pivotZOffset * px);
-        part(sink, pose, wingsType, wingsModel, "RightBase", light);
-
-        pose.translate(-tipSideOffset * px, pivotFrontOffset * px, tipZOffset * px);
-        pose.mulPose(com.mojang.math.Axis.YP.rotationDegrees(-rot2));
-        if (doesRotateZ()) pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(-rot2 * 0.25F - 5F));
-        pose.translate(tipSideOffset * px, -pivotFrontOffset * px, -tipZOffset * px);
-        part(sink, pose, wingsType, wingsModel, "RightTip", light);
-        pose.popPose();
-        pose.popPose();
-    }
-
-    private static boolean doesRotateZ() {
-        return true;
-    }
-
-    private static void part(SubmitSink sink, PoseStack pose, RenderType type,
-            com.hbm.client.model.WavefrontObj model, String part, int light) {
-        // ModelRendererObj scales only the geometry, after the block-space hinge transforms.
-        pose.pushPose();
-        pose.scale(1F / 16F, 1F / 16F, 1F / 16F);
-        sink.submitCustomGeometry(pose, type,
-                (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, OverlayTexture.NO_OVERLAY));
-        pose.popPose();
-    }
-
-    private static void submitAbsolutePart(PoseStack pose, SubmitSink sink, RenderType type,
-            com.hbm.client.model.WavefrontObj model, String part, ModelPart bone, int light, int overlay,
-            float tx, float ty, float tz) {
-        pose.pushPose();
-        pose.translate(bone.x / 16F, bone.y / 16F, bone.z / 16F);
-        if (bone.zRot != 0F) pose.mulPose(com.mojang.math.Axis.ZP.rotation(bone.zRot));
-        if (bone.yRot != 0F) pose.mulPose(com.mojang.math.Axis.YP.rotation(bone.yRot));
-        if (bone.xRot != 0F) pose.mulPose(com.mojang.math.Axis.XP.rotation(bone.xRot));
-        pose.translate(tx, ty, tz);
-        pose.scale(1F / 16F, 1F / 16F, 1F / 16F);
-        sink.submitCustomGeometry(pose, type,
-                (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, overlay));
-        pose.popPose();
+        JetpackWornModels.wings().submit(pose, sink, light, parts.body(), null, sweep, trail);
     }
 
     public static void submitLocalEffects(PoseStack pose, CameraInfo camera,

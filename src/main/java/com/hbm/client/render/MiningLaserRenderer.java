@@ -1,16 +1,15 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -23,29 +22,41 @@ import org.jspecify.annotations.Nullable;
  * All transforms are the old renderer's, verbatim (origin {@code (+0.5, −1, +0.5)}, emitter offset 1.5
  * along the aim vector, {@code v = target − pos + (0,3,0)}).
  */
-public class MiningLaserRenderer implements CompatBER<TileEntityMachineMiningLaser, MiningLaserRenderState> {
+public class MiningLaserRenderer extends GemBER<TileEntityMachineMiningLaser, MiningLaserRenderState> {
 
     private static final int BEAM_OUTER = 0xa00000;
     private static final int BEAM_INNER = 0xFFFFFF;
 
-    private final WavefrontObj model;
-    private final RenderType baseType;
-    private final RenderType pivotType;
-    private final RenderType laserType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mining_laser.obj"));
+    private final Surface base = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/mining_laser_base.png");
+    private final Surface pivot = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/mining_laser_pivot.png");
+    private final Surface barrel = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/mining_laser_laser.png");
 
-    public MiningLaserRenderer() {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/mining_laser.obj"));
-        this.baseType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mining_laser_base.png"));
-        this.pivotType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mining_laser_pivot.png"));
-        this.laserType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/mining_laser_laser.png"));
+    /**
+     * The beam can span hundreds of blocks below the machine, so the model never frustum-culls and keeps
+     * rendering at long range — the old getRenderBoundingBox and 65536-dist-squared overrides.
+     */
+    @Override
+    protected void setup(Gem.Model<MiningLaserRenderState> declaration) {
+        Gem.Part<MiningLaserRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, -1F, 0.5F);
+
+        machine.child(model.part("Base"), base);
+        machine.child(model.part("Pivot"), pivot)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+        machine.child(model.part("Laser"), barrel)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(0F, -1F, 0F)
+                .angle(Gem.Axes.X, state -> -(state.pitch + 90F))
+                .translate(0F, 1F, 0F);
     }
 
     @Override public MiningLaserRenderState createRenderState() { return new MiningLaserRenderState(); }
-    // The beam can span hundreds of blocks below the machine — never frustum-cull it, and keep it
-    // rendering at long range (the old getRenderBoundingBox/65536-dist² overrides).
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachineMiningLaser be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
 
     @Override
     public void extract(TileEntityMachineMiningLaser be, MiningLaserRenderState state, float partialTicks,
@@ -63,51 +74,26 @@ public class MiningLaserRenderer implements CompatBER<TileEntityMachineMiningLas
         state.vx = tx - be.getBlockPos().getX();
         state.vy = ty - be.getBlockPos().getY() + 3;
         state.vz = tz - be.getBlockPos().getZ();
-    }
-
-    @Override
-    public void submit(MiningLaserRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
-
-        ps.pushPose();
-        ps.translate(0.5F, -1F, 0.5F); // the old translate(x+0.5, y-1, z+0.5)
 
         // Emitter offset: 1.5 along the normalized aim vector; the barrel aims along the remainder.
-        Vec3 v = new Vec3(s.vx, s.vy, s.vz);
-        Vec3 nVec = v.normalize().scale(1.5);
-        Vec3 vec = v.subtract(nVec);
-
-        double yaw = Math.toDegrees(Math.atan2(vec.x, vec.z));
-        double sqrt = Math.sqrt(vec.x * vec.x + vec.z * vec.z);
-        double pitch = Math.toDegrees(Math.atan2(vec.y, sqrt));
-
-        part(col, ps, "Base", baseType, light);
-
-        ps.pushPose();
-        ps.mulPose(Axis.YP.rotationDegrees((float) yaw));
-        part(col, ps, "Pivot", pivotType, light);
-        ps.popPose();
-
-        ps.pushPose();
-        ps.mulPose(Axis.YP.rotationDegrees((float) yaw));
-        ps.translate(0F, -1F, 0F);
-        ps.mulPose(Axis.XN.rotationDegrees((float) pitch + 90F)); // old glRotated(pitch+90, -1, 0, 0)
-        ps.translate(0F, 1F, 0F);
-        part(col, ps, "Laser", laserType, light);
-        ps.popPose();
-
-        if (s.beam) {
-            ps.pushPose();
-            ps.translate(nVec.x, nVec.y - 1, nVec.z); // old: beam starts 1.5 out from the pivot, 1 down
-            BeamPronter.prontBeam(ps, col, vec, BEAM_OUTER, BEAM_INNER, 3, 0.09F);
-            ps.popPose();
-        }
-
-        ps.popPose();
+        Vec3 aim = new Vec3(state.vx, state.vy, state.vz);
+        Vec3 emitter = aim.normalize().scale(1.5);
+        Vec3 rest = aim.subtract(emitter);
+        state.emitter = emitter;
+        state.reach = rest;
+        state.yaw = (float) Math.toDegrees(Math.atan2(rest.x, rest.z));
+        state.pitch = (float) Math.toDegrees(
+                Math.atan2(rest.y, Math.sqrt(rest.x * rest.x + rest.z * rest.z)));
     }
 
-    private void part(SubmitSink col, PoseStack ps, String name, RenderType type, int light) {
-        col.submitCustomGeometry(ps, type,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
+    /** The beam reaches wherever the laser is pointing, so its length is its geometry. */
+    @Override
+    protected void submitUndeclared(MiningLaserRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
+        if (!s.beam) return;
+        ps.pushPose();
+        ps.translate(0.5F, -1F, 0.5F);
+        ps.translate(s.emitter.x, s.emitter.y - 1, s.emitter.z);
+        BeamPronter.prontBeam(ps, col, s.reach, BEAM_OUTER, BEAM_INNER, 3, 0.09F);
+        ps.popPose();
     }
 }

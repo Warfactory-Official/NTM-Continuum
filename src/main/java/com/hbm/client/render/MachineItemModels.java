@@ -8,17 +8,17 @@ import com.google.gson.JsonParser;
 import com.hbm.Constants;
 import com.hbm.items.ModDataComponents;
 import com.hbm.client.model.WavefrontObj;
-import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.item.ItemStack;
 import org.joml.Vector3f;
 
 import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +51,7 @@ private static Map<Identifier, MachineItemModel> models = Map.of();
     private static Map<Identifier, com.hbm.client.jetpack.JetpackGliderItemModel> gliders = Map.of();
     private static Map<Identifier, RBMKColumnItemModel> rbmkColumns = Map.of();
     private static Map<Identifier, RBMKBlockColumnItemModel> blockColumns = Map.of();
+    private static Set<Identifier> oversized = Set.of();
 
     /^ The model for an item, or null if that item is not an OBJ machine. ^/
 public static MachineItemModel get(Identifier item) {
@@ -72,6 +73,9 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
 
     public static boolean isGlider(Identifier item) { return gliders.containsKey(item); }
 
+    /^ Whether the definition opted out of slot clipping, the way 26.1's item properties do. ^/
+    public static boolean isOversizedInGui(Identifier item) { return oversized.contains(item); }
+
     /^ The dedicated four-section fuel-channel model, or null for every other item. ^/
     public static RBMKColumnItemModel rbmkColumn(Identifier item) { return rbmkColumns.get(item); }
 
@@ -88,6 +92,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         Map<Identifier, RBMKColumnItemModel> columns = new HashMap<>();
         Map<Identifier, RBMKBlockColumnItemModel> blocks = new HashMap<>();
         Map<Identifier, com.hbm.client.jetpack.JetpackGliderItemModel> gliderItems = new HashMap<>();
+        Set<Identifier> oversizedItems = new HashSet<>();
         for (Map.Entry<Identifier, Resource> entry :
                 resources.listResources("items", path -> path.getPath().endsWith(".json")).entrySet()) {
             Identifier file = entry.getKey();
@@ -101,6 +106,9 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                 if (jetpackGliderOf(root) != null) gliderItems.put(item,
                         new com.hbm.client.jetpack.JetpackGliderItemModel());
                 if (machine != null) built.put(item, parse(machine, isBlockFramed(root)));
+                if (root.isJsonObject() && bool(root.getAsJsonObject(), "oversized_in_gui", false)) {
+                    oversizedItems.add(item);
+                }
                 Map<Integer, JsonObject> variantJson = machineObjVariantsOf(root);
                 if (!variantJson.isEmpty()) {
                     Map<Integer, MachineItemModel> parsed = new HashMap<>();
@@ -123,6 +131,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         rbmkColumns = Map.copyOf(columns);
         blockColumns = Map.copyOf(blocks);
         gliders = Map.copyOf(gliderItems);
+        oversized = Set.copyOf(oversizedItems);
         // Logged at info, not debug: a silently-empty map renders every machine as an invisible item and
         // produces no warning anywhere, so the count is the only positive signal that this worked.
         Constants.LOG.info("Loaded {} OBJ item model(s) and {} RBMK fuel-column item model(s)", models.size(), rbmkColumns.size());
@@ -285,22 +294,22 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
              }
          }
 
-         Map<String, RenderType> materialTypes = Map.of();
+         Map<String, Surface> materialTypes = Map.of();
           if (bool(json, "mtl", false)) {
             // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
              Map<String, Identifier> lib = WavefrontObj.loadMtl(dev.golem.core.Ids.of(
                     objId.getNamespace(), objId.getPath().replace(".obj", ".mtl")));
-            Map<String, RenderType> resolved = new LinkedHashMap<>();
+            Map<String, Surface> resolved = new LinkedHashMap<>();
             for (String mat : obj.materialNames()) {
                 Identifier tex = lib.get(mat);
                 if (tex != null) resolved.put(mat, cutout(tex, noCull));
             }
                    materialTypes = resolved;
          }
-         Map<String, RenderType> partTypes = Map.of();
+         Map<String, Surface> partTypes = Map.of();
          JsonElement partTextureValue = json.get("partTextures");
          if (partTextureValue != null && partTextureValue.isJsonObject()) {
-             Map<String, RenderType> resolved = new LinkedHashMap<>();
+             Map<String, Surface> resolved = new LinkedHashMap<>();
              resolved.put("Body", cutout(texture, noCull));
              for (Map.Entry<String, JsonElement> entry : partTextureValue.getAsJsonObject().entrySet()) {
                  if (entry.getValue().isJsonPrimitive()) {
@@ -328,8 +337,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                  Set.copyOf(strings(json, "exclude")),
                  overlayTexture == null ? null : cutout(overlayTexture, noCull),
                  strings(json, "overlayParts"),
-                 blackParts.isEmpty() ? null : CompatRenderTypes.entitySolid(
-                         dev.golem.core.Ids.of("hbm", "textures/models/misc/white.png")),
+                 blackParts.isEmpty() ? null : Surface.solid("hbm:textures/models/misc/white.png"),
                  blackParts,
                  strings(json, "rotateParts"),
                 f(json, "rotateX", 0.0F),
@@ -341,8 +349,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                      strings(json, "parts"), vector(primaryTranslate), modelPasses, f(json, "guiSpinSpeed", 0F));
      }
 
-    private static RenderType cutout(Identifier texture, boolean noCull) {
-        return noCull ? CompatRenderTypes.entityCutoutNoCull(texture) : CompatRenderTypes.entityCutout(texture);
+    private static Surface cutout(Identifier texture, boolean noCull) {
+        return noCull ? Surface.cutoutNoCull(texture.toString()) : Surface.cutout(texture.toString());
     }
 
     private static Map<String, MachineItemModel.ContextTransform> contextTransforms(JsonObject json) {

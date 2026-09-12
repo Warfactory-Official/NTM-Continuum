@@ -6,35 +6,39 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Animated renderer for the industrial turbine, matching the old three-part TESR. */
+/** Industrial turbine: a static housing, the steam-type gauge needle and the spinning flywheel. */
 public final class IndustrialTurbineRenderer
-        implements CompatBER<TileEntityMachineIndustrialTurbine, IndustrialTurbineRenderState> {
+        extends GemBER<TileEntityMachineIndustrialTurbine, IndustrialTurbineRenderState> {
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/industrial_turbine.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/industrial_turbine.png");
 
-    public IndustrialTurbineRenderer() {
-        model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID,
-                "models/machines/industrial_turbine.obj"));
-        renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID,
-                "textures/models/machines/industrial_turbine.png"));
+    @Override
+    protected void setup(Gem.Model<IndustrialTurbineRenderState> declaration) {
+        Gem.Part<IndustrialTurbineRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+
+        machine.child(model.part("Turbine"), surface);
+        machine.child(model.part("Gauge"), surface)
+                .spin(Gem.Axes.Z, 0F, 1.5F, 0F, state -> state.gauge);
+        machine.child(model.part("Flywheel"), surface)
+                .spin(Gem.Axes.Z, 0F, 1.5F, 0F, state -> -state.rotor);
     }
 
-    @Override public IndustrialTurbineRenderState createRenderState() { return new IndustrialTurbineRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachineIndustrialTurbine be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    public IndustrialTurbineRenderState createRenderState() {
+        return new IndustrialTurbineRenderState();
+    }
 
     @Override
     public void extract(TileEntityMachineIndustrialTurbine be, IndustrialTurbineRenderState state,
@@ -50,33 +54,5 @@ public final class IndustrialTurbineRenderer
         };
         state.gauge = 135F - (be.tanks[0].getTankType().getID() - Fluids.STEAM.getID()) * 90F;
         state.rotor = be.lastRotor + (be.rotor - be.lastRotor) * partialTicks;
-    }
-
-    @Override
-    public void submit(IndustrialTurbineRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        part(sink, poseStack, "Turbine", state.lightCoords);
-
-        poseStack.pushPose();
-        poseStack.translate(0F, 1.5F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.gauge));
-        poseStack.translate(0F, -1.5F, 0F);
-        part(sink, poseStack, "Gauge", state.lightCoords);
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(0F, 1.5F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-state.rotor));
-        poseStack.translate(0F, -1.5F, 0F);
-        part(sink, poseStack, "Flywheel", state.lightCoords);
-        poseStack.popPose();
-        poseStack.popPose();
-    }
-
-    private void part(SubmitSink sink, PoseStack poseStack, String name, int light) {
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 }

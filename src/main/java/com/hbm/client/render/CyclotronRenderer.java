@@ -1,41 +1,67 @@
 package com.hbm.client.render;
 
-import com.hbm.util.GameTime;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
+import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
-/** OBJ renderer for the cyclotron body, plug sockets, and rotating Standard Galactic inscription. */
-public final class CyclotronRenderer implements CompatBER<TileEntityMachineCyclotron, CyclotronRenderState> {
-    private static final WavefrontObj MODEL = WavefrontObj.load(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/cyclotron.obj"));
-    private static final Identifier BODY = texture("cyclotron.png");
-    private static final Identifier ASHES = texture("cyclotron_ashes.png");
-    private static final Identifier ASHES_FILLED = texture("cyclotron_ashes_filled.png");
-    private static final Identifier BOOK = texture("cyclotron_book.png");
-    private static final Identifier BOOK_FILLED = texture("cyclotron_book_filled.png");
-    private static final Identifier GAVEL = texture("cyclotron_gavel.png");
-    private static final Identifier GAVEL_FILLED = texture("cyclotron_gavel_filled.png");
-    private static final Identifier COIN = texture("cyclotron_coin.png");
-    private static final Identifier COIN_FILLED = texture("cyclotron_coin_filled.png");
+import java.util.function.Predicate;
+
+/**
+ * The cyclotron body, its four plug sockets, and the Standard Galactic inscription that turns above a
+ * fully plugged machine.
+ *
+ * <p>A socket is one mesh with two textures — empty and filled — so it names the mesh once and picks
+ * its skin from the plug it reads. The inscription is not declared at all: it is glyph quads the font
+ * atlas builds per frame, with no mesh for either backend to hold.
+ */
+public final class CyclotronRenderer extends GemBER<TileEntityMachineCyclotron, CyclotronRenderState> {
+
     private static final String INSCRIPTION = "plures necat crapula quam gladius";
 
-    @Override public CyclotronRenderState createRenderState() { return new CyclotronRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachineCyclotron be, Vec3 cameraPosition) { return true; }
-    @Override public int viewDistance() { return 256; }
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/cyclotron.obj"));
+
+    @Override
+    protected void setup(Gem.Model<CyclotronRenderState> declaration) {
+        Gem.Part<CyclotronRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F);
+
+        machine.child(model.part("Body"), surface("cyclotron"));
+        socket(machine, "B1", "cyclotron_ashes", state -> state.ashes);
+        socket(machine, "B2", "cyclotron_book", state -> state.book);
+        socket(machine, "B3", "cyclotron_gavel", state -> state.gavel);
+        socket(machine, "B4", "cyclotron_coin", state -> state.coin);
+    }
+
+    private void socket(Gem.Part<CyclotronRenderState> machine, String part, String texture,
+                        Predicate<CyclotronRenderState> plugged) {
+        Surface empty = surface(texture);
+        Surface filled = surface(texture + "_filled");
+        machine.child(model.part(part), empty)
+                .skin(state -> plugged.test(state) ? filled : empty);
+    }
+
+    private static Surface surface(String texture) {
+        return Surface.cutoutNoCull(Constants.MOD_ID + ":textures/models/machines/" + texture + ".png");
+    }
+
+    @Override
+    public CyclotronRenderState createRenderState() {
+        return new CyclotronRenderState();
+    }
 
     @Override
     public void extract(TileEntityMachineCyclotron be, CyclotronRenderState state,
@@ -48,44 +74,26 @@ public final class CyclotronRenderer implements CompatBER<TileEntityMachineCyclo
     }
 
     @Override
-    public void submit(CyclotronRenderState state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
-        pose.pushPose();
-        pose.translate(0.5D, 0D, 0.5D);
-        part(sink, pose, "Body", BODY, state.lightCoords);
-        part(sink, pose, "B1", state.ashes ? ASHES_FILLED : ASHES, state.lightCoords);
-        part(sink, pose, "B2", state.book ? BOOK_FILLED : BOOK, state.lightCoords);
-        part(sink, pose, "B3", state.gavel ? GAVEL_FILLED : GAVEL, state.lightCoords);
-        part(sink, pose, "B4", state.coin ? COIN_FILLED : COIN, state.lightCoords);
+    protected void submitUndeclared(CyclotronRenderState state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
+        if (!(state.ashes && state.book && state.gavel && state.coin)) return;
 
-        if (state.ashes && state.book && state.gavel && state.coin) {
-            Font font = Minecraft.getInstance().font;
+        Font font = Minecraft.getInstance().font;
+        pose.pushPose();
+        pose.translate(0.5D, 2D, 0.5D);
+        pose.mulPose(Axis.XP.rotationDegrees(180F));
+        float rotation = state.rotation;
+        for (char character : INSCRIPTION.toCharArray()) {
+            Component text = Component.literal(String.valueOf(character));
             pose.pushPose();
-            pose.translate(0D, 2D, 0D);
-            pose.mulPose(Axis.XP.rotationDegrees(180F));
-            float rotation = state.rotation;
-            for (char character : INSCRIPTION.toCharArray()) {
-                Component text = Component.literal(String.valueOf(character));
-                pose.pushPose();
-                pose.mulPose(Axis.YP.rotationDegrees(rotation));
-                rotation -= font.width(text.getVisualOrderText()) * 2F;
-                pose.translate(2.75D, 0D, 0D);
-                pose.mulPose(Axis.YP.rotationDegrees(-90F));
-                pose.scale(0.1F, 0.1F, 0.1F);
-                sink.submitText(pose, font, 0F, 0F, text.getVisualOrderText(), false,
-                        Font.DisplayMode.POLYGON_OFFSET, 0xF000F0, 0xFF600060, 0);
-                pose.popPose();
-            }
+            pose.mulPose(Axis.YP.rotationDegrees(rotation));
+            rotation -= font.width(text.getVisualOrderText()) * 2F;
+            pose.translate(2.75D, 0D, 0D);
+            pose.mulPose(Axis.YP.rotationDegrees(-90F));
+            pose.scale(0.1F, 0.1F, 0.1F);
+            sink.submitText(pose, font, 0F, 0F, text.getVisualOrderText(), false,
+                    Font.DisplayMode.POLYGON_OFFSET, 0xF000F0, 0xFF600060, 0);
             pose.popPose();
         }
         pose.popPose();
-    }
-
-    private static void part(SubmitSink sink, PoseStack pose, String name, Identifier texture, int light) {
-        sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutoutNoCull(texture),
-                (last, buffer) -> MODEL.renderPart(name, last, buffer, light, OverlayTexture.NO_OVERLAY));
-    }
-
-    private static Identifier texture(String name) {
-        return dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/" + name);
     }
 }

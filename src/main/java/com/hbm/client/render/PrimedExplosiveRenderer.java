@@ -3,33 +3,59 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.blocks.bomb.BlockTNTBase;
 import com.hbm.entity.explosive.EntityPrimedExplosive;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatEntityRenderer;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.Vertexes;
-import java.util.HashMap;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemEntityRenderer;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Quads;
+import dev.golem.core.render.gem.Surface;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 /** Block-textured primed renderer with the legacy final-ten-tick swelling and white flash. */
 public class PrimedExplosiveRenderer
-        extends CompatEntityRenderer<EntityPrimedExplosive, PrimedExplosiveRenderState> {
+        extends GemEntityRenderer<EntityPrimedExplosive, PrimedExplosiveRenderState> {
 
-    private static final Identifier WHITE =
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/misc/white.png");
-    private final Map<String, RenderType[]> textures = new HashMap<>();
-    private final RenderType flash = CompatRenderTypes.entityTranslucent(WHITE);
+    private static final Surface FLASH =
+            Surface.translucent(Constants.MOD_ID + ":textures/models/misc/white.png");
+
+    /** The flash is a lamp over the charge, not a lit surface. */
+    private static final int FULL_BRIGHT = 0xF000F0;
+
+    private static final Geometry SIDES = sides(Quads.named(Constants.MOD_ID + ":primed_sides")).build();
+    private static final Geometry TOP = top(Quads.named(Constants.MOD_ID + ":primed_top")).build();
+    private static final Geometry BOTTOM = bottom(Quads.named(Constants.MOD_ID + ":primed_bottom")).build();
+    private static final Geometry CUBE =
+            bottom(top(sides(Quads.named(Constants.MOD_ID + ":primed_cube")))).build();
+
+    private static final Map<String, Surface[]> SKINS = new ConcurrentHashMap<>();
 
     public PrimedExplosiveRenderer(EntityRendererProvider.Context context) {
         super(context);
         shadowRadius = 0.5F;
+    }
+
+    @Override
+    protected void setup(Gem.Model<PrimedExplosiveRenderState> declaration) {
+        Gem.Part<PrimedExplosiveRenderState> charge = declaration.joint()
+                .translate(0F, 0.5F, 0F)
+                .stretch(state -> swell(state.fuse))
+                .rotate(Gem.Axes.Y, -90F)
+                .translate(-0.5F, -0.5F, 0.5F);
+
+        charge.child(SIDES, skins("tnt")[0]).skin(state -> skins(state.textureName)[0]);
+        charge.child(TOP, skins("tnt")[1]).skin(state -> skins(state.textureName)[1]);
+        charge.child(BOTTOM, skins("tnt")[2]).skin(state -> skins(state.textureName)[2]);
+
+        charge.child(CUBE, FLASH)
+                .order(1)
+                .visibleIf(state -> ((int) state.fuse) / 5 % 2 == 0)
+                .tint(state -> flash(state.fuse))
+                .light(state -> FULL_BRIGHT)
+                .translate(0.5F, 0.5F, 0.5F)
+                .scale(1.006F)
+                .translate(-0.5F, -0.5F, -0.5F);
     }
 
     @Override
@@ -45,85 +71,53 @@ public class PrimedExplosiveRenderer
         }
     }
 
-    @Override
-    public void submit(PrimedExplosiveRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0F, 0.5F, 0F);
-        if (state.fuse < 10F) {
-            float swell = Mth.clamp(1F - state.fuse / 10F, 0F, 1F);
-            swell *= swell;
-            swell *= swell;
-            float scale = 1F + swell * 0.3F;
-            poseStack.scale(scale, scale, scale);
-        }
-        poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
-        poseStack.translate(-0.5F, -0.5F, 0.5F);
-
-        RenderType[] passes = textures.computeIfAbsent(state.textureName, PrimedExplosiveRenderer::textures);
-        sink.submitCustomGeometry(poseStack, passes[0],
-                (pose, buffer) -> sides(pose, buffer, 0xFFFFFFFF, state.lightCoords));
-        sink.submitCustomGeometry(poseStack, passes[1],
-                (pose, buffer) -> top(pose, buffer, 0xFFFFFFFF, state.lightCoords));
-        sink.submitCustomGeometry(poseStack, passes[2],
-                (pose, buffer) -> bottom(pose, buffer, 0xFFFFFFFF, state.lightCoords));
-
-        if (((int) state.fuse) / 5 % 2 == 0) {
-            float alpha = (1F - state.fuse / 100F) * 0.8F;
-            int color = ((int) (Mth.clamp(alpha, 0F, 1F) * 255F) << 24) | 0xFFFFFF;
-            poseStack.pushPose();
-            poseStack.translate(0.5F, 0.5F, 0.5F);
-            poseStack.scale(1.006F, 1.006F, 1.006F);
-            poseStack.translate(-0.5F, -0.5F, -0.5F);
-            sink.order(1).submitCustomGeometry(poseStack, flash,
-                    (pose, buffer) -> cube(pose, buffer, color, 0xF000F0));
-            poseStack.popPose();
-        }
-        poseStack.popPose();
+    /** Upstream's quartic ramp over the last ten ticks, flat at one until then. */
+    private static float swell(float fuse) {
+        if (fuse >= 10F) return 1F;
+        float swell = Mth.clamp(1F - fuse / 10F, 0F, 1F);
+        swell *= swell;
+        swell *= swell;
+        return 1F + swell * 0.3F;
     }
 
-    private static RenderType[] textures(String name) {
-        return new RenderType[] {
-                cutout(name + "_side"), cutout(name + "_top"), cutout(name + "_bottom")
-        };
+    private static int flash(float fuse) {
+        float alpha = (1F - fuse / 100F) * 0.8F;
+        return ((int) (Mth.clamp(alpha, 0F, 1F) * 255F) << 24) | 0xFFFFFF;
     }
 
-    private static RenderType cutout(String name) {
-        return CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID,
-                "textures/blocks/" + name + ".png"));
+    private static Surface[] skins(String name) {
+        return SKINS.computeIfAbsent(name, base -> new Surface[] {
+                cutout(base + "_side"), cutout(base + "_top"), cutout(base + "_bottom")
+        });
     }
 
-    private static void cube(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer,
-                             int color, int light) {
-        sides(pose, buffer, color, light);
-        top(pose, buffer, color, light);
-        bottom(pose, buffer, color, light);
+    private static Surface cutout(String name) {
+        return Surface.cutout(Constants.MOD_ID + ":textures/blocks/" + name + ".png");
     }
 
-    private static void sides(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer b,
-                              int color, int light) {
-        quad(b, pose, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, color, light, 0, 0, -1);
-        quad(b, pose, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, color, light, 0, 0, 1);
-        quad(b, pose, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, color, light, -1, 0, 0);
-        quad(b, pose, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, color, light, 1, 0, 0);
+    private static Quads.Builder sides(Quads.Builder faces) {
+        quad(faces, 0F, 0F, -1F, 0F, 0F, 0F, 0F, 1F, 0F, 1F, 1F, 0F, 1F, 0F, 0F);
+        quad(faces, 0F, 0F, 1F, 1F, 0F, 1F, 1F, 1F, 1F, 0F, 1F, 1F, 0F, 0F, 1F);
+        quad(faces, -1F, 0F, 0F, 0F, 0F, 1F, 0F, 1F, 1F, 0F, 1F, 0F, 0F, 0F, 0F);
+        quad(faces, 1F, 0F, 0F, 1F, 0F, 0F, 1F, 1F, 0F, 1F, 1F, 1F, 1F, 0F, 1F);
+        return faces;
     }
 
-    private static void top(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer b,
-                            int color, int light) {
-        quad(b, pose, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, color, light, 0, 1, 0);
+    private static Quads.Builder top(Quads.Builder faces) {
+        return quad(faces, 0F, 1F, 0F, 0F, 1F, 0F, 0F, 1F, 1F, 1F, 1F, 1F, 1F, 1F, 0F);
     }
 
-    private static void bottom(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer b,
-                               int color, int light) {
-        quad(b, pose, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, color, light, 0, -1, 0);
+    private static Quads.Builder bottom(Quads.Builder faces) {
+        return quad(faces, 0F, -1F, 0F, 0F, 0F, 1F, 0F, 0F, 0F, 1F, 0F, 0F, 1F, 0F, 1F);
     }
 
-    private static void quad(com.mojang.blaze3d.vertex.VertexConsumer b, PoseStack.Pose pose,
-                             float x0, float y0, float z0, float x1, float y1, float z1,
-                             float x2, float y2, float z2, float x3, float y3, float z3,
-                             int color, int light, float nx, float ny, float nz) {
-        Vertexes.vertex(b, pose, x0, y0, z0, color, 0, 1, OverlayTexture.NO_OVERLAY, light, nx, ny, nz);
-        Vertexes.vertex(b, pose, x1, y1, z1, color, 0, 0, OverlayTexture.NO_OVERLAY, light, nx, ny, nz);
-        Vertexes.vertex(b, pose, x2, y2, z2, color, 1, 0, OverlayTexture.NO_OVERLAY, light, nx, ny, nz);
-        Vertexes.vertex(b, pose, x3, y3, z3, color, 1, 1, OverlayTexture.NO_OVERLAY, light, nx, ny, nz);
+    private static Quads.Builder quad(Quads.Builder faces, float nx, float ny, float nz,
+            float x0, float y0, float z0, float x1, float y1, float z1,
+            float x2, float y2, float z2, float x3, float y3, float z3) {
+        return faces.normal(nx, ny, nz)
+                .vertex(x0, y0, z0, 0F, 1F)
+                .vertex(x1, y1, z1, 0F, 0F)
+                .vertex(x2, y2, z2, 1F, 0F)
+                .vertex(x3, y3, z3, 1F, 1F);
     }
 }

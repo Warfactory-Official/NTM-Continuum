@@ -2,6 +2,12 @@ package com.hbm.items;
 
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;
+import dev.golem.core.dejson.Slots;
+import dev.golem.core.render.display.DisplaySlot;
+import dev.golem.core.render.display.Pose17;
+import org.joml.Matrix4f;
+
+import java.util.Map;
 
 /**
  * Every item model hbm can state in code, declared through Golem Core's {@code dejson} vocabulary
@@ -40,6 +46,7 @@ public final class ModItemModels {
         layeredSprites();
         tools();
         blockItems();
+        machineFrames();
     }
 
     private static final String[] SPRITE_ITEMS_0 = {
@@ -908,6 +915,38 @@ public final class ModItemModels {
         Dejson.item(NS, "overfuse").models(Models.handheld("hbm:items/overfuse")).register();
         Dejson.item(NS, "reacher").models(Models.handheld("hbm:items/reacher")).register();
         Dejson.item(NS, "screwdriver").models(Models.handheld("hbm:items/screwdriver")).register();
+    }
+
+    /**
+     * The two base models an OBJ machine item wears its frame on.
+     *
+     * <p>A machine icon is a frame times a body. The body is the item's own verbatim 1.7
+     * {@code renderInventory}/{@code renderCommon} numbers, which its item definition carries and
+     * {@code MachineItemModel} applies at draw time. The frame is what 1.7's {@code ItemRenderBase}
+     * wrapped around every such body, and it is shared — so it lives here, once, and every machine
+     * inherits it by pointing at one of these two models.
+     *
+     * <p>Two spellings of one frame because the renderer differs, not the pose. 26.1 reads display
+     * properties off {@code machine_obj_context_base} through the special-model system; below 1.21.4
+     * the same items are routed to a per-loader BEWLR, which vanilla only reaches for a model whose
+     * parent chain ends at {@code minecraft:builtin/entity}.
+     *
+     * <p>Composed rather than written out. A {@code display{}} entry is a translate/rotate/scale triple
+     * applied as {@code T . R . S}; the 1.7 chains are not in that shape until
+     * {@link dev.golem.core.render.display.DisplayFrame} decomposes them, and copying one field by
+     * field is how these icons ended up most of a slot too high.
+     */
+    private static void machineFrames() {
+        Map<DisplaySlot, Matrix4f> frame = Pose17.frames(Pose17.Klass.ITEM_RENDER_BASE);
+        Dejson.item(NS, "machine_obj_context_base")
+                .models(Models.guiLight("side", Models.display(frame,
+                        Models.parented("minecraft:block/block",
+                                Slots.of("particle", "hbm:blocks/block_steel")))))
+                .register();
+        Dejson.item(NS, "machine_obj_context_legacy")
+                .models(Models.guiLight("side", Models.display(frame,
+                        Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
+                .register();
     }
 
     /**

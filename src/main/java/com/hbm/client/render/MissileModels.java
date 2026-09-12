@@ -3,10 +3,11 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.ModMissileItems;
-import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.gem.Surface;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.item.Item;
 import org.jspecify.annotations.Nullable;
 
@@ -29,15 +30,26 @@ public final class MissileModels {
 
     private MissileModels() {}
 
-    /** One missile body: an OBJ, the texture it samples, and the scale it is drawn at. */
-    public record MissileModel(WavefrontObj model, RenderType renderType, float scale) {}
+    /** One missile body: an OBJ, the surface it wears, and the scale it is drawn at. */
+    public record MissileModel(WavefrontObj model, Surface surface, float scale) {}
 
     private static final Map<Item, MissileModel> MODELS = new HashMap<>();
+    private static final Map<String, WavefrontObj> MESHES = new LinkedHashMap<>();
     private static boolean built = false;
 
     public static @Nullable MissileModel get(Item item) {
         if (!built) build();
         return MODELS.get(item);
+    }
+
+    /**
+     * Every distinct body, each loaded once. Most missiles are one of a handful of shapes wearing a
+     * different paint job, so a declaration that names the shapes and picks the paint from the loaded
+     * missile has a part per shape rather than a part per missile.
+     */
+    public static Collection<WavefrontObj> meshes() {
+        if (!built) build();
+        return MESHES.values();
     }
 
     private static void build() {
@@ -75,9 +87,9 @@ public final class MissileModels {
     }
 
     private static void put(Item item, String model, String texture, float scale) {
-        MODELS.put(item, new MissileModel(
-                WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/missiles/" + model)),
-                CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/missiles/" + texture)),
-                scale));
+        WavefrontObj mesh = MESHES.computeIfAbsent(model,
+                path -> WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/missiles/" + path)));
+        MODELS.put(item, new MissileModel(mesh,
+                Surface.cutout(Constants.MOD_ID + ":textures/models/missiles/" + texture), scale));
     }
 }

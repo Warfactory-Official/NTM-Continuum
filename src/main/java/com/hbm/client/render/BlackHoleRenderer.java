@@ -9,16 +9,18 @@ import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatEntityRenderState;
-import dev.golem.core.render.CompatEntityRenderer;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemEntityRenderer;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
 /** Renders the legacy sphere, swirl/disc and axial jets of the black-hole fields. */
-public final class BlackHoleRenderer extends CompatEntityRenderer<EntityBlackHole, BlackHoleRenderer.State> {
+public final class BlackHoleRenderer extends GemEntityRenderer<EntityBlackHole, BlackHoleRenderer.State> {
     private static final Identifier SPHERE_TEXTURE =
             Ids.of(Constants.MOD_ID, "textures/models/explosion/blackhole.png");
     private static final Identifier SWIRL_TEXTURE = Ids.of(Constants.MOD_ID, "textures/entity/bhole.png");
@@ -33,14 +35,18 @@ public final class BlackHoleRenderer extends CompatEntityRenderer<EntityBlackHol
                 Ids.of(Constants.MOD_ID, "models/sphere.obj"));
     }
 
+    /** The event horizon itself; the accretion field around it is built from the clock every frame. */
     @Override
-    public State createRenderState() {
-        return new State();
+    protected void setup(Gem.Model<State> declaration) {
+        declaration.offScreen()
+                .part(sphere.all(), Surface.cutout(SPHERE_TEXTURE.toString()))
+                .light(state -> 0xF000F0)
+                .stretch(state -> state.size);
     }
 
     @Override
-    public boolean culled(EntityBlackHole entity) {
-        return false;
+    public State createRenderState() {
+        return new State();
     }
 
     @Override
@@ -48,18 +54,16 @@ public final class BlackHoleRenderer extends CompatEntityRenderer<EntityBlackHol
         state.entity = entity;
         state.partialTicks = partialTicks;
         state.entityId = entity.getId();
+        state.size = entity.getSize();
     }
 
     @Override
-    public void submit(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
+    protected void submitUndeclared(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         EntityBlackHole entity = state.entity;
         if (entity == null) return;
 
         pose.pushPose();
         pose.scale(entity.getSize(), entity.getSize(), entity.getSize());
-        sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(SPHERE_TEXTURE),
-                (last, buffer) -> sphere.renderAll(last, buffer, 0xF000F0, OverlayTexture.NO_OVERLAY));
-
         if (entity instanceof EntityVortex) {
             renderSwirl(entity, state.partialTicks, pose, sink);
         } else {
@@ -205,5 +209,6 @@ public final class BlackHoleRenderer extends CompatEntityRenderer<EntityBlackHol
         private EntityBlackHole entity;
         private float partialTicks;
         private int entityId;
+        private float size = 1F;
     }
 }

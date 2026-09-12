@@ -12,9 +12,22 @@
     "yaw": 0.0,
     "parts": ["Base"],
     "passes": [
-      { "obj": "hbm:models/turrets/turret_howard.obj", "texture": "hbm:textures/models/turrets/carriage_ciws.png", "parts": ["Carriage"] },
-      { "obj": "hbm:models/turrets/turret_howard.obj", "texture": "hbm:textures/models/turrets/howard.png", "parts": ["Body"] },
-      { "obj": "hbm:models/turrets/turret_howard.obj", "texture": "hbm:textures/models/turrets/howard_barrels.png", "parts": ["BarrelsTop", "BarrelsBottom"] }
+      {
+        "obj": "hbm:models/turrets/turret_howard.obj",
+        "texture": "hbm:textures/models/turrets/carriage_ciws.png",
+        "parts": ["Carriage"]
+      },
+      {
+        "obj": "hbm:models/turrets/turret_howard.obj",
+        "texture": "hbm:textures/models/turrets/howard.png",
+        "parts": ["Body"]
+      },
+      {
+        "obj": "hbm:models/turrets/turret_howard.obj",
+        "texture": "hbm:textures/models/turrets/howard_barrels.png",
+        "parts": ["BarrelsTop", "BarrelsBottom"]
+      }
     ]
-  }
+  },
+  "oversized_in_gui": true
 }

@@ -1,9 +1,11 @@
 package com.hbm.client.anim;
 
-import com.hbm.client.anim.BusAnimationKeyframe.IType;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import dev.golem.core.render.anim.BusAnimation;
+import dev.golem.core.render.anim.BusAnimationKeyframe.IType;
+import dev.golem.core.render.anim.BusAnimationSequence;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;

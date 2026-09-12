@@ -12,8 +12,17 @@
     "yaw": -90.0,
     "parts": ["Base"],
     "passes": [
-      { "obj": "hbm:models/turrets/turret_himars.obj", "texture": "hbm:textures/models/turrets/himars.png", "parts": ["Carriage", "Launcher", "Crane"] },
-      { "obj": "hbm:models/turrets/turret_himars.obj", "texture": "hbm:textures/models/projectiles/himars_standard.png", "parts": ["TubeStandard"] }
+      {
+        "obj": "hbm:models/turrets/turret_himars.obj",
+        "texture": "hbm:textures/models/turrets/himars.png",
+        "parts": ["Carriage", "Launcher", "Crane"]
+      },
+      {
+        "obj": "hbm:models/turrets/turret_himars.obj",
+        "texture": "hbm:textures/models/projectiles/himars_standard.png",
+        "parts": ["TubeStandard"]
+      }
     ]
-  }
+  },
+  "oversized_in_gui": true
 }

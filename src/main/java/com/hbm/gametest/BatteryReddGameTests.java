@@ -174,35 +174,41 @@ public final class BatteryReddGameTests {
 
     public static void itemModels(GameTestHelper helper) {
         assertItemModel(helper, "machine_fensu", "hbm:models/machines/fensu.obj",
-                "hbm:textures/models/machines/fensus/fensu_light_blue.png", 0.21D, 90D, false, null);
+                "hbm:textures/models/machines/fensus/fensu_light_blue.png", 0.21D, 90D, false, null, false);
         assertItemModel(helper, "machine_bigasstank", "hbm:models/machines/bigasstank.obj",
-                "hbm:textures/models/machines/bigasstank.png", 0.0807692308D, 0D, false, null);
+                "hbm:textures/models/machines/bigasstank.png", 0.5D, 0D, false, null, true);
         assertItemModel(helper, "machine_bat9000", "hbm:models/machines/bat9000.obj",
-                "hbm:textures/models/machines/bat9000.png", 0.2D, 0D, false, null);
+                "hbm:textures/models/machines/bat9000.png", 0.2D, 0D, false, null, false);
         assertItemModel(helper, "machine_battery_redd", "hbm:models/machines/fensu2.obj",
-                "hbm:textures/models/machines/fensu2.png", 0.1024390244D, 270D, true, "Plasma");
+                "hbm:textures/models/machines/fensu2.png", 0.5D, -90D, true, "Plasma", true);
         helper.succeed();
     }
 
     private static void assertItemModel(GameTestHelper helper, String name, String obj, String texture,
-                                        double scale, double yaw, boolean excluded, String excludedPart) {
+                                        double scale, double yaw, boolean excluded, String excludedPart,
+                                        boolean legacy) {
         try (InputStream stream = BatteryReddGameTests.class.getClassLoader()
                 .getResourceAsStream("assets/hbm/items/" + name + ".json")) {
             JsonObject root = stream == null ? null
                     : JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
-            JsonObject special = root == null ? null : root.getAsJsonObject("model");
-            JsonObject model = special == null ? null : special.getAsJsonObject("model");
-            helper.assertTrue(special != null && "minecraft:special".equals(special.get("type").getAsString())
-                            && "hbm:item/machine_obj_base".equals(special.get("base").getAsString())
+            JsonObject outer = root == null ? null : root.getAsJsonObject("model");
+            boolean direct = outer != null && "hbm:machine_obj".equals(outer.get("type").getAsString());
+            JsonObject model = direct ? outer : outer == null ? null : outer.getAsJsonObject("model");
+            boolean shape = direct == legacy && (direct
+                    || (outer != null && "minecraft:special".equals(outer.get("type").getAsString())
+                            && "hbm:item/machine_obj_base".equals(outer.get("base").getAsString())));
+            helper.assertTrue(shape
                             && model != null && "hbm:machine_obj".equals(model.get("type").getAsString())
                             && obj.equals(model.get("obj").getAsString())
                             && texture.equals(model.get("texture").getAsString())
                             && Math.abs(model.get("scale").getAsDouble() - scale) < 0.000001D
                             && Math.abs(model.get("yaw").getAsDouble() - yaw) < 0.000001D
                             && model.get("ty").getAsDouble() == 0D
-                            && !model.has("rawLegacyTransform") && !model.has("itemPreTranslate")
+                            && model.has("rawLegacyTransform") == legacy
+                            && (!legacy || root.get("oversized_in_gui").getAsBoolean())
                             && (!excluded || contains(model.getAsJsonArray("exclude"), excludedPart)),
-                    "Invalid centered OBJ item contract: " + name);
+                    (legacy ? "Invalid 1.7-framed OBJ item contract: " : "Invalid centered OBJ item contract: ")
+                            + name);
         } catch (IOException | RuntimeException exception) {
             helper.fail("Could not read item model " + name + ": " + exception);
         }

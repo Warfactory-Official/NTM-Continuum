@@ -20,7 +20,11 @@
           "parts": ["RocketStandard"],
           "translate": [0.75, 0.0, 0.0],
           "passes": [
-            { "texture": "hbm:textures/models/projectiles/himars_standard_he.png", "parts": ["TubeStandard"], "translate": [-1.5, -3.375, 0.0] }
+            {
+              "texture": "hbm:textures/models/projectiles/himars_standard_he.png",
+              "parts": ["TubeStandard"],
+              "translate": [-1.5, -3.375, 0.0]
+            }
           ]
         }
       },
@@ -41,7 +45,11 @@
           "parts": ["RocketStandard"],
           "translate": [0.75, 0.0, 0.0],
           "passes": [
-            { "texture": "hbm:textures/models/projectiles/himars_standard_wp.png", "parts": ["TubeStandard"], "translate": [-1.5, -3.375, 0.0] }
+            {
+              "texture": "hbm:textures/models/projectiles/himars_standard_wp.png",
+              "parts": ["TubeStandard"],
+              "translate": [-1.5, -3.375, 0.0]
+            }
           ]
         }
       },
@@ -62,7 +70,11 @@
           "parts": ["RocketStandard"],
           "translate": [0.75, 0.0, 0.0],
           "passes": [
-            { "texture": "hbm:textures/models/projectiles/himars_standard_tb.png", "parts": ["TubeStandard"], "translate": [-1.5, -3.375, 0.0] }
+            {
+              "texture": "hbm:textures/models/projectiles/himars_standard_tb.png",
+              "parts": ["TubeStandard"],
+              "translate": [-1.5, -3.375, 0.0]
+            }
           ]
         }
       },
@@ -83,7 +95,11 @@
           "parts": ["RocketStandard"],
           "translate": [0.75, 0.0, 0.0],
           "passes": [
-            { "texture": "hbm:textures/models/projectiles/himars_standard_lava.png", "parts": ["TubeStandard"], "translate": [-1.5, -3.375, 0.0] }
+            {
+              "texture": "hbm:textures/models/projectiles/himars_standard_lava.png",
+              "parts": ["TubeStandard"],
+              "translate": [-1.5, -3.375, 0.0]
+            }
           ]
         }
       },
@@ -104,7 +120,11 @@
           "parts": ["RocketStandard"],
           "translate": [0.75, 0.0, 0.0],
           "passes": [
-            { "texture": "hbm:textures/models/projectiles/himars_standard_mini_nuke.png", "parts": ["TubeStandard"], "translate": [-1.5, -3.375, 0.0] }
+            {
+              "texture": "hbm:textures/models/projectiles/himars_standard_mini_nuke.png",
+              "parts": ["TubeStandard"],
+              "translate": [-1.5, -3.375, 0.0]
+            }
           ]
         }
       },
@@ -125,7 +145,11 @@
           "parts": ["RocketSingle"],
           "translate": [0.75, 0.0, 0.0],
           "passes": [
-            { "texture": "hbm:textures/models/projectiles/himars_single.png", "parts": ["TubeSingle"], "translate": [-1.5, -3.375, 0.0] }
+            {
+              "texture": "hbm:textures/models/projectiles/himars_single.png",
+              "parts": ["TubeSingle"],
+              "translate": [-1.5, -3.375, 0.0]
+            }
           ]
         }
       },
@@ -146,7 +170,11 @@
           "parts": ["RocketSingle"],
           "translate": [0.75, 0.0, 0.0],
           "passes": [
-            { "texture": "hbm:textures/models/projectiles/himars_single_tb.png", "parts": ["TubeSingle"], "translate": [-1.5, -3.375, 0.0] }
+            {
+              "texture": "hbm:textures/models/projectiles/himars_single_tb.png",
+              "parts": ["TubeSingle"],
+              "translate": [-1.5, -3.375, 0.0]
+            }
           ]
         }
       }
@@ -166,8 +194,13 @@
       "parts": ["RocketStandard"],
       "translate": [0.75, 0.0, 0.0],
       "passes": [
-        { "texture": "hbm:textures/models/projectiles/himars_standard.png", "parts": ["TubeStandard"], "translate": [-1.5, -3.375, 0.0] }
+        {
+          "texture": "hbm:textures/models/projectiles/himars_standard.png",
+          "parts": ["TubeStandard"],
+          "translate": [-1.5, -3.375, 0.0]
+        }
       ]
     }
-  }
+  },
+  "oversized_in_gui": true
 }

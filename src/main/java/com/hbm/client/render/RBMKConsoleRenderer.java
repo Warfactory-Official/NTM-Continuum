@@ -11,24 +11,32 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.*;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
-public final class RBMKConsoleRenderer implements CompatBER<BlockEntityRBMKConsole, RBMKConsoleRenderer.State> {
+public final class RBMKConsoleRenderer extends GemBER<BlockEntityRBMKConsole, RBMKConsoleRenderer.State> {
     private static final WavefrontObj MODEL = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/rbmk_console.obj"));
     private static final Identifier TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/machines/rbmk_console.png");
     private final Font font;
-    public RBMKConsoleRenderer(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context context) { font = net.minecraft.client.Minecraft.getInstance().font; }
+    public RBMKConsoleRenderer() { font = net.minecraft.client.Minecraft.getInstance().font; }
+    @Override protected void setup(Gem.Model<State> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(MODEL.all(), Surface.cutout(TEXTURE.toString()))
+                .translate(.5F, 0F, .5F)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(.5F, 0F, 0F);
+    }
     @Override public State createRenderState() { return new State(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public int viewDistance() { return 256; }
     /** Folded cells own block entities of the same type; only the core draws the desk. */
     @Override public boolean shouldRender(BlockEntityRBMKConsole be, Vec3 camera) {
         return !(be.getBlockState().getBlock() instanceof BlockMultiblockCore core && core.isCellOf(be.getBlockState()))
-                && CompatBER.super.shouldRender(be, camera);
+                && super.shouldRender(be, camera);
     }
     @Override public void extract(BlockEntityRBMKConsole be, State state, float partial, Vec3 camera) {
         state.yaw = yaw(be.getBlockState().getValue(BlockMultiblockCore.FACING));
@@ -40,9 +48,12 @@ public final class RBMKConsoleRenderer implements CompatBER<BlockEntityRBMKConso
             state.text[i] = (parts.length == 2 ? Component.translatable(parts[0], parts[1]) : Component.literal(display)).getVisualOrderText();
         }
     }
-    @Override public void submit(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
+    /**
+     * The column grid is one quad and one diamond per reactor column, built from a snapshot that
+     * changes every tick, and the six screens are glyph quads; neither has a mesh to be declared as.
+     */
+    @Override protected void submitUndeclared(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         pose.pushPose(); pose.translate(.5D, 0D, .5D); pose.mulPose(Axis.YP.rotationDegrees(state.yaw)); pose.translate(.5D, 0D, 0D);
-        sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(TEXTURE), (last, buffer) -> MODEL.renderAll(last, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
         if (state.columns != null) sink.submitCustomGeometry(pose, CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png")),
                 (last, buffer) -> grid(last, buffer, state.columns, state.lightCoords));
         pose.translate(-.42D, 3.5D, 1.75D);

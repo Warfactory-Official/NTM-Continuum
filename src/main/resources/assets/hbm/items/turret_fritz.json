@@ -13,7 +13,12 @@
     "parts": ["Base"],
     "passes": [
       { "texture": "hbm:textures/models/turrets/carriage.png", "parts": ["Carriage"] },
-      { "obj": "hbm:models/turrets/turret_fritz.obj", "texture": "hbm:textures/models/turrets/fritz.png", "parts": ["Gun"] }
+      {
+        "obj": "hbm:models/turrets/turret_fritz.obj",
+        "texture": "hbm:textures/models/turrets/fritz.png",
+        "parts": ["Gun"]
+      }
     ]
-  }
+  },
+  "oversized_in_gui": true
 }

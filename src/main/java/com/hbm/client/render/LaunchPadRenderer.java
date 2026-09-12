@@ -4,17 +4,16 @@ import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * The launch pad: the silo, plus <b>the missile standing on it</b> — 1.12.2's {@code RenderLaunchPad}.
@@ -30,15 +29,41 @@ import net.minecraft.world.phys.Vec3;
  * <p>The missile comes from {@code TileEntityLaunchPad.toRender}, which the block entity syncs from
  * slot 0 in its network pack — the client never sees the pad's inventory otherwise.
  */
-public class LaunchPadRenderer implements CompatBER<TileEntityLaunchPad, LaunchPadRenderState> {
+public class LaunchPadRenderer extends GemBER<TileEntityLaunchPad, LaunchPadRenderState> {
 
     /** Upstream's TESR base yaw for the silo. */
     private static final float BASE_YAW = 90F;
 
     private final WavefrontObj silo = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/weapons/launch_pad_silo.obj"));
-    private final RenderType siloType = CompatRenderTypes.entityCutout(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/launchpad/silo.png"));
+    private final Surface siloSurface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/launchpad/silo.png");
+
+    /**
+     * The silo, and one missile-shaped slot above it holding whichever body the loaded missile has, in
+     * that missile's own paint and at its own scale. The silo and a tier-4 missile stand well outside
+     * the core's own block section, hence the off-screen pass.
+     */
+    @Override
+    protected void setup(Gem.Model<LaunchPadRenderState> declaration) {
+        declaration.offScreen().viewDistance(256)
+                .part(silo.all(true), siloSurface)
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> BASE_YAW + state.yaw);
+
+        Map<WavefrontObj, Geometry> bodies = new IdentityHashMap<>();
+        for (WavefrontObj body : MissileModels.meshes()) bodies.put(body, body.all(true));
+        Geometry fallback = bodies.values().iterator().next();
+
+        declaration.part(fallback, siloSurface)
+                .visibleIf(state -> state.missile != null)
+                .mesh(state -> state.missile == null ? fallback : bodies.get(state.missile.model()))
+                .skin(state -> state.missile == null ? siloSurface : state.missile.surface())
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> BASE_YAW + state.yaw)
+                .translate(0F, 1F, 0F)
+                .stretch(state -> state.missile == null ? 1F : state.missile.scale());
+    }
 
     @Override
     public LaunchPadRenderState createRenderState() {
@@ -46,55 +71,17 @@ public class LaunchPadRenderer implements CompatBER<TileEntityLaunchPad, LaunchP
     }
 
     @Override
-    public boolean shouldRenderOffScreen() {
-        // The silo and a tier-4 missile stand well outside the core's own block section.
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(TileEntityLaunchPad blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
-    }
-
-    @Override
     public void extract(TileEntityLaunchPad pad, LaunchPadRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState bs = pad.getBlockState();
         int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
         state.yaw = switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH (2)
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
 
         ItemStack loaded = pad.toRender;
         state.missile = loaded == null || loaded.isEmpty() ? null : MissileModels.get(loaded.getItem());
-    }
-
-    @Override
-    public void submit(LaunchPadRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(BASE_YAW + state.yaw));
-
-        collector.submitCustomGeometry(poseStack, siloType,
-                (pose, buffer) -> silo.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, true));
-
-        if (state.missile != null) {
-            poseStack.translate(0F, 1F, 0F);
-            float scale = state.missile.scale();
-            if (scale != 1.0F) poseStack.scale(scale, scale, scale);
-            MissileModels.MissileModel missile = state.missile;
-            collector.submitCustomGeometry(poseStack, missile.renderType(),
-                    (pose, buffer) -> missile.model().renderAll(pose, buffer, state.lightCoords,
-                            OverlayTexture.NO_OVERLAY, true));
-        }
-
-        poseStack.popPose();
     }
 }

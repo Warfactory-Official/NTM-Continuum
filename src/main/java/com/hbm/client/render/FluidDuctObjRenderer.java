@@ -1,16 +1,12 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -29,15 +25,39 @@ import java.util.Set;
  * the 1.12.2 {@code DuctNeoBakedModel}, which bakes a base + overlay quad per face). The block renders
  * {@code INVISIBLE}; this BER draws it, like {@link CableObjRenderer}.
  */
-public class FluidDuctObjRenderer implements CompatBER<TileEntityFluidDuctNT, FluidDuctRenderState> {
+public class FluidDuctObjRenderer extends GemBER<TileEntityFluidDuctNT, FluidDuctRenderState> {
 
     private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/blocks/pipe_neo.obj");
-    private static final Identifier BASE = dev.golem.core.Ids.of("hbm", "textures/models/blocks/fluid_duct_mk2.png");
-    private static final Identifier OVERLAY = dev.golem.core.Ids.of("hbm", "textures/models/blocks/fluid_duct_mk2_overlay.png");
+    private static final String[] PARTS = {
+            "pX", "nX", "pY", "nY", "pZ", "nZ",
+            "ppn", "ppp", "npn", "npp", "pnn", "pnp", "nnn", "nnp"};
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType baseType = CompatRenderTypes.entityCutout(BASE);
-    private final RenderType overlayType = CompatRenderTypes.entityCutout(OVERLAY);
+    private final Surface base = Surface.cutout("hbm:textures/models/blocks/fluid_duct_mk2.png");
+    private final Surface overlay = Surface.cutout("hbm:textures/models/blocks/fluid_duct_mk2_overlay.png");
+
+    /**
+     * The base metal pass, then — for a typed duct — the same geometry again in the overlay sprite,
+     * tinted by the fluid colour. The overlay is mostly transparent, so only its small "fluid window"
+     * band shows as a coloured indicator, which is what the 1.12.2 DuctNeoBakedModel drew per face. It
+     * is pushed a hair outward because it is the same geometry as the base and would otherwise z-fight
+     * with it. The OBJ is centred on the origin (-0.5..0.5), hence the half-block shift.
+     */
+    @Override
+    protected void setup(Gem.Model<FluidDuctRenderState> declaration) {
+        for (String name : PARTS) {
+            declaration.part(model.part(name), base)
+                    .visibleIf(state -> state.parts.contains(name))
+                    .translate(0.5F, 0.5F, 0.5F);
+        }
+        for (String name : PARTS) {
+            declaration.part(model.part(name), overlay)
+                    .visibleIf(state -> state.fluidColor != 0 && state.parts.contains(name))
+                    .tint(state -> state.fluidColor)
+                    .translate(0.5F, 0.5F, 0.5F)
+                    .scale(1.02F);
+        }
+    }
 
     @Override
     public FluidDuctRenderState createRenderState() {
@@ -46,7 +66,7 @@ public class FluidDuctObjRenderer implements CompatBER<TileEntityFluidDuctNT, Fl
 
     @Override
     public void extract(TileEntityFluidDuctNT be, FluidDuctRenderState state, float partialTicks,
-                                   Vec3 cameraPosition) {
+                        Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
         boolean pX = bs.getValue(BlockFluidDuct.EAST);
         boolean nX = bs.getValue(BlockFluidDuct.WEST);
@@ -92,33 +112,5 @@ public class FluidDuctObjRenderer implements CompatBER<TileEntityFluidDuctNT, Fl
             }
         }
         return parts;
-    }
-
-    @Override
-    public void submit(FluidDuctRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        if (state.parts.isEmpty()) return;
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0.5F, 0.5F); // OBJ is centred on the origin (-0.5..0.5)
-        // Base metal pass (untinted), then — for a typed duct — the overlay sprite tinted by the fluid
-        // colour on the SAME geometry. The overlay is mostly transparent, so only its small "fluid window"
-        // band shows as a coloured indicator (the 1.12.2 DuctNeoBakedModel draws base + overlay per face).
-        collector.submitCustomGeometry(poseStack, baseType, (pose, buffer) -> {
-            for (String part : state.parts) {
-                model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY);
-            }
-        });
-        if (state.fluidColor != 0) {
-            // Push the overlay a hair outward (it's the same geometry as the base) so it renders in front
-            // of the metal instead of z-fighting / losing the draw-order to it.
-            poseStack.pushPose();
-            poseStack.scale(1.02F, 1.02F, 1.02F);
-            collector.submitCustomGeometry(poseStack, overlayType, (pose, buffer) -> {
-                for (String part : state.parts) {
-                    model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, state.fluidColor);
-                }
-            });
-            poseStack.popPose();
-        }
-        poseStack.popPose();
     }
 }

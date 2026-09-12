@@ -12,8 +12,17 @@
     "yaw": 0.0,
     "parts": ["Base"],
     "passes": [
-      { "obj": "hbm:models/turrets/turret_howard.obj", "texture": "hbm:textures/models/turrets/carriage_ciws.png", "parts": ["Carriage"] },
-      { "obj": "hbm:models/turrets/turret_microwave.obj", "texture": "hbm:textures/models/turrets/maxwell.png", "parts": ["Microwave"] }
+      {
+        "obj": "hbm:models/turrets/turret_howard.obj",
+        "texture": "hbm:textures/models/turrets/carriage_ciws.png",
+        "parts": ["Carriage"]
+      },
+      {
+        "obj": "hbm:models/turrets/turret_microwave.obj",
+        "texture": "hbm:textures/models/turrets/maxwell.png",
+        "parts": ["Microwave"]
+      }
     ]
-  }
+  },
+  "oversized_in_gui": true
 }

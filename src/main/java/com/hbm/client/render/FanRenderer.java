@@ -3,30 +3,61 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.MachineFan;
 import com.hbm.client.model.WavefrontObj;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
-/** Six-directional OBJ renderer for the redstone fan. */
-public final class FanRenderer implements CompatBER<MachineFan.TileEntityFan, FanRenderState> {
+/**
+ * Six-directional OBJ declaration for the redstone fan.
+ *
+ * <p>The facing is a quarter turn about X or about Z and never about both, so both rotations are
+ * declared and the one the facing does not use reads zero.
+ */
+public final class FanRenderer extends GemBER<MachineFan.TileEntityFan, FanRenderState> {
 
     private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/fan.obj"));
-    private final RenderType renderType = CompatRenderTypes.entityCutout(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/fan.png"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/fan.png");
 
-    @Override public FanRenderState createRenderState() { return new FanRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(MachineFan.TileEntityFan be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    protected void setup(Gem.Model<FanRenderState> declaration) {
+        Gem.Part<FanRenderState> housing = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0.5F, 0.5F)
+                .angle(Gem.Axes.X, state -> pitchOf(state.facing))
+                .angle(Gem.Axes.Z, state -> rollOf(state.facing))
+                .translate(0F, -0.5F, 0F);
+
+        housing.child(model.part("Frame"), surface);
+        housing.child(model.part("Blades"), surface)
+                .angle(Gem.Axes.Y, state -> -state.rotation);
+    }
+
+    private static float pitchOf(Direction facing) {
+        return switch (facing) {
+            case DOWN -> 180F;
+            case NORTH -> -90F;
+            case SOUTH -> 90F;
+            default -> 0F;
+        };
+    }
+
+    private static float rollOf(Direction facing) {
+        return switch (facing) {
+            case WEST -> 90F;
+            case EAST -> -90F;
+            default -> 0F;
+        };
+    }
+
+    @Override
+    public FanRenderState createRenderState() {
+        return new FanRenderState();
+    }
 
     @Override
     public void extract(MachineFan.TileEntityFan be, FanRenderState state, float partialTicks,
@@ -35,31 +66,5 @@ public final class FanRenderer implements CompatBER<MachineFan.TileEntityFan, Fa
         state.facing = blockState.hasProperty(MachineFan.FACING)
                 ? blockState.getValue(MachineFan.FACING) : Direction.NORTH;
         state.rotation = be.prevSpin + (be.spin - be.prevSpin) * partialTicks;
-    }
-
-    @Override
-    public void submit(FanRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.translate(0F, 0.5F, 0F);
-        switch (state.facing) {
-            case DOWN -> poseStack.mulPose(Axis.XP.rotationDegrees(180F));
-            case NORTH -> poseStack.mulPose(Axis.XP.rotationDegrees(-90F));
-            case SOUTH -> poseStack.mulPose(Axis.XP.rotationDegrees(90F));
-            case WEST -> poseStack.mulPose(Axis.ZP.rotationDegrees(90F));
-            case EAST -> poseStack.mulPose(Axis.ZP.rotationDegrees(-90F));
-            case UP -> { }
-        }
-        poseStack.translate(0F, -0.5F, 0F);
-        part(sink, poseStack, "Frame", state.lightCoords);
-
-        poseStack.mulPose(Axis.YP.rotationDegrees(-state.rotation));
-        part(sink, poseStack, "Blades", state.lightCoords);
-        poseStack.popPose();
-    }
-
-    private void part(SubmitSink sink, PoseStack poseStack, String name, int light) {
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 }

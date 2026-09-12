@@ -1,15 +1,17 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderState;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.TileEntityFoundryOutlet;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatRenderState;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -23,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * stream while it's passing material (the old {@code HbmEffectNT.Foundry} particle, as a tinted
  * column). Yaw map from the old forge_marker blockstate: N→90, S→270, W→0, E→180.
  */
-public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> implements CompatBER<T, FoundryOutletRenderer.State> {
+public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> extends GemBER<T, FoundryOutletRenderer.State> {
 
     public static class State extends CompatRenderState {
         public float yaw;
@@ -34,8 +36,8 @@ public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> implements
     }
 
     private final WavefrontObj body;
-    /** material name → its render type (multi-texture OBJ, resolved from the .mtl). */
-    private final java.util.Map<String, RenderType> materialTypes = new java.util.LinkedHashMap<>();
+    /** material name -> the surface it wears (multi-texture OBJ, resolved from the .mtl). */
+    private final java.util.Map<String, Surface> materials = new java.util.LinkedHashMap<>();
     private final RenderType streamType;
 
     public FoundryOutletRenderer(String objPath) {
@@ -43,19 +45,29 @@ public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> implements
         var mtl = WavefrontObj.loadMtl(dev.golem.core.Ids.of(Constants.MOD_ID, objPath.replace(".obj", ".mtl")));
         for (String mat : body.materialNames()) {
             Identifier tex = mtl.get(mat);
-            if (tex != null) materialTypes.put(mat, CompatRenderTypes.entityCutout(tex));
+            if (tex != null) materials.put(mat, Surface.cutout(tex.toString()));
         }
-        // Stream: opaque + depth-writing (entitySolid) so the self-overlapping tube's near faces occlude
-        // the far ones — translucent-emissive doesn't write depth, so sides vanish with view angle. Solid
-        // shades by the vertex normal (all up → uniform, unlike entityCutout's winding-based per-face
-        // darkening); it culls, so the stream is double-wound (FoundryRenderHelper.quad). lava_gray is opaque.
+        // The stream is a self-overlapping tube and must write depth, which translucent-emissive does
+        // not; entitySolid shades by the vertex normal and culls, so the geometry is double-wound.
         this.streamType = CompatRenderTypes.entitySolid(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
     }
 
+    /**
+     * OBJ vertices are in 0..1 corner space; vanilla blockstate "y" rotations are clockwise about the
+     * block centre, so the body turns by -yaw around (0.5, 0.5) — the anvil-renderer convention.
+     */
+    @Override
+    protected void setup(Gem.Model<State> declaration) {
+        declaration.offScreen().viewDistance(128);
+        for (var material : materials.entrySet()) {
+            declaration.part(body.material(material.getKey()), material.getValue())
+                    .translate(0.5F, 0F, 0.5F)
+                    .angle(Gem.Axes.Y, state -> -state.yaw)
+                    .translate(-0.5F, 0F, -0.5F);
+        }
+    }
+
     @Override public State createRenderState() { return new State(); }
-    @Override public boolean shouldRender(T be, Vec3 cameraPosition) { return true; }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public int getViewDistance() { return 128; }
 
     @Override
     public void extract(T be, State state, float partialTicks, Vec3 cameraPosition) {
@@ -73,23 +85,9 @@ public class FoundryOutletRenderer<T extends TileEntityFoundryOutlet> implements
         state.pourLen = be.pourLen;
     }
 
+    /** The stream pours as far as it has to reach, so its geometry is a length, not a shape. */
     @Override
-    public void submit(State s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
-
-        // OBJ vertices are in 0..1 corner space; vanilla blockstate "y" rotations are clockwise about
-        // the block centre → rotate by -yaw around (0.5, 0.5) (the anvil-renderer convention).
-        ps.pushPose();
-        ps.translate(0.5F, 0F, 0.5F);
-        ps.mulPose(Axis.YP.rotationDegrees(-s.yaw));
-        ps.translate(-0.5F, 0F, -0.5F);
-        for (var e : materialTypes.entrySet()) {
-            String mat = e.getKey();
-            col.submitCustomGeometry(ps, e.getValue(),
-                    (pose, buffer) -> body.renderMaterial(mat, pose, buffer, light, OverlayTexture.NO_OVERLAY));
-        }
-        ps.popPose();
-
+    protected void submitUndeclared(State s, PoseStack ps, SubmitSink col, CameraInfo camera) {
         if (s.pourColor >= 0 && s.pourLen > 0) {
             // Old particle: spawn at (0.5 − facing·0.125, y+0.125), dir = facing, base = 0, off = 0.375.
             com.hbm.lib.ForgeDirection facing = com.hbm.lib.ForgeDirection.getOrientation(s.facingOrdinal);

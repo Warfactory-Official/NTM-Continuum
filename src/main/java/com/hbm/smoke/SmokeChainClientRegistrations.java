@@ -18,18 +18,18 @@ public final class SmokeChainClientRegistrations {
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
-        sink.register(SmokeChainRegistration.CHIMNEY_BRICK.get(), ctx ->
+        HbmBlockEntityRenderers.regGem(sink, SmokeChainRegistration.CHIMNEY_BRICK.get(), () ->
                 new MachineObjRenderer<TileEntityChimneyBrick>(0F, 1F,
                         new MachineObjRenderer.ModelDef(
                                 dev.golem.core.Ids.of("hbm", "models/machines/chimney_brick.obj"),
                                 dev.golem.core.Ids.of("hbm", "textures/models/machines/chimney_brick.png")))
                         .ignoreFacing().doubleSided());
-        sink.register(SmokeChainRegistration.CHIMNEY_INDUSTRIAL.get(), ctx ->
+        HbmBlockEntityRenderers.regGem(sink, SmokeChainRegistration.CHIMNEY_INDUSTRIAL.get(), () ->
                 new MachineObjRenderer<TileEntityChimneyIndustrial>(180F, 1F,
                         new MachineObjRenderer.ModelDef(
                                 dev.golem.core.Ids.of("hbm", "models/machines/chimney_industrial.obj"),
                                 dev.golem.core.Ids.of("hbm", "textures/models/machines/chimney_industrial.png")))
                         .ignoreFacing().doubleSided());
-        sink.register(SmokeChainRegistration.ASHPIT.get(), ctx -> new AshpitRenderer());
+        HbmBlockEntityRenderers.regGem(sink, SmokeChainRegistration.ASHPIT.get(), AshpitRenderer::new);
     }
 }
