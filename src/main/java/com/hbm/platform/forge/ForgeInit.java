@@ -83,6 +83,7 @@ public final class ForgeInit {
         com.hbm.gametest.ChunkPromotionGameTests.init();
         com.hbm.gametest.TickPhaseGameTests.init();
         com.hbm.gametest.MultiblockMenuGameTests.init();
+        com.hbm.gametest.RadiationPersistenceGameTests.init();
         com.hbm.gametest.FoldedPortParityGameTests.init();
 
         modBus.addListener(this::onRegister);
@@ -153,6 +154,8 @@ public final class ForgeInit {
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.MultiblockMenuGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RadiationPersistenceGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FoldedPortParityGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FlywheelGameTests.TESTS));
@@ -174,7 +177,7 @@ public final class ForgeInit {
         });
         MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
-                RadiationSystemNT.clearWorld(level);
+                RadiationSystemNT.closeWorld(level);
                 com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }
         });

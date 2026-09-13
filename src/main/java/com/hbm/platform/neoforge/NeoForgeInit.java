@@ -82,6 +82,7 @@ public class NeoForgeInit {
          com.hbm.gametest.ChunkPromotionGameTests.init();
          com.hbm.gametest.TickPhaseGameTests.init();
          com.hbm.gametest.MultiblockMenuGameTests.init();
+         com.hbm.gametest.RadiationPersistenceGameTests.init();
          com.hbm.gametest.FoldedPortParityGameTests.init();
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
@@ -161,6 +162,8 @@ public class NeoForgeInit {
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.MultiblockMenuGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.RadiationPersistenceGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.FoldedPortParityGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.FlywheelGameTests.TESTS));
@@ -179,7 +182,7 @@ public class NeoForgeInit {
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
-                RadiationSystemNT.clearWorld(level);
+                RadiationSystemNT.closeWorld(level);
                 com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }
         });
