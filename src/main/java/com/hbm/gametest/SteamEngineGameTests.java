@@ -10,6 +10,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 
@@ -18,15 +19,14 @@ public final class SteamEngineGameTests {
 
     private SteamEngineGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineSteamEngine block = ModMachineBlocks.machine_steam_engine.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(core, block.defaultBlockState());
         TileEntityMachineSteamEngine engine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, core, TileEntityMachineSteamEngine.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
         helper.assertTrue(engine != null, "Steam engine core BlockEntity was not created");
         assertMeta(helper, core.offset(1, 1, 0), 7);
@@ -103,10 +103,10 @@ public final class SteamEngineGameTests {
 
     private static TileEntityMachineSteamEngine place(GameTestHelper helper, BlockPos pos) {
         MachineSteamEngine block = ModMachineBlocks.machine_steam_engine.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(pos, block.defaultBlockState());
         TileEntityMachineSteamEngine engine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineSteamEngine.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(pos), ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return engine;
     }
 

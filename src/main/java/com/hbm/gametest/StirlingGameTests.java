@@ -9,6 +9,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityStirling;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 
@@ -17,13 +18,12 @@ public final class StirlingGameTests {
 
     private StirlingGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineStirling block = ModMachineBlocks.machine_stirling.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
+        helper.setBlock(core, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
         TileEntityStirling stirling = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, core, TileEntityStirling.class);
@@ -65,9 +65,9 @@ public final class StirlingGameTests {
         MachineStirling normal = ModMachineBlocks.machine_stirling.get();
         MachineStirling steel = ModMachineBlocks.machine_stirling_steel.get();
         MachineStirling creative = ModMachineBlocks.machine_stirling_creative.get();
-        helper.setBlock(new BlockPos(2, 1, 2), normal.defaultBlockState().setValue(BlockDummyable.META, 12));
-        helper.setBlock(new BlockPos(5, 1, 2), steel.defaultBlockState().setValue(BlockDummyable.META, 12));
-        helper.setBlock(new BlockPos(8, 1, 2), creative.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(new BlockPos(2, 1, 2), normal.defaultBlockState());
+        helper.setBlock(new BlockPos(5, 1, 2), steel.defaultBlockState());
+        helper.setBlock(new BlockPos(8, 1, 2), creative.defaultBlockState());
         TileEntityStirling normalTe = (TileEntityStirling) helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(2, 1, 2)));
         TileEntityStirling steelTe = (TileEntityStirling) helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(5, 1, 2)));
         TileEntityStirling creativeTe = (TileEntityStirling) helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(8, 1, 2)));
@@ -111,10 +111,10 @@ public final class StirlingGameTests {
     private static TileEntityStirling place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachineStirling block = ModMachineBlocks.machine_stirling.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+        helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityStirling,
                 "Stirling core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), pos, Direction.NORTH);
         return (TileEntityStirling) helper.getLevel().getBlockEntity(pos);
     }
 

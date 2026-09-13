@@ -27,6 +27,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Recipes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -324,7 +325,7 @@ public final class SingularityGameTests {
         MachineFluidTank block = ModMachineBlocks.machine_fluidtank.get();
         BlockPos absolute = helper.absolutePos(relative);
         helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
         return (TileEntityMachineFluidTank) helper.getLevel().getBlockEntity(absolute);
     }
 

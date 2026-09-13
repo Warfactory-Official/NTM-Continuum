@@ -2,15 +2,14 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -23,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The legacy one-core steam engine with three ports in the upper row. */
-public class MachineSteamEngine extends BlockDummyable
+public class MachineSteamEngine extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineSteamEngine(Properties properties) {
@@ -46,43 +45,8 @@ public class MachineSteamEngine extends BlockDummyable
     }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        x += dir.offsetX * offset;
-        z += dir.offsetZ * offset;
-        addExtraPorts(level, x, y, z, dir);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        addExtraPorts(level, core.getX(), core.getY(), core.getZ(), dir);
-    }
-
-    private void addExtraPorts(Level level, int x, int y, int z, ForgeDirection dir) {
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x + rot.offsetX, y + 1, z + rot.offsetZ);
-        makeExtra(level, x + rot.offsetX + dir.offsetX, y + 1, z + rot.offsetZ + dir.offsetZ);
-        makeExtra(level, x + rot.offsetX - dir.offsetX, y + 1, z + rot.offsetZ - dir.offsetZ);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineSteamEngine engine
-                && IEnergyConnectorBlock.isPort(engine.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return (type == Fluids.STEAM || type == Fluids.SPENTSTEAM)
-                && findCoreTE(world, pos) instanceof TileEntityMachineSteamEngine engine
-                && IEnergyConnectorBlock.isPort(engine.getConPos(), pos, dir);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineSteamEngine engine)) return null;
 
         List<String> text = new ArrayList<>();
@@ -95,4 +59,24 @@ public class MachineSteamEngine extends BlockDummyable
         return tank.getTankType().getDisplayNameString() + ": " + tank.getFill() + "/" + tank.getMaxFill() + "mB";
     }
 
+    /** Three ports in a row along one flank, one above the core. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+        for (int i = -1; i <= 1; i++) {
+            visitor.cell(core.offset(rot.getStepX() + facing.getStepX() * i, 1,
+                    rot.getStepZ() + facing.getStepZ() * i), MASK_WEST);
+        }
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        for (int i = -1; i <= 1; i++) {
+            visitor.passiveCell(core.offset(rot.getStepX() + facing.getStepX() * i, 1,
+                            rot.getStepZ() + facing.getStepZ() * i),
+                    MASK_ALL, PASSIVE_POWER_IN | PASSIVE_FLUID_IN);
+        }
+    }
 }

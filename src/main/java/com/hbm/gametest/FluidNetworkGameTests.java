@@ -4,7 +4,6 @@ import com.hbm.Constants;
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.FluidNetwork;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -16,6 +15,7 @@ import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 
@@ -42,7 +42,6 @@ public final class FluidNetworkGameTests {
 
     private static final int Y = 5;
     private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18;
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     private FluidNetworkGameTests() {}
 
@@ -148,10 +147,10 @@ public final class FluidNetworkGameTests {
 
     private static TileEntityMachineFluidTank tank(GameTestHelper helper, BlockPos relative, short mode) {
         MachineFluidTank block = ModMachineBlocks.machine_fluidtank.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(relative, block.defaultBlockState());
         TileEntityMachineFluidTank tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineFluidTank.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), helper.absolutePos(relative), Direction.NORTH);
         tank.tank.setTankType(Fluids.WATER);
         tank.mode = mode;
         return tank;

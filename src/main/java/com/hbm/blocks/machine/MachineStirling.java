@@ -1,16 +1,17 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModGearItems;
 import com.hbm.items.machine.ItemGear;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityStirling;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -33,7 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The legacy one-core Stirling engine family. */
-public class MachineStirling extends BlockDummyable implements IEnergyConnectorBlock, ILookOverlay {
+public class MachineStirling extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay {
 
     public MachineStirling(Properties properties) {
         super(properties);
@@ -55,34 +56,9 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
     }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        addExtraPorts(level, x + dir.offsetX * offset, y, z + dir.offsetZ * offset);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        addExtraPorts(level, core.getX(), core.getY(), core.getZ());
-    }
-
-    private void addExtraPorts(Level level, int x, int y, int z) {
-        makeExtra(level, x + 1, y, z);
-        makeExtra(level, x - 1, y, z);
-        makeExtra(level, x, y, z + 1);
-        makeExtra(level, x, y, z - 1);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter level, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(level, pos) instanceof TileEntityStirling stirling
-                && IEnergyConnectorBlock.isPort(stirling.getConPos(), pos, dir);
-    }
-
-    @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityStirling stirling
                 && !stirling.hasCog && stack.is(ModGearItems.gear_large.get())
                 && stack.getItem() instanceof ItemGear gear
@@ -103,7 +79,7 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.isClientSide() || ModDataComponents.ITEM_VARIANT.getOr(stack, 0) != 1) return;
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityStirling stirling) {
             stirling.hasCog = false;
             stirling.setChanged();
@@ -114,7 +90,7 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         ItemStack stack = new ItemStack(this);
         BlockPos pos = BlockPos.containing(params.getParameter(LootContextParams.ORIGIN));
-        BlockPos core = findCore(params.getLevel(), pos);
+        BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), pos);
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityStirling stirling
                 && !stirling.hasCog) {
             ModDataComponents.ITEM_VARIANT.set(stack, 1);
@@ -132,7 +108,7 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
 
     private ItemStack cloneWithCogState(BlockGetter level, BlockPos pos) {
         ItemStack stack = new ItemStack(this);
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityStirling stirling
                 && !stirling.hasCog) {
             ModDataComponents.ITEM_VARIANT.set(stack, 1);
@@ -142,7 +118,7 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityStirling stirling)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityStirling stirling)) return null;
 
         List<String> text = new ArrayList<>();
         text.add(stirling.heat + "TU/t");
@@ -159,4 +135,14 @@ public class MachineStirling extends BlockDummyable implements IEnergyConnectorB
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    /** Four ports around the waist. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+
+        visitor.cell(core.offset(1, 0, 0), MASK_EAST);
+        visitor.cell(core.offset(-1, 0, 0), MASK_WEST);
+        visitor.cell(core.offset(0, 0, 1), MASK_SOUTH);
+        visitor.cell(core.offset(0, 0, -1), MASK_NORTH);
+    }
 }
