@@ -1,6 +1,8 @@
 package com.hbm.blocks.network;
 
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import dev.golem.core.registry.TickingBlock;
@@ -51,8 +53,8 @@ import java.util.Map;
  * HBM's solid fluid duct: a connecting fluid conductor backed by {@link TileEntityFluidDuctNT}. Six
  * {@link BooleanProperty} connection flags drive the {@code pipe_neo.obj} model (via
  * {@link com.hbm.client.render.FluidDuctObjRenderer}), exactly like the power cable's
- * {@code cable_neo.obj}. Conduction lives in the BlockEntity (a UNINOS node); these flags are purely the
- * visual/collision shape.
+ * {@code cable_neo.obj}. Conduction is a cell of the level's fluid graph, which the block entity keeps
+ * in step with the type it carries; these flags are purely the visual/collision shape.
  *
  * <p>The duct's fluid type defaults to {@code NONE} (no connections) and is set by right-clicking it with
  * a {@code fluid_identifier}: the connection flags are then recomputed against that one fluid, so a typed
@@ -181,6 +183,18 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         }
         return state.setValue(PROPERTY_BY_DIRECTION.get(directionToNeighbour),
                 canConnectTo(level, pos, directionToNeighbour));
+    }
+
+    /**
+     * A block appearing beside a duct is the one endpoint transition nothing else announces. Our own
+     * machines say so from {@code clearRemoved}, and a face that has already probed absent stays absent
+     * until something asks it again.
+     */
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
+        if (level instanceof ServerLevel server) LevelNodeGraph.invalidateEndpointsAt(server, pos);
     }
 
     @Override

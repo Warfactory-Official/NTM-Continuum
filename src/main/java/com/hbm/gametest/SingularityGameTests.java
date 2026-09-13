@@ -14,7 +14,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
@@ -242,12 +242,11 @@ public final class SingularityGameTests {
             TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(
                     helper.absolutePos(ductPos));
             duct.setFluidType(Fluids.AMAT);
-            TileEntityFluidDuctNT.serverTick(helper.getLevel(), duct.getBlockPos(), duct.getBlockState(), duct);
         }
         tank.tank.setTankType(Fluids.AMAT);
-        tank.mode = 1; // Buffer mode owns the tank's network node at its physical port cells.
+        tank.mode = 1;
         TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
-        UniNodespace.updateNodespace(helper.getLevel().getServer());
+        FluidNetwork.distributeAll(helper.getLevel());
 
         cyclotron.power = TileEntityMachineCyclotron.MAX_POWER;
         cyclotron.inventory.setStackInSlot(0, new ItemStack(ModItems.part_plutonium.get(), 4));
@@ -259,7 +258,7 @@ public final class SingularityGameTests {
             TileEntityMachineCyclotron.serverTick(helper.getLevel(), cyclotron.getBlockPos(),
                     cyclotron.getBlockState(), cyclotron);
             TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
-            UniNodespace.updateNodespace(helper.getLevel().getServer());
+            FluidNetwork.distributeAll(helper.getLevel());
         }
         helper.assertTrue(tank.tank.getTankType() == Fluids.AMAT && tank.tank.getFill() == 4_000,
                 "cyclotron AMAT did not cross the duct network into the ordinary tank: output="

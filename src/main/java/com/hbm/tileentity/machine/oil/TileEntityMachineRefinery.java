@@ -73,7 +73,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRefinery te) {
         te.isOn = false;
-        te.updateConnections();
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
@@ -95,11 +94,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-        }
-    }
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();

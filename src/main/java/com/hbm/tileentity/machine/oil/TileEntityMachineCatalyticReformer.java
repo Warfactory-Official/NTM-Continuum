@@ -64,7 +64,6 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.catalyticReformer"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticReformer te) {
-        te.updateConnections();
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         te.loadInput();
@@ -84,11 +83,6 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-        }
-    }
 
     public DirPos[] getConPos() {
         int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;

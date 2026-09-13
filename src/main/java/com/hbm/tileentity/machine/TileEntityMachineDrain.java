@@ -34,11 +34,6 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDrain drain) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos connection : drain.getConPos()) {
-                drain.trySubscribe(drain.tank.getTankType(), level, connection);
-            }
-        }
 
         // Upstream synchronizes the pre-spill tank state, then performs the destructive/release branch.
         drain.networkPackNT();

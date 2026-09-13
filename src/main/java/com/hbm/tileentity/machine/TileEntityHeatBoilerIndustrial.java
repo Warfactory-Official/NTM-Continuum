@@ -37,7 +37,6 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoilerIndustrial te) {
         te.setupTanks();
-        te.updateConnections(level);
         te.tryPullHeat(level);
         te.isOn = false;
         te.tryConvert(level);
@@ -91,9 +90,6 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         heat = Math.max(heat - Math.max(heat / 1000, 1), 0);
     }
 
-    private void updateConnections(Level level) {
-        for (DirPos connection : getConPos()) trySubscribe(tanks[0].getTankType(), level, connection);
-    }
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();

@@ -56,7 +56,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         }
 
         te.setupTanks();
-        te.updateConnections();
 
         if (level.getGameTime() % 10 == 0) te.fractionate();
 
@@ -71,11 +70,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         }
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-        }
-    }
 
     private void setupTanks() {
         FractionRecipes.FractionPair pair = FractionRecipes.getFractions(tanks[0].getTankType());

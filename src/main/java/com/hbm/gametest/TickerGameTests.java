@@ -39,10 +39,11 @@ public final class TickerGameTests {
      * test exists for is a ticker quietly going missing, and a count is the only way a <i>deleted</i>
      * declaration fails anything — every other check here looks at declarations that are present.
      *
-     * <p>It was 160 until the cable stopped ticking: its block entity only existed to mint a network
-     * node once, and the node is now the block's, so nothing is left for a cable to do each tick.
+     * <p>It was 160 until the cable stopped ticking, and 159 until the fluid duct and the fluid valve
+     * followed it: each of their block entities existed only to mint a network node once, and a node is
+     * now a graph cell the block owns, so nothing is left for any of the three to do each tick.
      */
-    private static final int TICKING_TYPES = 159;
+    private static final int TICKING_TYPES = 157;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

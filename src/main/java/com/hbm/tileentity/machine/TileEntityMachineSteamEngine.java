@@ -74,7 +74,6 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
 
         for (DirPos connection : engine.getConPos()) {
             if (engine.powerBuffer > 0) engine.tryProvide(level, connection.getPos(), connection.getDir());
-            engine.trySubscribe(engine.tanks[0].getTankType(), level, connection);
             engine.tryProvide(engine.tanks[1], level, connection);
         }
         engine.setChanged();

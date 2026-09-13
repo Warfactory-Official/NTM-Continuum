@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
-import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.fluidmk2.DuctData;
+import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineDrain;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -12,7 +13,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineDrain;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidValve;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -27,22 +28,22 @@ public final class FluidValveDrainGameTests {
     public static void valveTypeAndNodeLifecycle(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(new BlockPos(3, 1, 3));
+        long key = pos.asLong();
+        LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
         FluidValve block = ModMachineBlocks.fluid_valve.get();
         level.setBlock(pos, block.defaultBlockState().setValue(FluidValve.OPEN, false), 3);
         TileEntityFluidValve valve = (TileEntityFluidValve) level.getBlockEntity(pos);
 
         valve.setFluidType(Fluids.WATER);
-        TileEntityFluidValve.serverTick(level, pos, valve.getBlockState(), valve);
-        helper.assertTrue(UniNodespace.getNode(level, pos, Fluids.WATER.getNetworkProvider()) == null,
-                "Closed valve must not create a fluid node");
+        helper.assertFalse(graph.containsCell(key), "Closed valve must not conduct");
         helper.assertTrue(!block.canConnect(Fluids.WATER, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
                 "Closed valve must not expose a fluid connection");
 
         level.setBlock(pos, level.getBlockState(pos).setValue(FluidValve.OPEN, true), 3);
         valve.updateState();
-        TileEntityFluidValve.serverTick(level, pos, valve.getBlockState(), valve);
-        FluidNode node = (FluidNode) UniNodespace.getNode(level, pos, Fluids.WATER.getNetworkProvider());
-        helper.assertTrue(node != null, "Open typed valve must create a fluid node");
+        helper.assertTrue(graph.containsCell(key), "Open typed valve must conduct");
+        helper.assertTrue(FluidGraph.typeAt(graph, key) == Fluids.WATER,
+                "An open valve conducts whatever it was typed to, not " + FluidGraph.typeAt(graph, key));
         helper.assertTrue(block.canConnect(Fluids.WATER, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
                 "Open valve must accept its configured fluid");
         helper.assertTrue(!block.canConnect(Fluids.STEAM, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
@@ -50,14 +51,11 @@ public final class FluidValveDrainGameTests {
 
         level.setBlock(pos, level.getBlockState(pos).setValue(FluidValve.OPEN, false), 3);
         valve.updateState();
-        helper.assertTrue(UniNodespace.getNode(level, pos, Fluids.WATER.getNetworkProvider()) == null,
-                "Closing valve must destroy its fluid node");
+        helper.assertFalse(graph.containsCell(key), "Closing a valve must sever the run it joined");
 
         level.setBlock(pos, level.getBlockState(pos).setValue(FluidValve.OPEN, true), 3);
         valve.setFluidType(Fluids.NONE);
-        TileEntityFluidValve.serverTick(level, pos, valve.getBlockState(), valve);
-        helper.assertTrue(UniNodespace.getNode(level, pos, Fluids.NONE.getNetworkProvider()) == null,
-                "A NONE valve must not create a fluid node");
+        helper.assertFalse(graph.containsCell(key), "An untyped valve carries nothing, so it must not conduct");
         helper.assertFalse(block.canConnect(Fluids.NONE, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
                 "A NONE valve must not expose a fluid connection");
         helper.succeed();

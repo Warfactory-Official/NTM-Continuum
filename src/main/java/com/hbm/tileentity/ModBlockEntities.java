@@ -202,7 +202,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityFluidDuctNT>> FLUID_DUCT =
             BLOCK_ENTITIES.register("fluid_duct_mk2",
-                    () -> BlockEntities.serverTicking(TileEntityFluidDuctNT::new, TileEntityFluidDuctNT::serverTick, ModMachineBlocks.fluid_duct_mk2.get()));
+                    () -> BlockEntities.type(TileEntityFluidDuctNT::new, ModMachineBlocks.fluid_duct_mk2.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityCreativeFluidSource>> CREATIVE_FLUID_SOURCE =
             BLOCK_ENTITIES.register("creative_fluid_source",
@@ -238,7 +238,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityFluidValve>> FLUID_VALVE =
             BLOCK_ENTITIES.register("fluid_valve",
-                    () -> BlockEntities.serverTicking(TileEntityFluidValve::new, TileEntityFluidValve::serverTick, ModMachineBlocks.fluid_valve.get()));
+                    () -> BlockEntities.type(TileEntityFluidValve::new, ModMachineBlocks.fluid_valve.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineDrain>> MACHINE_DRAIN =
             BLOCK_ENTITIES.register("machine_drain",

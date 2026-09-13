@@ -41,7 +41,6 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticCracker te) {
         te.setupTanks();
-        te.updateConnections();
 
         if (level.getGameTime() % 5 == 0) te.crack();
 
@@ -55,12 +54,6 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
         }
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-            this.trySubscribe(tanks[1].getTankType(), level, dp);
-        }
-    }
 
     public DirPos[] getConPos() {
         int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;

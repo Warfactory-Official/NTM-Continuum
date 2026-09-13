@@ -9,7 +9,6 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -23,7 +22,6 @@ public class BlockEntityRBMKInlet extends TileEntityMachineBase implements IFlui
     public BlockEntityRBMKInlet(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_INLET.get(), pos, state, 0); }
     @Override public String getDefaultName() { return "container.rbmk_steam_inlet"; }
     @Override public void tickServer() {
-        for (Direction direction : Direction.values()) trySubscribe(water.getTankType(), level, worldPosition.relative(direction), ForgeDirection.getOrientation(direction));
         if (!RBMKDials.getReasimBoilers(level)) return;
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos adjacent = worldPosition.relative(direction);

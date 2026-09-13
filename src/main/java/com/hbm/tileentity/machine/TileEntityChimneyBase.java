@@ -26,13 +26,6 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityChimneyBase chimney) {
-        if (level.getGameTime() % 20L == 0L) {
-            for (FluidType type : SMOKE_TYPES) {
-                for (DirPos connection : chimney.getConPos()) {
-                    chimney.trySubscribe(type, level, connection);
-                }
-            }
-        }
 
         if (chimney.ashTick > 0L || chimney.sootTick > 0L) {
             if (level.getBlockEntity(pos.below()) instanceof TileEntityAshpit ashpit) {

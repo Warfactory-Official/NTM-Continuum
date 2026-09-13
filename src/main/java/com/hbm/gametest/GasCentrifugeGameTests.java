@@ -4,7 +4,6 @@ import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineGasCent;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.MachineUF6Tank;
-import com.hbm.api.fluidmk2.FluidNode;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.inventory.container.ContainerMachineGasCent;
 import com.hbm.inventory.fluid.FluidStack;
@@ -22,7 +21,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.UniNodespace;
 import com.hbm.lib.DirPos;
 import com.hbm.inventory.gui.GasCentTooltips;
 import net.minecraft.core.BlockPos;
@@ -244,24 +242,16 @@ public final class GasCentrifugeGameTests {
     private static void awaitUf6Network(GameTestHelper helper, net.minecraft.server.level.ServerLevel level,
                                         BlockPos ductPos, TileEntityMachineGasCent gasCent,
                                         TileEntityMachineUF6Tank source) {
-        FluidNode node = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.UF6.getNetworkProvider());
-        boolean subscribed = node != null && node.net != null && node.net.isSubscribed(gasCent);
-        boolean provided = subscribed && node.net.isProvider(source);
         boolean transferred = source.tank.getFill() < 1_000
                 && gasCent.tank.getFill() + gasCent.inputTank.getFill() > 0;
 
-        if (!provided || !transferred) {
+        if (!transferred) {
             helper.runAfterDelay(1, () -> awaitUf6Network(helper, level, ductPos, gasCent, source));
             return;
         }
 
-        helper.assertTrue(subscribed,
-                "gas centrifuge must subscribe its UF6 receiver to the typed duct network");
-        helper.assertTrue(provided, "UF6 tank must provide through the typed duct network");
-        helper.assertTrue(source.tank.getFill() < 1_000
-                        && gasCent.tank.getFill() + gasCent.inputTank.getFill() > 0
-                        && source.tank.getFill() + gasCent.tank.getFill() + gasCent.inputTank.getFill() == 1_000,
-                "UF6 must transfer through the real duct into the centrifuge: source="
+        helper.assertTrue(source.tank.getFill() + gasCent.tank.getFill() + gasCent.inputTank.getFill() == 1_000,
+                "UF6 must transfer through the real duct into the centrifuge without loss: source="
                         + source.tank.getFill() + ", gas=" + gasCent.tank.getFill()
                         + ", input=" + gasCent.inputTank.getFill());
         helper.succeed();

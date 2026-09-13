@@ -134,7 +134,6 @@ public class TileEntityWatz extends TileEntityMachineBase
 
         List<TileEntityWatz> segments = new ArrayList<>();
         segments.add(te);
-        te.subscribeToTop(level);
 
         // Accumulate the column downward. Upstream scans to y=0; a 26.1 world can start lower.
         for (int y = pos.getY() - SEGMENT_HEIGHT; y >= level.getMinY(); y -= SEGMENT_HEIGHT) {
@@ -313,9 +312,6 @@ public class TileEntityWatz extends TileEntityMachineBase
 
     // --- fluid I/O: coolant enters at the top of the column, hot coolant and mud leave at the bottom ---
 
-    private void subscribeToTop(Level level) {
-        for (DirPos port : topPorts()) trySubscribe(tanks[0].getTankType(), level, port);
-    }
 
     private void sendOutBottom(Level level) {
         for (DirPos port : bottomPorts()) {

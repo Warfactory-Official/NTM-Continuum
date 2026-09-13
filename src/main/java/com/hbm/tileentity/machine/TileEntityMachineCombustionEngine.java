@@ -98,7 +98,6 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
 
         for (DirPos dp : te.getConPos()) {
             te.tryProvide(level, dp.getPos().getX(), dp.getPos().getY(), dp.getPos().getZ(), dp.getDir());
-            te.trySubscribe(te.tank.getTankType(), level, dp.getPos().getX(), dp.getPos().getY(), dp.getPos().getZ(), dp.getDir());
         }
 
         if (te.power > maxPower) te.power = maxPower;

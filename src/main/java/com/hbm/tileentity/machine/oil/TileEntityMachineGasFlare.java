@@ -79,7 +79,6 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasFlare te) {
         for (DirPos dp : te.getConPos()) {
             te.tryProvide(level, dp.getPos(), dp.getDir());
-            te.trySubscribe(te.tank.getTankType(), level, dp);
         }
 
         te.setTypeFromFluidId();

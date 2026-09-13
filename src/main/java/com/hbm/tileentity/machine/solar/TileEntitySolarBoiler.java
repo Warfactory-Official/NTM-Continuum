@@ -36,7 +36,6 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntitySolarBoiler te) {
-        te.updateConnections(level);
         te.tryConvert();
         te.sendFluid(level);
 
@@ -52,11 +51,6 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
         te.setChanged();
     }
 
-    private void updateConnections(Level level) {
-        for (DirPos connection : getConPos()) {
-            trySubscribe(tanks[0].getTankType(), level, connection);
-        }
-    }
 
     private void sendFluid(Level level) {
         for (DirPos connection : getConPos()) {

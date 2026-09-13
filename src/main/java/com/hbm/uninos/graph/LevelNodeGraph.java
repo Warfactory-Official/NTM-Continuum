@@ -19,6 +19,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.chunk.LevelChunk;
 import org.jspecify.annotations.Nullable;
 
@@ -301,6 +302,29 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
 
     public static void clearLevel(Level level) {
         GRAPHS.remove(level);
+    }
+
+    /**
+     * Whether a block entity is being removed because its <b>block</b> went, rather than because its
+     * chunk is unloading — the question every conductor has to answer before dropping its cells.
+     *
+     * <p>Dropping cells on an unload would tear a network in half whenever a player walked away from
+     * it; the graph parks unloaded cells and keeps them in the save instead. The block state at the
+     * position is what tells the two apart — a removal has already written the new state by the time
+     * the block entity hears about it, and an unload has written nothing.
+     *
+     * <p>The state is read from the chunk we are handed rather than through the level, because an
+     * unload runs this from inside the chunk's own teardown: {@code Level.getBlockState} would ask the
+     * chunk source for a chunk that is on its way out, and the server thread would block for it
+     * forever. A chunk that cannot be read without loading is an unload by definition, which is the
+     * case that answers no anyway.
+     */
+    public static boolean blockWentWithIt(BlockEntity owner) {
+        if (!(owner.getLevel() instanceof ServerLevel server)) return false;
+        BlockPos pos = owner.getBlockPos();
+        LevelChunk chunk = server.getChunkSource().getChunkNow(
+                SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
+        return chunk != null && !chunk.getBlockState(pos).is(owner.getBlockState().getBlock());
     }
 
     @Override

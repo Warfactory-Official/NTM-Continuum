@@ -55,7 +55,6 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoiler te) {
         if (!te.hasExploded) {
             te.setupTanks();
-            te.updateConnections();
             te.tryPullHeat();
 
             te.isOn = false;
@@ -70,11 +69,6 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
         te.networkPackNT();
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-        }
-    }
 
     public DirPos[] getConPos() {
         int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;

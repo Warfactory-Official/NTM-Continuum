@@ -85,7 +85,6 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
         }
         for (DirPos connection : turbine.getConPos()) {
             turbine.tryProvide(turbine.tanks[1], level, connection);
-            turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection);
         }
         turbine.networkPackNT();
     }

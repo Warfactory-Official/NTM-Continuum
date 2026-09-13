@@ -72,9 +72,6 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
 
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.power, MAX_POWER);
         te.setTankTypeFromIdentifier();
-        if (te.tank.getTankType() != Fluids.NONE) {
-            for (DirPos port : te.getConPos()) te.trySubscribe(te.tank.getTankType(), level, port);
-        }
 
         if (GasCentrifugeRecipes.FLUID_CONVERSIONS.containsValue(te.inputTank.getTankType())) {
             te.attemptConversion();

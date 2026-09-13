@@ -98,8 +98,6 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
         for (DirPos connection : te.getConPos()) {
-            te.trySubscribe(te.tanks[0].getTankType(), level, connection);
-            te.trySubscribe(te.tanks[3].getTankType(), level, connection);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
             if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
         }

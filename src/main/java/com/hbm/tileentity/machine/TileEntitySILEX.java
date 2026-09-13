@@ -88,9 +88,6 @@ public class TileEntitySILEX extends TileEntityMachineBase
         te.updateTankType();
         te.fillTankFromSlots();
 
-        for (DirPos dp : te.getConPos()) {
-            if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, dp);
-        }
 
         te.loadFluid();
 

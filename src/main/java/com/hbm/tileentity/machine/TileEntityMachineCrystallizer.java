@@ -90,9 +90,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         te.ensureClimbRegistered();
         te.isOn = false;
 
-        for (DirPos dp : te.getConPos()) {
-            if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, dp);
-        }
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.getPower(), te.getMaxPower());
         te.updateTankType();

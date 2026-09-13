@@ -39,6 +39,15 @@ public final class EndpointRegistry {
     private static final Reference2ObjectOpenHashMap<Level, EndpointRegistry> LEVELS =
             new Reference2ObjectOpenHashMap<>();
 
+    /**
+     * A second table, for claims that are not a net probing a face. The fusion beams claim coordinates
+     * that may hold no block at all and are nowhere near their owner, so sharing one table with the
+     * machines a duct or a cable resolves would let two unrelated claims on one coordinate overwrite
+     * each other every tick. They are the same structure and want none of the same keys.
+     */
+    private static final Reference2ObjectOpenHashMap<Level, EndpointRegistry> BEAMS =
+            new Reference2ObjectOpenHashMap<>();
+
     private final Long2ObjectOpenHashMap<Endpoint> byCell = new Long2ObjectOpenHashMap<>();
     private final ChunkPositionIndex byChunk = new ChunkPositionIndex();
 
@@ -46,14 +55,23 @@ public final class EndpointRegistry {
         return LEVELS.computeIfAbsent(level, key -> new EndpointRegistry());
     }
 
-    public static void init() {
-        Lifecycle.onChunkUnload((level, chunk) ->
-                of(level).onChunkUnload(ChunkPositionIndex.chunkOf(chunk.getPos().getWorldPosition().asLong())));
+    /** @see #BEAMS */
+    public static EndpointRegistry ofBeams(ServerLevel level) {
+        return BEAMS.computeIfAbsent(level, key -> new EndpointRegistry());
     }
 
-    /** Drops a level's table on unload; nothing else removes a level from the map. */
+    public static void init() {
+        Lifecycle.onChunkUnload((level, chunk) -> {
+            long chunkKey = ChunkPositionIndex.chunkOf(chunk.getPos().getWorldPosition().asLong());
+            of(level).onChunkUnload(chunkKey);
+            ofBeams(level).onChunkUnload(chunkKey);
+        });
+    }
+
+    /** Drops a level's tables on unload; nothing else removes a level from the maps. */
     public static void clearLevel(Level level) {
         LEVELS.remove(level);
+        BEAMS.remove(level);
     }
 
     /**

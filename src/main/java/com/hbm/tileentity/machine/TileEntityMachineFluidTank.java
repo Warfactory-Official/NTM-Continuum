@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -18,7 +18,8 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.EndpointRegistry;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -35,7 +36,6 @@ import net.minecraft.world.phys.AABB;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
-import java.util.HashSet;
 
 /**
  * The fluid tank multiblock's core BlockEntity — a tank-backed fluid transceiver
@@ -57,8 +57,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     public final FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, CAPACITY);
 
-    protected FluidNode node;
-    protected FluidType lastType;
+    private long[] cells = FluidGraph.NONE;
 
     private boolean climbRegistered = false;
     private AABB ladderAABB;
@@ -84,38 +83,9 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         tank.processCanister(4, 5); // canister bay B: same (both bays are interchangeable)
         FluidType type = tank.tank.getTankType();
 
-        if (tank.mode == 1) {
-            // Buffer mode: behave like a pipe — own a node and act as both provider and receiver.
-            if (tank.node == null || tank.node.expired || type != tank.lastType) {
-                tank.node = (FluidNode) UniNodespace.getNode(level, pos, type.getNetworkProvider());
-                if (tank.node == null || tank.node.expired || type != tank.lastType) {
-                    tank.node = tank.createNode(type);
-                    UniNodespace.createNode(level, tank.node);
-                    tank.lastType = type;
-                }
-            }
-            if (tank.node != null && tank.node.hasValidNet()) {
-                tank.node.net.addProvider(tank);
-                tank.node.net.addReceiver(tank);
-            }
-        } else {
-            if (tank.node != null) {
-                UniNodespace.destroyNode(level, pos, type.getNetworkProvider());
-                tank.node = null;
-            }
-            for (DirPos dp : tank.getConPos()) {
-                FluidNode dirNode = (FluidNode) UniNodespace.getNode(level, dp.getPos(), type.getNetworkProvider());
-                if (tank.mode == 2) {
-                    tank.tryProvide(tank.tank, level, dp.getPos(), dp.getDir());
-                } else if (dirNode != null && dirNode.hasValidNet()) {
-                    dirNode.net.removeProvider(tank);
-                }
-                if (tank.mode == 0) {
-                    if (dirNode != null && dirNode.hasValidNet()) dirNode.net.addReceiver(tank);
-                } else if (dirNode != null && dirNode.hasValidNet()) {
-                    dirNode.net.removeReceiver(tank);
-                }
-            }
+        if (level instanceof ServerLevel server) tank.updateCells(server, type);
+        if (tank.mode == 2) {
+            for (DirPos dp : tank.getConPos()) tank.tryProvide(tank.tank, level, dp.getPos(), dp.getDir());
         }
 
         tank.setChanged();
@@ -141,10 +111,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         if (t == tank.getTankType()) return;
 
         tank.setTankType(t);
-        if (node != null) {
-            UniNodespace.destroyNode(level, getBlockPos(), tank.getTankType().getNetworkProvider());
-            node = null;
-        }
         // pass the identifier from the in-slot (0) to the out-slot (1)
         inventory.insertItem(1, id.copy(), false);
         inventory.extractItem(0, 1, false);
@@ -178,10 +144,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                     ItemStack work = single(in);
                     int taken = fillable.tryEmpty(heldType, addable, work);
                     if (taken > 0 && fits(outSlot, work)) {
-                        FluidType before = tank.getTankType();
                         tank.fill(heldType, taken, true);
                         moveToOut(inSlot, outSlot, work);
-                        resetNodeOnTypeChange(before);
                         return;
                     }
                 }
@@ -206,10 +170,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
             // full bucket -> tank, empty bucket out
             ItemStack empty = new ItemStack(Items.BUCKET);
             if (fits(outSlot, empty)) {
-                FluidType before = tank.getTankType();
                 tank.fill(bucketFluid, ItemFluidBucket.VOLUME, true);
                 moveToOut(inSlot, outSlot, empty);
-                resetNodeOnTypeChange(before);
             }
         } else if (in.is(Items.BUCKET) && tankType != Fluids.NONE && tank.getFill() >= ItemFluidBucket.VOLUME) {
             // empty bucket <- tank: water/lava -> vanilla bucket, else an HBM fluid bucket
@@ -245,14 +207,6 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         inventory.extractItem(inSlot, 1, false);
         inventory.insertItem(outSlot, result, false);
         setChanged();
-    }
-
-    /** Resets the network node when the tank's fluid type changed, so it re-forms on the right nodespace. */
-    private void resetNodeOnTypeChange(FluidType before) {
-        if (before != tank.getTankType() && node != null) {
-            UniNodespace.destroyNode(level, getBlockPos(), before.getNetworkProvider());
-            node = null;
-        }
     }
 
     /**
@@ -315,23 +269,23 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                 new DirPos(x - 1, y, z - 3, Library.NEG_Z), new DirPos(x + 1, y, z - 3, Library.NEG_Z)};
     }
 
-    protected FluidNode createNode(FluidType type) {
-        DirPos[] conPos = getConPos();
-        HashSet<BlockPos> posSet = new HashSet<>();
-        posSet.add(getBlockPos());
-        for (DirPos dp : conPos) {
-            posSet.add(new BlockPos(dp.getPos().getX() - dp.getDir().offsetX,
-                    dp.getPos().getY() - dp.getDir().offsetY, dp.getPos().getZ() - dp.getDir().offsetZ));
-        }
-        return new FluidNode(type.getNetworkProvider(), posSet.toArray(new BlockPos[0])).setConnections(conPos);
+    /**
+     * Buffer mode makes the tank a length of duct: it holds its own footprint as cells, so runs touching
+     * two different ports are one network. Every other mode gives them back and lets the ducts find it by
+     * probing, which is all a plain provider or receiver ever needed.
+     */
+    private void updateCells(ServerLevel level, FluidType type) {
+        cells = mode == 1 && type != Fluids.NONE
+                ? FluidGraph.hold(level, this, type, getConPos())
+                : FluidGraph.release(level, cells);
     }
 
     @Override
     public void setRemoved() {
         super.setRemoved();
         unregisterClimbable();
-        if (level != null && !level.isClientSide() && node != null) {
-            UniNodespace.destroyNode(level, getBlockPos(), tank.getTankType().getNetworkProvider());
+        if (cells.length > 0 && FluidGraph.dropCells(this, cells) && level instanceof ServerLevel server) {
+            EndpointRegistry.of(server).withdraw(getBlockPos());
         }
     }
 

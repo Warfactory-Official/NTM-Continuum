@@ -87,10 +87,6 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         te.consumption *= overdriveLevel * 3 + 1;
 
         // The legacy machine only exposed five connection anchors around the core.
-        for (DirPos dp : te.getConPos()) {
-            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            if (te.tanks[1].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, dp);
-        }
 
         te.wasOn = te.canProcess();
         if (te.wasOn) {

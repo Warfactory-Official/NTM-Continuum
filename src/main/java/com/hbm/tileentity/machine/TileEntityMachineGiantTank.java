@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.BlockDummyable;
@@ -13,7 +13,8 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.EndpointRegistry;
+import net.minecraft.server.level.ServerLevel;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -31,7 +32,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.HashSet;
 
 /** Shared port of the old {@code TileEntityBarrel} behavior used by both giant storage machines. */
 public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
@@ -47,8 +47,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     public boolean tilted;
     public final FluidTankNTM tankNew;
 
-    protected FluidNode node;
-    protected FluidType lastType;
+    private long[] cells = FluidGraph.NONE;
 
     protected TileEntityMachineGiantTank(BlockEntityType<?> type, BlockPos pos, BlockState state, int capacity) {
         super(type, pos, state, 6);
@@ -74,47 +73,19 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         tank.setChanged();
     }
 
+    /**
+     * Buffer mode makes the tank a length of duct: it holds its own footprint as cells, so runs touching
+     * two different ports are one network. Every other mode gives them back and lets the ducts find it by
+     * probing. A tilted tank stops external work, but a buffer's cells stay — it is still plumbing.
+     */
     private void updateNetwork(Level level) {
+        if (!(level instanceof ServerLevel server)) return;
         FluidType type = tankNew.getTankType();
-        if (mode == 1) {
-            if (node == null || node.expired || type != lastType) {
-                if (node != null) UniNodespace.destroyNode(level, node);
-                node = (FluidNode) UniNodespace.getNode(level, getBlockPos(), type.getNetworkProvider());
-                if (node == null || node.expired) {
-                    node = createNode(type);
-                    UniNodespace.createNode(level, node);
-                }
-                lastType = type;
-            }
-            if (node != null && node.hasValidNet()) {
-                node.net.addProvider(this);
-                node.net.addReceiver(this);
-            }
-            return;
-        }
-
-        if (node != null) {
-            UniNodespace.destroyNode(level, node);
-            node = null;
-            lastType = null;
-        }
-
-        // Tilted tanks stop external work; buffer mode returned above and still keeps its node alive.
-        if (isTilted()) return;
-
-        for (DirPos connection : getConPos()) {
-            FluidNode connectionNode = (FluidNode) UniNodespace.getNode(level, connection.getPos(), type.getNetworkProvider());
-            if (mode == 2) {
-                tryProvide(tankNew, level, connection);
-            } else if (connectionNode != null && connectionNode.hasValidNet()) {
-                connectionNode.net.removeProvider(this);
-            }
-
-            if (connectionNode != null && connectionNode.hasValidNet()) {
-                if (mode == 0) connectionNode.net.addReceiver(this);
-                else connectionNode.net.removeReceiver(this);
-            }
-        }
+        cells = mode == 1 && type != Fluids.NONE
+                ? FluidGraph.hold(server, this, type, getConPos())
+                : FluidGraph.release(server, cells);
+        if (mode != 2 || isTilted()) return;
+        for (DirPos connection : getConPos()) tryProvide(tankNew, level, connection);
     }
 
     private void updateTypeFromIdentifier() {
@@ -130,15 +101,10 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         inventory.extractItem(0, 1, false);
     }
 
-    /** Retypes the tank and tears down a buffer node before the fluid's nodespace changes. */
+    /** Retypes the tank; the next tick retypes the cells a buffer holds with it. */
     public void setTankType(FluidType type) {
         if (type == null) type = Fluids.NONE;
         if (type == tankNew.getTankType()) return;
-        if (node != null && level != null && !level.isClientSide()) {
-            UniNodespace.destroyNode(level, node);
-            node = null;
-            lastType = null;
-        }
         tankNew.setTankType(type);
         setChanged();
     }
@@ -318,18 +284,6 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
         return false;
     }
 
-    protected FluidNode createNode(FluidType type) {
-        DirPos[] connections = getConPos();
-        HashSet<BlockPos> positions = new HashSet<>();
-        positions.add(getBlockPos());
-        for (DirPos connection : connections) {
-            BlockPos p = connection.getPos();
-            ForgeDirection dir = connection.getDir();
-            positions.add(new BlockPos(p.getX() - dir.offsetX, p.getY() - dir.offsetY, p.getZ() - dir.offsetZ));
-        }
-        return new FluidNode(type.getNetworkProvider(), positions.toArray(new BlockPos[0])).setConnections(connections);
-    }
-
     public abstract DirPos[] getConPos();
 
     public ForgeDirection getFacing() {
@@ -339,8 +293,13 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     }
 
     @Override
+    /**
+     * A tilted tank supplies nothing, the same way {@link #getDemand} already refuses to take anything.
+     * Under the old network that held because a tilted tank never subscribed as a provider; the graph
+     * finds it either way, so the tilt has to be in what it offers rather than in whether it is asked.
+     */
     public FluidTankNTM[] getSendingTanks() {
-        return mode == 1 || mode == 2 ? new FluidTankNTM[]{tankNew} : new FluidTankNTM[0];
+        return !isTilted() && (mode == 1 || mode == 2) ? new FluidTankNTM[]{tankNew} : new FluidTankNTM[0];
     }
 
     @Override
@@ -397,10 +356,9 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
 
     @Override
     public void setRemoved() {
-        if (level != null && !level.isClientSide() && node != null) {
-            UniNodespace.destroyNode(level, node);
-            node = null;
-        }
         super.setRemoved();
+        if (cells.length > 0 && FluidGraph.dropCells(this, cells) && level instanceof ServerLevel server) {
+            EndpointRegistry.of(server).withdraw(getBlockPos());
+        }
     }
 }

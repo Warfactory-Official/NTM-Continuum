@@ -188,9 +188,9 @@ public final class HbmGameTestFunctions {
             TESTS.function("steam_pump_conversion", 40, 8, () -> PumpGameTests::steamConversion);
     public static final GameTests.Function STEAM_PUMP_RECIPE =
             TESTS.function("steam_pump_recipe", 40, () -> PumpGameTests::steamRecipe);
-    public static final GameTests.Function STEAM_PUMP_NETWORK_SUBSCRIPTION =
-            TESTS.function("steam_pump_network_subscription", 40, 8,
-                    () -> PumpGameTests::steamNetworkSubscription);
+    public static final GameTests.Function STEAM_PUMP_NETWORK_REACH =
+            TESTS.function("steam_pump_network_reach", 40, 8,
+                    () -> PumpGameTests::steamNetworkReach);
     public static final GameTests.Function STIRLING_LAYOUT =
             TESTS.function("stirling_layout", 100, 8, () -> StirlingGameTests::layout);
     public static final GameTests.Function STIRLING_PORTS =

@@ -72,7 +72,6 @@ public abstract class TileEntityCooledBase extends TileEntityMachineBase
     /** Subscribes to power and cold coolant, and offers the warmed coolant back out. */
     protected void exchangeCoolant(Level level) {
         for (DirPos pos : getConPos()) {
-            this.trySubscribe(coolantTanks[0].getTankType(), level, pos);
             if (coolantTanks[1].getFill() > 0) this.tryProvide(coolantTanks[1], level, pos);
         }
     }

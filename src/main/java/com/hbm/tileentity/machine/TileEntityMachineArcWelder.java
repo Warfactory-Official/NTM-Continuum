@@ -73,13 +73,6 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.getPower(), te.getMaxPower());
         te.updateTankType();
 
-        if (level.getGameTime() % 20L == 0L) {
-            for (DirPos connection : te.getConPos()) {
-                if (te.tank.getTankType() != Fluids.NONE) {
-                    te.trySubscribe(te.tank.getTankType(), level, connection);
-                }
-            }
-        }
 
         te.recipe = ArcWelderRecipes.getRecipe(
                 te.inventory.getStackInSlot(0), te.inventory.getStackInSlot(1), te.inventory.getStackInSlot(2));

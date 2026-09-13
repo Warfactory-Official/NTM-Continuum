@@ -1,9 +1,7 @@
 package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
-import com.hbm.api.fluidmk2.FluidNetMK2;
 import com.hbm.lib.Library;
-import com.hbm.uninos.INetworkProvider;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -14,9 +12,9 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * A single fluid kind in HBM's own fluid system (NOT a vanilla/Forge {@code Fluid}). Each FluidType
- * owns its own {@link INetworkProvider} so that, in UNINOS, every fluid kind has a wholly separate
- * nodespace — fluid networks are segregated by type (water pipes never mix with oil pipes).
+ * A single fluid kind in HBM's own fluid system (NOT a vanilla/Forge {@code Fluid}). Fluid networks are
+ * segregated by type — water pipes never mix with oil pipes — which the fluid graph gets from
+ * {@link com.hbm.api.fluidmk2.FluidGraphProvider#dataCompatible} rather than from a nodespace per type.
  *
  * <p>The original also carried Forge-fluid interop, pollution/potion hooks, and client-side rendering. Those
  * remain outside this type; tooltip facts use the ported thermal and combustion data below.
@@ -170,9 +168,7 @@ public class FluidType {
         };
     }
 
-    protected INetworkProvider<FluidNetMK2> NETWORK_PROVIDER = () -> new FluidNetMK2(this);
 
-    public INetworkProvider<FluidNetMK2> getNetworkProvider() { return NETWORK_PROVIDER; }
 
     @Override
     public String toString() {

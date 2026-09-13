@@ -101,7 +101,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
         fan.power = Library.chargeItemsFromTE(fan.inventory, 3, fan.power, fan.power);
         for (DirPos connection : fan.getConPos()) {
             fan.tryProvide(level, connection.getPos(), connection.getDir());
-            fan.trySubscribe(fan.tank.getTankType(), level, connection);
             if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection);
         }
         fan.power = Math.min(fan.power, MAX_POWER);

@@ -90,9 +90,6 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
             te.tank.setTankType(te.recipe.fluid.type);
         }
 
-        for (DirPos dp : te.getConPos()) {
-            if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, dp);
-        }
 
         // Upgrades (1.12.2 red/blue/black formulas): SPEED (red) -duration/6 & +100% power per level;
         // POWER (blue) +duration/3 & -power/6 per level; OVERDRIVE (black) ×2 power & +1 progress/tick.

@@ -71,9 +71,6 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
 
         for (DirPos connection : te.getConPos()) {
             if (te.power > 0) te.tryProvide(level, connection.getPos(), connection.getDir());
-            if (level.getGameTime() % 20 == 0) {
-                te.trySubscribe(te.tank.getTankType(), level, connection);
-            }
         }
 
         if (!te.liquidBurn) {

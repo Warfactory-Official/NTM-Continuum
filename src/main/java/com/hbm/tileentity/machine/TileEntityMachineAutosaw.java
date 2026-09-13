@@ -197,9 +197,6 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
     private void subscribeToFuelNetwork(ServerLevel level) {
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             BlockPos neighbour = getBlockPos().offset(direction.offsetX, direction.offsetY, direction.offsetZ);
-            if (level.hasChunkAt(neighbour)) {
-                trySubscribe(tank.getTankType(), level, neighbour, direction);
-            }
         }
     }
 

@@ -63,9 +63,6 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         BlockPos powerPos = turbine.getBlockPos().offset(-dir.offsetX * 4, 0, -dir.offsetZ * 4);
         turbine.tryProvide(level, powerPos, dir.getOpposite());
         for (DirPos connection : turbine.getConPos()) {
-            turbine.trySubscribe(turbine.tanks[0].getTankType(), level, connection);
-        }
-        for (DirPos connection : turbine.getConPos()) {
             turbine.tryProvide(turbine.tanks[1], level, connection);
         }
 

@@ -13,5 +13,7 @@ public class CommonClass {
 
         // The power graph's per-tick round, and the channels that make a parked conductor face live again.
         PowerNetwork.init();
+        // The fluid graph's round. Its chunk and level hooks are the ones PowerNetwork already installed.
+        com.hbm.api.fluidmk2.FluidNetwork.init();
     }
 }

@@ -61,7 +61,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterHeatex heater) {
         heater.updateTypeFromFluidId();
         heater.setupTanks();
-        heater.updateConnections(level);
 
         // The old machine decays its stored TU before adding the current cooling operation's heat.
         heater.heatEnergy *= 0.999;
@@ -100,11 +99,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         tanks[1].setTankType(Fluids.NONE);
     }
 
-    private void updateConnections(Level level) {
-        for (DirPos connection : getConPos()) {
-            trySubscribe(tanks[0].getTankType(), level, connection);
-        }
-    }
 
     /** Performs the exact old min(input, output, throttle) operation calculation. */
     protected void tryConvert(Level level) {

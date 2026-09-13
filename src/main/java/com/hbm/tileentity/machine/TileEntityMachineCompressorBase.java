@@ -74,7 +74,6 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
     @Override public String getDefaultName() { return "container.machineCompressor"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCompressorBase te) {
-        if (level.getGameTime() % 20 == 0) te.updateConnections();
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
         te.setTypeFromFluidId();
@@ -118,11 +117,6 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
         te.networkPackNT();
     }
 
-    protected void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-        }
-    }
 
     public abstract DirPos[] getConPos();
 

@@ -55,7 +55,6 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRefueler te) {
         ForgeDirection dir = te.portDir();
-        te.trySubscribe(te.tank.getTankType(), level, pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir);
 
         te.isOperating = false;
 

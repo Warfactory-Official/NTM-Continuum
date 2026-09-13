@@ -138,8 +138,6 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             }
         }
         for (DirPos port : te.getConPos()) {
-            te.trySubscribe(te.water.getTankType(), level, port);
-            te.trySubscribe(te.carbonDioxide.getTankType(), level, port);
             te.tryProvide(te.steam, level, port);
         }
         if (te.heat > MAX_HEAT || te.pressure > MAX_PRESSURE) {

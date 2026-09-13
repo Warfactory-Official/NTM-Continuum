@@ -81,6 +81,19 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
         return InteractionResult.SUCCESS;
     }
 
+    /**
+     * A block appearing beside a valve is the one endpoint transition nothing else announces, exactly as
+     * for a duct — an open valve is a conductor with faces of its own.
+     */
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
+        if (level instanceof net.minecraft.server.level.ServerLevel server) {
+            com.hbm.uninos.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
+        }
+    }
+
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {

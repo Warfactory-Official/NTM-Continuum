@@ -1,6 +1,8 @@
 package com.hbm.gametest;
 
-import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.fluidmk2.DuctData;
+import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineBigAssTank9000;
 import com.hbm.blocks.machine.MachineBigAssTank;
@@ -14,7 +16,8 @@ import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
 import com.hbm.tileentity.machine.TileEntityMachineBigAssTank;
 import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.Ids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -137,15 +140,18 @@ public final class GiantTankGameTests {
         level.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.WATER);
-        TileEntityFluidDuctNT.serverTick(level, ductPos, duct.getBlockState(), duct);
-        UniNodespace.updateNodespace(level.getServer());
 
-        FluidNode networkNode = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.WATER.getNetworkProvider());
-        helper.assertTrue(networkNode != null && networkNode.hasValidNet(),
-                "Tilted-output test could not create the external fluid network");
+        LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
+        NodeNetwork<DuctData> net = graph.networkAt(ductPos.asLong());
+        helper.assertTrue(net != null, "Tilted-output test could not create the external fluid network");
         TileEntityMachineGiantTank.serverTick(level, tank.getBlockPos(), tank.getBlockState(), tank);
-        helper.assertFalse(networkNode.net.isProvider(tank),
-                "A tilted giant tank must not advertise itself as an external fluid provider");
+        FluidNetwork.distribute(level, graph, net);
+
+        helper.assertTrue(tank.getFluidAvailable(Fluids.WATER, tank.tankNew.getPressure()) == 0,
+                "A tilted giant tank must offer a network nothing; the net finds it either way now, so the "
+                        + "tilt has to be in what it supplies");
+        helper.assertTrue(tank.tankNew.getFill() == 1_000,
+                "A tilted giant tank lost " + (1_000 - tank.tankNew.getFill()) + "mB to a network");
         helper.succeed();
     }
 

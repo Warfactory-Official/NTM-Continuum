@@ -131,14 +131,6 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
 
         te.updateCooling();
 
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos port : te.getConPos()) {
-                te.trySubscribe(te.coolantTanks[0].getTankType(), level, port);
-                for (int i = 0; i < 3; i++) {
-                    if (te.tanks[i].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[i].getTankType(), level, port);
-                }
-            }
-        }
         for (DirPos port : te.getConPos()) {
             if (te.coolantTanks[1].getFill() > 0) te.tryProvide(te.coolantTanks[1], level, port);
             if (te.tanks[3].getFill() > 0) te.tryProvide(te.tanks[3], level, port);

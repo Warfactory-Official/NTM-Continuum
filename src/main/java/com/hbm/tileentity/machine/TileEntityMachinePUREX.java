@@ -91,7 +91,6 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePUREX te) {
         for (DirPos port : te.getConPos()) {
-            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, port);
         }
 
