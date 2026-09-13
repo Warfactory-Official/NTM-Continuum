@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachinePlasmaForge;
 import com.hbm.inventory.material.MaterialShapes;
@@ -186,8 +185,7 @@ public final class PlasmaForgeContainerGameTests {
     }
 
     private static TileEntityFusionPlasmaForge place(GameTestHelper helper, BlockPos relative) {
-        helper.setBlock(relative, ModMachineBlocks.fusion_plasma_forge.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+        helper.setBlock(relative, ModMachineBlocks.fusion_plasma_forge.get().defaultBlockState());
         return (TileEntityFusionPlasmaForge) helper.getLevel().getBlockEntity(helper.absolutePos(relative));
     }
 

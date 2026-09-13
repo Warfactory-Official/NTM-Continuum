@@ -290,6 +290,17 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     }
 
     /**
+     * Does the cell carry a passive proxy in any of {@code domains}, on any face at all? The side-blind
+     * ask: a hopper resolves the container before it knows which face it is pulling from, and 1.7's
+     * {@code meta >= extra} was the same question asked of the cell alone.
+     */
+    public boolean carriesPassiveAt(Direction facing, int dx, int dy, int dz, int domains) {
+        int mask = passiveMaskAt(MultiblockMaskTable.localX(dx, dy, dz, facing), dy,
+                MultiblockMaskTable.localZ(dx, dy, dz, facing), domains);
+        return mask != MultiblockMaskTable.NOT_A_CELL && mask != MASK_NONE;
+    }
+
+    /**
      * {@link #isOpenAt} over the passive plane alone — no active union; the item route's question, and the
      * union would be wrong for it: 1.7 has no item mechanism on the {@code getConPos} plane at all.
      */

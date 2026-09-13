@@ -125,7 +125,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
-                new DirPos(x - dir.offsetX * 2, y, z - dir.offsetZ * 2, rot.getOpposite()),
+                new DirPos(x - dir.offsetX * 2, y, z - dir.offsetZ * 2, dir.getOpposite()),
                 new DirPos(x - dir.offsetX * 2 + rot.offsetX, y, z - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite())
         };
     }

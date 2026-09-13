@@ -2,7 +2,6 @@ package com.hbm.gametest;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.radio.ModRadioBlocks;
 import com.hbm.radio.RadioTargets;
@@ -109,15 +108,15 @@ public final class CounterControllerGameTests {
     }
 
     public static void counterResolvesMultiblock(GameTestHelper helper) {
-        BlockPos counterPos = new BlockPos(3, 2, 3);
-        BlockPos dummyPos = counterPos.below();
-        BlockPos corePos = dummyPos.south();
+        BlockPos corePos = new BlockPos(3, 1, 3);
+        BlockPos counterPos = corePos.above(3);
         String channel = "ctrmulti";
         try {
+            // A cell carries no pointer home, so CELL alone makes no cell -- the machine has to be
+            // assembled for the index to record whose the position under the counter is.
+            FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_assembly_machine.get(), corePos);
             helper.setBlock(counterPos, ModRadioBlocks.RADIO_TORCH_COUNTER.get().defaultBlockState());
-            helper.setBlock(dummyPos, ModMachineBlocks.machine_assembly_machine.get().defaultBlockState()
-                    .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
-            helper.setBlock(corePos, ModMachineBlocks.machine_assembly_machine.get().defaultBlockState());
+            FoldedTestSupport.assertCell(helper, corePos, counterPos.below());
 
             TileEntityRadioTorchCounter counter = GameTestHelpers.blockEntity(
                     helper, counterPos, TileEntityRadioTorchCounter.class);
@@ -197,7 +196,8 @@ public final class CounterControllerGameTests {
         }
         helper.assertTrue(rejected, "ROR parser must reject multiple name separators");
 
-        BlockPos pos = new BlockPos(3, 2, 3);
+        BlockPos corePos = new BlockPos(3, 1, 3);
+        BlockPos pos = corePos.above(3);
         helper.setBlock(pos.below(), Blocks.STONE);
         helper.setBlock(pos, ModRadioBlocks.RADIO_TORCH_CONTROLLER.get().defaultBlockState());
         TileEntityRadioTorchController controller = GameTestHelpers.blockEntity(
@@ -212,11 +212,10 @@ public final class CounterControllerGameTests {
         helper.assertTrue("new".equals(controller.channel) && controller.polling,
                 "Controller screen control was not applied server-side");
 
-        helper.setBlock(pos.below(), ModMachineBlocks.machine_assembly_machine.get().defaultBlockState()
-                .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
-        helper.setBlock(pos.below().south(), ModMachineBlocks.machine_assembly_machine.get().defaultBlockState());
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_assembly_machine.get(), corePos);
+        FoldedTestSupport.assertCell(helper, corePos, pos.below());
         TileEntityMachineAssemblyMachine target = GameTestHelpers.blockEntity(
-                helper, pos.below().south(), TileEntityMachineAssemblyMachine.class);
+                helper, corePos, TileEntityMachineAssemblyMachine.class);
         RTTYSystem.clearChannel(helper.getLevel(), "new");
         RTTYSystem.broadcast(helper.getLevel(), "new", "setrecipe!ass.plate");
         RTTYSystem.updateTestChannels(helper.getLevel().getServer(), "new");

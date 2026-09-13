@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine.fusion;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionCollector;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import org.jspecify.annotations.Nullable;
  * Fusion collector — a passive dish on the plasma network that raises the torus's output rate
  * without consuming any of it. All the behaviour is in {@link TileEntityFusionCollector}.
  */
-public class MachineFusionCollector extends BlockDummyable {
+public class MachineFusionCollector extends BlockMultiblockMachine {
 
     public MachineFusionCollector(Properties properties) {
         super(properties);

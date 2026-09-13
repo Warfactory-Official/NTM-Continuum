@@ -210,11 +210,9 @@ public final class ModBlockModels {
     }
 
     private static final String[] RENDERED_0 = {
-            "chimney_brick", "chimney_industrial", "furnace_iron", "furnace_steel", "fusion_boiler",
-            "fusion_breeder", "fusion_collector", "fusion_coupler", "fusion_klystron",
-            "fusion_klystron_creative", "fusion_mhdt", "fusion_plasma_forge", "fusion_torus",
-            "heater_heatex", "launch_pad", "machine_arc_furnace", "machine_assembly_factory",
-            "machine_bat9000", "machine_battery_redd", "machine_battery_socket", "machine_bigasstank",
+            "chimney_brick", "chimney_industrial", "furnace_iron", "furnace_steel", "heater_heatex",
+            "launch_pad", "machine_arc_furnace", "machine_assembly_factory", "machine_bat9000",
+            "machine_battery_redd", "machine_battery_socket", "machine_bigasstank",
             "machine_blast_furnace", "machine_catalytic_cracker", "machine_chemical_factory",
             "machine_coker", "machine_cyclotron", "machine_deuterium_tower", "machine_electrolyser",
             "machine_exposure_chamber", "machine_fracking_tower", "machine_furnace_combination",
@@ -228,7 +226,9 @@ public final class ModBlockModels {
      * renderer on the core draws both, so every variant is the same empty placeholder.
      */
     private static final String[] RENDERED_FOLDED = {
-            "fraction_spacer", "heat_boiler", "heater_electric", "heater_firebox", "heater_oilburner",
+            "fraction_spacer", "fusion_boiler", "fusion_breeder", "fusion_collector", "fusion_coupler",
+            "fusion_klystron", "fusion_klystron_creative", "fusion_mhdt", "fusion_plasma_forge",
+            "fusion_torus", "heat_boiler", "heater_electric", "heater_firebox", "heater_oilburner",
             "heater_oven", "machine_ammo_press", "machine_arc_welder", "machine_ashpit",
             "machine_assembly_machine", "machine_catalytic_reformer", "machine_centrifuge",
             "machine_chemical_plant", "machine_combustion_engine", "machine_compressor",

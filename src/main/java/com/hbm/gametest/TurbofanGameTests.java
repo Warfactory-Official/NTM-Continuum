@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineTurbofan;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -20,8 +19,8 @@ public final class TurbofanGameTests {
         MachineTurbofan block = ModMachineBlocks.machine_turbofan.get();
         TileEntityMachineTurbofan fan = place(helper, core);
         helper.assertTrue(fan != null, "Turbofan core BlockEntity was not created");
-        assertMeta(helper, core.offset(-1, 0, -1), 10);
-        assertMeta(helper, core.offset(0, 0, 1), 9);
+        FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, -1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, 1));
         helper.succeed();
     }
 
@@ -62,11 +61,6 @@ public final class TurbofanGameTests {
                 helper, pos, TileEntityMachineTurbofan.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return fan;
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META) == expected,
-                "Turbofan extra cell mismatch at " + pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, int x, int y, int z, ForgeDirection direction) {

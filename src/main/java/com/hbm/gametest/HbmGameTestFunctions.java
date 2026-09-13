@@ -1464,8 +1464,7 @@ public final class HbmGameTestFunctions {
         // And the live predicate must agree, at the torus's edge and at the top of a tall machine.
         var core = new net.minecraft.core.BlockPos(8, 1, 8);
         var torus = ModMachineBlocks.fusion_torus.get();
-        helper.setBlock(core, torus.defaultBlockState().setValue(BlockDummyable.META, 12));
-        torus.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, torus, core);
 
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var absCore = helper.absolutePos(core);
@@ -1704,8 +1703,7 @@ public final class HbmGameTestFunctions {
     private static void fusionChain(GameTestHelper helper) {
         var torusCore = new net.minecraft.core.BlockPos(9, 1, 9);
         var torus = ModMachineBlocks.fusion_torus.get();
-        helper.setBlock(torusCore, torus.defaultBlockState().setValue(BlockDummyable.META, 12));
-        torus.formStructure(helper.getLevel(), helper.absolutePos(torusCore), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, torus, torusCore);
         var torusTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, torusCore,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class);
         helper.assertTrue(torusTe != null, "Torus setup failed");
@@ -1725,8 +1723,7 @@ public final class HbmGameTestFunctions {
 
         var boilerCore = new net.minecraft.core.BlockPos(2, 1, 2);
         var boiler = ModMachineBlocks.fusion_boiler.get();
-        helper.setBlock(boilerCore, boiler.defaultBlockState().setValue(BlockDummyable.META, 12));
-        boiler.formStructure(helper.getLevel(), helper.absolutePos(boilerCore), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, boiler, boilerCore);
         var boilerTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, boilerCore,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler.class);
         helper.assertTrue(boilerTe != null, "Boiler setup failed");
@@ -1794,7 +1791,7 @@ public final class HbmGameTestFunctions {
 
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
         forge.plasmaModule.recipe = hde.getInternalName();
@@ -1815,7 +1812,7 @@ public final class HbmGameTestFunctions {
     private static void fusionPlasmaForgeMenu(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
@@ -1840,7 +1837,7 @@ public final class HbmGameTestFunctions {
     private static void fusionPlasmaForgeProcessing(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
         var castIron = com.hbm.items.ModAutogenItems.get(
@@ -1871,8 +1868,7 @@ public final class HbmGameTestFunctions {
     private static void fusionBreeder(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(2, 1, 2);
         var block = ModMachineBlocks.fusion_breeder.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, core);
 
         var breeder = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.class);
@@ -1897,14 +1893,20 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    private static void checkPorts(GameTestHelper helper, net.minecraft.core.BlockPos core, BlockDummyable block,
+    private static void checkPorts(GameTestHelper helper, net.minecraft.core.BlockPos core,
+                                   net.minecraft.world.level.block.Block block,
                                    java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity,
                                            java.util.List<com.hbm.lib.DirPos>> ports) {
         String name = block.getName().getString();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        if (block instanceof com.hbm.blocks.multiblock.BlockMultiblockCore folded) {
+            FoldedTestSupport.assemble(helper, folded, core);
+        } else {
+            BlockDummyable dummyable = (BlockDummyable) block;
+            helper.setBlock(core, dummyable.defaultBlockState().setValue(BlockDummyable.META, 12));
+            dummyable.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+        }
         var te = helper.getLevel().getBlockEntity(helper.absolutePos(core));
         helper.assertTrue(te != null, name + " controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
 
         var declared = ports.apply(te);
         helper.assertFalse(declared.isEmpty(), name + " declares no ports at all");
@@ -1938,12 +1940,9 @@ public final class HbmGameTestFunctions {
     private static void fusionTorusLayout(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(8, 1, 8);
         var block = ModMachineBlocks.fusion_torus.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null, "Torus controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-
-        helper.assertBlockProperty(core, BlockDummyable.META, 12);
 
         // Every non-zero mask cell must be filled, and every zero one must not be — that hollow centre
         // is what makes it a torus rather than a cylinder.
@@ -1965,13 +1964,11 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(occupied == 925, "Torus must contain exactly 925 cells, found " + occupied);
 
         // The centre-top port plus the twenty-four ring ports.
-        helper.assertBlockProperty(core.above(4), BlockDummyable.META, 7);
+        FoldedTestSupport.assertPort(helper, core, core.above(4));
         for (int dy : new int[]{0, 4}) {
             for (int off : new int[]{-2, 0, 2}) {
                 for (int[] p : new int[][]{{6, dy, off}, {-6, dy, off}, {off, dy, 6}, {off, dy, -6}}) {
-                    int meta = helper.getBlockState(core.offset(p[0], p[1], p[2])).getValue(BlockDummyable.META);
-                    helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
-                            "Torus port " + p[0] + "," + p[1] + "," + p[2] + " must be an extra dummy, was " + meta);
+                    FoldedTestSupport.assertPort(helper, core, core.offset(p[0], p[1], p[2]));
                 }
             }
         }
@@ -2000,7 +1997,8 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.fusion_torus.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Torus struct core did not become a fusion reactor");
-            helper.assertBlockProperty(seed, BlockDummyable.META, 12);
+            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
+                    net.minecraft.core.Direction.NORTH);
             helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
                     com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null,
                     "Assembled torus has no controller");

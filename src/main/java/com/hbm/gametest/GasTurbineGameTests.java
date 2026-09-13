@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineTurbineGas;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -28,8 +27,8 @@ public final class GasTurbineGameTests {
         MachineTurbineGas block = ModMachineBlocks.machine_turbine_gas.get();
         TileEntityMachineTurbineGas turbine = place(helper, core);
         helper.assertTrue(turbine != null, "Gas turbine core BlockEntity was not created");
-        assertMeta(helper, core.offset(4, 1, 0), 7);
-        assertMeta(helper, core.offset(-5, 1, 0), 7);
+        FoldedTestSupport.assertPort(helper, core, core.offset(4, 1, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-5, 1, 0));
         helper.succeed();
     }
 
@@ -180,11 +179,6 @@ public final class GasTurbineGameTests {
                 helper, pos, TileEntityMachineTurbineGas.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return turbine;
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META) == expected,
-                "Gas turbine extra cell mismatch at " + pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, int x, int y, int z, ForgeDirection direction) {

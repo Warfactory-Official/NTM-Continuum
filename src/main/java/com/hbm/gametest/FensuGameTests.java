@@ -177,9 +177,16 @@ public final class FensuGameTests {
                 .getResourceAsStream("assets/hbm/blockstates/machine_fensu.json")) {
             JsonObject root = stream == null ? null
                     : JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
-            helper.assertTrue(root != null && root.has("variants")
-                            && root.getAsJsonObject("variants").entrySet().size() == 16,
-                    "FEnSU blockstate does not contain all 16 dummyable metadata variants");
+            java.util.Set<String> variants = root == null || !root.has("variants") ? java.util.Set.of()
+                    : root.getAsJsonObject("variants").keySet();
+            java.util.List<String> expected = new java.util.ArrayList<>();
+            for (String facing : new String[]{"north", "east", "south", "west"}) {
+                for (String cell : new String[]{"false", "true"}) {
+                    expected.add("facing=" + facing + ",cell=" + cell);
+                }
+            }
+            helper.assertTrue(variants.size() == expected.size() && variants.containsAll(expected),
+                    "FEnSU blockstate does not declare every facing x cell variant: " + variants);
         } catch (IOException | RuntimeException exception) {
             helper.fail("FEnSU blockstate could not be read: " + exception);
         }

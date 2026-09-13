@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineLargeTurbine;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -25,10 +24,10 @@ public final class LargeTurbineGameTests {
         block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
         helper.assertTrue(turbine != null, "Large turbine core BlockEntity was not created");
-        assertMeta(helper, core.offset(0, 0, 3), 9);
-        assertMeta(helper, core.offset(0, 0, -1), 8);
-        assertMeta(helper, core.offset(1, 0, 0), 11);
-        assertMeta(helper, core.offset(-1, 0, 0), 10);
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, 3));
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, -1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, 0));
         helper.succeed();
     }
 
@@ -103,11 +102,6 @@ public final class LargeTurbineGameTests {
         helper.setBlock(pos, block.defaultBlockState());
         return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 TileEntityMachineLargeTurbine.class);
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META) == expected,
-                "Large turbine structure missing extra cell at " + pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, int x, int y, int z,

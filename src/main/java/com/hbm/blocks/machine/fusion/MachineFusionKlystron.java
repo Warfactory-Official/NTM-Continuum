@@ -2,14 +2,12 @@ package com.hbm.blocks.machine.fusion;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -22,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  * the two side ports; the beam leaves from the muzzle port at +2. Behaviour lives in
  * {@link TileEntityFusionKlystron}.
  */
-public class MachineFusionKlystron extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineFusionKlystron extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineFusionKlystron(Properties properties) {
         super(properties);
@@ -37,35 +35,33 @@ public class MachineFusionKlystron extends BlockDummyable implements IEnergyConn
 
     @Override public int getOffset() { return 3; }
 
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        int cx = core.getX(), cy = core.getY(), cz = core.getZ();
-        MultiblockHandlerXR.fillSpace(level, cx, cy, cz, new int[]{4, -3, 4, 3, 1, 1}, this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, cx + dir.offsetX * 3, cy + 2, cz + dir.offsetZ * 3);
-        makeExtra(level, cx + rot.offsetX * 2, cy, cz + rot.offsetZ * 2);
-        makeExtra(level, cx - rot.offsetX * 2, cy, cz - rot.offsetZ * 2);
-    }
+    /** 1.7: the waveguide arm reaching out past the body. */
+    private static final int[] WAVEGUIDE = {4, -3, 4, 3, 1, 1};
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return isPortCell(world, pos, dir);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return super.checkRequirement(level, core, facing, clicked)
+                && MultiblockHandlerXR.checkSpace(level, core, WAVEGUIDE, clicked, facing);
+    }
+
+    /** The waveguide mouth at the muzzle, and the power and air laterals one step out on each flank. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, WAVEGUIDE, facing, visitor);
+
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.offset(facing.getStepX() * 3, 2, facing.getStepZ() * 3), MASK_SOUTH);
+        visitor.cell(core.offset(rot.getStepX() * 2, 0, rot.getStepZ() * 2), MASK_WEST);
+        visitor.cell(core.offset(-rot.getStepX() * 2, 0, -rot.getStepZ() * 2), MASK_EAST);
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return isPortCell(world, new BlockPos(x, y, z), dir);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.offset(facing.getStepX() * 3, 2, facing.getStepZ() * 3), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(rot.getStepX() * 2, 0, rot.getStepZ() * 2), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-rot.getStepX() * 2, 0, -rot.getStepZ() * 2), MASK_ALL, domains);
     }
-
-    /** A pipe may attach only at a promoted port cell, and only on the face the machine declares. */
-    private boolean isPortCell(BlockGetter world, BlockPos cell, ForgeDirection dir) {
-        BlockState state = world.getBlockState(cell);
-        if (state.getBlock() != this || state.getValue(META) < extra || state.getValue(META) >= offset + 2) return false;
-        BlockPos outside = cell.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
-        return findCoreTE(world, cell) instanceof TileEntityFusionKlystron te
-                && te.getConPos().stream().anyMatch(p -> p.getPos().equals(outside) && p.getDir() == dir);
-    }
-
 }

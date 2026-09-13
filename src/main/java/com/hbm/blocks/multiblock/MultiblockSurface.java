@@ -126,6 +126,20 @@ public final class MultiblockSurface {
                 BlockMultiblockCore.PASSIVE_NONE, role);
     }
 
+    /** {@link BlockMultiblockCore#carriesPassiveAt} reached through any cell of the machine. */
+    public static boolean carriesPassive(BlockGetter level, BlockPos pos, int domains) {
+        BlockMultiblockCore.FoldedOwner owner = ownerOf(level, pos);
+        if (owner == null) {
+            BlockState state = level.getBlockState(pos);
+            BlockMultiblockCore self = foldedCore(state);
+            return self != null && self.carriesPassiveAt(state.getValue(BlockMultiblockCore.FACING),
+                    0, 0, 0, domains);
+        }
+        BlockPos core = owner.pos();
+        return owner.block().carriesPassiveAt(owner.facing(), pos.getX() - core.getX(),
+                pos.getY() - core.getY(), pos.getZ() - core.getZ(), domains);
+    }
+
     /** The passive accept surface alone — the item route's question; see {@code isPassiveOnlyOpenAt}. */
     public static boolean isPassiveOpen(Level level, BlockPos pos, Direction side, int passiveDomains) {
         BlockMultiblockCore.FoldedOwner owner = ownerOf(level, pos);

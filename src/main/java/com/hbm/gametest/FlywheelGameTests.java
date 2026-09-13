@@ -2,12 +2,10 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.machine.solar.MachineSolarBoiler;
-import com.hbm.blocks.machine.solar.ModSolarBlocks;
+import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.client.render.flywheel.FlywheelCompat;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityNukeTorex;
 import dev.golem.core.render.Instancing;
@@ -124,13 +122,17 @@ public final class FlywheelGameTests {
         helper.succeed();
     }
 
-    /** A {@link BlockDummyable} keeps its block entity at a core offset from the dummies. */
+    /**
+     * A {@link BlockDummyable} keeps its block entity at a core offset from the dummies. Held on an
+     * un-migrated machine on purpose: once the last one folds this branch of the hook has no caller and
+     * the test goes with it.
+     */
     public static void crumblingCoreDummyable(GameTestHelper helper) {
-        MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
+        BlockDummyable block = ModMachineBlocks.machine_fracking_tower.get();
         BlockPos relative = new BlockPos(2, 1, 2);
         BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState());
-        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
+        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        block.formStructure(helper.getLevel(), core, com.hbm.lib.ForgeDirection.NORTH);
 
         BlockPos dummy = core.above(2);
         BlockState dummyState = helper.getLevel().getBlockState(dummy);

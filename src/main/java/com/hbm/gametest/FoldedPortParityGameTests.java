@@ -16,6 +16,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,13 +62,22 @@ public final class FoldedPortParityGameTests {
             }
             if (any) covered++;
         }
-        helper.assertTrue(failures.isEmpty(), String.join("; ", failures.subList(0, Math.min(8, failures.size())))
-                + (failures.size() > 8 ? " (and " + (failures.size() - 8) + " more)" : ""));
+        helper.assertTrue(failures.isEmpty(), failures.size() + " divergence(s): "
+                + String.join("; ", failures.subList(0, Math.min(40, failures.size())))
+                + (failures.size() > 40 ? " (and " + (failures.size() - 40) + " more)" : ""));
         helper.assertTrue(covered > 0, "No folded machine exposed a getConPos to compare against");
         helper.succeed();
     }
 
-    /** The core tile's declared connections, or null where this machine states none to compare against. */
+    /**
+     * Every connection the core tile declares, or null where this machine states none to compare against.
+     *
+     * <p>{@code getConPos} is the usual single statement, but a machine whose surfaces carry different
+     * commodities splits them: the large turbine keeps its rear power anchor in {@code getPowerPos}, the
+     * gas turbine its three intakes in {@code getFuelPos}/{@code getLubePos}/{@code getWaterPos}. Reading
+     * only {@code getConPos} would make every one of those look like a port the table invented, so the
+     * comparison takes the union of all of them.
+     */
     private static DirPos @org.jspecify.annotations.Nullable [] conPos(BlockMultiblockMachine machine,
                                                                       Direction facing) {
         BlockState state = machine.defaultBlockState().setValue(BlockMultiblockMachine.FACING, facing);
@@ -77,12 +88,35 @@ public final class FoldedPortParityGameTests {
             return null;
         }
         if (core == null) return null;
-        try {
-            Method method = core.getClass().getMethod("getConPos");
-            return (DirPos[]) method.invoke(core);
-        } catch (ReflectiveOperationException | RuntimeException e) {
-            return null;
+
+        List<DirPos> ports = new ArrayList<>();
+        boolean declared = false;
+        for (Method method : core.getClass().getMethods()) {
+            if (method.getParameterCount() != 0 || !method.getName().startsWith("get")) continue;
+            if (!declaresPorts(method)) continue;
+            Object value;
+            try {
+                value = method.invoke(core);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                continue;
+            }
+            declared = true;
+            if (value instanceof DirPos[] array) {
+                ports.addAll(Arrays.asList(array));
+            } else if (value instanceof List<?> list) {
+                for (Object entry : list) ports.add((DirPos) entry);
+            }
         }
+        return declared ? ports.toArray(DirPos[]::new) : null;
+    }
+
+    /** {@code DirPos[]} or {@code List<DirPos>}; the generic argument keeps a same-shaped getter out. */
+    private static boolean declaresPorts(Method method) {
+        if (DirPos[].class.equals(method.getReturnType())) return true;
+        if (!List.class.equals(method.getReturnType())) return false;
+        return method.getGenericReturnType() instanceof ParameterizedType parameterized
+                && parameterized.getActualTypeArguments().length == 1
+                && DirPos.class.equals(parameterized.getActualTypeArguments()[0]);
     }
 
     private static void compare(BlockMultiblockMachine machine, Direction facing, DirPos[] declared,

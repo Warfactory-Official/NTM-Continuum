@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineStirling;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
@@ -28,10 +27,8 @@ public final class StirlingGameTests {
         TileEntityStirling stirling = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, core, TileEntityStirling.class);
         helper.assertTrue(stirling != null, "Stirling core BlockEntity was not created");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
-                "Stirling east port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.west())).getValue(BlockDummyable.META) >= 6,
-                "Stirling west port was not marked extra");
+        FoldedTestSupport.assertPort(helper, core, core.east());
+        FoldedTestSupport.assertPort(helper, core, core.west());
         helper.succeed();
     }
 

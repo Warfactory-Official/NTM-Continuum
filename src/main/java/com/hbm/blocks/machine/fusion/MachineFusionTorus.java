@@ -2,15 +2,14 @@ package com.hbm.blocks.machine.fusion;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Like the Watz, the torus has no block item: it exists only by assembling a {@code struct_torus_core}.
  */
-public class MachineFusionTorus extends BlockDummyable
+public class MachineFusionTorus extends BlockMultiblockMachine
         implements IFluidConnectorBlockMK2, IEnergyConnectorBlock, WorldlyContainerHolder {
 
     /**
@@ -116,99 +115,80 @@ public class MachineFusionTorus extends BlockDummyable
     }
 
     @Override
-    public boolean checkRequirement(Level level, int x, int y, int z, ForgeDirection dir, int o) {
-        if (!super.checkRequirement(level, x, y, z, dir, o)) return false;
+    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityFusionTorus torus ? (WorldlyContainer) torus : null;
+    }
 
-        int cx = x + dir.offsetX * o;
-        int cz = z + dir.offsetZ * o;
+    /**
+     * The centre-bottom port hangs directly beneath the core cell itself, so the core carries a face of
+     * its own -- the one place in the corpus where {@code getConPos} names the core and not a cell.
+     */
+    @Override public int coreMask() { return MASK_DOWN; }
 
+    /**
+     * Upstream tests placeability rather than replaceability here; a cell holding the component the
+     * player just built is exactly what we are about to overwrite.
+     */
+    @Override
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         for (int iy = 0; iy < HEIGHT; iy++) {
             int[][] layer = layerFor(iy);
             int half = layer.length / 2;
             for (int ix = 0; ix < layer.length; ix++) {
                 for (int iz = 0; iz < layer[ix].length; iz++) {
                     if (layer[ix][iz] <= 0) continue;
-                    BlockPos cell = new BlockPos(cx + ix - half, y + iy, cz + iz - half);
-                    // Upstream tests placeability rather than replaceability here; a cell holding the
-                    // component the player just built is exactly what we are about to overwrite.
-                    if (!level.getBlockState(cell).canBeReplaced()
-                            && level.getBlockState(cell).getBlock() != this) return false;
+                    BlockState state = level.getBlockState(core.offset(ix - half, iy, iz - half));
+                    if (!state.canBeReplaced() && state.getBlock() != this) return false;
                 }
             }
         }
         return true;
     }
 
+    /**
+     * A shaped ring rather than a box, so no super: the mask is the footprint. The layout is identical
+     * under a quarter turn at every layer, which is what lets it be stated in the facing frame at all.
+     *
+     * <p>"is that enough ports?" -- upstream. Six per side at both ring heights, plus the centre-top.
+     */
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-
-        BlockDummyable.safeRem(true);
-        try {
-            for (int iy = 0; iy < HEIGHT; iy++) {
-                int[][] layer = layerFor(iy);
-                int half = layer.length / 2;
-                for (int ix = 0; ix < layer.length; ix++) {
-                    for (int iz = 0; iz < layer[ix].length; iz++) {
-                        if (layer[ix][iz] <= 0) continue;
-                        int ex = ix - half;
-                        int ez = iz - half;
-
-                        // Everything above the base layer points down; the base layer points outward
-                        // along whichever axis it is offset on, so the chain always reaches the core.
-                        int meta;
-                        if (iy > 0) meta = ForgeDirection.UP.ordinal();
-                        else if (ex < 0) meta = ForgeDirection.WEST.ordinal();
-                        else if (ex > 0) meta = ForgeDirection.EAST.ordinal();
-                        else if (ez < 0) meta = ForgeDirection.NORTH.ordinal();
-                        else if (ez > 0) meta = ForgeDirection.SOUTH.ordinal();
-                        else continue; // the core cell itself
-
-                        level.setBlock(new BlockPos(x + ex, y + iy, z + ez),
-                                this.defaultBlockState().setValue(META, meta), 3);
-                    }
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        for (int iy = 0; iy < HEIGHT; iy++) {
+            int[][] layer = layerFor(iy);
+            int half = layer.length / 2;
+            for (int ix = 0; ix < layer.length; ix++) {
+                for (int iz = 0; iz < layer[ix].length; iz++) {
+                    if (layer[ix][iz] <= 0) continue;
+                    int ex = ix - half, ez = iz - half;
+                    if (iy == 0 && ex == 0 && ez == 0) continue;
+                    visitor.cell(core.offset(ex, iy, ez), MASK_NONE);
                 }
             }
-        } finally {
-            BlockDummyable.safeRem(false);
         }
 
-        // "is that enough ports?" — upstream. Six per side at both ring heights, plus the centre-top.
-        makeExtra(level, x, y + 4, z);
-        for (int dy : new int[]{0, 4}) {
-            for (int off : new int[]{-2, 0, 2}) {
-                makeExtra(level, x + 6, y + dy, z + off);
-                makeExtra(level, x - 6, y + dy, z + off);
-                makeExtra(level, x + off, y + dy, z + 6);
-                makeExtra(level, x + off, y + dy, z - 6);
+        visitor.cell(core.offset(0, 4, 0), MASK_UP);
+        for (int side = -6; side <= 6; side += 12) {
+            for (int off = -2; off <= 2; off += 2) {
+                visitor.cell(core.offset(side, 0, off), MASK_DOWN);
+                visitor.cell(core.offset(side, 4, off), MASK_UP);
+                visitor.cell(core.offset(off, 0, side), MASK_DOWN);
+                visitor.cell(core.offset(off, 4, side), MASK_UP);
             }
         }
     }
 
     @Override
-    public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        if (state.getValue(META) < extra) return null;
-        return findCoreTE(level, pos) instanceof TileEntityFusionTorus torus ? (WorldlyContainer) torus : null;
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.offset(0, 4, 0), MASK_ALL, domains);
+        for (int side = -6; side <= 6; side += 12) {
+            for (int off = -2; off <= 2; off += 2) {
+                visitor.passiveCell(core.offset(side, 0, off), MASK_ALL, domains);
+                visitor.passiveCell(core.offset(side, 4, off), MASK_ALL, domains);
+                visitor.passiveCell(core.offset(off, 0, side), MASK_ALL, domains);
+                visitor.passiveCell(core.offset(off, 4, side), MASK_ALL, domains);
+            }
+        }
     }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection direction) {
-        return isPortCell(world, new BlockPos(x, y, z), direction);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection direction) {
-        return isPortCell(world, pos, direction);
-    }
-
-    private boolean isPortCell(BlockGetter world, BlockPos cell, ForgeDirection direction) {
-        BlockState state = world.getBlockState(cell);
-        // META >= extra admits promoted dummies (6-11) AND cores (12-15): the reactor's centre-bottom
-        // port hangs directly beneath the core cell itself, so excluding cores would drop it.
-        if (state.getBlock() != this || state.getValue(META) < extra) return false;
-        BlockPos outside = cell.offset(direction.offsetX, direction.offsetY, direction.offsetZ);
-        return findCoreTE(world, cell) instanceof TileEntityFusionTorus torus
-                && torus.getConPos().stream().anyMatch(port -> port.getPos().equals(outside) && port.getDir() == direction);
-    }
-
 }

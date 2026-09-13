@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineSteamEngine;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
@@ -29,9 +28,9 @@ public final class SteamEngineGameTests {
         block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
         helper.assertTrue(engine != null, "Steam engine core BlockEntity was not created");
-        assertMeta(helper, core.offset(1, 1, 0), 7);
-        assertMeta(helper, core.offset(1, 1, -1), 7);
-        assertMeta(helper, core.offset(1, 1, 1), 7);
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 1, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 1, -1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 1, 1));
         helper.succeed();
     }
 
@@ -108,11 +107,6 @@ public final class SteamEngineGameTests {
                 helper, pos, TileEntityMachineSteamEngine.class);
         block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return engine;
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META) == expected,
-                "Steam engine extra port cell mismatch at " + pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, int x, int y, int z,
