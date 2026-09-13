@@ -77,7 +77,7 @@ public final class PowerNetwork {
         dev.golem.core.world.EnergyExposure.expose(PowerEnergySource.INSTANCE,
                 () -> new net.minecraft.world.level.block.Block[]{
                         com.hbm.blocks.machine.ModMachineBlocks.red_cable.get()});
-        Lifecycle.onChunkLoad(LevelNodeGraph::onChunkFull);
+        dev.golem.core.world.ChunkPromotions.onRise(LevelNodeGraph::onChunkFull);
         Lifecycle.onLevelUnload((server, level) -> {
             LevelNodeGraph.clearLevel(level);
             EndpointRegistry.clearLevel(level);
