@@ -11,7 +11,7 @@ pluginManagement {
 
 plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
-    id("dev.kikugie.stonecutter") version "0.9.7"
+    id("dev.kikugie.stonecutter") version "0.9.8"
     // Picks the right Fabric Loom variant per node. Loom split at the obfuscation boundary:
     // `net.fabricmc.fabric-loom` builds the unobfuscated era (26.1+) and its officialMojangMappings()
     // throws outright, while `net.fabricmc.fabric-loom-remap` carries the remapping pipeline for
