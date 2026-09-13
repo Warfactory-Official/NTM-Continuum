@@ -7,6 +7,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -63,7 +64,7 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
     public void spawnParticles() {}
 
     protected final void spawnTowerSmoke(double y, float base) {
-        if (level == null || level.getGameTime() % 2L != 0L) return;
+        if (!TickPhase.every(this, 2L)) return;
 
         CompoundTag data = new CompoundTag();
         data.putFloat("lift", 10F);

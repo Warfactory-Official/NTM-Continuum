@@ -4,6 +4,7 @@ import dev.golem.core.world.Compat;
 import dev.golem.core.data.CompatBlockEntity;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -51,7 +52,7 @@ public class TileEntityZirnoxDestroyed extends CompatBlockEntity {
                     Compat.hurt(living, (ServerLevel) level, level.damageSources().onFire(), 2.0F);
                 }
             }
-            if (level.getGameTime() % 50L == 0L) {
+            if (TickPhase.every(level, pos, 50L)) {
                 level.playSound(null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
                         SoundEvents.FIRE_AMBIENT, SoundSource.BLOCKS, 1.0F + level.getRandom().nextFloat(),
                         0.3F + level.getRandom().nextFloat() * 0.7F);

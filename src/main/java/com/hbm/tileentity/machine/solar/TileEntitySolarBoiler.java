@@ -6,6 +6,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -43,7 +44,7 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
         if (te.heat > maxHeat) te.heat = maxHeat;
         te.heatSync = te.heat;
         te.heatInputSync = te.heatInput;
-        if (level.getGameTime() % 25L == 0L) te.networkPackNT();
+        if (TickPhase.every(level, pos, 25L)) te.networkPackNT();
 
         // This is compound-assignment integer truncation, matching old TileEntitySolarBoiler.update().
         te.heat *= 0.999D;

@@ -15,6 +15,7 @@ import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -106,7 +107,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         if (trait == null || trait.getEfficiency(FT_Coolable.CoolingType.HEATEXCHANGER) <= 0D) return;
 
         if (tickDelay < 1) tickDelay = 1;
-        if (level.getGameTime() % tickDelay != 0) return;
+        if (!TickPhase.every(level, worldPosition, tickDelay)) return;
 
         int inputOps = tanks[0].getFill() / trait.amountReq;
         int outputOps = (tanks[1].getMaxFill() - tanks[1].getFill()) / trait.amountProduced;

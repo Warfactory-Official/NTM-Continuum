@@ -4,6 +4,7 @@ import com.hbm.handler.JetpackHandler;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
+import com.hbm.util.TickPhase;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.Attributes;
 import dev.golem.core.world.CompatTooltipContext;
@@ -62,7 +63,7 @@ public class ArmorDNT extends ArmorFSBPowered {
             if (y < 0.6D) y += 0.2D;
             player.setDeltaMovement(player.getDeltaMovement().x, y, player.getDeltaMovement().z);
             player.fallDistance = 0;
-            if (level.getGameTime() % 4 == 0) playThrustSound(level, player);
+            if (TickPhase.every(player, 4)) playThrustSound(level, player);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_DNS);
         } else if (gliding) {
             player.fallDistance = 0;
@@ -78,7 +79,7 @@ public class ArmorDNT extends ArmorFSBPowered {
                 motion = motion.add(look.x * 0.25D * forward, 0, look.z * 0.25D * forward);
             }
             player.setDeltaMovement(motion);
-            if (level.getGameTime() % 4 == 0) playThrustSound(level, player);
+            if (TickPhase.every(player, 4)) playThrustSound(level, player);
             if (!level.isClientSide()) JetpackHandler.sendExhaust(player, JetpackHandler.EXHAUST_DNS);
         }
         if (player.isShiftKeyDown() && !player.onGround()) {

@@ -16,6 +16,7 @@ import com.hbm.modules.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
@@ -112,7 +113,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {
-        if (!level.getBlockState(pos.above(7)).isAir() || !furnace.isProgressing || level.getGameTime() % 2 != 0) return;
+        if (!level.getBlockState(pos.above(7)).isAir() || !furnace.isProgressing || !TickPhase.every(level, pos, 2)) return;
         level.addParticle(net.minecraft.core.particles.ParticleTypes.LAVA,
                 pos.getX() + 0.25D + level.getRandom().nextDouble() * 0.5D, pos.getY() + 7.25D,
                 pos.getZ() + 0.25D + level.getRandom().nextDouble() * 0.5D, 0D, 0D, 0D);

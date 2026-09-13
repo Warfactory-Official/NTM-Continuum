@@ -17,6 +17,7 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -190,15 +191,15 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
 
     private void run(Level level) {
         if ((int) (throttle * 0.9D) > rpm - rpmIdle) {
-            if (level.getGameTime() % 5 == 0) rpm++;
-        } else if ((int) (throttle * 0.9D) < rpm - rpmIdle && level.getGameTime() % 2 == 0) {
+            if (TickPhase.every(level, worldPosition, 5)) rpm++;
+        } else if ((int) (throttle * 0.9D) < rpm - rpmIdle && TickPhase.every(level, worldPosition, 2)) {
             rpm--;
         }
 
         int maxTemp = getFluidBurnTemp(tanks[0].getTankType());
         int heatTarget = throttle * 5 * (maxTemp - tempIdle) / 500;
-        if (heatTarget > temp - tempIdle && level.getGameTime() % 2 == 0) temp++;
-        else if (heatTarget < temp - tempIdle && level.getGameTime() % 2 == 0) temp--;
+        if (heatTarget > temp - tempIdle && TickPhase.every(level, worldPosition, 2)) temp++;
+        else if (heatTarget < temp - tempIdle && TickPhase.every(level, worldPosition, 2)) temp--;
         makePower(level, FUEL_MAX_CONSUMPTION.getOrDefault(tanks[0].getTankType(), 5D), throttle);
     }
 
@@ -208,7 +209,7 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         int consumed = (int) Math.floor(fuelToConsume);
         tanks[0].setFill(tanks[0].getFill() - consumed);
         fuelToConsume -= consumed;
-        if (level.getGameTime() % 10 == 0) tanks[1].setFill(tanks[1].getFill() - 1);
+        if (TickPhase.every(level, worldPosition, 10)) tanks[1].setFill(tanks[1].getFill() - 1);
         if (tanks[0].getFill() < 0) {
             tanks[0].setFill(0);
             state = 0;

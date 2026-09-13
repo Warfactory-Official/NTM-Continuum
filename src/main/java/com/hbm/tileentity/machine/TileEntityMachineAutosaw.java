@@ -9,6 +9,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
@@ -89,7 +90,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
                                    TileEntityMachineAutosaw saw) {
         if (!(level instanceof ServerLevel server)) return;
 
-        if (!saw.isSuspended && level.getGameTime() % 20L == 0L) {
+        if (!saw.isSuspended && TickPhase.every(level, pos, 20L)) {
             if (saw.tank.getFill() > 0) {
                 saw.tank.setFill(saw.tank.getFill() - 1);
                 saw.isOn = true;

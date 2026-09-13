@@ -20,6 +20,7 @@ import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -93,7 +94,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
             te.progress = 0;
         }
 
-        if (level.getGameTime() % 10 == 0) te.transferCascade(level);
+        if (TickPhase.every(level, pos, 10)) te.transferCascade(level);
         te.networkPackNT();
     }
 

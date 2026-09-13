@@ -16,6 +16,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
@@ -100,7 +101,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
 
             te.power -= te.getPowerReqEff();
 
-            if (level.getGameTime() % te.getDelayEff() == 0) {
+            if (TickPhase.every(level, pos, te.getDelayEff())) {
                 te.indicator = 0;
 
                 for (int y = pos.getY() - 1; y >= te.getDrillDepth(); y--) {

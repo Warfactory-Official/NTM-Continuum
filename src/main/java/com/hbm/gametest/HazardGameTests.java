@@ -12,6 +12,7 @@ import com.hbm.hazard.HazardSystem;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.hazard.type.HazardTypeContaminating;
 import com.hbm.hazard.type.IHazardType;
+import com.hbm.util.TickPhase;
 import com.hbm.blocks.generic.BlockSellafieldSlaked;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -64,10 +65,10 @@ public final class HazardGameTests {
         helper.assertTrue(oldRate == 2, "dropped-item hazard cadence default must remain 2 ticks");
 
         ItemEntity item = new ItemEntity(level, 0.5D, 2D, 0.5D, new ItemStack(Items.STICK));
-        runAtEvenTime(helper, () -> {
+        runWhenDue(helper, item, RadiationConfig.itemHazardDropTickRate, 4, () -> {
             item.tick();
             helper.assertTrue(recording.updates == 1 && recording.level == 6D,
-                    "dropped hazard must run at the world-time boundary with modifiers applied");
+                    "dropped hazard must run on its own cadence tick with modifiers applied");
 
             helper.runAfterDelay(1, () -> {
                 item.tick();
@@ -177,9 +178,22 @@ public final class HazardGameTests {
         return item;
     }
 
-    private static void runAtEvenTime(GameTestHelper helper, Runnable action) {
-        if ((helper.getLevel().getGameTime() & 1L) == 0L) action.run();
-        else helper.runAfterDelay(1, action);
+    /**
+     * Waits for this item's own turn in the cadence rather than for an even world time. What the hazard
+     * system promises is the rate; which tick of each period a given item lands on is its own phase, so
+     * an item is not late merely because the world clock is odd.
+     */
+    private static void runWhenDue(GameTestHelper helper, ItemEntity item, int rate, int triesLeft,
+                                   Runnable action) {
+        if (TickPhase.every(item, rate)) {
+            action.run();
+            return;
+        }
+        if (triesLeft <= 0) {
+            helper.fail("a dropped item never came due within one full cadence of " + rate + " ticks");
+            return;
+        }
+        helper.runAfterDelay(1, () -> runWhenDue(helper, item, rate, triesLeft - 1, action));
     }
 
     private static void restoreItemHazard(HazardData oldData, int oldRate) {

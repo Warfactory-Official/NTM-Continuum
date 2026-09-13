@@ -9,6 +9,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
@@ -42,9 +43,9 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCatalyticCracker te) {
         te.setupTanks();
 
-        if (level.getGameTime() % 5 == 0) te.crack();
+        if (TickPhase.every(level, pos, 5)) te.crack();
 
-        if (level.getGameTime() % 10 == 0) {
+        if (TickPhase.every(level, pos, 10)) {
             for (DirPos dp : te.getConPos()) {
                 for (int i = 2; i <= 4; i++) {
                     if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);

@@ -33,6 +33,7 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.hbm.util.CrucibleUtil;
+import com.hbm.util.TickPhase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +92,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         te.tryPullHeat(level, pos);
 
         /* collect items */
-        if (level.getGameTime() % 5 == 0) {
+        if (TickPhase.every(level, pos, 5)) {
             List<ItemEntity> list = level.getEntitiesOfClass(ItemEntity.class,
                     new AABB(pos.getX() - 0.5, pos.getY() + 0.5, pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 1, pos.getZ() + 1.5));
 
@@ -266,7 +267,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         CrucibleRecipe recipe = this.getLoadedRecipe();
 
         if (recipe == null) return;
-        if (level.getGameTime() % recipe.frequency > 0) return;
+        if (!TickPhase.every(level, worldPosition, recipe.frequency)) return;
 
         for (Mats.MaterialStack stack : recipe.input) {
             if (getQuantaFromType(this.recipeStack, stack.material) < stack.amount) return;

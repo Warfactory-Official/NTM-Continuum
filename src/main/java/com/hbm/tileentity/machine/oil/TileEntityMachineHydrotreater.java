@@ -15,6 +15,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -66,7 +67,7 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         te.setTypeFromFluidId();
         te.loadInput();
 
-        if (level.getGameTime() % 2 == 0) te.reform();
+        if (TickPhase.every(level, pos, 2)) te.reform();
 
         te.unloadTank(2, 3, 4);
         te.unloadTank(3, 5, 6);

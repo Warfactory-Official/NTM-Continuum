@@ -14,6 +14,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -106,7 +107,7 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCoker te) {
-        if (te.wasOn && level.getGameTime() % 2 == 0) {
+        if (te.wasOn && TickPhase.every(level, pos, 2)) {
             level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, pos.getX() + 0.5, pos.getY() + 22, pos.getZ() + 0.5, 0.0, 0.05, 0.0);
         }
     }

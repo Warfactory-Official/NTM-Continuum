@@ -20,6 +20,7 @@ import dev.golem.core.world.Effects;
 import dev.golem.core.world.GolemArmorMaterial;
 import dev.golem.core.world.Attributes;
 import com.hbm.items.armor.ItemModInsert;
+import com.hbm.util.TickPhase;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -404,7 +405,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
         if (this.slot != ArmorSlot.CHESTPLATE) return;
         if (!hasFSBArmor(entity) || !this.geigerSound) return;
         if (carriesCounter(entity)) return;
-        if (level.getGameTime() % 5 != 0) return;
+        if (!TickPhase.every(entity, 5)) return;
 
         double x = ContaminationUtil.getActualPlayerRads(entity);
         if (x <= 1e-5) return;

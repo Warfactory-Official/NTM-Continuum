@@ -10,6 +10,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
@@ -78,7 +79,7 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
 
             // PollutionHandler.SOOT_PER_SECOND is 1/25; TileEntityMachinePolluting stores pollution
             // fluids in hundredths, so the exact soot-fluid increments are 4 and 12 mB per second.
-            if (level.getGameTime() % 20L == 0L) furnace.addSmoke(extension ? 12 : 4);
+            if (TickPhase.every(level, pos, 20L)) furnace.addSmoke(extension ? 12 : 4);
         } else {
             furnace.progress = 0;
         }

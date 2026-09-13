@@ -4,6 +4,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.sound.ModSounds;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -45,9 +46,7 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
     private int tiltBlocksValid;
 
     private void checkTilt(Level level) {
-        long phase = level.getGameTime() + (worldPosition.getY() + worldPosition.getZ() * 27_644_437L) * 27_644_437L
-                + worldPosition.getX();
-        if (Math.floorMod(phase, 20L) != 0L) return;
+        if (!TickPhase.every(level, worldPosition, 20L)) return;
         if (tiltBlocksChecked >= getFloorCount()) {
             boolean wasTilted = tilted;
             tilted = tiltBlocksValid < tiltBlocksChecked * 0.95D;

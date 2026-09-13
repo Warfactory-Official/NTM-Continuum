@@ -12,6 +12,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -61,7 +62,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
             ItemStack stack = drum.inventory.getStackInSlot(slot);
             if (stack.isEmpty()) continue;
 
-            if (level.getGameTime() % 20 == 0) rad += HazardSystem.getRawRadsFromStack(stack);
+            if (TickPhase.every(level, pos, 20)) rad += HazardSystem.getRawRadsFromStack(stack);
 
             int[] waste = StorageDrumRecipes.getWaste(stack);
             if (waste != null) {

@@ -15,6 +15,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Effects;
@@ -71,7 +72,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
         furnace.unloadTank();
         furnace.tryPullHeat();
 
-        if (level.getGameTime() % 20L == 0L) {
+        if (TickPhase.every(level, pos, 20L)) {
             for (DirPos connection : furnace.getConPos()) {
                 if (furnace.tank.getFill() > 0) furnace.tryProvide(furnace.tank, level, connection);
             }

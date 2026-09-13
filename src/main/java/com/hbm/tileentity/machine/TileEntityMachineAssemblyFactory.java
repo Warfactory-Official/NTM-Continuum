@@ -21,6 +21,7 @@ import com.hbm.modules.machine.AssemblyFactoryModule;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.ChatFormatting;
@@ -208,7 +209,7 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
         AssemblyFactorySoundHandler.tickLoop(factory);
         boolean working = factory.isProcessing();
         for (AssemfacArm animation : factory.animations) animation.update(working);
-        if (level.getGameTime() % 20L == 0L) factory.frame = !level.getBlockState(pos.above(3)).isAir();
+        if (TickPhase.every(level, pos, 20L)) factory.frame = !level.getBlockState(pos.above(3)).isAir();
     }
 
     public boolean isProcessing() {

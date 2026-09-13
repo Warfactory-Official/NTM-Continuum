@@ -20,6 +20,7 @@ import com.hbm.lib.Library;
 import com.hbm.modules.machine.ModuleMachineChemplant;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -196,7 +197,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
         te.prevAnim = te.anim;
         if (te.isProcessing()) te.anim++;
-        if (level.getGameTime() % 20L == 0L) te.frame = !level.getBlockState(pos.above(3)).isAir();
+        if (TickPhase.every(level, pos, 20L)) te.frame = !level.getBlockState(pos.above(3)).isAir();
         ChemicalFactorySoundHandler.tickLoop(te);
     }
 

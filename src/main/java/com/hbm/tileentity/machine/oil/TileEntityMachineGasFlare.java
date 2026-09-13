@@ -18,6 +18,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -104,7 +105,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                     int eject = Math.min(maxVent, te.tank.getFill());
                     te.tank.setFill(te.tank.getFill() - eject);
 
-                    if (level.getGameTime() % 7 == 0) {
+                    if (TickPhase.every(level, pos, 7)) {
                         level.playSound(null, pos.getX(), pos.getY() + 11, pos.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, te.getVolume(1.5F), 0.5F);
                     }
                 }

@@ -5,6 +5,7 @@ import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.machine.struct.StructPattern;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -35,7 +36,7 @@ public abstract class TileEntityStructBase extends TileEntityLoadedBase {
     protected abstract BlockMultiblockCore target();
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityStructBase te) {
-        if (level.getGameTime() % 20 != 0) return;
+        if (!TickPhase.every(level, pos, 20)) return;
         if (!te.pattern().matches(level, pos)) return;
 
         BlockMultiblockCore machine = te.target();

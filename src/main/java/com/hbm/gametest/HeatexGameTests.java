@@ -10,6 +10,7 @@ import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
+import com.hbm.util.TickPhase;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -116,9 +117,13 @@ public final class HeatexGameTests {
         heater.amountToCool = 10;
         heater.tickDelay = 2;
 
-        long time = helper.getLevel().getGameTime();
         heater.tickDelay = 2;
-        while (time % heater.tickDelay == 0L) heater.tickDelay++;
+        while (heater.tickDelay < 64
+                && TickPhase.every(helper.getLevel(), heater.getBlockPos(), heater.tickDelay)) {
+            heater.tickDelay++;
+        }
+        helper.assertTrue(heater.tickDelay < 64,
+                "no throttle setting left this heatex off its own cadence, so the delayed tick cannot be tested");
         TileEntityHeaterHeatex.serverTick(helper.getLevel(), heater.getBlockPos(), heater.getBlockState(), heater);
         helper.assertTrue(heater.tanks[0].getFill() == 10 && heater.tanks[1].getFill() == 23_999,
                 "Heatex converted during a delayed tick");
