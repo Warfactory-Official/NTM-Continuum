@@ -216,12 +216,11 @@ public final class ModBlockModels {
             "heater_heatex", "launch_pad", "machine_arc_furnace", "machine_assembly_factory",
             "machine_bat9000", "machine_battery_redd", "machine_battery_socket", "machine_bigasstank",
             "machine_blast_furnace", "machine_catalytic_cracker", "machine_chemical_factory",
-            "machine_coker", "machine_crucible", "machine_cyclotron", "machine_deuterium_tower",
-            "machine_electrolyser", "machine_exposure_chamber", "machine_fracking_tower",
-            "machine_furnace_combination", "machine_mining_laser", "machine_puf6_tank",
-            "machine_pump_electric", "machine_pump_steam", "machine_pumpjack", "machine_radgen",
-            "machine_sawmill", "machine_solar_boiler", "machine_strand_caster", "machine_uf6_tank",
-            "machine_well", "machine_zirnox", "radio_autocal", "watz"
+            "machine_coker", "machine_cyclotron", "machine_deuterium_tower", "machine_electrolyser",
+            "machine_exposure_chamber", "machine_fracking_tower", "machine_furnace_combination",
+            "machine_mining_laser", "machine_puf6_tank", "machine_pumpjack", "machine_radgen",
+            "machine_strand_caster", "machine_uf6_tank", "machine_well", "machine_zirnox", "radio_autocal",
+            "watz"
     };
 
     /**
@@ -233,13 +232,15 @@ public final class ModBlockModels {
             "heater_oven", "machine_ammo_press", "machine_arc_welder", "machine_ashpit",
             "machine_assembly_machine", "machine_catalytic_reformer", "machine_centrifuge",
             "machine_chemical_plant", "machine_combustion_engine", "machine_compressor",
-            "machine_condenser_powered", "machine_crystallizer", "machine_drain", "machine_epress",
-            "machine_fel", "machine_fensu", "machine_flare", "machine_fluidtank", "machine_fraction_tower",
-            "machine_gascent", "machine_hydrotreater", "machine_industrial_boiler", "machine_liquefactor",
-            "machine_mixer", "machine_precass", "machine_press", "machine_purex", "machine_pyrooven",
-            "machine_refinery", "machine_silex", "machine_soldering_station", "machine_solidifier",
-            "machine_stirling", "machine_stirling_creative", "machine_stirling_steel",
-            "machine_vacuum_distill", "machine_wood_burner", "radio_telex", "watz_pump"
+            "machine_condenser_powered", "machine_crucible", "machine_crystallizer", "machine_drain",
+            "machine_epress", "machine_fel", "machine_fensu", "machine_flare", "machine_fluidtank",
+            "machine_fraction_tower", "machine_gascent", "machine_hydrotreater",
+            "machine_industrial_boiler", "machine_liquefactor", "machine_mixer", "machine_precass",
+            "machine_press", "machine_pump_electric", "machine_pump_steam", "machine_purex",
+            "machine_pyrooven", "machine_refinery", "machine_sawmill", "machine_silex",
+            "machine_solar_boiler", "machine_soldering_station", "machine_solidifier", "machine_stirling",
+            "machine_stirling_creative", "machine_stirling_steel", "machine_vacuum_distill",
+            "machine_wood_burner", "radio_telex", "watz_pump"
     };
 
     private static final String[] RENDERED_1 = {

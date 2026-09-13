@@ -26,13 +26,12 @@ public final class PumpGameTests {
 
     private PumpGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachinePump pump = ModMachineBlocks.machine_pump_electric.get();
-        helper.setBlock(core, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
-        pump.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
+        helper.setBlock(core, pump.defaultBlockState());
+        pump.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
         helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
                 "Pump east port was not marked extra");
@@ -88,8 +87,8 @@ public final class PumpGameTests {
     public static void steamLayout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachinePump pump = ModMachineBlocks.machine_pump_steam.get();
-        helper.setBlock(core, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
-        pump.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
+        helper.setBlock(core, pump.defaultBlockState());
+        pump.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
         helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
                 "Steam pump east port was not marked extra");
@@ -176,20 +175,20 @@ public final class PumpGameTests {
     private static TileEntityMachinePumpElectric place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachinePump pump = ModMachineBlocks.machine_pump_electric.get();
-        helper.getLevel().setBlock(pos, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+        helper.getLevel().setBlock(pos, pump.defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityMachinePumpElectric,
                 "Pump core BlockEntity was not created");
-        pump.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        pump.fillSpace(helper.getLevel(), pos, Direction.NORTH);
         return (TileEntityMachinePumpElectric) helper.getLevel().getBlockEntity(pos);
     }
 
     private static TileEntityMachinePumpSteam placeSteam(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachinePump pump = ModMachineBlocks.machine_pump_steam.get();
-        helper.getLevel().setBlock(pos, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+        helper.getLevel().setBlock(pos, pump.defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityMachinePumpSteam,
                 "Steam pump core BlockEntity was not created");
-        pump.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        pump.fillSpace(helper.getLevel(), pos, Direction.NORTH);
         return (TileEntityMachinePumpSteam) helper.getLevel().getBlockEntity(pos);
     }
 

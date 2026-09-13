@@ -2,17 +2,16 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 /** The shared 3x3x5 groundwater-pump multiblock. */
-public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
+public class MachinePump extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     private final boolean steam;
 
@@ -54,40 +53,10 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
     }
 
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        // The four meta>=6 cells are the pump's horizontal connection ports.
-        makeExtra(level, core.getX() + 1, core.getY(), core.getZ());
-        makeExtra(level, core.getX() - 1, core.getY(), core.getZ());
-        makeExtra(level, core.getX(), core.getY(), core.getZ() + 1);
-        makeExtra(level, core.getX(), core.getY(), core.getZ() - 1);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter level, BlockPos pos, ForgeDirection dir) {
-        if (steam) return false;
-        return findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump
-                && IEnergyConnectorBlock.isPort(pump.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter level, int x, int y, int z, ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        if (steam) {
-            return (type == Fluids.STEAM || type == Fluids.SPENTSTEAM || type == Fluids.WATER)
-                    && findCoreTE(level, pos) instanceof TileEntityMachinePumpSteam pump
-                    && IEnergyConnectorBlock.isPort(pump.getConPos(), pos, dir);
-        }
-        return type == Fluids.WATER
-                && findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump
-                && IEnergyConnectorBlock.isPort(pump.getConPos(), pos, dir);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         List<String> text = new ArrayList<>();
         if (steam) {
-            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpSteam pump)) return null;
+            if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachinePumpSteam pump)) return null;
             text.add("§a-> §r" + pump.steam.getTankType().getDisplayNameString() + ": "
                     + String.format(Locale.US, "%,d", pump.steam.getFill()) + " / "
                     + String.format(Locale.US, "%,d", pump.steam.getMaxFill()) + "mB");
@@ -102,7 +71,7 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
             }
             if (!pump.onGround) text.add("&[" + warningColor() + "&]! ! ! NO VALID GROUND ! ! !");
         } else {
-            if (!(findCoreTE(level, pos) instanceof TileEntityMachinePumpElectric pump)) return null;
+            if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachinePumpElectric pump)) return null;
             text.add("§a-> §r" + String.format(Locale.US, "%,d", pump.power) + " / "
                     + String.format(Locale.US, "%,d", pump.getMaxPower()) + "HE");
             text.add("§c<- §r" + pump.water.getTankType().getDisplayNameString() + ": "
@@ -120,4 +89,23 @@ public class MachinePump extends BlockDummyable implements IEnergyConnectorBlock
         return System.currentTimeMillis() % 1000 < 500 ? 0xff0000 : 0xffff00;
     }
 
+    /** The four horizontal connection ports around the core. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.east(), MASK_EAST);
+        visitor.cell(core.west(), MASK_WEST);
+        visitor.cell(core.south(), MASK_SOUTH);
+        visitor.cell(core.north(), MASK_NORTH);
+    }
+
+    /** Only the electric pump takes power; the steam one is driven through its fluid inlet. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = steam ? PASSIVE_FLUID_IN : PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.east(), MASK_ALL, domains);
+        visitor.passiveCell(core.west(), MASK_ALL, domains);
+        visitor.passiveCell(core.south(), MASK_ALL, domains);
+        visitor.passiveCell(core.north(), MASK_ALL, domains);
+    }
 }

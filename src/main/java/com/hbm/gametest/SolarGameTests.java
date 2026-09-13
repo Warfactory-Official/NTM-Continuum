@@ -224,8 +224,8 @@ public final class SolarGameTests {
     private static TileEntitySolarBoiler placeBoiler(GameTestHelper helper, BlockPos relative) {
         MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
         BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
         TileEntitySolarBoiler boiler = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntitySolarBoiler.class);
         helper.assertTrue(boiler != null, "Solar boiler core BlockEntity was not created");

@@ -129,8 +129,8 @@ public final class FlywheelGameTests {
         MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
         BlockPos relative = new BlockPos(2, 1, 2);
         BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
 
         BlockPos dummy = core.above(2);
         BlockState dummyState = helper.getLevel().getBlockState(dummy);
