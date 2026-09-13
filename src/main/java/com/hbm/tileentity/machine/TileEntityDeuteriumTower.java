@@ -36,7 +36,7 @@ public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor {
                 new DirPos(pos.offset(-dir.offsetX - rotation.offsetX, 0,
                         -dir.offsetZ - rotation.offsetZ), rotation.getOpposite()),
                 new DirPos(pos.offset(rotation.offsetX * 2, 0, rotation.offsetZ * 2), rotation),
-                new DirPos(pos.offset(dir.offsetX + rotation.offsetX * 2, 0,
+                new DirPos(pos.offset(-dir.offsetX + rotation.offsetX * 2, 0,
                         -dir.offsetZ + rotation.offsetZ * 2), rotation)
         };
     }

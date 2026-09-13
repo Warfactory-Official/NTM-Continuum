@@ -208,7 +208,6 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             inventory.setStackInSlot(slot, net.minecraft.world.item.ItemStack.EMPTY);
         }
 
-        int meta = state.getValue(com.hbm.blocks.BlockDummyable.META);
         // Remove the upper live shell and core before forming the two-block-tall wreck.
         BlockDummyable.safeRem(true);
         try {
@@ -232,7 +231,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         level.explode(null, pos.getX() + 0.5D, pos.getY() + 3.0D, pos.getZ() + 0.5D, 12.0F,
                 Level.ExplosionInteraction.BLOCK);
 
-        ModMachineBlocks.zirnox_destroyed.get().formWreck(level, pos, meta);
+        ModMachineBlocks.zirnox_destroyed.get().formWreck(level, pos,
+                MachineCore.facing(state).toDirection());
         spawnDebris(level, pos, DebrisType.EXCHANGER, 2);
         spawnDebris(level, pos, DebrisType.CONCRETE, 20);
         spawnDebris(level, pos, DebrisType.BLANK, 20);

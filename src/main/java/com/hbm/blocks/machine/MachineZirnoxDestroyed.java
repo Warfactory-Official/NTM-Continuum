@@ -1,13 +1,15 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityZirnoxDestroyed;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
@@ -19,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The inert, radioactive ZIRNOX wreck left behind by a reactor accident. */
-public class MachineZirnoxDestroyed extends BlockDummyable {
+public class MachineZirnoxDestroyed extends BlockMultiblockMachine {
 
     public MachineZirnoxDestroyed(Properties properties) {
         super(properties);
@@ -41,16 +43,9 @@ public class MachineZirnoxDestroyed extends BlockDummyable {
     }
 
     /** Builds the wreck after the blast, so the blast cannot remove the replacement multiblock. */
-    public void formWreck(Level level, BlockPos pos, int coreMeta) {
-        int meta = coreMeta >= 12 && coreMeta <= 15 ? coreMeta : 12;
-        ForgeDirection facing = ForgeDirection.getOrientation(meta - offset);
-        BlockDummyable.safeRem(true);
-        try {
-            level.setBlock(pos, defaultBlockState().setValue(META, meta), 3);
-            MultiblockHandlerXR.fillSpace(level, pos.getX(), pos.getY(), pos.getZ(), getDimensions(), this, facing);
-        } finally {
-            BlockDummyable.safeRem(false);
-        }
+    public void formWreck(Level level, BlockPos pos, Direction facing) {
+        BlockMultiblockCore.withoutTeardown(() ->
+                MultiblockHandlerXR.placeAssembled(level, pos, this, facing));
     }
 
     @Override
@@ -65,7 +60,7 @@ public class MachineZirnoxDestroyed extends BlockDummyable {
         if (above.isAir() && random.nextInt(10) == 0) {
             level.setBlock(pos.above(), ModNuclearBlocks.gas_meltdown.get().defaultBlockState(), 2);
         } else if (above.is(ModBlocks.block_foam.get()) && random.nextInt(25) == 0
-                && findCoreTE(level, pos) instanceof TileEntityZirnoxDestroyed wreck) {
+                && MultiblockSurface.coreEntity(level, pos) instanceof TileEntityZirnoxDestroyed wreck) {
             wreck.extinguish();
         }
     }

@@ -1,14 +1,15 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockMaskTable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The 3x3x8 blast furnace multiblock and its fluid-network port cells. */
-public class MachineBlastFurnace extends BlockDummyable implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineBlastFurnace extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineBlastFurnace(Properties properties) {
         super(properties);
@@ -34,32 +35,55 @@ public class MachineBlastFurnace extends BlockDummyable implements IFluidConnect
 
     @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineBlastFurnace furnace
                 ? furnace : null;
     }
 
+    /**
+     * Three of the four ground neighbours are ports, and 1.7 names them in <b>world</b> axes -- POS_X,
+     * NEG_X, POS_Z -- while the two stack ports rotate with the machine. The set is not symmetric (there
+     * is no north port), so the ground course cannot be baked in the facing frame; {@link #maskAt} gives
+     * it back the world directions.
+     */
     @Override
-    public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter level,
-                              int x, int y, int z, ForgeDirection dir) {
-        BlockEntity entity = findCoreTE(level, new BlockPos(x, y, z));
-        return entity instanceof TileEntityMachineBlastFurnace furnace
-                && com.hbm.api.energymk2.IEnergyConnectorBlock.isPort(furnace.getConPos(), new BlockPos(x, y, z), dir);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.offset(1, 0, 0), MASK_EAST);
+        visitor.cell(core.offset(-1, 0, 0), MASK_WEST);
+        visitor.cell(core.offset(0, 0, 1), MASK_SOUTH);
+        visitor.cell(core.relative(facing), MASK_NONE);
+        visitor.cell(core.relative(facing).above(3), MASK_SOUTH);
+        visitor.cell(core.relative(facing).above(5), MASK_SOUTH);
+        visitor.cell(core.above(6), MASK_UP);
     }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
+    public int maskAt(int lx, int ly, int lz, Direction facing) {
+        int baked = maskAt(lx, ly, lz);
+        if (baked == MultiblockMaskTable.NOT_A_CELL || ly != 0) return baked;
+        int dx = MultiblockMaskTable.worldX(lx, ly, lz, facing);
+        int dz = MultiblockMaskTable.worldZ(lx, ly, lz, facing);
+        if (dz == 0 && dx == 1) return worldFace(Direction.EAST, facing);
+        if (dz == 0 && dx == -1) return worldFace(Direction.WEST, facing);
+        if (dx == 0 && dz == 1) return worldFace(Direction.SOUTH, facing);
+        return MASK_NONE;
+    }
 
-        x -= dir.offsetX;
-        z -= dir.offsetZ;
+    private static int worldFace(Direction side, Direction facing) {
+        return 1 << MultiblockMaskTable.toLocal(side, facing).ordinal();
+    }
 
-        makeExtra(level, x + 1, y, z);
-        makeExtra(level, x - 1, y, z);
-        makeExtra(level, x, y, z + 1);
-        makeExtra(level, x, y, z - 1);
-        makeExtra(level, x + dir.offsetX, y + 3, z + dir.offsetZ);
-        makeExtra(level, x + dir.offsetX, y + 5, z + dir.offsetZ);
-        makeExtra(level, x, y + 6, z);
+    /** 1.7 stamps {@code inventory().fluid()} on all seven promoted cells. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.offset(1, 0, 0), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-1, 0, 0), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(0, 0, 1), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(0, 0, -1), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing).above(3), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing).above(5), MASK_ALL, domains);
+        visitor.passiveCell(core.above(6), MASK_ALL, domains);
     }
 }

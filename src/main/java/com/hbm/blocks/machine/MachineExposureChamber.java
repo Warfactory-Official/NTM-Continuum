@@ -1,16 +1,16 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The large Exposure Chamber multiblock and its five external power ports. */
-public class MachineExposureChamber extends BlockDummyable implements IEnergyConnectorBlock, WorldlyContainerHolder {
+public class MachineExposureChamber extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineExposureChamber(Properties properties) {
         super(properties);
@@ -42,58 +42,63 @@ public class MachineExposureChamber extends BlockDummyable implements IEnergyCon
     }
 
     @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        int x = core.getX();
-        int y = core.getY();
-        int z = core.getZ();
-        MultiblockHandlerXR.fillSpace(world, x, y, z, getDimensions(), this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP).getOpposite();
-
-        MultiblockHandlerXR.fillSpace(world, x, y, z, new int[]{3, 0, 0, 0, -3, 8}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x, y + 2, z, new int[]{0, 0, 1, -1, -3, 6}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x, y + 2, z, new int[]{0, 0, -1, 1, -3, 6}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + rot.offsetX * 7, y, z + rot.offsetZ * 7,
-                new int[]{3, 0, 1, -1, 0, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + rot.offsetX * 7, y, z + rot.offsetZ * 7,
-                new int[]{3, 0, -1, 1, 0, 1}, this, dir);
-
-        makeExtra(world, x + rot.offsetX * 7 + dir.offsetX, y, z + rot.offsetZ * 7 + dir.offsetZ);
-        makeExtra(world, x + rot.offsetX * 7 - dir.offsetX, y, z + rot.offsetZ * 7 - dir.offsetZ);
-        makeExtra(world, x + rot.offsetX * 8 + dir.offsetX, y, z + rot.offsetZ * 8 + dir.offsetZ);
-        makeExtra(world, x + rot.offsetX * 8 - dir.offsetX, y, z + rot.offsetZ * 8 - dir.offsetZ);
-        makeExtra(world, x + rot.offsetX * 8, y, z + rot.offsetZ * 8);
-    }
-
-    @Override
-    public boolean checkRequirement(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        if (!super.checkRequirement(world, x, y, z, dir, o)) return false;
-
-        x += dir.offsetX * o;
-        z += dir.offsetZ * o;
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP).getOpposite();
-
-        if (!MultiblockHandlerXR.checkSpace(world, x, y, z, new int[]{3, 0, 0, 0, -3, 8}, x, y, z, dir)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, x, y + 2, z, new int[]{0, 0, 1, -1, -3, 6}, x, y, z, dir)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, x, y + 2, z, new int[]{0, 0, -1, 1, -3, 6}, x, y, z, dir)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, x + rot.offsetX * 7, y, z + rot.offsetZ * 7,
-                new int[]{3, 0, 1, -1, 0, 1}, x, y, z, dir)) return false;
-        return MultiblockHandlerXR.checkSpace(world, x + rot.offsetX * 7, y, z + rot.offsetZ * 7,
-                new int[]{3, 0, -1, 1, 0, 1}, x, y, z, dir);
-    }
-
-    @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineExposureChamber chamber
                 ? chamber : null;
     }
 
+    private static final int[] SPINE = {3, 0, 0, 0, -3, 8};
+    private static final int[] SHOULDER_LEFT = {0, 0, 1, -1, -3, 6};
+    private static final int[] SHOULDER_RIGHT = {0, 0, -1, 1, -3, 6};
+    private static final int[] HEAD_LEFT = {3, 0, 1, -1, 0, 1};
+    private static final int[] HEAD_RIGHT = {3, 0, -1, 1, 0, 1};
+
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineExposureChamber chamber
-                && IEnergyConnectorBlock.isPort(chamber.getConPos(), pos, dir);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        if (!super.checkRequirement(level, core, facing, clicked)) return false;
+        BlockPos head = head(core, facing);
+        return MultiblockHandlerXR.checkSpace(level, core, SPINE, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.above(2), SHOULDER_LEFT, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.above(2), SHOULDER_RIGHT, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, head, HEAD_LEFT, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, head, HEAD_RIGHT, clicked, facing);
     }
 
+    /** Four cable ports either side of the emitter head, and one straight off its nose. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        BlockPos head = head(core, facing);
+        MultiblockHandlerXR.visitBox(core, SPINE, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.above(2), SHOULDER_LEFT, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.above(2), SHOULDER_RIGHT, facing, visitor);
+        MultiblockHandlerXR.visitBox(head, HEAD_LEFT, facing, visitor);
+        MultiblockHandlerXR.visitBox(head, HEAD_RIGHT, facing, visitor);
+
+        Direction rot = facing.getCounterClockWise();
+        visitor.cell(head.relative(facing), MASK_SOUTH);
+        visitor.cell(head.relative(facing, -1), MASK_NORTH);
+        visitor.cell(head.relative(rot).relative(facing), MASK_SOUTH);
+        visitor.cell(head.relative(rot).relative(facing, -1), MASK_NORTH);
+        visitor.cell(head.relative(rot), MASK_EAST);
+    }
+
+    /** 1.7 stamps {@code inventory().power()} on the five. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        BlockPos head = head(core, facing);
+        Direction rot = facing.getCounterClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(head.relative(facing), MASK_ALL, domains);
+        visitor.passiveCell(head.relative(facing, -1), MASK_ALL, domains);
+        visitor.passiveCell(head.relative(rot).relative(facing), MASK_ALL, domains);
+        visitor.passiveCell(head.relative(rot).relative(facing, -1), MASK_ALL, domains);
+        visitor.passiveCell(head.relative(rot), MASK_ALL, domains);
+    }
+
+    private static BlockPos head(BlockPos core, Direction facing) {
+        return core.relative(facing.getCounterClockWise(), 7);
+    }
 }

@@ -51,6 +51,17 @@ public final class FoldedTestSupport {
         helper.assertTrue(open, "Cell at " + cell + " is open on no face, so it is not a port");
     }
 
+    /**
+     * Assert the cell carries a passive proxy in {@code domains}. 1.7 spelled this {@code META >= extra}
+     * for a cell that holds a proxy but appears in no {@code getConPos} list -- a crown that takes items
+     * and nothing else.
+     */
+    public static void assertProxy(GameTestHelper helper, BlockPos core, BlockPos cell, int domains) {
+        assertCell(helper, core, cell);
+        helper.assertTrue(MultiblockSurface.carriesPassive(helper.getLevel(), helper.absolutePos(cell), domains),
+                "Cell at " + cell + " carries no passive proxy in domains " + domains);
+    }
+
     /** Assert the plot-relative {@code cell} is a cell of the multiblock cored at plot-relative {@code core}. */
     public static void assertCell(GameTestHelper helper, BlockPos core, BlockPos cell) {
         BlockPos absoluteCore = helper.absolutePos(core);

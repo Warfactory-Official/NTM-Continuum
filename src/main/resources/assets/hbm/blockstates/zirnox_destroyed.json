@@ -1,20 +1,28 @@
 {
   "variants": {
-    "meta=0": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=1": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=2": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=3": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=4": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=5": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=6": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=7": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=8": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=9": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=10": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=11": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=12": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=13": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=14": { "model": "hbm:block/zirnox_destroyed" },
-    "meta=15": { "model": "hbm:block/zirnox_destroyed" }
+    "facing=north,cell=false": {
+      "model": "hbm:block/zirnox_destroyed"
+    },
+    "facing=north,cell=true": {
+      "model": "hbm:block/zirnox_destroyed"
+    },
+    "facing=east,cell=false": {
+      "model": "hbm:block/zirnox_destroyed"
+    },
+    "facing=east,cell=true": {
+      "model": "hbm:block/zirnox_destroyed"
+    },
+    "facing=south,cell=false": {
+      "model": "hbm:block/zirnox_destroyed"
+    },
+    "facing=south,cell=true": {
+      "model": "hbm:block/zirnox_destroyed"
+    },
+    "facing=west,cell=false": {
+      "model": "hbm:block/zirnox_destroyed"
+    },
+    "facing=west,cell=true": {
+      "model": "hbm:block/zirnox_destroyed"
+    }
   }
 }

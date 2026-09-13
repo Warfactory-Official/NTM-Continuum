@@ -1298,7 +1298,7 @@ public final class HbmGameTestFunctions {
 
     private static void zirnoxGoldenTick(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        helper.setBlock(pos, ModMachineBlocks.machine_zirnox.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, ModMachineBlocks.machine_zirnox.get().defaultBlockState());
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityReactorZirnox.class);
         reactor.heat = 50_000;
         reactor.isOn = true;
@@ -2023,12 +2023,9 @@ public final class HbmGameTestFunctions {
     private static void watzLayout(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(4, 1, 4);
         var block = ModMachineBlocks.watz.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
                 com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Watz controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-
-        helper.assertBlockProperty(core, BlockDummyable.META, 12);
         // The cross: |x| + |z| reaches 3 along the axes and 2 on the diagonals, three blocks tall.
         int occupied = 0;
         for (int dx = -3; dx <= 3; dx++) {
@@ -2044,10 +2041,7 @@ public final class HbmGameTestFunctions {
         // The nine promoted port cells.
         for (int[] p : new int[][]{{2, 0, 0}, {-2, 0, 0}, {0, 0, 2}, {0, 0, -2},
                 {2, 2, 0}, {-2, 2, 0}, {0, 2, 2}, {0, 2, -2}, {0, 2, 0}}) {
-            var cell = core.offset(p[0], p[1], p[2]);
-            int meta = helper.getBlockState(cell).getValue(BlockDummyable.META);
-            helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
-                    "Watz port cell " + p[0] + "," + p[1] + "," + p[2] + " must be an extra dummy, was meta " + meta);
+            FoldedTestSupport.assertPort(helper, core, core.offset(p[0], p[1], p[2]));
         }
 
         var watz = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
@@ -2100,12 +2094,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxLayout(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class) != null,
                 "ZIRNOX controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-
-        helper.assertBlockProperty(core, BlockDummyable.META, 12);
         int occupied = 0;
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = 0; dy <= 4; dy++) {
@@ -2121,11 +2112,12 @@ public final class HbmGameTestFunctions {
             }
         }
         helper.assertTrue(occupied == 83, "ZIRNOX must contain exactly 83 cells, found " + occupied);
-        helper.assertBlockProperty(core.offset(2, 1, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.offset(2, 3, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.offset(-2, 1, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.offset(-2, 3, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.above(4), BlockDummyable.META, 7);
+        FoldedTestSupport.assertPort(helper, core, core.offset(2, 1, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(2, 3, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-2, 1, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-2, 3, 0));
+        FoldedTestSupport.assertProxy(helper, core, core.above(4),
+                com.hbm.blocks.multiblock.BlockMultiblockCore.PASSIVE_ITEMS);
 
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         var ports = reactor.getConPos();
@@ -2149,10 +2141,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxWorldTick(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
         var rod = new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM));
         reactor.inventory.setStackInSlot(0, rod);
         reactor.isOn = true;
@@ -2167,10 +2158,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxSteamOutput(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var reactorBlock = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, reactorBlock.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, reactorBlock, core);
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
-        reactorBlock.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
 
         var reactorDuctPos = core.offset(3, 1, 0);
         var tankDuctPos = core.offset(4, 1, 0);
@@ -2206,10 +2196,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxMeltdown(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
         reactor.heat = TileEntityReactorZirnox.MAX_HEAT + 1;
         TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(core), reactor.getBlockState(), reactor);
 
@@ -2236,7 +2225,7 @@ public final class HbmGameTestFunctions {
 
     private static void zirnoxWreckHazards(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
-        helper.setBlock(core, ModMachineBlocks.zirnox_destroyed.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(core, ModMachineBlocks.zirnox_destroyed.get().defaultBlockState());
         var wreck = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, com.hbm.tileentity.machine.TileEntityZirnoxDestroyed.class);
         helper.assertTrue(wreck != null && wreck.isOnFire(), "Fresh ZIRNOX wreck must start burning");
         wreck.extinguish();

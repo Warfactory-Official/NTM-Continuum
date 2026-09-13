@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineExposureChamber;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineExposureChamber;
@@ -48,7 +48,7 @@ public final class ExposureChamberGameTests {
         MachineExposureChamber block = ModMachineBlocks.machine_exposure_chamber.get();
         BlockPos core = chamber.getBlockPos();
 
-        helper.assertTrue(block.findCore(helper.getLevel(), core).equals(core),
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), core)),
                 "Exposure Chamber core did not resolve to itself");
         helper.assertTrue(chamber.getConPos().length == 5, "Exposure Chamber must expose five power ports");
         for (DirPos connection : chamber.getConPos()) {
@@ -58,7 +58,7 @@ public final class ExposureChamberGameTests {
                     "Exposure Chamber power connection is missing its extra cell");
             helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
                     "Exposure Chamber power port does not connect");
-            helper.assertTrue(block.findCore(helper.getLevel(), cell).equals(core),
+            helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                     "Exposure Chamber extra cell does not resolve to the core");
         }
         helper.succeed();
@@ -162,10 +162,8 @@ public final class ExposureChamberGameTests {
     }
 
     private static TileEntityMachineExposureChamber place(GameTestHelper helper, BlockPos relativePos) {
-        BlockPos absolute = helper.absolutePos(relativePos);
         MachineExposureChamber block = ModMachineBlocks.machine_exposure_chamber.get();
-        helper.setBlock(relativePos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relativePos);
         return GameTestHelpers.blockEntity(helper, relativePos, TileEntityMachineExposureChamber.class);
     }
 }

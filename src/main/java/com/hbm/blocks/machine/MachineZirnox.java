@@ -1,16 +1,15 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,49 +19,19 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The five-block-tall ZIRNOX reactor multiblock and its original five access cells. */
-public class MachineZirnox extends BlockDummyable implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineZirnox extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
     public MachineZirnox(Properties properties) { super(properties); }
     @Override protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) { return new TileEntityReactorZirnox(pos, state); }
     @Override public int[] getDimensions() { return new int[]{1, 0, 2, 2, 2, 2}; }
     @Override public int getOffset() { return 2; }
     @Override public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        if (state.getValue(META) < extra) return null;
-        return findCoreTE(level, pos) instanceof TileEntityReactorZirnox reactor ? reactor : null;
-    }
-    @Override public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection direction) {
-        BlockPos cell = new BlockPos(x, y, z);
-        BlockState state = world.getBlockState(cell);
-        if (state.getBlock() != this || state.getValue(META) < extra || state.getValue(META) >= offset + 2) return false;
-        BlockPos outside = cell.offset(direction.offsetX, direction.offsetY, direction.offsetZ);
-        return findCoreTE(world, cell) instanceof TileEntityReactorZirnox reactor
-                && reactor.getConPos().stream().anyMatch(port -> port.getPos().equals(outside) && port.getDir() == direction);
-    }
-    @Override public boolean checkRequirement(Level level, int x, int y, int z, ForgeDirection direction, int offset) {
-        int coreX = x + direction.offsetX * offset;
-        int coreY = y + direction.offsetY * offset;
-        int coreZ = z + direction.offsetZ * offset;
-        return super.checkRequirement(level, x, y, z, direction, offset)
-                && MultiblockHandlerXR.checkSpace(level, coreX, coreY, coreZ, new int[]{4, -2, 1, 1, 1, 1}, x, y, z, direction)
-                && MultiblockHandlerXR.checkSpace(level, coreX, coreY, coreZ, new int[]{4, -2, 0, 0, 2, -2}, x, y, z, direction)
-                && MultiblockHandlerXR.checkSpace(level, coreX, coreY, coreZ, new int[]{4, -2, 0, 0, -2, 2}, x, y, z, direction);
-    }
-    /** Forms the live dummy shell around an existing controller. Used by normal placement and structure tests. */
-    @Override public void formStructure(Level level, BlockPos core, ForgeDirection direction) {
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), getDimensions(), this, direction);
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), new int[]{4, -2, 1, 1, 1, 1}, this, direction);
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), new int[]{4, -2, 0, 0, 2, -2}, this, direction);
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), new int[]{4, -2, 0, 0, -2, 2}, this, direction);
-        ForgeDirection rot = direction.getRotation(ForgeDirection.UP);
-        makeExtra(level, core.getX() + rot.offsetX * 2, core.getY() + 1, core.getZ() + rot.offsetZ * 2);
-        makeExtra(level, core.getX() + rot.offsetX * 2, core.getY() + 3, core.getZ() + rot.offsetZ * 2);
-        makeExtra(level, core.getX() - rot.offsetX * 2, core.getY() + 1, core.getZ() - rot.offsetZ * 2);
-        makeExtra(level, core.getX() - rot.offsetX * 2, core.getY() + 3, core.getZ() - rot.offsetZ * 2);
-        makeExtra(level, core.getX(), core.getY() + 4, core.getZ());
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityReactorZirnox reactor ? reactor : null;
     }
     @Override protected void onNeighborChanged(BlockState state, Level level, BlockPos pos,
                                                 net.minecraft.world.level.block.Block block, boolean movedByPiston) {
         if (level.isClientSide()) return;
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityReactorZirnox reactor)) return;
         boolean powered = false;
         for (int dx = -2; dx <= 2 && !powered; dx++) {
@@ -78,4 +47,51 @@ public class MachineZirnox extends BlockDummyable implements IFluidConnectorBloc
         }
         reactor.setRedstonePowered(powered);
     }
+    
+
+    /** The three passes that carry the boiler's drum above the base box. */
+    private static final int[][] DRUM = {
+            {4, -2, 1, 1, 1, 1},
+            {4, -2, 0, 0, 2, -2},
+            {4, -2, 0, 0, -2, 2}};
+
+    @Override
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        if (!super.checkRequirement(level, core, facing, clicked)) return false;
+        for (int[] box : DRUM) {
+            if (!MultiblockHandlerXR.checkSpace(level, core, box, clicked, facing)) return false;
+        }
+        return true;
     }
+
+    /** Water in and steam out either flank, at the two drum heights; the crown takes items only. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int[] box : DRUM) MultiblockHandlerXR.visitBox(core, box, facing, visitor);
+
+        Direction rot = facing.getClockWise();
+        int rx = rot.getStepX(), rz = rot.getStepZ();
+        visitor.cell(core.offset(rx * 2, 1, rz * 2), MASK_WEST);
+        visitor.cell(core.offset(rx * 2, 3, rz * 2), MASK_WEST);
+        visitor.cell(core.offset(-rx * 2, 1, -rz * 2), MASK_EAST);
+        visitor.cell(core.offset(-rx * 2, 3, -rz * 2), MASK_EAST);
+    }
+
+    /**
+     * 1.7 stamps {@code TileEntityProxyCombo(true, true, true)} on all five promoted cells. The power arm
+     * of that stamp is inert here: the proxy gates it on the core being a receiver, and the ZIRNOX runs
+     * on nothing but water.
+     */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int rx = rot.getStepX(), rz = rot.getStepZ();
+        int domains = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.offset(rx * 2, 1, rz * 2), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(rx * 2, 3, rz * 2), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-rx * 2, 1, -rz * 2), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-rx * 2, 3, -rz * 2), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(0, 4, 0), MASK_ALL, domains);
+    }
+}
