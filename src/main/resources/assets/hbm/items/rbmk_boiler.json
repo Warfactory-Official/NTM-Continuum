@@ -8,9 +8,9 @@
       "top": "hbm:blocks/rbmk/rbmk_boiler_top",
       "scale": 0.35,
       "yaw": 0,
-      "lift": -0.675,
-      "pipe_side": "hbm:blocks/rbmk/rbmk_boiler_pipe_side",
-      "pipe_top": "hbm:blocks/rbmk/rbmk_boiler_pipe_top"
+      "lift": -0.75,
+      "pipe_side": null,
+      "pipe_top": null
     }
   }
 }

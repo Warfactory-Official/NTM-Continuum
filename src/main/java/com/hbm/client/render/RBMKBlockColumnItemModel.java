@@ -24,7 +24,9 @@ public final class RBMKBlockColumnItemModel {
 
     private static final WavefrontObj RODS = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/rbmk_rods.obj"));
     private static final int SECTIONS = 4;
-    private static final float PIPE_Y = 4F, LID_Y = 3F;
+    // The inventory boiler/control shell ends at y=4; overlap the pipe bases by one eighth
+    // so the GEM preview has no visible floating seam between the cap and pipe tops.
+    private static final float PIPE_Y = 3.875F, LID_Y = 3F;
     private static final float[] STUBS = {.0625F, .5625F};
     private static final float STUB = .375F;
     private static final float STUB_HEIGHT = .125F;

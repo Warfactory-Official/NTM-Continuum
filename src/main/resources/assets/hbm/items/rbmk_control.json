@@ -11,7 +11,7 @@
       "lift": -0.675,
       "pipe_side": "hbm:blocks/rbmk/rbmk_control_pipe_side",
       "pipe_top": "hbm:blocks/rbmk/rbmk_control_pipe_top",
-      "lid_texture": "hbm:textures/blocks/rbmk/rbmk_control.png"
+      "lid_texture": "hbm:blocks/rbmk/rbmk_control"
     }
   }
 }

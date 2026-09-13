@@ -18,16 +18,18 @@ public final class RBMKColumnItemModel {
 
     private static final WavefrontObj ELEMENT =
             WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/rbmk_element.obj"));
+    private static final WavefrontObj RODS =
+            WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/rbmk_element_rods.obj"));
     private static final int SECTIONS = 4;
 
     private final float scale, yaw, lift;
     private final ItemGem body;
 
-    public RBMKColumnItemModel(Identifier side, Identifier top, Identifier inner, float scale, float yaw, float lift) {
+    public RBMKColumnItemModel(Identifier side, Identifier top, Identifier inner, Identifier fuel, float scale, float yaw, float lift) {
         this.scale = scale;
         this.yaw = yaw;
         this.lift = lift;
-        this.body = declare(skin(side), skin(top), skin(inner));
+        this.body = declare(skin(side), skin(top), skin(inner), skin(fuel));
     }
 
     /**
@@ -54,7 +56,7 @@ public final class RBMKColumnItemModel {
      * parts are authored centred on the origin (x/z in [-0.5, 0.5]) while the casing boxes span [0, 1],
      * so they are shifted into block space or they ride half a block off the shell.
      */
-    private static ItemGem declare(Surface side, Surface top, Surface inner) {
+    private static ItemGem declare(Surface side, Surface top, Surface inner, Surface fuel) {
         ItemGem.Builder builder = ItemGem.builder();
         for (int section = 0; section < SECTIONS; section++) {
             builder.part(shell(section), side,
@@ -63,6 +65,7 @@ public final class RBMKColumnItemModel {
                     .translate(.5F, section, .5F);
             builder.part(ELEMENT.part("Cap"), top, ELEMENT.boundsIncluding(Set.of("Cap")))
                     .translate(.5F, section, .5F);
+            builder.part(RODS.all(), fuel, null).translate(.5F, section, .5F);
         }
         return builder.build();
     }

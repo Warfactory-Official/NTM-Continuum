@@ -89,6 +89,7 @@ public final class RBMKFuelRodRenderer<T extends BlockEntityRBMKRod> extends Gem
         return SKINS.computeIfAbsent(name, id -> Surface.cutout(texture(id).toString()));
     }
 
+
     @Override
     public State createRenderState() {
         return new State();

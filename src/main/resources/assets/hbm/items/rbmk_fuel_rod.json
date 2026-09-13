@@ -7,6 +7,7 @@
       "side": "hbm:blocks/rbmk/rbmk_element_side",
       "top": "hbm:blocks/rbmk/rbmk_element_top",
       "inner": "hbm:blocks/rbmk/rbmk_element_inner",
+      "fuel": "hbm:blocks/rbmk/rbmk_element_fuel",
       "scale": 0.35,
       "yaw": 0,
       "lift": -0.675
