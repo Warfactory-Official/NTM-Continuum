@@ -221,7 +221,7 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
 
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && state.getValue(META) >= offset + 2
+        if (!level.isClientSide() && !state.getValue(CELL)
                 && level.getBlockEntity(pos) instanceof TileEntitySawmill sawmill) {
             Containers.dropContents(level, pos, sawmill);
         }

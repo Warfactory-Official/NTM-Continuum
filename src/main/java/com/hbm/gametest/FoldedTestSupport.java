@@ -43,13 +43,12 @@ public final class FoldedTestSupport {
         BlockPos absoluteCell = helper.absolutePos(cell);
         BlockMultiblockCore.FoldedOwner owner = MultiblockSurface.ownerOf(helper.getLevel(), absoluteCell);
         helper.assertTrue(owner != null, "No folded owner for the cell at " + cell);
+        boolean open = false;
         for (Direction side : Direction.values()) {
-            if (owner.block().isOpenAt(owner.facing(), absoluteCell.getX() - absoluteCore.getX(),
-                    absoluteCell.getY() - absoluteCore.getY(), absoluteCell.getZ() - absoluteCore.getZ(), side)) {
-                return;
-            }
+            open |= owner.block().isOpenAt(owner.facing(), absoluteCell.getX() - absoluteCore.getX(),
+                    absoluteCell.getY() - absoluteCore.getY(), absoluteCell.getZ() - absoluteCore.getZ(), side);
         }
-        helper.fail("Cell at " + cell + " is open on no face, so it is not a port", absoluteCell);
+        helper.assertTrue(open, "Cell at " + cell + " is open on no face, so it is not a port");
     }
 
     /** Assert the plot-relative {@code cell} is a cell of the multiblock cored at plot-relative {@code core}. */
