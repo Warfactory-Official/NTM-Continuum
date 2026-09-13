@@ -1,5 +1,6 @@
 package com.hbm.blocks.multiblock;
 
+import com.hbm.capability.CapRole;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -58,11 +59,35 @@ public final class MultiblockSurface {
     }
 
     public static boolean isOpen(Level level, BlockPos pos, BlockState state, Direction side) {
+        return isOpen(level, pos, state, side, null);
+    }
+
+    /**
+     * Is this cell's face open, for one role? The role-blind ask reads the union of every role's plane,
+     * which is what a caller with no commodity in hand wants; naming one is what keeps a power-in face from
+     * answering for a fluid-out query on a machine whose 1.7 code stated the two separately.
+     */
+    public static boolean isOpen(Level level, BlockPos pos, BlockState state, Direction side, @Nullable CapRole role) {
         BlockPos core = foldedCore(state) != null ? pos : coreOfCell(level, pos);
         if (core == null) return false;
         BlockState coreState = level.getBlockState(core);
         BlockMultiblockCore block = foldedCore(coreState);
         return block != null && block.isOpenAt(coreState.getValue(BlockMultiblockCore.FACING),
-                pos.getX() - core.getX(), pos.getY() - core.getY(), pos.getZ() - core.getZ(), side);
+                pos.getX() - core.getX(), pos.getY() - core.getY(), pos.getZ() - core.getZ(), side,
+                BlockMultiblockCore.PASSIVE_NONE, role);
+    }
+
+    /** The passive accept surface alone — the item route's question; see {@code isPassiveOnlyOpenAt}. */
+    public static boolean isPassiveOpen(Level level, BlockPos pos, Direction side, int passiveDomains) {
+        BlockMultiblockCore.FoldedOwner owner = ownerOf(level, pos);
+        if (owner == null) {
+            BlockMultiblockCore self = foldedCore(level.getBlockState(pos));
+            if (self == null) return false;
+            return self.isPassiveOnlyOpenAt(level.getBlockState(pos).getValue(BlockMultiblockCore.FACING),
+                    0, 0, 0, side, passiveDomains);
+        }
+        BlockPos core = owner.pos();
+        return owner.block().isPassiveOnlyOpenAt(owner.facing(), pos.getX() - core.getX(),
+                pos.getY() - core.getY(), pos.getZ() - core.getZ(), side, passiveDomains);
     }
 }
