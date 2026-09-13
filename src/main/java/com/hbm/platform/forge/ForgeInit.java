@@ -82,6 +82,7 @@ public final class ForgeInit {
         com.hbm.gametest.NetworkSyncGameTests.init();
         com.hbm.gametest.ChunkPromotionGameTests.init();
         com.hbm.gametest.TickPhaseGameTests.init();
+        com.hbm.gametest.MultiblockMenuGameTests.init();
         com.hbm.gametest.FoldedPortParityGameTests.init();
 
         modBus.addListener(this::onRegister);
@@ -149,6 +150,8 @@ public final class ForgeInit {
                 com.hbm.gametest.ChunkPromotionGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.TickPhaseGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.MultiblockMenuGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FoldedPortParityGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,

@@ -536,8 +536,30 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         if (wantsNeighborUpdates() && level instanceof ServerLevel server) cellNeighborChanged(server, pos, pos);
     }
 
+    /**
+     * What a right-click on any part of the machine does: open the machine's menu.
+     *
+     * <p>The menu belongs to the core's block entity, and the player has clicked whichever cell they
+     * could reach, so the position is not incidental — the core is what the screen is bound to, and a
+     * cell carries no block entity to bind to at all. Every caller reaches this with the core already
+     * resolved.
+     *
+     * <p>A machine with no menu is answered {@code TRY_WITH_EMPTY_HAND} rather than swallowed, so that
+     * a right-click on it still falls through to whatever else the click could have meant.
+     *
+     * <p>Override for a machine that does something other than open its menu, or that treats a
+     * sneak-click differently; a machine with a menu and no special behaviour states nothing.
+     */
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player, BlockHitResult hit) {
-        return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(core) instanceof net.minecraft.world.MenuProvider menu)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
+        }
+        dev.golem.core.gui.Menus.openWithPos(serverPlayer, menu, core);
+        return InteractionResult.SUCCESS;
     }
 
     public void onExplosionHitAtCore(BlockState state, ServerLevel level, BlockPos core, Explosion explosion,
