@@ -60,6 +60,7 @@ public final class FluidNetwork {
                 DuctData data = graph.dataAt(cellPos);
                 if (data == null || data.typeId() == Fluids.NONE.getID()) return LevelNodeGraph.Probe.ABSENT;
                 BlockPos neighbour = neighbourOf(cellPos, faceOrdinal);
+                if (!resident(level, neighbour)) return LevelNodeGraph.Probe.ABSENT;
                 return userAt(level, neighbour, faceOrdinal, data.type()) == null
                         ? LevelNodeGraph.Probe.ABSENT : LevelNodeGraph.Probe.PRESENT;
             };
@@ -106,6 +107,7 @@ public final class FluidNetwork {
             for (int d = 0; d <= EdgeFaces.SELF; d++) {
                 if ((ef.activeMask & (1 << d)) == 0) continue;
                 BlockPos at = neighbourOf(node.posKey, d);
+                if (!resident(level, at)) continue;
                 BlockEntity be = userAt(level, at, d, type);
                 if (be == null) {
                     graph.markFaceStale(net, node, ef, d);
@@ -131,6 +133,14 @@ public final class FluidNetwork {
      * that knows where the core is. A machine's own {@code canConnect} gates both the side and the
      * fluid, so a duct carrying the wrong fluid is refused here rather than at delivery.
      */
+    /**
+     * Is the chunk holding this face already resident? See {@code PowerNetwork.resident}: probing runs from
+     * the server tick, and the block lookups below load a chunk synchronously when it is absent.
+     */
+    private static boolean resident(ServerLevel level, BlockPos pos) {
+        return level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
+    }
+
     private static @Nullable BlockEntity userAt(ServerLevel level, BlockPos pos, int faceOrdinal, FluidType type) {
         Direction face = faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite();
         BlockEntity declared = EndpointRegistry.of(level).resolve(level, pos.asLong(), face, FLUID);

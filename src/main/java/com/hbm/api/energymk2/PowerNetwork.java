@@ -64,6 +64,7 @@ public final class PowerNetwork {
     private static final LevelNodeGraph.FaceProbe<CableData> FACE_PROBE =
             (level, graph, cellPos, faces, faceOrdinal) -> {
                 BlockPos neighbour = neighbourOf(cellPos, faceOrdinal);
+                if (!resident(level, neighbour)) return LevelNodeGraph.Probe.ABSENT;
                 if (handlerAt(level, neighbour, faceOrdinal) != null) return LevelNodeGraph.Probe.PRESENT;
                 return foreignAt(level, neighbour, faceOrdinal) == null
                         ? LevelNodeGraph.Probe.ABSENT : LevelNodeGraph.Probe.PRESENT;
@@ -144,6 +145,7 @@ public final class PowerNetwork {
             for (int d = 0; d <= EdgeFaces.SELF; d++) {
                 if ((ef.activeMask & (1 << d)) == 0) continue;
                 BlockPos at = neighbourOf(node.posKey, d);
+                if (!resident(level, at)) continue;
                 BlockEntity be = handlerAt(level, at, d);
                 if (be instanceof IEnergyHandlerMK2 handler) {
                     if (handler.isLoaded() && gather.seen.add(handler)) gather.offer(handler);
@@ -258,6 +260,17 @@ public final class PowerNetwork {
      * face the net cannot reach it on — the pseudo-face is exempt, being the cell's own machine rather
      * than a side of it.
      */
+    /**
+     * Is the chunk holding this face already resident? Probing runs from the server tick over every face of
+     * every net, and both {@code getBlockEntity} and {@code getBlockState} load a chunk synchronously when
+     * it is absent -- so a net whose run reaches into unloaded ground makes the tick load chunks, which
+     * widens the loaded set, which gives the next tick more faces to probe. A face that is not resident is
+     * skipped rather than marked stale, so it is probed again for free once something else loads it.
+     */
+    private static boolean resident(ServerLevel level, BlockPos pos) {
+        return level.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
+    }
+
     private static @Nullable BlockEntity handlerAt(ServerLevel level, BlockPos pos, int faceOrdinal) {
         Direction face = faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite();
         BlockEntity declared = EndpointRegistry.of(level).resolve(level, pos.asLong(), face, POWER);
