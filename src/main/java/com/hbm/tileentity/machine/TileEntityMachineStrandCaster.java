@@ -9,6 +9,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.ItemStacks;
@@ -218,8 +219,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
     }
 
     private ForgeDirection facing() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {

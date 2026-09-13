@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.sound.LargeTurbineSoundHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -14,6 +13,7 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -215,9 +215,7 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
     }
 
     public ForgeDirection getFacing() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META)
-                ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     public DirPos[] getConPos() {

@@ -1,8 +1,8 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntitySawmill;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -42,7 +42,7 @@ public class SawmillRenderer extends GemBER<TileEntitySawmill, SawmillRenderStat
     @Override
     public void extract(TileEntitySawmill blockEntity, SawmillRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
-        int meta = blockEntity.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(blockEntity.getBlockState(), 2);
         state.yaw = switch (meta) {
             case 5 -> 90F;
             case 2 -> 180F;

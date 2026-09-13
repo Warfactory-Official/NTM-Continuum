@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,8 +22,7 @@ public class TileEntityDeuteriumTower extends TileEntityDeuteriumExtractor {
 
     @Override
     public DirPos[] getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(
-                getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection dir = MachineCore.facing(getBlockState());
         ForgeDirection rotation = dir.getRotation(ForgeDirection.DOWN);
         BlockPos pos = getBlockPos();
         return new DirPos[]{

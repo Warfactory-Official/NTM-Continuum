@@ -9,6 +9,7 @@ import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.sound.ModSounds;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSources;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -126,8 +127,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
                         sawmill.hasBlade = false;
                         level.explode(null, pos.getX() + 0.5D, pos.getY() + 1D, pos.getZ() + 0.5D,
                                 5F, false, Level.ExplosionInteraction.NONE);
-                        int orientation = state.getValue(com.hbm.blocks.BlockDummyable.META)
-                                - com.hbm.blocks.BlockDummyable.offset;
+                        int orientation = MachineCore.facingOrdinal(state, 2);
                         ForgeDirection direction = ForgeDirection.getOrientation(orientation);
                         ForgeDirection rotation = direction.getRotation(ForgeDirection.DOWN);
                         EntitySawblade blade = new EntitySawblade(level,
@@ -158,8 +158,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
     private static void damageOperatingBlade(Level level, BlockPos pos, BlockState state) {
         if (!(level instanceof ServerLevel server)) return;
 
-        ForgeDirection facing = ForgeDirection.getOrientation(
-                state.getValue(com.hbm.blocks.BlockDummyable.META) - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(state);
         ForgeDirection rotation = facing.getRotation(ForgeDirection.UP);
         AABB box = switch (rotation) {
             case NORTH -> BLADE_BOX;

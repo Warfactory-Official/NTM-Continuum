@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
 import com.hbm.inventory.fluid.FluidType;
@@ -12,6 +11,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -121,9 +121,8 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
 
     /** The four old horizontal ports: two facing forward and two facing backward. */
     public DirPos[] getConPos() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META)
-                ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection facing = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        ForgeDirection facing = ForgeDirection.getOrientation(meta);
         ForgeDirection lateral = facing.getRotation(ForgeDirection.UP);
         BlockPos pos = getBlockPos();
 
@@ -151,8 +150,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
 
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META)
-                - BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         return dir == facing || dir == facing.getOpposite();
     }
 

@@ -20,6 +20,7 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.sound.ModSounds;
@@ -274,8 +275,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     }
 
     public List<DirPos> getConPos() {
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         ForgeDirection rot = facing.getRotation(ForgeDirection.UP);
         return List.of(
                 new DirPos(worldPosition.offset(rot.offsetX * 3, 1, rot.offsetZ * 3), rot),

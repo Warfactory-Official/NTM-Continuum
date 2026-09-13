@@ -1,8 +1,8 @@
 package com.hbm.client.render;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.machine.ItemBatteryPack;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -60,8 +60,8 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
     public void extract(TileEntityBatterySocket be, BatterySocketRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 5;
-        state.yaw = switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(bs, 5);
+        state.yaw = switch (meta) {
             case 2 -> 90F;
             case 4 -> 180F;
             case 3 -> 270F;

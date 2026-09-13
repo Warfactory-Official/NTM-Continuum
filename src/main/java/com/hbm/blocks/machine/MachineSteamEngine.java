@@ -5,6 +5,7 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineSteamEngine;
@@ -78,5 +79,10 @@ public class MachineSteamEngine extends BlockMultiblockMachine
                             rot.getStepZ() + facing.getStepZ() * i),
                     MASK_ALL, PASSIVE_POWER_IN | PASSIVE_FLUID_IN);
         }
+    }
+
+    @Override
+    public boolean acceptsFluid(FluidType type) {
+        return type == Fluids.STEAM || type == Fluids.SPENTSTEAM;
     }
 }

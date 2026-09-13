@@ -2,10 +2,10 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.sound.HeaterSoundHandler;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.core.BlockPos;
@@ -55,7 +55,7 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
 
     /** The single power port, 3 blocks along the facing from the core. */
     public DirPos[] getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection dir = MachineCore.facing(getBlockState());
         BlockPos pos = getBlockPos();
         return new DirPos[]{new DirPos(pos.getX() + dir.offsetX * 3, pos.getY(), pos.getZ() + dir.offsetZ * 3, dir)};
     }

@@ -1,8 +1,8 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityFurnaceSteel;
 import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -38,7 +38,7 @@ public final class FurnaceSteelRenderer extends GemBER<TileEntityFurnaceSteel, F
     @Override public FurnaceRenderState createRenderState() { return new FurnaceRenderState(); }
 
     @Override public void extract(TileEntityFurnaceSteel furnace, FurnaceRenderState state, float partialTicks, Vec3 cameraPosition) {
-        int facing = furnace.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int facing = MachineCore.facingOrdinal(furnace.getBlockState(), 2);
         state.yaw = switch (facing) {
             case 3 -> -90F;
             case 5 -> 0F;

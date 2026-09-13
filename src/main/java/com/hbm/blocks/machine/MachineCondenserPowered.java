@@ -5,6 +5,7 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCondenserPowered;
@@ -94,5 +95,11 @@ public class MachineCondenserPowered extends BlockMultiblockMachine
         visitor.passiveCell(core.offset(dx - rx, 1, dz - rz), MASK_ALL, domains);
         visitor.passiveCell(core.offset(-dx + rx, 1, -dz + rz), MASK_ALL, domains);
         visitor.passiveCell(core.offset(-dx - rx, 1, -dz - rz), MASK_ALL, domains);
+    }
+
+    /** 1.7 takes spent steam in and water out here, and refuses everything else at the same call site. */
+    @Override
+    public boolean acceptsFluid(FluidType type) {
+        return type == Fluids.SPENTSTEAM || type == Fluids.WATER;
     }
 }

@@ -1,7 +1,9 @@
 package com.hbm.tileentity;
 
 import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,6 +22,34 @@ import org.jspecify.annotations.Nullable;
 public final class MachineCore {
 
     private MachineCore() {}
+
+    /**
+     * Which way the machine at this state faces, whichever system its block belongs to.
+     *
+     * <p>A dummyable spells its facing into {@code META} above {@code offset}; a folded core carries it as
+     * {@code FACING}. Dozens of block entities recover their own facing this way to lay out their ports,
+     * and the {@code META} spelling compiles perfectly well against a block that no longer has the
+     * property -- it throws when the line runs. Asking here instead is what makes a machine's migration
+     * invisible to its tile.
+     */
+    public static ForgeDirection facing(BlockState state) {
+        if (state.hasProperty(BlockMultiblockCore.FACING)) {
+            return ForgeDirection.getOrientation(state.getValue(BlockMultiblockCore.FACING));
+        }
+        if (state.hasProperty(BlockDummyable.META)) {
+            return ForgeDirection.getOrientation(state.getValue(BlockDummyable.META) - BlockDummyable.offset);
+        }
+        return ForgeDirection.UNKNOWN;
+    }
+
+    /**
+     * {@link #facing} as a {@link ForgeDirection} ordinal, with the fallback a caller used when the
+     * property was absent. The renderers all want the ordinal rather than the direction.
+     */
+    public static int facingOrdinal(BlockState state, int fallback) {
+        ForgeDirection facing = facing(state);
+        return facing == ForgeDirection.UNKNOWN ? fallback : facing.ordinal();
+    }
 
     public static @Nullable BlockEntity at(Level level, BlockPos cell, BlockState state) {
         if (state.getBlock() instanceof BlockDummyable dummyable) return dummyable.findCoreTE(level, cell);

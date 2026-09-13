@@ -5,6 +5,7 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineIntake;
 import net.minecraft.core.BlockPos;
@@ -74,5 +75,10 @@ public class MachineIntake extends BlockMultiblockMachine implements IEnergyConn
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         passiveEverywhere(core, facing, visitor, PASSIVE_POWER_IN | PASSIVE_FLUID_IN);
+    }
+
+    @Override
+    public boolean acceptsFluid(FluidType type) {
+        return type == Fluids.AIR;
     }
 }

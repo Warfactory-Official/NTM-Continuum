@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine.fusion;
 
 import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -53,8 +54,6 @@ public final class FusionNodes {
      * beam relative to this, and upstream spelled out {@code getBlockMetadata() - 10} inline each time.
      */
     public static ForgeDirection facing(net.minecraft.world.level.block.state.BlockState state) {
-        int meta = state.hasProperty(com.hbm.blocks.BlockDummyable.META)
-                ? state.getValue(com.hbm.blocks.BlockDummyable.META) : com.hbm.blocks.BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(state);
     }
 }

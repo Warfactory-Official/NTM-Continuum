@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -74,10 +75,8 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
     }
 
     public ForgeDirection getFacing() {
-        int meta = getBlockState().hasProperty(com.hbm.blocks.BlockDummyable.META)
-                ? getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                : com.hbm.blocks.BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        return ForgeDirection.getOrientation(meta);
     }
 
     @Override

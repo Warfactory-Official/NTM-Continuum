@@ -1,7 +1,7 @@
 package com.hbm.client.render;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -20,7 +20,7 @@ import java.util.Set;
  * per-machine {@code TileEntitySpecialRenderer}s. Animated arms/heads belong to their own renderers.
  *
  * <p>It is attached only to the multiblock <b>core</b> BlockEntity, so it declares once per machine and
- * the model spans the dummy footprint. Facing comes from the core's {@link BlockDummyable#META} state.
+ * the model spans the dummy footprint. Facing comes from the core's own state, through {@link com.hbm.tileentity.MachineCore#facingOrdinal}.
  *
  * <p>A machine that {@linkplain #ignoreFacing does not turn with its facing} states its base yaw as a
  * fixed rotation rather than reading a render state that is always zero, which keeps its model rigid.
@@ -167,8 +167,8 @@ public class MachineObjRenderer<T extends BlockEntity> extends GemBER<T, Machine
     @Override
     public void extract(T blockEntity, MachineRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState bs = blockEntity.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = switch (meta) {
             case 4 -> 90F;
             case 3 -> 180F;
             case 5 -> 270F;

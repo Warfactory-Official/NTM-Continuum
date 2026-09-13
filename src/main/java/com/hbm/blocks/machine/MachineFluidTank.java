@@ -91,30 +91,25 @@ public class MachineFluidTank extends BlockMultiblockMachine implements IFluidCo
         return MASK_NONE;
     }
 
-    /** The four corners of the base; the front pair face forward and the back pair back. */
+    /**
+     * Four ports two out along the tank's long axis and one to each side. ntm-next puts them at the
+     * corners instead; this machine's own getConPos is what Continuum answers to, and it says otherwise.
+     */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
 
-        Direction rot = facing.getClockWise();
-        BlockPos front = core.relative(facing, 1);
-        BlockPos back = core.relative(facing, -1);
-
-        visitor.cell(front.relative(rot), MASK_SOUTH);
-        visitor.cell(front.relative(rot, -1), MASK_SOUTH);
-        visitor.cell(back.relative(rot), MASK_NORTH);
-        visitor.cell(back.relative(rot, -1), MASK_NORTH);
+        visitor.cell(core.offset(2, 0, -1), MASK_EAST);
+        visitor.cell(core.offset(2, 0, 1), MASK_EAST);
+        visitor.cell(core.offset(-2, 0, -1), MASK_WEST);
+        visitor.cell(core.offset(-2, 0, 1), MASK_WEST);
     }
 
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
-        Direction rot = facing.getClockWise();
-        BlockPos front = core.relative(facing, 1);
-        BlockPos back = core.relative(facing, -1);
-
-        visitor.passiveCell(front.relative(rot), MASK_ALL, PASSIVE_FLUID_IN);
-        visitor.passiveCell(front.relative(rot, -1), MASK_ALL, PASSIVE_FLUID_IN);
-        visitor.passiveCell(back.relative(rot), MASK_ALL, PASSIVE_FLUID_IN);
-        visitor.passiveCell(back.relative(rot, -1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(2, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(2, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-2, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-2, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
     }
 }

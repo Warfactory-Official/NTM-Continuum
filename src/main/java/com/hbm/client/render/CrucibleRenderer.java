@@ -1,10 +1,10 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.material.Mats;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -75,8 +75,8 @@ public class CrucibleRenderer extends GemBER<TileEntityCrucible, CrucibleRenderS
     public void extract(TileEntityCrucible be, CrucibleRenderState state, float partialTicks,
                                    Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 3;
-        state.dirOrdinal = meta - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(bs, 3);
+        state.dirOrdinal = meta;
         state.yaw = 90F + switch (state.dirOrdinal) {
             case 4 -> 90F;
             case 3 -> 180F;

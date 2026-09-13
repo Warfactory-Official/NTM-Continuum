@@ -5,7 +5,6 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IClimbable;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
 import com.hbm.inventory.fluid.FluidType;
@@ -16,6 +15,7 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.graph.EndpointRegistry;
@@ -245,7 +245,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     /** The ladder box: a 1×3×1 column hugging one side of the tank, on the back-left relative to facing. */
     private AABB getLadderAABB() {
         if (ladderAABB == null) {
-            ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+            ForgeDirection dir = MachineCore.facing(getBlockState());
             ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
             BlockPos p = getBlockPos();
             ladderAABB = new AABB(p.getX(), p.getY(), p.getZ(), p.getX() + 1, p.getY() + 3, p.getZ() + 1)

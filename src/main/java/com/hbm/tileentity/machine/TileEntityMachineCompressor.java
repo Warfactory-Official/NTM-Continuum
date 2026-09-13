@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
@@ -60,8 +60,8 @@ public class TileEntityMachineCompressor extends TileEntityMachineCompressorBase
 
     @Override
     public DirPos[] getConPos() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection dir = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        ForgeDirection dir = ForgeDirection.getOrientation(meta);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
 

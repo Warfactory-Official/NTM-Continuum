@@ -11,6 +11,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -147,8 +148,7 @@ public class TileEntityMachineExposureChamber extends TileEntityMachineBase impl
     }
 
     public DirPos[] getConPos() {
-        ForgeDirection direction = ForgeDirection.getOrientation(getBlockState().getValue(
-                com.hbm.blocks.BlockDummyable.META) - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection direction = MachineCore.facing(getBlockState());
         ForgeDirection rotation = direction.getRotation(ForgeDirection.UP).getOpposite();
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{

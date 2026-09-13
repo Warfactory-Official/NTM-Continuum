@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.sound.IndustrialTurbineSoundHandler;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -11,6 +10,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -159,9 +159,7 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     }
 
     public ForgeDirection getFacing() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META)
-                ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     public boolean canConnect(ForgeDirection dir) {

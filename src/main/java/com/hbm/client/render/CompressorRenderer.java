@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineCompressor;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
@@ -50,8 +50,8 @@ public class CompressorRenderer extends GemBER<TileEntityMachineCompressor, Comp
     public void extract(TileEntityMachineCompressor be, CompressorRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = 90F + switch (ForgeDirection.getOrientation(meta - BlockDummyable.offset)) {
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = 90F + switch (ForgeDirection.getOrientation(meta)) {
             case WEST -> 90F;
             case SOUTH -> 180F;
             case EAST -> 270F;

@@ -1,8 +1,8 @@
 package com.hbm.client.render.solar;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.solar.TileEntitySolarBoiler;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -37,9 +37,8 @@ public final class SolarBoilerRenderer extends GemBER<TileEntitySolarBoiler, Sol
     public void extract(TileEntitySolarBoiler blockEntity, SolarBoilerRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState blockState = blockEntity.getBlockState();
-        int meta = blockState.hasProperty(BlockDummyable.META)
-                ? blockState.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(blockState, 2);
+        state.yaw = switch (meta) {
             case 4 -> 90F;
             case 3 -> 180F;
             case 5 -> 270F;

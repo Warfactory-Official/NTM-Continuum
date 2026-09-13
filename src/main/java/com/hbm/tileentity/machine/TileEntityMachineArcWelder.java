@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -18,6 +17,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -157,8 +157,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
 
     /** The ten old proxy positions, in their original order and facing. */
     public DirPos[] getConPos() {
-        ForgeDirection direction = ForgeDirection.getOrientation(
-                getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection direction = MachineCore.facing(getBlockState());
         ForgeDirection rotation = direction.getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
@@ -183,8 +182,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
 
     /** Recreates the old red/yellow/green proxy-relative inventory access. */
     public int[] getAccessibleSlotsFromSide(BlockPos accessor) {
-        ForgeDirection direction = ForgeDirection.getOrientation(
-                getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection direction = MachineCore.facing(getBlockState());
         ForgeDirection rotation = direction.getRotation(ForgeDirection.UP);
         BlockPos core = worldPosition;
 

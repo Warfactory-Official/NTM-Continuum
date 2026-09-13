@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine.oil;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerMachineCatalyticReformer;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -15,6 +14,7 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.core.BlockPos;
@@ -85,8 +85,8 @@ public class TileEntityMachineCatalyticReformer extends TileEntityMachineBase
 
 
     public DirPos[] getConPos() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection dir = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        ForgeDirection dir = ForgeDirection.getOrientation(meta);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
 

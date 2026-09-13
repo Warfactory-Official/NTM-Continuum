@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.material.MaterialShapes;
@@ -148,7 +148,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
         /* pour waste stack (out the back) */
         if (!te.wasteStack.isEmpty()) {
-            ForgeDirection dir = ForgeDirection.getOrientation(state.getValue(BlockDummyable.META) - BlockDummyable.offset).getOpposite();
+            ForgeDirection dir = MachineCore.facing(state).getOpposite();
             Vec3[] impact = new Vec3[1];
             double sx = pos.getX() + 0.5D + dir.offsetX * 1.875D;
             double sy = pos.getY() + 0.25D;
@@ -164,7 +164,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
         /* pour recipe stack (out the front) */
         if (!te.recipeStack.isEmpty()) {
-            ForgeDirection dir = ForgeDirection.getOrientation(state.getValue(BlockDummyable.META) - BlockDummyable.offset);
+            ForgeDirection dir = MachineCore.facing(state);
             List<Mats.MaterialStack> toCast = new ArrayList<>();
 
             CrucibleRecipe recipe = te.getLoadedRecipe();

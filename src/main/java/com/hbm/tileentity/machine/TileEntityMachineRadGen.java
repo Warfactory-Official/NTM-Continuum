@@ -6,6 +6,7 @@ import com.hbm.items.ModItems;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -129,9 +130,7 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
 
     /** The rear port is four blocks behind the core, adjacent to the extra dummy cell. */
     public DirPos[] getConPos() {
-        ForgeDirection facing = ForgeDirection.getOrientation(
-                getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                        - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         return new DirPos[]{new DirPos(
                 worldPosition.getX() - facing.offsetX * 4,
                 worldPosition.getY(),

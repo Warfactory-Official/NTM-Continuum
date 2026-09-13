@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine.oil;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -18,6 +17,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import net.minecraft.ChatFormatting;
@@ -113,7 +113,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
             te.anim++;
             net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
             if (player != null && player.distanceToSqr(pos.getX() + 0.5, pos.getY() + 3, pos.getZ() + 0.5) < 2_500D) {
-                ForgeDirection dir = ForgeDirection.getOrientation(te.getBlockState().getValue(BlockDummyable.META) - 10);
+                ForgeDirection dir = ForgeDirection.getOrientation(MachineCore.facingOrdinal(te.getBlockState(), 2));
                 ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
                 if (level.getRandom().nextInt(20) == 0) level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
                         pos.getX() + 0.5 - rot.offsetX - dir.offsetX * 0.875, pos.getY() + 3,
@@ -203,8 +203,8 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
     }
 
     public DirPos[] getConPos() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection dir = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        ForgeDirection dir = ForgeDirection.getOrientation(meta);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
 

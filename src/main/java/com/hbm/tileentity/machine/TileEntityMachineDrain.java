@@ -2,13 +2,13 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.ModOilBlocks;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -50,8 +50,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
                 if (toSpill >= 100 && level.getRandom().nextInt(20) == 0
                         && FluidCombustion.isLiquidAndViscous(drain.tank.getTankType())
                         && FluidCombustion.isFlammable(drain.tank.getTankType())) {
-                    ForgeDirection dir = ForgeDirection.getOrientation(
-                            state.getValue(BlockDummyable.META) - BlockDummyable.offset);
+                    ForgeDirection dir = MachineCore.facing(state);
                     Vec3 start = new Vec3(pos.getX() + 0.5D - dir.offsetX * 3D,
                             pos.getY() + 0.5D, pos.getZ() + 0.5D - dir.offsetZ * 3D);
                     Vec3 end = start.add(level.getRandom().nextGaussian() * 5D, -25D,
@@ -81,8 +80,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
     }
 
     public DirPos[] getConPos() {
-        ForgeDirection dir0 = ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection dir0 = MachineCore.facing(getBlockState());
         ForgeDirection dir1 = dir0.getRotation(ForgeDirection.UP);
         ForgeDirection dir2 = dir0.getRotation(ForgeDirection.DOWN);
         BlockPos pos = getBlockPos();

@@ -1,7 +1,7 @@
 package com.hbm.client.render;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineAmmoPress;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -44,9 +44,8 @@ public class AmmoPressRenderer extends GemBER<TileEntityMachineAmmoPress, AmmoPr
     public void extract(TileEntityMachineAmmoPress be, AmmoPressRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState blockState = be.getBlockState();
-        int meta = blockState.hasProperty(BlockDummyable.META)
-                ? blockState.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(blockState, 2);
+        state.yaw = switch (meta) {
             case 2 -> 90F;
             case 4 -> 180F;
             case 3 -> 270F;

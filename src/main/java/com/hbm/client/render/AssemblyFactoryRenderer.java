@@ -1,10 +1,10 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.AssemblyFactoryArmLayout;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -114,9 +114,8 @@ public final class AssemblyFactoryRenderer
     public void extract(TileEntityMachineAssemblyFactory be, AssemblyFactoryRenderState state,
                         float partialTicks, Vec3 cameraPosition) {
         BlockState blockState = be.getBlockState();
-        int meta = blockState.hasProperty(BlockDummyable.META)
-                ? blockState.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(blockState, 2);
+        state.yaw = switch (meta) {
             case 4 -> 90F;
             case 3 -> 180F;
             case 5 -> 270F;

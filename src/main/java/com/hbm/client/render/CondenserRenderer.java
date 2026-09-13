@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityCondenserPowered;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -42,9 +42,8 @@ public final class CondenserRenderer extends GemBER<TileEntityCondenserPowered, 
     public void extract(TileEntityCondenserPowered be, CondenserRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState blockState = be.getBlockState();
-        int meta = blockState.hasProperty(BlockDummyable.META)
-                ? blockState.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection facing = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(blockState, 2);
+        ForgeDirection facing = ForgeDirection.getOrientation(meta);
         state.yaw = 90F + facing.getRotationDegrees();
         state.spin = be.lastSpin + (be.spin - be.lastSpin) * partialTicks;
     }

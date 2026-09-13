@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
@@ -62,7 +62,7 @@ public class StrandCasterRenderer extends GemBER<TileEntityMachineStrandCaster, 
 
     @Override
     public void extract(TileEntityMachineStrandCaster be, State state, float partialTicks, Vec3 cameraPosition) {
-        int meta = be.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(be.getBlockState(), 2);
         state.direction = ForgeDirection.getOrientation(meta);
         state.hasMelt = be.amount > 0 && be.type != null && be.getInstalledMold() != null;
         if (state.hasMelt) {

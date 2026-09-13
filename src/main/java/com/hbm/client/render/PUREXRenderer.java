@@ -1,8 +1,8 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -50,8 +50,8 @@ public class PUREXRenderer extends GemBER<TileEntityMachinePUREX, PurexRenderSta
     public void extract(TileEntityMachinePUREX be, PurexRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = switch (meta) {
             case 4 -> 90F;
             case 3 -> 180F;
             case 5 -> 270F;

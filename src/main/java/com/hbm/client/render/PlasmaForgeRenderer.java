@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge;
 import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -152,8 +152,8 @@ public class PlasmaForgeRenderer extends GemBER<TileEntityFusionPlasmaForge, Pla
     public void extract(TileEntityFusionPlasmaForge be, PlasmaForgeRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = switch (meta) {
             case 2 -> 90F;
             case 4 -> 180F;
             case 3 -> 270F;

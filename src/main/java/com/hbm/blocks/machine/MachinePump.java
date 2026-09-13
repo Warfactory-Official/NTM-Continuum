@@ -5,6 +5,7 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
@@ -89,14 +90,15 @@ public class MachinePump extends BlockMultiblockMachine implements IEnergyConnec
         return System.currentTimeMillis() % 1000 < 500 ? 0xff0000 : 0xffff00;
     }
 
-    /** The four horizontal connection ports around the core. */
+    /** The four horizontal connection ports; the steam pump offers no power at any of them. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        visitor.cell(core.east(), MASK_EAST);
-        visitor.cell(core.west(), MASK_WEST);
-        visitor.cell(core.south(), MASK_SOUTH);
-        visitor.cell(core.north(), MASK_NORTH);
+        int roles = steam ? ROLE_FLUID : ROLE_ALL;
+        visitor.cell(core.east(), MASK_EAST, roles);
+        visitor.cell(core.west(), MASK_WEST, roles);
+        visitor.cell(core.south(), MASK_SOUTH, roles);
+        visitor.cell(core.north(), MASK_NORTH, roles);
     }
 
     /** Only the electric pump takes power; the steam one is driven through its fluid inlet. */
@@ -107,5 +109,12 @@ public class MachinePump extends BlockMultiblockMachine implements IEnergyConnec
         visitor.passiveCell(core.west(), MASK_ALL, domains);
         visitor.passiveCell(core.south(), MASK_ALL, domains);
         visitor.passiveCell(core.north(), MASK_ALL, domains);
+    }
+
+    /** The steam pump runs its own working fluid through the ports the electric one uses for water alone. */
+    @Override
+    public boolean acceptsFluid(FluidType type) {
+        if (steam) return type == Fluids.STEAM || type == Fluids.SPENTSTEAM || type == Fluids.WATER;
+        return type == Fluids.WATER;
     }
 }

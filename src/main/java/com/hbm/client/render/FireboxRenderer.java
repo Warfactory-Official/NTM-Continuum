@@ -1,8 +1,8 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -64,8 +64,8 @@ public class FireboxRenderer<T extends TileEntityFireboxBase> extends GemBER<T, 
     @Override
     public void extract(T be, FireboxRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 3;
-        state.yaw = 90F + switch (meta - BlockDummyable.offset) {
+        int meta = MachineCore.facingOrdinal(bs, 3);
+        state.yaw = 90F + switch (meta) {
             case 4 -> 90F;
             case 3 -> 180F;
             case 5 -> 270F;

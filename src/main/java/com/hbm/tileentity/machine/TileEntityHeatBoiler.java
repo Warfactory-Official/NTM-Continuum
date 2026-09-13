@@ -10,6 +10,7 @@ import com.hbm.inventory.recipes.HeatRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.core.BlockPos;
@@ -71,8 +72,8 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
 
 
     public DirPos[] getConPos() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection dir = ForgeDirection.getOrientation(meta - BlockDummyable.offset).getRotation(ForgeDirection.UP);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        ForgeDirection dir = ForgeDirection.getOrientation(meta).getRotation(ForgeDirection.UP);
         BlockPos pos = worldPosition;
         return new DirPos[]{
                 new DirPos(pos.getX() + dir.offsetX * 2, pos.getY(), pos.getZ() + dir.offsetZ * 2, dir),

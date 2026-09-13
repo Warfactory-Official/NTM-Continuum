@@ -4,6 +4,9 @@ import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineLargeTurbine;
@@ -80,5 +83,11 @@ public class MachineLargeTurbine extends BlockMultiblockMachine
         visitor.passiveCell(core.relative(facing, -3), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot, -1), MASK_ALL, domains);
+    }
+
+    /** A coolant with a cooling recipe, or the spent steam it returns; nothing else reaches the tanks. */
+    @Override
+    public boolean acceptsFluid(FluidType type) {
+        return CoolingRecipes.get(type) != null || type == Fluids.SPENTSTEAM;
     }
 }

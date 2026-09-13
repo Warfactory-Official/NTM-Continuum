@@ -16,6 +16,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
@@ -135,7 +136,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
     }
 
     private void transferCascade(Level level) {
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META) - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         BlockPos adjacent = worldPosition.offset(-facing.offsetX, 0, -facing.offsetZ);
         if (level.getBlockEntity(adjacent) instanceof TileEntityMachineGasCent target
                 && target.tank.getFill() == 0 && target.tank.getTankType() == tank.getTankType()) {

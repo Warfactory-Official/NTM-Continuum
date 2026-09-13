@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityStirling;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -62,7 +62,7 @@ public final class StirlingRenderer extends GemBER<TileEntityStirling, StirlingR
 
     @Override
     public void extract(TileEntityStirling be, StirlingRenderState state, float partialTicks, Vec3 cameraPosition) {
-        int meta = be.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(be.getBlockState(), 2);
         state.yaw = switch (ForgeDirection.getOrientation(meta)) {
             case EAST -> 90F;
             case NORTH -> 180F;

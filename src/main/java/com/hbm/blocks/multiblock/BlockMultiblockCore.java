@@ -318,10 +318,20 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return openForConnector(world, pos, dir, ROLE_POWER);
     }
 
+    /**
+     * Which fluids this machine's ducts may carry. 1.7 gates the type at the same call site as the face --
+     * the large turbine takes only a coolant or spent steam, the intake only air -- so a folded machine
+     * that inherits its geometry still has to say this, or it accepts every fluid at a port that refused
+     * all but one.
+     */
+    public boolean acceptsFluid(com.hbm.inventory.fluid.FluidType type) {
+        return true;
+    }
+
     /** The duct answer; see {@link #canConnect(BlockGetter, BlockPos, ForgeDirection)}. */
     public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter world, int x, int y, int z,
                               ForgeDirection dir) {
-        return openForConnector(world, new BlockPos(x, y, z), dir, ROLE_FLUID);
+        return acceptsFluid(type) && openForConnector(world, new BlockPos(x, y, z), dir, ROLE_FLUID);
     }
 
     private boolean openForConnector(BlockGetter world, BlockPos pos, ForgeDirection dir, int roles) {

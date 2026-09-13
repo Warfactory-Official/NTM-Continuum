@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerMachineGiantTank;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -12,6 +11,7 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.uninos.graph.EndpointRegistry;
 import net.minecraft.server.level.ServerLevel;
@@ -287,9 +287,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     public abstract DirPos[] getConPos();
 
     public ForgeDirection getFacing() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META)
-                ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override

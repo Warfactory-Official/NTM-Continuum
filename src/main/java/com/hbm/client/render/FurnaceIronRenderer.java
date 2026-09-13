@@ -1,8 +1,8 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityFurnaceIron;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -43,7 +43,7 @@ public final class FurnaceIronRenderer extends GemBER<TileEntityFurnaceIron, Fur
 
     @Override
     public void extract(TileEntityFurnaceIron furnace, FurnaceRenderState state, float partialTicks, Vec3 cameraPosition) {
-        int facing = furnace.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int facing = MachineCore.facingOrdinal(furnace.getBlockState(), 2);
         state.yaw = switch (facing) {
             case 5 -> 90F;
             case 2 -> 180F;

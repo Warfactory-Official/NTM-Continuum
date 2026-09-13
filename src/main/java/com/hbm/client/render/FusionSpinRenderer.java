@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -81,8 +81,8 @@ public class FusionSpinRenderer<T extends BlockEntity> extends GemBER<T, FusionS
     @Override
     public void extract(T blockEntity, FusionSpinRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState bs = blockEntity.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (ForgeDirection.getOrientation(meta - BlockDummyable.offset)) {
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = switch (ForgeDirection.getOrientation(meta)) {
             case WEST -> 90F;
             case SOUTH -> 180F;
             case EAST -> 270F;

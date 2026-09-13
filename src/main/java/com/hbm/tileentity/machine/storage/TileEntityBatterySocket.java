@@ -3,10 +3,10 @@ package com.hbm.tileentity.machine.storage;
 import com.hbm.api.energymk2.IBatteryItem;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerBatterySocket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -123,7 +123,7 @@ public class TileEntityBatterySocket extends TileEntityBatteryBase implements Me
     // --- multiblock port geometry (ported verbatim from the 1.12.2 socket) ---
 
     private ForgeDirection facing() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -64,10 +65,8 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
 
     public ForgeDirection getFacing() {
         BlockState state = getBlockState();
-        int meta = state.hasProperty(com.hbm.blocks.BlockDummyable.META)
-                ? state.getValue(com.hbm.blocks.BlockDummyable.META)
-                : com.hbm.blocks.BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(state, 2);
+        return ForgeDirection.getOrientation(meta);
     }
 
     /** The eight air/power anchors around the legacy two-by-two intake footprint. */

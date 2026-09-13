@@ -9,6 +9,7 @@ import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -174,7 +175,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
 
     /** The 8 network-connection positions around the footprint, facing-dependent (ported verbatim). */
     public DirPos[] getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection dir = MachineCore.facing(getBlockState());
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{

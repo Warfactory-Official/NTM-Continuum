@@ -13,6 +13,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -119,7 +120,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META) - 10);
+        ForgeDirection facing = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2));
         return new DirPos[]{
                 new DirPos(x + 2, y, z, Library.POS_X),
                 new DirPos(x - 2, y, z, Library.NEG_X),

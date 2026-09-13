@@ -1,7 +1,7 @@
 package com.hbm.client.render.smoke;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
@@ -39,7 +39,7 @@ public final class AshpitRenderer extends GemBER<TileEntityAshpit, AshpitRenderS
     /** The old renderer applied its facing switch and then a final -90 degree rotation. */
     @Override
     public void extract(TileEntityAshpit ashpit, AshpitRenderState state, float partialTicks, Vec3 cameraPosition) {
-        int meta = ashpit.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(ashpit.getBlockState(), 2);
         state.yaw = -90F + switch (meta) {
             case 5 -> 90F;
             case 2 -> 180F;

@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerMachineWoodBurner;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -16,6 +15,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -131,9 +131,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
     }
 
     private ForgeDirection facing(BlockState state) {
-        int meta = state.hasProperty(BlockDummyable.META)
-                ? state.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        return MachineCore.facing(state);
     }
 
     private void setTypeFromFluidId() {

@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -101,7 +101,7 @@ public class ArcFurnaceRenderer extends GemBER<TileEntityMachineArcFurnaceLarge,
 
     @Override
     public void extract(TileEntityMachineArcFurnaceLarge be, State state, float partialTicks, Vec3 cameraPosition) {
-        int meta = be.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(be.getBlockState(), 2);
         state.direction = ForgeDirection.getOrientation(meta);
         state.lid = be.prevLid + (be.lid - be.prevLid) * partialTicks;
         state.progressing = be.isProgressing;

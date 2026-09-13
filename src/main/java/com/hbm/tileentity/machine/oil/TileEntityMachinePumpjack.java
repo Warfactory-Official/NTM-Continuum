@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine.oil;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -10,6 +9,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -103,8 +103,8 @@ public class TileEntityMachinePumpjack extends TileEntityOilDrillBase {
 
     @Override
     public DirPos[] getConPos() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META) ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection dir = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        ForgeDirection dir = ForgeDirection.getOrientation(meta);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
         BlockPos pos = worldPosition;
 

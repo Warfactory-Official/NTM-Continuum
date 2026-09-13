@@ -12,6 +12,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ContaminationUtil;
@@ -144,7 +145,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     /** Walks the beam from 3 blocks out to {@link #RANGE}, driving SILEX chambers and burning blocks. */
     private void trace(Level level, ForgeDirection dir) {
         boolean silexSpacing = false;
-        int felMeta = getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int felMeta = MachineCore.facingOrdinal(getBlockState(), 2);
 
         for (int i = 3; i < RANGE; i++) {
             BlockPos beam = new BlockPos(worldPosition.getX() + dir.offsetX * i,
@@ -162,7 +163,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
                 BlockPos silexPos = new BlockPos(beam.getX() + dir.offsetX, worldPosition.getY(),
                         beam.getZ() + dir.offsetZ);
                 if (level.getBlockEntity(silexPos) instanceof TileEntitySILEX silex) {
-                    int silexMeta = silex.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+                    int silexMeta = MachineCore.facingOrdinal(silex.getBlockState(), 2);
                     if (rotationIsValid(silexMeta, felMeta) && i >= 5 && !silexSpacing) {
                         if (silex.mode != this.mode) {
                             silex.mode = this.mode;
@@ -286,7 +287,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     }
 
     private ForgeDirection facing() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     /**
