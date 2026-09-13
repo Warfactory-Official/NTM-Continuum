@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineAmmoPress;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.level.Level;
@@ -15,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The positional 3-wide x 2-high Ammo Press from the 1.12.2 machine. */
-public class MachineAmmoPress extends BlockDummyable implements WorldlyContainerHolder {
+public class MachineAmmoPress extends BlockMultiblockMachine implements WorldlyContainerHolder {
 
     public MachineAmmoPress(Properties properties) {
         super(properties);
@@ -24,7 +26,7 @@ public class MachineAmmoPress extends BlockDummyable implements WorldlyContainer
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineAmmoPress press ? press : null;
     }
 
@@ -41,5 +43,11 @@ public class MachineAmmoPress extends BlockDummyable implements WorldlyContainer
     @Override
     public int getOffset() {
         return 0;
+    }
+
+    /** Item automation reaches the core through any cell; there is no receive domain, so no active face. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        passiveEverywhere(core, facing, visitor, PASSIVE_ITEMS);
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
@@ -26,7 +27,7 @@ public final class MultiblockSurface {
                 || state.getBlock() instanceof BlockMultiblockCore core && core.isCellState(state);
     }
 
-    public static @Nullable BlockPos coreOfCell(Level level, BlockPos cell) {
+    public static @Nullable BlockPos coreOfCell(BlockGetter level, BlockPos cell) {
         if (level instanceof ServerLevel server) {
             long packed = MultiblockCoreIndex.lookup(server, cell);
             if (packed == Long.MIN_VALUE) return null;
@@ -36,7 +37,7 @@ public final class MultiblockSurface {
         return clientCoreOf(level, cell);
     }
 
-    public static BlockMultiblockCore.@Nullable FoldedOwner ownerOf(Level level, BlockPos cell) {
+    public static BlockMultiblockCore.@Nullable FoldedOwner ownerOf(BlockGetter level, BlockPos cell) {
         BlockPos core = coreOfCell(level, cell);
         if (core == null) return null;
         BlockState state = level.getBlockState(core);
@@ -93,8 +94,17 @@ public final class MultiblockSurface {
         return deltas.toLongArray();
     }
 
-    public static @Nullable BlockPos coreOfAny(Level level, BlockPos pos) {
+    public static @Nullable BlockPos coreOfAny(BlockGetter level, BlockPos pos) {
         return foldedCore(level.getBlockState(pos)) != null ? pos : coreOfCell(level, pos);
+    }
+
+    /**
+     * The block entity of the multiblock {@code pos} belongs to — what 1.7's {@code findCoreTE} answered,
+     * off the index instead of a metadata walk. {@code pos} may be the core itself or any of its cells.
+     */
+    public static @Nullable BlockEntity coreEntity(BlockGetter level, BlockPos pos) {
+        BlockPos core = coreOfAny(level, pos);
+        return core == null ? null : level.getBlockEntity(core);
     }
 
     public static boolean isOpen(Level level, BlockPos pos, BlockState state, Direction side) {

@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineMixer;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMixer;
@@ -11,6 +10,7 @@ import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.items.machine.ItemFluidId;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.tags.TagKey;
@@ -50,8 +50,8 @@ public final class MixerGameTests {
         MachineMixer block = ModMachineBlocks.machine_mixer.get();
         BlockPos core = new BlockPos(2, 1, 2);
         BlockPos absolute = helper.absolutePos(core);
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.NORTH);
+        helper.setBlock(core, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
 
         helper.assertTrue(helper.getLevel().getBlockEntity(absolute) instanceof TileEntityMachineMixer,
                 "Mixer core block entity was not created");
@@ -122,7 +122,7 @@ public final class MixerGameTests {
     private static TileEntityMachineMixer place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos absolute = helper.absolutePos(relativePos);
         MachineMixer block = ModMachineBlocks.machine_mixer.get();
-        helper.setBlock(relativePos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(relativePos, block.defaultBlockState());
         return (TileEntityMachineMixer) helper.getLevel().getBlockEntity(absolute);
     }
 }

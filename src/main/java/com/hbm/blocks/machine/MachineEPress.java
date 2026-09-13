@@ -1,14 +1,13 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Electric Press: a 1×1×3 dummyable column (core at the bottom, two dummies stacked above). */
-public class MachineEPress extends BlockDummyable implements IEnergyConnectorBlock, WorldlyContainerHolder {
+public class MachineEPress extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineEPress(Properties properties) {
         super(properties);
@@ -28,15 +27,8 @@ public class MachineEPress extends BlockDummyable implements IEnergyConnectorBlo
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineEPress te ? te : null;
-    }
-
-    /** Cables connect only at the press's real power ports (its {@code getConPos()} faces). */
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineEPress te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
@@ -52,5 +44,11 @@ public class MachineEPress extends BlockDummyable implements IEnergyConnectorBlo
     @Override
     public int getOffset() {
         return 0;
+    }
+
+    /** 1.7's six-direction loop minus UP, buried under the machine's own cell. */
+    @Override
+    public int coreMask() {
+        return MASK_HORIZONTAL | MASK_DOWN;
     }
 }

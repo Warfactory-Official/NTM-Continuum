@@ -1,6 +1,6 @@
 package com.hbm.blocks.network;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.tileentity.network.TileEntityRadioTelex;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The 1.12.2 {@code radio_telex}: a two-cell-wide, five-line wireless text machine. */
-public final class RadioTelex extends BlockDummyable {
+public final class RadioTelex extends BlockMultiblockMachine {
 
     public RadioTelex(Properties properties) {
         super(properties);

@@ -1,14 +1,13 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
-import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,7 +18,7 @@ import net.minecraft.world.phys.AABB;
 import org.jspecify.annotations.Nullable;
 
 /** Standard 1×1×4 centrifuge tower. */
-public class MachineCentrifuge extends BlockDummyable implements IEnergyConnectorBlock, WorldlyContainerHolder {
+public class MachineCentrifuge extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineCentrifuge(Properties properties) {
         super(properties);
@@ -35,14 +34,8 @@ public class MachineCentrifuge extends BlockDummyable implements IEnergyConnecto
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineCentrifuge te ? te : null;
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineCentrifuge te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
@@ -53,5 +46,11 @@ public class MachineCentrifuge extends BlockDummyable implements IEnergyConnecto
     @Override
     public int getOffset() {
         return 0;
+    }
+
+    /** 1.7's six-direction loop minus UP, buried under the machine's own cell. */
+    @Override
+    public int coreMask() {
+        return MASK_HORIZONTAL | MASK_DOWN;
     }
 }

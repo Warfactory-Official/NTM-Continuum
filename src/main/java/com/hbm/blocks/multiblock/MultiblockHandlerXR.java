@@ -95,6 +95,16 @@ public final class MultiblockHandlerXR {
      * 1.7's {@code BlockDummyable#bounding} silhouette in one cell's frame; one implementation for both
      * bases, since a second rotation table would drift silently.
      */
+    /**
+     * The silhouette translated into a cell's frame and NOT rotated — 1.7 {@code BlockDummyable#getShape}
+     * moves the authored boxes by the core offset and leaves their orientation alone, so a machine whose
+     * box is not rotationally symmetric keeps the same hitbox at all four facings. A machine that wants
+     * its box to turn with it says so, as the FEnSU does.
+     */
+    public static VoxelShape boundingSilhouette(List<AABB> bounding, int dx, int dy, int dz) {
+        return boundingSilhouette(bounding, Direction.SOUTH, dx, dy, dz);
+    }
+
     public static VoxelShape boundingSilhouette(List<AABB> bounding, Direction rot, int dx, int dy, int dz) {
         VoxelShape shape = Shapes.empty();
         for (AABB aabb : bounding) {

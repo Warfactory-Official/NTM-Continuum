@@ -2,7 +2,6 @@ package com.hbm.gametest;
 
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineDrain;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.network.BlockFluidDuct;
@@ -15,6 +14,7 @@ import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidValve;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 
@@ -23,7 +23,6 @@ public final class FluidValveDrainGameTests {
 
     private FluidValveDrainGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void valveTypeAndNodeLifecycle(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -122,10 +121,10 @@ public final class FluidValveDrainGameTests {
     private static TileEntityMachineDrain placeDrain(GameTestHelper helper) {
         BlockPos core = helper.absolutePos(new BlockPos(3, 1, 3));
         MachineDrain block = ModMachineBlocks.machine_drain.get();
-        helper.getLevel().setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+        helper.getLevel().setBlock(core, block.defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(core) instanceof TileEntityMachineDrain,
                 "Drain core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
         return (TileEntityMachineDrain) helper.getLevel().getBlockEntity(core);
     }
 

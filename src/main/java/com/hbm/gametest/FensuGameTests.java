@@ -3,15 +3,16 @@ package com.hbm.gametest;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.storage.MachineFENSU;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryBase;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -65,15 +66,15 @@ public final class FensuGameTests {
         MachineFENSU block = ModBatteryBlocks.machine_fensu.get();
         BlockPos relativeCore = new BlockPos(3, 1, 3);
         BlockPos core = helper.absolutePos(relativeCore);
-        helper.getLevel().setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        helper.getLevel().setBlock(core, block.defaultBlockState(), 3);
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
 
         int cells = 0;
         for (int x = -2; x <= 2; x++) for (int y = 0; y <= 4; y++) for (int z = -1; z <= 1; z++) {
             if (helper.getLevel().getBlockState(core.offset(x, y, z)).getBlock() == block) cells++;
         }
         helper.assertTrue(cells == 75, "FEnSU structure occupancy changed: " + cells);
-        helper.assertTrue(block.findCore(helper.getLevel(), core.offset(2, 4, 1)).equals(core),
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), core.offset(2, 4, 1))),
                 "FEnSU dummy did not resolve through the full tower");
 
         TileEntityMachineFENSU fensu = (TileEntityMachineFENSU) helper.getLevel().getBlockEntity(core);
@@ -138,7 +139,7 @@ public final class FensuGameTests {
                 "FEnSU item power/color/modes were not restored on placement");
 
         TileEntityMachineFENSU copy = new TileEntityMachineFENSU(BlockPos.ZERO,
-                block.defaultBlockState().setValue(BlockDummyable.META, 12));
+                block.defaultBlockState());
         var buf = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         original.serialize(buf);
         copy.deserialize(buf);
@@ -216,8 +217,8 @@ public final class FensuGameTests {
     private static TileEntityMachineFENSU place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachineFENSU block = ModBatteryBlocks.machine_fensu.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
+        block.fillSpace(helper.getLevel(), pos, Direction.NORTH);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityMachineFENSU,
                 "FEnSU core BlockEntity was not created");
         return (TileEntityMachineFENSU) helper.getLevel().getBlockEntity(pos);

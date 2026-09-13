@@ -79,6 +79,7 @@ public final class ForgeInit {
         com.hbm.gametest.FluidNetworkGameTests.init();
         com.hbm.gametest.ForeignEnergyGameTests.init();
         com.hbm.gametest.FoldedGeometryGameTests.init();
+        com.hbm.gametest.FoldedPortParityGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -139,6 +140,8 @@ public final class ForgeInit {
                 com.hbm.gametest.ForeignEnergyGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FoldedGeometryGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FoldedPortParityGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FlywheelGameTests.TESTS));
 

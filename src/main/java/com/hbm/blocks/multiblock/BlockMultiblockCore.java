@@ -90,6 +90,8 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * the base answers the whole silhouette at every cell of the footprint.
      */
     protected final List<AABB> bounding = new ArrayList<>();
+    private final java.util.concurrent.ConcurrentHashMap<Long, VoxelShape> shapeCache =
+            new java.util.concurrent.ConcurrentHashMap<>();
     private @Nullable MultiblockMaskTable table;
 
     protected BlockMultiblockCore(Properties properties) {
@@ -322,21 +324,34 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /** This cell's world-frame geometry, or null for a plain full cube. */
     public @Nullable VoxelShape cellShape(int lx, int ly, int lz, Direction facing, boolean open, boolean forCollision) {
         if (bounding.isEmpty()) return null;
-        return MultiblockHandlerXR.boundingSilhouette(bounding, facing.getClockWise(),
+        return MultiblockHandlerXR.boundingSilhouette(bounding,
                 -MultiblockMaskTable.worldX(lx, ly, lz, facing), -ly,
                 -MultiblockMaskTable.worldZ(lx, ly, lz, facing));
     }
 
+    /**
+     * {@link #cellShape} unions and optimises a fresh {@link VoxelShape} per call, and shape queries run on
+     * the meshing threads; the answer is a function of the local offset and the facing alone, so it is
+     * memoised on those.
+     */
+    protected final VoxelShape cachedCellShape(int lx, int ly, int lz, Direction facing, boolean forCollision) {
+        if (bounding.isEmpty()) return Shapes.block();
+        long key = (lx & 0xFFFFL) | (ly & 0xFFFFL) << 16 | (lz & 0xFFFFL) << 32
+                | (long) facing.ordinal() << 48 | (forCollision ? 1L << 56 : 0L);
+        return shapeCache.computeIfAbsent(key, ignored -> {
+            VoxelShape shape = cellShape(lx, ly, lz, facing, false, forCollision);
+            return shape == null ? Shapes.block() : shape;
+        });
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        VoxelShape shape = cellShape(0, 0, 0, state.getValue(FACING), false, false);
-        return shape == null ? Shapes.block() : shape;
+        return cachedCellShape(0, 0, 0, state.getValue(FACING), false);
     }
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        VoxelShape shape = cellShape(0, 0, 0, state.getValue(FACING), false, true);
-        return shape == null ? Shapes.block() : shape;
+        return cachedCellShape(0, 0, 0, state.getValue(FACING), true);
     }
 
     @Override public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {

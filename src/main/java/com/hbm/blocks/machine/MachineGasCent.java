@@ -2,14 +2,13 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,7 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Four-block gas centrifuge tower with energy and fluid ports around its core. */
-public class MachineGasCent extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2,
+public class MachineGasCent extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2,
         WorldlyContainerHolder {
 
     public MachineGasCent(Properties properties) {
@@ -36,23 +35,16 @@ public class MachineGasCent extends BlockDummyable implements IEnergyConnectorBl
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineGasCent te ? te : null;
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineGasCent te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter world, int x, int y, int z,
-                              ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineGasCent te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
     }
 
     @Override public int[] getDimensions() { return new int[]{3, 0, 0, 0, 0, 0}; }
     @Override public int getOffset() { return 0; }
+
+    /** 1.7's six-direction loop minus UP, buried under the machine's own cell. */
+    @Override
+    public int coreMask() {
+        return MASK_HORIZONTAL | MASK_DOWN;
+    }
 }
