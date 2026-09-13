@@ -89,7 +89,7 @@ public final class SmokeChainGameTests {
         MachineAshpit ashpitBlock = SmokeChainRegistration.machine_ashpit.get();
         BlockPos ashpitPos = helper.absolutePos(new BlockPos(3, 2, 3));
         helper.getLevel().setBlock(ashpitPos,
-                ashpitBlock.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+                ashpitBlock.defaultBlockState(), 3);
         TileEntityAshpit ashpit = (TileEntityAshpit) helper.getLevel().getBlockEntity(ashpitPos);
         helper.assertTrue(ashpit != null, "Ashpit core BlockEntity was not created");
 
@@ -159,7 +159,7 @@ public final class SmokeChainGameTests {
                 io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         ashpit.serialize(buffer);
         TileEntityAshpit copy = new TileEntityAshpit(BlockPos.ZERO,
-                SmokeChainRegistration.machine_ashpit.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+                SmokeChainRegistration.machine_ashpit.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.playersUsing == 2 && copy.isFull,
                 "Ashpit GUI sync fields did not round-trip");
@@ -195,8 +195,8 @@ public final class SmokeChainGameTests {
     private static TileEntityAshpit placeAshpit(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
         MachineAshpit block = SmokeChainRegistration.machine_ashpit.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
+        block.fillSpace(helper.getLevel(), pos, net.minecraft.core.Direction.NORTH);
         return (TileEntityAshpit) helper.getLevel().getBlockEntity(pos);
     }
 

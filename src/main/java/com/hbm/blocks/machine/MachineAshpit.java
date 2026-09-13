@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.smoke.SmokeChainRegistration;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
@@ -18,7 +20,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The 3x3 ashpit shell; all cells expose the core's output inventory to hoppers. */
-public final class MachineAshpit extends BlockDummyable implements WorldlyContainerHolder {
+public final class MachineAshpit extends BlockMultiblockMachine implements WorldlyContainerHolder {
 
     public MachineAshpit(Properties properties) {
         super(properties);
@@ -41,8 +43,13 @@ public final class MachineAshpit extends BlockDummyable implements WorldlyContai
 
     @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityAshpit ashpit ? ashpit : null;
     }
 
+    /** Item automation reaches the core through any cell; there is no receive domain, so no active face. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        passiveEverywhere(core, facing, visitor, PASSIVE_ITEMS);
+    }
 }

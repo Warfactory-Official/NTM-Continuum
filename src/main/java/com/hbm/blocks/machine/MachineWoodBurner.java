@@ -2,13 +2,11 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -17,7 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The old two-port, six-slot wood burner. */
-public class MachineWoodBurner extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineWoodBurner extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineWoodBurner(Properties properties) {
         super(properties);
@@ -31,34 +29,24 @@ public class MachineWoodBurner extends BlockDummyable implements IEnergyConnecto
     @Override public int[] getDimensions() { return new int[]{1, 0, 1, 0, 1, 0}; }
     @Override public int getOffset() { return 0; }
 
+    /** 1.7 upgrades two cells behind the burner to ports; the pair rides the facing. */
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-        addExtraPorts(world, x, y, z, dir);
-    }
-
-    @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        super.formStructure(world, core, dir);
-        addExtraPorts(world, core.getX(), core.getY(), core.getZ(), dir);
-    }
-
-    private void addExtraPorts(Level world, int x, int y, int z, ForgeDirection dir) {
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(world, x - dir.offsetX, y, z - dir.offsetZ);
-        makeExtra(world, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.relative(back), MASK_NORTH);
+        visitor.cell(core.relative(back).relative(rot), MASK_NORTH);
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineWoodBurner te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
-    }
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        passiveEverywhere(core, facing, visitor, PASSIVE_ITEMS);
 
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineWoodBurner te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.relative(back), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(back).relative(rot), MASK_ALL, domains);
     }
-
 }

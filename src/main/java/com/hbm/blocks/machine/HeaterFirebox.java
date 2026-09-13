@@ -1,11 +1,14 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockMaskTable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityFireboxBase;
 import com.hbm.tileentity.machine.TileEntityHeaterFirebox;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -21,7 +24,7 @@ import java.util.List;
  * heat consumer) sits directly on top of the core and drains its heat. Right-click opens the 2-fuel-slot
  * GUI; the look-overlay shows the stored TU + the current burn rate.
  */
-public class HeaterFirebox extends BlockDummyable implements ILookOverlay {
+public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverlay {
 
     public HeaterFirebox(Properties properties) {
         super(properties);
@@ -44,11 +47,33 @@ public class HeaterFirebox extends BlockDummyable implements ILookOverlay {
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityFireboxBase heater)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityFireboxBase heater)) return null;
 
         List<String> text = new ArrayList<>();
         text.add(String.format("%,d", heater.heatEnergy) + " TU");
         text.add("§c<- §r" + String.format("%,d", heater.burnHeat) + " TU/t");
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        passiveEverywhere(core, facing, visitor, PASSIVE_FLUID_IN | PASSIVE_ITEMS);
+    }
+
+    /**
+     * Each ring cell opens outward on the side it faces, stated analytically because the vent must not
+     * widen the footprint the table was sized from.
+     */
+    @Override
+    public int maskAt(int lx, int ly, int lz) {
+        if (maskTable().maskAtLocal(lx, ly, lz) == MultiblockMaskTable.NOT_A_CELL) {
+            return MultiblockMaskTable.NOT_A_CELL;
+        }
+        int mask = MASK_NONE;
+        if (lx == 1) mask |= MASK_EAST;
+        if (lx == -1) mask |= MASK_WEST;
+        if (lz == 1) mask |= MASK_SOUTH;
+        if (lz == -1) mask |= MASK_NORTH;
+        return mask;
     }
 }
