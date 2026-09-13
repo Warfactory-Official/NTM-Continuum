@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineSawmill;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -43,9 +42,9 @@ public final class SawmillGameTests {
     public static void layout(GameTestHelper helper) {
         var block = ModMachineBlocks.machine_sawmill.get();
         BlockPos core = new BlockPos(2, 1, 2);
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        helper.setBlock(core, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core)).getValue(BlockDummyable.META) >= 12,
+        helper.assertTrue(MultiblockSurface.foldedCore(helper.getLevel().getBlockState(helper.absolutePos(core))) != null,
                 "sawmill core was not formed");
         helper.assertTrue(helper.absolutePos(core).equals(MultiblockSurface.coreOfAny(helper.getLevel(),
                         helper.absolutePos(core.offset(-1, 0, 0)))),

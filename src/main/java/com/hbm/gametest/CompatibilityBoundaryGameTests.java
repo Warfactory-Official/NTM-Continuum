@@ -1,7 +1,6 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.tileentity.machine.storage.TileEntityCrate;
 import com.hbm.inventory.material.MaterialShapes;
@@ -52,7 +51,7 @@ public final class CompatibilityBoundaryGameTests {
     public static void crucibleRemovalScraps(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
         helper.getLevel().setBlock(pos, ModMachineBlocks.machine_crucible.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12), 3);
+                , 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityCrucible,
                 "crucible did not create its block entity");
         TileEntityCrucible crucible = (TileEntityCrucible) helper.getLevel().getBlockEntity(pos);

@@ -2,13 +2,15 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
@@ -22,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The five-long legacy gas turbine multiblock. */
-public class MachineTurbineGas extends BlockDummyable
+public class MachineTurbineGas extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineTurbineGas(Properties properties) {
@@ -38,45 +40,21 @@ public class MachineTurbineGas extends BlockDummyable
     @Override public int getOffset() { return 1; }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        x += dir.offsetX * offset;
-        z += dir.offsetZ * offset;
-        addExtraPorts(level, x, y, z, dir);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        addExtraPorts(level, core.getX(), core.getY(), core.getZ(), dir);
-    }
-
-    private void addExtraPorts(Level level, int x, int y, int z, ForgeDirection dir) {
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
-        makeExtra(level, x + dir.offsetX + rot.offsetX, y, z + dir.offsetZ + rot.offsetZ);
-        makeExtra(level, x - dir.offsetX - rot.offsetX * 4, y, z - dir.offsetZ - rot.offsetZ * 4);
-        makeExtra(level, x + dir.offsetX - rot.offsetX * 4, y, z + dir.offsetZ - rot.offsetZ * 4);
-        makeExtra(level, x + rot.offsetX * 4, y + 1, z + rot.offsetZ * 4);
-        makeExtra(level, x - rot.offsetX * 5, y + 1, z - rot.offsetZ * 5);
-    }
-
-    @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineTurbineGas turbine
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachineTurbineGas turbine
                 && IEnergyConnectorBlock.isPort(new com.hbm.lib.DirPos[]{turbine.getPowerPos()}, pos, dir);
     }
 
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityMachineTurbineGas turbine
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachineTurbineGas turbine
                 && turbine.isFluidPort(pos, dir);
     }
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachineTurbineGas turbine)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineTurbineGas turbine)) return null;
 
         ForgeDirection facing = turbine.getFacing();
         List<String> text = new ArrayList<>();
@@ -115,4 +93,34 @@ public class MachineTurbineGas extends BlockDummyable
         return x == hit.getX() && y == hit.getY() && z == hit.getZ();
     }
 
+    /** Four anchors along the flanks and two more a step up, all riding the facing. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+        int dx = facing.getStepX(), dz = facing.getStepZ();
+        int rx = rot.getStepX(), rz = rot.getStepZ();
+
+        visitor.cell(core.offset(-dx + rx, 0, -dz + rz), MASK_NORTH);
+        visitor.cell(core.offset(dx + rx, 0, dz + rz), MASK_SOUTH);
+        visitor.cell(core.offset(-dx + rx * -4, 0, -dz + rz * -4), MASK_NORTH);
+        visitor.cell(core.offset(dx + rx * -4, 0, dz + rz * -4), MASK_SOUTH);
+        visitor.cell(core.offset(rx * 4, 1, rz * 4), MASK_WEST);
+        visitor.cell(core.offset(rx * -5, 1, rz * -5), MASK_EAST);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int dx = facing.getStepX(), dz = facing.getStepZ();
+        int rx = rot.getStepX(), rz = rot.getStepZ();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+
+        visitor.passiveCell(core.offset(-dx + rx, 0, -dz + rz), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(dx + rx, 0, dz + rz), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-dx + rx * -4, 0, -dz + rz * -4), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(dx + rx * -4, 0, dz + rz * -4), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(rx * 4, 1, rz * 4), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(rx * -5, 1, rz * -5), MASK_ALL, domains);
+    }
 }

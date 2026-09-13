@@ -316,7 +316,7 @@ public final class SingularityGameTests {
     private static TileEntityMachineCyclotron placeCyclotron(GameTestHelper helper, BlockPos relative) {
         MachineCyclotron block = ModMachineBlocks.machine_cyclotron.get();
         BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        helper.setBlock(relative, block.defaultBlockState());
         block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
         return (TileEntityMachineCyclotron) helper.getLevel().getBlockEntity(absolute);
     }
@@ -324,7 +324,7 @@ public final class SingularityGameTests {
     private static TileEntityMachineFluidTank placeFluidTank(GameTestHelper helper, BlockPos relative) {
         MachineFluidTank block = ModMachineBlocks.machine_fluidtank.get();
         BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        helper.setBlock(relative, block.defaultBlockState());
         block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
         return (TileEntityMachineFluidTank) helper.getLevel().getBlockEntity(absolute);
     }

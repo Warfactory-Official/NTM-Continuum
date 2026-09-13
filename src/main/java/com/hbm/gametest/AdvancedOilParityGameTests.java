@@ -47,7 +47,7 @@ public final class AdvancedOilParityGameTests {
     public static void combustionOperationGate(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         helper.setBlock(relative, ModMachineBlocks.machine_combustion_engine.get().defaultBlockState()
-                .setValue(BlockDummyable.META, FACING_NORTH));
+                );
         TileEntityMachineCombustionEngine engine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineCombustionEngine.class);
         helper.assertTrue(engine != null, "Combustion engine core BlockEntity was not created");

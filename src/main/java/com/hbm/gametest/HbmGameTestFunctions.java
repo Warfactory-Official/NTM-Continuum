@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.blocks.BlockDummyable;
@@ -1577,8 +1578,7 @@ public final class HbmGameTestFunctions {
     private static void poweredCondenserConversion(GameTestHelper helper) {
         com.hbm.inventory.fluid.Fluids.init();
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState()
-                .setValue(com.hbm.blocks.BlockDummyable.META, 12);
+        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
         helper.setBlock(pos, state);
         var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
@@ -1600,8 +1600,7 @@ public final class HbmGameTestFunctions {
     /** The six anchored fluid/power positions are the legacy powered-condenser ports. */
     private static void poweredCondenserPorts(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState()
-                .setValue(com.hbm.blocks.BlockDummyable.META, 12);
+        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
         helper.setBlock(pos, state);
         var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
@@ -2186,7 +2185,7 @@ public final class HbmGameTestFunctions {
 
         var tankCore = core.offset(6, 1, 1);
         helper.setBlock(tankCore, ModMachineBlocks.machine_fluidtank.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 13));
+                .setValue(BlockMultiblockCore.FACING, net.minecraft.core.Direction.SOUTH));
         var tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankCore, com.hbm.tileentity.machine.TileEntityMachineFluidTank.class);
         helper.assertTrue(tank != null, "Fluid tank controller setup failed");
         tank.mode = 1; // Buffer mode owns the network node at its physical port cells.

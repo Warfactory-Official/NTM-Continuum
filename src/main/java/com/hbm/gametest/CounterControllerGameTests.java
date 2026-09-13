@@ -1,8 +1,8 @@
 package com.hbm.gametest;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.radio.ModRadioBlocks;
 import com.hbm.radio.RadioTargets;
@@ -116,9 +116,8 @@ public final class CounterControllerGameTests {
         try {
             helper.setBlock(counterPos, ModRadioBlocks.RADIO_TORCH_COUNTER.get().defaultBlockState());
             helper.setBlock(dummyPos, ModMachineBlocks.machine_assembly_machine.get().defaultBlockState()
-                    .setValue(BlockDummyable.META, 2));
-            helper.setBlock(corePos, ModMachineBlocks.machine_assembly_machine.get().defaultBlockState()
-                    .setValue(BlockDummyable.META, 12));
+                    .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
+            helper.setBlock(corePos, ModMachineBlocks.machine_assembly_machine.get().defaultBlockState());
 
             TileEntityRadioTorchCounter counter = GameTestHelpers.blockEntity(
                     helper, counterPos, TileEntityRadioTorchCounter.class);
@@ -214,9 +213,8 @@ public final class CounterControllerGameTests {
                 "Controller screen control was not applied server-side");
 
         helper.setBlock(pos.below(), ModMachineBlocks.machine_assembly_machine.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 2));
-        helper.setBlock(pos.below().south(), ModMachineBlocks.machine_assembly_machine.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+                .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
+        helper.setBlock(pos.below().south(), ModMachineBlocks.machine_assembly_machine.get().defaultBlockState());
         TileEntityMachineAssemblyMachine target = GameTestHelpers.blockEntity(
                 helper, pos.below().south(), TileEntityMachineAssemblyMachine.class);
         RTTYSystem.clearChannel(helper.getLevel(), "new");

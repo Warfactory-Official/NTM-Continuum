@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.config.GeneralConfig;
 import com.hbm.inventory.container.ContainerMachinePrecAss;
@@ -171,7 +170,7 @@ public final class PrecisionAssemblerGameTests {
 
     private static TileEntityMachinePrecAss place(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, ModMachineBlocks.machine_precass.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+                );
         return (TileEntityMachinePrecAss) helper.getLevel().getBlockEntity(helper.absolutePos(relative));
     }
 }

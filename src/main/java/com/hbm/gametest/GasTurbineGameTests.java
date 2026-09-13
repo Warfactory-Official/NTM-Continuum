@@ -12,6 +12,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 
@@ -21,7 +22,6 @@ import java.util.List;
 /** GameTests for the gas turbine's layout, ports, startup, menu, and assembly recipe. */
 public final class GasTurbineGameTests {
     private GasTurbineGameTests() {}
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
@@ -175,10 +175,10 @@ public final class GasTurbineGameTests {
 
     private static TileEntityMachineTurbineGas place(GameTestHelper helper, BlockPos pos) {
         MachineTurbineGas block = ModMachineBlocks.machine_turbine_gas.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(pos, block.defaultBlockState());
         TileEntityMachineTurbineGas turbine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineTurbineGas.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(pos), ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return turbine;
     }
 

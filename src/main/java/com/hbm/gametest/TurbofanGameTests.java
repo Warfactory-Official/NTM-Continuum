@@ -8,12 +8,12 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 /** GameTests for the turbofan's footprint, exhaust ports, burn path, and menu. */
 public final class TurbofanGameTests {
     private TurbofanGameTests() {}
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
@@ -57,10 +57,10 @@ public final class TurbofanGameTests {
 
     private static TileEntityMachineTurbofan place(GameTestHelper helper, BlockPos pos) {
         MachineTurbofan block = ModMachineBlocks.machine_turbofan.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(pos, block.defaultBlockState());
         TileEntityMachineTurbofan fan = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineTurbofan.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(pos), ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return fan;
     }
 

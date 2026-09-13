@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachinePump;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.api.fluidmk2.DuctData;
@@ -33,14 +32,10 @@ public final class PumpGameTests {
         helper.setBlock(core, pump.defaultBlockState());
         pump.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
-                "Pump east port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.west())).getValue(BlockDummyable.META) >= 6,
-                "Pump west port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.north())).getValue(BlockDummyable.META) >= 6,
-                "Pump north port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.south())).getValue(BlockDummyable.META) >= 6,
-                "Pump south port was not marked extra");
+        FoldedTestSupport.assertPort(helper, core, core.east());
+        FoldedTestSupport.assertPort(helper, core, core.west());
+        FoldedTestSupport.assertPort(helper, core, core.north());
+        FoldedTestSupport.assertPort(helper, core, core.south());
         helper.succeed();
     }
 
@@ -90,14 +85,10 @@ public final class PumpGameTests {
         helper.setBlock(core, pump.defaultBlockState());
         pump.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump east port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.west())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump west port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.north())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump north port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.south())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump south port was not marked extra");
+        FoldedTestSupport.assertPort(helper, core, core.east());
+        FoldedTestSupport.assertPort(helper, core, core.west());
+        FoldedTestSupport.assertPort(helper, core, core.north());
+        FoldedTestSupport.assertPort(helper, core, core.south());
         helper.succeed();
     }
 
