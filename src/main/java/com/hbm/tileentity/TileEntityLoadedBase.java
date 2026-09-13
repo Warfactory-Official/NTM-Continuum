@@ -4,7 +4,7 @@ import dev.golem.core.data.CompatBlockEntity;
 import com.hbm.api.tile.ILoadedTile;
 import com.hbm.lib.Library;
 import com.hbm.packet.BlockEntitySyncPayload;
-import dev.golem.core.net.GolemNetwork;
+import dev.golem.core.net.GolemSync;
 import io.netty.buffer.Unpooled;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -111,30 +111,45 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
     // --- per-tick / on-change "BufPacket" sync ---
 
     /**
-     * Compiles this tile's {@link #serialize} payload and ships it to every player tracking the chunk.
-     * No-op on the client. Skips the broadcast when the payload is byte-identical to the previous one.
+     * Compiles this tile's {@link #serialize} payload and publishes it to every player tracking the
+     * chunk. No-op on the client, and no-op while nobody is tracking — the payload is not even built
+     * then, which is the whole point of asking first. Skips the broadcast when the payload is
+     * byte-identical to the previous one; {@link GolemSync} replays that last payload to players who
+     * arrive later, so skipping an unchanged send does not strand them.
      */
     public void networkPackNT() {
         if (level == null || level.isClientSide() || !(level instanceof ServerLevel serverLevel)) return;
+        if (!GolemSync.isWatched(serverLevel, worldPosition)) return;
 
         byte[] data = compilePayload();
         long hash = Library.fnv1a64(data);
         if (hash == lastPackedBufHash) return;
         lastPackedBufHash = hash;
 
-        GolemNetwork.sendToTracking(serverLevel, worldPosition, BlockEntitySyncPayload.CODEC,
+        GolemSync.publish(serverLevel, worldPosition, BlockEntitySyncPayload.CODEC,
                 new BlockEntitySyncPayload(worldPosition, data));
     }
 
-    /** As {@link #networkPackNT()} but skips compilation entirely unless {@link #dataChanged()} was set. */
+    /**
+     * As {@link #networkPackNT()} but skips compilation entirely unless {@link #dataChanged()} was set.
+     * A change raised while nobody watches keeps its flag rather than clearing it, so the first tick
+     * with an audience sends the state that changed in the dark.
+     */
     public void networkPackMK2() {
         if (level == null || level.isClientSide() || !(level instanceof ServerLevel serverLevel)) return;
         if (!hasDataChanged) return;
+        if (!GolemSync.isWatched(serverLevel, worldPosition)) return;
 
         byte[] data = compilePayload();
-        GolemNetwork.sendToTracking(serverLevel, worldPosition, BlockEntitySyncPayload.CODEC,
+        GolemSync.publish(serverLevel, worldPosition, BlockEntitySyncPayload.CODEC,
                 new BlockEntitySyncPayload(worldPosition, data));
         hasDataChanged = false;
+    }
+
+    @Override
+    public void setRemoved() {
+        if (level instanceof ServerLevel serverLevel) GolemSync.retract(serverLevel, worldPosition);
+        super.setRemoved();
     }
 
     private byte[] compilePayload() {

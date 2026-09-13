@@ -23,6 +23,7 @@ public final class HbmPackets {
 
     /** Declares HBM's play payloads once; loaders flush these declarations at their own hook. */
     public static void declare() {
+        dev.golem.core.net.GolemSync.install();
         GolemNetwork.declarePlayToClient(BlockEntitySyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
