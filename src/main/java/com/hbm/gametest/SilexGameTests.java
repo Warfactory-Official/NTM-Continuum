@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.container.ContainerSILEX;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.SILEXRecipes;
@@ -12,6 +12,7 @@ import com.hbm.items.machine.ItemFluidId;
 import com.hbm.lib.DirPos;
 import com.hbm.tileentity.machine.TileEntitySILEX;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -28,7 +29,7 @@ public final class SilexGameTests {
     /** Places a bare SILEX core and returns its BlockEntity. */
     private static TileEntitySILEX place(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + 2)); // facing NORTH
+                .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
         TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;

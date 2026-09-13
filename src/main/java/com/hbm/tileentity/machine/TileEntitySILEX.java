@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.container.ContainerSILEX;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -290,11 +290,11 @@ public class TileEntitySILEX extends TileEntityMachineBase
 
     /**
      * The two fluid ports: {@code ±2} blocks out along the axis PERPENDICULAR to the machine's facing,
-     * at {@code y+1} — the two "extra" dummies {@code MachineSILEX.fillSpace} places.
+     * at {@code y+1} — the two cells {@code MachineSILEX.visitCells} opens.
      */
     public DirPos[] getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset)
-                .getRotation(ForgeDirection.UP);
+        ForgeDirection dir = ForgeDirection.getOrientation(
+                getBlockState().getValue(BlockMultiblockCore.FACING)).getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
                 new DirPos(x + dir.offsetX * 2, y + 1, z + dir.offsetZ * 2, dir),

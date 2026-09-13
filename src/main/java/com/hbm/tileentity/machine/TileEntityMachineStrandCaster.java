@@ -240,7 +240,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
 
     @Override public boolean stillValid(Player player) {
         return level != null && level.getBlockEntity(worldPosition) == this
-                && com.hbm.blocks.BlockDummyable.isWithinInteractionRange(level, worldPosition, player);
+                && com.hbm.inventory.container.Containers.inRangeOfMultiblock(level, worldPosition, player);
     }
 
     @Override

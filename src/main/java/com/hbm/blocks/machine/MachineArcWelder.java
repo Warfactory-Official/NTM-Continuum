@@ -2,8 +2,8 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineArcWelder;
 import net.minecraft.core.BlockPos;
@@ -11,7 +11,6 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -22,7 +21,7 @@ import net.minecraft.core.Direction;
 import org.jspecify.annotations.Nullable;
 
 /** The 3x1x3 Arc Welder multiblock and its ten external power/fluid port cells. */
-public class MachineArcWelder extends BlockDummyable
+public class MachineArcWelder extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineArcWelder(Properties properties) {
@@ -37,27 +36,13 @@ public class MachineArcWelder extends BlockDummyable
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineArcWelder welder)) {
             return null;
         }
         // The old proxy passed its own position into getAccessibleSlotsFromSide. Keep that information
         // instead of exposing all three input slots from every dummy cell.
         return new SidedContainer(welder, pos);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineArcWelder welder
-                && IEnergyConnectorBlock.isPort(welder.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter world, int x, int y, int z,
-                              ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityMachineArcWelder welder
-                && IEnergyConnectorBlock.isPort(welder.getConPos(), pos, dir);
     }
 
     @Override
@@ -106,5 +91,29 @@ public class MachineArcWelder extends BlockDummyable
             for (int allowed : slots) if (allowed == slot) return true;
             return false;
         }
+    }
+
+    @Override
+    public int coreMask() {
+        return MASK_SOUTH;
+    }
+
+    /** Every cell of the pad is already in the box; what 1.7 left unsaid is which face each opens on. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+        BlockPos back = core.relative(facing.getOpposite());
+
+        visitor.cell(core.relative(rot), MASK_SOUTH | MASK_WEST);
+        visitor.cell(core.relative(rot.getOpposite()), MASK_SOUTH | MASK_EAST);
+        visitor.cell(back, MASK_NORTH);
+        visitor.cell(back.relative(rot), MASK_NORTH | MASK_WEST);
+        visitor.cell(back.relative(rot.getOpposite()), MASK_NORTH | MASK_EAST);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        passiveEverywhere(core, facing, visitor, PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS);
     }
 }

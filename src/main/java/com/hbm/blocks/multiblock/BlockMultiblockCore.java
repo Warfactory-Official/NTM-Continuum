@@ -472,6 +472,36 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     }
 
     /** Does this machine read the redstone at its cells as well as at its core? */
+    /**
+     * 1.7's machine-base interaction range, squared: twice vanilla's, which HBM widened precisely because
+     * its machines are multiblocks.
+     */
+    public static final double BASE_INTERACTION_RANGE_SQ = 128D;
+
+    /**
+     * How far from the <b>core</b> a player may be and still keep this machine's menu open, squared. A
+     * multiblock's menu is bound to its core, but the player interacts with whatever cell they are standing
+     * at, and on a big machine those are nowhere near each other.
+     *
+     * <p>1.7 widened the flat range by the half-diagonal of {@code getDimensions}, then scanned the world
+     * for a cell when that fell short -- because five machines build far more than they declare. The folded
+     * table holds every cell, so the widened radius is exact and there is nothing left to scan for.
+     */
+    public double getInteractionRangeSq() {
+        double range = Math.sqrt(BASE_INTERACTION_RANGE_SQ) + maskTable().cornerRadius();
+        return range * range;
+    }
+
+    /** Whether {@code player} is close enough to interact with the machine cored at {@code core}. */
+    public static boolean isWithinInteractionRange(BlockGetter level, BlockPos core, Player player) {
+        BlockMultiblockCore block = MultiblockSurface.foldedCore(level.getBlockState(core));
+        double dx = core.getX() + 0.5D - player.getX();
+        double dy = core.getY() + 0.5D - player.getY();
+        double dz = core.getZ() + 0.5D - player.getZ();
+        double distance = dx * dx + dy * dy + dz * dz;
+        return distance <= (block == null ? BASE_INTERACTION_RANGE_SQ : block.getInteractionRangeSq());
+    }
+
     public boolean wantsNeighborUpdates() { return false; }
 
     /**

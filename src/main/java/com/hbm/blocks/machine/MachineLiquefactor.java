@@ -2,13 +2,11 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineLiquefactor;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -17,11 +15,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * MachineLiquefactor block - 1:1 port of the 1.12.2 {@code MachineLiquefactor}: a 4-tall 3x3 {@link BlockDummyable}
+ * MachineLiquefactor block - 1:1 port of the 1.12.2 {@code MachineLiquefactor}: a 4-tall 3x3 the folded core
  * (dims {@code {3,0,1,1,1,1}}, offset 1) with the top-centre + the 4 mid-side cells marked extras
  * (the fluid/power ports on {@code getConPos}).
  */
-public class MachineLiquefactor extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineLiquefactor extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineLiquefactor(Properties properties) {
         super(properties);
@@ -43,29 +41,29 @@ public class MachineLiquefactor extends BlockDummyable implements IEnergyConnect
     }
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
+    public int coreMask() {
+        return MASK_DOWN;
+    }
 
-        x = x + dir.offsetX * o;
-        z = z + dir.offsetZ * o;
+    /** The spout three above and the four waist inlets; the set is its own rotation. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
 
-        this.makeExtra(world, x, y + 3, z);
-        this.makeExtra(world, x + 1, y + 1, z);
-        this.makeExtra(world, x - 1, y + 1, z);
-        this.makeExtra(world, x, y + 1, z + 1);
-        this.makeExtra(world, x, y + 1, z - 1);
+        visitor.cell(core.above(3), MASK_UP);
+        visitor.cell(core.offset(1, 1, 0), MASK_EAST);
+        visitor.cell(core.offset(-1, 1, 0), MASK_WEST);
+        visitor.cell(core.offset(0, 1, 1), MASK_SOUTH);
+        visitor.cell(core.offset(0, 1, -1), MASK_NORTH);
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineLiquefactor te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.above(3), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(1, 1, 0), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-1, 1, 0), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(0, 1, 1), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(0, 1, -1), MASK_ALL, domains);
     }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineLiquefactor te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
 }

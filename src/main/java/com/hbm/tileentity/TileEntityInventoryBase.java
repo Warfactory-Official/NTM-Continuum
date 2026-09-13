@@ -128,13 +128,13 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
     /**
      * Upstream's {@code isUseableByPlayer}. The radius comes from the block rather than being a flat
      * constant, so a multiblock's is measured against its footprint and not just its core cell — see
-     * {@link com.hbm.blocks.BlockDummyable#isWithinInteractionRange}.
+     * {@link com.hbm.inventory.container.Containers#inRangeOfMultiblock}.
      */
     @Override
     public boolean stillValid(Player player) {
         return this.level != null
                 && this.level.getBlockEntity(this.worldPosition) == this
-                && com.hbm.blocks.BlockDummyable.isWithinInteractionRange(this.level, this.worldPosition, player);
+                && com.hbm.inventory.container.Containers.inRangeOfMultiblock(this.level, this.worldPosition, player);
     }
 
     @Override

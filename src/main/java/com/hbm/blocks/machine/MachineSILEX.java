@@ -2,15 +2,14 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntitySILEX;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,7 +26,7 @@ import org.jspecify.annotations.Nullable;
  * peroxide, which arrives through the two ports {@link #fillSpace} adds at {@code y+1} on either side,
  * perpendicular to the machine's facing. Those two extras are the only fluid connection points.
  */
-public class MachineSILEX extends BlockDummyable implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineSILEX extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineSILEX(Properties properties) {
         super(properties);
@@ -42,16 +41,8 @@ public class MachineSILEX extends BlockDummyable implements IFluidConnectorBlock
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntitySILEX te ? te : null;
-    }
-
-    /** Ducts connect only at the two side ports the core reports (the {@code y+1} extras). */
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntitySILEX te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
@@ -64,19 +55,20 @@ public class MachineSILEX extends BlockDummyable implements IFluidConnectorBlock
         return 1;
     }
 
+    /** Two fluid inlets at the waist, one on each side across the facing axis. */
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.offset(rot.getStepX(), 1, rot.getStepZ()), MASK_WEST);
+        visitor.cell(core.offset(-rot.getStepX(), 1, -rot.getStepZ()), MASK_EAST);
+    }
 
-        // Two "extra" dummies at y+1, one on each side ACROSS the facing axis — the fluid inlets.
-        if (dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH) {
-            this.makeExtra(world, x + dir.offsetX * o + 1, y + 1, z + dir.offsetZ * o);
-            this.makeExtra(world, x + dir.offsetX * o - 1, y + 1, z + dir.offsetZ * o);
-        }
-
-        if (dir == ForgeDirection.EAST || dir == ForgeDirection.WEST) {
-            this.makeExtra(world, x + dir.offsetX * o, y + 1, z + dir.offsetZ * o + 1);
-            this.makeExtra(world, x + dir.offsetX * o, y + 1, z + dir.offsetZ * o - 1);
-        }
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.offset(rot.getStepX(), 1, rot.getStepZ()), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-rot.getStepX(), 1, -rot.getStepZ()), MASK_ALL, domains);
     }
 }

@@ -2,22 +2,22 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFractionTower;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -31,11 +31,11 @@ import java.util.List;
 
 /**
  * Fractioning Tower block — 1:1 port of the 1.12.2 {@code MachineFractionTower}: a 3-tall 3×3
- * {@link BlockDummyable} (dims {@code {2,0,1,1,1,1}}, offset 1) with the 4 side cells marked as extras
+ * the folded core (dims {@code {2,0,1,1,1,1}}, offset 1) with the 4 side cells marked as extras
  * (fluid ports). Right-click with a fluid identifier on the <b>bottom</b> segment types the input tank
  * (towers stacked 3 apart share the type); empty-hand right-click prints the tank contents.
  */
-public class MachineFractionTower extends BlockDummyable implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineFractionTower extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineFractionTower(Properties properties) {
         super(properties);
@@ -57,23 +57,10 @@ public class MachineFractionTower extends BlockDummyable implements IFluidConnec
     }
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-
-        x = x + dir.offsetX * o;
-        z = z + dir.offsetZ * o;
-
-        this.makeExtra(world, x + 1, y, z);
-        this.makeExtra(world, x - 1, y, z);
-        this.makeExtra(world, x, y, z + 1);
-        this.makeExtra(world, x, y, z - 1);
-    }
-
-    @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidId identifier) {
             if (!level.isClientSide()) {
-                BlockPos core = findCore(level, pos);
+                BlockPos core = MultiblockSurface.coreOfAny(level, pos);
                 if (core == null) return InteractionResult.FAIL;
                 if (!(level.getBlockEntity(core) instanceof TileEntityMachineFractionTower frac)) return InteractionResult.FAIL;
 
@@ -93,14 +80,8 @@ public class MachineFractionTower extends BlockDummyable implements IFluidConnec
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineFractionTower te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineFractionTower frac)) return null;
 
         List<String> text = new ArrayList<>();
@@ -108,5 +89,23 @@ public class MachineFractionTower extends BlockDummyable implements IFluidConnec
             text.add(tank.getTankType().getDisplayNameString() + ": " + String.format("%,d", tank.getFill()) + "/" + String.format("%,d", tank.getMaxFill()) + " mB");
         }
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    /** Four inlets around the base of the tower. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.offset(1, 0, 0), MASK_EAST);
+        visitor.cell(core.offset(-1, 0, 0), MASK_WEST);
+        visitor.cell(core.offset(0, 0, 1), MASK_SOUTH);
+        visitor.cell(core.offset(0, 0, -1), MASK_NORTH);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        visitor.passiveCell(core.offset(1, 0, 0), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-1, 0, 0), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(0, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(0, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
     }
 }

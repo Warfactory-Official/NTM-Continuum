@@ -142,6 +142,19 @@ public final class MultiblockMaskTable {
         }
     }
 
+    /**
+     * The distance from the core to the furthest corner of the footprint. Read off the baked bounds rather
+     * than {@code getDimensions}, which several machines understate badly -- the fracking tower declares a
+     * radius of 3 and erects a derrick 24 tall -- because the table holds every cell the machine actually
+     * places.
+     */
+    public double cornerRadius() {
+        double x = Math.max(Math.abs(minX), Math.abs(minX + sizeX - 1));
+        double y = Math.max(Math.abs(minY), Math.abs(minY + sizeY - 1));
+        double z = Math.max(Math.abs(minZ), Math.abs(minZ + sizeZ - 1));
+        return Math.sqrt(x * x + y * y + z * z);
+    }
+
     public static int localX(int dx, int dy, int dz, Direction facing) {
         return switch (facing) { case WEST -> dz; case NORTH -> -dx; case EAST -> -dz; default -> dx; };
     }

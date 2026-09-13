@@ -1280,7 +1280,7 @@ public final class HbmGameTestFunctions {
 
     private static TileEntityMachinePUREX placePurex(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
         helper.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
-        helper.setBlock(pos, ModMachineBlocks.machine_purex.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, ModMachineBlocks.machine_purex.get().defaultBlockState());
         return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachinePUREX.class);
     }
 
@@ -1425,23 +1425,31 @@ public final class HbmGameTestFunctions {
      */
     private static void multiblockInteractionRange(GameTestHelper helper) {
         // Every multiblock must be usable from any cell it occupies, plus a player's reach.
-        record Case(String name, BlockDummyable block) {}
+        // Mixed while the migration runs: a folded core answers its own range, a dummyable the old one.
+        record Case(String name, double rangeSq, int[] dimensions) {}
         var cases = new Case[]{
-                new Case("fusion_torus", ModMachineBlocks.fusion_torus.get()),
-                new Case("watz", ModMachineBlocks.watz.get()),
-                new Case("coker", ModMachineBlocks.machine_coker.get()),
-                new Case("gas flare", ModMachineBlocks.machine_flare.get()),
-                new Case("oil well", ModMachineBlocks.machine_well.get()),
-                new Case("fracking tower", ModMachineBlocks.machine_fracking_tower.get()),
-                new Case("assembly machine", ModMachineBlocks.machine_assembly_machine.get()),
+                new Case("fusion_torus", ModMachineBlocks.fusion_torus.get().getInteractionRangeSq(),
+                        ModMachineBlocks.fusion_torus.get().getDimensions()),
+                new Case("watz", ModMachineBlocks.watz.get().getInteractionRangeSq(),
+                        ModMachineBlocks.watz.get().getDimensions()),
+                new Case("coker", ModMachineBlocks.machine_coker.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_coker.get().getDimensions()),
+                new Case("gas flare", ModMachineBlocks.machine_flare.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_flare.get().getDimensions()),
+                new Case("oil well", ModMachineBlocks.machine_well.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_well.get().getDimensions()),
+                new Case("fracking tower", ModMachineBlocks.machine_fracking_tower.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_fracking_tower.get().getDimensions()),
+                new Case("assembly machine", ModMachineBlocks.machine_assembly_machine.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_assembly_machine.get().getDimensions()),
         };
         for (Case c : cases) {
-            int[] dim = c.block().getDimensions();
+            int[] dim = c.dimensions();
             double y = Math.max(dim[0], dim[1]);
             double z = Math.max(dim[2], dim[3]);
             double x = Math.max(dim[4], dim[5]);
             double corner = Math.sqrt(x * x + y * y + z * z);
-            double range = Math.sqrt(c.block().getInteractionRangeSq());
+            double range = Math.sqrt(c.rangeSq());
             helper.assertTrue(range >= corner + 4D,
                     c.name() + " range " + Math.round(range) + " must clear its furthest cell ("
                             + Math.round(corner) + ") plus reach");

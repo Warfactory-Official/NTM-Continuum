@@ -26,8 +26,7 @@ public final class AdvancedOilParityGameTests {
 
     public static void pyroProgressGate(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
-        helper.setBlock(relative, ModMachineBlocks.machine_pyrooven.get().defaultBlockState()
-                .setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(relative, ModMachineBlocks.machine_pyrooven.get().defaultBlockState());
         TileEntityMachinePyroOven oven = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachinePyroOven.class);
         helper.assertTrue(oven != null, "Pyro oven core BlockEntity was not created");
