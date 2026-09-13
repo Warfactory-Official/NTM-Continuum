@@ -5,7 +5,6 @@ import com.hbm.entity.projectile.EntityArtilleryRocket;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.ItemAmmoHIMARS;
 import com.hbm.items.weapon.sedna.BulletConfig;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
@@ -254,8 +253,6 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
         }
 
         if (aligned && crane <= 0F) updateFiringTick();
-
-        for (DirPos port : getConPos()) trySubscribe(level, port);
 
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, getMaxPower());
 

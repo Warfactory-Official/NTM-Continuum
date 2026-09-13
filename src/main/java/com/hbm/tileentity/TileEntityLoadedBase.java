@@ -37,7 +37,7 @@ import net.minecraft.core.BlockPos;
  * chunk-load path uses vanilla NBT rather than the {@code hbmSync} byte[] trick (which can't survive
  * {@code DataOut}, see IMPLEMENTATION.md §20).
  */
-public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTile, IBufPacketReceiver {
+public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTile, IBufPacketReceiver, GraphResident {
 
     public boolean isLoaded = true;
     public boolean muffled = false;
@@ -49,6 +49,12 @@ public class TileEntityLoadedBase extends CompatBlockEntity implements ILoadedTi
 
     public TileEntityLoadedBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void clearRemoved() {
+        super.clearRemoved();
+        GraphResident.onLoad(this);
     }
 
     @Override

@@ -69,7 +69,6 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasCent te) {
         GasCentrifugeRecipes.register();
-        for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
 
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.power, MAX_POWER);
         te.setTankTypeFromIdentifier();

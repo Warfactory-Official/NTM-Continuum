@@ -71,10 +71,6 @@ public class TileEntityMachineExposureChamber extends TileEntityMachineBase impl
         te.isOn = false;
         te.power = Library.chargeTEFromItems(te.inventory, 5, te.power, MAX_POWER);
 
-        if (level.getGameTime() % 20L == 0L) {
-            for (DirPos connection : te.getConPos()) te.trySubscribe(level, connection);
-        }
-
         te.upgradeManager.checkSlots(te.inventory, 6, 7);
         int speedLevel = te.upgradeManager.getLevel(UpgradeType.SPEED);
         int powerLevel = te.upgradeManager.getLevel(UpgradeType.POWER);

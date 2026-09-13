@@ -79,7 +79,6 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         te.setTypeFromFluidId();
 
         for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
             if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
         }

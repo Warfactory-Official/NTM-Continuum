@@ -93,14 +93,21 @@ public final class EndpointRegistry {
     }
 
     /**
-     * Declares {@code cell} as exposing {@code faceMask} on behalf of {@code owner}. Idempotent, since
-     * a block entity re-declares on every chunk load.
+     * Declares {@code cell} as exposing {@code faceMask} on behalf of {@code owner}. An unchanged
+     * declaration is left alone rather than replaced: a block entity re-declares on every chunk load,
+     * and a machine whose ports are its own footprint re-declares every tick, which would otherwise
+     * throw away the resolution this entry has already memoised.
      */
     public void declare(BlockPos cell, BlockPos owner, int faceMask, int domains) {
         long cellKey = cell.asLong();
         if (faceMask == 0) {
             byCell.remove(cellKey);
             byChunk.remove(cellKey);
+            return;
+        }
+        Endpoint held = byCell.get(cellKey);
+        if (held != null && held.owner() == owner.asLong() && held.faceMask() == faceMask
+                && held.domains() == domains) {
             return;
         }
         byCell.put(cellKey, new Endpoint(owner.asLong(), faceMask, domains));

@@ -75,7 +75,6 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
 
         if (level.getGameTime() % 20L == 0L) {
             for (DirPos connection : te.getConPos()) {
-                te.trySubscribe(level, connection);
                 if (te.tank.getTankType() != Fluids.NONE) {
                     te.trySubscribe(te.tank.getTankType(), level, connection);
                 }

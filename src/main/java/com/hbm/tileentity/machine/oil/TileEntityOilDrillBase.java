@@ -70,10 +70,10 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityOilDrillBase te) {
-        te.updateConnections();
-
         te.unloadTank(0, 1, 2);
         te.unloadTank(1, 3, 4);
+
+        te.updateConnections();
 
         te.upgradeManager.checkSlots(te.inventory, 5, 7);
         te.speedLevel = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -240,11 +240,8 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
 
     public abstract DirPos[] getConPos();
 
-    protected void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
-        }
-    }
+    /** Nothing to do for a plain drill; the fracking tower takes its fracking solution here. */
+    protected void updateConnections() {}
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

@@ -62,8 +62,6 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCentrifuge te) {
-        for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
-
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, MAX_POWER);
 
         int consumption = BASE_CONSUMPTION;

@@ -180,7 +180,6 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     protected void serverTickBase(Level level) {
         if (level.getGameTime() % 20 == 0) {
             for (DirPos pos : getConPos()) {
-                this.trySubscribe(level, pos);
                 for (FluidTankNTM tank : tanks) {
                     if (tank.getTankType() != Fluids.NONE) this.trySubscribe(tank.getTankType(), level, pos);
                 }

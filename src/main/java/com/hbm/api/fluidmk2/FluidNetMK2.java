@@ -1,9 +1,9 @@
 package com.hbm.api.fluidmk2;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.api.energymk2.PowerNetMK2;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.uninos.NodeNet;
+import com.hbm.uninos.graph.Distribution;
 import com.hbm.util.Tuple;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * The fluid distribution network. A {@link NodeNet} of providers/receivers segregated by pressure
  * level (0..{@link IFluidUserMK2#HIGHEST_VALID_PRESSURE}) and {@link ConnectionPriority}, using the same
- * weighted-share, priority-bucketed, round-robin algorithm as {@link PowerNetMK2}. One FluidNetMK2 per
+ * weighted-share, priority-bucketed, round-robin algorithm the power net used. One FluidNetMK2 per
  * {@link FluidType} (every fluid kind has its own UNINOS nodespace). Ported nearly verbatim from 1.12.2.
  *
  * @author hbm, mlbv
@@ -131,7 +131,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
                     }
 
                     long toSend;
-                    toSend = step == receiverCount - 1 ? maxForReceiver : PowerNetMK2.weightedShare(remainingBudget,
+                    toSend = step == receiverCount - 1 ? maxForReceiver : Distribution.weightedShare(remainingBudget,
                             receiverDemand, remainingDemand, maxForReceiver);
                     if (toSend <= 0) {
                         remainingDemand -= receiverDemand;
@@ -176,7 +176,7 @@ public class FluidNetMK2 extends NodeNet<IFluidReceiverMK2, IFluidProviderMK2, F
                 if (step == providerCount - 1) {
                     toUse = maxForProvider;
                 } else {
-                    toUse = PowerNetMK2.weightedShare(remainingToDebit, providerSupply, remainingSupply, maxForProvider);
+                    toUse = Distribution.weightedShare(remainingToDebit, providerSupply, remainingSupply, maxForProvider);
                 }
                 if (toUse <= 0) {
                     remainingSupply -= providerSupply;

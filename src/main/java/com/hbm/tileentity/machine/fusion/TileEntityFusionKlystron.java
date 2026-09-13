@@ -88,7 +88,6 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
         for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
             te.trySubscribe(te.compair.getTankType(), level, port);
         }
 

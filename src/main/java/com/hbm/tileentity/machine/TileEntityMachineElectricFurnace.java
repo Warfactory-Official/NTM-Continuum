@@ -79,7 +79,6 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         if (te.cooldown > 0) te.cooldown--;
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        if (level.getGameTime() % 40 == 0) for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
 
         te.consumption = 50;
         te.maxProgress = 100;

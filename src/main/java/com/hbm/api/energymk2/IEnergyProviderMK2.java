@@ -9,8 +9,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public interface IEnergyProviderMK2 extends IEnergyHandlerMK2 {
 
     /**
-     * Attempts to provide energy to the target tile entity at the given coordinates. Connects to a
-     * conductor's network, or pushes directly into an adjacent receiver.
+     * Pushes energy straight into the receiver at the given coordinates, bypassing any network. The
+     * conductor half of 1.7's version is gone: a provider beside a cable is found by the graph walking
+     * that cable's faces, so there is nothing left to subscribe to and this is only the direct hand-over.
      *
      * @param dir the {@link ForgeDirection} from this provider to the target.
      */
@@ -18,15 +19,6 @@ public interface IEnergyProviderMK2 extends IEnergyHandlerMK2 {
         BlockPos targetPos = new BlockPos(x, y, z);
         BlockEntity targetTE = world.getBlockEntity(targetPos);
         if (targetTE == null) return;
-
-        if (targetTE instanceof IEnergyConductorMK2 con) {
-            if (con.canConnect(dir.getOpposite())) {
-                Nodespace.PowerNode node = Nodespace.getNode(world, targetPos);
-                if (node != null && node.net != null) {
-                    node.net.addProvider(this);
-                }
-            }
-        }
 
         if (targetTE instanceof IEnergyReceiverMK2 rec && targetTE != this) {
             if (rec.canConnect(dir.getOpposite()) && rec.allowDirectProvision()) {

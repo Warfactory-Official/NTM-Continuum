@@ -172,7 +172,6 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
         factory.upgradeManager.checkSlots(factory.inventory, 1, 3);
 
         for (DirPos connection : factory.getConPos()) {
-            factory.trySubscribe(level, connection);
             for (FluidTankNTM tank : factory.inputTanks) {
                 if (tank.getTankType() != Fluids.NONE) factory.trySubscribe(tank.getTankType(), level, connection);
             }
@@ -181,7 +180,6 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
             }
         }
         for (DirPos connection : factory.getCoolPos()) {
-            factory.coolantDelegate.trySubscribe(level, connection);
             factory.coolantDelegate.trySubscribe(factory.water.getTankType(), level, connection);
             factory.coolantDelegate.tryProvide(factory.lps, level, connection);
         }

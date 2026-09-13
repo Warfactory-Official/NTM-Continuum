@@ -53,10 +53,6 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpElectric pump) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos connection : pump.getConPos()) pump.trySubscribe(level, connection);
-        }
-
         for (DirPos connection : pump.getConPos()) {
             if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection);
         }

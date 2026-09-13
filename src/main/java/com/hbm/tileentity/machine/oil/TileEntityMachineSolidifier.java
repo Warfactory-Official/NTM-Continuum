@@ -84,7 +84,6 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
 
     private void updateConnections() {
         for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
             this.trySubscribe(tank.getTankType(), level, dp);
         }
     }

@@ -97,7 +97,6 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
 
     private void updateConnections() {
         for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
             this.trySubscribe(tanks[0].getTankType(), level, dp);
         }
     }

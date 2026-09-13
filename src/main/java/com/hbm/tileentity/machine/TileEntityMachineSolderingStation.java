@@ -91,7 +91,6 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
         }
 
         for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
             if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, dp);
         }
 

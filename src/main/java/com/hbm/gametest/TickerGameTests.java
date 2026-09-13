@@ -38,8 +38,11 @@ public final class TickerGameTests {
      * from the {@code getTicker} overrides that existed then. It is pinned because the risk this
      * test exists for is a ticker quietly going missing, and a count is the only way a <i>deleted</i>
      * declaration fails anything — every other check here looks at declarations that are present.
+     *
+     * <p>It was 160 until the cable stopped ticking: its block entity only existed to mint a network
+     * node once, and the node is now the block's, so nothing is left for a cable to do each tick.
      */
-    private static final int TICKING_TYPES = 160;
+    private static final int TICKING_TYPES = 159;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

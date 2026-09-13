@@ -105,7 +105,6 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         furnace.upgrade = furnace.upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED);
         furnace.power = Library.chargeTEFromItems(furnace.inventory, 3, furnace.power, MAX_POWER);
 
-        for (DirPos connection : furnace.getConPos()) furnace.trySubscribe(level, connection);
         if (furnace.lid > 0F) furnace.loadIngredients();
 
         furnace.isProgressing = false;

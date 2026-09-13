@@ -65,7 +65,6 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineLiquefactor te) {
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
-        te.updateConnections();
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         int speed = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -80,10 +79,6 @@ public class TileEntityMachineLiquefactor extends TileEntityMachineBase
         for (DirPos dp : te.getConPos()) te.tryProvide(te.tank, level, dp);
 
         te.networkPackNT();
-    }
-
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) this.trySubscribe(level, dp);
     }
 
     public DirPos[] getConPos() {

@@ -1,6 +1,8 @@
 package com.hbm.api.energymk2;
 
+import com.hbm.blocks.BlockDummyable;
 import com.hbm.capability.MachineCaps;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.graph.Distribution;
 import com.hbm.uninos.graph.EdgeFaces;
 import com.hbm.uninos.graph.EndpointRegistry;
@@ -13,6 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -31,9 +34,10 @@ import java.util.List;
  * capability lookup is only needed for machines that are somebody else's, which is
  * {@link dev.golem.core.world.EnergyCompat} and belongs to the foreign bridge.
  *
- * <p><b>Inert as it stands.</b> Cables still mint UNINOS nodes and nothing calls
- * {@code graph.addNode}, so every net here is empty and this runs over nothing. Wiring the cables is
- * the commit that flips behaviour, and the acceptance suite is what gets to judge it.
+ * <p>Discovery is entirely pull: a conductor probes the faces of its own cells and asks what is on the
+ * other side. Nothing subscribes. The three things that can make a parked face live again are a
+ * neighbour notification on the conductor, a block entity announcing itself through
+ * {@link com.hbm.tileentity.GraphResident} as its chunk loads, and a chunk reaching FULL.
  */
 public final class PowerNetwork {
 
@@ -57,6 +61,11 @@ public final class PowerNetwork {
 
     public static void init() {
         EndpointRegistry.init();
+        Lifecycle.onChunkLoad(LevelNodeGraph::onChunkFull);
+        Lifecycle.onLevelUnload((server, level) -> {
+            LevelNodeGraph.clearLevel(level);
+            EndpointRegistry.clearLevel(level);
+        });
         Lifecycle.onServerTick(PowerNetwork::onServerTick);
     }
 
@@ -153,16 +162,33 @@ public final class PowerNetwork {
     }
 
     /**
-     * The machine a face looks at. The endpoint registry is asked first because it answers without
-     * touching the chunk; a machine that never declared still resolves, because a declaration is an
-     * optimisation and never a gate.
+     * The machine a face looks at, through three routes in order of cost. The endpoint registry
+     * answers without touching the chunk; a block entity sitting on the cell answers for itself; and a
+     * folded footprint cell answers through the block, which is the only one of the three that knows
+     * where the core is. A machine's own {@code canConnect} gates the side, so a face it refuses is a
+     * face the net cannot reach it on — the pseudo-face is exempt, being the cell's own machine rather
+     * than a side of it.
      */
     private static @Nullable BlockEntity handlerAt(ServerLevel level, BlockPos pos, int faceOrdinal) {
         Direction face = faceOrdinal == EdgeFaces.SELF ? null : DIRS[faceOrdinal].getOpposite();
         BlockEntity declared = EndpointRegistry.of(level).resolve(level, pos.asLong(), face, POWER);
         if (declared instanceof IEnergyHandlerMK2) return declared;
+
         BlockEntity be = level.getBlockEntity(pos);
-        return be instanceof IEnergyHandlerMK2 ? be : null;
+        if (be instanceof IEnergyHandlerMK2 handler) {
+            return face == null || handler.canConnect(ForgeDirection.getOrientation(face)) ? be : null;
+        }
+        if (face == null) return null;
+
+        BlockState state = level.getBlockState(pos);
+        ForgeDirection side = ForgeDirection.getOrientation(face);
+        if (!(state.getBlock() instanceof IEnergyConnectorBlock connector)
+                || !(state.getBlock() instanceof BlockDummyable dummyable)
+                || !connector.canConnect(level, pos, side)) {
+            return null;
+        }
+        BlockEntity core = dummyable.findCoreTE(level, pos);
+        return core instanceof IEnergyHandlerMK2 ? core : null;
     }
 
     private static BlockPos neighbourOf(long cellPos, int faceOrdinal) {

@@ -93,7 +93,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityCableBaseNT>> RED_CABLE =
             BLOCK_ENTITIES.register("red_cable",
-                    () -> BlockEntities.serverTicking(TileEntityCableBaseNT::new, TileEntityCableBaseNT::serverTick, ModMachineBlocks.red_cable.get()));
+                    () -> BlockEntities.type(TileEntityCableBaseNT::new, ModMachineBlocks.red_cable.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityCreativeGenerator>> CREATIVE_GENERATOR =
             BLOCK_ENTITIES.register("creative_generator",

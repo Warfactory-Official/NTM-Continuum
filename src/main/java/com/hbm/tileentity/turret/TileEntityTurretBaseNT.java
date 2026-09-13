@@ -167,8 +167,6 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
         if (aligned) updateFiringTick();
 
-        for (DirPos port : getConPos()) trySubscribe(level, port);
-
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, getMaxPower());
 
         if (level instanceof ServerLevel server) connectorMask = computeConnectorMask(server);

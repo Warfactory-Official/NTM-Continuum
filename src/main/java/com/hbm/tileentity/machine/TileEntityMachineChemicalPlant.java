@@ -97,7 +97,6 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
         // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
         for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
             for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
         }

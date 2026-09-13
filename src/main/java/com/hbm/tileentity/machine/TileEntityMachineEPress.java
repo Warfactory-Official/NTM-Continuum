@@ -69,7 +69,6 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineEPress te) {
-        for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.upgradeManager.checkSlots(te.inventory, 4, 4);
 

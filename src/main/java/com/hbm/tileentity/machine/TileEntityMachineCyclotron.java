@@ -70,7 +70,6 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCyclotron te) {
         for (DirPos connection : te.getConPos()) {
-            te.trySubscribe(level, connection);
             te.trySubscribe(te.tanks[0].getTankType(), level, connection);
         }
 

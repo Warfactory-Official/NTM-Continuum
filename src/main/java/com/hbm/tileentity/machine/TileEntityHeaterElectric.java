@@ -35,10 +35,6 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterElectric te) {
-        if (level.getGameTime() % 20 == 0) { // doesn't have to happen constantly
-            for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
-        }
-
         te.heatEnergy *= 0.999;
 
         te.tryPullHeat(level, pos);
@@ -57,7 +53,7 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
         HeaterSoundHandler.tickLoop(te);
     }
 
-    /** The single power port, 3 blocks along the facing from the core (old {@code trySubscribe} position). */
+    /** The single power port, 3 blocks along the facing from the core. */
     public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
         BlockPos pos = getBlockPos();

@@ -94,9 +94,6 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFEL te) {
         ForgeDirection dir = te.facing();
-        // Subscribe through getConPos so the tick and the block-level connector can never disagree
-        // about where (or which way round) the power port is.
-        for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
         ItemStack crystal = te.inventory.getStackInSlot(1);
@@ -299,8 +296,8 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
      *
      * <p><b>Deliberate deviation.</b> Upstream passed {@code dir} (the facing) as this port's direction,
      * but a {@code DirPos}'s direction means "the machine's side that faces the connecting cable" —
-     * that is what {@code trySubscribe} inverts to ask the cable {@code canConnect(dir.getOpposite())},
-     * and what {@code IEnergyConnectorBlock.isPort} matches against. Since the port sits behind the
+     * that is what the graph inverts when it probes a conductor's face, and what
+     * {@code IEnergyConnectorBlock.isPort} matches against. Since the port sits behind the
      * machine, that direction is {@code facing.getOpposite()}, not {@code facing}; every other ported
      * machine (assembly, crystallizer, …) already uses the outward convention. With upstream's value a
      * cable placed at the port <b>fails to connect</b>: {@code isPort} rejects the direction mismatch,
