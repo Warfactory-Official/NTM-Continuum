@@ -258,7 +258,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
 
     private static RBMKColumnItemModel parseColumn(JsonObject json) {
         return new RBMKColumnItemModel(id(json, "side", null), id(json, "top", null), id(json, "inner", null),
-                f(json, "scale", .35F), f(json, "yaw", 0F), f(json, "lift", -.675F));
+                id(json, "fuel", null), f(json, "scale", .35F), f(json, "yaw", 0F), f(json, "lift", -.675F));
     }
 
     private static RBMKBlockColumnItemModel parseBlockColumn(JsonObject json) {
