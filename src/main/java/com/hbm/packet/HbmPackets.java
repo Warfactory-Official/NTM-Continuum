@@ -46,6 +46,8 @@ public final class HbmPackets {
                 });
         GolemNetwork.registerPlayToServer(CraneKeyPayload.CODEC,
                 (payload, player) -> handleCraneKey(player, payload));
+        GolemNetwork.registerPlayToServerOffThread(NetworkProbePayload.CODEC,
+                NetworkProbePayload::received);
     }
 
     /** Tells one player's client that their gun played an animation cue. */

@@ -2,13 +2,16 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.packet.BlockEntitySyncPayload;
+import com.hbm.packet.NetworkProbePayload;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.net.GolemSync;
+import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.net.GolemTransport;
 import dev.golem.core.net.GolemWire;
 import java.util.List;
+import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
@@ -57,6 +60,11 @@ public final class NetworkSyncGameTests {
     public static final GameTests.Function FALLS_BACK = TESTS.function(
             "sync_falls_back_when_unaccelerated", 20,
             () -> NetworkSyncGameTests::fallsBackWhenUnaccelerated);
+    public static final GameTests.Function OFF_THREAD = TESTS.function(
+            "net_off_thread_handler_contract", 20, () -> NetworkSyncGameTests::offThreadHandlerContract);
+    public static final GameTests.Function OFF_THREAD_PAIRING = TESTS.function(
+            "net_off_thread_pairing_is_enforced", 20,
+            () -> NetworkSyncGameTests::offThreadPairingIsEnforced);
 
     public static void init() {}
 
@@ -321,6 +329,67 @@ public final class NetworkSyncGameTests {
             GolemSync.clearStatedWatchers(level, pos);
             GolemSync.retract(level, pos);
         }
+    }
+
+    /**
+     * An off-thread handler must run wherever it is called, at once, and must need nothing from the
+     * game thread. Driving it from a foreign thread is what proves the second half — a handler that
+     * quietly depended on the server thread would work when tested from the server thread and fail in
+     * production, where it runs on Netty's.
+     */
+    public static void offThreadHandlerContract(GameTestHelper helper) {
+        helper.assertTrue(GolemNetwork.offThread(NetworkProbePayload.CODEC),
+                "The probe channel must be marked off-thread");
+        helper.assertFalse(GolemNetwork.offThread(BlockEntitySyncPayload.CODEC),
+                "Block entity sync touches the level and must stay on the game thread");
+
+        long nonce = System.nanoTime();
+        UUID sender = UUID.randomUUID();
+        long before = NetworkProbePayload.receivedCount();
+        Thread caller = new Thread(() ->
+                NetworkProbePayload.received(new NetworkProbePayload(nonce, 0L), sender), "golem-probe-test");
+        try {
+            caller.start();
+            caller.join(5_000);
+            helper.assertFalse(caller.isAlive(),
+                    "An off-thread handler must complete without the game thread ever ticking");
+            helper.assertTrue(sender.equals(NetworkProbePayload.senderOf(nonce)),
+                    "The handler must have recorded the sender it was given");
+            helper.assertTrue(NetworkProbePayload.receivedCount() > before,
+                    "The handler must actually have run");
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(interrupted);
+        } finally {
+            NetworkProbePayload.forget(nonce);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * Pairing a channel with the wrong kind of handler used to fail silently: an off-thread dispatch
+     * has no context to give, so a handler expecting one was called with null and dropped by the null
+     * guard, never running and never complaining.
+     */
+    public static void offThreadPairingIsEnforced(GameTestHelper helper) {
+        boolean refused = false;
+        try {
+            GolemNetwork.registerPlayToServer(NetworkProbePayload.CODEC, (payload, player) -> {});
+        } catch (IllegalArgumentException expected) {
+            refused = true;
+        }
+        helper.assertTrue(refused,
+                "A channel declared off-thread must refuse a game-thread handler");
+
+        boolean refusedTheOtherWay = false;
+        try {
+            GolemNetwork.registerPlayToClientOffThread(BlockEntitySyncPayload.CODEC, payload -> {});
+        } catch (IllegalArgumentException expected) {
+            refusedTheOtherWay = true;
+        }
+        helper.assertTrue(refusedTheOtherWay,
+                "A channel not declared off-thread must refuse an off-thread handler");
+        helper.succeed();
     }
 
     private static String on(GolemTransport.Backend backend) {
