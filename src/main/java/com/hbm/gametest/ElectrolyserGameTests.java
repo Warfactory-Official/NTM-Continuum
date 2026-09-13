@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineElectrolyser;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.handler.MultiblockHandlerXR;
@@ -28,8 +28,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.Blocks;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /** Focused contracts for the electrolyser's independent fluid and metal pipelines. */
 public final class ElectrolyserGameTests {
@@ -68,31 +68,28 @@ public final class ElectrolyserGameTests {
         for (int i = 0; i < facings.length; i++) {
             ForgeDirection facing = facings[i];
             BlockPos core = helper.absolutePos(relativeCore);
-            int placementOffset = -block.getOffset();
             BlockPos base = core.offset(facing.offsetX * block.getOffset(), 0,
                     facing.offsetZ * block.getOffset());
 
-            helper.assertTrue(block.checkRequirement(helper.getLevel(), base.getX(), base.getY(), base.getZ(),
-                            facing, placementOffset), "empty electrolyser placement failed for " + facing);
+            helper.assertTrue(block.checkRequirement(helper.getLevel(), core, facing.toDirection(), base),
+                    "empty electrolyser placement failed for " + facing);
             BlockPos obstruction = core.above();
             helper.getLevel().setBlock(obstruction, Blocks.STONE.defaultBlockState(), 3);
-            helper.assertFalse(block.checkRequirement(helper.getLevel(), base.getX(), base.getY(), base.getZ(),
-                            facing, placementOffset), "electrolyser extra volume was not checked for " + facing);
+            helper.assertFalse(block.checkRequirement(helper.getLevel(), core, facing.toDirection(), base),
+                    "electrolyser extra volume was not checked for " + facing);
             helper.getLevel().removeBlock(obstruction, false);
 
-            helper.setBlock(relativeCore, block.defaultBlockState().setValue(BlockDummyable.META,
-                    facing.ordinal() + BlockDummyable.offset));
-            block.formStructure(helper.getLevel(), core, facing);
+            FoldedTestSupport.assemble(helper, block, relativeCore, facing.toDirection());
             TileEntityMachineElectrolyser electrolyser =
                     (TileEntityMachineElectrolyser) helper.getLevel().getBlockEntity(core);
             helper.assertTrue(electrolyser != null, "electrolyser core block entity was not created for " + facing);
 
-            Map<BlockPos, Integer> expected = expectedLayout(core, facing);
-            for (Map.Entry<BlockPos, Integer> entry : expected.entrySet()) {
-                var state = helper.getLevel().getBlockState(entry.getKey());
-                helper.assertTrue(state.getBlock() == block
-                                && state.getValue(BlockDummyable.META) == entry.getValue(),
-                        "wrong electrolyser footprint metadata at " + entry.getKey() + " for " + facing);
+            for (BlockPos cell : expectedLayout(core, facing)) {
+                helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock() == block,
+                        "missing electrolyser footprint cell at " + cell + " for " + facing);
+                helper.assertTrue(cell.equals(core)
+                                || core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), cell)),
+                        "electrolyser cell at " + cell + " is not owned by the core for " + facing);
             }
             assertPorts(helper, block, electrolyser, core, facing);
             clearStructure(helper, block, core);
@@ -102,6 +99,7 @@ public final class ElectrolyserGameTests {
 
     /** Removes every block this machine placed, so the next facing starts from the empty plot again. */
     private static void clearStructure(GameTestHelper helper, MachineElectrolyser block, BlockPos core) {
+        helper.getLevel().removeBlock(core, false);
         for (int x = -7; x <= 7; x++) {
             for (int y = -1; y <= 4; y++) {
                 for (int z = -7; z <= 7; z++) {
@@ -261,8 +259,8 @@ public final class ElectrolyserGameTests {
                 "electrolyser opening packet carried the wrong machine position");
     }
 
-    private static Map<BlockPos, Integer> expectedLayout(BlockPos core, ForgeDirection facing) {
-        Map<BlockPos, Integer> expected = new HashMap<>();
+    private static Set<BlockPos> expectedLayout(BlockPos core, ForgeDirection facing) {
+        Set<BlockPos> expected = new HashSet<>();
         addExpectedVolume(expected, core, new int[]{0, 0, 5, 5, 1, 3}, facing);
         int[][] extraVolumes = {
                 {2, -1, 5, 5, 1, 1}, {3, -3, 5, 5, 0, 0},
@@ -275,18 +273,11 @@ public final class ElectrolyserGameTests {
             addExpectedVolume(expected, core.offset(facing.offsetX * along, 3, facing.offsetZ * along),
                     new int[]{0, 0, 0, 0, -1, 2}, facing);
         }
-        expected.put(core, facing.ordinal() + BlockDummyable.offset);
-
-        ForgeDirection rot = facing.getRotation(ForgeDirection.UP);
-        for (int along : new int[]{-5, 5}) for (int side = -1; side <= 1; side++) {
-            BlockPos endpoint = core.offset(facing.offsetX * along + rot.offsetX * side, 0,
-                    facing.offsetZ * along + rot.offsetZ * side);
-            expected.put(endpoint, expected.get(endpoint) + BlockDummyable.extra);
-        }
+        expected.add(core);
         return expected;
     }
 
-    private static void addExpectedVolume(Map<BlockPos, Integer> expected, BlockPos anchor, int[] dimensions,
+    private static void addExpectedVolume(Set<BlockPos> expected, BlockPos anchor, int[] dimensions,
                                           ForgeDirection facing) {
         int[] rotated = MultiblockHandlerXR.rotate(dimensions, facing.toDirection());
         for (int x = anchor.getX() - rotated[4]; x <= anchor.getX() + rotated[5]; x++) {
@@ -294,20 +285,10 @@ public final class ElectrolyserGameTests {
                 for (int z = anchor.getZ() - rotated[2]; z <= anchor.getZ() + rotated[3]; z++) {
                     BlockPos position = new BlockPos(x, y, z);
                     if (position.equals(anchor)) continue;
-                    expected.put(position, dummyMetadata(anchor, position));
+                    expected.add(position);
                 }
             }
         }
-    }
-
-    private static int dummyMetadata(BlockPos anchor, BlockPos position) {
-        if (position.getY() < anchor.getY()) return ForgeDirection.DOWN.ordinal();
-        if (position.getY() > anchor.getY()) return ForgeDirection.UP.ordinal();
-        if (position.getX() < anchor.getX()) return ForgeDirection.WEST.ordinal();
-        if (position.getX() > anchor.getX()) return ForgeDirection.EAST.ordinal();
-        if (position.getZ() < anchor.getZ()) return ForgeDirection.NORTH.ordinal();
-        if (position.getZ() > anchor.getZ()) return ForgeDirection.SOUTH.ordinal();
-        return -1;
     }
 
     private static void assertPorts(GameTestHelper helper, MachineElectrolyser block,
@@ -355,7 +336,7 @@ public final class ElectrolyserGameTests {
     private static TileEntityMachineElectrolyser place(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
         MachineElectrolyser block = ModMachineBlocks.machine_electrolyser.get();
-        helper.setBlock(new BlockPos(2, 1, 2), block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(new BlockPos(2, 1, 2), block.defaultBlockState());
         return (TileEntityMachineElectrolyser) helper.getLevel().getBlockEntity(pos);
     }
 

@@ -1481,8 +1481,7 @@ public final class HbmGameTestFunctions {
         // and must be able to use it, which only the cell fallback can establish.
         var towerCore = new net.minecraft.core.BlockPos(2, 1, 2);
         var tower = ModMachineBlocks.machine_fracking_tower.get();
-        helper.setBlock(towerCore, tower.defaultBlockState().setValue(BlockDummyable.META, 12));
-        tower.formStructure(helper.getLevel(), helper.absolutePos(towerCore), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, tower, towerCore);
         var absTower = helper.absolutePos(towerCore);
 
         helper.assertTrue(Math.sqrt(tower.getInteractionRangeSq()) < 24D,
@@ -2066,7 +2065,8 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.watz.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Struct core did not become a Watz reactor");
-            helper.assertBlockProperty(seed, BlockDummyable.META, 12);
+            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
+                    net.minecraft.core.Direction.NORTH);
             helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
                     com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Assembled Watz has no controller");
             // The shell must have formed too, not just the core.

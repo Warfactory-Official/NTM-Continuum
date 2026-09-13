@@ -1,12 +1,13 @@
 package com.hbm.foundry;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.machine.ItemScraps;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,7 +17,6 @@ import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 
 /** The compound-footprint Large Arc Furnace block and its six power ports. */
-public class MachineArcFurnaceLarge extends BlockDummyable implements IEnergyConnectorBlock,
+public class MachineArcFurnaceLarge extends BlockMultiblockMachine implements IEnergyConnectorBlock,
         WorldlyContainerHolder {
 
     public MachineArcFurnaceLarge(Properties properties) {
@@ -44,45 +44,8 @@ public class MachineArcFurnaceLarge extends BlockDummyable implements IEnergyCon
     @Override public int getOffset() { return 2; }
 
     @Override
-    public boolean checkRequirement(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        if (!super.checkRequirement(level, x, y, z, dir, offset)) return false;
-        BlockPos core = new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset);
-        return MultiblockHandlerXR.checkSpace(level, core.getX(), core.getY(), core.getZ(),
-                new int[]{4, 0, 3, -2, 1, 1}, x, y, z, dir);
-    }
-
-    @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        BlockPos core = new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset);
-        formStructure(level, core, dir);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(),
-                getDimensions(), this, dir);
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(),
-                new int[]{4, 0, 3, -2, 1, 1}, this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        makeExtra(level, x + dir.offsetX * 2 + rot.offsetX, y, z + dir.offsetZ * 2 + rot.offsetZ);
-        makeExtra(level, x + dir.offsetX * 2 - rot.offsetX, y, z + dir.offsetZ * 2 - rot.offsetZ);
-        makeExtra(level, x + rot.offsetX * 2 + dir.offsetX, y, z + rot.offsetZ * 2 + dir.offsetZ);
-        makeExtra(level, x + rot.offsetX * 2 - dir.offsetX, y, z + rot.offsetZ * 2 - dir.offsetZ);
-        makeExtra(level, x - rot.offsetX * 2 + dir.offsetX, y, z - rot.offsetZ * 2 + dir.offsetZ);
-        makeExtra(level, x - rot.offsetX * 2 - dir.offsetX, y, z - rot.offsetZ * 2 - dir.offsetZ);
-    }
-
-    @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineArcFurnaceLarge furnace ? furnace : null;
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineArcFurnaceLarge furnace
-                && IEnergyConnectorBlock.isPort(furnace.getConPos(), pos, dir);
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineArcFurnaceLarge furnace ? furnace : null;
     }
 
     @Override
@@ -95,7 +58,7 @@ public class MachineArcFurnaceLarge extends BlockDummyable implements IEnergyCon
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineArcFurnaceLarge furnace)) {
             return InteractionResult.SUCCESS;
         }
@@ -125,7 +88,7 @@ public class MachineArcFurnaceLarge extends BlockDummyable implements IEnergyCon
 
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && state.getValue(META) >= offset + 2
+        if (!level.isClientSide() && !state.getValue(CELL)
                 && level.getBlockEntity(pos) instanceof TileEntityMachineArcFurnaceLarge furnace) {
             for (com.hbm.inventory.material.Mats.MaterialStack liquid : furnace.liquids) {
                 ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
@@ -137,4 +100,39 @@ public class MachineArcFurnaceLarge extends BlockDummyable implements IEnergyCon
         super.onBlockRemoved(state, level, pos, movedByPiston);
     }
 
+    /** 1.7: the electrode gantry reaching out past getDimensions. */
+    private static final int[] GANTRY = {4, 0, 3, -2, 1, 1};
+
+    @Override
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return super.checkRequirement(level, core, facing, clicked)
+                && MultiblockHandlerXR.checkSpace(level, core, GANTRY, clicked, facing);
+    }
+
+    /** Two cable anchors across the nose and two on each flank. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, GANTRY, facing, visitor);
+
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.relative(facing, 2).relative(rot), MASK_SOUTH);
+        visitor.cell(core.relative(facing, 2).relative(rot, -1), MASK_SOUTH);
+        visitor.cell(core.relative(rot, 2).relative(facing), MASK_WEST);
+        visitor.cell(core.relative(rot, 2).relative(facing, -1), MASK_WEST);
+        visitor.cell(core.relative(rot, -2).relative(facing), MASK_EAST);
+        visitor.cell(core.relative(rot, -2).relative(facing, -1), MASK_EAST);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.relative(facing, 2).relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, 2).relative(rot, -1), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot, 2).relative(facing), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot, 2).relative(facing, -1), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot, -2).relative(facing), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot, -2).relative(facing, -1), MASK_ALL, domains);
+    }
 }

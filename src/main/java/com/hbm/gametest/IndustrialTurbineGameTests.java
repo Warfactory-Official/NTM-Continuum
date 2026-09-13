@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineIndustrialTurbine;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -15,27 +14,22 @@ public final class IndustrialTurbineGameTests {
 
     private IndustrialTurbineGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
-
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineIndustrialTurbine block = ModMachineBlocks.machine_industrial_turbine.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, block, core);
         TileEntityMachineIndustrialTurbine turbine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, core, TileEntityMachineIndustrialTurbine.class);
         helper.assertTrue(turbine != null, "Industrial turbine core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
 
-        helper.assertTrue(helper.absolutePos(core).equals(
-                        block.findCore(helper.getLevel(), helper.absolutePos(core.offset(1, 0, -3)))),
-                "Industrial turbine dummy did not chain to its core");
-        assertMeta(helper, core.offset(1, 0, -3), 11);
-        assertMeta(helper, core.offset(-1, 0, -3), 10);
-        assertMeta(helper, core.offset(1, 0, 1), 11);
-        assertMeta(helper, core.offset(-1, 0, 1), 10);
-        assertMeta(helper, core.offset(0, 2, -3), 7);
-        assertMeta(helper, core.offset(0, 2, 1), 7);
-        assertMeta(helper, core.offset(0, 1, 3), 7);
+        FoldedTestSupport.assertCell(helper, core, core.offset(1, 0, -3));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, -3));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, -3));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, 1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 2, -3));
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 2, 1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 1, 3));
         helper.succeed();
     }
 
@@ -85,17 +79,11 @@ public final class IndustrialTurbineGameTests {
 
     private static TileEntityMachineIndustrialTurbine place(GameTestHelper helper, BlockPos pos) {
         MachineIndustrialTurbine block = ModMachineBlocks.machine_industrial_turbine.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, block, pos);
         TileEntityMachineIndustrialTurbine turbine = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineIndustrialTurbine.class);
         helper.assertTrue(turbine != null, "Industrial turbine core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), helper.absolutePos(pos), ForgeDirection.NORTH);
         return turbine;
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META) == expected,
-                "Industrial turbine structure missing extra cell at " + pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, int x, int y, int z, ForgeDirection direction) {

@@ -2,7 +2,8 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -14,11 +15,11 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -32,7 +33,7 @@ import java.util.List;
 import java.util.Locale;
 
 /** The 7x4x4 industrial steam turbine multiblock. */
-public class MachineIndustrialTurbine extends BlockDummyable
+public class MachineIndustrialTurbine extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineIndustrialTurbine(Properties properties) {
@@ -55,38 +56,11 @@ public class MachineIndustrialTurbine extends BlockDummyable
     }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-
-        x += dir.offsetX * offset;
-        z += dir.offsetZ * offset;
-        addExtraPorts(level, x, y, z, dir);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        addExtraPorts(level, core.getX(), core.getY(), core.getZ(), dir);
-    }
-
-    private void addExtraPorts(Level level, int x, int y, int z, ForgeDirection dir) {
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-
-        makeExtra(level, x + dir.offsetX * 3 + rot.offsetX, y, z + dir.offsetZ * 3 + rot.offsetZ);
-        makeExtra(level, x + dir.offsetX * 3 - rot.offsetX, y, z + dir.offsetZ * 3 - rot.offsetZ);
-        makeExtra(level, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
-        makeExtra(level, x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ);
-        makeExtra(level, x + dir.offsetX * 3, y + 2, z + dir.offsetZ * 3);
-        makeExtra(level, x - dir.offsetX, y + 2, z - dir.offsetZ);
-        makeExtra(level, x - dir.offsetX * 3, y + 1, z - dir.offsetZ * 3);
-    }
-
-    @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineIndustrialTurbine turbine)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
@@ -112,22 +86,8 @@ public class MachineIndustrialTurbine extends BlockDummyable
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineIndustrialTurbine turbine
-                && IEnergyConnectorBlock.isPort(turbine.getPowerPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return (com.hbm.inventory.recipes.CoolingRecipes.get(type) != null || type == com.hbm.inventory.fluid.Fluids.SPENTSTEAM)
-                && findCoreTE(world, pos) instanceof TileEntityMachineIndustrialTurbine turbine
-                && IEnergyConnectorBlock.isPort(turbine.getConPos(), pos, dir);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachineIndustrialTurbine turbine)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineIndustrialTurbine turbine)) return null;
 
         List<String> text = new ArrayList<>();
         FluidType inputType = turbine.tanks[0].getTankType();
@@ -153,4 +113,43 @@ public class MachineIndustrialTurbine extends BlockDummyable
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    /**
+     * Six coolant ports and one power port, and 1.7 states them at separate call sites -- the cable
+     * answer runs over getPowerPos alone -- so the roles keep a duct off the generator's own outlet and
+     * a cable off the coolant intakes.
+     */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+
+        visitor.cell(core.relative(facing, 3).relative(rot), MASK_WEST, ROLE_FLUID);
+        visitor.cell(core.relative(facing, 3).relative(rot, -1), MASK_EAST, ROLE_FLUID);
+        visitor.cell(core.relative(facing, -1).relative(rot), MASK_WEST, ROLE_FLUID);
+        visitor.cell(core.relative(facing, -1).relative(rot, -1), MASK_EAST, ROLE_FLUID);
+        visitor.cell(core.relative(facing, 3).above(2), MASK_UP, ROLE_FLUID);
+        visitor.cell(core.relative(facing, -1).above(2), MASK_UP, ROLE_FLUID);
+        visitor.cell(core.relative(facing, -3).above(1), MASK_NORTH, ROLE_POWER);
+    }
+
+    /** 1.7 stamps {@code fluid().power()} on all seven. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.relative(facing, 3).relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, 3).relative(rot, -1), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -1).relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -1).relative(rot, -1), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, 3).above(2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -1).above(2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -3).above(1), MASK_ALL, domains);
+    }
+
+    /** A coolant with a cooling recipe, or the spent steam it returns. */
+    @Override
+    public boolean acceptsFluid(FluidType type) {
+        return com.hbm.inventory.recipes.CoolingRecipes.get(type) != null
+                || type == com.hbm.inventory.fluid.Fluids.SPENTSTEAM;
+    }
 }

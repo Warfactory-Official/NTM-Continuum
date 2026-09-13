@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.storage.MachineBatteryREDD;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.inventory.container.ContainerBatteryREDD;
@@ -40,15 +40,16 @@ public final class BatteryReddGameTests {
         MachineBatteryREDD block = ModBatteryBlocks.machine_battery_redd.get();
         BlockPos relative = new BlockPos(10, 1, 10);
         BlockPos core = helper.absolutePos(relative);
-        helper.getLevel().setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relative);
 
         int cells = 0;
         int extras = 0;
         for (int x = -4; x <= 4; x++) for (int z = -2; z <= 2; z++) {
-            BlockStateCheck state = new BlockStateCheck(helper.getLevel().getBlockState(core.offset(x, 0, z)));
-            if (state.is(block)) cells++;
-            if (state.is(block) && state.meta() >= 6 && state.meta() < 12) extras++;
+            BlockPos cell = core.offset(x, 0, z);
+            if (helper.getLevel().getBlockState(cell).getBlock() != block) continue;
+            cells++;
+            if (MultiblockSurface.carriesPassive(helper.getLevel(), cell,
+                    com.hbm.blocks.multiblock.BlockMultiblockCore.PASSIVE_POWER_IN)) extras++;
         }
         helper.assertTrue(cells == 45 && extras == 6, "FEnSU occupancy or six extra port cells changed");
         helper.assertTrue(java.util.Arrays.equals(block.getDimensions(), new int[]{9, 0, 2, 2, 4, 4})
@@ -118,8 +119,7 @@ public final class BatteryReddGameTests {
                 io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         original.serialize(buffer);
         TileEntityBatteryREDD copy = new TileEntityBatteryREDD(BlockPos.ZERO,
-                ModBatteryBlocks.machine_battery_redd.get().defaultBlockState()
-                        .setValue(BlockDummyable.META, 12));
+                ModBatteryBlocks.machine_battery_redd.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.power.equals(original.power) && copy.delta.equals(original.delta)
                         && copy.redLow == original.redLow && copy.redHigh == original.redHigh
@@ -230,15 +230,10 @@ public final class BatteryReddGameTests {
     private static TileEntityBatteryREDD place(GameTestHelper helper, BlockPos relative) {
         MachineBatteryREDD block = ModBatteryBlocks.machine_battery_redd.get();
         BlockPos core = helper.absolutePos(relative);
-        helper.getLevel().setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relative);
         helper.assertTrue(helper.getLevel().getBlockEntity(core) instanceof TileEntityBatteryREDD,
                 "FEnSU core BlockEntity was not created");
         return (TileEntityBatteryREDD) helper.getLevel().getBlockEntity(core);
     }
 
-    private record BlockStateCheck(net.minecraft.world.level.block.state.BlockState state) {
-        boolean is(net.minecraft.world.level.block.Block block) { return state.getBlock() == block; }
-        int meta() { return state.getValue(BlockDummyable.META); }
-    }
 }

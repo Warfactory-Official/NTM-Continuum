@@ -2,23 +2,23 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.handler.MultiblockHandlerXR;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticCracker;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -33,7 +33,7 @@ import java.util.List;
 /** Catalytic Cracker block — 1:1 port of the 1.12.2 {@code MachineCatalyticCracker}: a large steam
  * tower (dims {@code {0,0,3,3,2,3}}, offset 3; 4 body fills + 8 makeExtra ports). No GUI — fluid-ID
  * right-click retypes the input, empty-hand look-overlay prints the 5 tanks. */
-public class MachineCatalyticCracker extends BlockDummyable implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineCatalyticCracker extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineCatalyticCracker(Properties properties) {
         super(properties);
@@ -48,40 +48,10 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
     @Override public int getOffset() { return 3; }
 
     @Override
-    public boolean checkRequirement(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        return super.checkRequirement(world, x, y, z, dir, o) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{4, -1, 3, -1, 1, 1}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{13, 0, 0, 3, 2, 1}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{14, -13, -1, 2, 1, 0}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{3, -1, 2, 3, -1, 3}, x, y, z, dir);
-    }
-
-    @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        super.formStructure(world, core, dir);
-
-        int cx = core.getX(), cy = core.getY(), cz = core.getZ();
-        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{4, -1, 3, -1, 1, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{13, 0, 0, 3, 2, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{14, -13, -1, 2, 1, 0}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{3, -1, 2, 3, -1, 3}, this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        this.makeExtra(world, cx + dir.offsetX * 3 + rot.offsetX, cy, cz + dir.offsetZ * 3 + rot.offsetZ);
-        this.makeExtra(world, cx + dir.offsetX * 3 - rot.offsetX * 2, cy, cz + dir.offsetZ * 3 - rot.offsetZ * 2);
-        this.makeExtra(world, cx - dir.offsetX * 3 + rot.offsetX, cy, cz - dir.offsetZ * 3 + rot.offsetZ);
-        this.makeExtra(world, cx - dir.offsetX * 3 - rot.offsetX * 2, cy, cz - dir.offsetZ * 3 - rot.offsetZ * 2);
-        this.makeExtra(world, cx + dir.offsetX * 2 + rot.offsetX * 2, cy, cz + dir.offsetZ * 2 + rot.offsetZ * 2);
-        this.makeExtra(world, cx + dir.offsetX * 2 - rot.offsetX * 3, cy, cz + dir.offsetZ * 2 - rot.offsetZ * 3);
-        this.makeExtra(world, cx - dir.offsetX * 2 + rot.offsetX * 2, cy, cz - dir.offsetZ * 2 + rot.offsetZ * 2);
-        this.makeExtra(world, cx - dir.offsetX * 2 - rot.offsetX * 3, cy, cz - dir.offsetZ * 2 - rot.offsetZ * 3);
-    }
-
-    @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.getItem() instanceof IItemFluidId identifier) {
             if (!level.isClientSide()) {
-                BlockPos core = findCore(level, pos);
+                BlockPos core = MultiblockSurface.coreOfAny(level, pos);
                 if (core == null) return InteractionResult.FAIL;
                 if (!(level.getBlockEntity(core) instanceof TileEntityMachineCatalyticCracker cracker)) return InteractionResult.FAIL;
 
@@ -97,14 +67,8 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineCatalyticCracker te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineCatalyticCracker cracker)) return null;
 
         List<String> text = new ArrayList<>();
@@ -114,4 +78,52 @@ public class MachineCatalyticCracker extends BlockDummyable implements IFluidCon
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    /** 1.7: the tower shaft, the chimney and the two wings beyond getDimensions. */
+    private static final int[][] EXTRA_BOXES = {
+            {4, -1, 3, -1, 1, 1},
+            {13, 0, 0, 3, 2, 1},
+            {14, -13, -1, 2, 1, 0},
+            {3, -1, 2, 3, -1, 3}};
+
+    @Override
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        if (!super.checkRequirement(level, core, facing, clicked)) return false;
+        for (int[] box : EXTRA_BOXES) {
+            if (!MultiblockHandlerXR.checkSpace(level, core, box, clicked, facing)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Six of upstream's eight ports. The two it states at {@code +-rot*4} name a cell one step outside
+     * the machine -- 1.7 asks {@code isPort} of a block that is not the cracker and never gets an
+     * answer -- so they connect nothing there either, and the table says what the machine really has.
+     */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int[] box : EXTRA_BOXES) MultiblockHandlerXR.visitBox(core, box, facing, visitor);
+
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.relative(facing, 3).relative(rot), MASK_SOUTH);
+        visitor.cell(core.relative(facing, 3).relative(rot, -2), MASK_SOUTH);
+        visitor.cell(core.relative(facing, -3).relative(rot), MASK_NORTH);
+        visitor.cell(core.relative(facing, -3).relative(rot, -2), MASK_NORTH);
+        visitor.cell(core.relative(facing, 2).relative(rot, 2), MASK_WEST);
+        visitor.cell(core.relative(facing, -2).relative(rot, 2), MASK_WEST);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.relative(facing, 3).relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, 3).relative(rot, -2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -3).relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -3).relative(rot, -2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, 2).relative(rot, 2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, 2).relative(rot, -3), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -2).relative(rot, 2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -2).relative(rot, -3), MASK_ALL, domains);
+    }
 }

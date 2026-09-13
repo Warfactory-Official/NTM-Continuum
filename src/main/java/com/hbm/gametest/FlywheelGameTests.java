@@ -1,8 +1,6 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.client.render.flywheel.FlywheelCompat;
@@ -34,9 +32,6 @@ public final class FlywheelGameTests {
             TESTS.function("flywheel_engine_client_only", 20, () -> FlywheelGameTests::engineClientOnly);
     public static final GameTests.Function CRUMBLING_CORE_FOLDED =
             TESTS.function("flywheel_crumbling_core_folded", 60, 8, () -> FlywheelGameTests::crumblingCoreFolded);
-    public static final GameTests.Function CRUMBLING_CORE_DUMMYABLE =
-            TESTS.function("flywheel_crumbling_core_dummyable", 60, 8,
-                    () -> FlywheelGameTests::crumblingCoreDummyable);
 
     private FlywheelGameTests() {}
 
@@ -122,27 +117,4 @@ public final class FlywheelGameTests {
         helper.succeed();
     }
 
-    /**
-     * A {@link BlockDummyable} keeps its block entity at a core offset from the dummies. Held on an
-     * un-migrated machine on purpose: once the last one folds this branch of the hook has no caller and
-     * the test goes with it.
-     */
-    public static void crumblingCoreDummyable(GameTestHelper helper) {
-        BlockDummyable block = ModMachineBlocks.machine_fracking_tower.get();
-        BlockPos relative = new BlockPos(2, 1, 2);
-        BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
-        block.formStructure(helper.getLevel(), core, com.hbm.lib.ForgeDirection.NORTH);
-
-        BlockPos dummy = core.above(2);
-        BlockState dummyState = helper.getLevel().getBlockState(dummy);
-        helper.assertTrue(dummyState.getBlock() instanceof BlockDummyable,
-                "Expected a dummy cell above the boiler core, found " + dummyState);
-        helper.assertTrue(core.equals(FlywheelCompat.crumblingCore(helper.getLevel(), dummy, dummyState)),
-                "A dummy must resolve to the core carrying the block entity");
-        helper.assertTrue(core.equals(FlywheelCompat.crumblingCore(helper.getLevel(), core,
-                        helper.getLevel().getBlockState(core))),
-                "The core must resolve to itself");
-        helper.succeed();
-    }
 }

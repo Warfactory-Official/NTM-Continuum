@@ -1,9 +1,10 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -33,41 +34,37 @@ public class MachineBigAssTank9000 extends MachineGiantTank {
         return 2;
     }
 
-    @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        fillAdditional(level, new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset), dir);
-    }
+    private static final int[][] ARMS = {{4, 0, 1, 1, 2, -2}, {4, 0, 1, 1, -2, 2}};
 
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        fillAdditional(level, core, dir);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        if (!super.checkRequirement(level, core, facing, clicked)) return false;
+        for (int[] arm : ARMS) {
+            if (!MultiblockHandlerXR.checkSpace(level, core, arm, clicked, facing)) return false;
+        }
+        return true;
     }
 
-    private void fillAdditional(Level level, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        com.hbm.handler.MultiblockHandlerXR.fillSpace(level, x, y, z, new int[]{4, 0, 1, 1, 2, -2}, this, dir);
-        com.hbm.handler.MultiblockHandlerXR.fillSpace(level, x, y, z, new int[]{4, 0, 1, 1, -2, 2}, this, dir);
-        makeExtra(level, x + 1, y, z + 2);
-        makeExtra(level, x - 1, y, z + 2);
-        makeExtra(level, x + 1, y, z - 2);
-        makeExtra(level, x - 1, y, z - 2);
-        makeExtra(level, x + 2, y, z + 1);
-        makeExtra(level, x - 2, y, z + 1);
-        makeExtra(level, x + 2, y, z - 1);
-        makeExtra(level, x - 2, y, z - 1);
+    /** Eight intake caps, two on each flank, stated in world axes as upstream states them. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int[] arm : ARMS) MultiblockHandlerXR.visitBox(core, arm, facing, visitor);
+        for (int off = -1; off <= 1; off += 2) {
+            visitor.cell(core.offset(off, 0, 2), MASK_SOUTH);
+            visitor.cell(core.offset(off, 0, -2), MASK_NORTH);
+            visitor.cell(core.offset(2, 0, off), MASK_EAST);
+            visitor.cell(core.offset(-2, 0, off), MASK_WEST);
+        }
     }
 
     @Override
-    public boolean checkRequirement(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        BlockPos core = new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset);
-        return com.hbm.handler.MultiblockHandlerXR.checkSpace(level, core.getX(), core.getY(), core.getZ(),
-                        getDimensions(), x, y, z, dir)
-                && com.hbm.handler.MultiblockHandlerXR.checkSpace(level, core.getX(), core.getY(), core.getZ(),
-                        new int[]{4, 0, 1, 1, 2, -2}, x, y, z, dir)
-                && com.hbm.handler.MultiblockHandlerXR.checkSpace(level, core.getX(), core.getY(), core.getZ(),
-                        new int[]{4, 0, 1, 1, -2, 2}, x, y, z, dir);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        for (int off = -1; off <= 1; off += 2) {
+            visitor.passiveCell(core.offset(off, 0, 2), MASK_ALL, PASSIVE_FLUID_IN);
+            visitor.passiveCell(core.offset(off, 0, -2), MASK_ALL, PASSIVE_FLUID_IN);
+            visitor.passiveCell(core.offset(2, 0, off), MASK_ALL, PASSIVE_FLUID_IN);
+            visitor.passiveCell(core.offset(-2, 0, off), MASK_ALL, PASSIVE_FLUID_IN);
+        }
     }
-
 }

@@ -3,7 +3,6 @@ package com.hbm.gametest;
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.FluidNetwork;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineBigAssTank9000;
 import com.hbm.blocks.machine.MachineBigAssTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -36,7 +35,6 @@ import net.minecraft.world.phys.Vec3;
 /** Focused contracts for both legacy giant fluid-storage machines. */
 public final class GiantTankGameTests {
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
     private static final TagKey<Block> PICKAXE =
             TagKey.create(Registries.BLOCK, Ids.of("minecraft", "mineable/pickaxe"));
 
@@ -50,9 +48,7 @@ public final class GiantTankGameTests {
         helper.assertTrue(big.getConPos().length == 2, "Big Ass Tank must expose two end ports");
         assertPort(helper, big.getConPos()[0], new BlockPos(8, 1, 1), ForgeDirection.NORTH);
         assertPort(helper, big.getConPos()[1], new BlockPos(8, 1, 15), ForgeDirection.SOUTH);
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(4, 1, 8)))
-                        .getValue(BlockDummyable.META) == 4,
-                "Big Ass Tank's west base cell was not formed");
+        FoldedTestSupport.assertCell(helper, new BlockPos(8, 1, 8), new BlockPos(4, 1, 8));
         BlockPos bigPortCell = helper.absolutePos(new BlockPos(8, 1, 2));
         helper.assertTrue(bigBlock.canConnect(Fluids.WATER, helper.getLevel(), bigPortCell.getX(), bigPortCell.getY(),
                         bigPortCell.getZ(), ForgeDirection.NORTH),
@@ -251,19 +247,17 @@ public final class GiantTankGameTests {
 
     private static TileEntityMachineBigAssTank placeBigAss(GameTestHelper helper, BlockPos relative) {
         MachineBigAssTank block = ModMachineBlocks.machine_bigasstank.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineBigAssTank tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineBigAssTank.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
         return tank;
     }
 
     private static TileEntityMachineBAT9000 placeBat(GameTestHelper helper, BlockPos relative) {
         MachineBigAssTank9000 block = ModMachineBlocks.machine_bat9000.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineBAT9000 tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineBAT9000.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
         return tank;
     }
 

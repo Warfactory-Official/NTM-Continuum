@@ -4,7 +4,6 @@ import com.hbm.Constants;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityRagingVortex;
 import com.hbm.entity.projectile.EntityRubble;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineCyclotron;
 import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -315,10 +314,7 @@ public final class SingularityGameTests {
 
     private static TileEntityMachineCyclotron placeCyclotron(GameTestHelper helper, BlockPos relative) {
         MachineCyclotron block = ModMachineBlocks.machine_cyclotron.get();
-        BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + 2));
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
+        BlockPos absolute = FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityMachineCyclotron) helper.getLevel().getBlockEntity(absolute);
     }
 

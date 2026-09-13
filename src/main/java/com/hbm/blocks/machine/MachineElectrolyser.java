@@ -2,16 +2,15 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The original electrolyser footprint and its six network ports. */
-public final class MachineElectrolyser extends BlockDummyable
+public final class MachineElectrolyser extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     /** The seven upper/side fill volumes from the 1.12.2 implementation. */
@@ -48,64 +47,52 @@ public final class MachineElectrolyser extends BlockDummyable
 
     @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineElectrolyser electrolyser ? electrolyser : null;
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineElectrolyser electrolyser ? electrolyser : null;
     }
 
+    /** Public so the layout test can ask whether a footprint would fit before it builds one. */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineElectrolyser electrolyser
-                && IEnergyConnectorBlock.isPort(electrolyser.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return canConnect(world, new BlockPos(x, y, z), dir);
-    }
-
-    @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        formStructure(level, new BlockPos(x + dir.offsetX * offset, y + dir.offsetY * offset,
-                z + dir.offsetZ * offset), dir);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        int x = core.getX();
-        int y = core.getY();
-        int z = core.getZ();
-
-        MultiblockHandlerXR.fillSpace(level, x, y, z, getDimensions(), this, dir);
+    public boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        if (!super.checkRequirement(level, core, facing, clicked)) return false;
         for (int[] volume : EXTRA_VOLUMES) {
-            MultiblockHandlerXR.fillSpace(level, x, y, z, volume, this, dir);
+            if (!MultiblockHandlerXR.checkSpace(level, core, volume, clicked, facing)) return false;
         }
         for (int along : RING_OFFSETS) {
-            MultiblockHandlerXR.fillSpace(level, x + dir.offsetX * along, y + 3,
-                    z + dir.offsetZ * along, RING_VOLUME, this, dir);
-        }
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        for (int along : new int[]{-5, 5}) {
-            for (int side = -1; side <= 1; side++) {
-                makeExtra(level, x + dir.offsetX * along + rot.offsetX * side, y,
-                        z + dir.offsetZ * along + rot.offsetZ * side);
+            if (!MultiblockHandlerXR.checkSpace(level, ring(core, facing, along), RING_VOLUME, clicked, facing)) {
+                return false;
             }
-        }
-    }
-
-    @Override
-    public boolean checkRequirement(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        if (!super.checkRequirement(level, x, y, z, dir, offset)) return false;
-
-        x += dir.offsetX * offset;
-        z += dir.offsetZ * offset;
-        for (int[] volume : EXTRA_VOLUMES) {
-            if (!MultiblockHandlerXR.checkSpace(level, x, y, z, volume, x, y, z, dir)) return false;
-        }
-        for (int along : RING_OFFSETS) {
-            if (!MultiblockHandlerXR.checkSpace(level, x + dir.offsetX * along, y + 3,
-                    z + dir.offsetZ * along, RING_VOLUME, x, y, z, dir)) return false;
         }
         return true;
     }
 
+    /** Three ports across each end of the hall. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int[] volume : EXTRA_VOLUMES) MultiblockHandlerXR.visitBox(core, volume, facing, visitor);
+        for (int along : RING_OFFSETS) {
+            MultiblockHandlerXR.visitBox(ring(core, facing, along), RING_VOLUME, facing, visitor);
+        }
+
+        Direction rot = facing.getClockWise();
+        for (int side = -1; side <= 1; side++) {
+            visitor.cell(core.relative(facing, 5).relative(rot, side), MASK_SOUTH);
+            visitor.cell(core.relative(facing, -5).relative(rot, side), MASK_NORTH);
+        }
+    }
+
+    /** 1.7 stamps {@code inventory().power().fluid()} on the six. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        for (int side = -1; side <= 1; side++) {
+            visitor.passiveCell(core.relative(facing, 5).relative(rot, side), MASK_ALL, domains);
+            visitor.passiveCell(core.relative(facing, -5).relative(rot, side), MASK_ALL, domains);
+        }
+    }
+
+    private static BlockPos ring(BlockPos core, Direction facing, int along) {
+        return core.relative(facing, along).above(3);
+    }
 }

@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineCyclotron;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineCyclotron;
@@ -149,7 +148,7 @@ public final class CyclotronGameTests {
         original.setPlug(3);
 
         TileEntityMachineCyclotron copy = new TileEntityMachineCyclotron(BlockPos.ZERO,
-                ModMachineBlocks.machine_cyclotron.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+                ModMachineBlocks.machine_cyclotron.get().defaultBlockState());
         var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         original.serialize(buffer);
         copy.deserialize(buffer);
@@ -174,9 +173,7 @@ public final class CyclotronGameTests {
 
     private static MachineCyclotron placeStructure(GameTestHelper helper, BlockPos relative) {
         MachineCyclotron block = ModMachineBlocks.machine_cyclotron.get();
-        BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relative);
         return block;
     }
 
