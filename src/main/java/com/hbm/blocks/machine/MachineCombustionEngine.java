@@ -2,13 +2,11 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -17,8 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Combustion Engine block — 1:1 port of the 1.12.2 {@code MachineCombustionEngine}: a low 4×3
- * {@link BlockDummyable} (dims {@code {1,0,1,0,3,2}}, offset 0; 4 makeExtra power/fluid ports). */
-public class MachineCombustionEngine extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+ * the folded core (dims {@code {1,0,1,0,3,2}}, offset 0; 4 makeExtra power/fluid ports). */
+public class MachineCombustionEngine extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineCombustionEngine(Properties properties) {
         super(properties);
@@ -32,26 +30,26 @@ public class MachineCombustionEngine extends BlockDummyable implements IEnergyCo
     @Override public int[] getDimensions() { return new int[]{1, 0, 1, 0, 3, 2}; }
     @Override public int getOffset() { return 0; }
 
+    /** Four ports at the engine's shoulders, two forward and two back. */
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        this.makeExtra(world, x + rot.offsetX, y, z + rot.offsetZ);
-        this.makeExtra(world, x - rot.offsetX, y, z - rot.offsetZ);
-        this.makeExtra(world, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
-        this.makeExtra(world, x - dir.offsetX - rot.offsetX, y, z - dir.offsetZ - rot.offsetZ);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.relative(rot), MASK_SOUTH);
+        visitor.cell(core.relative(rot.getOpposite()), MASK_SOUTH);
+        visitor.cell(core.relative(back).relative(rot), MASK_NORTH);
+        visitor.cell(core.relative(back).relative(rot.getOpposite()), MASK_NORTH);
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineCombustionEngine te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot.getOpposite()), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(back).relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(back).relative(rot.getOpposite()), MASK_ALL, domains);
     }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineCombustionEngine te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
 }
