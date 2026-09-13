@@ -75,6 +75,7 @@ public class NeoForgeInit {
          com.hbm.gametest.SingularityGameTests.init();
          com.hbm.gametest.TurretGameTests.init();
          com.hbm.gametest.PowerNetworkGameTests.init();
+         com.hbm.gametest.NetworkReachGameTests.init();
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
 
@@ -136,6 +137,8 @@ public class NeoForgeInit {
                  com.hbm.gametest.TurretGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.PowerNetworkGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.NetworkReachGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.FlywheelGameTests.TESTS));
 
