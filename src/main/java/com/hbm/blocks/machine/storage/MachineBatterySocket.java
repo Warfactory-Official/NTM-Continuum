@@ -1,15 +1,14 @@
 package com.hbm.blocks.machine.storage;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -22,12 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Battery Socket: a small 2×2 dummyable multiblock (dims {1,0,1,0,1,0} + 3 extra cells), drawn by the
+ * Battery Socket: a 2x2 folded multiblock (dims {1,0,1,0,1,0}), drawn by the
  * {@code BatterySocketRenderer}. Its core is {@link TileEntityBatterySocket}, which exposes the inserted
- * battery item's charge to the power grid. Implements {@link IEnergyConnectorBlock} so cables connect to
- * any footprint face (the core's BlockEntity isn't present at the dummy cells).
+ * battery item's charge to the power grid.
  */
-public class MachineBatterySocket extends BlockDummyable implements IEnergyConnectorBlock, ILookOverlay {
+public class MachineBatterySocket extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay {
 
     public MachineBatterySocket(Properties properties) {
         super(properties);
@@ -36,13 +34,6 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityBatterySocket(pos, state);
-    }
-
-    /** Cables connect only at the socket's true power ports (its {@code getConPos()} positions), not every footprint face. */
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityBatterySocket te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
@@ -55,16 +46,6 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
         return 0;
     }
 
-    @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        this.makeExtra(world, x - dir.offsetX, y, z - dir.offsetZ);
-        this.makeExtra(world, x + rot.offsetX, y, z + rot.offsetZ);
-        this.makeExtra(world, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
-    }
-
     // --- comparator output from the carried battery's fill (works from any cell via findCore) ---
 
     @Override
@@ -74,13 +55,13 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
 
     @Override
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-        return findCoreTE(level, pos) instanceof TileEntityBatterySocket socket ? socket.getComparatorPower() : 0;
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityBatterySocket socket ? socket.getComparatorPower() : 0;
     }
 
     /** Look-overlay: the carried battery item's charge / max (or "Empty" when no battery is inserted). */
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityBatterySocket socket)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityBatterySocket socket)) return null;
 
         // Read the SYNCED carried stack, not getPower()/getMaxPower() — those read the slot-0 inventory
         // item, which is only synced to the client while the container is open (so the HUD would show a
@@ -99,5 +80,28 @@ public class MachineBatterySocket extends BlockDummyable implements IEnergyConne
             text.add("&[" + Library.getColorProgress(frac) + "&]    " + Library.getPercentage(frac) + "%");
         }
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    /** The four cells of the 2x2 each turn the two faces of its own corner outward. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.relative(back), MASK_NORTH | MASK_EAST);
+        visitor.cell(core.relative(rot), MASK_SOUTH | MASK_WEST);
+        visitor.cell(core.relative(back).relative(rot), MASK_NORTH | MASK_WEST);
+    }
+
+    @Override public int coreMask() { return MASK_SOUTH | MASK_EAST; }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.relative(back), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(back).relative(rot), MASK_ALL, domains);
     }
 }

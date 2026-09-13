@@ -474,8 +474,8 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 new DirPos(x, y + 2, z, ForgeDirection.UP),
                 new DirPos(x + 2, y, z, Library.POS_X),
                 new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y + 2, z, Library.POS_Z),
-                new DirPos(x, y - 2, z, Library.NEG_Z)
+                new DirPos(x, y, z + 2, Library.POS_Z),
+                new DirPos(x, y, z - 2, Library.NEG_Z)
         };
     }
 

@@ -1633,7 +1633,7 @@ public final class HbmGameTestFunctions {
     private static void combinationTick(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.machine_furnace_combination.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
         furnace.inventory.setStackInSlot(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COAL));
@@ -1652,7 +1652,7 @@ public final class HbmGameTestFunctions {
     private static void combinationMenu(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.machine_furnace_combination.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);

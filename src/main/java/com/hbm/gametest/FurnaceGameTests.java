@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerFurnaceBrick;
 import com.hbm.inventory.container.ContainerFurnaceIron;
@@ -54,7 +54,7 @@ public final class FurnaceGameTests {
                 "Iron furnace did not smelt iron ore");
         helper.assertTrue(furnace.processingTime == TileEntityFurnaceIron.baseTime,
                 "Iron furnace base processing time changed");
-        helper.assertBlockProperty(pos, BlockDummyable.META, 12);
+        helper.assertBlockProperty(pos, BlockMultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
         helper.succeed();
     }
 
@@ -109,14 +109,12 @@ public final class FurnaceGameTests {
     }
 
     private static TileEntityFurnaceIron placeIron(GameTestHelper helper, BlockPos pos) {
-        helper.setBlock(pos, ModMachineBlocks.furnace_iron.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, ModMachineBlocks.furnace_iron.get().defaultBlockState());
         return GameTestHelpers.blockEntity(helper, pos, TileEntityFurnaceIron.class);
     }
 
     private static TileEntityFurnaceSteel placeSteel(GameTestHelper helper, BlockPos pos) {
-        helper.setBlock(pos, ModMachineBlocks.furnace_steel.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, ModMachineBlocks.furnace_steel.get().defaultBlockState());
         return GameTestHelpers.blockEntity(helper, pos, TileEntityFurnaceSteel.class);
     }
 }

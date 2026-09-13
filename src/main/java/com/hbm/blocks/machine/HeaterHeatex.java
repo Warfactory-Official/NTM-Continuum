@@ -1,21 +1,21 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The 3x3 legacy heat-exchanger multiblock. */
-public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlockMK2, ILookOverlay {
+public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
 
     public HeaterHeatex(Properties properties) {
         super(properties);
@@ -49,40 +49,6 @@ public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlock
         return 1;
     }
 
-    @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-
-        x += dir.offsetX * offset;
-        z += dir.offsetZ * offset;
-        makeExtra(level, x + dir.offsetX + dir.getRotation(ForgeDirection.UP).offsetX,
-                y, z + dir.offsetZ + dir.getRotation(ForgeDirection.UP).offsetZ);
-        makeExtra(level, x + dir.offsetX - dir.getRotation(ForgeDirection.UP).offsetX,
-                y, z + dir.offsetZ - dir.getRotation(ForgeDirection.UP).offsetZ);
-        makeExtra(level, x - dir.offsetX + dir.getRotation(ForgeDirection.UP).offsetX,
-                y, z - dir.offsetZ + dir.getRotation(ForgeDirection.UP).offsetZ);
-        makeExtra(level, x - dir.offsetX - dir.getRotation(ForgeDirection.UP).offsetX,
-                y, z - dir.offsetZ - dir.getRotation(ForgeDirection.UP).offsetZ);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        addExtraPorts(level, core, dir);
-    }
-
-    private void addExtraPorts(Level level, BlockPos core, ForgeDirection dir) {
-        ForgeDirection lateral = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, core.getX() + dir.offsetX + lateral.offsetX, core.getY(),
-                core.getZ() + dir.offsetZ + lateral.offsetZ);
-        makeExtra(level, core.getX() + dir.offsetX - lateral.offsetX, core.getY(),
-                core.getZ() + dir.offsetZ - lateral.offsetZ);
-        makeExtra(level, core.getX() - dir.offsetX + lateral.offsetX, core.getY(),
-                core.getZ() - dir.offsetZ + lateral.offsetZ);
-        makeExtra(level, core.getX() - dir.offsetX - lateral.offsetX, core.getY(),
-                core.getZ() - dir.offsetZ - lateral.offsetZ);
-    }
-
     /** Sneak + fluid identifier changes the input type; ordinary use opens the legacy menu. */
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
@@ -93,7 +59,7 @@ public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlock
             }
             if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-            BlockEntity core = findCoreTE(level, pos);
+            BlockEntity core = MultiblockSurface.coreEntity(level, pos);
             if (!(core instanceof TileEntityHeaterHeatex heater)) return InteractionResult.FAIL;
             FluidType type = identifier.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             heater.tanks[0].setTankType(type);
@@ -118,7 +84,7 @@ public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlock
         if (!(player instanceof net.minecraft.server.level.ServerPlayer serverPlayer)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityHeaterHeatex heater)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
@@ -128,26 +94,38 @@ public class HeaterHeatex extends BlockDummyable implements IFluidConnectorBlock
 
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!BlockDummyable.safeRem() && level.getBlockEntity(pos) instanceof TileEntityHeaterHeatex heater) {
+        if (!level.isClientSide() && !state.getValue(CELL)
+                && level.getBlockEntity(pos) instanceof TileEntityHeaterHeatex heater) {
             Containers.dropContents(level, pos, heater);
         }
         super.onBlockRemoved(state, level, pos, movedByPiston);
     }
 
-    /** Fluid connections are accepted only at the four remote ports, as in the old proxy path. */
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        BlockPos cell = new BlockPos(x, y, z);
-        return findCoreTE(world, cell) instanceof TileEntityHeaterHeatex heater
-                && com.hbm.api.energymk2.IEnergyConnectorBlock.isPort(heater.getConPos(), cell, dir);
-    }
-
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityHeaterHeatex heater)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterHeatex heater)) return null;
         List<String> text = new ArrayList<>();
         text.add(String.format("%,d", heater.heatEnergy) + " TU");
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    /** The four corner cells are the exchanger's only fluid ports: two on the face, two on the back. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.relative(facing).relative(rot), MASK_SOUTH);
+        visitor.cell(core.relative(facing).relative(rot, -1), MASK_SOUTH);
+        visitor.cell(core.relative(facing, -1).relative(rot), MASK_NORTH);
+        visitor.cell(core.relative(facing, -1).relative(rot, -1), MASK_NORTH);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        visitor.passiveCell(core.relative(facing).relative(rot), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.relative(facing).relative(rot, -1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.relative(facing, -1).relative(rot), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.relative(facing, -1).relative(rot, -1), MASK_ALL, PASSIVE_FLUID_IN);
+    }
 }

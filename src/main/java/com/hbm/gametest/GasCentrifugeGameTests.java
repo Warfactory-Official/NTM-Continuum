@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineGasCent;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.MachineUF6Tank;
@@ -140,8 +139,7 @@ public final class GasCentrifugeGameTests {
 
         BlockPos sourcePos = gasPos.west(2);
         MachineUF6Tank sourceBlock = ModMachineBlocks.machine_uf6_tank.get();
-        level.setBlock(sourcePos, sourceBlock.defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + 2), 3);
+        level.setBlock(sourcePos, sourceBlock.defaultBlockState(), 3);
         TileEntityMachineUF6Tank source = (TileEntityMachineUF6Tank) level.getBlockEntity(sourcePos);
         source.tank.setFill(1_000);
 

@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineRadGen;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModItems;
@@ -58,15 +57,13 @@ public final class RadiationMachineGameTests {
     public static void radGenLayoutPortsAndFuel(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineRadGen block = ModMachineBlocks.machine_radgen.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        BlockPos absoluteCore = FoldedTestSupport.assemble(helper, block, core);
         TileEntityMachineRadGen generator = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
                 TileEntityMachineRadGen.class);
-        BlockPos absoluteCore = helper.absolutePos(core);
-        block.formStructure(helper.getLevel(), absoluteCore, ForgeDirection.NORTH);
 
-        assertMeta(helper, core.offset(0, 0, 3), 9);
-        assertMeta(helper, core.offset(1, 0, 0), 11);
-        assertMeta(helper, core.offset(-1, 0, 0), 10);
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, 3));
+        FoldedTestSupport.assertCell(helper, core, core.offset(1, 0, 0));
+        FoldedTestSupport.assertCell(helper, core, core.offset(-1, 0, 0));
         DirPos port = generator.getConPos()[0];
         helper.assertTrue(port.getPos().equals(absoluteCore.offset(0, 0, 4))
                         && port.getDir() == ForgeDirection.SOUTH,
@@ -85,8 +82,7 @@ public final class RadiationMachineGameTests {
 
     public static void radGenMenu(GameTestHelper helper) {
         BlockPos pos = new BlockPos(1, 1, 1);
-        helper.setBlock(pos, ModMachineBlocks.machine_radgen.get().defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        helper.setBlock(pos, ModMachineBlocks.machine_radgen.get().defaultBlockState());
         TileEntityMachineRadGen generator = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 TileEntityMachineRadGen.class);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
@@ -107,9 +103,4 @@ public final class RadiationMachineGameTests {
                 generator.getBlockState(), generator);
     }
 
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        int actual = helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META);
-        helper.assertTrue(actual == expected, "RadGen structure meta at " + pos + " was " + actual
-                + ", expected " + expected);
-    }
 }

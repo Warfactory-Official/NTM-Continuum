@@ -100,10 +100,8 @@ public final class IsotopeProcessingGameTests {
 
     private static TileEntityMachineUF6Tank placeUf6(GameTestHelper helper, BlockPos relative) {
         MachineUF6Tank block = ModMachineBlocks.machine_uf6_tank.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        TileEntityMachineUF6Tank tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        FoldedTestSupport.assemble(helper, block, relative);
+        return dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineUF6Tank.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
-        return tank;
     }
 }

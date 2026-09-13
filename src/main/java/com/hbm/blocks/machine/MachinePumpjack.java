@@ -2,14 +2,12 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -23,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  * corner ports around the well head (old checkRequirement/fillSpace verbatim). The old meta&ge;6 proxy
  * cells map to the extras.
  */
-public class MachinePumpjack extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachinePumpjack extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachinePumpjack(Properties properties) {
         super(properties);
@@ -44,37 +42,47 @@ public class MachinePumpjack extends BlockDummyable implements IEnergyConnectorB
         return 0;
     }
 
+    private static final int[] RAIL_NEAR = {0, 0, -1, 1, 1, 1};
+    private static final int[] RAIL_FAR = {0, 0, 1, -1, 2, 2};
+
     @Override
-    public boolean checkRequirement(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        return super.checkRequirement(world, x, y, z, dir, o) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{0, 0, -1, 1, -2, 4}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{0, 0, 1, -1, -1, 5}, x, y, z, dir);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return super.checkRequirement(level, core, facing, clicked)
+                && MultiblockHandlerXR.checkSpace(level, core, new int[]{0, 0, -1, 1, -2, 4}, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core, new int[]{0, 0, 1, -1, -1, 5}, clicked, facing);
+    }
+
+    /**
+     * The two rails around the well head, and its four corners. 1.7 derives the ports with a formula that
+     * only lands all four for a north/south pump; the corners are read off the cells instead, so every
+     * facing has all four.
+     */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+
+        BlockPos head = wellHead(core, facing);
+        MultiblockHandlerXR.visitBox(head, RAIL_NEAR, facing, visitor);
+        MultiblockHandlerXR.visitBox(head, RAIL_FAR, facing, visitor);
+
+        visitor.cell(head.offset(1, 0, 1), MASK_SOUTH);
+        visitor.cell(head.offset(1, 0, -1), MASK_NORTH);
+        visitor.cell(head.offset(-1, 0, 1), MASK_SOUTH);
+        visitor.cell(head.offset(-1, 0, -1), MASK_NORTH);
     }
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
-        MultiblockHandlerXR.fillSpace(world, x + rot.offsetX * 3, y, z + rot.offsetZ * 3, new int[]{0, 0, -1, 1, 1, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + rot.offsetX * 3, y, z + rot.offsetZ * 3, new int[]{0, 0, 1, -1, 2, 2}, this, dir);
-
-        this.makeExtra(world, x + rot.offsetX * 3 + 1, y, z + rot.offsetZ * 3 + 1);
-        this.makeExtra(world, x + rot.offsetX * 3 + 1, y, z + rot.offsetZ * 3 - 1);
-        this.makeExtra(world, x + rot.offsetX * 3 - 1, y, z + rot.offsetZ * 3 + 1);
-        this.makeExtra(world, x + rot.offsetX * 3 - 1, y, z + rot.offsetZ * 3 - 1);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        BlockPos head = wellHead(core, facing);
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(head.offset(1, 0, 1), MASK_ALL, domains);
+        visitor.passiveCell(head.offset(1, 0, -1), MASK_ALL, domains);
+        visitor.passiveCell(head.offset(-1, 0, 1), MASK_ALL, domains);
+        visitor.passiveCell(head.offset(-1, 0, -1), MASK_ALL, domains);
     }
 
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachinePumpjack te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+    private static BlockPos wellHead(BlockPos core, Direction facing) {
+        Direction rot = facing.getCounterClockWise();
+        return core.offset(rot.getStepX() * 3, 0, rot.getStepZ() * 3);
     }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachinePumpjack te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
 }

@@ -42,7 +42,7 @@ public final class CombustionHeatGameTests {
 
         DirPos[] ports = burner.getConPos();
         helper.assertTrue(ports.length == 2, "Wood burner must expose two ports");
-        helper.assertTrue(ports[0].getPos().equals(core.south(2)) && ports[0].getDir() == ForgeDirection.WEST,
+        helper.assertTrue(ports[0].getPos().equals(core.south(2)) && ports[0].getDir() == ForgeDirection.SOUTH,
                 "Wood burner first port does not match the legacy layout");
         helper.assertTrue(ports[1].getPos().equals(core.east().south(2)) && ports[1].getDir() == ForgeDirection.SOUTH,
                 "Wood burner second port does not match the legacy layout");

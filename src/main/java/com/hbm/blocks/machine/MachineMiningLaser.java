@@ -2,15 +2,14 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * off {@code getConPos} ports instead of proxy tiles). Power connects at the TOP arm, fluid (crude oil
  * out) at the 4 side arms, and every cell exposes the core's 21 output slots to hoppers.
  */
-public class MachineMiningLaser extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineMiningLaser extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineMiningLaser(Properties properties) {
         super(properties);
@@ -53,43 +52,39 @@ public class MachineMiningLaser extends BlockDummyable implements IEnergyConnect
         return -1;
     }
 
-    @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-
-        // The old block promoted the 4 side arms + the top cell to "extra" cells (its power/item proxy
-        // tiles). Kept verbatim for structural parity; connectivity here is port-based (getConPos).
-        x += dir.offsetX * o;
-        z += dir.offsetZ * o;
-
-        this.makeExtra(world, x + 1, y, z);
-        this.makeExtra(world, x - 1, y, z);
-        this.makeExtra(world, x, y, z + 1);
-        this.makeExtra(world, x, y, z - 1);
-
-        this.makeExtra(world, x, y + 1, z);
-    }
-
     /** Any face of the multiblock exposes the core's inventory to hoppers (extract the 21 output slots). */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineMiningLaser te ? te : null;
     }
 
-    /** Cables connect only at the machine's true power port (the core's {@code getConPos} top arm). */
+    /**
+     * Two call sites with two disjoint cell sets: 1.7 sends oil over the four horizontals and subscribes
+     * for power at the arm above, so unioning them would let a cable onto an oil outlet.
+     */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineMiningLaser te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.east(), MASK_EAST, ROLE_FLUID);
+        visitor.cell(core.west(), MASK_WEST, ROLE_FLUID);
+        visitor.cell(core.south(), MASK_SOUTH, ROLE_FLUID);
+        visitor.cell(core.north(), MASK_NORTH, ROLE_FLUID);
+        visitor.cell(core.above(), MASK_UP, ROLE_POWER);
     }
 
-    /** Ducts connect at the same ports (the geometry is fluid-agnostic — reuse the energy helper). */
+    /**
+     * 1.7's top cell is a {@code TileEntityProxyEnergy} and carries power alone; the four side cells are
+     * {@code inventory().fluid()} and carry no power at all.
+     */
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineMiningLaser te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int sides = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.east(), MASK_ALL, sides);
+        visitor.passiveCell(core.west(), MASK_ALL, sides);
+        visitor.passiveCell(core.south(), MASK_ALL, sides);
+        visitor.passiveCell(core.north(), MASK_ALL, sides);
+        visitor.passiveCell(core.above(), MASK_ALL, PASSIVE_POWER_IN);
     }
-
 }

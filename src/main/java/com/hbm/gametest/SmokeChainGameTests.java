@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineAshpit;
 import com.hbm.blocks.machine.MachineChimneyBrick;
 import com.hbm.blocks.machine.MachineChimneyIndustrial;
@@ -31,20 +30,14 @@ public final class SmokeChainGameTests {
 
     private SmokeChainGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
-
     public static void layouts(GameTestHelper helper) {
         BlockPos brickPos = new BlockPos(3, 1, 3);
         MachineChimneyBrick brick = SmokeChainRegistration.chimney_brick.get();
-        helper.getLevel().setBlock(helper.absolutePos(brickPos),
-                brick.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        brick.formStructure(helper.getLevel(), helper.absolutePos(brickPos), ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, brick, brickPos);
 
         BlockPos industrialPos = new BlockPos(12, 1, 3);
         MachineChimneyIndustrial industrial = SmokeChainRegistration.chimney_industrial.get();
-        helper.getLevel().setBlock(helper.absolutePos(industrialPos),
-                industrial.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        industrial.formStructure(helper.getLevel(), helper.absolutePos(industrialPos), ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, industrial, industrialPos);
 
         helper.assertTrue(Arrays.equals(brick.getDimensions(), new int[]{12, 0, 1, 1, 1, 1}),
                 "Brick chimney dimensions changed");
@@ -52,10 +45,8 @@ public final class SmokeChainGameTests {
                 "Industrial chimney dimensions changed");
         assertTowerCells(helper, helper.absolutePos(brickPos), 12, brick);
         assertTowerCells(helper, helper.absolutePos(industrialPos), 22, industrial);
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(brickPos).east()).getValue(BlockDummyable.META) >= 6,
-                "Brick east smoke port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(industrialPos).north()).getValue(BlockDummyable.META) >= 6,
-                "Industrial north smoke port was not marked extra");
+        FoldedTestSupport.assertPort(helper, brickPos, brickPos.east());
+        FoldedTestSupport.assertPort(helper, industrialPos, industrialPos.north());
         helper.succeed();
     }
 
@@ -179,16 +170,14 @@ public final class SmokeChainGameTests {
     private static TileEntityChimneyBrick placeBrick(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
         MachineChimneyBrick block = SmokeChainRegistration.chimney_brick.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityChimneyBrick) helper.getLevel().getBlockEntity(pos);
     }
 
     private static TileEntityChimneyIndustrial placeIndustrial(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
         MachineChimneyIndustrial block = SmokeChainRegistration.chimney_industrial.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityChimneyIndustrial) helper.getLevel().getBlockEntity(pos);
     }
 

@@ -42,9 +42,9 @@ public class MachinePyroOven extends BlockMultiblockMachine implements IEnergyCo
     }
 
     /**
-     * A row of five ports down one flank, and the chimney mouth above. 1.7 sends only smoke to the
-     * chimney -- the getConPos loop's power and fluid-in never reach it -- so it is stated as a fluid
-     * outlet alone rather than folded into the union with the flank.
+     * A row of five ports down one flank. 1.7 also vents smoke upward from the cell at {@code (-rot, 2)},
+     * which is why that cell exists, but Continuum has no smoke tank yet (deferred, §20) -- and a face
+     * open on the fluid plane with no smoke behind it would offer a duct the machine's oil instead.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -56,7 +56,6 @@ public class MachinePyroOven extends BlockMultiblockMachine implements IEnergyCo
         for (int i = -2; i <= 2; i++) {
             visitor.cell(core.offset(dx * i + rx * 2, 0, dz * i + rz * 2), MASK_EAST);
         }
-        visitor.cell(core.offset(-rx, 2, -rz), MASK_UP, ROLE_FLUID_OUT);
     }
 
     @Override

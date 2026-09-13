@@ -1,6 +1,6 @@
 package com.hbm.blocks.network;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.tileentity.network.TileEntityRadioAUTOCAL;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The one-block-core AUTOCAL unit from the old Redstone-over-Radio network. */
-public final class RadioAUTOCAL extends BlockDummyable {
+public final class RadioAUTOCAL extends BlockMultiblockMachine {
     public RadioAUTOCAL(Properties properties) {
         super(properties);
     }
