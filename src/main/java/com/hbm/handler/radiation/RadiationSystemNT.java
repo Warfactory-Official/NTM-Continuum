@@ -21,20 +21,27 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 
 /**
  * The chunk radiation engine — a faithful port of the <i>behaviour</i> of 1.12.2's {@code RadiationSystemNT}
- * (the pocket model), adapted to 26.1 and run <b>synchronously</b> on the server thread. Radiation is a
- * per-block density (RAD/s) stored per <b>pocket</b>: a maximal flood-filled region of non-{@link
- * IRadResistantBlock} blocks within a 16³ section. Rad-resistant blocks are walls, so a sealed lead room
- * holds its radiation separately from the rest of its section. Radiation diffuses between pockets across
- * section faces (mass-conserving exchange toward equilibrium, weighted by open contact area) and decays
- * exponentially (t½ = {@link RadiationConfig#radHalfLifeSeconds}).
+ * (the pocket model). Radiation is a per-block density (RAD/s) stored per <b>pocket</b>: a maximal
+ * flood-filled region of non-{@link IRadResistantBlock} blocks within a 16³ section. Rad-resistant blocks
+ * are walls, so a sealed lead room holds its radiation separately from the rest of its section. Radiation
+ * diffuses between pockets across section faces (mass-conserving exchange toward equilibrium, weighted by
+ * open contact area) and decays exponentially (t½ = {@link RadiationConfig#radHalfLifeSeconds}).
  *
- * <p><b>Deviation from the fork:</b> the fork runs the diffusion sweeps on a {@code ForkJoinPool} with
- * lock-free parity-bucketed sections + a bespoke binary chunk payload + {@code sun.misc.Unsafe}. Here the
- * same algorithm runs single-threaded (radiation is sparse; the server thread is cheap for it) with
- * {@code fastutil} maps and vanilla {@code SavedData} persistence ({@link RadiationSavedData}). The
- * observable gameplay — spread through air, sealing by resistant blocks, the exact decay/diffusivity
- * constants — matches. The async parallelism is a performance optimisation that can return later behind
- * this same public API.
+ * <p>A step is in two halves and the split is the safety property, not an optimisation. {@link
+ * WorldRadiationData#prepare()} builds every section the sweep will touch <b>on the server thread</b>,
+ * because building reads block state; the sweep that follows runs on {@link #RAD_POOL} and touches
+ * nothing but plain numeric arrays. The fork flood-fills off-thread and this deliberately does not.
+ *
+ * <p>The sweeps are parity-bucketed exactly as the fork's are — in a pass only chunks of one coordinate
+ * parity exchange with their {@code +axis} neighbour, so every chunk is written by at most one pair and
+ * the pairs need no locking. The server thread joins before returning, so no other tick logic races the
+ * density arrays.
+ *
+ * <p><b>Deviations from the fork.</b> Persistence is vanilla {@code SavedData} ({@link
+ * RadiationSavedData}) holding the densities of <i>unloaded</i> chunks rather than a bespoke binary
+ * payload attached to the chunk, and there is no {@code sun.misc.Unsafe} and no SIMD: the sweep is plain
+ * Java over {@code double[]}. The observable gameplay — spread through air, sealing by resistant blocks,
+ * the exact decay and diffusivity constants — matches.
  */
 public final class RadiationSystemNT {
 
