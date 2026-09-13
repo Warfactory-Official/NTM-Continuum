@@ -378,11 +378,11 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineEPress>> MACHINE_EPRESS =
             BLOCK_ENTITIES.register("machine_epress",
-                    () -> BlockEntities.serverTicking(TileEntityMachineEPress::new, TileEntityMachineEPress::serverTick, ModMachineBlocks.machine_epress.get()));
+                    () -> BlockEntities.ticking(TileEntityMachineEPress::new, TileEntityMachineEPress::clientTick, TileEntityMachineEPress::serverTick, ModMachineBlocks.machine_epress.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachinePress>> MACHINE_PRESS =
             BLOCK_ENTITIES.register("machine_press",
-                    () -> BlockEntities.serverTicking(TileEntityMachinePress::new, TileEntityMachinePress::serverTick, ModMachineBlocks.machine_press.get()));
+                    () -> BlockEntities.ticking(TileEntityMachinePress::new, TileEntityMachinePress::clientTick, TileEntityMachinePress::serverTick, ModMachineBlocks.machine_press.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineAmmoPress>> MACHINE_AMMO_PRESS =
             BLOCK_ENTITIES.register("machine_ammo_press",

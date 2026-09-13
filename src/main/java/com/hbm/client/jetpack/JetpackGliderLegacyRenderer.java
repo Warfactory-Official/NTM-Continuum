@@ -15,9 +15,8 @@ public final class JetpackGliderLegacyRenderer {
 
     public static void render(ItemStack stack, ItemDisplayContext context, PoseStack pose,
             MultiBufferSource buffers, int light, int overlay) {
-        JetpackGliderItemModel model = new JetpackGliderItemModel();
         RecordingSubmitSink sink = new RecordingSubmitSink();
-        model.submit(pose, sink, light, overlay, context);
+        JetpackGliderItemModel.shared().submit(pose, sink, light, overlay, context);
         sink.flush(buffers, null);
     }
 }

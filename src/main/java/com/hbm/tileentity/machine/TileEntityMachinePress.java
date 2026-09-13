@@ -47,6 +47,8 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     public int burnTime = 0;
 
     public int progress;
+    /** Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it. */
+    public int lastProgress;
     public static final int maxProgress = 200;
     private boolean isRetracting = false;
     private int delay;
@@ -62,6 +64,10 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     @Override
     public String getDefaultName() {
         return "container.press";
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePress te) {
+        te.lastProgress = te.progress;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePress te) {

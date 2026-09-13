@@ -67,6 +67,7 @@ public final class JetpackClientVisuals {
         GLIDER_ANIMATIONS.clear();
         activeLevel = null;
         gliderModel = null;
+        JetpackGliderItemModel.clear();
         JetpackWornModels.clear();
         JetpackSound.clearAll();
     }

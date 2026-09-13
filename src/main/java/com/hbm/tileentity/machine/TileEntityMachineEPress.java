@@ -49,6 +49,8 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     public static final long maxPower = 50000;
 
     public int progress;
+    /** Client-only: last tick's stroke, so the head glides between packets the way 1.7 interpolates it. */
+    public int lastProgress;
     public static final int maxProgress = 200;
     private boolean isRetracting = false;
     private int delay;
@@ -66,6 +68,10 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
     @Override
     public String getDefaultName() {
         return "container.epress";
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineEPress te) {
+        te.lastProgress = te.progress;
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineEPress te) {

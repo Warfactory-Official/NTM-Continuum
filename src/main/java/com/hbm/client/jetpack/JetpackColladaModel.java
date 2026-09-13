@@ -61,7 +61,13 @@ public final class JetpackColladaModel {
         this.gem = declaration.seal();
     }
 
-    /** Turns one scene node into a part; a node with no geometry becomes a joint. */
+    /**
+     * Turns one scene node into a part; a node with no geometry becomes a joint.
+     *
+     * <p>A node's track is resolved here rather than per frame, and an animated one is given the scratch
+     * its blend writes into: this channel runs once per node on every frame the glider is on screen, and
+     * a blend that allocates its own vectors, quaternion and matrix is a hundred objects a frame.
+     */
     private void declare(Node node, Gem.Part<GliderPose> parent, Gem.Model<GliderPose> declaration) {
         Gem.Part<GliderPose> part;
         if (node.geometry == null) {
@@ -72,15 +78,14 @@ public final class JetpackColladaModel {
                     : parent.child(model.part(node.name), SURFACE);
             boxes.put(part, model.boundsIncluding(Set.of(node.name)));
         }
-        part.pose(state -> transformOf(node, state));
+        Transform[] track = animated.get(node.name);
+        if (track == null) {
+            part.pose(state -> node.base);
+        } else {
+            Blend blend = new Blend();
+            part.pose(state -> track[state.first].interpolate(track[state.next], state.interpolation, blend));
+        }
         for (Node child : node.children) declare(child, part, declaration);
-    }
-
-    /** A node's local matrix: its animation track where it has one, its authored base where it does not. */
-    private Matrix4f transformOf(Node node, GliderPose state) {
-        Transform[] frames = animated.get(node.name);
-        if (frames == null) return node.base;
-        return frames[state.first].interpolate(frames[state.next], state.interpolation).matrix();
     }
 
     private GliderPose seek(long elapsedMillis, boolean reverse) {
@@ -208,24 +213,18 @@ public final class JetpackColladaModel {
                     + values[offset + 2] * values[offset + 2]);
         }
 
-        private Transform(Vector3f translation, Vector3f scale, Quaternionf rotation) {
-            this.translation = translation;
-            this.scale = scale;
-            this.rotation = rotation;
-        }
-
-        private Transform interpolate(Transform other, float amount) {
-            Vector3f position = new Vector3f(translation).lerp(other.translation, amount);
-            Vector3f size = new Vector3f(scale).lerp(other.scale, amount);
-            Quaternionf target = new Quaternionf(other.rotation);
+        private Matrix4f interpolate(Transform other, float amount, Blend into) {
+            translation.lerp(other.translation, amount, into.translation);
+            scale.lerp(other.scale, amount, into.scale);
+            Quaternionf target = into.target.set(other.rotation);
             double dot = rotation.dot(target);
             if (dot < 0D) {
                 target.set(-target.x, -target.y, -target.z, -target.w);
                 dot = -dot;
             }
-            Quaternionf quat;
+            Quaternionf quat = into.rotation;
             if (dot > 0.9999999D) {
-                quat = new Quaternionf(rotation.x + amount * (target.x - rotation.x),
+                quat.set(rotation.x + amount * (target.x - rotation.x),
                         rotation.y + amount * (target.y - rotation.y),
                         rotation.z + amount * (target.z - rotation.z),
                         rotation.w + amount * (target.w - rotation.w)).normalize();
@@ -233,10 +232,10 @@ public final class JetpackColladaModel {
                 double theta0 = Math.acos(dot), theta = theta0 * amount;
                 float a = (float) (Math.cos(theta) - dot * Math.sin(theta) / Math.sin(theta0));
                 float b = (float) (Math.sin(theta) / Math.sin(theta0));
-                quat = new Quaternionf(a * rotation.x + b * target.x, a * rotation.y + b * target.y,
+                quat.set(a * rotation.x + b * target.x, a * rotation.y + b * target.y,
                         a * rotation.z + b * target.z, a * rotation.w + b * target.w);
             }
-            return new Transform(position, size, quat);
+            return matrix(into.matrix, quat, into.scale, into.translation);
         }
 
         /**
@@ -244,14 +243,25 @@ public final class JetpackColladaModel {
          * collapses those wings; this preserves {@code quatToGlMatrix}'s {@code 1-2*y*y-2*z*z} form and
          * {@code Transform.scale}'s row scaling rather than silently normalizing the track.
          */
-        private Matrix4f matrix() {
+        private static Matrix4f matrix(Matrix4f out, Quaternionf rotation, Vector3f scale,
+                Vector3f translation) {
             float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
             float sx = scale.x, sy = scale.y, sz = scale.z;
-            return new Matrix4f(
+            return out.set(
                     (1F - 2F*y*y - 2F*z*z)*sx, (2F*x*y + 2F*z*w)*sy, (2F*x*z - 2F*y*w)*sz, 0F,
                     (2F*x*y - 2F*z*w)*sx, (1F - 2F*x*x - 2F*z*z)*sy, (2F*y*z + 2F*x*w)*sz, 0F,
                     (2F*x*z + 2F*y*w)*sx, (2F*y*z - 2F*x*w)*sy, (1F - 2F*x*x - 2F*y*y)*sz, 0F,
                     translation.x, translation.y, translation.z, 1F);
         }
+    }
+
+    /** One animated node's blend scratch. The walk consumes each matrix before moving on, so reusing
+     * it costs nothing and keeps a frame's transform work off the heap. */
+    private static final class Blend {
+        private final Vector3f translation = new Vector3f();
+        private final Vector3f scale = new Vector3f();
+        private final Quaternionf rotation = new Quaternionf();
+        private final Quaternionf target = new Quaternionf();
+        private final Matrix4f matrix = new Matrix4f();
     }
 }

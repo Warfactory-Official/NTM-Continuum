@@ -1037,7 +1037,6 @@ public final class ModItemModels {
         Dejson.item(NS, "ore_sellafield_radgem").models(Models.blockItem("hbm:block/ore_sellafield_radgem_0")).register();
         Dejson.item(NS, "ore_sellafield_schrabidium").models(Models.blockItem("hbm:block/ore_sellafield_schrabidium_0")).register();
         Dejson.item(NS, "ore_sellafield_uranium_scorched").models(Models.blockItem("hbm:block/ore_sellafield_uranium_scorched_0")).register();
-        Dejson.item(NS, "rbmk_gauge").models(Models.blockItem("hbm:block/rbmk_gauge")).register();
         Dejson.item(NS, "sellafield_bedrock").models(Models.blockItem("hbm:block/sellafield_bedrock_0")).register();
         Dejson.item(NS, "sellafield_slaked").models(Models.blockItem("hbm:block/sellafield_slaked_0")).register();
         Dejson.item(NS, "steel_beam").models(Models.blockItem("hbm:block/steel_beam")).register();

@@ -77,6 +77,13 @@ public final class HbmBlockEntityRenderers {
          regGem(sink, ModBlockEntities.MACHINE_RAD_GEN.get(), RadGenRenderer::new);
           regGem(sink, ModBlockEntities.FUSION_PLASMA_FORGE.get(), PlasmaForgeRenderer::new);
          regGem(sink, ModBlockEntities.MACHINE_EXPOSURE_CHAMBER.get(), ExposureChamberRenderer::new);
+        // Blast furnace extension: the legacy flue, a truncated pyramid drawn from one 32x32 sheet whose
+        // quadrants are the three block icons 1.7 bound per OBJ part.
+        regGem(sink, com.hbm.blocks.machine.DiFurnaceContent.DI_FURNACE_EXTENSION.get(),
+                () -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityDiFurnaceExtension>(0F, 1F,
+                        new ModelDef(obj("block/difurnace_extension.obj"),
+                                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/blocks/difurnace_extension.png")))
+                        .ignoreFacing());
         // Blast furnace: static body, with the legacy yaw map (base 90° + the standard facing map).
         regGem(sink, ModBlockEntities.MACHINE_BLAST_FURNACE.get(), () -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityMachineBlastFurnace>(90F, 1F,
                 new ModelDef(obj("machines/blast_furnace.obj"), tex("machines/blast_furnace.png"))).doubleSided());
@@ -91,15 +98,18 @@ public final class HbmBlockEntityRenderers {
                  tex("machines/pump_steam.png")));
          regGem(sink, ModBlockEntities.MACHINE_STIRLING.get(), StirlingRenderer::new);
          regGem(sink, ModBlockEntities.MACHINE_PUREX.get(), PUREXRenderer::new);
-        // Presses: a static body + a head that descends with the machine's progress.
+        // Presses: a static body + a head that descends with the machine's progress, and the ingredient
+        // lying on the anvil between them.
         regGem(sink, ModBlockEntities.MACHINE_EPRESS.get(), () -> new PressRenderer<>(
                 obj("epress_body.obj"), tex("machines/epress_body.png"),
                 obj("epress_head.obj"), tex("machines/epress_head.png"),
-                90F, true, 1.875F, 1.0F, true, 200, te -> te.progress));
+                90F, true, 1.875F, 1.0F, true, 200, te -> te.progress, te -> te.lastProgress,
+                0.128125F, 90F, te -> te.syncStack));
          regGem(sink, ModBlockEntities.MACHINE_PRESS.get(), () -> new PressRenderer<>(
                  obj("press_body.obj"), tex("machines/press_body.png"),
                  obj("press_head.obj"), tex("machines/press_head.png"),
-                  180F, false, 0.875F, 0.99F, false, 200, te -> te.progress));
+                  180F, false, 0.875F, 0.99F, false, 200, te -> te.progress, te -> te.lastProgress,
+                  0F, 180F, te -> te.syncStack));
          regGem(sink, ModBlockEntities.MACHINE_AMMO_PRESS.get(), AmmoPressRenderer::new);
          regGem(sink, ModBlockEntities.MACHINE_SAWMILL.get(), SawmillRenderer::new);
         // The launch pad draws the missile it is holding on top of the silo, so it needs its own

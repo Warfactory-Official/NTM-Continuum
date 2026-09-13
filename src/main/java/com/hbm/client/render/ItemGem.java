@@ -91,6 +91,18 @@ final class ItemGem {
             return declared;
         }
 
+        /** A transform-only root, for an icon whose parts hang off a chain rather than sitting flat. */
+        Gem.Part<ItemPose> joint() {
+            return declaration.joint();
+        }
+
+        Gem.Part<ItemPose> child(Gem.Part<ItemPose> parent, Geometry geometry, Surface surface,
+                                 float @Nullable [][] box) {
+            Gem.Part<ItemPose> declared = parent.child(geometry, surface);
+            if (box != null) boxes.put(declared, box);
+            return declared;
+        }
+
         /** Records a box against a part declared earlier, for a group of draws framed as one. */
         void frame(Gem.Part<ItemPose> part, float @Nullable [][] box) {
             if (box != null) boxes.put(part, box);

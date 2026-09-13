@@ -38,6 +38,9 @@ import org.joml.Vector3fc;
  */
 public final class MachineItemModel {
 
+    /** The arm pitch the old autosaw item renderer posed its icon at — {@code 80 - rotationPitch}, at rest. */
+    private static final float AUTOSAW_PITCH = 80F;
+
     private final WavefrontObj model;
     private final Surface surface;
     private final float scale;
@@ -228,6 +231,10 @@ public final class MachineItemModel {
         ItemGem.Builder builder = ItemGem.builder();
         if ("pump".equals(animation)) {
             pump(builder);
+        } else if ("autosaw".equals(animation)) {
+            autosaw(builder);
+        } else if ("rbmk_gauge".equals(animation)) {
+            RBMKGaugeIcon.declare(builder, model, surface, partSurfaces);
         } else if ("armor_bj_jetpack_chest".equals(animation) && !partSurfaces.isEmpty()) {
             jetpackChest(builder);
         } else if (!partSurfaces.isEmpty()) {
@@ -257,6 +264,48 @@ public final class MachineItemModel {
     private static float pumpArmAngle(ItemPose state) {
         double cos = Math.cos(state.animation * Math.PI / 180D) * 0.5D;
         return (float) (Math.acos(cos / 2D) * 180D / Math.PI - 90D);
+    }
+
+    /**
+     * The autosaw icon is the placed machine's own arm chain, parked at the pitch the old item renderer
+     * asked for and with the blade turning. Drawing the OBJ flat leaves the three segments lying in a
+     * straight line, which is a pose the machine never holds.
+     */
+    private void autosaw(ItemGem.Builder builder) {
+        Gem.Part<ItemPose> ground = builder.joint();
+        segment(builder, ground, "Base");
+        segment(builder, ground, "Main");
+        segment(builder, ground, "Engine");
+
+        Gem.Part<ItemPose> upper = ground.joint()
+                .translate(0F, 1.75F, 0F)
+                .rotate(Gem.Axes.X, AUTOSAW_PITCH)
+                .translate(0F, -1.75F, 0F);
+        segment(builder, upper, "ArmUpper");
+
+        Gem.Part<ItemPose> lower = upper.joint()
+                .translate(0F, 1.75F, -4F)
+                .rotate(Gem.Axes.X, -AUTOSAW_PITCH * 2F)
+                .translate(0F, -1.75F, 4F)
+                .translate(-0.01F, 0F, 0F);
+        segment(builder, lower, "ArmLower");
+
+        Gem.Part<ItemPose> tip = lower.joint()
+                .translate(0.01F, 0F, 0F)
+                .translate(0F, 1.75F, -8F)
+                .rotate(Gem.Axes.X, AUTOSAW_PITCH)
+                .translate(0F, -1.75F, 8F);
+        segment(builder, tip, "ArmTip");
+
+        Gem.Part<ItemPose> blade = tip.joint()
+                .translate(0F, 1.75F, -10F)
+                .angle(Gem.Axes.Y, state -> -state.animation)
+                .translate(0F, -1.75F, 10F);
+        segment(builder, blade, "Sawblade");
+    }
+
+    private void segment(ItemGem.Builder builder, Gem.Part<ItemPose> parent, String part) {
+        builder.child(parent, model.part(part), surface, model.boundsIncluding(Set.of(part)));
     }
 
     private static float pumpLift(ItemPose state) {

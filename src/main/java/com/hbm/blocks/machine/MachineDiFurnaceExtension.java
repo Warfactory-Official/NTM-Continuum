@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
+import com.hbm.tileentity.machine.TileEntityDiFurnaceExtension;
+import dev.golem.core.registry.TickingBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
@@ -9,16 +11,27 @@ import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
-/** Separate chimney/extension block; its inventory and menu are delegated to the furnace below. */
+/**
+ * Separate chimney/extension block; its inventory and menu are delegated to the furnace below.
+ *
+ * <p>The block entity carries no data — the flue is a truncated pyramid, which is not a shape a vanilla
+ * block model can state, so it is drawn by a block-entity renderer and this is what anchors it.
+ */
 public class MachineDiFurnaceExtension extends dev.golem.core.world.CompatBlock
-        implements WorldlyContainerHolder {
+        implements TickingBlock, WorldlyContainerHolder {
 
     public MachineDiFurnaceExtension(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new TileEntityDiFurnaceExtension(pos, state);
     }
 
     @Override

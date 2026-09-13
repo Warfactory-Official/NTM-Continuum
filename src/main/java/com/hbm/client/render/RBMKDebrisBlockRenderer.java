@@ -31,7 +31,8 @@ public final class RBMKDebrisBlockRenderer extends GemBER<BlockEntityRBMKDebris,
         }
         declaration.part(meshes[0], skins[0])
                 .mesh(state -> meshes[state.variant])
-                .skin(state -> skins[state.variant]);
+                .skin(state -> skins[state.variant])
+                .translate(.5F, 0F, .5F);
     }
 
     @Override

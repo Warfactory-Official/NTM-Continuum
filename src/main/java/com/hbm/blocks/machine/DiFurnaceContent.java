@@ -5,6 +5,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerDiFurnace;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
+import com.hbm.tileentity.machine.TileEntityDiFurnaceExtension;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -45,6 +46,10 @@ public final class DiFurnaceContent {
 
     public static final RegistryObject<BlockEntityType<TileEntityDiFurnace>> DI_FURNACE = BLOCK_ENTITIES.register(
             "machine_difurnace_off", () -> BlockEntities.serverTicking(TileEntityDiFurnace::new, TileEntityDiFurnace::serverTick, MACHINE_DIFURNACE.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityDiFurnaceExtension>> DI_FURNACE_EXTENSION =
+            BLOCK_ENTITIES.register("machine_difurnace_ext", () -> BlockEntities.type(
+                    TileEntityDiFurnaceExtension::new, MACHINE_DIFURNACE_EXTENSION.get()));
 
     public static final RegistryObject<MenuType<ContainerDiFurnace>> DI_FURNACE_MENU = MENUS.register(
             "machine_difurnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerDiFurnace::new));

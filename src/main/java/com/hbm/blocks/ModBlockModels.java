@@ -255,8 +255,8 @@ public final class ModBlockModels {
     };
 
     private static final String[] RENDERED_2 = {
-            "foundry_basin", "gas_explosive", "gas_flammable", "machine_autosaw", "machine_minirtg",
-            "machine_rtg_grey", "machine_storage_drum", "rbmk_console", "rbmk_crane_console",
+            "foundry_basin", "gas_explosive", "gas_flammable", "machine_autosaw", "machine_difurnace_ext",
+            "machine_minirtg", "machine_rtg_grey", "machine_storage_drum", "rbmk_console", "rbmk_crane_console",
             "rtg_polonium", "slag", "solar_mirror", "turret_emplacement", "turret_pad", "turret_sentry",
             "turret_sentry_damaged"
     };
@@ -266,58 +266,54 @@ public final class ModBlockModels {
     };
 
     private static final String[] RENDERED_4 = {
-            "machine_difurnace_ext"
-    };
-
-    private static final String[] RENDERED_5 = {
             "rbmk_absorber"
     };
 
-    private static final String[] RENDERED_6 = {
+    private static final String[] RENDERED_5 = {
             "rbmk_blank"
     };
 
-    private static final String[] RENDERED_7 = {
+    private static final String[] RENDERED_6 = {
             "rbmk_boiler"
     };
 
-    private static final String[] RENDERED_8 = {
+    private static final String[] RENDERED_7 = {
             "rbmk_cooler"
     };
 
-    private static final String[] RENDERED_9 = {
+    private static final String[] RENDERED_8 = {
             "rbmk_fuel_rod"
     };
 
-    private static final String[] RENDERED_10 = {
+    private static final String[] RENDERED_9 = {
             "rbmk_fuel_rod_moderated"
     };
 
-    private static final String[] RENDERED_11 = {
+    private static final String[] RENDERED_10 = {
             "rbmk_fuel_rod_reasim"
     };
 
-    private static final String[] RENDERED_12 = {
+    private static final String[] RENDERED_11 = {
             "rbmk_fuel_rod_reasim_moderated"
     };
 
-    private static final String[] RENDERED_13 = {
+    private static final String[] RENDERED_12 = {
             "rbmk_heater"
     };
 
-    private static final String[] RENDERED_14 = {
+    private static final String[] RENDERED_13 = {
             "rbmk_moderator"
     };
 
-    private static final String[] RENDERED_15 = {
+    private static final String[] RENDERED_14 = {
             "rbmk_outgasser"
     };
 
-    private static final String[] RENDERED_16 = {
+    private static final String[] RENDERED_15 = {
             "rbmk_reflector"
     };
 
-    private static final String[] RENDERED_17 = {
+    private static final String[] RENDERED_16 = {
             "rbmk_storage"
     };
 
@@ -344,45 +340,42 @@ public final class ModBlockModels {
             Dejson.block(NS, name).rendered("hbm:block/machine_dummy_empty").states(Variants.uniformRange("facing", 2, 5)).register();
         }
         for (String name : RENDERED_4) {
-            Dejson.block(NS, name).rendered("hbm:block/difurnace_extension").states(Variants.simple()).register();
-        }
-        for (String name : RENDERED_5) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_absorber_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_6) {
+        for (String name : RENDERED_5) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_blank_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_7) {
+        for (String name : RENDERED_6) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_boiler_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_8) {
+        for (String name : RENDERED_7) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_cooler_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_9) {
+        for (String name : RENDERED_8) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_element_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_10) {
+        for (String name : RENDERED_9) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_element_mod_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_11) {
+        for (String name : RENDERED_10) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_element_reasim_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_12) {
+        for (String name : RENDERED_11) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_element_reasim_mod_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_13) {
+        for (String name : RENDERED_12) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_heater_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_14) {
+        for (String name : RENDERED_13) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_moderator_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_15) {
+        for (String name : RENDERED_14) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_outgasser_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_16) {
+        for (String name : RENDERED_15) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_reflector_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
-        for (String name : RENDERED_17) {
+        for (String name : RENDERED_16) {
             Dejson.block(NS, name).rendered("hbm:block/rbmk/rbmk_storage_column_none").states(Variants.product(Variants.uniform("lid", "none", "concrete", "glass"), Variants.uniform("part", "core", "middle", "top"))).register();
         }
     }
