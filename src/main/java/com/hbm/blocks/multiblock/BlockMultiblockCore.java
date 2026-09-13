@@ -4,6 +4,7 @@ import com.hbm.capability.CapRole;
 import com.hbm.capability.ICapabilityBlock;
 import com.hbm.capability.MachineCaps;
 import com.hbm.interfaces.ICopiable;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
@@ -282,6 +283,40 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         int mask = passiveMaskAt(lx, dy, lz, passiveDomains);
         if (mask == MultiblockMaskTable.NOT_A_CELL) return false;
         return (mask & (1 << MultiblockMaskTable.toLocal(side, facing).ordinal())) != 0;
+    }
+
+    /** Is any of {@code roles} open on this face? The union a caller holding a commodity but not a direction wants. */
+    public boolean isOpenForAny(Direction facing, int dx, int dy, int dz, Direction side, int roles) {
+        for (CapRole role : CapRole.VALUES) {
+            if ((roles & role.bit) != 0 && isOpenAt(facing, dx, dy, dz, side, PASSIVE_NONE, role)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * The cable answer, inherited rather than written per machine: a subclass that declares
+     * {@link com.hbm.api.energymk2.IEnergyConnectorBlock} satisfies it from the baked table and states its
+     * ports in one place. Reads the power roles only, so a fluid port does not answer for a cable.
+     */
+    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+        return openForConnector(world, pos, dir, ROLE_POWER);
+    }
+
+    /** The duct answer; see {@link #canConnect(BlockGetter, BlockPos, ForgeDirection)}. */
+    public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter world, int x, int y, int z,
+                              ForgeDirection dir) {
+        return openForConnector(world, new BlockPos(x, y, z), dir, ROLE_FLUID);
+    }
+
+    private boolean openForConnector(BlockGetter world, BlockPos pos, ForgeDirection dir, int roles) {
+        if (!(world instanceof Level level)) return false;
+        BlockState state = level.getBlockState(pos);
+        BlockPos core = MultiblockSurface.foldedCore(state) != null ? pos : MultiblockSurface.coreOfCell(level, pos);
+        if (core == null) return false;
+        BlockState coreState = level.getBlockState(core);
+        BlockMultiblockCore block = MultiblockSurface.foldedCore(coreState);
+        return block != null && block.isOpenForAny(coreState.getValue(FACING), pos.getX() - core.getX(),
+                pos.getY() - core.getY(), pos.getZ() - core.getZ(), dir.toDirection(), roles);
     }
 
     /** This cell's world-frame geometry, or null for a plain full cube. */

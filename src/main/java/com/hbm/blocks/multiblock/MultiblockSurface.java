@@ -12,6 +12,9 @@ import org.jspecify.annotations.Nullable;
 /** Resolves folded cells to their owning core without the old metadata chain. */
 public final class MultiblockSurface {
 
+    private static long @Nullable [] clientCandidates;
+    private static @Nullable BlockPos clientCoreHint;
+
     private MultiblockSurface() {}
 
     public static @Nullable BlockMultiblockCore foldedCore(BlockState state) {
@@ -42,16 +45,52 @@ public final class MultiblockSurface {
                 state.getValue(BlockMultiblockCore.FACING));
     }
 
-    /** The client has no server index, so validate the bounded geometry around the interacted cell. */
+    /**
+     * The client has no server index, so it walks back to the core. The candidates are the exact offsets
+     * some registered machine places a cell at, negated — a few hundred deltas rather than the 35937 of a
+     * bounding cube, and every one of them a position a core could actually occupy. Cells cluster, so the
+     * last answer is tried first and usually stands.
+     */
     private static @Nullable BlockPos clientCoreOf(BlockGetter level, BlockPos cell) {
+        BlockPos hint = clientCoreHint;
+        if (hint != null && coreClaims(level, hint, cell)) return hint;
+
+        long[] candidates = clientCandidates;
+        if (candidates == null) candidates = clientCandidates = buildClientCandidates();
         BlockPos.MutableBlockPos probe = new BlockPos.MutableBlockPos();
-        for (int dx = -16; dx <= 16; dx++) for (int dy = -16; dy <= 16; dy++) for (int dz = -16; dz <= 16; dz++) {
-            probe.set(cell.getX() + dx, cell.getY() + dy, cell.getZ() + dz);
-            BlockState state = level.getBlockState(probe);
-            BlockMultiblockCore core = foldedCore(state);
-            if (core != null && core.claimsCell(probe, cell, state.getValue(BlockMultiblockCore.FACING))) return probe.immutable();
+        for (long delta : candidates) {
+            probe.set(cell.getX() + BlockPos.getX(delta), cell.getY() + BlockPos.getY(delta),
+                    cell.getZ() + BlockPos.getZ(delta));
+            if (!coreClaims(level, probe, cell)) continue;
+            BlockPos core = probe.immutable();
+            clientCoreHint = core;
+            return core;
         }
         return null;
+    }
+
+    /**
+     * Does the folded core standing at {@code core} claim {@code cell}? The walk's acceptance test, factored
+     * out so hint and walk cannot disagree.
+     */
+    public static boolean coreClaims(BlockGetter level, BlockPos core, BlockPos cell) {
+        BlockState state = level.getBlockState(core);
+        BlockMultiblockCore block = foldedCore(state);
+        return block != null && block.claimsCell(core, cell, state.getValue(BlockMultiblockCore.FACING));
+    }
+
+    private static long[] buildClientCandidates() {
+        it.unimi.dsi.fastutil.longs.LongOpenHashSet deltas = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        for (net.minecraft.world.level.block.Block block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+            if (!(block instanceof BlockMultiblockCore core)) continue;
+            for (Direction facing : Direction.values()) {
+                if (facing.getAxis().isVertical()) continue;
+                core.maskTable().forEachLocalCell((lx, ly, lz) -> deltas.add(BlockPos.asLong(
+                        -MultiblockMaskTable.worldX(lx, ly, lz, facing), -ly,
+                        -MultiblockMaskTable.worldZ(lx, ly, lz, facing))));
+            }
+        }
+        return deltas.toLongArray();
     }
 
     public static @Nullable BlockPos coreOfAny(Level level, BlockPos pos) {
