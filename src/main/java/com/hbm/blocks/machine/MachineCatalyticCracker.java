@@ -95,9 +95,10 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
     }
 
     /**
-     * Six of upstream's eight ports. The two it states at {@code +-rot*4} name a cell one step outside
-     * the machine -- 1.7 asks {@code isPort} of a block that is not the cracker and never gets an
-     * answer -- so they connect nothing there either, and the table says what the machine really has.
+     * Six of upstream's eight ports. The pair at {@code +dir*2 - rot*4} and {@code -dir*2 + rot*3}
+     * each carries the face of the opposite flank, so each names a cell one step outside the machine
+     * -- 1.7 asks {@code isPort} of a block that is not the cracker and never gets an answer -- so
+     * they connect nothing there either, and the table says what the machine really has.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -110,7 +111,7 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
         visitor.cell(core.relative(facing, -3).relative(rot), MASK_NORTH);
         visitor.cell(core.relative(facing, -3).relative(rot, -2), MASK_NORTH);
         visitor.cell(core.relative(facing, 2).relative(rot, 2), MASK_WEST);
-        visitor.cell(core.relative(facing, -2).relative(rot, 2), MASK_WEST);
+        visitor.cell(core.relative(facing, -2).relative(rot, -3), MASK_EAST);
     }
 
     @Override
