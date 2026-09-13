@@ -2,15 +2,14 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  * acid to produce crystals. Power and fluid connect only at the core's 8 side ports ({@code getConPos});
  * the plus-shaped base is widened to the full 3×3 by {@link #fillSpace} corner extras, like the original.
  */
-public class MachineCrystallizer extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineCrystallizer extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineCrystallizer(Properties properties) {
         super(properties);
@@ -39,22 +38,8 @@ public class MachineCrystallizer extends BlockDummyable implements IEnergyConnec
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineCrystallizer te ? te : null;
-    }
-
-    /** Cables connect only at the machine's true power ports (the core's {@code getConPos} side positions). */
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineCrystallizer te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
-    }
-
-    /** Ducts connect at the same 8 side ports (the geometry is fluid-agnostic — reuse the energy helper). */
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineCrystallizer te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
     }
 
     @Override
@@ -67,17 +52,24 @@ public class MachineCrystallizer extends BlockDummyable implements IEnergyConnec
         return 1;
     }
 
+    /** The declared box fills a plus at ground level; 1.7 widens it to the full 3x3 with four corners. */
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int dx = -1; dx <= 1; dx += 2) {
+            for (int dz = -1; dz <= 1; dz += 2) {
+                visitor.cell(core.offset(dx, 0, dz), outwardMask(dx, dz, 1));
+            }
+        }
+    }
 
-        // The dimensions above only fill a plus shape at ground level; add the 4 base corners (1.12.2 verbatim).
-        x += dir.offsetX * o;
-        z += dir.offsetZ * o;
-
-        this.makeExtra(world, x + 1, y, z + 1);
-        this.makeExtra(world, x + 1, y, z - 1);
-        this.makeExtra(world, x - 1, y, z + 1);
-        this.makeExtra(world, x - 1, y, z - 1);
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        for (int dx = -1; dx <= 1; dx += 2) {
+            for (int dz = -1; dz <= 1; dz += 2) {
+                visitor.passiveCell(core.offset(dx, 0, dz), MASK_ALL, domains);
+            }
+        }
     }
 }

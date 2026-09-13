@@ -1,15 +1,15 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityHeaterElectric;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -27,7 +27,7 @@ import java.util.List;
  * old screwdriver/hand-drill tools aren't ported), and the look-overlay shows heat/consumption/output.
  * Cables connect at the single rear power port.
  */
-public class HeaterElectric extends BlockDummyable implements IEnergyConnectorBlock, ILookOverlay {
+public class HeaterElectric extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay {
 
     public HeaterElectric(Properties properties) {
         super(properties);
@@ -48,24 +48,11 @@ public class HeaterElectric extends BlockDummyable implements IEnergyConnectorBl
         return 2;
     }
 
-    @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-        this.makeExtra(world, x, y, z);
-    }
-
-    /** Cables connect only at the heater's rear power port. */
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityHeaterElectric te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
-    }
-
     /** Right-click cycles the heat setting up, sneak-right-click cycles it down (replaces IToolable). */
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide()) {
-            if (findCoreTE(level, pos) instanceof TileEntityHeaterElectric te) {
+            if (MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterElectric te) {
                 if (player.isShiftKeyDown()) te.toggleSettingDown();
                 else te.toggleSettingUp();
                 if (player instanceof net.minecraft.server.level.ServerPlayer sp) {
@@ -79,7 +66,7 @@ public class HeaterElectric extends BlockDummyable implements IEnergyConnectorBl
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityHeaterElectric heater)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityHeaterElectric heater)) return null;
 
         List<String> text = new ArrayList<>();
         text.add(String.format("%,d", heater.heatEnergy) + " TU");
@@ -87,5 +74,17 @@ public class HeaterElectric extends BlockDummyable implements IEnergyConnectorBl
         text.add("§a-> §r" + heater.getConsumption() + " HE/t");
         text.add("§c<- §r" + heater.getHeatGen() + " TU/t");
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    /** The cell two in front of the core is the whole power surface. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.relative(facing, 2), MASK_SOUTH);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        visitor.passiveCell(core.relative(facing, 2), MASK_ALL, PASSIVE_POWER_IN);
     }
 }

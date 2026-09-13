@@ -147,6 +147,20 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public int coreMask() { return MASK_NONE; }
 
     /**
+     * The faces a cell on the edge of a square footprint turns outward. What 1.7 left unsaid: {@code
+     * makeExtra} marked a ring cell a port and recorded no face, because the face was recovered later by
+     * scanning {@code getConPos}.
+     */
+    protected static int outwardMask(int dx, int dz, int radius) {
+        int mask = MASK_NONE;
+        if (dx == -radius) mask |= MASK_WEST;
+        if (dx == radius) mask |= MASK_EAST;
+        if (dz == -radius) mask |= MASK_NORTH;
+        if (dz == radius) mask |= MASK_SOUTH;
+        return mask;
+    }
+
+    /**
      * Every cell where 1.7 stamps a fluid- or power-carrying proxy, and the faces that proxy accepts on;
      * read the stamp's arguments — only {@code .power()} and {@code .fluid()} name a domain.
      */

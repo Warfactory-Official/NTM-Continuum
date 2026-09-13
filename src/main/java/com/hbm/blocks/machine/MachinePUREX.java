@@ -45,7 +45,7 @@ public final class MachinePUREX extends BlockMultiblockMachine implements IEnerg
         super.visitCells(core, facing, visitor);
         for (int i = -2; i <= 2; i++) {
             for (int j = -2; j <= 2; j++) {
-                if (Math.abs(i) == 2 || Math.abs(j) == 2) visitor.cell(core.offset(i, 0, j), ringMask(i, j));
+                if (Math.abs(i) == 2 || Math.abs(j) == 2) visitor.cell(core.offset(i, 0, j), outwardMask(i, j, 2));
             }
         }
     }
@@ -60,14 +60,5 @@ public final class MachinePUREX extends BlockMultiblockMachine implements IEnerg
                 }
             }
         }
-    }
-
-    private static int ringMask(int dx, int dz) {
-        int mask = MASK_NONE;
-        if (dx == -2) mask |= MASK_WEST;
-        if (dx == 2) mask |= MASK_EAST;
-        if (dz == -2) mask |= MASK_NORTH;
-        if (dz == 2) mask |= MASK_SOUTH;
-        return mask;
     }
 }

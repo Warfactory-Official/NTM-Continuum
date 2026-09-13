@@ -32,6 +32,26 @@ public final class FoldedTestSupport {
         return core;
     }
 
+    /**
+     * Assert the plot-relative {@code cell} is a port of the multiblock cored at plot-relative {@code core}
+     * -- open on at least one face. This is what {@code META >= extra} used to assert: 1.7 marked a cell a
+     * port and recorded no face, so "is a port at all" is the whole of what it said.
+     */
+    public static void assertPort(GameTestHelper helper, BlockPos core, BlockPos cell) {
+        assertCell(helper, core, cell);
+        BlockPos absoluteCore = helper.absolutePos(core);
+        BlockPos absoluteCell = helper.absolutePos(cell);
+        BlockMultiblockCore.FoldedOwner owner = MultiblockSurface.ownerOf(helper.getLevel(), absoluteCell);
+        helper.assertTrue(owner != null, "No folded owner for the cell at " + cell);
+        for (Direction side : Direction.values()) {
+            if (owner.block().isOpenAt(owner.facing(), absoluteCell.getX() - absoluteCore.getX(),
+                    absoluteCell.getY() - absoluteCore.getY(), absoluteCell.getZ() - absoluteCore.getZ(), side)) {
+                return;
+            }
+        }
+        helper.fail("Cell at " + cell + " is open on no face, so it is not a port", absoluteCell);
+    }
+
     /** Assert the plot-relative {@code cell} is a cell of the multiblock cored at plot-relative {@code core}. */
     public static void assertCell(GameTestHelper helper, BlockPos core, BlockPos cell) {
         BlockPos absoluteCore = helper.absolutePos(core);
