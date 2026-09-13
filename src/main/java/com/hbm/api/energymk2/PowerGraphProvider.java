@@ -1,6 +1,7 @@
 package com.hbm.api.energymk2;
 
 import com.hbm.uninos.graph.IGraphProvider;
+import com.hbm.uninos.graph.NodeNetwork;
 import com.mojang.serialization.Codec;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -24,5 +25,10 @@ public final class PowerGraphProvider implements IGraphProvider<CableData> {
     @Override
     public Codec<CableData> dataCodec() {
         return CableData.CODEC;
+    }
+
+    @Override
+    public void onNetsMerged(NodeNetwork<CableData> keep, NodeNetwork<CableData> drain) {
+        PowerNetwork.mergeBridges(keep, drain);
     }
 }

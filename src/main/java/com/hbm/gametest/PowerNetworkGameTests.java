@@ -3,6 +3,7 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.api.energymk2.CableData;
 import com.hbm.api.energymk2.EnergyBus;
+import com.hbm.api.energymk2.EnergyConversion;
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -17,6 +18,8 @@ import com.hbm.uninos.graph.LevelNodeGraph;
 import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.EnergyCompat;
+import dev.golem.core.world.EnergyExposure;
+import dev.golem.core.world.EnergyView;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -68,6 +71,10 @@ public final class PowerNetworkGameTests {
             TESTS.function("power_net_foreign_lookup", 20, () -> PowerNetworkGameTests::foreignLookup);
     public static final GameTests.Function GRAPH_ROUND =
             TESTS.function("power_graph_round", 40, () -> PowerNetworkGameTests::graphRound);
+    public static final GameTests.Function FOREIGN_FACE =
+            TESTS.function("power_foreign_face", 40, () -> PowerNetworkGameTests::foreignFace);
+    public static final GameTests.Function CONVERSION =
+            TESTS.function("power_he_fe_conversion", 20, () -> PowerNetworkGameTests::heFeConversion);
 
     /**
      * A row per test, because a gametest plot is not alone in the level and the graph is. Plots sit
@@ -78,6 +85,7 @@ public final class PowerNetworkGameTests {
     private static final int JOIN_Z = 6;
     private static final int SPLIT_Z = 12;
     private static final int GRAPH_Z = 18;
+    private static final int FOREIGN_Z = 22;
     private static final int CABLE_FROM = 6;
     private static final int CABLE_TO = 14;
     private static final long CAP = TileEntityMachineBattery.MAX_POWER;
@@ -291,6 +299,73 @@ public final class PowerNetworkGameTests {
         helper.assertTrue(failure == null, String.valueOf(failure));
         helper.assertTrue(moved > 0L, "The graph moved nothing to a receiver on its own net");
         helper.assertTrue(total == SPEED, "The graph round created or destroyed energy: " + total);
+        helper.succeed();
+    }
+
+    /**
+     * Our own cable read as somebody else's energy block: the one half of the foreign bridge that can
+     * be exercised without a foreign mod on the classpath, since the reading side and the exposing side
+     * are the two facades this port added and they meet at the capability.
+     *
+     * <p>What a peer sees is a BUDGET, not a charge — a cable stores nothing. So a run with a full
+     * provider on it advertises what that provider had left over, and taking it leaves the net owing
+     * the amount, which its next round charges to the provider. That is the invariant asserted here.
+     */
+    private static void foreignFace(GameTestHelper helper) {
+        if (!EnergyExposure.supported()) {
+            helper.succeed();
+            return;
+        }
+        ServerLevel level = helper.getLevel();
+        Rig rig = new Rig(helper, FOREIGN_Z);
+        rig.cables(CABLE_FROM, CABLE_TO);
+        TileEntityMachineBattery source =
+                rig.battery(CABLE_FROM, FOREIGN_Z - 1, TileEntityMachineBattery.MODE_OUTPUT, SPEED);
+
+        BlockPos cable = helper.absolutePos(new BlockPos(CABLE_FROM + 2, 1, FOREIGN_Z));
+        EnergyView view = EnergyCompat.find(level, cable, Direction.UP);
+        helper.assertTrue(view != null, "A cable exposed no energy handler to a foreign lookup");
+
+        // The first round is what publishes a budget; before it the net has never been asked anything.
+        for (int pass = 0; pass < 8 && view.extractable() == 0L; pass++) rig.round();
+
+        long offered = view.extractable();
+        helper.assertTrue(offered > 0L, "A cable fed by a full provider offered a foreign peer nothing");
+        helper.assertTrue(offered == EnergyConversion.feFromHe(SPEED),
+                "A cable offered " + offered + " FE where " + SPEED + " HE is worth "
+                        + EnergyConversion.feFromHe(SPEED));
+
+        long taken = view.extract(offered);
+        helper.assertTrue(taken == offered, "A peer asked for " + offered + " FE and got " + taken);
+        helper.assertTrue(view.extractable() == 0L, "A budget survived being spent");
+
+        rig.round();
+        long charged = SPEED - source.power;
+        helper.assertTrue(charged == EnergyConversion.heFromFe(taken),
+                "A peer took " + taken + " FE but the net charged its provider " + charged + " HE");
+        helper.succeed();
+    }
+
+    /**
+     * The exchange is exact in both directions at the shipped ratio, and the carry is what makes it so
+     * at ratios that do not divide: 1.7's own converter is 5 HE to 1 FE, so a single HE buys nothing
+     * and five of them must buy one rather than five nothings.
+     */
+    private static void heFeConversion(GameTestHelper helper) {
+        long he = EnergyConversion.heRatio();
+        long fe = EnergyConversion.feRatio();
+        helper.assertTrue(EnergyConversion.feFromHe(he) == fe,
+                he + " HE bought " + EnergyConversion.feFromHe(he) + " FE rather than " + fe);
+        helper.assertTrue(EnergyConversion.heFromFe(fe) == he,
+                fe + " FE bought " + EnergyConversion.heFromFe(fe) + " HE rather than " + he);
+
+        EnergyConversion.Carry carry = new EnergyConversion.Carry();
+        long bought = 0L;
+        for (long i = 0; i < he; i++) bought += carry.feFromHe(1L);
+        helper.assertTrue(bought == fe, "One HE at a time bought " + bought + " FE where " + he
+                + " at once buys " + fe + "; the carry is dropping the remainder");
+        helper.assertTrue(carry.heToFeRemainder() == 0L,
+                "An exact conversion left " + carry.heToFeRemainder() + " banked");
         helper.succeed();
     }
 
