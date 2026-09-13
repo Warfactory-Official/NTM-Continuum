@@ -3,7 +3,6 @@ package com.hbm.client.render;
 import com.hbm.Constants;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;

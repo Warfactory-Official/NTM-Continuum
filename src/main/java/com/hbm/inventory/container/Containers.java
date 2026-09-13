@@ -1,6 +1,5 @@
 package com.hbm.inventory.container;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
@@ -28,23 +27,17 @@ public final class Containers {
      * machine that owns it. Identical to vanilla's check for an ordinary block; for a multiblock the
      * range covers the whole footprint rather than just the core cell.
      */
-    /**
-     * Whether {@code player} is in range of the multiblock cored at {@code pos}, whichever system owns it.
-     * The dummyable arm retires with the last unfolded machine.
-     */
+    /** Whether {@code player} is in range of the multiblock cored at {@code pos}. */
     public static boolean inRangeOfMultiblock(net.minecraft.world.level.BlockGetter level,
                                               net.minecraft.core.BlockPos pos, Player player) {
-        Block block = level.getBlockState(pos).getBlock();
-        if (block instanceof BlockMultiblockCore) {
-            return BlockMultiblockCore.isWithinInteractionRange(level, pos, player);
-        }
-        return BlockDummyable.isWithinInteractionRange(level, pos, player);
+        return level.getBlockState(pos).getBlock() instanceof BlockMultiblockCore
+                && BlockMultiblockCore.isWithinInteractionRange(level, pos, player);
     }
 
     public static boolean stillValidMultiblock(ContainerLevelAccess access, Player player, Block block) {
         return access.evaluate((level, pos) -> {
             if (!level.getBlockState(pos).is(block)) return false;
-            if (block instanceof BlockMultiblockCore || block instanceof BlockDummyable) {
+            if (block instanceof BlockMultiblockCore) {
                 return inRangeOfMultiblock(level, pos, player);
             }
             // Not a multiblock: vanilla's plain 8-block radius, spelled the era-neutral way

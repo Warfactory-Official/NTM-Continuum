@@ -233,7 +233,7 @@ public final class HbmBlockEntityRenderers {
         // generic renderer's built-in map (N0/S180/W90/E270) + 90 — then a post-rotation
         // translate(-0.5, 0, 3) (the model isn't centred on the core cell).
         regGem(sink, ModBlockEntities.MACHINE_COMBUSTION_ENGINE.get(), CombustionEngineRenderer::new);
-        // Refueler: a single FACING block (not a BlockDummyable), so the generic renderer can't read its
+        // Refueler: a single FACING block (not a multiblock), so the generic renderer can't read its
         // facing — own renderer (yaw from FACING + the fill-level fluid part).
         regGem(sink, ModBlockEntities.REFUELER.get(), RefuelerRenderer::new);
 
@@ -273,7 +273,7 @@ public final class HbmBlockEntityRenderers {
         // Fluid duct: the real pipe_neo.obj, parts chosen from the connection state (like the cable).
         regGem(sink, ModBlockEntities.FLUID_DUCT.get(), FluidDuctObjRenderer::new);
 
-         // Fluid tank: a BlockDummyable multiblock with its own renderer — the cylinder body is textured
+         // Fluid tank: a multiblock with its own renderer — the cylinder body is textured
          // per-fluid (tank/tank_<name>.png, NONE -> tank_none) while the frame stays machines/tank.png, so
          // it can't use the single-texture-per-part generic renderer. (Base yaw 180°; see FluidTankRenderer.)
           regGem(sink, ModBlockEntities.FLUID_TANK.get(), FluidTankRenderer::new);

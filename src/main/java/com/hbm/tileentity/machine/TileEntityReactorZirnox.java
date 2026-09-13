@@ -1,10 +1,10 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
@@ -209,8 +209,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         }
 
         // Remove the upper live shell and core before forming the two-block-tall wreck.
-        BlockDummyable.safeRem(true);
-        try {
+        BlockMultiblockCore.withoutTeardown(() -> {
             for (int dx = -2; dx <= 2; dx++) {
                 for (int dy = 2; dy <= 5; dy++) {
                     for (int dz = -2; dz <= 2; dz++) {
@@ -222,9 +221,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
                 }
             }
             level.removeBlock(pos, false);
-        } finally {
-            BlockDummyable.safeRem(false);
-        }
+        });
 
         level.playSound(null, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D,
                 ModSounds.RBMK_EXPLOSION.get(), SoundSource.BLOCKS, 10.0F, 1.0F);

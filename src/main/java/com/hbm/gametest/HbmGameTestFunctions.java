@@ -4,7 +4,6 @@ import com.hbm.Constants;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CoolingRecipes;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ZirnoxFuel;
@@ -1469,32 +1468,31 @@ public final class HbmGameTestFunctions {
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var absCore = helper.absolutePos(core);
         player.setPos(absCore.getX() + 8.5D, absCore.getY(), absCore.getZ() + 0.5D);
-        helper.assertTrue(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absCore, player),
+        helper.assertTrue(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
                 "A player at the torus's edge must be able to use it");
 
         player.setPos(absCore.getX() + 64.5D, absCore.getY(), absCore.getZ() + 0.5D);
-        helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absCore, player),
+        helper.assertFalse(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
                 "The range must still cut off at distance");
 
-        // The fracking tower is the case a dimensions-derived radius CANNOT cover: it declares a radius
-        // of 3 and then erects a derrick 24 blocks tall. A player at the top is standing on the machine
-        // and must be able to use it, which only the cell fallback can establish.
+        // The fracking tower is the case a dimensions-derived radius cannot cover: getDimensions says
+        // three and the derrick is twenty-four tall. The reach comes off the baked footprint instead.
         var towerCore = new net.minecraft.core.BlockPos(2, 1, 2);
         var tower = ModMachineBlocks.machine_fracking_tower.get();
         FoldedTestSupport.assemble(helper, tower, towerCore);
         var absTower = helper.absolutePos(towerCore);
 
-        helper.assertTrue(Math.sqrt(tower.getInteractionRangeSq()) < 24D,
-                "This test is only meaningful while the tower's declared radius is too small");
+        helper.assertTrue(Math.sqrt(tower.getInteractionRangeSq()) > 20D,
+                "The tower's reach must come from its baked footprint, not its declared dimensions");
 
         // Standing at the crown, 20 blocks up the derrick.
         player.setPos(absTower.getX() + 0.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
-        helper.assertTrue(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
+        helper.assertTrue(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "A player on top of the fracking tower must be able to use it");
 
         // But standing 20 blocks up in open air well to the side must not count.
         player.setPos(absTower.getX() + 40.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
-        helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
+        helper.assertFalse(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "Being high up near nothing must not grant access");
         helper.succeed();
     }
@@ -1897,13 +1895,7 @@ public final class HbmGameTestFunctions {
                                    java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity,
                                            java.util.List<com.hbm.lib.DirPos>> ports) {
         String name = block.getName().getString();
-        if (block instanceof com.hbm.blocks.multiblock.BlockMultiblockCore folded) {
-            FoldedTestSupport.assemble(helper, folded, core);
-        } else {
-            BlockDummyable dummyable = (BlockDummyable) block;
-            helper.setBlock(core, dummyable.defaultBlockState().setValue(BlockDummyable.META, 12));
-            dummyable.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-        }
+        FoldedTestSupport.assemble(helper, (BlockMultiblockCore) block, core);
         var te = helper.getLevel().getBlockEntity(helper.absolutePos(core));
         helper.assertTrue(te != null, name + " controller setup failed");
 

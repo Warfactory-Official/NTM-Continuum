@@ -1,6 +1,5 @@
 package com.hbm.blocks.bomb;
 
-import com.hbm.blocks.BlockDummyable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
@@ -31,8 +30,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  */
 public class BlockDigammaMatter extends Block {
 
-    /** Reuses the multiblock META property purely as a 0–15 generation counter, exactly as upstream. */
-    public static final IntegerProperty META = BlockDummyable.META;
+    /** Upstream carries the generation count in the block's metadata; here it is a property of its own. */
+    public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
     public BlockDigammaMatter(Properties properties) {
         super(properties);

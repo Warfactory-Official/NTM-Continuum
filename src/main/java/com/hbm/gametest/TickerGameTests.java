@@ -98,10 +98,9 @@ public final class TickerGameTests {
      * it silently. This is the check that fails for that, and a count is the only shape it can take:
      * there is nothing left in the tree that remembers the machine used to tick.
      *
-     * <p>It is deliberately not derived from reachability. A {@code BlockDummyable} creates its
-     * block entity only at its core state, so sweeping blocks at their default state reaches 86 of
-     * the 177 registered types and would make this number a measure of multiblock shape rather than
-     * of ticker coverage.
+     * <p>It is deliberately not derived from reachability. Not every registered type is reachable from
+     * a block's default state, so sweeping that way would make this number a measure of block shape
+     * rather than of ticker coverage.
      */
     public static void everyDeclaredTickerBelongsToABlock(GameTestHelper helper) {
         int ticking = BlockEntities.tickingTypes();

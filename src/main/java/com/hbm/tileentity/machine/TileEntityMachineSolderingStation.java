@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -37,7 +36,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Soldering station — a {@link BlockDummyable} multiblock that solders the higher-tier circuits from lower
+ * Soldering station — a multiblock that solders the higher-tier circuits from lower
  * circuits + lead fine-wire (+ a fluid at higher tiers). Auto-matches its recipe from the six grouped input
  * slots (3 toppings / 2 pcb / 1 solder), so no selector/blueprint is needed. Power + one receiving fluid
  * tank (typed by a {@code fluid_identifier} in slot 8).

@@ -3,7 +3,7 @@ package com.hbm.gametest;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineElectrolyser;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;

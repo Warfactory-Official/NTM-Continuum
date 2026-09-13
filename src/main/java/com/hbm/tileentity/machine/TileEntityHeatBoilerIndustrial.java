@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HeatRecipes;
@@ -75,8 +75,8 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         if (heat >= maxHeat) return;
         BlockPos below = worldPosition.below();
         BlockEntity sourceEntity = level.getBlockEntity(below);
-        if (!(sourceEntity instanceof IHeatSource) && level.getBlockState(below).getBlock() instanceof BlockDummyable dummy) {
-            sourceEntity = dummy.findCoreTE(level, below);
+        if (!(sourceEntity instanceof IHeatSource)) {
+            sourceEntity = MachineCore.at(level, below, level.getBlockState(below));
         }
         if (sourceEntity instanceof IHeatSource source) {
             int diff = source.getHeatStored() - heat;

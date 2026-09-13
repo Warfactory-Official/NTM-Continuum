@@ -15,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * The seed block of a hand-built multiblock: place it, build the machine's shape around it out of
  * component blocks, and its {@link TileEntityStructBase} scans once a second until the shape matches —
- * at which point it replaces itself with the finished {@link com.hbm.blocks.BlockDummyable} core and
+ * at which point it replaces itself with the finished multiblock core and
  * fills in the dummy shell. Port of 1.12.2's {@code BlockStruct}.
  *
  * <p>Upstream's comment still applies: <b>this is not direction sensitive</b>. Assembly always forms

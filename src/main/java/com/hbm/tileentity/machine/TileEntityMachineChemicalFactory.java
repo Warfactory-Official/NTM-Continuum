@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -292,8 +293,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     }
 
     private ForgeDirection facing() {
-        int meta = getBlockState().getValue(com.hbm.blocks.BlockDummyable.META);
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override

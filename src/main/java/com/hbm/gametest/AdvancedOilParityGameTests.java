@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -19,8 +18,6 @@ import net.minecraft.world.item.ItemStack;
  * Registration in the shared test aggregator is intentionally left to the central test owner.
  */
 public final class AdvancedOilParityGameTests {
-
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     private AdvancedOilParityGameTests() {}
 

@@ -251,7 +251,7 @@ public final class ModMachineBlocks {
             "machine_shredder", MachineShredder::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
 
-    // Multiblock (BlockDummyable) machines — invisible core+dummy blocks drawn by a BlockEntityRenderer.
+    // Folded multiblock machines — invisible core+cell blocks drawn by a BlockEntityRenderer.
     public static final RegistryObject<MachineEPress> machine_epress = BLOCKS.registerBlock(
             "machine_epress", MachineEPress::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
@@ -657,7 +657,7 @@ public final class ModMachineBlocks {
     }
 
     /**
-     * Properties for BlockDummyable multiblocks: their invisible full-cube cells must not count as
+     * Properties for folded multiblocks: their invisible full-cube cells must not count as
      * suffocating/view-blocking, or 26.1's push-out-of-block logic shoves entities that overlap them
      * (the 1.12.2 original set {@code isNormalCube=false} for the same reason).
      */

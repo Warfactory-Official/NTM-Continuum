@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerFurnaceCombination;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -140,8 +140,8 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
         if (heat >= maxHeat) return;
         BlockPos below = worldPosition.below();
         BlockEntity connection = level.getBlockEntity(below);
-        if (!(connection instanceof IHeatSource) && level.getBlockState(below).getBlock() instanceof BlockDummyable dummy) {
-            connection = dummy.findCoreTE(level, below);
+        if (!(connection instanceof IHeatSource)) {
+            connection = MachineCore.at(level, below, level.getBlockState(below));
         }
 
         if (connection instanceof IHeatSource source) {

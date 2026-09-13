@@ -1,6 +1,5 @@
 package com.hbm.client.render.flywheel;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.client.render.TorexCloudletRenderData;
 import com.hbm.entity.ModEntities;
@@ -134,17 +133,15 @@ public final class FlywheelCompat {
     /**
      * The block that owns the visual for a mined position, for the crumbling overlay.
      *
-     * <p>Both of this mod's multiblock systems put the block entity somewhere other than where the
-     * player is usually swinging: a {@link BlockDummyable} keeps it at a core offset from its dummies,
-     * and a folded multiblock's cells carry no block entity at all. Without this the destroy-stage
-     * overlay silently fails to draw on every multiblock in the game.
+     * <p>A folded multiblock puts the block entity somewhere other than where the player is usually
+     * swinging -- its cells carry none at all -- so without this the destroy-stage overlay silently
+     * fails to draw on every multiblock in the game.
      *
      * <p>Deliberately not {@link MultiblockSurface#coreOfAny}: that falls through to a cell lookup for
      * any state at all, and the client half of that lookup is a 33-cubed scan around the position. This
      * runs per mined block per frame, so it has to reject a plain block on a state test alone.
      */
     public static @Nullable BlockPos crumblingCore(Level level, BlockPos mined, BlockState state) {
-        if (state.getBlock() instanceof BlockDummyable dummy) return dummy.findCore(level, mined);
         if (MultiblockSurface.isFoldedCell(state)) return cachedFoldedCore(level, mined);
         return null;
     }

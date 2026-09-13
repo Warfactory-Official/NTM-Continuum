@@ -154,7 +154,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
         sawmill.heat = 0;
     }
 
-    /** The running blade's fixed damage volume, rotated exactly like the old BlockDummyable helper. */
+    /** The running blade's fixed damage volume, rotated exactly like the footprint helper. */
     private static void damageOperatingBlade(Level level, BlockPos pos, BlockState state) {
         if (!(level instanceof ServerLevel server)) return;
 

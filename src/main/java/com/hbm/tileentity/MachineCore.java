@@ -1,6 +1,5 @@
 package com.hbm.tileentity;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.lib.ForgeDirection;
@@ -14,7 +13,7 @@ import org.jspecify.annotations.Nullable;
  * The block entity that owns a cell, for a net that found a connector block rather than a machine.
  *
  * <p>Continuum has two multiblock systems, and a resolver that knows only one of them misses the other
- * in silence. A {@link BlockDummyable} keeps its core at a fixed offset every cell can compute; a folded
+ * in silence. The dummyable system kept its core at a fixed offset every cell could compute; a folded
  * multiblock's cells carry no offset at all and are resolved through the server's core index. A turret
  * pad is the second kind, and asking it for a dummy offset simply answers nothing — which is why a
  * cable or a duct laid against one reached the turret through neither.
@@ -26,18 +25,12 @@ public final class MachineCore {
     /**
      * Which way the machine at this state faces, whichever system its block belongs to.
      *
-     * <p>A dummyable spells its facing into {@code META} above {@code offset}; a folded core carries it as
-     * {@code FACING}. Dozens of block entities recover their own facing this way to lay out their ports,
-     * and the {@code META} spelling compiles perfectly well against a block that no longer has the
-     * property -- it throws when the line runs. Asking here instead is what makes a machine's migration
-     * invisible to its tile.
+     * <p>Dozens of block entities recover their own facing this way to lay out their ports, and asking
+     * here rather than reading the property is what kept a machine's migration invisible to its tile.
      */
     public static ForgeDirection facing(BlockState state) {
         if (state.hasProperty(BlockMultiblockCore.FACING)) {
             return ForgeDirection.getOrientation(state.getValue(BlockMultiblockCore.FACING));
-        }
-        if (state.hasProperty(BlockDummyable.META)) {
-            return ForgeDirection.getOrientation(state.getValue(BlockDummyable.META) - BlockDummyable.offset);
         }
         return ForgeDirection.UNKNOWN;
     }
@@ -52,7 +45,6 @@ public final class MachineCore {
     }
 
     public static @Nullable BlockEntity at(Level level, BlockPos cell, BlockState state) {
-        if (state.getBlock() instanceof BlockDummyable dummyable) return dummyable.findCoreTE(level, cell);
         if (MultiblockSurface.foldedCore(state) == null && !MultiblockSurface.isFoldedCell(state)) return null;
         BlockPos core = MultiblockSurface.coreOfAny(level, cell);
         return core == null ? null : level.getBlockEntity(core);

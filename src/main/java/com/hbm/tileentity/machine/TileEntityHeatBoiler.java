@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HeatRecipes;
@@ -33,7 +33,7 @@ import dev.golem.core.data.DataOut;
  *
  * <p>Skips (§20): TomSaveData sun-fire heating, the boilerGroan ambience, the boiler audio loop,
  * IPersistentNBT/IConfigurableMachine/IFluidCopiable. Port seam: heat is polled through a
- * {@link BlockDummyable} dummy cell below by resolving its core (old used proxy TEs).
+ * multiblock cell below by resolving its core (old used proxy TEs).
  */
 public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
 
@@ -114,26 +114,24 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
 
         if (outputOps == 0 && canExplode) {
             this.hasExploded = true;
-            BlockDummyable.safeRem(true);
-
             BlockPos base = this.worldPosition;
-            for (int x = base.getX() - 1; x <= base.getX() + 1; x++) {
-                for (int y = base.getY() + 2; y <= base.getY() + 3; y++) {
-                    for (int z = base.getZ() - 1; z <= base.getZ() + 1; z++) {
-                        this.level.removeBlock(new BlockPos(x, y, z), false);
+            BlockMultiblockCore.withoutTeardown(() -> {
+                for (int x = base.getX() - 1; x <= base.getX() + 1; x++) {
+                    for (int y = base.getY() + 2; y <= base.getY() + 3; y++) {
+                        for (int z = base.getZ() - 1; z <= base.getZ() + 1; z++) {
+                            this.level.removeBlock(new BlockPos(x, y, z), false);
+                        }
                     }
                 }
-            }
-            this.level.removeBlock(this.worldPosition.above(), false);
+                this.level.removeBlock(this.worldPosition.above(), false);
 
-            // ExplosionVNT (strength 5, range-mod 3) unported — vanilla stand-in, documented §20.
-            // ExplosionInteraction.NONE: the old boiler-burst ExplosionVNT set only entity/player
-            // processors and NO BlockAllocator, i.e. it damaged entities but destroyed no blocks. A
-            // block-destroying interaction here blows up the boiler's own dummy cells → one self-drop
-            // per destroyed cell ("drops multiple of itself") and, with safeRem up, orphaned dummies.
-            this.level.explode(null, base.getX() + 0.5D, base.getY() + 2D, base.getZ() + 0.5D, 5F, Level.ExplosionInteraction.NONE);
-
-            BlockDummyable.safeRem(false);
+                // ExplosionVNT (strength 5, range-mod 3) unported — vanilla stand-in, documented §20.
+                // ExplosionInteraction.NONE: the old boiler-burst ExplosionVNT set only entity/player
+                // processors and NO BlockAllocator, i.e. it damaged entities but destroyed no blocks. A
+                // block-destroying interaction here blows up the boiler's own cells → one self-drop per
+                // destroyed cell ("drops multiple of itself") and, with teardown suppressed, orphans.
+                this.level.explode(null, base.getX() + 0.5D, base.getY() + 2D, base.getZ() + 0.5D, 5F, Level.ExplosionInteraction.NONE);
+            });
         }
     }
 
@@ -143,8 +141,8 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
         BlockEntity con = level.getBlockEntity(below);
 
         // Port seam: the heater below may expose only a dummy cell here — resolve to its core.
-        if (!(con instanceof IHeatSource) && level.getBlockState(below).getBlock() instanceof BlockDummyable dummy) {
-            con = dummy.findCoreTE(level, below);
+        if (!(con instanceof IHeatSource)) {
+            con = MachineCore.at(level, below, level.getBlockState(below));
         }
 
         if (con instanceof IHeatSource source) {

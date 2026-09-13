@@ -6,7 +6,6 @@ import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
 import com.hbm.api.fluidmk2.IFluidUserMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.BlockMultiblockCell;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
@@ -32,10 +31,8 @@ import java.util.List;
  * all, and the only thing that can speak for them is the block. A machine that fails this does not throw
  * and does not log — it simply never runs again, which is why a count of them is worth a test.
  *
- * <p>There are two multiblock systems and they fail differently: a {@link BlockDummyable} at least
- * resolves its core from any cell, so a conductor touching its <i>core</i> still works and only the
- * ports go dark; a folded multiblock's cells resolve through the server's core index and a conductor
- * touching one reaches nothing without the block's own answer.
+ * <p>A folded multiblock's cells resolve through the server's core index, and a conductor touching one
+ * reaches nothing without the block's own answer.
  */
 public final class NetworkReachGameTests {
 
@@ -56,8 +53,7 @@ public final class NetworkReachGameTests {
 
         for (Block block : BlockStates.blocksIn(Constants.MOD_ID)) {
             if (!(block instanceof EntityBlock entityBlock)) continue;
-            boolean spread = block instanceof BlockDummyable
-                    || block instanceof BlockMultiblockCore || block instanceof BlockMultiblockCell;
+            boolean spread = block instanceof BlockMultiblockCore || block instanceof BlockMultiblockCell;
             if (!spread || portless(block)) continue;
 
             BlockEntity be;
@@ -106,15 +102,9 @@ public final class NetworkReachGameTests {
         return block == ModMachineBlocks.fusion_klystron_creative.get();
     }
 
-    /**
-     * A dummyable hands out its block entity only for a core state, and its default state is not one —
-     * asking with the default is how this sweep first looked at five fluid machines and thought that was
-     * all of them.
-     */
+    /** A folded core's default state is already a core state; a cell is told apart by {@code CELL}. */
     private static BlockState coreState(Block block) {
-        BlockState state = block.defaultBlockState();
-        return state.hasProperty(BlockDummyable.META)
-                ? state.setValue(BlockDummyable.META, BlockDummyable.offset + 2) : state;
+        return block.defaultBlockState();
     }
 
     private static String name(Block block) {

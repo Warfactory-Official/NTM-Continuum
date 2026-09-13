@@ -3,7 +3,6 @@ package com.hbm.radio;
 import com.hbm.api.redstoneoverradio.IRORInfo;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -13,7 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/** Resolves an ROR attachment the same way old Compat.getTileStandard did for multiblock dummies. */
+/** Resolves an ROR attachment the same way old Compat.getTileStandard did for multiblock cells. */
 public final class RadioTargets {
     private RadioTargets() {}
 
@@ -49,10 +48,6 @@ public final class RadioTargets {
         // owner is only known to the index, and asking for a plain block's owner costs a client-side scan.
         if (MultiblockSurface.foldedCore(state) != null || MultiblockSurface.isFoldedCell(state)) {
             BlockEntity core = MultiblockSurface.coreEntity(level, pos);
-            if (core != null) return core;
-        }
-        if (block instanceof BlockDummyable dummyable) {
-            BlockEntity core = dummyable.findCoreTE(level, pos);
             if (core != null) return core;
         }
         // Containers are also direct targets, even though vanilla inventory block entities are not ROR info.

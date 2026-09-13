@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerMachineCoker;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
@@ -148,8 +148,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
         if (this.heat >= maxHeat) return;
         BlockPos below = worldPosition.below();
         BlockEntity con = level.getBlockEntity(below);
-        if (!(con instanceof IHeatSource) && level.getBlockState(below).getBlock() instanceof BlockDummyable dummy) {
-            con = dummy.findCoreTE(level, below);
+        if (!(con instanceof IHeatSource)) {
+            con = MachineCore.at(level, below, level.getBlockState(below));
         }
 
         if (con instanceof IHeatSource source) {

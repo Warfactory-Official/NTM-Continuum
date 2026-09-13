@@ -1,6 +1,5 @@
 package com.hbm.tileentity.machine.struct;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.machine.struct.StructPattern;
@@ -33,27 +32,15 @@ public abstract class TileEntityStructBase extends TileEntityLoadedBase {
     public abstract StructPattern pattern();
 
     /** The multiblock this becomes once the shape is complete. */
-    protected abstract Block target();
+    protected abstract BlockMultiblockCore target();
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityStructBase te) {
         if (level.getGameTime() % 20 != 0) return;
         if (!te.pattern().matches(level, pos)) return;
 
-        Block machine = te.target();
-        if (machine instanceof BlockMultiblockCore folded) {
-            BlockMultiblockCore.withoutTeardown(() ->
-                    MultiblockHandlerXR.placeAssembled(level, pos, folded, Direction.NORTH));
-        } else {
-            BlockDummyable dummyable = (BlockDummyable) machine;
-            BlockDummyable.safeRem(true);
-            try {
-                // META 12 = ForgeDirection.NORTH (2) + BlockDummyable.offset (10).
-                level.setBlock(pos, dummyable.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
-                dummyable.formStructure(level, pos, ForgeDirection.NORTH);
-            } finally {
-                BlockDummyable.safeRem(false);
-            }
-        }
+        BlockMultiblockCore machine = te.target();
+        BlockMultiblockCore.withoutTeardown(() ->
+                MultiblockHandlerXR.placeAssembled(level, pos, machine, Direction.NORTH));
         // `te` no longer exists — setBlock above destroyed this BlockEntity. Touch nothing after here.
     }
 }

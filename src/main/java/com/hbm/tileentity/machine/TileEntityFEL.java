@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.ModFallingBlocks;
@@ -154,7 +153,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             BlockState b = level.getBlockState(beam);
 
             // The SILEX check comes FIRST. Upstream relied on the chamber being Material.IRON (opaque)
-            // to reach this branch, but the port renders every BlockDummyable as INVISIBLE with
+            // to reach this branch, but the port renders every multiblock cell as INVISIBLE with
             // noOcclusion(), so an opacity test would let the beam pass straight through it. Testing
             // for the block explicitly is equivalent for the original and correct for the port.
             if (b.is(ModMachineBlocks.machine_silex.get())) {
