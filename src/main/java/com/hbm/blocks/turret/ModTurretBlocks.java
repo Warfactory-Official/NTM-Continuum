@@ -1,6 +1,7 @@
 package com.hbm.blocks.turret;
 
 import com.hbm.Constants;
+import com.hbm.blocks.multiblock.BlockMultiblockCell;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
@@ -17,14 +18,14 @@ public final class ModTurretBlocks {
     /** Shared by every turret, and never given to a player: it has no block item and no loot. */
     public static final RegistryObject<BlockTurretPad> turret_pad = BLOCKS.registerBlock(
             "turret_pad", BlockTurretPad::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+            p -> BlockMultiblockCell.rigid(p).strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                     .isSuffocating((state, world, pos) -> false)
                     .isViewBlocking((state, world, pos) -> false));
 
     /** Shared by the artillery guns, and likewise never given to a player. */
     public static final RegistryObject<BlockTurretEmplacement> turret_emplacement = BLOCKS.registerBlock(
             "turret_emplacement", BlockTurretEmplacement::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
+            p -> BlockMultiblockCell.rigid(p).strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
 
     public static final RegistryObject<TurretChekhov> turret_chekhov = BLOCKS.registerBlock(
             "turret_chekhov", TurretChekhov::new, ModTurretBlocks::turretProperties);

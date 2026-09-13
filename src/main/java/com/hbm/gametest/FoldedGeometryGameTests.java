@@ -1,12 +1,20 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.multiblock.BlockMultiblockCell;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
 import com.hbm.capability.CapRole;
 import com.hbm.capability.MachineCaps;
 import dev.golem.core.gametest.GameTests;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A folded machine states its connection geometry once, per cell and per role, and the statement is baked
@@ -28,6 +36,8 @@ public final class FoldedGeometryGameTests {
             TESTS.function("folded_roles_default_to_union", 1, () -> FoldedGeometryGameTests::rolesUnion);
     public static final GameTests.Function PASSIVE_PLANE =
             TESTS.function("folded_passive_plane_is_its_own", 1, () -> FoldedGeometryGameTests::passivePlane);
+    public static final GameTests.Function PISTONS_REFUSED =
+            TESTS.function("folded_cells_refuse_pistons", 1, () -> FoldedGeometryGameTests::pistonsRefused);
 
     private FoldedGeometryGameTests() {}
 
@@ -96,6 +106,29 @@ public final class FoldedGeometryGameTests {
                 BlockMultiblockCore.MASK_UP, "the item proxy's accept face");
         eq(helper, table.passiveMaskAtLocal(0, 1, 0, BlockMultiblockCore.PASSIVE_POWER_IN), 0,
                 "the power-in proxy face of a cell that proxies items only");
+        helper.succeed();
+    }
+
+    /**
+     * A piston may not take one cell out of a machine. 1.7 got the refusal free -- {@code BlockDummyable}
+     * extends {@code BlockContainer}, so every cell answered {@code hasTileEntity} and vanilla declined --
+     * and a folded cell carries no block entity, so each of the two cell kinds has to earn it separately:
+     * a machine whose cells are its own block from {@code TickingBlock}, the shared cell from its
+     * {@code PushReaction}. Shearing one cell out leaves a footprint the index no longer describes, and
+     * the displaced cell is an orphan no later teardown collects.
+     */
+    public static void pistonsRefused(GameTestHelper helper) {
+        List<String> shearable = new ArrayList<>();
+        for (Block block : BuiltInRegistries.BLOCK) {
+            if (!(block instanceof BlockMultiblockCore) && !(block instanceof BlockMultiblockCell)) continue;
+            for (BlockState state : block.getStateDefinition().getPossibleStates()) {
+                if (state.hasBlockEntity() || state.getPistonPushReaction() == PushReaction.BLOCK) continue;
+                shearable.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(block)));
+                break;
+            }
+        }
+        helper.assertTrue(shearable.isEmpty(), shearable.size() + " folded block(s) a piston can shear: "
+                + String.join(", ", shearable.subList(0, Math.min(20, shearable.size()))));
         helper.succeed();
     }
 }
