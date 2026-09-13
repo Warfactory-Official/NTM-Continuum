@@ -149,6 +149,11 @@ dependencies {
     // Sodium declares itself client-side, so it loads only during the client run. It goes on
     // `devModJar` rather than `localRuntime` — see that configuration for why.
     propOrNull("deps.sodium_neoforge")?.let { devModJar("maven.modrinth:sodium:$it") }
+
+    // Pipez is a real third-party energy mod, on `localRuntime` so it is present for the gametest
+    // server run and not only the client: it ships no mixins, so it needs no `mods` folder placement.
+    // Nothing compiles against it — the tests that drive it reach its one public setter reflectively.
+    propOrNull("deps.pipez")?.let { localRuntime("maven.modrinth:pipez:$it") }
 }
 
 tasks.processResources {

@@ -77,6 +77,9 @@ public final class ForgeInit {
         com.hbm.gametest.PowerNetworkGameTests.init();
         com.hbm.gametest.NetworkReachGameTests.init();
         com.hbm.gametest.FluidNetworkGameTests.init();
+        com.hbm.gametest.ForeignEnergyGameTests.init();
+        com.hbm.gametest.NetworkReachGameTests.init();
+        com.hbm.gametest.FluidNetworkGameTests.init();
         com.hbm.gametest.NetworkReachGameTests.init();
         com.hbm.gametest.FluidNetworkGameTests.init();
         com.hbm.gametest.NetworkReachGameTests.init();
@@ -132,6 +135,12 @@ public final class ForgeInit {
                 com.hbm.gametest.TurretGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.PowerNetworkGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.NetworkReachGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FluidNetworkGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ForeignEnergyGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.NetworkReachGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
