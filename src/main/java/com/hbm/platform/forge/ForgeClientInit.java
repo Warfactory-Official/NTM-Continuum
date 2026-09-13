@@ -36,6 +36,7 @@ final class ForgeClientInit {
         GolemNetwork.flushClientRegistrations();
 
         com.hbm.client.ClientGameTime.install();
+        HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();

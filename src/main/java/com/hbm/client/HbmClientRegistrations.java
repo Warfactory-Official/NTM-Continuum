@@ -221,6 +221,27 @@ public final class HbmClientRegistrations {
 
     }
 
+    /**
+     * The instancing engine's own count, on the F3 screen.
+     *
+     * <p>An instanced draw and a vanilla draw are pixel-identical when both are right, so the only way
+     * to tell an engine that is working from one that silently received nothing is to count what it
+     * holds. Models against models drawn is that count; draws against parts is the claim instancing
+     * actually makes, which is that many copies of a machine cost one draw rather than many.
+     */
+    public static void installDebugLines() {
+        dev.golem.core.client.DebugLines.register(com.hbm.Constants.MOD_ID, "gemrender", out -> {
+            dev.golem.core.render.Instancing.Report report = dev.golem.core.render.Instancing.report();
+            out.accept("gemrender: " + report.backend() + ", " + report.owning() + "/" + report.visuals()
+                    + " models (" + report.animated() + " animated, " + report.moving() + " moving), "
+                    + report.instances() + " parts, " + report.draws() + " draws");
+            out.accept("gemrender: " + report.writes() + " transforms written, " + report.skipped()
+                    + " parts skipped");
+            int fallen = report.visuals() - report.healthy();
+            if (fallen > 0) out.accept("gemrender: " + fallen + " models fell back to vanilla");
+        });
+    }
+
     public static void installTints() {
         dev.golem.core.client.Tints.install(com.hbm.Constants.MOD_ID);
     }

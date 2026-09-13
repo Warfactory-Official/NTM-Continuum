@@ -28,9 +28,9 @@ import java.util.WeakHashMap;
  *       every such reference lives in {@link FlywheelVisuals}, a file that does not exist on a node
  *       without the engine and which this class names only from inside a {@code //? if flywheel}
  *       branch. That way the JVM never tries to resolve those classes when the engine is absent.</li>
- *   <li><b>The vendored engine</b>, {@code dev.golem.core.flywheel}, on 26.1 NeoForge. Engine Room has
- *       a 26.1 source branch but no published artifact used by this build, so Golem Core carries that
- *       port instead. It ships inside
+ *   <li><b>The vendored engine</b>, {@code dev.golem.core.flywheel}, on both 26.1 nodes. Engine Room
+ *       has a 26.1 source branch but no published artifact used by this build, so Golem Core carries
+ *       that port instead. It ships inside
  *       a hard dependency and its entry point is present on every node with inert bodies, so it can be
  *       named unguarded — the discipline above exists for absent classes, and this one is never
  *       absent.</li>
@@ -108,7 +108,7 @@ public final class FlywheelCompat {
         if (!Instancing.isAvailable()) {
             throw new UnsupportedOperationException(
                     "Flywheel publishes no build for this Minecraft version and Golem Core vendors one "
-                            + "only on 26.1 NeoForge, so there are no visuals to register. Guard the "
+                            + "only from 26.1, so there are no visuals to register. Guard the "
                             + "call site on FlywheelCompat.isSupportedOnThisVersion() and let the block "
                             + "entity draw through its vanilla CompatBER.");
         }

@@ -61,16 +61,49 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
     private final GemBER<T, S> renderer;
     private final Gem.Model<S> model;
     private final S state;
+    private final boolean channelsFixed;
     private final List<Slot> slots = new ArrayList<>();
     private final Matrix4f scratch = new Matrix4f();
+
+    /^*
+     * The world transform this walk last gave each part, in visit order, and whether it drew.
+     *
+     * <p>Parts are numbered rather than looked up because the tree is sealed, exactly as the slot
+     * list already relies on. Joints are numbered too: they carry no instance, but a joint is the
+     * most common thing a still subtree hangs from, so proving one unchanged is what lets the walk
+     * skip everything under it.
+     ^/
+    private final Matrix4f[] poses;
+    private final boolean[] drawn;
+
+    /^*
+     * The slot each part started at last walk.
+     *
+     * <p>Slots are positional, so a part earlier in the walk that stops drawing — a mesh chooser is
+     * allowed to hand back nothing — shifts every slot after it by one. A subtree proved unchanged is
+     * still holding the right values, but no longer in the right slots, so the cursor has to agree
+     * before stepping over it.
+     ^/
+    private final int[] slotAt;
+    private int walked;
     private volatile boolean healthy = true;
     private volatile boolean written;
+    private boolean primed;
+    private int writtenLight;
+    private boolean touched;
 
     GemFlywheelVisual(VisualizationContext ctx, T blockEntity, float partialTick, GemBER<T, S> renderer) {
         super(ctx, blockEntity, partialTick);
         this.renderer = renderer;
         this.model = renderer.gem();
         this.state = renderer.createRenderState();
+        this.channelsFixed = this.model.channelsFixed();
+        int nodes = 0;
+        for (Gem.Part<S> root : this.model.roots()) nodes += root.subtreeNodes();
+        this.poses = new Matrix4f[nodes];
+        this.drawn = new boolean[nodes];
+        this.slotAt = new int[nodes];
+        for (int i = 0; i < nodes; i++) this.poses[i] = new Matrix4f();
         LIVE.put(pos, this);
     }
 
@@ -78,19 +111,27 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
     public void beginFrame(DynamicVisual.Context ctx) {
         if (!healthy) return;
         try {
+            state.blockPos = pos;
+            int sampled = Renderers.lightAt(level, pos);
+            if (sampled != writtenLight) primed = false;
+            state.lightCoords = sampled;
+
             // A model with no state-driven part is written once and then left alone until its light
             // changes, which is what makes a bolted-down machine cost nothing per frame.
-            if (written && model.rigid()) return;
+            if (written && primed && model.rigid()) return;
 
-            state.blockPos = pos;
-            state.lightCoords = Renderers.lightAt(level, pos);
             renderer.extract(blockEntity, state, ctx.partialTick(), ctx.camera().getPosition());
 
             scratch.identity().translate(visualPos.getX(), visualPos.getY(), visualPos.getZ());
+            boolean comparable = primed;
+            touched = false;
+            walked = 0;
             int next = 0;
-            for (Gem.Part<S> root : model.roots()) next = write(root, scratch, next, true);
+            for (Gem.Part<S> root : model.roots()) next = write(root, scratch, next, true, comparable);
             while (slots.size() > next) slots.remove(slots.size() - 1).instance().delete();
 
+            primed = true;
+            writtenLight = sampled;
             written = next > 0;
         } catch (RuntimeException failure) {
             fail(failure);
@@ -103,10 +144,30 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
      * <p>Slots are keyed by position in that walk rather than by identity, because the walk is over a
      * sealed tree: part <i>n</i> is the same part every frame, so its instance can simply be reused.
      ^/
-    private int write(Gem.Part<S> part, Matrix4f parent, int slot, boolean parentVisible) {
+    private int write(Gem.Part<S> part, Matrix4f parent, int slot, boolean parentVisible,
+                      boolean parentUnchanged) {
+        int node = walked++;
+
+        // Nothing above this part moved, nothing in it or under it reads the render state, and the
+        // model-wide channels every part falls back to are fixed too — so this subtree is already on
+        // the GPU holding the values it would be handed again. A spinning blade should cost a blade,
+        // not the machine it is bolted to.
+        if (parentUnchanged && channelsFixed && slot == slotAt[node] && part.rigidTree()) {
+            walked = node + part.subtreeNodes();
+            return slot + part.subtreeSlots();
+        }
+        slotAt[node] = slot;
+
         boolean visible = parentVisible && part.visible(state);
         Matrix4f here = new Matrix4f(parent);
         part.applyTo(here, state);
+
+        Matrix4f cached = poses[node];
+        boolean unchanged = parentUnchanged && visible == drawn[node] && here.equals(cached);
+        if (!unchanged) {
+            cached.set(here);
+            drawn[node] = visible;
+        }
 
         Geometry geometry = part.geometryOf(state);
         if (geometry != null) {
@@ -123,18 +184,64 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
                 target = allocate(geometry, surface);
                 slots.add(target);
             }
-            TransformedInstance instance = target.instance();
-            instance.setTransform(here);
-            instance.light(part.lightOf(state, model.lightOf(state, state.lightCoords)));
-            instance.overlay(OverlayTexture.NO_OVERLAY);
-            instance.colorArgb(part.tintOf(state));
-            instance.setVisible(visible);
-            instance.setChanged();
+            apply(target, here, part.lightOf(state, model.lightOf(state, state.lightCoords)),
+                    part.tintOf(state), visible);
             slot++;
         }
 
-        for (Gem.Part<S> child : part.children()) slot = write(child, here, slot, visible);
+        for (Gem.Part<S> child : part.children()) slot = write(child, here, slot, visible, unchanged);
         return slot;
+    }
+
+    /^*
+     * Sends one part's properties to its instance, and only the ones that differ.
+     *
+     * <p>{@code setChanged} is what queues an instance for upload, so an unchanged part that still
+     * calls it costs an upload to change nothing. Most machines in a loaded world are in exactly that
+     * position on most frames: they read their facing from the render state, which is enough to make
+     * them animated as far as the declaration is concerned, and then they never turn.
+     ^/
+    private void apply(Slot target, Matrix4f transform, int light, int tint, boolean visible) {
+        TransformedInstance instance = target.instance();
+        if (!target.written) {
+            target.written = true;
+            target.transform.set(transform);
+            target.light = light;
+            target.color = tint;
+            target.visible = visible;
+            instance.setTransform(transform);
+            instance.light(light);
+            instance.overlay(OverlayTexture.NO_OVERLAY);
+            instance.colorArgb(tint);
+            instance.setVisible(visible);
+            instance.setChanged();
+            touched = true;
+            return;
+        }
+
+        boolean changed = false;
+        if (!target.transform.equals(transform)) {
+            target.transform.set(transform);
+            instance.setTransform(transform);
+            changed = true;
+            touched = true;
+        }
+        if (target.light != light) {
+            target.light = light;
+            instance.light(light);
+            changed = true;
+        }
+        if (target.color != tint) {
+            target.color = tint;
+            instance.colorArgb(tint);
+            changed = true;
+        }
+        if (target.visible != visible) {
+            target.visible = visible;
+            instance.setVisible(visible);
+            changed = true;
+        }
+        if (changed) instance.setChanged();
     }
 
     /^*
@@ -162,6 +269,7 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
     @Override
     public void updateLight(float partialTick) {
         written = false;
+        primed = false;
     }
 
     @Override
@@ -182,8 +290,43 @@ final class GemFlywheelVisual<T extends BlockEntity, S extends CompatRenderState
         for (Slot slot : slots) slot.instance().delete();
         slots.clear();
         written = false;
+        primed = false;
     }
 
-    private record Slot(TransformedInstance instance, Geometry geometry, Surface surface) {}
+    /^*
+     * One instance, the declaration it was allocated against, and the last values sent to it.
+     *
+     * <p>The cache is what makes a redundant write detectable at all: an instance holds its own
+     * properties but has no way to answer "is this what you already have".
+     ^/
+    private static final class Slot {
+
+        private final TransformedInstance instance;
+        private final Geometry geometry;
+        private final Surface surface;
+        private final Matrix4f transform = new Matrix4f();
+        private boolean written;
+        private int light;
+        private int color;
+        private boolean visible;
+
+        private Slot(TransformedInstance instance, Geometry geometry, Surface surface) {
+            this.instance = instance;
+            this.geometry = geometry;
+            this.surface = surface;
+        }
+
+        private TransformedInstance instance() {
+            return instance;
+        }
+
+        private Geometry geometry() {
+            return geometry;
+        }
+
+        private Surface surface() {
+            return surface;
+        }
+    }
 }
 *///?}

@@ -29,6 +29,10 @@ public class FabricClientInit implements ClientModInitializer {
         HbmPackets.registerClientHandlers();
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
                 com.hbm.handler.JetpackHandler.clearClientState());
+        // The vendored 26.1 engine is a library and has to be handed its listeners; nowhere later
+        // will do, since some of them have to be in place before the first level arrives. No-op
+        // where the engine is a mod that subscribes itself, or absent.
+        com.hbm.client.render.flywheel.FlywheelCompat.startEngine();
         com.hbm.client.particle.HbmParticleHandlers.register();
         com.hbm.client.particle.SingularityParticleHandlers.register();
         GolemNetwork.flushClientRegistrations();
@@ -37,6 +41,7 @@ public class FabricClientInit implements ClientModInitializer {
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         com.hbm.client.ClientGameTime.install();
+        HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();

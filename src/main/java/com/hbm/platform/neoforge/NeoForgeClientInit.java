@@ -46,6 +46,7 @@ public final class NeoForgeClientInit {
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         com.hbm.client.ClientGameTime.install();
+        HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
