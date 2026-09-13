@@ -35,6 +35,18 @@ public final class MachineCaps {
     public static final int FE = 1 << 6;
 
     /**
+     * The fusion links, which are domains rather than caps: no block declares them and the builder below
+     * takes no argument for them. They name what a machine claims at a <b>position</b> — a fusion beam
+     * lands on a coordinate that need not hold a block at all — so the in/out halves are spelled
+     * separately, because which end of a link a machine is on is the whole of what the plasma and
+     * klystron nets used to carry.
+     */
+    public static final int PLASMA_IN = 1 << 7;
+    public static final int PLASMA_OUT = 1 << 8;
+    public static final int KLYSTRON_IN = 1 << 9;
+    public static final int KLYSTRON_OUT = 1 << 10;
+
+    /**
      * Every face open, as a {@code 1 << Direction.ordinal()} mask. Upstream keeps this on
      * {@code BlockMultiblockCore} beside its cell visitor; Continuum's multiblock core has no such
      * visitor, and a face mask belongs with the class that owns face semantics anyway.

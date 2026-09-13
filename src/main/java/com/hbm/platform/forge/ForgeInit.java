@@ -10,7 +10,6 @@ import com.hbm.packet.AnvilCraftPayload;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.packet.HbmPackets;
 import com.hbm.handler.radiation.RadiationSystemNT;
-import com.hbm.uninos.UniNodespace;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -79,6 +78,8 @@ public final class ForgeInit {
         com.hbm.gametest.NetworkReachGameTests.init();
         com.hbm.gametest.FluidNetworkGameTests.init();
         com.hbm.gametest.NetworkReachGameTests.init();
+        com.hbm.gametest.FluidNetworkGameTests.init();
+        com.hbm.gametest.NetworkReachGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -138,6 +139,10 @@ public final class ForgeInit {
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.NetworkReachGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FluidNetworkGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.NetworkReachGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FlywheelGameTests.TESTS));
 
         HbmPackets.declare();
@@ -152,13 +157,11 @@ public final class ForgeInit {
                 com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer());
             }
             if (event.phase == TickEvent.Phase.END) {
-                UniNodespace.updateNodespace(event.getServer());
                 RadiationSystemNT.tickServer(event.getServer());
             }
         });
         MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
-                UniNodespace.clearLevel(level);
                 RadiationSystemNT.clearWorld(level);
                 com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }

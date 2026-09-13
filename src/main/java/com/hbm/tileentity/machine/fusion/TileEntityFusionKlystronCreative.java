@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -28,9 +29,10 @@ public class TileEntityFusionKlystronCreative extends TileEntityFusionKlystron {
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionKlystronCreative te) {
         // maxInput is only known once the cycles are loaded; registration is idempotent.
         FusionRecipes.INSTANCE.registerRecipes();
-        te.klystronNode = FusionNodes.emitterNode(level, te.klystronNode, pos, FusionNodes.facing(state));
-        if (te.klystronNode.net != null) te.klystronNode.net.addProvider(te);
-        te.isConnected = FusionNodes.provideKyU(te.klystronNode, FusionRecipes.INSTANCE.maxInput);
+        FusionLink.claim(level, te, FusionNodes.emitter(pos, FusionNodes.facing(state)),
+                MachineCaps.KLYSTRON_OUT);
+        te.isConnected = FusionNodes.provideKyU(level, pos, FusionNodes.facing(state),
+                FusionRecipes.INSTANCE.maxInput);
         te.networkPackNT();
     }
 

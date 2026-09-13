@@ -11,7 +11,6 @@ import com.hbm.items.ModFuelItems;
 import com.hbm.packet.HbmPackets;
 import com.hbm.packet.AnvilCraftPayload;
 import dev.golem.core.registry.DeferredRegister;
-import com.hbm.uninos.UniNodespace;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
@@ -105,11 +104,9 @@ public class FabricInit implements ModInitializer {
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.START_SERVER_TICK.register(
                 com.hbm.tileentity.network.RTTYSystem::updateBroadcastQueue);
         dev.golem.core.platform.Lifecycle.onServerTick(server -> {
-            UniNodespace.updateNodespace(server);
             RadiationSystemNT.tickServer(server);
         });
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> {
-            UniNodespace.clearLevel(level);
             RadiationSystemNT.clearWorld(level);
             com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
         });

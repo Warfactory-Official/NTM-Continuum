@@ -10,11 +10,11 @@ import com.hbm.inventory.recipes.FluidBreederRecipes;
 import com.hbm.inventory.recipes.OutgasserRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.IItemFluidId;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -48,7 +48,6 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
     private double neutronEnergySync;
     public double progress;
 
-    private PlasmaNetwork.PlasmaNode plasmaNode;
 
     public TileEntityFusionBreeder(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_BREEDER.get(), pos, state, SLOTS);
@@ -75,10 +74,7 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
         }
 
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
-        breeder.plasmaNode = FusionNodes.plasma(level, breeder.plasmaNode,
-                new BlockPos(pos.getX() + dir.offsetX * 2, pos.getY() + 2, pos.getZ() + dir.offsetZ * 2),
-                new DirPos(pos.getX() + dir.offsetX * 3, pos.getY() + 2, pos.getZ() + dir.offsetZ * 3, dir));
-        if (breeder.plasmaNode.hasValidNet()) breeder.plasmaNode.net.addReceiver(breeder);
+        FusionLink.claim(level, breeder, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
 
         breeder.networkPackNT();
         breeder.neutronEnergy = 0;
@@ -230,7 +226,8 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
 
     @Override
     public void setRemoved() {
-        FusionNodes.destroy(level, null, plasmaNode);
+        FusionLink.release(level, plasmaCell(worldPosition,
+                FusionNodes.facing(getBlockState()).getOpposite()));
         super.setRemoved();
     }
 
@@ -271,5 +268,11 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
     @Override
     protected boolean syncFullTagOnChunkLoad() {
         return true;
+    }
+
+    /** Where this machine claims its end of the torus beam, 2 blocks out the back at +2. */
+    private static BlockPos plasmaCell(BlockPos pos, ForgeDirection dir) {
+        return new BlockPos(pos.getX() + dir.offsetX * 2, pos.getY() + 2,
+                pos.getZ() + dir.offsetZ * 2);
     }
 }

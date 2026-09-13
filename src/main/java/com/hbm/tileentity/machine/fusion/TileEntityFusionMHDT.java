@@ -4,11 +4,11 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -54,7 +54,6 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
     public float prevRotor;
     public float rotorSpeed;
 
-    private PlasmaNetwork.PlasmaNode plasmaNode;
 
     public TileEntityFusionMHDT(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_MHDT.get(), pos, state);
@@ -85,10 +84,7 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
         }
 
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
-        te.plasmaNode = FusionNodes.plasma(level, te.plasmaNode,
-                new BlockPos(pos.getX() + dir.offsetX * 6, pos.getY() + 2, pos.getZ() + dir.offsetZ * 6),
-                new DirPos(pos.getX() + dir.offsetX * 7, pos.getY() + 2, pos.getZ() + dir.offsetZ * 7, dir));
-        if (te.plasmaNode.hasValidNet()) te.plasmaNode.net.addReceiver(te);
+        FusionLink.claim(level, te, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
 
         te.networkPackNT();
         te.plasmaEnergy = 0;
@@ -128,7 +124,8 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
 
     @Override
     public void setRemoved() {
-        FusionNodes.destroy(level, null, plasmaNode);
+        FusionLink.release(level, plasmaCell(worldPosition,
+                FusionNodes.facing(getBlockState()).getOpposite()));
         super.setRemoved();
     }
 
@@ -173,4 +170,10 @@ public class TileEntityFusionMHDT extends TileEntityLoadedBase
     }
 
     @Override protected boolean syncFullTagOnChunkLoad() { return true; }
+
+    /** Where this machine claims its end of the torus beam, 6 blocks out the back at +2. */
+    private static BlockPos plasmaCell(BlockPos pos, ForgeDirection dir) {
+        return new BlockPos(pos.getX() + dir.offsetX * 6, pos.getY() + 2,
+                pos.getZ() + dir.offsetZ * 6);
+    }
 }

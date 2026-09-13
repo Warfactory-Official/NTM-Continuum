@@ -17,7 +17,6 @@ import com.hbm.packet.HbmPackets;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.hazard.Hazards;
 import dev.golem.core.net.GolemNetwork;
-import com.hbm.uninos.UniNodespace;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -75,6 +74,8 @@ public class NeoForgeInit {
          com.hbm.gametest.SingularityGameTests.init();
          com.hbm.gametest.TurretGameTests.init();
          com.hbm.gametest.PowerNetworkGameTests.init();
+         com.hbm.gametest.NetworkReachGameTests.init();
+         com.hbm.gametest.FluidNetworkGameTests.init();
          com.hbm.gametest.NetworkReachGameTests.init();
          com.hbm.gametest.FluidNetworkGameTests.init();
          com.hbm.gametest.NetworkReachGameTests.init();
@@ -146,6 +147,10 @@ public class NeoForgeInit {
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.NetworkReachGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.FluidNetworkGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.NetworkReachGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.FlywheelGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
@@ -158,12 +163,10 @@ public class NeoForgeInit {
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) ->
                 com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
-            UniNodespace.updateNodespace(event.getServer());
             RadiationSystemNT.tickServer(event.getServer());
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
-                UniNodespace.clearLevel(level);
                 RadiationSystemNT.clearWorld(level);
                 com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }
