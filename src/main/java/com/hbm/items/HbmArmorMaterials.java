@@ -49,6 +49,9 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial DNS = new GolemArmorMaterial(
             Constants.MOD_ID, "dns", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/dns");
 
+    public static final GolemArmorMaterial AJR = new GolemArmorMaterial(
+            Constants.MOD_ID, "ajr", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/ajr");
+
     /** Jetpack modules were not armor themselves in 1.12; this material keeps direct wear non-protective. */
     public static final GolemArmorMaterial JETPACK = new GolemArmorMaterial(
             Constants.MOD_ID, "jetpack", 1, 0, 0, 0, 0, 0, 0.0F, 0.0F, "repairs/steel");

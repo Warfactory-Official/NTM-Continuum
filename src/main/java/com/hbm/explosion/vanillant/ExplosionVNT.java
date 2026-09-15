@@ -70,6 +70,15 @@ public class ExplosionVNT {
         this.exploder = exploder;
     }
 
+    public float blockResistance(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        return Math.max(state.getBlock().getExplosionResistance(), level.getFluidState(pos).getExplosionResistance());
+    }
+
+    public boolean blockExplodes(Level level, BlockPos pos,
+            net.minecraft.world.level.block.state.BlockState state, float power) {
+        return true;
+    }
+
     public void explode() {
 
         boolean processBlocks = blockAllocator != null && blockProcessor != null;

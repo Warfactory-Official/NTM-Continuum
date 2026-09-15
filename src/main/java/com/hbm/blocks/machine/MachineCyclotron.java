@@ -50,7 +50,7 @@ public class MachineCyclotron extends BlockMultiblockMachine
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineCyclotron cyclotron) {

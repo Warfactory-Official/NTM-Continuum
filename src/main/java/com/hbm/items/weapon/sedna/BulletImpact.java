@@ -2,6 +2,8 @@ package com.hbm.items.weapon.sedna;
 
 import com.hbm.Constants;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.items.weapon.sedna.factory.ConfettiUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.DamageResistanceHandler;
 import net.minecraft.core.BlockPos;
@@ -31,8 +33,8 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>Deferred with their subsystems, all skipped rather than approximated: the {@code red_barrel} and
  * {@code BlockDetonatable} shoot triggers and the {@code deco_crt} screen-cracking state swap (none of
- * those blocks are ported), and {@code ConfettiUtil.decideConfetti} on a kill (the particle system is
- * not ported).
+ * those blocks are ported). Death-only target presentation is delegated to {@code ConfettiUtil}, which
+ * keeps the damage callback independent from the client renderer.
  */
 public final class BulletImpact {
 
@@ -108,12 +110,13 @@ public final class BulletImpact {
 
         Entity victim = entityHit.getEntity();
         BulletConfig config = bullet.config;
+        DamageSource source = source(level, config.dmgClass.type(), bullet);
 
         if (victim == bullet.getThrower() && bullet.tickCount < config.selfDamageDelay) return;
         if (victim instanceof LivingEntity living && living.getHealth() <= 0F) return;
 
         if (!(victim instanceof LivingEntity living)) {
-            hurt(level, victim, source(level, config.dmgClass.type(), bullet), bullet.damage);
+            hurt(level, victim, source, bullet.damage);
             return;
         }
 
@@ -128,7 +131,7 @@ public final class BulletImpact {
         }
 
         float previousHealth = living.getHealth();
-        attack(level, living, bullet, intendedDamage);
+        attack(level, living, bullet, source, intendedDamage);
         float dealt = Math.max(previousHealth - living.getHealth(), 0F);
 
         if (config.damageFalloffByPen) bullet.damage -= dealt * 0.5F;
@@ -136,6 +139,29 @@ public final class BulletImpact {
             bullet.setPos(hit.getLocation());
             bullet.discard();
         }
+        if (!living.isAlive()) ConfettiUtil.decideConfetti(living, source);
+    }
+
+    /** The original separate beam callback: no headshot/falloff, but the same damage class and DR inputs. */
+    public static void standardBeamHit(EntityBulletBeamBase beam, HitResult hit) {
+        if (!(hit instanceof EntityHitResult entityHit) || hit.getType() != HitResult.Type.ENTITY) return;
+        if (!(beam.level() instanceof ServerLevel level)) return;
+
+        Entity victim = entityHit.getEntity();
+        if (victim instanceof LivingEntity living && living.getHealth() <= 0F) return;
+        DamageSource source = ModDamageSources.bullet(level, beam.config.dmgClass.type(), beam, beam.getThrower());
+        victim.invulnerableTime = 0;
+        if (victim instanceof LivingEntity living) {
+            Vec3 before = living.getDeltaMovement();
+            DamageResistanceHandler.hurt(level, living, source, beam.damage,
+                    beam.config.armorThresholdNegation, beam.config.armorPiercingPercent);
+            Vec3 knockback = living.getDeltaMovement().subtract(before);
+            living.setDeltaMovement(before.add(knockback.scale(beam.config.knockbackMult)));
+            living.hurtMarked = true;
+            if (!living.isAlive()) ConfettiUtil.decideConfetti(living, source);
+            return;
+        }
+        dev.golem.core.world.Compat.hurt(victim, level, source, beam.damage);
     }
 
     /**
@@ -145,13 +171,14 @@ public final class BulletImpact {
      * matters because splitting into a bypass-armor source loses threshold negation and changes exact
      * source/category precedence.
      */
-    private static void attack(ServerLevel level, LivingEntity victim, EntityBulletBaseMK4 bullet, float amount) {
+    private static void attack(ServerLevel level, LivingEntity victim, EntityBulletBaseMK4 bullet,
+                               DamageSource source, float amount) {
         BulletConfig config = bullet.config;
         Vec3 before = victim.getDeltaMovement();
 
         // Upstream's attackEntityFromNT path always ignored i-frames so every pellet and burst round lands.
         victim.invulnerableTime = 0;
-        DamageResistanceHandler.hurt(level, victim, source(level, config.dmgClass.type(), bullet), amount,
+        DamageResistanceHandler.hurt(level, victim, source, amount,
                 config.armorThresholdNegation, config.armorPiercingPercent);
 
         // Scale whatever knockback the hits produced rather than applying our own: that keeps knockback

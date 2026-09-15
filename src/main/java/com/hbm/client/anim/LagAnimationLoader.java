@@ -19,15 +19,21 @@ import net.minecraft.resources.Identifier;
 /** Loads the upstream Blender-exported LAG bus animations at resource-load time. */
 public final class LagAnimationLoader {
 
-    private static final Identifier FILE = Ids.of("hbm", "models/weapons/animations/lag.json");
-    private static Map<String, BusAnimation> cached;
+    private static final Map<String, Map<String, BusAnimation>> CACHE = new HashMap<>();
 
     private LagAnimationLoader() {}
 
     public static Map<String, BusAnimation> load() {
+        return load("lag");
+    }
+
+    /** Loads one original-hbm JSON bus table from models/weapons/animations. */
+    public static Map<String, BusAnimation> load(String name) {
+        Map<String, BusAnimation> cached = CACHE.get(name);
         if (cached != null) return cached;
+        Identifier file = Ids.of("hbm", "models/weapons/animations/" + name + ".json");
         try (BufferedReader reader = Minecraft.getInstance().getResourceManager()
-                .getResourceOrThrow(FILE).openAsReader()) {
+                .getResourceOrThrow(file).openAsReader()) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
             Map<String, double[]> offsets = vectors(root, "offset");
             Map<String, BusAnimation> animations = new HashMap<>();
@@ -40,15 +46,16 @@ public final class LagAnimationLoader {
                 animations.put(animationEntry.getKey(), animation);
             }
             cached = Map.copyOf(animations);
+            CACHE.put(name, cached);
             return cached;
         } catch (IOException | RuntimeException e) {
-            throw new IllegalStateException("Failed to load LAG animation " + FILE, e);
+            throw new IllegalStateException("Failed to load weapon animation " + file, e);
         }
     }
 
     /** Clears the resource-pack-backed cache; the next animation lookup reparses the current pack. */
     public static void invalidate() {
-        cached = null;
+        CACHE.clear();
     }
 
     private static Map<String, double[]> vectors(JsonObject root, String key) {

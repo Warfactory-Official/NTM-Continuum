@@ -45,6 +45,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> TECH_BLEEP = register("item.tech_bleep");
     /** The detonator's bind confirmation. Old id {@code hbm:item.techBoop}. */
     public static final RegistryObject<SoundEvent> TECH_BOOP = register("item.tech_boop");
+    /** Ammo-container release sound from ntm-next's {@code item.unpack} pool. */
+    public static final RegistryObject<SoundEvent> ITEM_UNPACK = register("item.unpack");
     public static final RegistryObject<SoundEvent> BOLTGUN = register("item.boltgun");
     public static final RegistryObject<SoundEvent> SYRINGE = register("item.syringe");
     public static final RegistryObject<SoundEvent> RADAWAY = register("item.radaway");
@@ -60,6 +62,8 @@ public final class ModSounds {
     /** Block fragment impact sounds used by the black-hole rubble entity. */
     public static final RegistryObject<SoundEvent> DEBRIS = register("block.debris");
     public static final RegistryObject<SoundEvent> VICE = register("item.vice");
+    public static final RegistryObject<SoundEvent> GUN_SMACK = register("weapon.fire.smack");
+    public static final RegistryObject<SoundEvent> GUN_STAB = register("weapon.fire.stab");
     /** Looping hum of the current BigInteger FEnSU. */
     public static final RegistryObject<SoundEvent> FENSU_HUM = SOUNDS.register("block.fensu_hum",
             () -> SoundEvent.createFixedRangeEvent(

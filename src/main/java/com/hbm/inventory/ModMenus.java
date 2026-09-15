@@ -38,6 +38,7 @@ import com.hbm.inventory.container.ContainerNukeTsar;
 import com.hbm.inventory.container.ContainerNukeMike;
 import com.hbm.inventory.container.ContainerWasteDrum;
 import com.hbm.inventory.container.ContainerArmorTable;
+import com.hbm.inventory.container.ContainerWeaponTable;
 import com.hbm.inventory.container.ContainerStorageDrum;
 import com.hbm.inventory.container.ContainerMachineRadGen;
 import com.hbm.inventory.container.ContainerReactorZirnox;
@@ -272,6 +273,8 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerArmorTable>> ARMOR_TABLE =
             MENUS.register("armor_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerArmorTable::new));
+    public static final RegistryObject<MenuType<ContainerWeaponTable>> WEAPON_TABLE =
+            MENUS.register("weapon_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerWeaponTable::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMassStorage>> MASS_STORAGE =
             MENUS.register("mass_storage", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->

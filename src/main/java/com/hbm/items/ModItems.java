@@ -6,6 +6,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.special.ItemCustomLore;
+import com.hbm.items.tool.ItemKey;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.BlockItem;
@@ -39,6 +40,12 @@ public final class ModItems {
 
     private static RegistryObject<ItemCustomLore> lore(String name, HbmTab tab, UnaryOperator<Item.Properties> props) {
         RegistryObject<ItemCustomLore> ro = ITEMS.registerItem(name, ItemCustomLore::new, props);
+        ModTabs.addTo(tab, ro);
+        return ro;
+    }
+
+    private static RegistryObject<ItemKey> key(String name, HbmTab tab, UnaryOperator<Item.Properties> props) {
+        RegistryObject<ItemKey> ro = ITEMS.registerItem(name, ItemKey::new, props);
         ModTabs.addTo(tab, ro);
         return ro;
     }
@@ -408,6 +415,8 @@ public final class ModItems {
     public static final RegistryObject<Item> shimmer_handle = item("shimmer_handle", HbmTab.MATERIALS);
     public static final RegistryObject<Item> telepad = item("telepad", HbmTab.MATERIALS);
     public static final RegistryObject<Item> ducc = item("ducc", HbmTab.CONTROL);
+    public static final RegistryObject<ItemKey> key = key("key", HbmTab.CONSUMABLES, p -> p.stacksTo(1));
+    public static final RegistryObject<ItemKey> key_fake = key("key_fake", HbmTab.CONSUMABLES, p -> p.stacksTo(1));
     public static final RegistryObject<Item> toothpicks = item("toothpicks", HbmTab.MATERIALS);
     public static final RegistryObject<Item> cap_sunset = item("cap_sunset", HbmTab.CONSUMABLES);
     public static final RegistryObject<Item> cap_star = item("cap_star", HbmTab.CONSUMABLES);

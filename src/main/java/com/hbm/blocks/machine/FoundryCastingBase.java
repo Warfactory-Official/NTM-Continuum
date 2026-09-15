@@ -73,7 +73,7 @@ public abstract class FoundryCastingBase extends dev.golem.core.world.CompatBloc
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         TileEntityFoundryCastingBase cast = getTE(level, pos);
-        if (cast == null) return InteractionResult.PASS;
+        if (cast == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         // take the finished item first, regardless of what's held
         if (!cast.inventory.getStackInSlot(1).isEmpty()) {

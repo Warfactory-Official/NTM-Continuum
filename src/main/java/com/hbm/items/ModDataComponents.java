@@ -118,6 +118,15 @@ public final class ModDataComponents {
     /** A gun's durable state: wear, fire mode, and its magazines' contents. */
     public static final GolemComponent<net.minecraft.nbt.CompoundTag> GUN_DATA =
             GolemComponent.compound(Constants.MOD_ID, "gun_data");
+    /** Fixed eight-slot contents carried by the reusable ammo bag. */
+    public static final GolemComponent<dev.golem.core.data.ItemContents> AMMO_BAG =
+            GolemComponent.of(Constants.MOD_ID, "ammo_bag", dev.golem.core.data.ItemContents.CODEC);
+    /** Fixed fifteen-slot contents carried by the spent-casing bag. */
+    public static final GolemComponent<dev.golem.core.data.ItemContents> CASING_BAG =
+            GolemComponent.of(Constants.MOD_ID, "casing_bag", dev.golem.core.data.ItemContents.CODEC);
+    /** Fractional casing progress, retained between shots until a whole casing is produced. */
+    public static final GolemComponent<net.minecraft.nbt.CompoundTag> CASING_PROGRESS =
+            GolemComponent.compound(Constants.MOD_ID, "casing_progress");
 
     public static int fluidId(ItemStack stack) { return FLUID_ID.getOr(stack, 0); }
     public static void fluidId(ItemStack stack, int value) { FLUID_ID.set(stack, value); }

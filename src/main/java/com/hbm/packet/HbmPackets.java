@@ -8,7 +8,12 @@ import dev.golem.core.net.GolemBuffers;
 import dev.golem.core.net.GolemNetwork;
 import io.netty.buffer.Unpooled;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
@@ -24,6 +29,19 @@ public final class HbmPackets {
     /** Declares HBM's play payloads once; loaders flush these declarations at their own hook. */
     public static void declare() {
         dev.golem.core.net.GolemSync.install();
+        com.hbm.particle.helper.CasingCreator.setSender((level, event) -> {
+            if (!(level instanceof ServerLevel server)) return;
+            if (event.gun()) {
+                sendGunCasing(server, new GunCasingEjectPayload(event.x(), event.y(), event.z(), event.mX(),
+                        event.mY(), event.mZ(), event.yaw(), event.pitch(), event.mPitch(), event.mYaw(),
+                        event.casing(), event.smoking(), event.smokeLife(), event.smokeLift(), event.nodeLife(),
+                        event.legacy()));
+            } else {
+                sendCasing(server, new CasingEjectPayload(event.x(), event.y(), event.z(), event.mX(), event.mY(),
+                        event.mZ(), event.yaw(), event.pitch(), event.mPitch(), event.mYaw(), event.casing(),
+                        event.smoking(), event.smokeLife(), event.smokeLift(), event.nodeLife()));
+            }
+        });
         GolemNetwork.declarePlayToClient(BlockEntitySyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
@@ -31,9 +49,15 @@ public final class HbmPackets {
         GolemNetwork.registerPlayToServer(AnvilCraftPayload.CODEC,
                 (payload, player) -> handleAnvilCraft(player, payload));
         GolemNetwork.declarePlayToClient(GunAnimationPayload.CODEC);
+        GolemNetwork.declarePlayToClient(PlasmaBlastPayload.CODEC);
+        GolemNetwork.declarePlayToClient(MuzzleFlashPayload.CODEC);
+        GolemNetwork.declarePlayToClient(GunSoundPayload.CODEC);
+        GolemNetwork.declarePlayToClient(CasingEjectPayload.CODEC);
+        GolemNetwork.declarePlayToClient(GunCasingEjectPayload.CODEC);
         GolemNetwork.declarePlayToClient(ParticlePayload.CODEC);
         GolemNetwork.declarePlayToClient(JetpackSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(JetpackExhaustPayload.CODEC);
+        GolemNetwork.declarePlayToClient(ProjectileStatePayload.CODEC);
         GolemNetwork.registerPlayToServer(JetpackInputPayload.CODEC,
                 (payload, player) -> com.hbm.handler.JetpackHandler.handleInput(player, payload));
         GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
@@ -53,9 +77,63 @@ public final class HbmPackets {
     /** Tells one player's client that their gun played an animation cue. */
     public static void sendGunAnimation(ServerPlayer player, net.minecraft.world.item.ItemStack stack,
             com.hbm.items.weapon.sedna.GunAnimation animation, int configIndex) {
+        sendGunAnimation(player, stack, animation, InteractionHand.MAIN_HAND, 0, configIndex);
+    }
+
+    /** Sends an animation cue while retaining the source receiver/rail and config index. */
+    public static void sendGunAnimation(ServerPlayer player, net.minecraft.world.item.ItemStack stack,
+            com.hbm.items.weapon.sedna.GunAnimation animation, int receiver, int configIndex) {
+        sendGunAnimation(player, stack, animation, handOf(player, stack), receiver, configIndex);
+    }
+
+    /** Sends an animation cue for the exact hand that owns {@code stack}. */
+    public static void sendGunAnimation(ServerPlayer player, net.minecraft.world.item.ItemStack stack,
+            com.hbm.items.weapon.sedna.GunAnimation animation, InteractionHand hand, int receiver,
+            int configIndex) {
         GolemNetwork.sendToPlayer(player, GunAnimationPayload.CODEC,
-                new GunAnimationPayload(animation.ordinal(), 0, configIndex,
+                new GunAnimationPayload(animation.ordinal(), receiver, configIndex, hand,
                         net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()));
+    }
+
+    private static InteractionHand handOf(ServerPlayer player, net.minecraft.world.item.ItemStack stack) {
+        if (player.getItemInHand(InteractionHand.OFF_HAND) == stack) return InteractionHand.OFF_HAND;
+        return InteractionHand.MAIN_HAND;
+    }
+
+    /** Sends a seeded gun sound to the same tracking population as the source gun packet. */
+    public static void sendGunSound(ServerLevel level, boolean legacy, SoundEvent sound, SoundSource source,
+            double x, double y, double z, float volume, float pitch, long seed) {
+        GunSoundPayload.send(level, legacy, sound, source, x, y, z, volume, pitch, seed);
+    }
+
+    /** Sends the observer muzzle edge; the firing player's own animation packet handles the local gun. */
+    public static void sendMuzzleFlash(LivingEntity entity) {
+        if (entity.level() instanceof ServerLevel level) {
+            MuzzleFlashPayload payload = new MuzzleFlashPayload(entity.getId());
+            double radiusSquared = 100D * 100D;
+            for (ServerPlayer player : level.players()) {
+                if (player.distanceToSqr(entity) <= radiusSquared)
+                    GolemNetwork.sendToPlayer(player, MuzzleFlashPayload.CODEC, payload);
+            }
+        }
+    }
+
+    /** Sends an ordinary casing snapshot to the tracking population. */
+    public static void sendCasing(ServerLevel level, CasingEjectPayload payload) {
+        sendToRadius(level, payload.x(), payload.y(), payload.z(), 50D, CasingEjectPayload.CODEC, payload);
+    }
+
+    /** Sends a mode-filtered gun casing snapshot to the tracking population. */
+    public static void sendGunCasing(ServerLevel level, GunCasingEjectPayload payload) {
+        sendToRadius(level, payload.x(), payload.y(), payload.z(), 50D, GunCasingEjectPayload.CODEC, payload);
+    }
+
+    private static <P extends dev.golem.core.net.GolemPayload> void sendToRadius(ServerLevel level,
+            double x, double y, double z, double radius, dev.golem.core.net.GolemCodec<P> codec, P payload) {
+        double radiusSquared = radius * radius;
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(x, y, z) <= radiusSquared) GolemNetwork.sendToPlayer(player, codec, payload);
+        }
     }
 
     /** Attaches client handlers only after the physical client is available. */
@@ -66,12 +144,26 @@ public final class HbmPackets {
                 (payload, context) -> handlePropsSync(context.player(), payload));
         GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
                 (payload, context) -> com.hbm.client.anim.GunAnimationHandler.handle(payload));
+        GolemNetwork.registerPlayToClient(PlasmaBlastPayload.CODEC,
+                (payload, context) -> handlePlasmaBlast(context.level(), payload));
+        GolemNetwork.registerPlayToClient(MuzzleFlashPayload.CODEC,
+                (payload, context) -> com.hbm.client.GunEffectState.markMuzzleFlash(payload));
+        GolemNetwork.registerPlayToClient(GunSoundPayload.CODEC, GunSoundPayload::handleClient);
+        GolemNetwork.registerPlayToClient(CasingEjectPayload.CODEC,
+                (payload, context) -> com.hbm.client.GunEffectState.handleCasing(payload));
+        GolemNetwork.registerPlayToClient(GunCasingEjectPayload.CODEC,
+                (payload, context) -> {
+                    if (payload.legacy() == com.hbm.config.ClientConfig.GUN_ANIMS_LEGACY)
+                        com.hbm.client.GunEffectState.handleGunCasing(payload);
+                });
         GolemNetwork.registerPlayToClient(ParticlePayload.CODEC,
                 (payload, context) -> handleParticle(context.level(), payload));
         GolemNetwork.registerPlayToClient(JetpackSyncPayload.CODEC,
                 (payload, context) -> com.hbm.handler.JetpackHandler.dispatchClientSync(context.level(), payload));
         GolemNetwork.registerPlayToClient(JetpackExhaustPayload.CODEC,
                 (payload, context) -> com.hbm.handler.JetpackHandler.dispatchClientExhaust(context.level(), payload));
+        GolemNetwork.registerPlayToClient(ProjectileStatePayload.CODEC,
+                (payload, context) -> payload.apply(context.level()));
     }
 
     /**
@@ -116,6 +208,14 @@ public final class HbmPackets {
         } catch (Exception e) {
             Constants.LOG.warn("Failed to play particle effect {}: {}", payload.effect(), e.toString());
         }
+    }
+
+    /** Rebuilds the source shockwave using Core's oriented additive particle path. */
+    public static void handlePlasmaBlast(Level level, PlasmaBlastPayload payload) {
+        if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel client)) return;
+        dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticlePlasmaBlast(client,
+                payload.x(), payload.y(), payload.z(), payload.r(), payload.g(), payload.b(),
+                payload.pitch(), payload.yaw(), payload.scale()));
     }
 
     /**

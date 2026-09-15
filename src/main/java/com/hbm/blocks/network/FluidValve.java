@@ -63,7 +63,7 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (!(stack.getItem() instanceof IItemFluidId identifier)) return InteractionResult.PASS;
+        if (!(stack.getItem() instanceof IItemFluidId identifier)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidValve valve) {
             FluidType type = identifier.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);

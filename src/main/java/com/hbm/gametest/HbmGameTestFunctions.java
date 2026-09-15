@@ -122,6 +122,17 @@ public final class HbmGameTestFunctions {
             TESTS.function("advanced_oil_combustion_gate", 40, 8, () -> AdvancedOilParityGameTests::combustionOperationGate);
     public static final GameTests.Function ADVANCED_OIL_REFUELER_GATE =
             TESTS.function("advanced_oil_refueler_gate", 40, 8, () -> AdvancedOilParityGameTests::refuelerIdleGate);
+    public static final GameTests.Function ADVANCED_OIL_REFUELER_TRANSFER =
+            TESTS.function("advanced_oil_refueler_transfer", 40, 8, () -> AdvancedOilParityGameTests::refuelerFillsAcrossTicks);
+    public static final GameTests.Function FLUID_TANK_EXTRACTION =
+            TESTS.function("fluid_tank_extraction", 40, 8, () -> FluidTankGameTests::extractionUsesOutputBay);
+    public static final GameTests.Function FLUID_TANK_INVALID_FLUID =
+            TESTS.function("fluid_tank_invalid_fluid", 40, 8, () -> FluidTankGameTests::invalidFluidStaysInInput);
+    public static final GameTests.Function FLUID_TANK_SLOT_DIRECTION =
+            TESTS.function("fluid_tank_slot_direction", 40, 8, () -> FluidTankGameTests::menuSlotsAreOneWay);
+    public static final GameTests.Function ADVANCED_OIL_MENU_DIRECTION =
+            TESTS.function("advanced_oil_menu_direction", 40, 8,
+                    () -> AdvancedOilParityGameTests::oilWellMenuKeepsTankInputAboveOutput);
     public static final GameTests.Function TURBINE_CONVERSION =
             TESTS.function("turbine_conversion", 20, () -> HbmGameTestFunctions::turbineConversion);
     public static final GameTests.Function TURBINE_IDENTIFIER =
@@ -421,6 +432,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("ammo_press_shift_click", 40, () -> AmmoPressGameTests::shiftClickInput);
     public static final GameTests.Function AMMO_PRESS_PROCESSING =
             TESTS.function("ammo_press_processing", 40, 8, () -> AmmoPressGameTests::controlAndProcessing);
+    public static final GameTests.Function AMMO_PARITY_CATALOG =
+            TESTS.function("ammo_parity_catalog", 20, () -> AmmoParityGameTests::enumCatalog);
+    public static final GameTests.Function AMMO_PARITY_CONFIGURATION =
+            TESTS.function("ammo_parity_configuration", 20, () -> AmmoParityGameTests::configuration);
+    public static final GameTests.Function AMMO_PARITY_EXTINGUISHER =
+            TESTS.function("ammo_parity_extinguisher", 40, () -> AmmoParityGameTests::extinguisherImpacts);
 
     // --- FEnSU ---
     public static final GameTests.Function FENSU_NUMERIC =
@@ -605,6 +622,14 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_reload_keeps_type", 300, () -> GunGameTests::gunReloadKeepsType);
     public static final GameTests.Function GUN_FIRE =
             TESTS.function("gun_fire", 200, () -> GunGameTests::gunFire);
+    public static final GameTests.Function GUN_FIRING_ROUTES =
+            TESTS.function("gun_firing_routes", 20, () -> GunGameTests::gunFiringRoutes);
+    public static final GameTests.Function GUN_DEBUG_SECONDARY_FIRE =
+            TESTS.function("gun_debug_secondary_fire", 200, () -> GunGameTests::gunDebugSecondaryFire);
+    public static final GameTests.Function GUN_MINIGUN_FIRING_ROUTES =
+            TESTS.function("gun_minigun_firing_routes", 300, () -> GunGameTests::minigunFiringRoutes);
+    public static final GameTests.Function GUN_LAG_FIRING_ROUTE =
+            TESTS.function("gun_lag_firing_route", 200, () -> GunGameTests::gunLagFiringRoute);
     public static final GameTests.Function GUN_DRY_FIRE =
             TESTS.function("gun_dry_fire", 100, () -> GunGameTests::gunDryFire);
     public static final GameTests.Function GUN_AMMO_STATS =
@@ -645,8 +670,44 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_animation_math", 20, () -> GunGameTests::gunAnimationMath);
     public static final GameTests.Function GUN_FOV_MATH =
             TESTS.function("gun_fov_math", 20, () -> GunGameTests::gunFovMath);
+    public static final GameTests.Function GUN_PROJECTILE_ENTITY_REGISTRATIONS =
+            TESTS.function("gun_projectile_entity_registrations", 20,
+                    () -> GunProjectileEntityGameTests::projectileEntityRegistrations);
+    public static final GameTests.Function GUN_PROJECTILE_CHUNK_LIFECYCLE =
+            TESTS.function("gun_projectile_chunk_lifecycle", 40,
+                    () -> GunProjectileEntityGameTests::chunkloadingBulletClaimLifecycle);
+    public static final GameTests.Function GUN_PROJECTILE_BEAM_STOP =
+            TESTS.function("gun_projectile_beam_stop", 40,
+                    () -> GunProjectileEntityGameTests::beamStopsAtNearestBlock);
+    public static final GameTests.Function GUN_PROJECTILE_BEAM_CLIENT_STATE =
+            TESTS.function("gun_projectile_beam_client_state", 20,
+                    () -> GunProjectileEntityGameTests::beamPayloadAppliesClientState);
+    public static final GameTests.Function GUN_PROJECTILE_ROTATION_INTERPOLATION =
+            TESTS.function("gun_projectile_rotation_interpolation", 20,
+                    () -> GunProjectileEntityGameTests::bulletRotationInterpolatesDisplacement);
+    public static final GameTests.Function GUN_PROJECTILE_CHEMICAL_STYLE =
+            TESTS.function("gun_projectile_chemical_style", 20,
+                    () -> GunProjectileEntityGameTests::chemicalFluidStyleAndLifetime);
+    public static final GameTests.Function B92_REGISTRY =
+            TESTS.function("b92_registry", 20, () -> B92GameTests::registry);
+    public static final GameTests.Function B92_FIRES_BEAMS =
+            TESTS.function("b92_fires_beams", 40, () -> B92GameTests::firesBeams);
+    public static final GameTests.Function B92_CELL_DRAWS_CHARGE =
+            TESTS.function("b92_cell_draws_charge", 40, () -> B92GameTests::cellDrawsCharge);
     public static final GameTests.Function GUN_CREATIVE_QUALITY_VISIBILITY =
             TESTS.function("gun_creative_quality_visibility", 20, () -> GunGameTests::gunCreativeQualityVisibility);
+    public static final GameTests.Function GUN_OBTAINMENT_AMMO_PRESS_CATALOGUE =
+            TESTS.function("gun_obtainment_ammo_press_catalogue", 40,
+                    () -> GunObtainmentDataAuditGameTests::ammoPressCatalogue);
+    public static final GameTests.Function GUN_OBTAINMENT_REGISTRY_NAMES =
+            TESTS.function("gun_obtainment_registry_names", 40,
+                    () -> GunObtainmentDataAuditGameTests::gunRegistryNames);
+    public static final GameTests.Function GUN_OBTAINMENT_CATALOGUE_REGISTRATION =
+            TESTS.function("gun_obtainment_catalogue_registration", 40,
+                    () -> GunObtainmentDataAuditGameTests::catalogueRegistration);
+    public static final GameTests.Function GUN_OBTAINMENT_ANVIL_AMMO_GATEWAY =
+            TESTS.function("gun_obtainment_anvil_ammo_gateway", 40,
+                    () -> GunObtainmentDataAuditGameTests::anvilAmmoGateway);
     public static final GameTests.Function BULLET_DAMAGES_MOB =
             TESTS.function("bullet_damages_mob", 100, () -> GunGameTests::bulletDamagesMob);
     public static final GameTests.Function BULLET_ARMOR_PIERCING =

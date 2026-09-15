@@ -3,6 +3,7 @@ package com.hbm.items.weapon.sedna.mags;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.tool.ItemAmmoBag;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,9 +19,8 @@ import net.minecraft.world.item.ItemStack;
  * for why. The key names ({@code magcount}, {@code magtype}, {@code magprev}, {@code magafter}) are kept
  * so the shape of the saved data still matches the original.
  *
- * <p>The ammo-bag branches of {@code standardReload}/{@code getFirstConfig} are not ported: neither
- * {@code ammo_bag} nor {@code ammo_bag_infinite} exists yet. Both methods are otherwise faithful,
- * including the "fix broken data by falling back to the first accepted round" guards.
+     * <p>Ammo bags are searched after the player's ordinary inventory, matching the old slot-order rule.
+     * An infinite bag supplies rounds without mutating its contents.
  */
 public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> {
 
@@ -74,6 +74,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
     @Override
     public void useUpAmmo(ItemStack stack, Container inventory, int amount) {
         this.setAmount(stack, this.getAmount(stack, inventory) - amount);
+        IMagazine.handleAmmoBag(inventory, this.getType(stack, inventory), amount);
     }
 
     /** True if the player has the same ammo when partially loaded, or any accepted ammo when empty. */
@@ -103,38 +104,49 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
             if (loadLimit <= 0) return;
 
             ItemStack slot = inventory.getItem(i);
-            if (slot.isEmpty()) continue;
-
-            if (this.getAmount(stack, null) == 0) {
-                // Empty: adopt whichever accepted round is found first.
-                for (BulletConfig config : this.acceptedBullets) {
-                    if (config.ammoItem() == slot.getItem()) {
-                        this.setType(stack, config);
-                        loadLimit -= load(stack, inventory, i, slot, config, 0, loadLimit);
-                        break;
+            if (!slot.isEmpty()) {
+                int used = loadFromStack(stack, slot, loadLimit);
+                if (used > 0) inventory.removeItem(i, used);
+                loadLimit -= used;
+            }
+            if (loadLimit <= 0) return;
+            if (slot.getItem() instanceof com.hbm.items.tool.ItemAmmoBag bag) {
+                ItemAmmoBag.InventoryAmmoBag contents = new ItemAmmoBag.InventoryAmmoBag(slot);
+                for (int j = 0; j < contents.getSlots() && loadLimit > 0; j++) {
+                    ItemStack nested = contents.getStackInSlot(j);
+                    if (nested.isEmpty()) continue;
+                    int used = loadFromStack(stack, nested, loadLimit, bag.isInfinite());
+                    if (used > 0) {
+                        if (!bag.isInfinite()) {
+                            nested.shrink(used);
+                            contents.setStackInSlot(j, nested);
+                        }
+                        loadLimit -= used;
                     }
-                }
-            } else {
-                // Partially loaded: only top up with the same round.
-                BulletConfig config = this.getType(stack, null);
-                if (config == null) { config = this.acceptedBullets.get(0); this.setType(stack, config); }
-                if (config.ammoItem() == slot.getItem()) {
-                    loadLimit -= load(stack, inventory, i, slot, config, this.getAmount(stack, null), loadLimit);
                 }
             }
         }
     }
 
-    /** Consumes items from one slot into the magazine; returns how many items were used. */
-    private int load(ItemStack stack, Container inventory, int slotIndex, ItemStack slot,
-            BulletConfig config, int alreadyLoaded, int loadLimit) {
-        int wantsToLoad = (int) Math.ceil((double) (this.getCapacity(stack) - alreadyLoaded)
-                / (double) config.ammoReloadCount);
-        int toLoad = Math.min(Math.min(wantsToLoad, slot.getCount()), loadLimit);
-        if (toLoad <= 0) return 0;
-        this.setAmount(stack, Math.min(toLoad * config.ammoReloadCount + alreadyLoaded, this.capacity));
-        inventory.removeItem(slotIndex, toLoad);
+    private int loadFromStack(ItemStack stack, ItemStack source, int loadLimit) {
+        return loadFromStack(stack, source, loadLimit, false);
+    }
+
+    private int loadFromStack(ItemStack stack, ItemStack source, int loadLimit, boolean infinite) {
+        BulletConfig config = getAmount(stack, null) == 0 ? acceptedConfig(source) : getType(stack, null);
+        if (config == null || config.ammoItem() != source.getItem()) return 0;
+        if (getAmount(stack, null) == 0) setType(stack, config);
+        int wantsToLoad = (int) Math.ceil((double) (getCapacity(stack) - getAmount(stack, null))
+                / config.ammoReloadCount);
+        int available = infinite ? 9_999 : source.getCount();
+        int toLoad = Math.min(Math.min(wantsToLoad, available), loadLimit);
+        if (toLoad > 0) setAmount(stack, Math.min(getAmount(stack, null) + toLoad * config.ammoReloadCount, capacity));
         return toLoad;
+    }
+
+    private BulletConfig acceptedConfig(ItemStack source) {
+        for (BulletConfig config : acceptedBullets) if (config.ammoItem() == source.getItem()) return config;
+        return null;
     }
 
     /** The first round that could be loaded: the chambered type, or the first accepted one if empty. */
@@ -144,15 +156,16 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack slot = inventory.getItem(i);
             if (slot.isEmpty()) continue;
-
-            if (this.getAmount(stack, null) == 0) {
-                for (BulletConfig config : this.acceptedBullets) {
-                    if (config.ammoItem() == slot.getItem()) return config;
+            BulletConfig direct = getAmount(stack, null) == 0 ? acceptedConfig(slot) : getType(stack, null);
+            if (direct != null && direct.ammoItem() == slot.getItem()) return direct;
+            if (slot.getItem() instanceof com.hbm.items.tool.ItemAmmoBag) {
+                ItemAmmoBag.InventoryAmmoBag contents = new ItemAmmoBag.InventoryAmmoBag(slot);
+                for (int j = 0; j < contents.getSlots(); j++) {
+                    ItemStack nested = contents.getStackInSlot(j);
+                    if (nested.isEmpty()) continue;
+                    BulletConfig config = getAmount(stack, null) == 0 ? acceptedConfig(nested) : getType(stack, null);
+                    if (config != null && config.ammoItem() == nested.getItem()) return config;
                 }
-            } else {
-                BulletConfig config = this.getType(stack, null);
-                if (config == null) { config = this.acceptedBullets.get(0); this.setType(stack, config); }
-                if (config.ammoItem() == slot.getItem()) return config;
             }
         }
 
@@ -168,7 +181,7 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
 
     @Override public int getCapacity(ItemStack stack) { return capacity; }
     @Override public int getAmount(ItemStack stack, Container inventory) { return getMagCount(stack, index); }
-    @Override public void setAmount(ItemStack stack, int amount) { setMagCount(stack, index, amount); }
+    @Override public void setAmount(ItemStack stack, int amount) { setMagCount(stack, index, Math.max(amount, 0)); }
 
     @Override public void setAmountBeforeReload(ItemStack stack, int amount) { ItemGunBaseNT.setValueInt(stack, KEY_MAG_PREV + index, amount); }
     @Override public int getAmountBeforeReload(ItemStack stack) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_PREV + index); }
@@ -182,4 +195,9 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
     // MAG COUNT //
     public static int getMagCount(ItemStack stack, int index) { return ItemGunBaseNT.getValueInt(stack, KEY_MAG_COUNT + index); }
     public static void setMagCount(ItemStack stack, int index, int value) { ItemGunBaseNT.setValueInt(stack, KEY_MAG_COUNT + index, value); }
+
+    @Override public ItemStack getCasing(ItemStack stack, Container inventory) {
+        BulletConfig type = getType(stack, inventory);
+        return type == null || type.casingStack() == null ? ItemStack.EMPTY : type.casingStack().copy();
+    }
 }

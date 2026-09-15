@@ -87,6 +87,20 @@ public final class ParticleGameTests {
                 || Tags.getIntOr(fluidFill.data(), "color", -1) != 0x123456) {
             helper.fail("FluidFill payload did not preserve its legacy parameters");
         }
+
+        CompoundTag mukeData = new CompoundTag();
+        mukeData.putBoolean("balefire", true);
+        ParticlePayload muke = roundTrip(helper,
+                new ParticlePayload(HbmEffectNT.Muke.name(), 8D, 9D, 10D, mukeData));
+        if (HbmEffectNT.byName(muke.effect()) != HbmEffectNT.Muke
+                || !Tags.getBooleanOr(muke.data(), "balefire", false)) {
+            helper.fail("Muke payload did not preserve its balefire selector");
+        }
+        ParticlePayload tinyTot = roundTrip(helper,
+                new ParticlePayload(HbmEffectNT.TinyTot.name(), 11D, 12D, 13D, new CompoundTag()));
+        if (HbmEffectNT.byName(tinyTot.effect()) != HbmEffectNT.TinyTot) {
+            helper.fail("TinyTot payload did not preserve its effect name");
+        }
         helper.succeed();
     }
 

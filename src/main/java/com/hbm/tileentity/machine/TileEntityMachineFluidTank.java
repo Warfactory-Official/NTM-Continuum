@@ -79,8 +79,10 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFluidTank tank) {
         tank.ensureClimbRegistered();
         tank.updateTypeFromFluidId();
-        tank.processCanister(2, 3); // canister bay A: fill the tank from / drain into a container
-        tank.processCanister(4, 5); // canister bay B: same (both bays are interchangeable)
+        if (tank.tank.getPressure() == 0) {
+            MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
+        }
+        MachineFluidContainerIO.unload(tank.tank, tank.inventory, 4, 5);
         FluidType type = tank.tank.getTankType();
 
         if (level instanceof ServerLevel server) tank.updateCells(server, type);
@@ -117,75 +119,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         setChanged();
     }
 
-    /**
-     * Processes a canister bay {@code (in → out)}: a <b>full</b> container drains INTO the machine tank, an
-     * <b>empty</b> one is filled FROM it, and the modified single container moves to {@code out}. Handles
-     * both the universal tank/barrel ({@link IFillableItem}) and buckets (HBM {@link ItemFluidBucket} +
-     * vanilla water/lava/empty). <b>Both</b> bays (2→3 and 4→5) run this, so either can fill <i>or</i>
-     * drain — the port's two canister bays are interchangeable (more forgiving than the 1.12.2 directional
-     * load/unload). Only fires when the out slot can hold the result (no loss); a NONE tank adopts the
-     * incoming fluid, and the network node is reset on a type change.
-     */
-    private void processCanister(int inSlot, int outSlot) {
-        ItemStack in = inventory.getStackInSlot(inSlot);
-        if (in.isEmpty()) return;
-        FluidType tankType = tank.getTankType();
-
-        // --- universal tank / barrel ---
-        if (in.getItem() instanceof IFillableItem fillable) {
-            int held = fillable.getFill(in);
-            FluidType heldType = fillable.getFirstFluidType(in);
-
-            // full -> tank (drain)
-            if (held > 0 && heldType != null && heldType != Fluids.NONE
-                    && (tankType == Fluids.NONE || tankType == heldType)) {
-                int addable = tank.fill(heldType, held, false);
-                if (addable > 0) {
-                    ItemStack work = single(in);
-                    int taken = fillable.tryEmpty(heldType, addable, work);
-                    if (taken > 0 && fits(outSlot, work)) {
-                        tank.fill(heldType, taken, true);
-                        moveToOut(inSlot, outSlot, work);
-                        return;
-                    }
-                }
-            }
-            // empty/same -> filled from tank
-            if (tankType != Fluids.NONE && tank.getFill() > 0 && fillable.acceptsFluid(tankType, in)) {
-                ItemStack work = single(in);
-                int remainder = fillable.tryFill(tankType, tank.getFill(), work);
-                int moved = tank.getFill() - remainder;
-                if (moved > 0 && fits(outSlot, work)) {
-                    tank.setFill(tank.getFill() - moved);
-                    moveToOut(inSlot, outSlot, work);
-                }
-            }
-            return;
-        }
-
-        // --- buckets ---
-        FluidType bucketFluid = bucketFluid(in);
-        if (bucketFluid != Fluids.NONE && (tankType == Fluids.NONE || tankType == bucketFluid)
-                && tank.fill(bucketFluid, ItemFluidBucket.VOLUME, false) >= ItemFluidBucket.VOLUME) {
-            // full bucket -> tank, empty bucket out
-            ItemStack empty = new ItemStack(Items.BUCKET);
-            if (fits(outSlot, empty)) {
-                tank.fill(bucketFluid, ItemFluidBucket.VOLUME, true);
-                moveToOut(inSlot, outSlot, empty);
-            }
-        } else if (in.is(Items.BUCKET) && tankType != Fluids.NONE && tank.getFill() >= ItemFluidBucket.VOLUME) {
-            // empty bucket <- tank: water/lava -> vanilla bucket, else an HBM fluid bucket
-            ItemStack filled = tankType == Fluids.WATER ? new ItemStack(Items.WATER_BUCKET)
-                    : tankType == Fluids.LAVA ? new ItemStack(Items.LAVA_BUCKET)
-                    : ItemFluidBucket.make(tankType);
-            if (fits(outSlot, filled)) {
-                tank.setFill(tank.getFill() - ItemFluidBucket.VOLUME);
-                moveToOut(inSlot, outSlot, filled);
-            }
-        }
-    }
-
-    /** The fluid a full bucket in {@code stack} would give the tank (NONE if it's not a full bucket). */
+    /** The full fluid carried by a bucket, or NONE when it is not a fluid source. */
     private static FluidType bucketFluid(ItemStack stack) {
         if (stack.getItem() instanceof ItemFluidBucket) return ItemFluidBucket.getFluid(stack);
         if (stack.is(Items.WATER_BUCKET)) return Fluids.WATER;
@@ -193,44 +127,49 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         return Fluids.NONE;
     }
 
-    private static ItemStack single(ItemStack stack) {
-        ItemStack copy = stack.copy();
-        copy.setCount(1);
-        return copy;
+    /** Slot 2 mirrors the source tank's loadTank path: it accepts only a full, matching fluid source. */
+    private boolean isDrainable(ItemStack stack) {
+        if (stack.isEmpty() || tank.getPressure() != 0 || tank.getFill() >= tank.getMaxFill()) return false;
+        FluidType type;
+        int amount;
+        if (stack.getItem() instanceof IFillableItem fillable) {
+            type = fillable.getFirstFluidType(stack);
+            amount = fillable.getFill(stack);
+        } else {
+            type = bucketFluid(stack);
+            amount = ItemFluidBucket.VOLUME;
+        }
+        return type != null && type != Fluids.NONE && amount > 0
+                && (tank.getTankType() == Fluids.NONE || tank.getTankType() == type)
+                && tank.fill(type, amount, false) > 0;
     }
 
-    private boolean fits(int outSlot, ItemStack stack) {
-        return inventory.insertItem(outSlot, stack.copy(), true).isEmpty();
-    }
+    /** Slot 4 mirrors the source tank's unloadTank path: it accepts only an empty container to fill. */
+    private boolean isFillable(ItemStack stack) {
+        if (stack.isEmpty() || tank.getPressure() != 0 || tank.getTankType() == Fluids.NONE
+                || tank.getFill() <= 0) return false;
+        if (stack.is(Items.BUCKET)) return true;
+        if (!(stack.getItem() instanceof IFillableItem fillable)) return false;
 
-    private void moveToOut(int inSlot, int outSlot, ItemStack result) {
-        inventory.extractItem(inSlot, 1, false);
-        inventory.insertItem(outSlot, result, false);
-        setChanged();
+        // Slot 4 is the source's empty-canister input; filled canisters belong in slot 2.
+        return fillable.getFill(stack) == 0 && fillable.getFirstFluidType(stack) == Fluids.NONE
+                && fillable.acceptsFluid(tank.getTankType(), stack);
     }
 
     /**
-     * Slot roles: 0/1 = identifier in/out (identifiers <b>only</b>); 2 and 4 = canister input bays (any
-     * fluid container — bucket or universal tank/barrel, full <i>or</i> empty). Slots 3/5 are the result
-     * outputs: they must return {@code true} so the machine's own {@link com.hbm.inventory.NTMItemHandler#insertItem} can
-     * place the emptied/filled container there (the handler rejects an insert whose slot is invalid) —
-     * player insertion into them is blocked instead by the take-only slots in
-     * {@link com.hbm.inventory.container.ContainerMachineFluidTank}.
+     * Slot roles: 0/1 = identifier in/out (identifiers <b>only</b>); 2/3 = full source into tank and
+     * emptied result; 4/5 = empty container from which the tank is extracted and filled result. Slots 3/5
+     * remain handler-valid so the machine can insert results; player insertion is blocked by the menu's
+     * take-only slots.
      */
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return switch (slot) {
             case 0, 1 -> stack.getItem() instanceof IItemFluidId;
-            case 2, 4 -> isFluidContainer(stack);
+            case 2 -> isDrainable(stack);
+            case 4 -> isFillable(stack);
             default -> true; // 3 + 5: outputs — the machine inserts results here; player UI is take-only
         };
-    }
-
-    /** Any fluid container the canister bays accept: a tank/barrel, an HBM fluid bucket, or a vanilla bucket. */
-    private static boolean isFluidContainer(ItemStack stack) {
-        return stack.getItem() instanceof IFillableItem
-                || stack.getItem() instanceof ItemFluidBucket
-                || stack.is(Items.BUCKET) || stack.is(Items.WATER_BUCKET) || stack.is(Items.LAVA_BUCKET);
     }
 
     // --- IClimbable: a functional ladder up one side (ported from the 1.12.2 tank) ---

@@ -55,7 +55,7 @@ public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnec
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (player.isShiftKeyDown()) {
             if (!(stack.getItem() instanceof com.hbm.items.machine.IItemFluidId identifier)) {
-                return InteractionResult.PASS;
+                return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
             if (level.isClientSide()) return InteractionResult.SUCCESS;
 

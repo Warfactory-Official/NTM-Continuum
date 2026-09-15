@@ -84,6 +84,8 @@ public class NeoForgeInit {
          com.hbm.gametest.MultiblockMenuGameTests.init();
          com.hbm.gametest.RadiationPersistenceGameTests.init();
          com.hbm.gametest.FoldedPortParityGameTests.init();
+         com.hbm.gametest.WeaponTableGameTests.init();
+          com.hbm.gametest.GunSupportGameTests.init();
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
 
@@ -163,10 +165,14 @@ public class NeoForgeInit {
                  com.hbm.gametest.MultiblockMenuGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.RadiationPersistenceGameTests.TESTS));
-         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
-                 com.hbm.gametest.FoldedPortParityGameTests.TESTS));
-         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
-                 com.hbm.gametest.FlywheelGameTests.TESTS));
+          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                  com.hbm.gametest.FoldedPortParityGameTests.TESTS));
+          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                  com.hbm.gametest.GunSupportGameTests.TESTS));
+          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                  com.hbm.gametest.FlywheelGameTests.TESTS));
+          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                  com.hbm.gametest.WeaponTableGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {

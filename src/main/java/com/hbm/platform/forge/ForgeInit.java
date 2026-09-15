@@ -84,7 +84,8 @@ public final class ForgeInit {
         com.hbm.gametest.TickPhaseGameTests.init();
         com.hbm.gametest.MultiblockMenuGameTests.init();
         com.hbm.gametest.RadiationPersistenceGameTests.init();
-        com.hbm.gametest.FoldedPortParityGameTests.init();
+         com.hbm.gametest.FoldedPortParityGameTests.init();
+         com.hbm.gametest.WeaponTableGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -155,8 +156,10 @@ public final class ForgeInit {
                 com.hbm.gametest.MultiblockMenuGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.RadiationPersistenceGameTests.TESTS));
-        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
-                com.hbm.gametest.FoldedPortParityGameTests.TESTS));
+         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.FoldedPortParityGameTests.TESTS));
+         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.WeaponTableGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FlywheelGameTests.TESTS));
 

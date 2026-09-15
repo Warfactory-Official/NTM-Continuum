@@ -141,7 +141,7 @@ public class EntityEffectHandler {
         }
         if (entity.isInWaterOrRain()) props.setFire(0);
 
-        DamageSource source = ModDamageSources.source(entity.level(), ModDamageSources.DamageClass.FIRE.type());
+        DamageSource source = server.damageSources().onFire();
         if (props.getFire() > 0) {
             props.setFire(props.getFire() - 1);
             if ((entity.tickCount + entity.getId()) % 40 == 0) Compat.hurt(entity, server, source, 2F);

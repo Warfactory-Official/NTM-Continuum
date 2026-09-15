@@ -10,6 +10,7 @@ import dev.golem.core.render.gem.Gem;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionHand;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -55,13 +56,13 @@ public abstract class WeaponRenderer {
         pose.pushPose();
         dev.golem.core.client.HandSpace.enterCameraSpace(pose);
         if (otherArm) pose.scale(-1F, 1F, 1F);
-        setupTransformsAndSubmit(stack, player, pose, collector, light, overlay);
+        setupTransformsAndSubmit(stack, player, pose, collector, light, overlay, otherArm);
         pose.popPose();
     }
 
     /** Turn lag, walk sway, then the weapon's own offset — upstream's {@code setupTransformsAndRender}. */
     protected void setupTransformsAndSubmit(ItemStack stack, LocalPlayer player, PoseStack pose,
-            SubmitSink collector, int light, int overlay) {
+            SubmitSink collector, int light, int overlay, boolean otherArm) {
 
         float swayMagnitude = getSwayMagnitude(stack);
         float swayPeriod = getSwayPeriod(stack);
@@ -85,7 +86,8 @@ public abstract class WeaponRenderer {
                 Math.abs(Mth.cos(distanceInterp * (float) Math.PI * swayPeriod - 0.2F) * bob) * 5.0F));
 
         setupFirstPerson(stack, pose);
-        renderFirstPerson(stack, pose, collector, light, overlay);
+        renderFirstPerson(stack, pose, collector, light, overlay,
+                otherArm ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
     }
 
     /** Where the weapon sits relative to the camera. Overridden per weapon. */
@@ -135,19 +137,29 @@ public abstract class WeaponRenderer {
     }
 
     public final void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
-        replay(stack, true, pose, collector, light, overlay, ItemDisplayContext.FIRST_PERSON_RIGHT_HAND);
+            int light, int overlay, InteractionHand hand) {
+        replay(stack, true, pose, collector, light, overlay,
+                hand == InteractionHand.OFF_HAND ? ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+                        : ItemDisplayContext.FIRST_PERSON_RIGHT_HAND,
+                Minecraft.getInstance().player, hand);
     }
 
     public final void renderStatic(ItemStack stack, PoseStack pose, SubmitSink collector,
             int light, int overlay) {
-        replay(stack, false, pose, collector, light, overlay, staticContext);
+        renderStatic(stack, pose, collector, light, overlay, null);
+    }
+
+    public final void renderStatic(ItemStack stack, PoseStack pose, SubmitSink collector,
+            int light, int overlay, net.minecraft.world.entity.@Nullable LivingEntity owner) {
+        replay(stack, false, pose, collector, light, overlay, staticContext, owner, InteractionHand.MAIN_HAND);
     }
 
     private void replay(ItemStack stack, boolean animated, PoseStack poseStack, SubmitSink collector,
-            int light, int overlay, ItemDisplayContext context) {
-        pose.begin(stack, animated, overlay, context);
+            int light, int overlay, ItemDisplayContext context,
+            net.minecraft.world.entity.@Nullable LivingEntity owner, InteractionHand hand) {
+        pose.begin(stack, animated, overlay, context, owner, hand);
         Gem.replay(gem(), pose, poseStack, collector, light);
+        WeaponEffects.render(pose, poseStack, collector, light, overlay);
     }
 
     /**

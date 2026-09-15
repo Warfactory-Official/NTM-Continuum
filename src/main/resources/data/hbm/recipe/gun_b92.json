@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "hbm:plate_dineutronium",
+    "S": "hbm:ingot_starmetal",
+    "C": "hbm:circuit_bismoid",
+    "R": "hbm:gun_lasrifle"
+  },
+  "pattern": [
+    "DDD",
+    "SSC",
+    "  R"
+  ],
+  "result": {
+    "id": "hbm:gun_b92",
+    "count": 1
+  }
+}

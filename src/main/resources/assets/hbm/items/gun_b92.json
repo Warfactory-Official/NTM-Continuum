@@ -1,0 +1,7 @@
+{
+  "model": {
+    "type": "hbm:gun",
+    "base": "hbm:item/gun_b92_base",
+    "weapon": "b92"
+  }
+}

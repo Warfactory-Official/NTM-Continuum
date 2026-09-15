@@ -29,6 +29,8 @@ public class FabricClientInit implements ClientModInitializer {
         HbmPackets.registerClientHandlers();
         net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
                 com.hbm.handler.JetpackHandler.clearClientState());
+        net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                com.hbm.client.gun.GunSmokeClient.onDisconnect());
         // The vendored 26.1 engine is a library and has to be handed its listeners; nowhere later
         // will do, since some of them have to be in place before the first level arrives. No-op
         // where the engine is a mod that subscribes itself, or absent.

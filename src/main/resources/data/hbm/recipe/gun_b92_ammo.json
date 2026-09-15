@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "hbm:plate_steel",
+    "S": "hbm:ingot_starmetal",
+    "E": "hbm:powder_spark_mix"
+  },
+  "pattern": [
+    "PSP",
+    "ESE",
+    "PSP"
+  ],
+  "result": {
+    "id": "hbm:gun_b92_ammo",
+    "count": 1
+  }
+}

@@ -21,6 +21,11 @@ import org.gradle.jvm.toolchain.JavaToolchainService
 fun Project.pinRunsToToolchain(javaVersion: Int) {
     val toolchains = extensions.getByType(JavaToolchainService::class.java)
     val launcher = toolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(javaVersion)) }
+    // Gradle JVM properties are not inherited by the Minecraft process. Keep the opt-in neutral so
+    // `-Dhbm.gunSmokeTest=true` and `-PgunSmokeTest=true` reach only the client run that consumes it.
+    val gunSmokeTest = providers.gradleProperty("gunSmokeTest")
+        .orElse(providers.systemProperty("hbm.gunSmokeTest"))
+        .map { if (it.isBlank()) "true" else it }
 
     tasks.withType(JavaExec::class.java).configureEach {
         // `this` is the JavaExec; inside doFirst the receiver is a plain Task, so hold on to it.
@@ -30,6 +35,12 @@ fun Project.pinRunsToToolchain(javaVersion: Int) {
         // here at configuration time; executable is set in doFirst so it lands after whatever the IDE's
         // generated script configured.
         javaLauncher.set(launcher)
+        if (name == "runClient") {
+            gunSmokeTest.orNull?.let {
+                systemProperty("hbm.gunSmokeTest", it)
+                logger.lifecycle("Forwarding hbm.gunSmokeTest=$it to $path")
+            }
+        }
         doFirst {
             val wanted = launcher.get().executablePath.asFile.absolutePath
             val configured = run.executable

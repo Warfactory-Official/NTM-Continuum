@@ -5,6 +5,7 @@ import dev.golem.core.net.GolemNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 
 import org.jspecify.annotations.Nullable;
@@ -37,11 +38,15 @@ public enum HbmEffectNT {
     BlackPowder,
     /** Drifting embers and ash, for things that are burning down rather than exploding. */
     Ashes,
+    /** The authored OBJ skeleton strip/fragment effect. */
+    Skeleton,
+    /** The authored meat/slime/metal giblet billboard effect. */
+    Giblets,
     /** The full-size RBMK meltdown cloud. */
     RBMKMush,
-    /** The old small-nuke effect; its custom geometry handler is still deferred. */
+    /** The old small-nuke wave, flare and delayed cloud effect. */
     Muke,
-    /** The tiny-tot small-nuke effect; its custom geometry handler is still deferred. */
+    /** The tiny-tot wave and immediate small-nuke cloud effect. */
     TinyTot,
     /** The smaller Watz/RBMK cloud. */
     RBMKMushSmall,
@@ -64,7 +69,9 @@ public enum HbmEffectNT {
     /** The large explosion's drifting smoke cloud. */
     Smoke_Cloud,
     /** The large explosion's radial shock smoke. */
-    Smoke_Shock;
+    Smoke_Shock,
+    /** Direct client-side block dust used by the three legacy extinguisher streams. */
+    VanillaExt_BlockDust;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before
@@ -97,6 +104,18 @@ public enum HbmEffectNT {
         if (!(level instanceof ServerLevel serverLevel)) return;
         GolemNetwork.sendToTracking(serverLevel, BlockPos.containing(x, y, z), ParticlePayload.CODEC,
                 new ParticlePayload(this.name(), x, y, z, data == null ? new CompoundTag() : data));
+    }
+
+    /** Sends an AuxParticle-equivalent effect to the source's explicit radius, not just its chunk. */
+    public void send(Level level, double x, double y, double z, @Nullable CompoundTag data, double range) {
+        if (!(level instanceof ServerLevel serverLevel)) return;
+        ParticlePayload payload = new ParticlePayload(this.name(), x, y, z,
+                data == null ? new CompoundTag() : data);
+        double radiusSquared = range * range;
+        for (ServerPlayer player : serverLevel.players()) {
+            if (player.distanceToSqr(x, y, z) <= radiusSquared)
+                GolemNetwork.sendToPlayer(player, ParticlePayload.CODEC, payload);
+        }
     }
 
     /** Plays this effect at the centre of a block position. */

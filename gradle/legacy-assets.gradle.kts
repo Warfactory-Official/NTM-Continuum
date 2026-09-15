@@ -206,6 +206,7 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         rawLegacyTransform = true,
         guiTranslate = listOf(0.0, -3.5, -3.0),
         guiScale = 5.0,
+        animation = "autosaw",
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
     "machine_solar_boiler" to MachineObjTransformExpectation(0.2625, 0.0),

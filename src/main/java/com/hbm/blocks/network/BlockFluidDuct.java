@@ -228,7 +228,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
     /** Right-click with a fluid identifier → set the duct's fluid type and recompute its connections. */
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.PASS;
+        if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
             if (type != duct.getFluidType()) {

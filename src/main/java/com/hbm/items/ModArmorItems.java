@@ -9,6 +9,7 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.items.armor.ArmorBJ;
 import com.hbm.items.armor.ArmorBJJetpack;
 import com.hbm.items.armor.ArmorDNT;
+import com.hbm.items.armor.ArmorPAWeapons;
 import com.hbm.items.armor.WingsMurk;
 import com.hbm.items.armor.JetpackBase;
 import com.hbm.items.gear.JetpackRegular;
@@ -169,6 +170,16 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorDNT> dns_legs = dns("dns_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorDNT> dns_boots = dns("dns_boots", ArmorSlot.BOOTS);
 
+    private static final long AJR_POWER = 2_500_000L;
+    public static final RegistryObject<ArmorFSBPowered> rpa_helmet = paPowered("rpa_helmet", ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSBPowered> rpa_plate = paPowered("rpa_plate", ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSBPowered> rpa_legs = paPowered("rpa_legs", ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSBPowered> rpa_boots = paPowered("rpa_boots", ArmorSlot.BOOTS);
+    public static final RegistryObject<ArmorFSBPowered> ncrpa_helmet = paPowered("ncrpa_helmet", ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSBPowered> ncrpa_plate = paPowered("ncrpa_plate", ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSBPowered> ncrpa_legs = paPowered("ncrpa_legs", ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSBPowered> ncrpa_boots = paPowered("ncrpa_boots", ArmorSlot.BOOTS);
+
     // ---- direct-wear and armor-module jetpacks ----
     public static final RegistryObject<JetpackRegular> jetpack_fly =
             jetpack("jetpack_fly", p -> new JetpackRegular(Fluids.KEROSENE, 12_000, p));
@@ -194,6 +205,14 @@ public final class ModArmorItems {
         RegistryObject<ArmorFSBPowered> ro = ITEMS.registerItem(name,
                 p -> new ArmorFSBPowered(material, slot, p, T51_POWER, T51_CHARGE_RATE, T51_CONSUMPTION,
                         T51_DRAIN),
+                p -> p.stacksTo(1));
+        ModTabs.addTo(HbmTab.CONSUMABLES, ro);
+        return ro;
+    }
+
+    private static RegistryObject<ArmorFSBPowered> paPowered(String name, ArmorSlot slot) {
+        RegistryObject<ArmorFSBPowered> ro = ITEMS.registerItem(name,
+                p -> new ArmorFSBPowered(HbmArmorMaterials.AJR, slot, p, AJR_POWER, 10_000L, 1_000L, 25L),
                 p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
@@ -339,6 +358,25 @@ public final class ModArmorItems {
         dns_plate.get().setArmorModel("dns");
         dns_legs.get().setArmorModel("dns");
         dns_boots.get().setArmorModel("dns");
+
+        ArmorFSBPowered rpa = rpa_helmet.get();
+        rpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
+                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D);
+        rpa_plate.get().cloneStats(rpa);
+        rpa_legs.get().cloneStats(rpa);
+        rpa_boots.get().cloneStats(rpa);
+
+        ArmorFSBPowered ncrpa = ncrpa_helmet.get();
+        ncrpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
+                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D);
+        ncrpa_plate.get().cloneStats(ncrpa);
+        ncrpa_legs.get().cloneStats(ncrpa);
+        ncrpa_boots.get().cloneStats(ncrpa);
+        ArmorPAWeapons.registerMelee(rpa_plate.get(), new com.hbm.items.armor.ArmorRPAMelee());
+        ArmorPAWeapons.registerMelee(ncrpa_plate.get(), new com.hbm.items.armor.ArmorNCRPAMelee());
+        ArmorPAWeapons.registerRanged(ncrpa_plate.get(), new com.hbm.items.armor.ArmorNCRPARanged());
+        ArmorUtil.registerHazmat2Set(rpa_helmet.get(), rpa_plate.get(), rpa_legs.get(), rpa_boots.get());
+        ArmorUtil.registerHazmat2Set(ncrpa_helmet.get(), ncrpa_plate.get(), ncrpa_legs.get(), ncrpa_boots.get());
         jetpack_fly.get().setArmorModel("jetpack_regular");
         jetpack_break.get().setArmorModel("jetpack_break");
         jetpack_vector.get().setArmorModel("jetpack_vector");

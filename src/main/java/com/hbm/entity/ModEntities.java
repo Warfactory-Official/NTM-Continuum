@@ -10,6 +10,10 @@ import com.hbm.entity.projectile.EntityShrapnel;
 import com.hbm.entity.effect.EntityBlackHole;
 import com.hbm.entity.effect.EntityVortex;
 import com.hbm.entity.effect.EntityRagingVortex;
+import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.entity.projectile.EntityBulletBaseMK4CL;
+import com.hbm.entity.projectile.EntityChemical;
+import com.hbm.entity.projectile.EntityB92Beam;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -108,7 +112,44 @@ public final class ModEntities {
                                     com.hbm.entity.projectile.EntityBulletBaseMK4::new, MobCategory.MISC)
                             .sized(0.5F, 0.5F)
                             .fireImmune()
-                            .clientTrackingRange(16)
+                            .clientTrackingRange(250)
+                            .updateInterval(1), key));
+
+    /** The original chunkloading MK4 variant used by long-lived gun payloads. */
+    public static final RegistryObject<EntityType<EntityBulletBaseMK4CL>> BULLET_MK4_CL =
+            ENTITY_TYPES.register("entity_bullet_mk4_cl", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityBulletBaseMK4CL>of(EntityBulletBaseMK4CL::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(250)
+                            .updateInterval(1), key));
+
+    /** A 250-block hitscan beam, retained as an entity so the old renderer/callback path can observe it. */
+    public static final RegistryObject<EntityType<EntityBulletBeamBase>> BEAM_MK4 =
+            ENTITY_TYPES.register("entity_beam_mk4", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityBulletBeamBase>of(EntityBulletBeamBase::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(250)
+                            .updateInterval(1), key));
+
+    /** Chemical-gun splash projectile; fluid identity is synchronized as the old integer fluid id. */
+    public static final RegistryObject<EntityType<EntityChemical>> CHEMICAL =
+            ENTITY_TYPES.register("entity_chemthrower_splash", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityChemical>of(EntityChemical::new, MobCategory.MISC)
+                            // EntityThrowableNT's original constructor uses a 0.25 x 0.25 box.
+                            .sized(0.25F, 0.25F)
+                            .fireImmune()
+                            .clientTrackingRange(1000)
+                            .updateInterval(1), key));
+
+    /** The original B92's short-lived explosive beam projectile. */
+    public static final RegistryObject<EntityType<EntityB92Beam>> BEAM_BOMB =
+            ENTITY_TYPES.register("entity_beam_bomb", key -> dev.golem.core.registry.Entities.build(
+                    EntityType.Builder.<EntityB92Beam>of(EntityB92Beam::new, MobCategory.MISC)
+                            .sized(0.5F, 0.5F)
+                            .fireImmune()
+                            .clientTrackingRange(63)
                             .updateInterval(1), key));
 
     /** Base black-hole field used by the dropped capsules and the vortex subclasses. */

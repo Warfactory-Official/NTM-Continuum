@@ -5,6 +5,7 @@ import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.packet.GunAnimationPayload;
+import com.hbm.util.GameTime;
 import dev.golem.core.render.anim.BusAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -26,9 +27,10 @@ public final class GunAnimationHandler {
 
     public static void handle(GunAnimationPayload payload) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player == null) return;
+        if (minecraft.player == null || minecraft.level == null) return;
 
-        ItemStack stack = minecraft.player.getMainHandItem();
+        net.minecraft.world.InteractionHand hand = payload.interactionHand();
+        ItemStack stack = minecraft.player.getItemInHand(hand);
         if (!(stack.getItem() instanceof ItemGunBaseNT gun)) return;
 
         String heldItemId = BuiltInRegistries.ITEM.getKey(stack.getItem()).toString();
@@ -37,6 +39,7 @@ public final class GunAnimationHandler {
         if (payload.animation() < 0 || payload.animation() >= GunAnimation.VALUES.length) return;
 
         GunAnimation cue = GunAnimation.byOrdinal(payload.animation());
+        HbmAnimations.setBuildingHand(hand);
         int index = payload.configIndex();
         if (!gun.isValidConfigIndex(index)) return;
         GunConfig config = gun.getConfig(stack, index);
@@ -45,18 +48,26 @@ public final class GunAnimationHandler {
 
         // The shot timestamp drives muzzle flash and smoke, and must be stamped even when the gun has
         // no animation table at all.
-        if (cue == GunAnimation.CYCLE && index < gun.lastShot.length) {
-            int receiverIndex = payload.receiver();
-            if (receiverIndex < 0 || receiverIndex >= receivers.length) return;
-            gun.lastShot[index] = System.currentTimeMillis();
-            java.util.function.BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> recoil =
-                    receivers[receiverIndex].getRecoil(stack);
-            if (recoil != null) recoil.accept(stack,
-                    new ItemGunBaseNT.LambdaContext(config, minecraft.player,
-                            minecraft.player.getInventory(), index));
+        if ((cue == GunAnimation.CYCLE || cue == GunAnimation.ALT_CYCLE)
+                && index < gun.lastShotByHand[hand.ordinal()].length) {
+            // Use the client world clock, not wall time: smoke and muzzle flash share this epoch.
+            gun.lastShotByHand[hand.ordinal()][index] = GameTime.millis(minecraft.level);
+            if (cue == GunAnimation.CYCLE) {
+                gun.shotRandByHand[hand.ordinal()] = minecraft.level.getRandom().nextDouble();
+                int receiverIndex = payload.receiver();
+                if (receiverIndex < 0 || receiverIndex >= receivers.length) return;
+                java.util.function.BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> recoil =
+                        receivers[receiverIndex].getRecoil(stack);
+                if (recoil != null) recoil.accept(stack,
+                        new ItemGunBaseNT.LambdaContext(config, minecraft.player,
+                                minecraft.player.getInventory(), hand, index));
+            }
         }
 
         BusAnimation animation = GunAnimations.get(stack, cue, index);
-        if (animation != null) HbmAnimations.start(stack.getItem(), animation, index);
+        if (animation == null && config.getAnimation(stack) != null) {
+            animation = config.getAnimation(stack).apply(stack, cue);
+        }
+        if (animation != null) HbmAnimations.start(stack.getItem(), animation, hand, index);
     }
 }

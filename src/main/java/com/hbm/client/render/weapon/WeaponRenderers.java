@@ -5,8 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import com.hbm.items.ModGunItems;
+import dev.golem.core.Ids;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 /**
  * The weapon renderers, by name.
@@ -33,7 +36,10 @@ public final class WeaponRenderers {
     public static float viewFov(ItemStack stack, float fov, float partialTick) {
         if (byItem == null) {
             Map<Item, WeaponRenderer> resolved = new HashMap<>();
-            DECLARED_BY_ITEM.forEach((item, renderer) -> resolved.put(item.get(), renderer));
+            DECLARED_BY_ITEM.forEach((item, renderer) -> {
+                Item value = item.get();
+                if (value != null && value != Items.AIR) resolved.put(value, renderer);
+            });
             byItem = resolved;
         }
         WeaponRenderer renderer = byItem.get(stack.getItem());
@@ -45,6 +51,7 @@ public final class WeaponRenderers {
      * either loader without touching an unflushed registry.
      */
     public static void init() {
+        register("debug", ModGunItems.gun_debug::get, new DebugWeaponRenderer());
         register("atlas", ModGunItems.gun_light_revolver::get, new AtlasWeaponRenderer());
         register("am180", ModGunItems.gun_am180::get,
                 new Sedna22lrWeaponRenderer(Sedna22lrWeaponRenderer.Variant.AM180));
@@ -77,11 +84,21 @@ public final class WeaponRenderers {
         register("dani", ModGunItems.gun_light_revolver_dani::get, new DaniWeaponRenderer());
         register("pepperbox", ModGunItems.gun_pepperbox::get, new PepperboxWeaponRenderer());
         register("g3", ModGunItems.gun_g3::get, new G3WeaponRenderer());
+        register("b92", ModGunItems.gun_b92::get, new B92WeaponRenderer());
+
+        // The catalogue helpers own their renderer families. Keep item resolution lazy because client
+        // initialization precedes deferred registry flush on NeoForge and Fabric.
+        BallisticWeaponRenderers.register(WeaponRenderers::registerCatalogueEntry);
+        SpecialWeaponRenderers.register(WeaponRenderers::registerCatalogueEntry);
     }
 
     private static void register(String name, Supplier<Item> item, WeaponRenderer renderer) {
         BY_NAME.put(name, renderer);
         DECLARED_BY_ITEM.put(item, renderer);
         byItem = null;
+    }
+
+    private static void registerCatalogueEntry(String name, WeaponRenderer renderer) {
+        register(name, () -> BuiltInRegistries.ITEM.getValue(Ids.of("hbm", "gun_" + name)), renderer);
     }
 }

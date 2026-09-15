@@ -36,11 +36,11 @@ neoForge {
         register("client") {
             client()
             gameDirectory = file("runs/client")
-            // Set HBM_QUICKPLAY to a save name to have runClient load straight into that world.
-            // Joining a world is where several faults only appear — the registry-sync failure fixed in
-            // §19z-e was invisible to every headless check — and clicking through the menu by hand is
-            // not something an automated verification pass can do.
-            System.getenv("HBM_QUICKPLAY")?.let { programArguments.addAll("--quickPlaySingleplayer", it) }
+            // Quick Play is opt-in through -PquickPlayWorld. Do not inherit HBM_QUICKPLAY from a
+            // previous visual fixture into ordinary IDE launches.
+            providers.gradleProperty("quickPlayWorld").orNull?.let {
+                programArguments.addAll("--quickPlaySingleplayer", it)
+            }
         }
         register("data") {
             // 26.1 splits datagen into clientData/serverData; NeoForge 21.1 has only the combined
@@ -117,7 +117,7 @@ tasks.matching { it.name == "runClient" }.configureEach { dependsOn(syncDevMods)
 // ModDev writes run arguments to build/moddev/clientRunProgramArgs.txt. Without this input, a
 // one-off HBM_QUICKPLAY launch remains cached and every later normal client run keeps auto-joining it.
 tasks.matching { it.name == "prepareClientRun" }.configureEach {
-    inputs.property("hbmQuickPlayWorld", providers.environmentVariable("HBM_QUICKPLAY").orElse(""))
+    inputs.property("hbmQuickPlayWorld", providers.gradleProperty("quickPlayWorld").orElse(""))
 }
 
 dependencies {

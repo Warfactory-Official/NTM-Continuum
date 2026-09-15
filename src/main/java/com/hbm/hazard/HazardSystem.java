@@ -14,7 +14,6 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.hazard.transformer.IHazardTransformer;
 import com.hbm.hazard.type.IHazardType;
-import com.hbm.util.TickPhase;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.LivingEntity;
@@ -59,6 +58,7 @@ public class HazardSystem {
 
     /** Per-item memo of the registered (component-agnostic) HazardData chronology. */
     private static final Map<Item, List<HazardData>> chronologyCache = new ConcurrentHashMap<>();
+
 
     public static void register(TagKey<Item> tag, HazardData data) {
         tagMap.put(tag, data);
@@ -198,7 +198,7 @@ public class HazardSystem {
         if (stack.isEmpty()) return;
 
         int tickRate = Math.max(1, RadiationConfig.itemHazardDropTickRate);
-        if (!TickPhase.every(entity, tickRate)) return;
+        if (Math.floorMod(entity.level().getGameTime(), tickRate) != 0) return;
 
         for (HazardEntry entry : getHazardsFromStack(stack)) {
             entry.type.updateEntity(entity,

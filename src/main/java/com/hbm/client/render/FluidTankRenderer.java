@@ -11,9 +11,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Draws the fluid-tank multiblock from {@code fluidtank.obj}. Unlike the generic
@@ -32,9 +32,9 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
     private final Surface frame = Surface.cutout(FRAME_TEX.toString());
-    private final Map<Identifier, Surface> skins = new HashMap<>();
+    private final Map<Identifier, Surface> skins = new ConcurrentHashMap<>();
     /** Cache of fluid name → resolved body texture (falling back to tank_none when a fluid has no skin). */
-    private static final Map<String, Identifier> BODY_TEX = new HashMap<>();
+    private static final Map<String, Identifier> BODY_TEX = new ConcurrentHashMap<>();
 
     /**
      * The body skin for a fluid, falling back to {@code tank_none} when that fluid ships no

@@ -62,6 +62,7 @@ public final class MainRegistry {
         com.hbm.world.gen.ModBiomeModifiers.declare();
         com.hbm.inventory.recipes.ModCraftingRecipes.declare();
         com.hbm.blocks.machine.ModArmorTableBlocks.init();
+        com.hbm.blocks.machine.ModWeaponTableBlocks.init();
         com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)
         com.hbm.radio.ModRadioContent.init(); // Redstone-over-Radio blocks, block entities, and menus
@@ -95,6 +96,7 @@ public final class MainRegistry {
         com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModGunSupportItems.init(); // ammo container and stack-backed ammo/casing bags
         com.hbm.items.ModJetpackDependencyItems.init(); // hot steel and the functional xenon thruster part
         com.hbm.items.ModSingularityItems.init(); // dropped singularity capsules and Spark progression
         com.hbm.items.ModSelfchargerItems.init(); // deprecated powered-armour auxiliary batteries
@@ -125,21 +127,20 @@ public final class MainRegistry {
         com.hbm.items.ModGearItems.init(); // radiation gear (geiger/dosimeter + hazmat armor)
         com.hbm.items.ModArmorItems.init(); // modelled power armour (T-51b)
         com.hbm.items.ModArmorModules.init(); // complete armor modules (storage, cladding, inserts)
-        com.hbm.items.ModAmmoItems.init();  // Sedna ammunition (one item per old ammo_standard variant)
-        // The bullet configs must exist before a gun's magazine names them; the gun items themselves are
-        // built lazily at registration, well after this.
-        com.hbm.items.weapon.sedna.factory.GunFactory.init();
-        com.hbm.items.ModGunItems.init();   // the Sedna guns
+        // Ammo, factories, and gun suppliers must all be declared before any loader flushes ITEMs.
+        com.hbm.items.weapon.sedna.factory.GunCatalogue.init();
         com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them
         com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)
         com.hbm.world.biome.ModBiomes.init(); // crater biome keys, backed by worldgen biome JSON
         ModBlockEntities.init();
         com.hbm.tileentity.ModRBMKBlockEntities.init();
         ModMenus.init();
+        com.hbm.inventory.ModGunSupportMenus.init();
         com.hbm.inventory.ModRBMKMenus.init();
         ModEntities.init();        // entity types (the explosion + fallout entities)
         com.hbm.entity.ModRBMKEntities.init();
         com.hbm.entity.missile.ModMissileEntities.init(); // the missiles
+        com.hbm.entity.NtmToolEntityCatalog.init(); // NI4NI's throwable coin, separate from ModEntities
         com.hbm.particle.HbmParticles.init();
         com.hbm.potion.ModEffects.init(); // status effects (radiation)
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)

@@ -88,7 +88,7 @@ public abstract class BlockTNTBase extends dev.golem.core.world.CompatBlock impl
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (!stack.is(Items.FLINT_AND_STEEL)) return InteractionResult.PASS;
+        if (!stack.is(Items.FLINT_AND_STEEL)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             prime(level, pos, state.setValue(ARMED, true), player);
             level.removeBlock(pos, false);

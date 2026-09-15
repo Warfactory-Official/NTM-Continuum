@@ -48,9 +48,9 @@ public class ContainerMachineFluidTank extends AbstractContainerMenu {
 
         this.addSlot(validated(0, 8, 17));    // identifier in (identifiers only)
         this.addSlot(validated(1, 8, 53));    // identifier out (identifiers only)
-        this.addSlot(validated(2, 35, 17));   // container in: drained INTO the tank
+        this.addSlot(validated(2, 35, 17));   // full container in: drained INTO the tank
         this.addSlot(takeOnly(3, 35, 53));    // emptied container out
-        this.addSlot(validated(4, 125, 17));  // container in: filled FROM the tank
+        this.addSlot(validated(4, 125, 17));  // empty container in: filled FROM the tank
         this.addSlot(takeOnly(5, 125, 53));   // filled container out
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);

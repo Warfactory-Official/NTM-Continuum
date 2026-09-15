@@ -1,0 +1,59 @@
+{
+  "parent": "hbm:item/weapon_mod_test.firerate",
+  "overrides": [
+    {
+      "predicate": {
+        "hbm:item_variant": 1
+      },
+      "model": "hbm:item/weapon_mod_test.damage"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 2
+      },
+      "model": "hbm:item/weapon_mod_test.multi"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 3
+      },
+      "model": "hbm:item/weapon_mod_test.override_2_5"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 4
+      },
+      "model": "hbm:item/weapon_mod_test.override_5"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 5
+      },
+      "model": "hbm:item/weapon_mod_test.override_7_5"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 6
+      },
+      "model": "hbm:item/weapon_mod_test.override_10"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 7
+      },
+      "model": "hbm:item/weapon_mod_test.override_12_5"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 8
+      },
+      "model": "hbm:item/weapon_mod_test.override_15"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 9
+      },
+      "model": "hbm:item/weapon_mod_test.override_20"
+    }
+  ]
+}

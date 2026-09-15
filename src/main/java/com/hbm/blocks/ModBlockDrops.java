@@ -125,7 +125,7 @@ public final class ModBlockDrops {
             "machine_press", "machine_puf6_tank", "machine_pump_electric", "machine_pump_steam", "machine_pumpjack",
             "machine_purex", "machine_pyrooven", "machine_radgen", "machine_refinery", "machine_rtg_grey",
             "machine_shredder", "machine_silex", "machine_solar_boiler", "machine_soldering_station",
-            "machine_solidifier", "machine_storage_drum", "machine_strand_caster", "machine_transformer",
+            "machine_solidifier", "machine_storage_drum", "machine_strand_caster", "machine_weapon_table", "machine_transformer",
             "machine_transformer_20", "machine_transformer_dnt", "machine_transformer_dnt_20", "machine_turbine",
             "machine_uf6_tank", "machine_vacuum_distill", "machine_waste_drum", "machine_well", "machine_zirnox",
             "meteor_battery", "meteor_brick", "meteor_brick_chiseled", "meteor_brick_cracked", "meteor_brick_mossy",

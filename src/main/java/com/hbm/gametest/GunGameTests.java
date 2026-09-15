@@ -7,8 +7,10 @@ import com.hbm.handler.HbmKeybinds.EnumKeybind;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
+import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.factory.XFactory22lr;
 import com.hbm.items.weapon.sedna.factory.XFactory357;
 import com.hbm.items.weapon.sedna.factory.XFactory44;
@@ -18,6 +20,7 @@ import com.hbm.items.weapon.sedna.mags.MagazineSingleTypeBase;
 import dev.golem.core.render.anim.BusAnimationKeyframe;
 import dev.golem.core.render.anim.BusAnimationSequence;
 import java.util.List;
+import java.util.Set;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -27,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
  * GameTests pinning the Sedna gun engine to upstream's behaviour: the reload cycle, ammo consumption,
@@ -40,6 +44,10 @@ import net.minecraft.world.phys.AABB;
 public final class GunGameTests {
 
     private GunGameTests() {}
+
+    private static final Set<String> SOURCE_SECONDARY_ONLY_CONFIGS = Set.of(
+            "gun_aberrator_eott", "gun_light_revolver_dani", "gun_maresleg_akimbo",
+            "gun_minigun_dual", "gun_star_f_akimbo", "gun_uzi_akimbo");
 
     /**
      * A mock player standing inside the test structure.
@@ -145,6 +153,135 @@ public final class GunGameTests {
     }
 
     // ---------------------------------------------------------------- firing
+
+    /** Every registered source gun must expose a live primary input and receiver fire route. */
+    public static void gunFiringRoutes(GameTestHelper helper) {
+        int gunCount = 0;
+        for (Item item : BuiltInRegistries.ITEM) {
+            var id = BuiltInRegistries.ITEM.getKey(item);
+            if (!"hbm".equals(id.getNamespace()) || !id.getPath().startsWith("gun_")
+                    || !(item instanceof ItemGunBaseNT gun)) continue;
+            gunCount++;
+            ItemStack stack = new ItemStack(item);
+            if (gun.defaultAmmo != null) {
+                helper.assertTrue(gun.defaultAmmo.get() != null && gun.defaultAmmoAmount > 0,
+                        id + " has an invalid source default ammo declaration");
+            }
+            for (int index = 0; index < gun.getConfigCount(); index++) {
+                GunConfig config = gun.getConfig(stack, index);
+                if (isSourceSecondaryOnly(id, index)) {
+                    helper.assertTrue(config.getPressSecondary(stack) != null,
+                            id + " config " + index + " has no source secondary callback");
+                } else {
+                    helper.assertTrue(config.getPressPrimary(stack) != null,
+                            id + " config " + index + " has no primary callback");
+                }
+                helper.assertTrue(config.getDecider(stack) != null,
+                        id + " config " + index + " has no state decider");
+                Receiver[] receivers = config.getReceivers(stack);
+                helper.assertTrue(receivers != null && receivers.length > 0,
+                        id + " config " + index + " has no receivers");
+                for (int receiverIndex = 0; receiverIndex < receivers.length; receiverIndex++) {
+                    Receiver receiver = receivers[receiverIndex];
+                    // PA receivers are provider-driven; every other receiver must expose its fire route.
+                    if (receiver.getMagazine(stack) == null
+                            && gun instanceof com.hbm.items.weapon.sedna.factory.XFactoryPA.ItemGunPA) continue;
+                    helper.assertTrue(receiver.getCanFire(stack) != null && receiver.getOnFire(stack) != null,
+                            id + " config " + index + " receiver " + receiverIndex
+                                    + " has a dormant firing route");
+                }
+            }
+        }
+        helper.assertTrue(gunCount == 70, "source gun registry must expose 70 guns, found " + gunCount);
+        helper.succeed();
+    }
+
+    /** Source akimbo/dual second rails are selected by secondary press, not primary press. */
+    private static boolean isSourceSecondaryOnly(net.minecraft.resources.Identifier id, int index) {
+        return "hbm".equals(id.getNamespace()) && index == 1
+                && SOURCE_SECONDARY_ONLY_CONFIGS.contains(id.getPath());
+    }
+
+    /** The source debug secondary receiver remains a real six-projectile firing route. */
+    public static void gunDebugSecondaryFire(GameTestHelper helper) {
+        Player player = player(helper);
+        ItemStack stack = armed(helper, player, ModGunItems.gun_debug.get(),
+                ModAmmoItems.ammo_debug.get(), 24);
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+        draw(helper, player, stack);
+
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.RELOAD, true);
+        tick(helper, player, stack, 120);
+
+        int before = bullets(helper, player).size();
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_SECONDARY, true);
+        List<EntityBulletBaseMK4> spawned = bullets(helper, player);
+        helper.assertTrue(spawned.size() == before + 6,
+                "debug secondary must fire its source six-pellet load, spawned " + (spawned.size() - before));
+        helper.assertTrue(mag(stack).getAmount(stack, player.getInventory()) == 12,
+                "debug secondary must leave the primary receiver's twelve rounds untouched");
+        helper.succeed();
+    }
+
+    /** Standard, Lacunae, and both dual-minigun rails must all reach their source firing callbacks. */
+    public static void minigunFiringRoutes(GameTestHelper helper) {
+        Player player = player(helper);
+
+        ItemStack standard = armed(helper, player, ModGunItems.gun_minigun.get(),
+                ModAmmoItems.r762_fmj.get(), 3);
+        ItemGunBaseNT standardGun = (ItemGunBaseNT) standard.getItem();
+        draw(helper, player, standard);
+        int bulletsBefore = bullets(helper, player).size();
+        standardGun.handleKeybind(player, player.getInventory(), standard, EnumKeybind.GUN_PRIMARY, true);
+        helper.assertTrue(bullets(helper, player).size() == bulletsBefore + 1,
+                "standard minigun primary did not fire one source bullet");
+
+        ItemStack lacunae = armed(helper, player, ModGunItems.gun_minigun_lacunae.get(),
+                ModAmmoItems.capacitor.get(), 15);
+        ItemGunBaseNT lacunaeGun = (ItemGunBaseNT) lacunae.getItem();
+        draw(helper, player, lacunae);
+        lacunaeGun.handleKeybind(player, player.getInventory(), lacunae, EnumKeybind.RELOAD, true);
+        tick(helper, player, lacunae, 120);
+        int beamsBefore = helper.getLevel().getEntitiesOfClass(
+                com.hbm.entity.projectile.EntityBulletBeamBase.class,
+                player.getBoundingBox().inflate(64D)).size();
+        lacunaeGun.handleKeybind(player, player.getInventory(), lacunae, EnumKeybind.GUN_PRIMARY, true);
+        helper.assertTrue(helper.getLevel().getEntitiesOfClass(
+                        com.hbm.entity.projectile.EntityBulletBeamBase.class,
+                        player.getBoundingBox().inflate(64D)).size() == beamsBefore + 1,
+                "Lacunae minigun primary did not fire one beam");
+
+        ItemStack dual = armed(helper, player, ModGunItems.gun_minigun_dual.get(),
+                ModAmmoItems.r762_sp.get(), 4);
+        ItemGunBaseNT dualGun = (ItemGunBaseNT) dual.getItem();
+        draw(helper, player, dual);
+        int dualBefore = bullets(helper, player).size();
+        dualGun.handleKeybind(player, player.getInventory(), dual, EnumKeybind.GUN_PRIMARY, true);
+        dualGun.handleKeybind(player, player.getInventory(), dual, EnumKeybind.GUN_PRIMARY, false);
+        dualGun.handleKeybind(player, player.getInventory(), dual, EnumKeybind.GUN_SECONDARY, true);
+        helper.assertTrue(bullets(helper, player).size() == dualBefore + 2,
+                "dual minigun primary and secondary rails must each fire one bullet");
+        helper.succeed();
+    }
+
+    /** LAG's source callback must retain its ordinary projectile fallback outside the inspect window. */
+    public static void gunLagFiringRoute(GameTestHelper helper) {
+        Player player = player(helper);
+        ItemStack stack = armed(helper, player, ModGunItems.gun_lag.get(),
+                ModAmmoItems.p9_jhp.get(), 1);
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+        draw(helper, player, stack);
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.RELOAD, true);
+        tick(helper, player, stack, 120);
+
+        int before = bullets(helper, player).size();
+        gun.handleKeybind(player, player.getInventory(), stack, EnumKeybind.GUN_PRIMARY, true);
+        helper.assertTrue(bullets(helper, player).size() == before + 1,
+                "LAG's source fire callback must fall back to standard projectile fire");
+        helper.assertTrue(mag(stack).getAmount(stack, player.getInventory()) == 0,
+                "LAG fallback must consume its loaded round");
+        helper.succeed();
+    }
 
     /** Pulling the trigger spawns a bullet carrying the loaded config, and spends a round. */
     public static void gunFire(GameTestHelper helper) {

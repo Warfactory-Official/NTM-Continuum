@@ -30,6 +30,10 @@ public final class ExplosionCreator {
         ParticleEffects.explosionSmall(level, x, y, z, 15, 4F, 1F);
     }
 
+    public static void composeEffectSmall(Level level, double x, double y, double z) {
+        ParticleEffects.explosionSmall(level, x, y, z, 10, 2.5F, 1F);
+    }
+
     public static void composeEffectLarge(Level level, double x, double y, double z) {
         ParticleEffects.explosionSmall(level, x, y, z, 25, 8F, 1F);
     }

@@ -113,7 +113,8 @@ public final class ModItemModels {
     };
 
     private static final String[] SPRITE_ITEMS_0 = {
-            "ammo_arty", "ammo_debug", "ammo_dgk", "ammo_secret_m44_equestrian", "ammo_shell",
+            "ammo_arty", "ammo_debug", "ammo_dgk", "ammo_fireext", "ammo_fireext_foam", "ammo_fireext_sand",
+            "ammo_secret_m44_equestrian", "ammo_shell",
             "ammo_shell_apfsds_du", "ammo_shell_apfsds_t", "ammo_shell_explosive", "ammo_shell_w9",
             "ammo_standard_bmg50_ap", "ammo_standard_bmg50_du", "ammo_standard_bmg50_fmj",
             "ammo_standard_bmg50_he", "ammo_standard_bmg50_jhp", "ammo_standard_bmg50_sm",
@@ -216,7 +217,7 @@ public final class ModItemModels {
             "fuel_tank_medium", "fuel_tank_small", "fuse", "fusion_core_infinite", "gadget_core",
             "gadget_explosive", "gadget_explosive8", "gadget_wireing", "gas_empty", "geiger_counter",
             "gem_alexandrite", "gem_rad", "gem_sodalite", "gem_tantalium", "gem_volcanic",
-            "generator_steel", "glyphid_meat", "glyphid_meat_grilled", "gun_debug", "hazmat_boots",
+            "generator_steel", "glyphid_meat", "glyphid_meat_grilled", "hazmat_boots",
             "hazmat_boots_grey", "hazmat_boots_red", "hazmat_cloth", "hazmat_cloth_grey",
             "hazmat_cloth_red", "hazmat_helmet", "hazmat_helmet_grey", "hazmat_helmet_red",
             "hazmat_legs", "hazmat_legs_grey", "hazmat_legs_red", "hazmat_plate", "hazmat_plate_grey",
@@ -485,6 +486,7 @@ public final class ModItemModels {
     }
 
     private static void renamed0() {
+        Dejson.item(NS, "gun_b92_ammo").models(Models.generated("hbm:items/gun_b92_ammo_alt")).register();
         Dejson.item(NS, "arc_electrode").models(Models.generated("hbm:items/arc_electrode.graphite")).register();
         Dejson.item(NS, "arc_electrode_burnt").models(Models.generated("hbm:items/arc_electrode_burnt.graphite")).register();
         Dejson.item(NS, "arc_electrode_burnt_desh").models(Models.generated("hbm:items/arc_electrode_burnt.desh")).register();

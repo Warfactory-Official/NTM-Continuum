@@ -47,7 +47,7 @@ public class MachineBigAssTank extends MachineGiantTank {
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!player.isShiftKeyDown() || !(stack.getItem() instanceof IItemFluidId identifier)) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (!level.isClientSide() && MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineBigAssTank tank) {
             var type = identifier.getType(level, tank.getBlockPos().getX(), tank.getBlockPos().getY(),

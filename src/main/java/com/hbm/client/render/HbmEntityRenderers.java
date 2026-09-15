@@ -11,6 +11,11 @@ import net.minecraft.client.renderer.entity.FallingBlockRenderer;
 import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import com.hbm.client.render.projectile.BeamProjectileRenderer;
+import com.hbm.client.render.projectile.BulletProjectileRenderer;
+import com.hbm.client.render.projectile.ChemicalProjectileRenderer;
+import com.hbm.client.render.projectile.CoinProjectileRenderer;
+import com.hbm.client.render.projectile.RenderBeamBomb;
 
 /**
  * Cross-loader registration of HBM's entity renderers. Common defines the wiring; each loader passes a
@@ -39,10 +44,13 @@ public final class HbmEntityRenderers {
         regGem(sink, ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
         regGem(sink, ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
         regGem(sink, ModEntities.SAWBLADE.get(), SawbladeRenderer::new);
-        // Bullets are invisible for now: upstream draws them through ~30 per-ammo tracer styles in
-        // LegoClient, which is a follow-up. A renderer must still be registered or the client throws
-        // the moment one spawns.
-        sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
+        // The per-ammo LegoClient styles are resolved by the client-owned ID registry.
+        regGem(sink, ModEntities.BULLET_MK4.get(), BulletProjectileRenderer::new);
+        regGem(sink, ModEntities.BULLET_MK4_CL.get(), BulletProjectileRenderer::new);
+        regGem(sink, ModEntities.CHEMICAL.get(), ChemicalProjectileRenderer::new);
+        sink.register(ModEntities.BEAM_BOMB.get(), RenderBeamBomb::new);
+        regGem(sink, ModEntities.BEAM_MK4.get(), BeamProjectileRenderer::new);
+        regGem(sink, com.hbm.entity.NtmToolEntityCatalog.COIN.get(), CoinProjectileRenderer::new);
         regGem(sink, ModEntities.BLACK_HOLE.get(), BlackHoleRenderer::new);
         regGem(sink, ModEntities.VORTEX.get(), BlackHoleRenderer::new);
         regGem(sink, ModEntities.RAGING_VORTEX.get(), BlackHoleRenderer::new);

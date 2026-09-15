@@ -145,7 +145,7 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
                                                                Player player, net.minecraft.world.InteractionHand hand,
                                                                ItemStack stack, BlockHitResult hit) {
         if (level.isClientSide()) return net.minecraft.world.InteractionResult.SUCCESS;
-        if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.TRY_WITH_EMPTY_HAND;
         DyeColor dyeColor = dyeColor(stack);
         if (dyeColor != null) {
             BlockPos core = MultiblockSurface.coreOfAny(level, pos);

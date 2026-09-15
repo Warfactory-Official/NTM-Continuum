@@ -13,7 +13,7 @@ import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
 
-/** The ported metal subset of the old metadata-backed {@code casing} item. */
+/** Every identity from original-hbm's metadata-backed {@code casing} item. */
 public final class ModCasingItems {
 
     private ModCasingItems() {}
@@ -25,11 +25,19 @@ public final class ModCasingItems {
             EnumCasingType.SMALL,
             EnumCasingType.LARGE,
             EnumCasingType.SMALL_STEEL,
-            EnumCasingType.LARGE_STEEL
+            EnumCasingType.LARGE_STEEL,
+            EnumCasingType.SHOTSHELL,
+            EnumCasingType.BUCKSHOT,
+            EnumCasingType.BUCKSHOT_ADVANCED
     };
 
     static {
         for (EnumCasingType type : PORTED) {
+            // The original generated catalogue already owns this flattened identity.
+            if (type == EnumCasingType.BUCKSHOT) {
+                CASINGS.put(type, ModItems.casing_buckshot);
+                continue;
+            }
             String id = "casing_" + type.name().toLowerCase(Locale.ROOT);
             RegistryObject<Item> casing = ITEMS.registerSimpleItem(id);
             CASINGS.put(type, casing);

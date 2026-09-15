@@ -54,6 +54,7 @@
     "hbm:fluid_valve",
     "hbm:machine_drain",
     "hbm:machine_battery_socket",
+    "hbm:machine_weapon_table",
     "hbm:crate_iron",
     "hbm:crate_steel",
     "hbm:crate_desh",

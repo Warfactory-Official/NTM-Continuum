@@ -37,6 +37,9 @@ public final class NeoForgeClientInit {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
                 (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
                         com.hbm.handler.JetpackHandler.clearClientState());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+                (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
+                        com.hbm.client.gun.GunSmokeClient.onDisconnect());
         // The vendored 26.1 engine is a library and must be subscribed from the constructor: two of
         // its listeners are mod-bus registry events. No-op where the engine is a mod, or absent.
         com.hbm.client.render.flywheel.FlywheelCompat.startEngine();

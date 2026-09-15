@@ -29,6 +29,8 @@ public class AshesCreator implements IParticleCreator {
 
         Entity entity = level.getEntity(Tags.getIntOr(data, "entityID", -1));
         if (entity == null) return;
+        if (entity instanceof net.minecraft.world.entity.LivingEntity living)
+            DisintegrationParticles.vanish(living);
 
         int amount = Tags.getIntOr(data, "ashesCount", 0);
         float scale = Tags.getFloatOr(data, "ashesScale", 1F);

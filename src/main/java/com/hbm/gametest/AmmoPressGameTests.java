@@ -22,8 +22,9 @@ public final class AmmoPressGameTests {
     private AmmoPressGameTests() {}
 
     public static void recipes(GameTestHelper helper) {
-        helper.assertTrue(AmmoPressRecipes.getRecipes().size() == 20,
-                "Ammo Press should expose the 20 feasible legacy recipes");
+        helper.assertTrue(AmmoPressRecipes.getRecipes().size() == AmmoPressRecipes.SOURCE_RECIPE_COUNT,
+                "Ammo Press should expose all dependency-complete original-hbm rows (89), got "
+                        + AmmoPressRecipes.getRecipes().size());
         helper.assertTrue(AmmoPressRecipes.recipes.get(0).output.is(ModAmmoItems.m357_bp.get())
                         && AmmoPressRecipes.recipes.get(6).output.is(ModAmmoItems.m44_bp.get())
                         && AmmoPressRecipes.recipes.get(12).output.is(ModAmmoItems.p22_sp.get())

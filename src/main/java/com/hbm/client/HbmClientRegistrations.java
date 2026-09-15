@@ -7,6 +7,7 @@ import com.hbm.blocks.machine.rbmk.RBMKGauge;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.gui.GUIAnvil;
 import com.hbm.inventory.gui.GUIArmorTable;
+import com.hbm.inventory.gui.GUIWeaponTable;
 import com.hbm.inventory.gui.GUIBatterySocket;
 import com.hbm.inventory.gui.GUIBatteryREDD;
 import com.hbm.inventory.gui.GUIMachineFENSU;
@@ -155,9 +156,11 @@ public final class HbmClientRegistrations {
          sink.register(ModMenus.FENSU.get(), GUIMachineFENSU::new);
          sink.register(ModMenus.BATTERY_REDD.get(), GUIBatteryREDD::new);
          sink.register(ModMenus.CRATE.get(), GUICrate::new);
-         sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
+          sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
+          sink.register(ModMenus.WEAPON_TABLE.get(), GUIWeaponTable::new);
          sink.register(ModMenus.MACHINE_PRESS.get(), GUIMachinePress::new);
-         sink.register(ModMenus.MACHINE_AMMO_PRESS.get(), GUIMachineAmmoPress::new);
+          sink.register(ModMenus.MACHINE_AMMO_PRESS.get(), GUIMachineAmmoPress::new);
+          com.hbm.inventory.gui.GunSupportClientRegistrations.registerScreens(sink);
          sink.register(ModMenus.MACHINE_EPRESS.get(), GUIMachineEPress::new);
         sink.register(ModMenus.MACHINE_ELECTRIC_FURNACE.get(), GUIMachineElectricFurnace::new);
         sink.register(ModMenus.FURNACE_BRICK.get(), GUIFurnaceBrick::new);
@@ -195,14 +198,18 @@ public final class HbmClientRegistrations {
     }
 
     public static void registerHud(HudSink sink) {
+        com.hbm.items.weapon.sedna.factory.GunFactoryClient.init();
         sink.register("look_overlay", HbmLookOverlay::render);
         sink.register("rad_counter", RadCounterOverlay::render);
         sink.register("nuke_flash", NukeScreenEffects::render);
         sink.register("gun_hud", GunHudOverlay::render);
+        sink.register("gun_scope", GunScopeOverlay::render);
         sink.register("armor_hud", ArmorHudOverlay::render);
         sink.register("jetpack_hud", com.hbm.client.jetpack.JetpackHudOverlay::render);
         if (System.getenv("HBM_JETPACK_SCREENSHOTS") != null && dev.golem.core.platform.Platform.isDevelopment())
             sink.register("jetpack_visual_check", com.hbm.client.jetpack.JetpackSmokeClient::render);
+        if (com.hbm.client.gun.GunSmokeClient.enabled() && dev.golem.core.platform.Platform.isDevelopment())
+            sink.register("gun_smoke_capture", com.hbm.client.gun.GunSmokeClient::render);
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
@@ -270,8 +277,9 @@ public final class HbmClientRegistrations {
         dev.golem.core.render.HeatDistortionRenderType.configure(
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
         com.hbm.client.jetpack.JetpackClientVisuals.init();
-        com.hbm.client.jetpack.JetpackSmokeClient.register();
-        com.hbm.client.render.TorexBenchmarkClient.register();
+         com.hbm.client.jetpack.JetpackSmokeClient.register();
+         com.hbm.client.gun.GunSmokeClient.register();
+         com.hbm.client.render.TorexBenchmarkClient.register();
         dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "jetpack_visuals",
                 () -> {
                     com.hbm.client.render.armor.ArmorRenderers.reload();
@@ -279,8 +287,12 @@ public final class HbmClientRegistrations {
                 });
         dev.golem.core.client.PlayerRenderHooks.register(
                 com.hbm.client.jetpack.JetpackClientVisuals::applyPlayerPose);
-        dev.golem.core.client.PlayerRenderHooks.registerModel(
-                com.hbm.client.jetpack.JetpackClientVisuals::applyPlayerModelPose);
+        dev.golem.core.client.PlayerRenderHooks.registerModel(parts -> {
+            // The source applies gun aimedBow during model setup; keep its arm pose after the glider's
+            // flight freeze while retaining the glider's body, head and leg precedence.
+            com.hbm.client.jetpack.JetpackClientVisuals.applyPlayerModelPose(parts);
+            com.hbm.client.render.weapon.GunPlayerPose.apply(parts);
+        });
         dev.golem.core.client.CameraHooks.register(
                 com.hbm.client.jetpack.JetpackClientVisuals::lowerThirdPersonCamera);
         dev.golem.core.render.HumanoidLayers.register(
@@ -330,7 +342,18 @@ public final class HbmClientRegistrations {
 
     /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */
     public static void installGunAnimations() {
+        GunEffectState.install();
+        com.hbm.client.render.projectile.TracerRegistry.init();
+        com.hbm.client.particle.CasingParticles.init();
+        com.hbm.client.particle.DisintegrationParticles.init();
+        GunEffectState.setCasingHandler(event -> com.hbm.client.particle.CasingParticles.spawn(event));
+        GunEffectState.setGunCasingHandler(payload -> com.hbm.client.particle.CasingParticles.spawn(
+                new com.hbm.particle.helper.CasingCreator.Event(payload.x(), payload.y(), payload.z(), payload.mX(),
+                        payload.mY(), payload.mZ(), payload.yaw(), payload.pitch(), payload.mPitch(), payload.mYaw(),
+                        payload.casing(), payload.smoking(), payload.smokeLife(), payload.smokeLift(), payload.nodeLife(),
+                        true, payload.legacy())));
         com.hbm.client.anim.GunAnimations.init();
+        installGunHudComponents();
         dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID,
                 "lag_animations", com.hbm.client.anim.LagAnimationLoader::invalidate);
         // The weapon renderers a gun item definition can name. Both eras read the same definitions:
@@ -338,5 +361,39 @@ public final class HbmClientRegistrations {
         com.hbm.client.render.weapon.WeaponRenderers.init();
         dev.golem.core.client.Fov.register(com.hbm.client.render.weapon.WeaponRenderers::viewFov);
         dev.golem.core.client.Crosshairs.register(GunCrosshairOverlay::render);
+    }
+
+    /** Applies the source per-config HUD rails after all deferred gun items have resolved. */
+    private static void installGunHudComponents() {
+        com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar durability =
+                new com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar();
+        com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar mirroredDurability =
+                new com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar(true);
+        com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter ammo =
+                new com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter(0);
+        com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter mirroredAmmo =
+                new com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter(0).mirror();
+        com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter ammoOnly =
+                new com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter(0).noCounter();
+
+        for (com.hbm.items.weapon.sedna.ItemGunBaseNT gun :
+                com.hbm.items.weapon.sedna.ItemGunBaseNT.INSTANCES) {
+            String path = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(gun).getPath();
+            for (int index = 0; index < gun.getConfigCount(); index++) {
+                boolean mirrored = path.endsWith("_akimbo") && index == 0;
+                boolean ammoOnlyConfig = path.equals("gun_autoshotgun_heretic")
+                        || path.equals("gun_folly") || path.startsWith("gun_aberrator");
+                boolean noCounter = path.startsWith("gun_flamer") || path.equals("gun_chemthrower");
+                com.hbm.items.weapon.sedna.hud.IHUDComponent ammoRail = mirrored ? mirroredAmmo
+                        : (noCounter ? ammoOnly : ammo);
+                if (ammoOnlyConfig) {
+                    gun.getConfig(null, index).hud(ammoRail);
+                } else {
+                    gun.getConfig(null, index).hud(mirrored
+                            ? new com.hbm.items.weapon.sedna.hud.IHUDComponent[] {mirroredDurability, ammoRail}
+                            : new com.hbm.items.weapon.sedna.hud.IHUDComponent[] {durability, ammoRail});
+                }
+            }
+        }
     }
 }

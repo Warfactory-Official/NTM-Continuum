@@ -63,12 +63,14 @@ public final class ModTabs {
 
     /** Add an item (or block item) to a tab's display list. */
     public static void addTo(HbmTab tab, RegistryObject<? extends Item> item) {
-        LISTS.get(tab).add(item);
+        List<RegistryObject<? extends Item>> contents = LISTS.get(tab);
+        if (!contents.contains(item)) contents.add(item);
     }
 
     /** Add a batch of custom display stacks to a tab (resolved lazily at tab-build time). */
     public static void addStacksTo(HbmTab tab, Supplier<List<ItemStack>> stacks) {
-        STACK_LISTS.get(tab).add(stacks);
+        List<Supplier<List<ItemStack>>> contents = STACK_LISTS.get(tab);
+        if (!contents.contains(stacks)) contents.add(stacks);
     }
 
     public static RegistryObject<CreativeModeTab> get(HbmTab tab) {
