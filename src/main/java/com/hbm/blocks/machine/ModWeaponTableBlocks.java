@@ -21,7 +21,8 @@ public final class ModWeaponTableBlocks {
 
     public static final RegistryObject<BlockWeaponTable> MACHINE_WEAPON_TABLE = BLOCKS.registerBlock(
             "machine_weapon_table", BlockWeaponTable::new,
-            p -> p.strength(5.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops());
+            // Original: Material.iron, setHardness(5.0F).setResistance(10.0F); no tool requirement.
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
     public static final RegistryObject<BlockItem> MACHINE_WEAPON_TABLE_ITEM = ITEMS.registerBlockItem(
             "machine_weapon_table", MACHINE_WEAPON_TABLE, Compat::blockDescription);
 

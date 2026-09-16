@@ -86,7 +86,67 @@ public final class WeaponTableGameTests {
     public static final GameTests.Function DRILL_ENTITY_DAMAGE = TESTS.function(
             "drill_actual_entity_damage", 40, () -> WeaponTableGameTests::drillActualEntityDamage);
 
+    public static final GameTests.Function STALE_SOURCE = TESTS.function(
+            "weapon_table_second_gun_after_shift_click", 20,
+            () -> WeaponTableGameTests::secondGunAfterShiftClick);
+    public static final GameTests.Function CONFIG1_QUICK_MOVE = TESTS.function(
+            "weapon_table_config1_quick_move_keeps_mod", 20,
+            () -> WeaponTableGameTests::config1QuickMoveKeepsMod);
+
     public static void init() {}
+
+    /** Regression: a gun that entered by shift-click after another gun left must not crash or leak mods. */
+    private static void secondGunAfterShiftClick(GameTestHelper helper) {
+        var player = helper.makeMockServerPlayerInLevel();
+        ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+        Item bayonetItem = bayonet.getItem();
+        player.getInventory().setItem(0, new ItemStack(ModGunItems.gun_carbine.get()));
+        player.getInventory().setItem(1, new ItemStack(ModGunItems.gun_carbine.get()));
+        player.getInventory().setItem(2, bayonet);
+        ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
+        int hotbar = ContainerWeaponTable.PLAYER_START + 27;
+        Menus.click(menu, hotbar, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.QUICK_MOVE, player);
+        Menus.click(menu, hotbar + 1, 0, CompatContainerMenu.ClickAction.QUICK_MOVE, player);
+        helper.assertTrue(menu.getSlot(ContainerWeaponTable.GUN_SLOT).getItem().is(ModGunItems.gun_carbine.get()),
+                "the second gun must enter the table by shift-click");
+        Menus.click(menu, hotbar + 2, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        Menus.click(menu, 0, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        int modded = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(ModGunItems.gun_carbine.get())
+                    && XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_CARBINE_BAYONET)) modded++;
+        }
+        helper.assertTrue(modded == 0, "a gun outside the table must not receive the modifier");
+        helper.assertTrue(XWeaponModManager.hasUpgrade(menu.getSlot(ContainerWeaponTable.GUN_SLOT).getItem(), 0,
+                        XWeaponModManager.ID_CARBINE_BAYONET),
+                "the gun in the table must receive the modifier");
+        helper.succeed();
+    }
+
+    /** Regression: a modifier installed on configuration 1 must survive the gun leaving the table. */
+    private static void config1QuickMoveKeepsMod(GameTestHelper helper) {
+        var player = helper.makeMockServerPlayerInLevel();
+        player.getInventory().setItem(0, new ItemStack(ModGunItems.gun_light_revolver_dani.get()));
+        player.getInventory().setItem(1, ModWeaponModItems.weapon_mod_test.get()
+                .of(com.hbm.items.weapon.sedna.factory.GunFactory.EnumModTest.FIRERATE));
+        ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
+        int hotbar = ContainerWeaponTable.PLAYER_START + 27;
+        Menus.click(menu, hotbar, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        helper.assertTrue(menu.clickMenuButton(player, 1) && menu.configIndex() == 1, "config 1 must be selectable");
+        Menus.click(menu, hotbar + 1, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        Menus.click(menu, 0, 0, CompatContainerMenu.ClickAction.PICKUP, player);
+        Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.QUICK_MOVE, player);
+        ItemStack out = find(player, ModGunItems.gun_light_revolver_dani.get());
+        helper.assertTrue(!out.isEmpty() && XWeaponModManager.hasUpgrade(out, 1, 0),
+                "the outgoing gun must keep its configuration-1 modifier");
+        helper.assertTrue(menu.getSlot(0).getItem().isEmpty() && menu.configIndex() == 0,
+                "the consumed modifier slot must clear and the configuration must reset");
+        helper.succeed();
+    }
 
     private static void interactionOpensMenu(GameTestHelper helper) {
         BlockPos relative = new BlockPos(2, 1, 2);
@@ -134,6 +194,7 @@ public final class WeaponTableGameTests {
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+        Item bayonetItem = bayonet.getItem();
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
         menu.getSlot(0).set(bayonet);
 
@@ -152,6 +213,7 @@ public final class WeaponTableGameTests {
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+        Item bayonetItem = bayonet.getItem();
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
         menu.getSlot(0).set(bayonet);
 
@@ -171,7 +233,7 @@ public final class WeaponTableGameTests {
         helper.assertTrue(gunCount == 1, "successful quick-move must create exactly one gun stack");
         helper.assertTrue(XWeaponModManager.hasUpgrade(destination, 0, XWeaponModManager.ID_CARBINE_BAYONET),
                 "quick-move must put the finalized gun in the actual player destination");
-        helper.assertTrue(count(player, bayonet.getItem()) == 0,
+        helper.assertTrue(count(player, bayonetItem) == 0,
                 "successful gun quick-move must not leave a loose modifier copy");
         helper.assertTrue(menu.getSlot(ContainerWeaponTable.GUN_SLOT).getItem().isEmpty(),
                 "successful quick-move must clear the table gun slot");
@@ -183,11 +245,12 @@ public final class WeaponTableGameTests {
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+        Item bayonetItem = bayonet.getItem();
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
         menu.getSlot(0).set(bayonet);
 
         ItemStack moved = menu.quickMoveStack(player, 0);
-        helper.assertTrue(!moved.isEmpty() && count(player, bayonet.getItem()) == 1,
+        helper.assertTrue(!moved.isEmpty() && count(player, bayonetItem) == 1,
                 "modifier quick-move must move exactly one modifier to the player");
         helper.assertTrue(!XWeaponModManager.hasUpgrade(gun, 0, XWeaponModManager.ID_CARBINE_BAYONET),
                 "moving a modifier out must uninstall it from the live gun");
@@ -201,6 +264,7 @@ public final class WeaponTableGameTests {
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+        Item bayonetItem = bayonet.getItem();
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
         menu.getSlot(0).set(bayonet);
 
@@ -217,13 +281,20 @@ public final class WeaponTableGameTests {
 
     private static void hotbarSwapConservesItems(GameTestHelper helper) {
         var player = helper.makeMockServerPlayerInLevel();
-        ItemStack hotbarItem = new ItemStack(Items.STICK);
-        player.getInventory().setItem(0, hotbarItem);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
         menu.getSlot(0).set(ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET));
 
+        // Vanilla swap semantics (as in the original 1.7 slotClick mode 2): a hotbar item that the gun
+        // slot cannot accept means no swap at all; an empty hotbar slot takes the gun.
+        player.getInventory().setItem(0, new ItemStack(Items.STICK));
+        Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.SWAP, player);
+        helper.assertTrue(menu.getSlot(ContainerWeaponTable.GUN_SLOT).getItem().is(ModGunItems.gun_carbine.get())
+                        && player.getInventory().getItem(0).is(Items.STICK),
+                "a hotbar swap against a non-gun hotbar item must not move anything");
+
+        player.getInventory().setItem(0, ItemStack.EMPTY);
         Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.SWAP, player);
         helper.assertTrue(menu.getSlot(ContainerWeaponTable.GUN_SLOT).getItem().isEmpty()
                         && count(player, ModGunItems.gun_carbine.get()) == 1,
@@ -231,7 +302,7 @@ public final class WeaponTableGameTests {
         helper.assertTrue(XWeaponModManager.hasUpgrade(player.getInventory().getItem(0), 0,
                         XWeaponModManager.ID_CARBINE_BAYONET)
                         && menu.getSlot(0).getItem().isEmpty(),
-                "the hotbar swap callback must use the removed gun's modifier snapshot");
+                "the swapped-out gun must carry the table modifiers and consume them");
         helper.succeed();
     }
 
@@ -239,6 +310,7 @@ public final class WeaponTableGameTests {
         var player = helper.makeMockServerPlayerInLevel();
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+        Item bayonetItem = bayonet.getItem();
         player.getInventory().setItem(0, gun);
         player.getInventory().setItem(1, bayonet);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
@@ -248,14 +320,15 @@ public final class WeaponTableGameTests {
         Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.PICKUP, player);
         Menus.click(menu, hotbar + 1, 0, CompatContainerMenu.ClickAction.PICKUP, player);
         Menus.click(menu, 0, 0, CompatContainerMenu.ClickAction.PICKUP, player);
-        helper.assertTrue(XWeaponModManager.hasUpgrade(gun, 0, XWeaponModManager.ID_CARBINE_BAYONET),
-                "a modifier placed through player inventory clicking must install on the live gun");
+        helper.assertTrue(XWeaponModManager.hasUpgrade(menu.getSlot(ContainerWeaponTable.GUN_SLOT).getItem(), 0,
+                        XWeaponModManager.ID_CARBINE_BAYONET),
+                "a modifier placed through player inventory clicking must install on the gun in the table");
         Menus.click(menu, ContainerWeaponTable.GUN_SLOT, 0, CompatContainerMenu.ClickAction.PICKUP, player);
         Menus.click(menu, hotbar, 0, CompatContainerMenu.ClickAction.PICKUP, player);
 
         helper.assertTrue(count(player, ModGunItems.gun_carbine.get()) == 1,
                 "player inventory clicking must conserve exactly one gun");
-        helper.assertTrue(count(player, bayonet.getItem()) == 0 && menu.getSlot(0).getItem().isEmpty(),
+        helper.assertTrue(count(player, bayonetItem) == 0 && menu.getSlot(0).getItem().isEmpty(),
                 "the installed modifier must not also remain as an item after the click transfer");
         helper.assertTrue(XWeaponModManager.hasUpgrade(player.getInventory().getItem(0), 0,
                         XWeaponModManager.ID_CARBINE_BAYONET),
@@ -286,6 +359,7 @@ public final class WeaponTableGameTests {
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+        Item bayonetItem = bayonet.getItem();
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
         menu.getSlot(0).set(bayonet);
         menu.removed(player);
@@ -294,7 +368,7 @@ public final class WeaponTableGameTests {
                         player.getBoundingBox().inflate(8D)).stream().map(ItemEntity::getItem).toList();
         helper.assertTrue(drops.stream().mapToInt(stack -> stack.is(ModGunItems.gun_carbine.get()) ? stack.getCount() : 0).sum() == 1,
                 "closing the table must drop exactly one gun");
-        helper.assertTrue(drops.stream().mapToInt(stack -> stack.is(bayonet.getItem()) ? stack.getCount() : 0).sum() == 1,
+        helper.assertTrue(drops.stream().mapToInt(stack -> stack.is(bayonetItem) ? stack.getCount() : 0).sum() == 1,
                 "closing the table must drop exactly one modifier");
         ItemStack droppedGun = drops.stream().filter(stack -> stack.is(ModGunItems.gun_carbine.get())).findFirst().orElse(ItemStack.EMPTY);
         helper.assertTrue(!XWeaponModManager.hasUpgrade(droppedGun, 0, XWeaponModManager.ID_CARBINE_BAYONET),

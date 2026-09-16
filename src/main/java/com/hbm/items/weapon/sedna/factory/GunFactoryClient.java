@@ -30,7 +30,7 @@ public final class GunFactoryClient {
         hud(ModGunItems.gun_henry_lincoln, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_greasegun, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_maresleg, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
-        hud(ModGunItems.gun_maresleg_broken, 0, HUD_COMPONENT_AMMO);
+        hud(ModGunItems.gun_maresleg_broken, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_flaregun, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_heavy_revolver, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);
         hud(ModGunItems.gun_heavy_revolver_lilmac, 0, HUD_COMPONENT_DURABILITY, HUD_COMPONENT_AMMO);

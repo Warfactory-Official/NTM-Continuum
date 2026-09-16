@@ -206,6 +206,19 @@ public final class XWeaponModManager {
         return result.toArray(new ItemStack[0]);
     }
 
+    /**
+     * The source {@code ItemGunBaseNT.recognizedMods}: one stack per modifier definition with a binding
+     * for this gun's item. Resolved lazily because gun suppliers cannot be evaluated at definition time.
+     */
+    public static List<ItemStack> recognizedMods(ItemStack gun) {
+        List<ItemStack> result = new ArrayList<>();
+        if (gun == null || gun.isEmpty()) return result;
+        for (WeaponModDefinition def : definitions) {
+            if (def.bindsGun(gun.getItem())) result.add(def.modStack.get().copy());
+        }
+        return result;
+    }
+
     public static boolean hasUpgrade(ItemStack stack, int cfg, int id) {
         for (int installed : getIds(stack, cfg)) if (installed == id) return true;
         return false;
@@ -355,7 +368,6 @@ public final class XWeaponModManager {
         }
         public WeaponModDefinition(ItemStack stack) { this(() -> stack.copyWithCount(1)); }
         public WeaponModDefinition addMod(Item gun, IWeaponMod mod) {
-            if (gun instanceof ItemGunBaseNT weapon) weapon.recognizedMods.add(() -> modStack.get().copy());
             return addMod(() -> gun, mod);
         }
         public WeaponModDefinition addMod(Supplier<? extends Item> gun, IWeaponMod mod) {
@@ -374,6 +386,10 @@ public final class XWeaponModManager {
             return gun == null ? addDefault(mod) : addMod(gun.getDisplayStack(), mod);
         }
         public WeaponModDefinition addDefault(IWeaponMod mod) { bindings.add(new Binding(null, null, mod)); modToStack.put(mod, modStack); return this; }
+        private boolean bindsGun(Item item) {
+            for (Binding binding : bindings) if (binding.gun != null && binding.gun.get() == item) return true;
+            return false;
+        }
         private boolean matches(ItemStack stack) { return !stack.isEmpty() && ItemStacks.sameItemAndData(modStack.get(), stack); }
         private IWeaponMod forGun(ItemStack gun) {
             IWeaponMod fallback = null;

@@ -13,4 +13,9 @@ public final class ClientPlayerAccess {
     public static @Nullable Player player() {
         return Minecraft.getInstance().player;
     }
+
+    /** The original tooltip lists accepted modifiers only while the weapon table screen is open. */
+    public static boolean weaponTableOpen() {
+        return Minecraft.getInstance().screen instanceof com.hbm.inventory.gui.GUIWeaponTable;
+    }
 }

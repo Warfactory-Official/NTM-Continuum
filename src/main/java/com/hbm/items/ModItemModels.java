@@ -483,6 +483,16 @@ public final class ModItemModels {
     private static void renamedSprites() {
         renamed0();
         renamed1();
+        powerArmorSprites();
+    }
+
+    /** RPA and NCRPA both draw the original {@code rpa_*} icons (the original NCRPA setTextureName). */
+    private static void powerArmorSprites() {
+        for (String set : new String[] {"rpa", "ncrpa"}) {
+            for (String part : new String[] {"helmet", "plate", "legs", "boots"}) {
+                Dejson.item(NS, set + "_" + part).models(Models.generated("hbm:items/rpa_" + part)).register();
+            }
+        }
     }
 
     private static void renamed0() {

@@ -353,7 +353,7 @@ public final class HbmClientRegistrations {
                         payload.casing(), payload.smoking(), payload.smokeLife(), payload.smokeLift(), payload.nodeLife(),
                         true, payload.legacy())));
         com.hbm.client.anim.GunAnimations.init();
-        installGunHudComponents();
+        com.hbm.client.render.weapon.DrillHighlightClient.init();
         dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID,
                 "lag_animations", com.hbm.client.anim.LagAnimationLoader::invalidate);
         // The weapon renderers a gun item definition can name. Both eras read the same definitions:
@@ -363,37 +363,4 @@ public final class HbmClientRegistrations {
         dev.golem.core.client.Crosshairs.register(GunCrosshairOverlay::render);
     }
 
-    /** Applies the source per-config HUD rails after all deferred gun items have resolved. */
-    private static void installGunHudComponents() {
-        com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar durability =
-                new com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar();
-        com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar mirroredDurability =
-                new com.hbm.items.weapon.sedna.hud.HUDComponentDurabilityBar(true);
-        com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter ammo =
-                new com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter(0);
-        com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter mirroredAmmo =
-                new com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter(0).mirror();
-        com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter ammoOnly =
-                new com.hbm.items.weapon.sedna.hud.HUDComponentAmmoCounter(0).noCounter();
-
-        for (com.hbm.items.weapon.sedna.ItemGunBaseNT gun :
-                com.hbm.items.weapon.sedna.ItemGunBaseNT.INSTANCES) {
-            String path = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(gun).getPath();
-            for (int index = 0; index < gun.getConfigCount(); index++) {
-                boolean mirrored = path.endsWith("_akimbo") && index == 0;
-                boolean ammoOnlyConfig = path.equals("gun_autoshotgun_heretic")
-                        || path.equals("gun_folly") || path.startsWith("gun_aberrator");
-                boolean noCounter = path.startsWith("gun_flamer") || path.equals("gun_chemthrower");
-                com.hbm.items.weapon.sedna.hud.IHUDComponent ammoRail = mirrored ? mirroredAmmo
-                        : (noCounter ? ammoOnly : ammo);
-                if (ammoOnlyConfig) {
-                    gun.getConfig(null, index).hud(ammoRail);
-                } else {
-                    gun.getConfig(null, index).hud(mirrored
-                            ? new com.hbm.items.weapon.sedna.hud.IHUDComponent[] {mirroredDurability, ammoRail}
-                            : new com.hbm.items.weapon.sedna.hud.IHUDComponent[] {durability, ammoRail});
-                }
-            }
-        }
-    }
 }

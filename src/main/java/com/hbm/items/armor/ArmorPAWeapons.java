@@ -4,7 +4,6 @@ import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.ModArmorItems;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -29,12 +28,17 @@ public final class ArmorPAWeapons {
         return RANGED.get(player.getItemBySlot(EquipmentSlot.CHEST).getItem());
     }
 
+    // Client-only callers. The lookup goes through ClientPlayerAccess so this common class carries no
+    // client type in any signature: a LocalPlayer here would make the verifier load client classes on
+    // a dedicated server when ModArmorItems links this class.
     public static IPAMelee clientMelee() {
-        return Minecraft.getInstance().player == null ? null : melee(Minecraft.getInstance().player);
+        Player player = com.hbm.client.ClientPlayerAccess.player();
+        return player == null ? null : melee(player);
     }
 
     public static IPARanged clientRanged() {
-        return Minecraft.getInstance().player == null ? null : ranged(Minecraft.getInstance().player);
+        Player player = com.hbm.client.ClientPlayerAccess.player();
+        return player == null ? null : ranged(player);
     }
 
     private static boolean hasPowerArmorSet(Player player) {

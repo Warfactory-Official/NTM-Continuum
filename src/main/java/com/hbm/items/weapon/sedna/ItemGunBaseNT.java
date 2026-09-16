@@ -104,11 +104,15 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     protected final GunConfig[] configs_DNA;
     public final WeaponQuality quality;
 
-    /** The source gun tooltip: one diagnostic block for every receiver configuration. */
+    /** {@code "#.##"} with US symbols, as the original {@code FORMAT_DMG}. */
+    private static final java.text.DecimalFormat FORMAT_DMG = new java.text.DecimalFormat("#.##",
+            java.text.DecimalFormatSymbols.getInstance(java.util.Locale.US));
+
+    /** The original {@code addInformation}: one diagnostic block per receiver configuration, then the quality line. */
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-         Player player = ClientPlayerAccess.player();
+        Player player = ClientPlayerAccess.player();
         Container inventory = player == null ? null : player.getInventory();
 
         for (int configIndex = 0; configIndex < configs_DNA.length; configIndex++) {
@@ -122,48 +126,57 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
                 if (!(magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineInfinite)) {
                     ItemStack icon = player != null ? magazine.getIconForHUD(stack, player)
                             : tooltipAmmoIcon(magazine, stack, magazine.getType(stack, null));
-                    tooltip.add(Component.translatable("gui.weapon.ammo")
-                            .append(Component.literal(": "))
+                    String state = player != null ? magazine.reportAmmoStateForHUD(stack, player)
+                            : tooltipAmmoState(magazine, stack);
+                    tooltip.add(Component.translatable("gui.weapon.ammo").append(": ")
                             .append(icon == null || icon.isEmpty() ? Component.empty() : icon.getHoverName())
-                            .append(Component.literal(" "))
-                            .append(Component.literal(player != null ? magazine.reportAmmoStateForHUD(stack, player)
-                                    : tooltipAmmoState(magazine, stack))));
+                            .append(" " + state));
                 }
                 float damage = receiver.getBaseDamage(stack);
-                tooltip.add(Component.translatable("gui.weapon.baseDamage", String.format(java.util.Locale.ROOT, "%.2f", damage)));
-                Object ammo = magazine.getType(stack, inventory);
-                if (ammo instanceof BulletConfig bullet) {
-                    float ammoDamage = damage * bullet.damageMult;
+                tooltip.add(Component.translatable("gui.weapon.baseDamage").append(": " + FORMAT_DMG.format(damage)));
+                if (magazine.getType(stack, inventory) instanceof BulletConfig bullet) {
                     int minimum = (int) (bullet.projectilesMin * receiver.getSplitProjectiles(stack));
                     int maximum = (int) (bullet.projectilesMax * receiver.getSplitProjectiles(stack));
-                    tooltip.add(Component.translatable("gui.weapon.damageWithAmmo",
-                            String.format(java.util.Locale.ROOT, "%.2f", ammoDamage))
-                            .append(minimum > 1
-                                    ? Component.literal(" x" + (minimum != maximum ? minimum + "-" + maximum : minimum))
-                                    : Component.empty()));
+                    tooltip.add(Component.translatable("gui.weapon.damageWithAmmo")
+                            .append(": " + FORMAT_DMG.format(damage * bullet.damageMult)
+                                    + (minimum > 1 ? (" x" + (minimum != maximum ? (minimum + "-" + maximum) : minimum)) : "")));
                 }
             }
             float maximum = config.getDurability(stack);
             if (maximum > 0) {
                 int condition = Math.max(0, Math.min(100,
-                        (int) ((maximum - getWear(stack, configIndex)) * 100F / maximum)));
-                tooltip.add(Component.translatable("gui.weapon.condition", condition));
+                        (int) ((maximum - getWear(stack, configIndex)) * 100 / maximum)));
+                tooltip.add(Component.translatable("gui.weapon.condition").append(": " + condition + "%"));
             }
             for (ItemStack modifier : XWeaponModManager.getUpgradeItems(stack, configIndex)) {
-                if (!modifier.isEmpty()) tooltip.add(Component.literal(" ").append(modifier.getHoverName())
-                        .withStyle(ChatFormatting.YELLOW));
+                if (modifier != null && !modifier.isEmpty()) {
+                    tooltip.add(modifier.getHoverName().copy().withStyle(ChatFormatting.YELLOW));
+                }
             }
         }
-        String qualityKey = switch (quality) {
-            case A_SIDE -> "gui.weapon.quality.aside";
-            case B_SIDE -> "gui.weapon.quality.bside";
-            case LEGENDARY -> "gui.weapon.quality.legendary";
-            case SPECIAL -> "gui.weapon.quality.special";
-            case UTILITY -> "gui.weapon.quality.utility";
-            case SECRET -> "gui.weapon.quality.secret";
-            case DEBUG -> "gui.weapon.quality.debug";
-        };
-        tooltip.add(Component.translatable(qualityKey).withStyle(qualityStyle(quality)));
+        boolean blink = System.currentTimeMillis() % 1000 < 500; // BobMathUtil.getBlink()
+        switch (quality) {
+            case A_SIDE -> tooltip.add(Component.translatable("gui.weapon.quality.aside").withStyle(ChatFormatting.YELLOW));
+            case B_SIDE -> tooltip.add(Component.translatable("gui.weapon.quality.bside").withStyle(ChatFormatting.GOLD));
+            case LEGENDARY -> tooltip.add(Component.translatable("gui.weapon.quality.legendary").withStyle(ChatFormatting.RED));
+            case SPECIAL -> tooltip.add(Component.translatable("gui.weapon.quality.special").withStyle(ChatFormatting.AQUA));
+            case UTILITY -> tooltip.add(Component.translatable("gui.weapon.quality.utility").withStyle(ChatFormatting.GREEN));
+            case SECRET -> tooltip.add(Component.translatable("gui.weapon.quality.secret")
+                    .withStyle(blink ? ChatFormatting.DARK_RED : ChatFormatting.RED));
+            case DEBUG -> tooltip.add(Component.translatable("gui.weapon.quality.debug")
+                    .withStyle(blink ? ChatFormatting.YELLOW : ChatFormatting.GOLD));
+        }
+
+        // Only while the weapon table is open: every modifier this gun has a binding for.
+        if (ClientPlayerAccess.weaponTableOpen()) {
+            List<ItemStack> recognized = XWeaponModManager.recognizedMods(stack);
+            if (!recognized.isEmpty()) {
+                tooltip.add(Component.translatable("gui.weapon.accepts").append(":").withStyle(ChatFormatting.RED));
+                for (ItemStack mod : recognized) {
+                    tooltip.add(Component.literal("  ").append(mod.getHoverName()).withStyle(ChatFormatting.RED));
+                }
+            }
+        }
         super.appendCompatHoverText(stack, context, tooltip, flag);
     }
 
@@ -200,22 +213,10 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
         return magazine.getAmount(stack, null) + " / " + magazine.getCapacity(stack);
     }
 
-    private static ChatFormatting qualityStyle(WeaponQuality value) {
-        return switch (value) {
-            case A_SIDE -> ChatFormatting.YELLOW;
-            case B_SIDE -> ChatFormatting.GOLD;
-            case LEGENDARY, SECRET -> ChatFormatting.RED;
-            case SPECIAL -> ChatFormatting.AQUA;
-            case UTILITY -> ChatFormatting.GREEN;
-            case DEBUG -> ChatFormatting.GOLD;
-        };
-    }
     public Supplier<? extends Item> defaultAmmo;
     public int defaultAmmoAmount;
     public boolean isDefaultExpensive;
     public Function<ItemStack, String> LAMBDA_NAME_MUTATOR;
-    /** Source-shaped mod suppliers; the modifier manager populates this when definitions are installed. */
-    public final List<Supplier<ItemStack>> recognizedMods = new ArrayList<>();
 
     public ItemGunBaseNT(Properties properties, WeaponQuality quality, GunConfig... cfg) {
         super(properties.stacksTo(1));

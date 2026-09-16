@@ -3362,14 +3362,15 @@
   "item.hbm.weapon_mod_test.override_15": "DAMAGE OVERRIDE (15)",
   "item.hbm.weapon_mod_test.override_20": "DAMAGE OVERRIDE (20)",
   "gui.weapon.ammo": "Ammo",
-  "gui.weapon.baseDamage": "Base Damage: %s",
-  "gui.weapon.damageWithAmmo": "Damage With Ammo: %s",
-  "gui.weapon.condition": "Condition: %s%%",
-  "gui.weapon.quality.aside": "A-Side Weapon",
-  "gui.weapon.quality.bside": "B-Side Weapon",
+  "gui.weapon.baseDamage": "Base Damage",
+  "gui.weapon.damageWithAmmo": "Damage with current ammo",
+  "gui.weapon.condition": "Condition",
+  "gui.weapon.accepts": "Accepts",
+  "gui.weapon.quality.aside": "Standard Arsenal",
+  "gui.weapon.quality.bside": "B-Side",
   "gui.weapon.quality.legendary": "Legendary Weapon",
   "gui.weapon.quality.special": "Special Weapon",
-  "gui.weapon.quality.utility": "Utility Weapon",
-  "gui.weapon.quality.secret": "Secret Weapon",
-  "gui.weapon.quality.debug": "Debug Weapon"
+  "gui.weapon.quality.utility": "Utility",
+  "gui.weapon.quality.secret": "SECRET",
+  "gui.weapon.quality.debug": "DEBUG"
 }

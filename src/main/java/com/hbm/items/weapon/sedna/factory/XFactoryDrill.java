@@ -15,13 +15,7 @@ import com.hbm.items.weapon.sedna.mags.MagazineLiquidEngine;
 import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.util.DamageResistanceHandler;
 import com.hbm.util.EntityDamageUtil;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.golem.core.world.Compat;
-import dev.golem.core.client.Colors;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.Vertexes;
 import dev.golem.core.world.Harvests;
 import dev.golem.core.world.Sounds;
 import java.util.function.BiConsumer;
@@ -171,47 +165,4 @@ public class XFactoryDrill {
     public static int getModdableHarvestLevel(ItemStack stack, int base) {
         return XWeaponModManager.eval(base, stack, I_HARVEST, NtmToolGunCatalog.gun_drill.get(), 0);
     }
-
-    /** Port of 1.7 drawBlockHighlight; the caller cancels vanilla's outline before invoking this. */
-    public static void submitBlockHighlight(PoseStack poseStack, SubmitSink collector, net.minecraft.world.phys.Vec3 cameraPos,
-                                             Player player, ItemStack drill) {
-        HitResult mop = EntityDamageUtil.getMouseOver(player, getModdableReach(drill, 5.0D));
-        if (!(mop instanceof net.minecraft.world.phys.BlockHitResult blockHit)) return;
-        BlockPos pos = blockHit.getBlockPos();
-        int aoe = player.isShiftKeyDown() ? 0 : getModdableAoE(drill, 1);
-        float exp = 0.002F;
-        poseStack.pushPose();
-        poseStack.translate(pos.getX() - cameraPos.x, pos.getY() - cameraPos.y, pos.getZ() - cameraPos.z);
-        submitOutline(collector, poseStack, -exp, -exp, -exp, 1F + exp, 1F + exp, 1F + exp,
-                aoe > 0 ? Colors.black(102) : 0xFF800000);
-        if (aoe > 0) submitOutline(collector, poseStack, -aoe - exp, -aoe - exp, -aoe - exp,
-                1F + aoe + exp, 1F + aoe + exp, 1F + aoe + exp, 0xFF800000);
-        poseStack.popPose();
-    }
-
-    private static void submitOutline(SubmitSink collector, PoseStack poseStack,
-                                      float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
-                                      int color) {
-        collector.submitCustomGeometry(poseStack, CompatRenderTypes.lines(), (pose, buffer) -> {
-            edge(pose, buffer, minX, minY, minZ, maxX, minY, minZ, color);
-            edge(pose, buffer, minX, minY, maxZ, maxX, minY, maxZ, color);
-            edge(pose, buffer, minX, maxY, minZ, maxX, maxY, minZ, color);
-            edge(pose, buffer, minX, maxY, maxZ, maxX, maxY, maxZ, color);
-            edge(pose, buffer, minX, minY, minZ, minX, maxY, minZ, color);
-            edge(pose, buffer, maxX, minY, minZ, maxX, maxY, minZ, color);
-            edge(pose, buffer, minX, minY, maxZ, minX, maxY, maxZ, color);
-            edge(pose, buffer, maxX, minY, maxZ, maxX, maxY, maxZ, color);
-            edge(pose, buffer, minX, minY, minZ, minX, minY, maxZ, color);
-            edge(pose, buffer, maxX, minY, minZ, maxX, minY, maxZ, color);
-            edge(pose, buffer, minX, maxY, minZ, minX, maxY, maxZ, color);
-            edge(pose, buffer, maxX, maxY, minZ, maxX, maxY, maxZ, color);
-        });
-    }
-
-    private static void edge(PoseStack.Pose pose, VertexConsumer buffer,
-                             float x1, float y1, float z1, float x2, float y2, float z2, int color) {
-        Vertexes.color(buffer, pose, x1, y1, z1, color);
-        Vertexes.color(buffer, pose, x2, y2, z2, color);
-    }
-
 }

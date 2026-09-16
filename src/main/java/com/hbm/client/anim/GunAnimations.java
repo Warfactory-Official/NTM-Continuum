@@ -122,6 +122,11 @@ public final class GunAnimations {
         registerById("gun_maresleg_broken", GunAnimations::mareslegShort);
         registerById("gun_liberator", GunAnimations::liberator);
         registerById("gun_autoshotgun", GunAnimations::shredder);
+        registerById("gun_autoshotgun_shredder", GunAnimations::shredder);
+        registerById("gun_carbine", GunAnimations::carbine);
+        registerById("gun_mas36", GunAnimations::mas36);
+        registerById("gun_mk108", GunAnimations::mk108);
+        registerById("gun_bolter", GunAnimations::bolter);
         registerById("gun_autoshotgun_sexy", GunAnimations::sexy);
         registerById("gun_autoshotgun_heretic", GunAnimations::sexy);
         registerById("gun_folly", GunAnimations::folly);
@@ -777,6 +782,169 @@ public final class GunAnimations {
                     .addPos(0, 0, 0, 100, IType.SIN_FULL))
                     .addBus("BARREL", seq().addPos(0, 0, 0, 300).addPos(60, 0, 0, 150, IType.SIN_UP)
                             .addPos(60, 0, 0, 650).addPos(0, 0, 0, 150, IType.SIN_UP));
+            default -> null;
+        };
+    }
+
+    /** Held-ammo count for the primary magazine, as the source lambdas read it on the client. */
+    private static int heldAmmo(ItemStack stack, int rail) {
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+        net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
+        return gun.getPrimaryMagazine(stack, rail).getAmount(stack, player == null ? null : player.getInventory());
+    }
+
+    /** Source XFactory762mm.LAMBDA_CARBINE_ANIMS. */
+    private static BusAnimation carbine(ItemStack stack, GunAnimation type, int rail) {
+        int ammo = heldAmmo(stack, 0);
+        return switch (type) {
+            case EQUIP -> new BusAnimation().addBus("EQUIP", seq().addPos(45, 0, 0, 0).addPos(0, 0, 0, 500, IType.SIN_FULL));
+            case CYCLE -> new BusAnimation()
+                    .addBus("RECOIL", seq().addPos(0, 0, ItemGunBaseNT.getIsAiming(stack) ? -0.25 : -0.5, 50, IType.SIN_DOWN)
+                            .addPos(0, 0, 0, 100, IType.SIN_FULL))
+                    .addBus("SLIDE", seq().addPos(0, 0, -1, 50, IType.SIN_DOWN).addPos(0, 0, 0, 100, IType.SIN_UP))
+                    .addBus(ammo <= 1 ? "NULL" : "REL", seq().addPos(0, 0, 0.25, 50).addPos(0, 0.125, 1.25, 100, IType.SIN_UP));
+            case CYCLE_DRY -> new BusAnimation()
+                    .addBus("SLIDE", seq().addPos(0, 0, 0, 500).addPos(0, 0, -1, 100, IType.SIN_DOWN)
+                            .addPos(0, 0, -1, 50).addPos(0, 0, 0, 100, IType.SIN_UP));
+            case RELOAD -> new BusAnimation()
+                    .addBus("MAG", seq().addPos(0, -4, 0, 250, IType.SIN_UP).addPos(0, -4, 0, 750).addPos(0, 0, 0, 500, IType.SIN_DOWN))
+                    .addBus("LIFT", seq().addPos(0, 0, 0, 500).addPos(-25, 0, 0, 250, IType.SIN_FULL).addPos(-25, 0, 0, 1000))
+                    .addBus("BULLET", seq().addPos(ammo == 0 ? 1 : 0, 0, 0, 0).addPos(0, 0, 0, 1000));
+            case RELOAD_END -> new BusAnimation()
+                    .addBus("LIFT", seq().addPos(-25, 0, 0, 0).addPos(-25, 0, 0, 750).addPos(0, 0, 0, 500, IType.SIN_FULL))
+                    .addBus("SLIDE", seq().addPos(0, 0, 0, 250).addPos(0, 0, -1, 100, IType.SIN_DOWN)
+                            .addPos(0, 0, -1, 50).addPos(0, 0, 0, 100, IType.SIN_UP))
+                    .addBus("REL", seq().addPos(0, 0, 0, 250).addPos(0, 0, 0.25, 150).addPos(0, 0.125, 1.25, 100, IType.SIN_UP));
+            case JAMMED -> new BusAnimation()
+                    .addBus("LIFT", seq().addPos(-25, 0, 0, 0).addPos(-25, 0, 0, 750).addPos(0, 0, 0, 500, IType.SIN_FULL)
+                            .addPos(0, 0, 0, 250).addPos(-25, 0, 0, 250, IType.SIN_FULL).addPos(-25, 0, 0, 750)
+                            .addPos(0, 0, 0, 500, IType.SIN_FULL))
+                    .addBus("SLIDE", seq().addPos(0, 0, 0, 250).addPos(0, 0, -1, 100, IType.SIN_DOWN).addPos(0, 0, -1, 50)
+                            .addPos(0, 0, -0.25, 100, IType.SIN_UP).addPos(0, 0, -0.25, 1250)
+                            .addPos(0, 0, -1, 100, IType.SIN_DOWN).addPos(0, 0, -1, 50).addPos(0, 0, 0, 100, IType.SIN_UP))
+                    .addBus("REL", seq().addPos(0, 0, 0, 250).addPos(0, 0, 0.25, 150).addPos(0, 0.125, 1, 100, IType.SIN_UP)
+                            .addPos(0, 0.125, 1, 1250).addPos(0, 0.125, 0.25, 100, IType.SIN_DOWN)
+                            .addPos(0, 0.125, 1, 100, IType.SIN_UP));
+            case INSPECT -> new BusAnimation()
+                    .addBus("LIFT", seq().addPos(-25, 0, 0, 250, IType.SIN_FULL).addPos(-25, 0, 0, 1500).addPos(0, 0, 0, 500, IType.SIN_FULL))
+                    .addBus("SLIDE", seq().addPos(0, 0, 0, 500).addPos(0, 0, -0.75, 150, IType.SIN_DOWN)
+                            .addPos(0, 0, -0.75, 1000).addPos(0, 0, 0, 100, IType.SIN_UP))
+                    .addBus(ammo == 0 ? "NULL" : "REL", seq().addPos(0, 0.125, 1.25, 0).addPos(0, 0.125, 1.25, 500)
+                            .addPos(0, 0.125, 0.5, 150, IType.SIN_DOWN).addPos(0, 0.125, 0.5, 1000)
+                            .addPos(0, 0.125, 1.25, 100, IType.SIN_UP));
+            default -> null;
+        };
+    }
+
+    /** Source XFactory762mm.LAMBDA_MAS36_ANIMS. */
+    private static BusAnimation mas36(ItemStack stack, GunAnimation type, int rail) {
+        int mag = heldAmmo(stack, 0);
+        double turn = -90;
+        double pullAmount = ItemGunBaseNT.getIsAiming(stack) ? -1F : -1.5D;
+        return switch (type) {
+            case EQUIP -> new BusAnimation()
+                    .addBus("STOCK", seq().setPos(-158, 0, 0).hold(500).addPos(0, 0, 0, 500, IType.SIN_FULL))
+                    .addBus("EQUIP", seq().setPos(45, 0, 0).addPos(0, 0, 0, 500, IType.SIN_FULL).hold(500)
+                            .addPos(1, 0, 0, 100, IType.SIN_DOWN).addPos(0, 0, 0, 100, IType.SIN_FULL));
+            case CYCLE -> new BusAnimation()
+                    .addBus("RECOIL", seq().addPos(0, 0, -0.5, 50, IType.SIN_DOWN).addPos(0, 0, 0, 100, IType.SIN_FULL))
+                    .addBus("BOLT_TURN", seq().hold(250).addPos(0, 0, turn, 150).hold(700).addPos(0, 0, 0, 150))
+                    .addBus("BOLT_PULL", seq().hold(350).addPos(0, 0, pullAmount, 250, IType.SIN_UP).hold(250).addPos(0, 0, 0, 200, IType.LINEAR))
+                    .addBus("LIFT", seq().hold(600).addPos(-3, 0, 0, 150, IType.SIN_DOWN).hold(300).addPos(0, 0, 0, 250, IType.SIN_FULL))
+                    .addBus("BULLET", mag <= 1 ? seq().setPos(-100, 0, 0) : seq().hold(850).addPos(0, 0.1875, 1.5, 200, IType.LINEAR));
+            case CYCLE_DRY -> new BusAnimation()
+                    .addBus("BOLT_TURN", seq().hold(250).addPos(0, 0, turn, 150).hold(700).addPos(0, 0, 0, 150))
+                    .addBus("BOLT_PULL", seq().hold(350).addPos(0, 0, pullAmount, 250, IType.SIN_UP).hold(250).addPos(0, 0, 0, 200, IType.LINEAR))
+                    .addBus("LIFT", seq().hold(600).addPos(-3, 0, 0, 150, IType.SIN_DOWN).hold(300).addPos(0, 0, 0, 250, IType.SIN_FULL))
+                    .addBus("BULLET", seq().setPos(-100, 0, 0));
+            case RELOAD -> new BusAnimation()
+                    .addBus("BOLT_TURN", seq().addPos(0, 0, turn, 150).holdUntil(2000).addPos(0, 0, 0, 150))
+                    .addBus("BOLT_PULL", seq().hold(100).addPos(0, 0, -1.5D, 250, IType.SIN_UP).holdUntil(1800).addPos(0, 0, 0, 200, IType.LINEAR))
+                    .addBus("BULLET", seq().setPos(-100, 0, 0).holdUntil(1200).setPos(0, 0, 0).hold(600).addPos(0, 0.1875, 1.5, 200, IType.LINEAR))
+                    .addBus("LIFT", seq().hold(200).addPos(30, 0, 0, 500, IType.SIN_FULL).holdUntil(1200).addPos(0, 0, 0, 500, IType.SIN_FULL))
+                    .addBus("SHOW_CLIP", seq().setPos(1, 1, 1))
+                    .addBus("CLIP", seq().setPos(2, -3, 0).hold(250).addPos(0.5, 1, 0, 500, IType.SIN_DOWN)
+                            .addPos(0, 0, 0, 250, IType.SIN_FULL).hold(400).addPos(-0.5, 0.5, 0, 150).addPos(-3, -3, 0, 250, IType.SIN_UP))
+                    .addBus("BULLETS", seq().setPos(2, -3, 0).hold(250).addPos(0.5, 1, 0, 500, IType.SIN_DOWN)
+                            .addPos(0, 0, 0, 250, IType.SIN_FULL).hold(150).addPos(0, -1.5, 0, 250, IType.SIN_DOWN));
+            case JAMMED -> new BusAnimation()
+                    .addBus("LIFT", seq().hold(250).addPos(-15, 0, 0, 500, IType.SIN_FULL).holdUntil(1650).addPos(0, 0, 0, 500, IType.SIN_FULL))
+                    .addBus("BOLT_TURN", seq().hold(250).addPos(0, 0, turn, 150).holdUntil(1250).addPos(0, 0, 0, 150))
+                    .addBus("BOLT_PULL", seq().hold(350).addPos(0, 0, pullAmount, 250, IType.SIN_UP).addPos(0, 0, 0, 200, IType.LINEAR)
+                            .addPos(0, 0, pullAmount, 250, IType.SIN_UP).addPos(0, 0, 0, 200, IType.LINEAR));
+            case INSPECT -> new BusAnimation()
+                    .addBus("LIFT", seq().hold(350).addPos(-3, 0, 0, 150, IType.SIN_DOWN).holdUntil(1050).addPos(0, 0, 0, 250, IType.SIN_FULL))
+                    .addBus("BOLT_TURN", seq().addPos(0, 0, turn, 150).holdUntil(1050).addPos(0, 0, 0, 150))
+                    .addBus("BOLT_PULL", seq().hold(100).addPos(0, 0, -1D, 250, IType.SIN_UP).hold(500).addPos(0, 0, 0, 200, IType.LINEAR))
+                    .addBus("BULLET", mag == 0 ? seq().setPos(-100, 0, 0) : seq().setPos(0, 0.1875, 1.5).hold(100)
+                            .addPos(0, 0.125, 0.5, 250, IType.SIN_UP).hold(500).addPos(0, 0.1875, 1.5, 200, IType.LINEAR));
+            default -> null;
+        };
+    }
+
+    /** Source XFactory40mm.LAMBDA_MK108_ANIMS. */
+    private static BusAnimation mk108(ItemStack stack, GunAnimation type, int rail) {
+        switch (type) {
+            case EQUIP:
+                return new BusAnimation().addBus("EQUIP", seq().setPos(45, 0, 0).addPos(0, 0, 0, 1000, IType.SIN_DOWN));
+            case CYCLE:
+                int amount = ((ItemGunBaseNT) stack.getItem()).getPrimaryMagazine(stack, 0).getAmount(stack, null);
+                return new BusAnimation()
+                        .addBus("RECOIL", seq().hold(50).addPos(0, 0, -0.25, 100, IType.SIN_DOWN).addPos(0, 0, 0, 150, IType.SIN_FULL))
+                        .addBus("BARREL", seq().addPos(0, 0, -1, 100, IType.SIN_DOWN).addPos(0, 0, 0, 250, IType.SIN_FULL))
+                        .addBus("CYCLE", seq().addPos(0, 0, 0, 100).addPos(1, 0, 0, 150))
+                        .addBus("SHELLS", seq().setPos(amount - 1, 0, 0));
+            case CYCLE_DRY:
+                return new BusAnimation().addBus("HAMMER", seq().addPos(15, 0, 0, 50).addPos(15, 0, 0, 550).addPos(0, 0, 0, 100));
+            case RELOAD:
+                return new BusAnimation()
+                        .addBus("LIFT", seq().addPos(10, 0, 0, 500, IType.SIN_FULL).holdUntil(1250).addPos(-50, 0, 0, 750, IType.SIN_FULL)
+                                .holdUntil(5500).addPos(0, 0, 0, 500, IType.SIN_FULL).hold(500).addPos(1, 0, 0, 100, IType.SIN_UP)
+                                .addPos(0, 0, 0, 150, IType.SIN_FULL))
+                        .addBus("LID", seq().addPos(60, 0, 0, 500, IType.SIN_FULL).holdUntil(6000).addPos(0, 0, 0, 500, IType.SIN_UP))
+                        .addBus("BELT", seq().setPos(1, 0, 0).hold(500).addPos(0, 0, 0, 750, IType.SIN_UP).holdUntil(4500).addPos(1, 0, 0, 750, IType.SIN_UP))
+                        .addBus("DRUM", seq().hold(2000).addPos(2.5, 0, 0, 500, IType.SIN_DOWN).addPos(2.5, -2, -8, 500, IType.SIN_UP)
+                                .setPos(4, -3, -8).addPos(2.5, 0, 0, 1000, IType.SIN_FULL).addPos(0, 0, 0, 500, IType.SIN_UP));
+            case JAMMED:
+                return new BusAnimation()
+                        .addBus("LID", seq().hold(250).addPos(45, 0, 0, 500, IType.SIN_FULL).addPos(0, 0, 0, 250, IType.SIN_UP))
+                        .addBus("LIFT", seq().hold(1000).addPos(1, 0, 0, 100, IType.SIN_UP).addPos(0, 0, 0, 150, IType.SIN_FULL));
+            case INSPECT:
+                int yeetHorizontal = 750;
+                int untilImpact = yeetHorizontal * 9 / 15;
+                int delay = 250;
+                int height = 6;
+                int arcUp = untilImpact * 5 / 8;
+                int arcDown = untilImpact * 3 / 8;
+                BusAnimation inspect = new BusAnimation()
+                        .addBus("LIFT", seq().hold(untilImpact).addPos(1, 0, 0, 50, IType.SIN_UP).addPos(0, 0, 0, 100, IType.SIN_FULL)
+                                .hold(delay - 150).addPos(1, 0, 0, 50, IType.SIN_UP).addPos(0, 0, 0, 100, IType.SIN_FULL)
+                                .hold(delay - 150).addPos(1, 0, 0, 50, IType.SIN_UP).addPos(0, 0, 0, 100, IType.SIN_FULL));
+                // The source spells GRENH1..3/GRENV1..3/GRENS1..3 out; each grenade is the same arc delayed by i*delay.
+                for (int i = 0; i < 3; i++) {
+                    int wait = delay * i;
+                    inspect.addBus("GRENH" + (i + 1), seq().setPos(9, 0, 0).hold(wait).addPos(-6, 0, 0, yeetHorizontal))
+                            .addBus("GRENV" + (i + 1), seq().setPos(0, -2, 0).hold(wait).addPos(0, height, 0, arcUp, IType.SIN_DOWN)
+                                    .addPos(0, 2, 0, arcDown, IType.SIN_UP).addPos(0, 3, 0, yeetHorizontal - untilImpact, IType.SIN_DOWN))
+                            .addBus("GRENS" + (i + 1), seq().hold(wait).addPos(360 * 2, 0, 0, untilImpact).setPos(0, 0, 0)
+                                    .addPos(360, 0, 0, yeetHorizontal - untilImpact));
+                }
+                return inspect;
+            default:
+                return null;
+        }
+    }
+
+    /** Source XFactory75Bolt.LAMBDA_BOLTER_ANIMS. */
+    private static BusAnimation bolter(ItemStack stack, GunAnimation type, int rail) {
+        return switch (type) {
+            case CYCLE -> new BusAnimation().addBus("RECOIL", seq().addPos(1, 0, 0, 25).addPos(0, 0, 0, 75));
+            case RELOAD -> new BusAnimation()
+                    .addBus("TILT", seq().addPos(1, 0, 0, 250).addPos(1, 0, 0, 1500).addPos(0, 0, 0, 250))
+                    .addBus("MAG", seq().addPos(0, 0, 1, 500).addPos(1, 0, 1, 500).addPos(0, 0, 0, 500));
+            case JAMMED -> new BusAnimation()
+                    .addBus("TILT", seq().addPos(0, 0, 0, 500).addPos(1, 0, 0, 250).addPos(1, 0, 0, 700).addPos(0, 0, 0, 250))
+                    .addBus("MAG", seq().addPos(0, 0, 0, 750).addPos(0.6, 0, 0, 250).addPos(0, 0, 0, 250));
             default -> null;
         };
     }
