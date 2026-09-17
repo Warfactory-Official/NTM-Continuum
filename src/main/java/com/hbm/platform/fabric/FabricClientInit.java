@@ -44,8 +44,9 @@ public class FabricClientInit implements ClientModInitializer {
         // stored colour. One call, every version, both loaders.
         com.hbm.client.ClientGameTime.install();
         // The material-shape sprites are computed onto the atlas, not shipped; this has to be declared
-        // before the first resource load.
+        // before the first resource load. The fluid droplets are the same, one per registered fluid.
         com.hbm.client.AutogenSprites.install();
+        com.hbm.client.FluidSprites.install();
         HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();

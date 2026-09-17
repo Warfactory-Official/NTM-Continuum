@@ -47,21 +47,21 @@ public final class BarrelRenderer extends GemBER<TileEntityBarrel, BarrelRendere
         fallbackSkin = skinOf(first);
 
         declaration.part(fallbackMesh, fallbackSkin)
-                .translate(0.5F, 0.0F, 0.5F)
                 .mesh(state -> state.mesh == null ? fallbackMesh : state.mesh)
                 .skin(state -> state.skin == null ? fallbackSkin : state.skin);
 
         connector(declaration, 0F, state -> state.posX);
-        connector(declaration, 90F, state -> state.posZ);
+        connector(declaration, 90F, state -> state.negZ);
         connector(declaration, 180F, state -> state.negX);
-        connector(declaration, 270F, state -> state.negZ);
+        connector(declaration, 270F, state -> state.posZ);
     }
 
     private static void connector(Gem.Model<State> declaration, float yaw, Gem.Test<State> present) {
         declaration.part(CONNECTOR, fallbackSkin)
                 .visibleIf(present)
                 .translate(0.5F, 0.0F, 0.5F)
-                .angle(Gem.Axes.Y, state -> yaw)
+                .rotate(Gem.Axes.Y, yaw)
+                .translate(-0.5F, 0.0F, -0.5F)
                 .skin(state -> state.flipped == null ? fallbackSkin : state.flipped);
     }
 

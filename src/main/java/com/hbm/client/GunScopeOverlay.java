@@ -8,7 +8,14 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 
-/** The old full-screen scope pass, kept separate from the crosshair layer. */
+/**
+ * The old full-screen scope pass, kept separate from the crosshair layer.
+ *
+ * <p>The scope sits in a fixed 16:9 window of its texture: the screen's shorter side always shows
+ * 9/16 of the image, and the longer side shows however much more its aspect ratio asks for. The
+ * result is a UV rectangle, not a texel one, so it goes through
+ * {@link GuiDraw#blitUvFullscreen} rather than a blit that would need the texture's own size.
+ */
 public final class GunScopeOverlay {
 
     private GunScopeOverlay() {}
@@ -29,15 +36,13 @@ public final class GunScopeOverlay {
 
         int width = graphics.guiWidth();
         int height = graphics.guiHeight();
-        double smallest = Math.min(width, height);
-        double divisor = smallest / (9D / 16D);
-        double largest = Math.max(width, height) / divisor;
-        double vMin = 0.5D - (height < width ? (9D / 16D) : largest) / 2D;
-        double vMax = 0.5D + (height < width ? (9D / 16D) : largest) / 2D;
-        double uMin = width < height ? vMin : 0.5D - largest / 2D;
-        double uMax = width < height ? vMax : 0.5D + largest / 2D;
+        double narrow = 9D / 16D;
+        double wide = (double) Math.max(width, height) / Math.min(width, height) * narrow;
+        double uSpan = width < height ? narrow : wide;
+        double vSpan = height < width ? narrow : wide;
 
-        GuiDraw.blitUv(graphics, texture, 0, 0, width, height,
-                (float) uMin, (float) vMin, (float) uMax, (float) vMax, 1, 1);
+        GuiDraw.blitUvFullscreen(graphics, texture,
+                (float) (0.5D - uSpan / 2D), (float) (0.5D - vSpan / 2D),
+                (float) (0.5D + uSpan / 2D), (float) (0.5D + vSpan / 2D));
     }
 }

@@ -4,6 +4,7 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
@@ -15,6 +16,7 @@ import com.hbm.items.weapon.sedna.factory.XFactory22lr;
 import com.hbm.items.weapon.sedna.factory.XFactory357;
 import com.hbm.items.weapon.sedna.factory.XFactory44;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
+import com.hbm.items.weapon.sedna.impl.ItemGunChemthrower;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
 import com.hbm.items.weapon.sedna.mags.MagazineSingleTypeBase;
 import dev.golem.core.render.anim.BusAnimationKeyframe;
@@ -29,7 +31,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 /**
@@ -867,6 +868,44 @@ public final class GunGameTests {
         helper.assertTrue(ModTabs.CONTENTS.get(weapons).stream()
                         .noneMatch(item -> item.equals(ModAmmoItems.m44_equestrian)),
                 "secret equestrian ammunition must remain registered but not appear in Weapons");
+        helper.succeed();
+    }
+
+    /**
+     * The chemthrower's tank is its receiver's magazine, not a private pair of keys beside it. Every
+     * reader of a gun's ammunition goes through the receiver — the HUD rail, the tooltip, the fire
+     * lambdas — so a fill that only the item can see is a fill nothing displays, and a receiver with no
+     * magazine at all takes the HUD down with it.
+     */
+    public static void chemthrowerTank(GameTestHelper helper) {
+        ItemStack stack = new ItemStack(ModGunItems.gun_chemthrower.get());
+        ItemGunChemthrower gun = (ItemGunChemthrower) stack.getItem();
+        IMagazine<?> magazine = gun.getConfig(stack, 0).getReceivers(stack)[0].getMagazine(stack);
+
+        helper.assertTrue(magazine != null, "the chemthrower's receiver must declare a magazine");
+        helper.assertTrue(magazine.getCapacity(stack) == ItemGunChemthrower.CAPACITY,
+                "the tank must hold " + ItemGunChemthrower.CAPACITY + "mB, holds " + magazine.getCapacity(stack));
+
+        int rejected = gun.tryFill(Fluids.DIESEL, 500, stack);
+        int moved = ItemGunChemthrower.TRANSFER_SPEED;
+        helper.assertTrue(rejected == 500 - moved,
+                "one fill must turn away all but " + moved + "mB, turned away " + rejected);
+        helper.assertTrue(gun.getFill(stack) == moved,
+                "the item must report " + moved + "mB, reports " + gun.getFill(stack));
+        helper.assertTrue(magazine.getAmount(stack, null) == moved,
+                "the magazine must report the fill the item took, reports " + magazine.getAmount(stack, null));
+        helper.assertTrue(magazine.getType(stack, null) == Fluids.DIESEL,
+                "the magazine must report the fluid that was pumped in");
+
+        Player player = player(helper);
+        helper.assertTrue((moved + "mB").equals(magazine.reportAmmoStateForHUD(stack, player)),
+                "the HUD readout must be " + moved + "mB, is " + magazine.reportAmmoStateForHUD(stack, player));
+        helper.assertTrue(!magazine.getIconForHUD(stack, player).isEmpty(),
+                "a filled tank must give the HUD an icon to draw");
+
+        gun.tryEmpty(Fluids.DIESEL, 5_000, stack);
+        helper.assertTrue(magazine.getAmount(stack, null) == 0,
+                "draining must empty the magazine, left " + magazine.getAmount(stack, null));
         helper.succeed();
     }
 }

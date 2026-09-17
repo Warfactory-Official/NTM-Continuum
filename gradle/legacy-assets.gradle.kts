@@ -1132,3 +1132,65 @@ if (needsLegacyItemAssets(extra.properties["mc_version"] as String)) {
 registerMachineObjTransformChecks()
 registerGunObjTransformChecks()
 registerMissileObjTransformChecks()
+
+/**
+ * A mesh drawn by a block renderer states its own frame, and the two frames in this tree disagree:
+ * the meshes ported from 1.7 are authored about the origin, so the renderer moves them to the block
+ * centre, while those ported from 1.12 were baked with that move already applied and are authored in
+ * 0..1 block space. Adding the centring translate to a block-space mesh puts the block half a block
+ * out along x and z — the defect the drums shipped with. This grades the pair, because neither half
+ * is wrong on its own.
+ */
+fun Project.registerBlockObjFrameChecks() {
+    val validation = tasks.register("validateBlockObjFrames") {
+        group = "verification"
+        description = "Checks that a block-space OBJ is not also given the block-centring translate."
+        doLast {
+            val assets = rootProject.file("src/main/resources/assets/hbm")
+            val renderers = rootProject.file("src/main/java/com/hbm/client/render")
+
+            val blockSpace = mutableListOf<String>()
+            assets.resolve("models").walkTopDown().filter { it.extension == "obj" }.forEach { obj ->
+                var minX = Double.MAX_VALUE; var maxX = -Double.MAX_VALUE
+                var minZ = Double.MAX_VALUE; var maxZ = -Double.MAX_VALUE
+                obj.forEachLine { line ->
+                    if (line.startsWith("v ")) {
+                        val parts = line.trim().split(Regex("\\s+"))
+                        val x = parts[1].toDouble(); val z = parts[3].toDouble()
+                        if (x < minX) minX = x; if (x > maxX) maxX = x
+                        if (z < minZ) minZ = z; if (z > maxZ) maxZ = z
+                    }
+                }
+                if (minX > maxX) return@forEach
+                val single = (maxX - minX) <= 1.02 && (maxZ - minZ) <= 1.02
+                val inside = minX > -0.06 && maxX < 1.06 && minZ > -0.06 && maxZ < 1.06
+                val offOrigin = kotlin.math.abs((minX + maxX) / 2) > 0.2 || kotlin.math.abs((minZ + maxZ) / 2) > 0.2
+                if (single && inside && offOrigin) blockSpace += obj.nameWithoutExtension
+            }
+
+            val centring = Regex("""translate\(\s*0\.5F?\s*,[^,]*,\s*0\.5F?\s*\)""")
+            val pivotBack = Regex("""translate\(\s*-0\.5F?\s*,[^,]*,\s*-0\.5F?\s*\)""")
+            val comments = Regex("""/\*.*?\*/|//[^\n]*""", RegexOption.DOT_MATCHES_ALL)
+            var graded = 0
+            renderers.walkTopDown().filter { it.extension == "java" }.forEach { source ->
+                val text = comments.replace(source.readText(), " ")
+                val meshes = blockSpace.filter { text.contains(it) }
+                if (meshes.isEmpty()) return@forEach
+                graded++
+                text.split(';').filter { it.contains(".part(") || it.contains(".child(") }.forEach { statement ->
+                    val flat = statement.replace(Regex("\\s+"), " ")
+                    check(!(centring.containsMatchIn(flat) && !pivotBack.containsMatchIn(flat))) {
+                        "${source.name} centres a block-space mesh (${meshes.joinToString()}) that is already " +
+                                "authored about the block centre: drop the translate(0.5, y, 0.5), or pair it with " +
+                                "translate(-0.5, y, -0.5) if it is the pivot of a rotation about the block centre.\n" +
+                                "  ${flat.trim()}"
+                    }
+                }
+            }
+            logger.lifecycle("blockObjFrames: ${blockSpace.size} block-space mesh(es) across $graded renderer(s)")
+        }
+    }
+    tasks.named("check") { dependsOn(validation) }
+}
+
+registerBlockObjFrameChecks()

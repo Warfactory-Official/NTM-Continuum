@@ -8,6 +8,7 @@ import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.items.weapon.sedna.GunConfig;
 import com.hbm.items.weapon.sedna.Receiver;
+import com.hbm.items.weapon.sedna.mags.MagazineFluid;
 import com.hbm.items.weapon.sedna.mags.MagazineFullReload;
 import com.hbm.items.weapon.sedna.impl.ItemGunChemthrower;
 import com.hbm.lib.ModDamageSources.DamageClass;
@@ -191,7 +192,9 @@ public final class XFactoryFlamer {
 
     public static GunConfig chemthrowerConfig() {
         return new GunConfig().dura(90_000).draw(10).inspect(17).crosshair(Crosshair.L_CIRCLE)
-                .rec(new Receiver(0).delay(1).auto(true).canFire(ItemGunChemthrower.LAMBDA_CAN_FIRE)
+                .rec(new Receiver(0).delay(1).spreadHipfire(0F).auto(true)
+                        .mag(new MagazineFluid(0, ItemGunChemthrower.CAPACITY))
+                        .canFire(ItemGunChemthrower.LAMBDA_CAN_FIRE)
                         .fire(ItemGunChemthrower.LAMBDA_FIRE).offset(0.75, -0.0625, -0.25D))
                 .setupStandardConfiguration();
     }

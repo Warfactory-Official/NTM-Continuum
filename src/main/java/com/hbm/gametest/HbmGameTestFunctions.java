@@ -407,6 +407,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("fusion_breeder", 20, () -> HbmGameTestFunctions::fusionBreeder);
     public static final GameTests.Function FLUID_DISPLAY_NAMES =
             TESTS.function("fluid_display_names", 20, () -> HbmGameTestFunctions::fluidDisplayNames);
+    public static final GameTests.Function FLUID_DROPLET_SPRITES =
+            TESTS.function("fluid_droplet_sprites", 20, () -> HbmGameTestFunctions::fluidDropletSprites);
     public static final GameTests.Function LANG_COVERAGE =
             TESTS.function("lang_coverage", 20, () -> HbmGameTestFunctions::langCoverage);
     public static final GameTests.Function BATTERY_REDD_LAYOUT_PORTS =
@@ -734,6 +736,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_lag_firing_route", 200, () -> GunGameTests::gunLagFiringRoute);
     public static final GameTests.Function GUN_DRY_FIRE =
             TESTS.function("gun_dry_fire", 100, () -> GunGameTests::gunDryFire);
+    public static final GameTests.Function GUN_CHEMTHROWER_TANK =
+            TESTS.function("gun_chemthrower_tank", 20, () -> GunGameTests::chemthrowerTank);
     public static final GameTests.Function GUN_AMMO_STATS =
             TESTS.function("gun_ammo_stats", 20, () -> GunGameTests::ammoStats);
     public static final GameTests.Function GUN_AMMO_22_STATS =
@@ -1508,6 +1512,36 @@ public final class HbmGameTestFunctions {
         java.util.Collections.sort(missing);
         helper.assertTrue(missing.isEmpty(),
                 missing.size() + " hbm items have no lang entry: " + missing);
+        helper.succeed();
+    }
+
+    /**
+     * Every fluid's droplet sprite is the shared art plus that fluid's own key, and no two fluids name
+     * the same sprite.
+     *
+     * <p>Two places have to agree on that id and neither can see the other: {@link com.hbm.client.FluidSprites}
+     * mints it while the atlas is stitched, by handing the remap the fluid's key as a permutation name,
+     * and a screen asks {@link com.hbm.inventory.fluid.FluidType#getIconSprite()} for it at draw time.
+     * Change the shape on one side and the other keeps minting the old one — every lookup then quietly
+     * returns the missing-texture sprite, on a client, with nothing logged. The client class itself
+     * cannot be named from here (loading it on a dedicated server pulls in {@code GuiGraphics}), so what
+     * is pinned is the shape both sides build.
+     */
+    private static void fluidDropletSprites(GameTestHelper helper) {
+        java.util.Map<String, String> bySprite = new java.util.HashMap<>();
+        for (com.hbm.inventory.fluid.FluidType fluid : com.hbm.inventory.fluid.Fluids.getAll()) {
+            String sprite = fluid.getIconSprite().toString();
+            String expected = com.hbm.Constants.MOD_ID + ":"
+                    + com.hbm.inventory.fluid.FluidType.ICON_ART + "_" + fluid.getKey();
+            helper.assertTrue(sprite.equals(expected),
+                    "Fluid " + fluid.getName() + " must name the droplet " + expected + ", names " + sprite);
+            String clash = bySprite.put(sprite, fluid.getName());
+            helper.assertTrue(clash == null,
+                    "Fluids " + clash + " and " + fluid.getName() + " both name the droplet " + sprite);
+        }
+        helper.assertTrue(bySprite.size() == com.hbm.inventory.fluid.Fluids.getAll().length,
+                "Every fluid must have its own droplet, " + bySprite.size() + " for "
+                        + com.hbm.inventory.fluid.Fluids.getAll().length + " fluids");
         helper.succeed();
     }
 

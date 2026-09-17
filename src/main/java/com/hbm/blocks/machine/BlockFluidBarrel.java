@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -104,8 +105,9 @@ public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
-        if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityBarrel barrel) {
-            player.openMenu(barrel);
+        if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
+                && level.getBlockEntity(pos) instanceof TileEntityBarrel barrel) {
+            dev.golem.core.gui.Menus.openWithPos(serverPlayer, barrel, pos);
         }
         return InteractionResult.SUCCESS;
     }
