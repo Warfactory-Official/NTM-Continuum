@@ -1,52 +1,5 @@
 {
   "variants": {
-    "meta=0": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=1": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=2": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=3": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=4": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=5": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=6": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=7": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=8": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=9": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=10": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=11": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=12": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=13": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=14": {
-      "model": "hbm:block/machine_satlink"
-    },
-    "meta=15": {
-      "model": "hbm:block/machine_satlink"
-    }
+    "": { "model": "hbm:block/machine_satlink" }
   }
 }

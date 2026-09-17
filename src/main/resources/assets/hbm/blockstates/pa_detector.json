@@ -1,52 +1,5 @@
 {
   "variants": {
-    "meta=0": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=1": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=2": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=3": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=4": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=5": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=6": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=7": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=8": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=9": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=10": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=11": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=12": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=13": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=14": {
-      "model": "hbm:block/machine_dummy_empty"
-    },
-    "meta=15": {
-      "model": "hbm:block/machine_dummy_empty"
-    }
+    "": { "model": "hbm:block/pa_detector" }
   }
 }

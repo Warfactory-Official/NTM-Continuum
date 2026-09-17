@@ -1729,12 +1729,6 @@
       "hbm:weapon/reload/boltclose"
     ]
   },
-  "weapon.reload.boltopen": {
-    "category": "player",
-    "sounds": [
-      "hbm:weapon/reload/boltopen"
-    ]
-  },
   "weapon.reload.closeclick": {
     "category": "player",
     "sounds": [

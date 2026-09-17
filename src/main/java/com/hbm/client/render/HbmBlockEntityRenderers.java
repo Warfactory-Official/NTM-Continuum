@@ -183,6 +183,7 @@ public final class HbmBlockEntityRenderers {
         regGem(sink, ModBlockEntities.BARREL.get(), BarrelRenderer::new);
         regGem(sink, ModBlockEntities.MACHINE_CHUNGUS.get(), ChungusRenderer::new);
         regGem(sink, ModBlockEntities.MACHINE_SATLINK.get(), SatLinkRenderer::new);
+        regGem(sink, ModBlockEntities.SOYUZ_LAUNCHER.get(), SoyuzLauncherRenderer::new);
         regGem(sink, ModBlockEntities.PILE_CONTROL.get(), PileDeviceRenderers.Control::new);
         regGem(sink, ModBlockEntities.PILE_LOADER.get(), PileDeviceRenderers.Loader::new);
         regGem(sink, ModBlockEntities.PILE_VENT.get(), PileDeviceRenderers.Vent::new);

@@ -145,6 +145,8 @@ public final class TracerRegistry {
         register(rocketModel("models/projectiles/projectiles.obj", "textures/models/projectiles/rocket.png", "Rocket", 1F,
                 pose -> pose.mulPose(Axis.ZP.rotationDegrees(90F))), "rocket_qd_he", "rocket_qd_heat",
                 "rocket_qd_demo", "rocket_qd_inc", "rocket_qd_phosphorus");
+        register(model("models/projectiles/deb_graphite.obj", "textures/entity/rbmk_debris/graphite.png",
+                "Cube_Cube.001", 2F, pose -> { }), "pile_debris");
         BulletTracer flare = flare(1F, 0.5F, 0.5F);
         register(flare, "g26_flare");
         register(flare(0.5F, 0.5F, 1F), "g26_flare_supply");

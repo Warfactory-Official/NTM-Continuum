@@ -9,6 +9,7 @@ import com.hbm.items.weapon.sedna.BulletConfigs;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.particle.helper.FlameCreator;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -83,6 +84,11 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
         if (pile_debris != null) return;
         pile_debris = BulletConfigs.register("pile_debris", new BulletConfig()
                 .setLife(200).setVel(1F).setGrav(0.1F)
+                .setOnUpdate(fragment -> {
+                    if (!fragment.level().isClientSide()) return;
+                    FlameCreator.composeEffectClient(fragment.level(), fragment.getX(),
+                            fragment.getY() - 0.125D, fragment.getZ(), FlameCreator.META_FIRE);
+                })
                 .setOnImpact((bullet, hit) -> {
                     bullet.level().explode(bullet, bullet.getX(), bullet.getY(), bullet.getZ(), 5F,
                             Level.ExplosionInteraction.TNT);
