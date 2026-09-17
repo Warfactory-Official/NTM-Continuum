@@ -69,7 +69,7 @@ public class GeigerCounter extends dev.golem.core.world.CompatBlock implements E
     }
 
     @Override
-    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPES.getOrDefault(state.getValue(FACING), NORTH);
     }
 

@@ -1,6 +1,13 @@
 package com.hbm.blocks.machine.soyuz;
 
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import net.minecraft.world.level.BlockGetter;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.lib.ForgeDirection;
@@ -24,7 +31,8 @@ import java.util.List;
  * the service tower are built, and this block's footprint is the whole thirteen-by-thirteen apron plus the
  * towers, filled in one pass from the same boxes upstream uses.
  */
-public class SoyuzLauncher extends BlockMultiblockMachine {
+public class SoyuzLauncher extends BlockMultiblockMachine
+        implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     /** How far above the struct core the launcher's own core sits. */
     public static final int HEIGHT = 4;
@@ -99,9 +107,26 @@ public class SoyuzLauncher extends BlockMultiblockMachine {
         }
     }
 
+    /**
+     * The pad has no block entity at its cells, so a cable or a duct touching one asks the block, which
+     * resolves the core and defers to the same port list the launcher pushes through.
+     */
+    @Override
+    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntitySoyuzLauncher launcher
+                && IEnergyConnectorBlock.isPort(launcher.getConPos(), pos, dir);
+    }
+
+    @Override
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+        BlockPos pos = new BlockPos(x, y, z);
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntitySoyuzLauncher launcher
+                && IEnergyConnectorBlock.isPort(launcher.getConPos(), pos, dir);
+    }
+
     /** The complex cannot be picked up; breaking it gives back the bulk it was built from. */
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         return List.of();
     }
 

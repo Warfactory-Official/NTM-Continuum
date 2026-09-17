@@ -11,7 +11,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -50,20 +49,11 @@ public class MachineSatLink extends BlockMultiblockMachine implements ILookOverl
         return 0;
     }
 
-    /** The dish's three ground cells; 1.7 flags all three as ports, and the link draws no power. */
     @Override
-    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
-        Direction rot = facing.getClockWise();
-        visitor.passiveCell(core.relative(facing, -1), MASK_ALL, PASSIVE_POWER_IN);
-        visitor.passiveCell(core.relative(rot), MASK_ALL, PASSIVE_POWER_IN);
-        visitor.passiveCell(core.relative(facing, -1).relative(rot), MASK_ALL, PASSIVE_POWER_IN);
-    }
-
-    @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, net.minecraft.world.InteractionHand hand,
-                                          BlockHitResult hit) {
-        if (!(stack.getItem() instanceof ISatChip)) return super.useItemOn(stack, state, level, pos, player, hand, hit);
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
+                                         net.minecraft.world.InteractionHand hand, ItemStack stack,
+                                         BlockHitResult hit) {
+        if (!(stack.getItem() instanceof ISatChip)) return InteractionResult.PASS;
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         return tuneTo(level, pos, stack, player) ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;

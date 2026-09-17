@@ -14,6 +14,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
 import dev.golem.core.world.Compat;
+import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -184,7 +185,7 @@ public class TileEntityPADetector extends TileEntityCooledBase
 
         ItemStack inSlot = inventory.getStackInSlot(outputSlot);
         if (!inSlot.isEmpty()) {
-            if (!ItemStack.isSameItemSameComponents(inSlot, output)) return false;
+            if (!ItemStacks.sameItemAndData(inSlot, output)) return false;
             if (inSlot.getCount() + output.getCount() > output.getMaxStackSize()) return false;
         }
 
@@ -192,7 +193,7 @@ public class TileEntityPADetector extends TileEntityCooledBase
         if (container.isEmpty()) return true;
 
         ItemStack containerInSlot = inventory.getStackInSlot(containerSlot);
-        return !containerInSlot.isEmpty() && ItemStack.isSameItemSameComponents(containerInSlot, container);
+        return !containerInSlot.isEmpty() && ItemStacks.sameItemAndData(containerInSlot, container);
     }
 
     @Override

@@ -59,7 +59,8 @@ public final class PileGameTests {
         assertMeta(helper, new BlockPos(6, 5, 6), BlockPile.META_EDGE);
         assertMeta(helper, new BlockPos(4, 3, 4), BlockPile.META_DUMMY);
 
-        TileEntityPileBaseMK2 cell = helper.getBlockEntity(new BlockPos(4, 3, 4), TileEntityPileBaseMK2.class);
+        TileEntityPileBaseMK2 cell = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+                helper, new BlockPos(4, 3, 4), TileEntityPileBaseMK2.class);
         helper.assertTrue(cell != null && cell.getCore() == core, "Pile cell did not point at its core");
         helper.succeed();
     }

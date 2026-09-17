@@ -68,8 +68,8 @@ public class FluidDuctGauge extends dev.golem.core.world.CompatBlock
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
+                                         InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityPipeGauge gauge) {

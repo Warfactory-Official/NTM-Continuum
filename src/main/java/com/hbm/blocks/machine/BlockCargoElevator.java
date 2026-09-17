@@ -170,7 +170,7 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
     }
 
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         BlockEntity entity = params.getOptionalParameter(
                 net.minecraft.world.level.storage.loot.parameters.LootContextParams.BLOCK_ENTITY);
         if (!(entity instanceof TileEntityCargoElevator lift)) return super.getDrops(state, params);

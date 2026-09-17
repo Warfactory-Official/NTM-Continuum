@@ -10,6 +10,7 @@ import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.pile.TileEntityPileCore.PileChannel;
 import dev.golem.core.data.DataIn;
+import dev.golem.core.world.ItemStacks;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -167,8 +168,8 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeDouble(this.travel);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, this.stack);
-        ItemStack.OPTIONAL_STREAM_CODEC.encode(buf, this.channelStack);
+        ItemStacks.writeOptional(buf, this.stack);
+        ItemStacks.writeOptional(buf, this.channelStack);
         buf.writeDouble(this.channelDepletion);
         buf.writeDouble(this.channelTemp);
     }
@@ -178,8 +179,8 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
         super.deserialize(buf);
         double lastSync = this.syncTravel;
         this.syncTravel = buf.readDouble();
-        this.syncStack = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
-        this.channelStack = ItemStack.OPTIONAL_STREAM_CODEC.decode(buf);
+        this.syncStack = ItemStacks.readOptional(buf);
+        this.channelStack = ItemStacks.readOptional(buf);
         this.channelDepletion = buf.readDouble();
         this.channelTemp = buf.readDouble();
 

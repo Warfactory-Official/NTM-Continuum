@@ -10,9 +10,9 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
+import dev.golem.core.net.GolemBuffers;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -112,7 +112,7 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         buf.writeInt(freq);
         buf.writeInt(info.length);
         for (Component component : info) {
-            ComponentSerialization.TRUSTED_STREAM_CODEC.encode(buf, component);
+            GolemBuffers.writeComponent(buf, component);
         }
     }
 
@@ -123,7 +123,7 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         this.freq = buf.readInt();
         this.info = new Component[buf.readInt()];
         for (int i = 0; i < info.length; i++) {
-            this.info[i] = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(buf);
+            this.info[i] = GolemBuffers.readComponent(buf);
         }
     }
 

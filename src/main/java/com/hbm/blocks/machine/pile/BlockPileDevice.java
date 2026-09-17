@@ -80,7 +80,7 @@ public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements
     }
 
     @Override
-    protected RenderShape getRenderShape(BlockState state) {
+    public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE;
     }
 
@@ -136,14 +136,14 @@ public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
-                                               BlockHitResult hit) {
+    protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
+                                                 BlockHitResult hit) {
         return interact(state, level, pos, player, ItemStack.EMPTY);
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack held, BlockState state, Level level, BlockPos pos,
-                                          Player player, InteractionHand hand, BlockHitResult hit) {
+    protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
+                                         InteractionHand hand, ItemStack held, BlockHitResult hit) {
         return interact(state, level, pos, player, held);
     }
 

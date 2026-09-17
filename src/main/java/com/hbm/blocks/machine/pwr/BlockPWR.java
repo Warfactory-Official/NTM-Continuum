@@ -65,7 +65,7 @@ public class BlockPWR extends CompatBlock implements EntityBlock, IFluidConnecto
      * rest of the structure restores itself in place.
      */
     @Override
-    protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
+    public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         BlockEntity be = params.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (be instanceof TileEntityBlockPWR cell && cell.originalBlockState != null) {
             ItemStack stack = new ItemStack(cell.originalBlockState.getBlock());

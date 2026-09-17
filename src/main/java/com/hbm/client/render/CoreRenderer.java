@@ -10,6 +10,7 @@ import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.Vertexes;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.world.phys.Vec3;
 
@@ -207,7 +208,7 @@ public class CoreRenderer implements CompatBER<TileEntityCore, CoreRenderState> 
     }
 
     private static void vertex(PoseStack.Pose pose, VertexConsumer buffer, int argb, float x, float y, float z) {
-        buffer.addVertex(pose, x, y, z).setColor(argb);
+        Vertexes.color(buffer, pose, x, y, z, argb);
     }
 
     private static void submitSphere(PoseStack ps, SubmitSink col, RenderType type, WavefrontObj model, int color) {

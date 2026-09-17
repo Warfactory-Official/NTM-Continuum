@@ -1,0 +1,7 @@
+accessWidener v2 named
+
+# 1.20.1: AbstractMinecart.getDropItem is package-private abstract in vanilla, so a minecart declared
+# outside net.minecraft cannot implement it. Forge patches the method protected, which is why only the
+# Fabric node needs this. Golem Core states the same widening for its own CompatMinecart; a transitive
+# widening does not reach this compile, so the consumer states it too.
+extendable method net/minecraft/world/entity/vehicle/AbstractMinecart getDropItem ()Lnet/minecraft/world/item/Item;
