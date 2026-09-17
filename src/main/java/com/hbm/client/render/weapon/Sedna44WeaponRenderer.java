@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -221,5 +222,68 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.Z, state -> (float) state.bus("MAG")[2]);
         magazine.child(obj.part("Magazine"), body);
         magazine.child(obj.part("Bullets"), body).visibleIf(state -> state.bus("BULLETS")[0] == 0);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        switch (variant) {
+            case HENRY, HENRY_LINCOLN -> {
+                pose.scale(1.5F, 1.5F, 1.5F);
+                pose.mulPose(Axis.XP.rotationDegrees(25F));
+                pose.mulPose(Axis.YP.rotationDegrees(45F));
+                pose.translate(-0.5F, 0.5F, 0F);
+            }
+            case HANGMAN -> {
+                pose.scale(0.375F, 0.375F, 0.375F);
+                pose.mulPose(Axis.XP.rotationDegrees(25F));
+                pose.mulPose(Axis.YP.rotationDegrees(45F));
+                pose.translate(-0.5F, 2.5F, 0F);
+            }
+            default -> {
+                if (isScoped(stack)) {
+                    pose.scale(1.125F, 1.125F, 1.125F);
+                    pose.mulPose(Axis.XP.rotationDegrees(25F));
+                    pose.mulPose(Axis.YP.rotationDegrees(45F));
+                    pose.translate(0F, -0.5F, 0F);
+                } else {
+                    pose.scale(1.25F, 1.25F, 1.25F);
+                    pose.mulPose(Axis.XP.rotationDegrees(25F));
+                    pose.mulPose(Axis.YP.rotationDegrees(45F));
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        switch (variant) {
+            case HENRY, HENRY_LINCOLN -> {
+                pose.scale(1.75F, 1.75F, 1.75F);
+                pose.translate(0F, 0.25F, 3F);
+            }
+            case HANGMAN -> {
+                pose.scale(0.5F, 0.5F, 0.5F);
+                pose.translate(0F, 4.25F, 11F);
+            }
+            default -> {
+                pose.scale(0.75F, 0.75F, 0.75F);
+                pose.translate(0F, 1F, 3F);
+            }
+        }
+    }
+
+    @Override
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        if (variant == Variant.HANGMAN) {
+            pose.scale(0.0625F, 0.0625F, 0.0625F);
+            return;
+        }
+        super.setupEntity(pose, stack);
+    }
+
+    private boolean isScoped(ItemStack stack) {
+        return variant.scoped || XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE);
     }
 }

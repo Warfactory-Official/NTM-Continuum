@@ -171,10 +171,10 @@ public final class NtmEntityRenderers {
 
         // Missiles: the micro body is the old missileTaint OBJ at 2x, as the pre-existing tier 0 pair; the rest
         // reuse the tier bodies the missile wave already loads.
-        missile(sink, ModNtmEntities.MISSILE_TEST.get(), "missile_taint.obj", "missile_test.png", 2.0F);
-        missile(sink, ModNtmEntities.MISSILE_SCHRABIDIUM.get(), "missile_taint.obj", "missile_micro_schrab.png", 2.0F);
-        missile(sink, ModNtmEntities.MISSILE_BHOLE.get(), "missile_taint.obj", "missile_micro_bhole.png", 2.0F);
-        missile(sink, ModNtmEntities.MISSILE_EMP.get(), "missile_taint.obj", "missile_micro_emp.png", 2.0F);
+        missile(sink, ModNtmEntities.MISSILE_TEST.get(), "missile_micro.obj", "missile_test.png", 1.0F);
+        missile(sink, ModNtmEntities.MISSILE_SCHRABIDIUM.get(), "missile_micro.obj", "missile_micro_schrab.png", 1.0F);
+        missile(sink, ModNtmEntities.MISSILE_BHOLE.get(), "missile_micro.obj", "missile_micro_bhole.png", 1.0F);
+        missile(sink, ModNtmEntities.MISSILE_EMP.get(), "missile_micro.obj", "missile_micro_emp.png", 1.0F);
         missile(sink, ModNtmEntities.MISSILE_CLUSTER.get(), "missile_v2.obj", "missile_v2_cl.png", 1.0F);
         missile(sink, ModNtmEntities.MISSILE_CLUSTER_STRONG.get(), "missile_strong.obj", "missile_strong_cl.png", 1.0F);
         missile(sink, ModNtmEntities.MISSILE_RAIN.get(), "missile_huge.obj", "missile_huge_cl.png", 0.8F);

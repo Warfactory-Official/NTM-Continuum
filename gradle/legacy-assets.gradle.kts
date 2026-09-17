@@ -23,46 +23,20 @@ data class MachineObjTransformExpectation(
     val itemPreTranslate: List<Double> = listOf(0.0, 0.0, 0.0),
 )
 
-data class GunObjTransformExpectation(
-    val rotation: List<Double>,
-    val translation: List<Double>,
-    val scale: List<Double>,
-)
-
-data class GunObjExpectation(
-    val base: String,
-    val display: Map<String, GunObjTransformExpectation>,
-)
-
-fun gunTransform(rotation: List<Double>, translation: List<Double>, scale: Double) =
-    GunObjTransformExpectation(rotation, translation, listOf(scale, scale, scale))
-
+/**
+ * The base model each Sedna gun names. No matrices here any more: the frame is
+ * `Pose17.ITEM_RENDER_WEAPON`, composed at datagen, and every weapon's own inventory and third-person
+ * pose is the 1.7 `setupInv`/`setupThirdPerson` chain replayed by its `WeaponRenderer`. What this table
+ * used to hold was one hand-fitted display block per base, pinned here as expected, which locked in a
+ * pose no oracle produced and made the drift permanent.
+ */
 val GUN_OBJ_EXPECTATIONS = mapOf(
-    "gun_pepperbox" to GunObjExpectation("hbm:item/gun_obj_pepperbox_base", mapOf(
-        "gui" to gunTransform(listOf(-18.881721, -41.641143, -27.236313), listOf(1.011377, 1.228155, -6.40901), 0.09375),
-        "ground" to gunTransform(listOf(0.0, -90.0, 0.0), listOf(-0.5, -3.5, 0.5), 0.0625),
-        "fixed" to gunTransform(listOf(0.0, 90.0, 0.0), listOf(1.0, -1.56, -0.5), 0.125),
-        "thirdperson_righthand" to gunTransform(listOf(-179.493995, -1.125273, 179.74399), listOf(-0.757072, 1.14817, -2.356844), 0.0703125),
-        "thirdperson_lefthand" to gunTransform(listOf(-172.402674, 29.330267, 154.481445), listOf(8.662276, 3.115906, 0.150338), 0.0703125),
-        "head" to gunTransform(listOf(-31.091374, -55.675371, 143.318463), listOf(-3.357926, -10.391071, 17.010688), 0.3),
-    )),
-    "gun_g3" to GunObjExpectation("hbm:item/gun_obj_g3_base", mapOf(
-        "gui" to gunTransform(listOf(-18.881721, -41.641143, -27.236313), listOf(0.008565, 0.928038, -7.690641), 0.0546875),
-        "ground" to gunTransform(listOf(0.0, -90.0, 0.0), listOf(-0.5, -3.5, 0.5), 0.0625),
-        "fixed" to gunTransform(listOf(0.0, 90.0, 0.0), listOf(1.0, -1.56, -0.5), 0.125),
-        "thirdperson_righthand" to gunTransform(listOf(-179.493995, -1.125273, 179.74399), listOf(-0.784191, 2.283047, -3.47155), 0.0703125),
-        "thirdperson_lefthand" to gunTransform(listOf(-172.402674, 29.330267, 154.481445), listOf(8.790823, 4.283303, -0.922934), 0.0703125),
-        "head" to gunTransform(listOf(-31.091374, -55.675371, 143.318463), listOf(-8.938885, -13.512669, 19.28852), 0.3),
-    )),
-    "gun_light_revolver_dani" to GunObjExpectation("hbm:item/gun_obj_dani_base", mapOf(
-        "gui" to gunTransform(listOf(-180.0, 0.0, 0.0), listOf(0.5625, 1.4375, -8.5625), 0.0703125),
-        "ground" to gunTransform(listOf(0.0, -90.0, 0.0), listOf(-0.5, -3.5, 0.5), 0.0625),
-        "fixed" to gunTransform(listOf(0.0, 90.0, 0.0), listOf(1.0, -1.56, -0.5), 0.125),
-        "thirdperson_righthand" to gunTransform(listOf(-179.493995, -1.125273, 179.74399), listOf(-0.757072, 1.14817, -2.356844), 0.0703125),
-        "thirdperson_lefthand" to gunTransform(listOf(-172.402674, 29.330267, 154.481445), listOf(8.662276, 3.115906, 0.150338), 0.0703125),
-        "head" to gunTransform(listOf(-31.091374, -55.675371, 143.318463), listOf(-3.357926, -10.391071, 17.010688), 0.3),
-    )),
+    "gun_pepperbox" to "hbm:item/gun_obj_pepperbox_base",
+    "gun_g3" to "hbm:item/gun_obj_g3_base",
+    "gun_light_revolver_dani" to "hbm:item/gun_obj_dani_base",
+    "gun_b92" to "hbm:item/gun_b92_base",
 )
+
 
 val RTG_BLOCKSTATE_IDS = listOf("machine_minirtg", "rtg_polonium", "machine_rtg_grey")
 val MACHINE_OBJ_ITEM_BASE = "hbm:item/machine_obj_base"
@@ -541,6 +515,10 @@ val MACHINE_OBJ_CONTEXT_LEGACY_MODEL = "hbm:item/machine_obj_context_legacy"
  * that base's one display block.
  */
 val GUN_OBJ_LEGACY_MODEL = "hbm:item/gun_obj_legacy"
+val GUN_OBJ_BASE_MODEL = "hbm:item/gun_obj_base"
+
+/** The authored gun bases. `gun_obj_base` itself is generated, so it is not among them. */
+val gunBaseChain = listOf("gun_obj_pepperbox_base", "gun_obj_g3_base", "gun_obj_dani_base", "gun_b92_base")
 
 fun Project.applyLegacyItemAssets() {
     tasks.named<ProcessResources>("processResources").configure {
@@ -568,7 +546,7 @@ fun Project.applyLegacyItemAssets() {
                     // longer references (their definitions point at the OBJ renderer), and leaving it in
                     // place would render them flat here and 3D there. The same applies to a gun, whose
                     // placeholder sprite predates its OBJ renderer. Every other item defers to what ships.
-                    val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent == MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+                    val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent.endsWith("_obj_context_legacy")
                             || isGunDefinition(definition)
                     if (target.exists() && !selfRendered) return@forEach
                     itemModels.mkdirs()
@@ -802,11 +780,68 @@ fun Project.registerMachineObjTransformChecks() {
     tasks.named("check") { dependsOn(validation) }
 }
 
+/**
+ * 1.7's `ItemRenderMissileGeneric`: the per-type GUI scale and offset, the body each missile wears, and the
+ * extra scale `generateLarge` applied. The renderer is one class configured eight ways, so a missile put on
+ * the wrong row is a wrong-size icon and nothing else — which is invisible without the table to check it
+ * against. Carrier, endo and exo are absent here because upstream registers no body for them either.
+ */
+data class MissileObjExpectation(val obj: String, val texture: String, val modelScale: Double,
+                                 val guiScale: Double, val guiOffset: Double)
+
+fun missile(obj: String, texture: String, modelScale: Double, tier: Pair<Double, Double>) =
+    MissileObjExpectation(obj, texture, modelScale, tier.first, tier.second)
+
+val MISSILE_TIER0 = 3.75 to 10.75
+val MISSILE_TIER1 = 2.5 to 8.5
+val MISSILE_TIER2 = 2.0 to 6.5
+val MISSILE_TIER3 = 1.25 to 1.0
+val MISSILE_STEALTH = 1.75 to 4.75
+val MISSILE_ABM = 2.25 to 7.0
+val MISSILE_NUCLEAR = 1.375 to 1.5
+val MISSILE_ROBIN = 1.25 to 2.0
+
+/** 1.7 spins these at `currentTimeMillis() / 15 % 360`, a degree every fifteen milliseconds. */
+val MISSILE_SPIN_SPEED = 1.0 / 15.0
+
+val MISSILE_OBJ_EXPECTATIONS = mapOf(
+    "missile_micro" to missile("missile_micro.obj", "missile_micro.png", 1.0, MISSILE_TIER0),
+    "missile_taint" to missile("missile_micro.obj", "missile_micro_taint.png", 1.0, MISSILE_TIER0),
+    "missile_bhole" to missile("missile_micro.obj", "missile_micro_bhole.png", 1.0, MISSILE_TIER0),
+    "missile_schrabidium" to missile("missile_micro.obj", "missile_micro_schrab.png", 1.0, MISSILE_TIER0),
+    "missile_emp" to missile("missile_micro.obj", "missile_micro_emp.png", 1.0, MISSILE_TIER0),
+    "missile_generic" to missile("missile_v2.obj", "missile_v2.png", 1.0, MISSILE_TIER1),
+    "missile_incendiary" to missile("missile_v2.obj", "missile_v2_inc.png", 1.0, MISSILE_TIER1),
+    "missile_cluster" to missile("missile_v2.obj", "missile_v2_cl.png", 1.0, MISSILE_TIER1),
+    "missile_buster" to missile("missile_v2.obj", "missile_v2_bu.png", 1.0, MISSILE_TIER1),
+    "missile_decoy" to missile("missile_v2.obj", "missile_v2_decoy.png", 1.0, MISSILE_TIER1),
+    "missile_anti_ballistic" to missile("missile_abm.obj", "missile_abm.png", 1.0, MISSILE_ABM),
+    "missile_stealth" to missile("missile_stealth.obj", "missile_stealth.png", 1.0, MISSILE_STEALTH),
+    "missile_strong" to missile("missile_strong.obj", "missile_strong.png", 1.5, MISSILE_TIER2),
+    "missile_incendiary_strong" to missile("missile_strong.obj", "missile_strong_inc.png", 1.5, MISSILE_TIER2),
+    "missile_cluster_strong" to missile("missile_strong.obj", "missile_strong_cl.png", 1.5, MISSILE_TIER2),
+    "missile_buster_strong" to missile("missile_strong.obj", "missile_strong_bu.png", 1.5, MISSILE_TIER2),
+    "missile_emp_strong" to missile("missile_strong.obj", "missile_strong_emp.png", 1.5, MISSILE_TIER2),
+    "missile_burst" to missile("missile_huge.obj", "missile_huge.png", 1.0, MISSILE_TIER3),
+    "missile_inferno" to missile("missile_huge.obj", "missile_huge_inc.png", 1.0, MISSILE_TIER3),
+    "missile_rain" to missile("missile_huge.obj", "missile_huge_cl.png", 1.0, MISSILE_TIER3),
+    "missile_drill" to missile("missile_huge.obj", "missile_huge_bu.png", 1.0, MISSILE_TIER3),
+    "missile_nuclear" to missile("missile_atlas.obj", "missile_atlas_nuclear.png", 1.0, MISSILE_NUCLEAR),
+    "missile_nuclear_cluster" to missile("missile_atlas.obj", "missile_atlas_thermo.png", 1.0, MISSILE_NUCLEAR),
+    "missile_volcano" to missile("missile_atlas.obj", "missile_atlas_tectonic.png", 1.0, MISSILE_NUCLEAR),
+    "missile_doomsday" to missile("missile_atlas.obj", "missile_atlas_doomsday.png", 1.0, MISSILE_NUCLEAR),
+    "missile_doomsday_rusted" to missile("missile_atlas.obj", "missile_atlas_doomsday_weathered.png", 1.0, MISSILE_NUCLEAR),
+    "missile_n2" to missile("missile_n2_body.obj", "missile_n2.png", 1.5, MISSILE_NUCLEAR),
+    "missile_shuttle" to missile("missile_shuttle.obj", "missile_shuttle.png", 1.0, MISSILE_ROBIN),
+)
+
+val MISSILE_OBJ_CONTEXT_LEGACY_MODEL = "hbm:item/missile_obj_context_legacy"
+
 /** Checks the dedicated old-renderer matrices and the shared modern/legacy base reference. */
 fun Project.registerGunObjTransformChecks() {
     val validation = tasks.register("validateGunObjTransforms") {
         group = "verification"
-        description = "Checks Sedna gun base references and exact static display transforms."
+        description = "Checks Sedna gun base references and that no base authors its own frame."
         doLast {
             val assets = rootProject.file("src/main/resources/assets/hbm")
             fun vector(actual: Any?, expected: List<Double>, label: String) {
@@ -821,41 +856,46 @@ fun Project.registerGunObjTransformChecks() {
                 }
             }
 
-            GUN_OBJ_EXPECTATIONS.forEach { (item, expected) ->
+            GUN_OBJ_EXPECTATIONS.forEach { (item, base) ->
                 val definition = File(assets, "items/$item.json")
                 check(definition.isFile) { "Missing gun item definition: $definition" }
                 @Suppress("UNCHECKED_CAST")
                 val root = JsonSlurper().parse(definition) as Map<String, Any?>
                 @Suppress("UNCHECKED_CAST")
-                val model = root["model"] as? Map<String, Any?> ?: error("Missing model object: $definition")
+                var model = root["model"] as? Map<String, Any?> ?: error("Missing model object: $definition")
+                if (model["type"] == "minecraft:select") {
+                    @Suppress("UNCHECKED_CAST")
+                    model = model["fallback"] as? Map<String, Any?>
+                        ?: error("Missing select fallback: $definition")
+                }
                 check(model["type"] == "hbm:gun") { "$definition must use hbm:gun" }
-                check(model["base"] == expected.base) {
-                    "$definition must reference ${expected.base}, not ${model["base"]}"
+                check(model["base"] == base) {
+                    "$definition must reference $base, not ${model["base"]}"
                 }
-                check(parentModelOf(definition) == expected.base) {
-                    "Legacy conversion must retain ${expected.base} for $item"
+                @Suppress("UNCHECKED_CAST")
+                val slotModel = ((root["model"] as? Map<String, Any?>)
+                    ?.takeIf { it["type"] == "minecraft:select" }
+                    ?.get("cases") as? List<Map<String, Any?>>)
+                    ?.firstOrNull()
+                    ?.let { (it["model"] as? Map<String, Any?>)?.get("model") as? String }
+                val legacy = parentModelOf(definition)
+                check(legacy == base || legacy == slotModel) {
+                    "Legacy conversion must retain ${slotModel ?: base} for $item, not $legacy"
                 }
+            }
 
-                val baseName = expected.base.substringAfter("hbm:item/")
-                val baseFile = File(assets, "models/item/$baseName.json")
-                check(baseFile.isFile) { "Missing dedicated gun base: $baseFile" }
+            gunBaseChain.forEach { name ->
+                val baseFile = File(assets, "models/item/$name.json")
+                check(baseFile.isFile) { "Missing gun base: $baseFile" }
                 @Suppress("UNCHECKED_CAST")
                 val base = JsonSlurper().parse(baseFile) as Map<String, Any?>
-                check(base["parent"] == GUN_OBJ_LEGACY_MODEL) {
-                    "$baseFile must inherit $GUN_OBJ_LEGACY_MODEL for legacy custom rendering"
+                check(!base.containsKey("display")) {
+                    "$baseFile must not author a display block: the weapon frame is Pose17.ITEM_RENDER_WEAPON, " +
+                            "composed at datagen, and the per-weapon pose is the renderer's setupInv/setupThirdPerson"
                 }
-                @Suppress("UNCHECKED_CAST")
-                val display = base["display"] as? Map<String, Any?> ?: error("Missing display object: $baseFile")
-                check(display.keys == expected.display.keys) {
-                    "$baseFile contexts expected ${expected.display.keys} but were ${display.keys}"
-                }
-                expected.display.forEach { (context, transform) ->
-                    @Suppress("UNCHECKED_CAST")
-                    val actual = display[context] as? Map<String, Any?>
-                        ?: error("Missing $context transform: $baseFile")
-                    vector(actual["rotation"], transform.rotation, "$item.$context.rotation")
-                    vector(actual["translation"], transform.translation, "$item.$context.translation")
-                    vector(actual["scale"], transform.scale, "$item.$context.scale")
+                val parent = base["parent"]
+                check(parent == GUN_OBJ_BASE_MODEL || parent == GUN_OBJ_LEGACY_MODEL) {
+                    "$baseFile must inherit $GUN_OBJ_BASE_MODEL or $GUN_OBJ_LEGACY_MODEL for legacy custom rendering"
                 }
             }
 
@@ -863,7 +903,7 @@ fun Project.registerGunObjTransformChecks() {
             check(marker["parent"] == "minecraft:builtin/entity" && !marker.containsKey("display")) {
                 "gun_obj_legacy must remain a transform-free builtin/entity marker"
             }
-            logger.lifecycle("gunObjTransforms: validated ${GUN_OBJ_EXPECTATIONS.size} dedicated weapon bases")
+            logger.lifecycle("gunObjTransforms: validated ${GUN_OBJ_EXPECTATIONS.size} gun base references")
         }
     }
     tasks.named("check") { dependsOn(validation) }
@@ -944,6 +984,13 @@ fun isGunDefinition(definition: File): Boolean {
     return model["type"] == "hbm:gun"
 }
 
+/**
+ * Which shared frame a `hbm:machine_obj` model wears below 1.21.4. The `frame` field names the 1.7 item
+ * render class; absent, it is `ItemRenderBase` like every machine.
+ */
+fun contextLegacyModelOf(model: Map<String, Any?>): String =
+    if (model["frame"] == "missile") MISSILE_OBJ_CONTEXT_LEGACY_MODEL else MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+
 fun parentModelOf(definition: File): String? {
     @Suppress("UNCHECKED_CAST")
     val json = JsonSlurper().parse(definition) as? Map<String, Any?> ?: return null
@@ -951,7 +998,7 @@ fun parentModelOf(definition: File): String? {
     val model = json["model"] as? Map<String, Any?> ?: return null
     return when (model["type"]) {
         "minecraft:model" -> model["model"] as? String
-        "hbm:machine_obj" -> MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+        "hbm:machine_obj" -> contextLegacyModelOf(model)
         // Gun bases inherit builtin/entity themselves, preserving their exact modern display matrices.
         "hbm:gun" -> model["base"] as? String
         "minecraft:special" -> {
@@ -972,6 +1019,13 @@ fun parentModelOf(definition: File): String? {
                 MACHINE_OBJ_CONTEXT_LEGACY_MODEL
             } else if (isMachineObjSpecial(fallback) || cases.any { isMachineObjSpecial(it["model"]) }) {
                 MACHINE_OBJ_LEGACY_MODEL
+            } else if ((fallback as? Map<String, Any?>)?.get("type") == "hbm:gun") {
+                // A gun whose slot icon is a sprite and whose model is only drawn in hand: below 1.21.4
+                // nothing reads the definition, so the item resolves models/item/<id>.json. Point it at
+                // the sprite branch, which is what the slot shows in 1.7 too.
+                @Suppress("UNCHECKED_CAST")
+                val cases2 = model["cases"] as? List<Map<String, Any?>> ?: emptyList()
+                ((cases2.firstOrNull()?.get("model") as? Map<String, Any?>)?.get("model") as? String)
             } else {
                 // A select over ordinary sprite models still needs a model at the ITEM's own path.
                 // Nothing below 1.21.4 reads the definition, so the item resolves
@@ -983,6 +1037,75 @@ fun parentModelOf(definition: File): String? {
             }
         }
         else -> null
+    }
+}
+
+/**
+ * Checks every launchable missile's icon against 1.7's `ItemRenderMissileGeneric` table. The frame these
+ * bodies hang on is `Pose17.Klass.ITEM_RENDER_MISSILE` and is declared, not written, so `DisplayFrame`
+ * already refuses a pose vanilla would corrupt; what a file can still get wrong is which row of the tier
+ * table it took, which this reads back.
+ */
+fun Project.registerMissileObjTransformChecks() {
+    val validation = tasks.register("validateMissileObjTransforms") {
+        group = "verification"
+        description = "Checks the launchable missiles' item icons against 1.7's per-tier GUI table."
+        doLast {
+            val assets = rootProject.file("src/main/resources/assets/hbm")
+            MISSILE_OBJ_EXPECTATIONS.forEach { (item, expected) ->
+                val definition = File(assets, "items/$item.json")
+                check(definition.isFile) { "Missing missile item definition: $definition" }
+                @Suppress("UNCHECKED_CAST")
+                val root = JsonSlurper().parse(definition) as Map<String, Any?>
+                check(root["oversized_in_gui"] == true) { "$definition must set oversized_in_gui" }
+                @Suppress("UNCHECKED_CAST")
+                val model = root["model"] as? Map<String, Any?> ?: error("Missing model object: $definition")
+                check(model["type"] == "hbm:machine_obj") {
+                    "$definition must use hbm:machine_obj directly, or it loses the display context"
+                }
+                check(model["frame"] == "missile") {
+                    "$definition must name the missile frame, not ${model["frame"]}"
+                }
+                check(parentModelOf(definition) == MISSILE_OBJ_CONTEXT_LEGACY_MODEL) {
+                    "Legacy conversion must route $item to $MISSILE_OBJ_CONTEXT_LEGACY_MODEL"
+                }
+                check(model["rawLegacyTransform"] == true) { "$definition must set rawLegacyTransform" }
+                check(model["noCull"] == true) { "$definition must disable culling, as 1.7 does" }
+                check(model["obj"] == "hbm:models/missiles/${expected.obj}") {
+                    "$definition draws ${model["obj"]}, expected ${expected.obj}"
+                }
+                check(model["texture"] == "hbm:textures/models/missiles/${expected.texture}") {
+                    "$definition wears ${model["texture"]}, expected ${expected.texture}"
+                }
+                check(File(assets, "models/missiles/${expected.obj}").isFile) {
+                    "Missing missile body: ${expected.obj}"
+                }
+                check(File(assets, "textures/models/missiles/${expected.texture}").isFile) {
+                    "Missing missile skin: ${expected.texture}"
+                }
+                number(model["scale"], expected.modelScale, "$item.scale")
+                number(model["yaw"], 0.0, "$item.yaw")
+                number(model["guiSpinSpeed"], MISSILE_SPIN_SPEED, "$item.guiSpinSpeed")
+
+                @Suppress("UNCHECKED_CAST")
+                val gui = (model["contextTransforms"] as? Map<String, Any?>)?.get("gui") as? Map<String, Any?>
+                    ?: error("Missing gui contextTransform: $definition")
+                val rotation = gui["rotation"] as? List<*> ?: error("Missing gui rotation: $definition")
+                val translation = gui["translation"] as? List<*> ?: error("Missing gui translation: $definition")
+                number(rotation.getOrNull(2), 135.0, "$item.gui.rotation.z")
+                number(gui["scale"], expected.guiScale, "$item.gui.scale")
+                number(translation.getOrNull(1), (-16.0 + expected.guiOffset) * expected.guiScale,
+                    "$item.gui.translation.y")
+            }
+            logger.lifecycle("missileObjTransforms: validated ${MISSILE_OBJ_EXPECTATIONS.size} missile icons")
+        }
+    }
+    tasks.named("check") { dependsOn(validation) }
+}
+
+fun number(actual: Any?, expected: Double, label: String) {
+    check(actual is Number && kotlin.math.abs(actual.toDouble() - expected) < 0.000001) {
+        "$label expected $expected but was $actual"
     }
 }
 
@@ -1008,3 +1131,4 @@ if (needsLegacyItemAssets(extra.properties["mc_version"] as String)) {
 
 registerMachineObjTransformChecks()
 registerGunObjTransformChecks()
+registerMissileObjTransformChecks()

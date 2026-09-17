@@ -1,0 +1,40 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "frame": "missile",
+    "obj": "hbm:models/missiles/missile_micro.obj",
+    "texture": "hbm:textures/models/missiles/missile_micro_bhole.png",
+    "noCull": true,
+    "scale": 1.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ty": 0.0,
+    "guiSpinSpeed": 0.06666667,
+    "contextTransforms": {
+      "gui": {
+        "rotation": [
+          0.0,
+          0.0,
+          135.0
+        ],
+        "translation": [
+          0.0,
+          -19.6875,
+          0.0
+        ],
+        "scale": 3.75
+      }
+    }
+  },
+  "oversized_in_gui": true
+}

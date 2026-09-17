@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -41,5 +42,21 @@ public final class TauWeaponRenderer extends WeaponRenderer {
         root.child(obj.part("Body"), BODY);
         root.child(obj.part("Rotor"), BODY)
                 .spin(Gem.Axes.Z, 0F, -0.25F, 0F, state -> (float) state.bus("ROTATE")[2]);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(2F, 2F, 2F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(-0.25F, 0.5F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(2.5F, 2.5F, 2.5F);
+        pose.translate(0F, 1F, 2F);
     }
 }

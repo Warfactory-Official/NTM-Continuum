@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -75,5 +76,21 @@ public class AberratorWeaponRenderer extends WeaponRenderer {
                 .translate(0, 1.25F, -3.625F)
                 .angle(Gem.Axes.X, state -> -45F + (float) state.bus("HAMMER", rail)[0])
                 .translate(0, -1.25F, 3.625F);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(2.5F, 2.5F, 2.5F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(-0.5F, -1F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.translate(0F, -1F, 4F);
+        pose.scale(1.5F, 1.5F, 1.5F);
     }
 }

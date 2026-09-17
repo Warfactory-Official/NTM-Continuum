@@ -106,7 +106,7 @@ public final class GunLegacyModels {
             renderer.submitFirstPerson(stack, poseStack, sink, light, overlay, !mainHand);
         } else {
             poseStack.pushPose();
-            renderer.setupStatic(poseStack, context);
+            renderer.setupStatic(poseStack, stack, context);
             renderer.renderStatic(stack, poseStack, sink, light, overlay,
                     dev.golem.core.render.ItemRenderContext.owner());
             poseStack.popPose();

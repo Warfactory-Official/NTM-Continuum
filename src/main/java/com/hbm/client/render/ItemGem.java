@@ -45,9 +45,9 @@ final class ItemGem {
         Gem.replay(declaration, pose, poseStack, sink, light);
     }
 
-    /** The transformed corners of every framed part, in the frame the caller has already applied. */
-    void extents(PoseStack framed, Consumer<Vector3fc> output) {
-        pose.animation = clock();
+    /** The transformed corners of every framed part, at one animation phase, in the caller's frame. */
+    void extents(PoseStack framed, float animation, Consumer<Vector3fc> output) {
+        pose.animation = animation;
         Matrix4f start = new Matrix4f(framed.last().pose());
         for (Gem.Part<ItemPose> root : declaration.roots()) corners(root, start, output);
     }

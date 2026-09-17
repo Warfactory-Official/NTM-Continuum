@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -79,5 +80,21 @@ public final class LasrifleWeaponRenderer extends WeaponRenderer {
                 .visibleIf(state -> SpecialWeaponRenderers.hasUpgrade(state, 216));
         root.child(mods().part("UnderBarrel"), MODS)
                 .visibleIf(state -> SpecialWeaponRenderers.hasUpgrade(state, 217));
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.03125F, 1.03125F, 1.03125F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(0.75F, 0F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(1.25F, 1.25F, 1.25F);
+        pose.translate(0F, 0F, 4F);
     }
 }

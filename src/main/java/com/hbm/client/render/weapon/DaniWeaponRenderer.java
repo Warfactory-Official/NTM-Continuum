@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -190,5 +191,18 @@ public final class DaniWeaponRenderer extends WeaponRenderer {
                         (float) Math.toRadians(right ? -1.125273F : 29.330267F),
                         (float) Math.toRadians(right ? 179.74399F : 154.481445F))
                 .scale(0.0703125F);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        pose.scale(1F, 1F, -1F);
+        pose.translate(8F, 6F, 0F);
+        pose.scale(1.125F, 1.125F, 1.125F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.translate(0F, 1F, 3F);
     }
 }

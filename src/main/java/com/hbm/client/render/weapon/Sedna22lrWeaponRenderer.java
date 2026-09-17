@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -203,5 +204,39 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
                 .rotate(Gem.Axes.X, 25F)
                 .rotate(Gem.Axes.Y, -45F)
                 .translate(-0.5F, 0F, 0F);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        if (variant == Variant.STAR_F_AKIMBO) {
+            pose.scale(1F, 1F, -1F);
+            pose.translate(8F, 8F, 0F);
+            pose.scale(1.5F, 1.5F, 1.5F);
+            return;
+        }
+        super.setupInv(pose, stack);
+        if (variant == Variant.AM180) {
+            pose.scale(0.75F, 0.75F, 0.75F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(45F));
+            pose.translate(1.5F, 0F, 0F);
+        } else {
+            pose.scale(1.5F, 1.5F, 1.5F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(45F));
+            pose.translate(-1F, -0.5F, 0F);
+        }
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        if (variant == Variant.AM180) {
+            pose.scale(1F, 1F, 1F);
+            pose.translate(0F, -0.5F, 3F);
+        } else {
+            pose.translate(0F, -0.25F, 1.75F);
+            pose.scale(0.75F, 0.75F, 0.75F);
+        }
     }
 }

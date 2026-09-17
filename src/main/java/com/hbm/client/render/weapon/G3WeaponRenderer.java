@@ -1,5 +1,7 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -99,5 +101,38 @@ public final class G3WeaponRenderer extends WeaponRenderer {
                 .spin(Gem.Axes.X, 0F, -0.875F, -3.5F, state -> state.animated
                         ? -30F * (1 - ItemGunBaseNT.getMode(state.stack, 0))
                         : -30F);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        boolean silencer = hasSilencer(stack);
+        if (hasStock(stack)) {
+            pose.scale(0.875F, 0.875F, 0.875F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(silencer ? 50F : 45F));
+            pose.translate(silencer ? 0.75F : -0.5F, 0.5F, 0F);
+        } else {
+            pose.scale(1.125F, 1.125F, 1.125F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(silencer ? 55F : 45F));
+            pose.translate(2.5F, 0.5F, 0F);
+        }
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(1F, 1F, 1F);
+        pose.translate(0F, 2F, 4F);
+    }
+
+    static boolean hasStock(ItemStack stack) {
+        return !XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_NO_STOCK);
+    }
+
+    static boolean hasSilencer(ItemStack stack) {
+        return SpecialWeaponRenderers.itemPath(stack).equals("gun_g3_zebra")
+                || XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER);
     }
 }

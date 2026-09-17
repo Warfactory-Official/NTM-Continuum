@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -23,4 +24,20 @@ public final class Mk108WeaponRenderer extends WeaponRenderer {
     private static Matrix4f beltPose(WeaponPose s,int index){double[]loaded={0,0,-5,0,-5,60,45,-10,0},unloaded={0,-30,-60,-45,-45,0,0,0,0};double progress=s.animated?s.bus("BELT")[0]:1;double x=.0625*22,y=.0625*-46,angle=0;float vx=0,vy=.53125F;double[]xs=new double[9],ys=new double[9],as=new double[9];for(int n=0;n<9;n++){xs[n]=x;ys[n]=y;as[n]=angle-90;double delta=unloaded[n]+(loaded[n]-unloaded[n])*progress;angle+=delta;double r=Math.toRadians(-delta),nx=vx*Math.cos(r)-vy*Math.sin(r),ny=vx*Math.sin(r)+vy*Math.cos(r);vx=(float)nx;vy=(float)ny;x+=vx;y+=vy;}double cycle=s.animated?s.bus("CYCLE")[0]:1;double xx=xs[index]+(xs[index+1]-xs[index])*cycle,yy=ys[index]+(ys[index+1]-ys[index])*cycle,aa=as[index]+(as[index+1]-as[index])*cycle;return new Matrix4f().translate((float)xx,(float)yy,0).rotateZ((float)Math.toRadians(aa));}
     private static Matrix4f staticBeltPose(int i){return beltPose(new WeaponPose(),i);}
     private static boolean grenadeVisible(WeaponPose s,int i){if(!s.animated)return false;return s.bus("GRENH"+i)[0]!=0&&s.bus("GRENH"+i)[0]>-4;}
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.375F, 1.375F, 1.375F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(0F, 0.5F, 0.25F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(2F, 2F, 2F);
+        pose.translate(1F, -2.5F, 4F);
+    }
 }

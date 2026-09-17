@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -63,5 +64,27 @@ public final class FlaregunWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.Z, s -> (float) s.bus("SHELL")[2]);
         declaration.part(obj.parts("Gun", "Hammer", "Barrel", "Flare"), BODY)
                 .visibleIf(s -> !s.animated);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1F, 1F, 1F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(-0.5F, 0F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(0.5F, 0.5F, 0.5F);
+        pose.translate(0F, 0.25F, 3F);
+    }
+
+    @Override
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        super.setupEntity(pose, stack);
+        pose.scale(0.5F, 0.5F, 0.5F);
     }
 }

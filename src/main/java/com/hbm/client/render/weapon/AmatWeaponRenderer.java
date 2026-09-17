@@ -1,5 +1,7 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -24,4 +26,32 @@ public final class AmatWeaponRenderer extends WeaponRenderer {
     @Override protected void setup(Gem.Model<WeaponPose>d){WavefrontObj o=model();Gem.Part<WeaponPose>g=d.joint().visibleIf(s->s.animated).stretch(s->.375F).slide(Gem.Axes.Z,s->(float)s.bus("RECOIL")[2]).spin(Gem.Axes.X,0,-3,-8,s->(float)s.bus("EQUIP")[0]).spin(Gem.Axes.X,0,-3,-8,s->(float)s.bus("LIFT")[0]);g.child(o.part("Gun"),body);g.child(o.part("Bolt"),body).spin(Gem.Axes.Z,0,.625F,0,s->(float)s.bus("BOLT_TURN")[2]).slide(Gem.Axes.Z,s->(float)s.bus("BOLT_PULL")[2]);g.child(o.part("Magazine"),body).slide(Gem.Axes.X,s->(float)s.bus("MAG")[0]).slide(Gem.Axes.Y,s->(float)s.bus("MAG")[1]).slide(Gem.Axes.Z,s->(float)s.bus("MAG")[2]);Gem.Part<WeaponPose>scope=g.child(o.part("Scope"),body).slide(Gem.Axes.X,s->(float)s.bus("SCOPE_THROW")[0]).slide(Gem.Axes.Y,s->(float)s.bus("SCOPE_THROW")[1]).slide(Gem.Axes.Z,s->(float)s.bus("SCOPE_THROW")[2]).spin(Gem.Axes.X,0,1.5F,-4.5F,s->(float)s.bus("SCOPE_SPIN")[0]);scope.visibleIf(AmatWeaponRenderer::scoped);Gem.Part<WeaponPose>left=g.joint().spin(Gem.Axes.Z,.3125F,-.625F,-1F,s->(float)s.bus("BIPOD")[1]);left.child(o.part("BipodHingeLeft"),body);left.joint().spin(Gem.Axes.X,.3125F,-.625F,-1F,s->(float)s.bus("BIPOD")[0]).child(o.part("BipodLeft"),body);Gem.Part<WeaponPose>right=g.joint().spin(Gem.Axes.Z,-.3125F,-.625F,-1F,s->(float)-s.bus("BIPOD")[1]);right.child(o.part("BipodHingeRight"),body);right.joint().spin(Gem.Axes.X,-.3125F,-.625F,-1F,s->(float)s.bus("BIPOD")[0]).child(o.part("BipodRight"),body);d.part(o.parts("Gun","Bolt","Magazine","BipodHingeLeft","BipodLeft","BipodHingeRight","BipodRight"),body).visibleIf(s->!s.animated);d.part(o.part("Scope"),body).visibleIf(s->!s.animated&&scoped(s));d.part(g3().part("Silencer"),SILENCER).visibleIf(s->!s.animated&&silenced(s));g.child(o.part("MuzzleBrake"),body).visibleIf(s->!silenced(s));g.child(g3().part("Silencer"),SILENCER).visibleIf(AmatWeaponRenderer::silenced);}
     private static boolean scoped(WeaponPose s){return true;}
     private static boolean silenced(WeaponPose s){return SpecialWeaponRenderers.itemPath(s.stack).equals("gun_amat_penance");}
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        if (silenced(stack)) {
+            pose.scale(0.8175F, 0.8175F, 0.8175F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(45F));
+            pose.translate(-0.5F, 0.5F, -1F);
+        } else {
+            pose.scale(0.9375F, 0.9375F, 0.9375F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(45F));
+            pose.translate(-0.5F, 0.5F, 0F);
+        }
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(1.25F, 1.25F, 1.25F);
+        pose.translate(0F, 0.5F, 6.75F);
+    }
+
+    private static boolean silenced(ItemStack stack) {
+        return SpecialWeaponRenderers.itemPath(stack).equals("gun_amat_penance")
+                || XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SILENCER);
+    }
 }

@@ -3,14 +3,28 @@
     "type": "hbm:machine_obj",
     "obj": "hbm:models/machines/crystallizer.obj",
     "texture": "hbm:textures/models/machines/crystallizer.png",
-    "scale": 1.0,
+    "scale": 0.5,
     "yaw": 0.0,
-    "exclude": ["Fluid"],
+    "exclude": [
+      "Fluid"
+    ],
     "rawLegacyTransform": true,
-    "guiTranslate": [0.0, -4.0, 0.0],
-    "guiScale": 2.0,
-    "itemTranslate": [0.0, 0.0, 0.0],
-    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "guiTranslate": [
+      0.0,
+      -4.0,
+      0.0
+    ],
+    "guiScale": 4.0,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
     "ty": 0.0
   },
   "oversized_in_gui": true

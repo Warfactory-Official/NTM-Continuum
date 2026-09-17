@@ -1,5 +1,7 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -23,4 +25,32 @@ public final class CarbineWeaponRenderer extends WeaponRenderer {
     @Override protected void setup(Gem.Model<WeaponPose>d){WavefrontObj o=model();Gem.Part<WeaponPose>g=d.joint().visibleIf(s->s.animated).stretch(s->.5F).spin(Gem.Axes.X,0,-1,-2,s->(float)s.bus("EQUIP")[0]).spin(Gem.Axes.X,0,0,-2,s->(float)s.bus("LIFT")[0]).slide(Gem.Axes.X,s->(float)s.bus("STAB")[0]).slide(Gem.Axes.Y,s->(float)s.bus("STAB")[1]).slide(Gem.Axes.Z,s->(float)s.bus("STAB")[2]).slide(Gem.Axes.Z,s->(float)s.bus("RECOIL")[2]);g.child(o.part("Gun"),BODY);g.child(o.part("Slide"),BODY).slide(Gem.Axes.Z,s->(float)s.bus("SLIDE")[2]);Gem.Part<WeaponPose>m=g.joint().slide(Gem.Axes.X,s->(float)s.bus("MAG")[0]).slide(Gem.Axes.Y,s->(float)s.bus("MAG")[1]).slide(Gem.Axes.Z,s->(float)s.bus("MAG")[2]);m.child(o.part("Magazine"),BODY);m.child(o.part("Bullet"),BODY).visibleIf(s->s.bus("BULLET")[0]!=1);d.part(o.parts("Gun","Slide","Magazine","Bullet"),BODY).visibleIf(s->!s.animated);d.part(o.part("IronSight"),BODY).visibleIf(s->!s.animated);d.part(o.part("Scope"),SCOPE).visibleIf(s->!s.animated&&scoped(s));d.part(o.part("Bayonet"),BAYONET).visibleIf(s->!s.animated&&bayonet(s));g.child(o.part("IronSight"),BODY).visibleIf(s->!scoped(s));g.child(o.part("Scope"),SCOPE).visibleIf(CarbineWeaponRenderer::scoped);g.child(o.part("Bayonet"),BAYONET).visibleIf(CarbineWeaponRenderer::bayonet);}
     private static boolean scoped(WeaponPose s){return SpecialWeaponRenderers.itemPath(s.stack).equals("gun_carbine_scoped");}
     private static boolean bayonet(WeaponPose s){return SpecialWeaponRenderers.itemPath(s.stack).equals("gun_carbine_bayonet");}
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        if (hasBayonet(stack)) {
+            pose.scale(1.1875F, 1.1875F, 1.1875F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(45F));
+            pose.translate(1.5F, 0F, 0F);
+        } else {
+            pose.scale(1.375F, 1.375F, 1.375F);
+            pose.mulPose(Axis.XP.rotationDegrees(25F));
+            pose.mulPose(Axis.YP.rotationDegrees(45F));
+            pose.translate(-0.5F, 0F, 0F);
+        }
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(1.375F, 1.375F, 1.375F);
+        pose.translate(0F, 0F, 2F);
+    }
+
+    private static boolean hasBayonet(ItemStack stack) {
+        return SpecialWeaponRenderers.itemPath(stack).equals("gun_carbine_bayonet")
+                || XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_CARBINE_BAYONET);
+    }
 }

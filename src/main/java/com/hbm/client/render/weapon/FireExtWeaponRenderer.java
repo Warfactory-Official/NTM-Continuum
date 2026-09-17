@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
@@ -36,5 +37,34 @@ public final class FireExtWeaponRenderer extends WeaponRenderer {
             case "fext_sand" -> SAND;
             default -> NORMAL;
         };
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack, float spinDegrees) {
+        pose.translate(2F, 14F, 0F);
+        pose.mulPose(Axis.YP.rotationDegrees(-90F));
+        pose.mulPose(Axis.XP.rotationDegrees(-135F));
+        pose.mulPose(Axis.YP.rotationDegrees(spinDegrees));
+        pose.scale(4.5F, 4.5F, -4.5F);
+    }
+
+    @Override
+    protected float guiSpinSpeed() {
+        return 0.1F;
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        pose.scale(0.5F, 0.5F, 0.5F);
+        pose.mulPose(Axis.ZP.rotationDegrees(20F));
+        pose.mulPose(Axis.of(new org.joml.Vector3f(0F, 1F, 1F).normalize()).rotationDegrees(-5F));
+        pose.mulPose(Axis.YP.rotationDegrees(10F));
+        pose.mulPose(Axis.XP.rotationDegrees(15F));
+        pose.translate(0.75F, -2.75F, 0.5F);
+    }
+
+    @Override
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        pose.scale(0.3F, 0.3F, 0.3F);
     }
 }

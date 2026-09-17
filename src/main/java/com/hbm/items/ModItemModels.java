@@ -304,17 +304,11 @@ public final class ModItemModels {
             "lithium", "loop_stew", "loops", "magnet_circular", "man_core", "man_explosive",
             "man_explosive8", "man_igniter", "marshmallow", "marshmallow_roasted", "med_bag",
             "med_ipecac", "med_ptsd", "med_schizophrenia", "mike_cooling_unit", "mike_core",
-            "mike_deut", "missile_anti_ballistic", "missile_assembly", "missile_bhole", "missile_burst",
-            "missile_buster", "missile_buster_strong", "missile_carrier", "missile_cluster",
-            "missile_cluster_strong", "missile_decoy", "missile_doomsday", "missile_drill",
-            "missile_emp", "missile_emp_strong", "missile_endo", "missile_exo", "missile_generic",
-            "missile_incendiary", "missile_incendiary_strong", "missile_inferno", "missile_micro",
-            "missile_n2", "missile_nuclear", "missile_nuclear_cluster", "missile_rain",
-            "missile_schrabidium", "missile_shuttle", "missile_skin_camo", "missile_skin_desert",
-            "missile_skin_flames", "missile_skin_manly_pink", "missile_skin_metal",
-            "missile_skin_orange_insulation", "missile_skin_sleek", "missile_skin_soviet_glory",
-            "missile_skin_soviet_stank", "missile_stealth", "missile_strong", "missile_taint",
-            "missile_volcano", "mold_barrel_heavy", "mold_barrel_light", "mold_base", "mold_billet",
+            "mike_deut", "missile_assembly", "missile_carrier", "missile_endo", "missile_exo",
+            "missile_skin_camo", "missile_skin_desert", "missile_skin_flames", "missile_skin_manly_pink",
+            "missile_skin_metal", "missile_skin_orange_insulation", "missile_skin_sleek",
+            "missile_skin_soviet_glory", "missile_skin_soviet_stank",
+            "mold_barrel_heavy", "mold_barrel_light", "mold_base", "mold_billet",
             "mold_blade", "mold_blades", "mold_block", "mold_c50", "mold_c9", "mold_grip", "mold_ingot",
             "mold_ingots", "mold_mechanism", "mold_nugget", "mold_pipe", "mold_pipes", "mold_plate",
             "mold_plate_cast", "mold_plates", "mold_plates_cast", "mold_receiver_heavy",
@@ -518,6 +512,7 @@ public final class ModItemModels {
 
     private static void renamed0() {
         Dejson.item(NS, "gun_b92_ammo").models(Models.generated("hbm:items/gun_b92_ammo_alt")).register();
+        Dejson.item(NS, "gun_b92_flat").models(Models.generated("hbm:items/gun_b92")).register();
         Dejson.item(NS, "arc_electrode").models(Models.generated("hbm:items/arc_electrode.graphite")).register();
         Dejson.item(NS, "arc_electrode_burnt").models(Models.generated("hbm:items/arc_electrode_burnt.graphite")).register();
         Dejson.item(NS, "arc_electrode_burnt_desh").models(Models.generated("hbm:items/arc_electrode_burnt.desh")).register();
@@ -597,7 +592,6 @@ public final class ModItemModels {
         Dejson.item(NS, "mechanism_rifle_1").models(Models.generated("hbm:items/mechanism_2")).register();
         Dejson.item(NS, "mechanism_rifle_2").models(Models.generated("hbm:items/mechanism_4")).register();
         Dejson.item(NS, "mechanism_special").models(Models.generated("hbm:items/mechanism_7")).register();
-        Dejson.item(NS, "missile_doomsday_rusted").models(Models.generated("hbm:items/missile_doomsday")).register();
     }
 
     private static void renamed1() {
@@ -1033,13 +1027,40 @@ public final class ModItemModels {
      * field is how these icons ended up most of a slot too high.
      */
     private static void machineFrames() {
-        Map<DisplaySlot, Matrix4f> frame = Pose17.frames(Pose17.Klass.ITEM_RENDER_BASE);
-        Dejson.item(NS, "machine_obj_context_base")
+        machineFrame("machine", Pose17.Klass.ITEM_RENDER_BASE);
+        machineFrame("missile", Pose17.Klass.ITEM_RENDER_MISSILE);
+        gunFrame();
+    }
+
+    /**
+     * The one base model every Sedna gun wears.
+     *
+     * <p>{@link Pose17.Klass#ITEM_RENDER_WEAPON} is the engine slot alone, so this carries none of
+     * {@code ItemRenderWeaponBase}'s setup chain and none of any weapon's own: those are calls, and they
+     * live in {@code WeaponRenderer}. What this replaces is a hand-fitted {@code display{}} that stood
+     * in for all of it — one pose shared by sixty-six guns, in place of the fifty-two the oracle has.
+     */
+    private static void gunFrame() {
+        Dejson.item(NS, "gun_obj_base")
+                .models(Models.guiLight("side", Models.display(Pose17.frames(Pose17.Klass.ITEM_RENDER_WEAPON),
+                        Models.parented("hbm:item/gun_obj_legacy", Slots.EMPTY))))
+                .register();
+    }
+
+    /**
+     * One 1.7 item-render class's frame, in the two spellings. {@code missile} is
+     * {@code ItemRenderMissileGeneric}, which is not an {@code ItemRenderBase} at all: it wraps the body in
+     * nothing, so its GUI frame is the bare 1.7 pixel slot and its hand poses end on that renderer's own
+     * equipped preamble.
+     */
+    private static void machineFrame(String name, Pose17.Klass klass) {
+        Map<DisplaySlot, Matrix4f> frame = Pose17.frames(klass);
+        Dejson.item(NS, name + "_obj_context_base")
                 .models(Models.guiLight("side", Models.display(frame,
                         Models.parented("minecraft:block/block",
                                 Slots.of("particle", "hbm:blocks/block_steel")))))
                 .register();
-        Dejson.item(NS, "machine_obj_context_legacy")
+        Dejson.item(NS, name + "_obj_context_legacy")
                 .models(Models.guiLight("side", Models.display(frame,
                         Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
                 .register();

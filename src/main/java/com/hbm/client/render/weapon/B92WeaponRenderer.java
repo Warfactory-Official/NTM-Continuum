@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.items.weapon.GunB92;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.gem.Gem;
@@ -106,5 +107,21 @@ public final class B92WeaponRenderer extends WeaponRenderer {
             case "Frame1", "Frame2", "Frame3" -> -1F; case "Back" -> -2F;
             case "BodyPlate" -> -2.5F; default -> 0F;
         };
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        pose.mulPose(Axis.ZP.rotationDegrees(-200F));
+        pose.mulPose(Axis.YP.rotationDegrees(75F));
+        pose.mulPose(Axis.XP.rotationDegrees(-30F));
+        pose.translate(0F, -0.2F, -0.5F);
+        pose.mulPose(Axis.ZP.rotationDegrees(-5F));
+        pose.scale(0.5F, 0.5F, 0.5F);
+        pose.translate(-0.3F, -0.4F, 0.15F);
+    }
+
+    @Override
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        setupThirdPerson(pose, stack);
     }
 }

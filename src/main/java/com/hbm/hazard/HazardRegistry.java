@@ -14,6 +14,7 @@ import com.hbm.hazard.type.HazardTypeHydroactive;
 import com.hbm.hazard.type.HazardTypeRadiation;
 import com.hbm.hazard.type.HazardTypeToxic;
 import com.hbm.hazard.type.IHazardType;
+import com.hbm.hazard.transformer.HazardTransformerCustom;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.hazard.transformer.HazardTransformerZirnox;
 import com.hbm.hazard.modifier.HazardModifierFuelRadiation;
@@ -30,6 +31,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Registers every item/material hazard, ported from 1.12.2's {@code HazardRegistry} (+ the radioactive
@@ -66,23 +73,62 @@ public class HazardRegistry {
             block = 10.0F, crystal = block, billet = 0.5F, rtg = billet * 3, rod = 0.5F, rod_dual = rod * 2,
             rod_quad = rod * 4, rod_rbmk = rod * 8;
 
+    /** Named hazard types, in registration order. Declaration order is the built-ins' order. */
+    private static final Map<Identifier, IHazardType> TYPES = new LinkedHashMap<>();
+    private static final Map<IHazardType, Identifier> TYPE_IDS = new IdentityHashMap<>();
+
+    /**
+     * Names a hazard type, so a hazard added from elsewhere can be found by whoever wants to extend
+     * it — a recipe, a command, another mod's registration pass. Returns the type, to be used as the
+     * initialiser of the constant that holds it.
+     *
+     * <p>Names are not part of the fold: {@link HazardSystem} keys everything off type identity, so
+     * an unnamed type still works everywhere. What a name buys is being reachable without the field.
+     */
+    public static <T extends IHazardType> T registerType(final Identifier id, final T type) {
+        final IHazardType existing = TYPES.putIfAbsent(id, type);
+        if (existing != null && existing != type) {
+            throw new IllegalStateException("Hazard type " + id + " is already registered to " + existing);
+        }
+        TYPE_IDS.putIfAbsent(type, id);
+        return type;
+    }
+
+    public static @Nullable IHazardType getType(final Identifier id) {
+        return TYPES.get(id);
+    }
+
+    public static @Nullable Identifier getTypeId(final IHazardType type) {
+        return TYPE_IDS.get(type);
+    }
+
+    /** Every named hazard type, built-in and third-party alike. */
+    public static Map<Identifier, IHazardType> types() {
+        return Collections.unmodifiableMap(TYPES);
+    }
+
+    private static Identifier hazardId(final String path) {
+        return dev.golem.core.Ids.of(Constants.MOD_ID, path);
+    }
+
     // ---- hazard types ----
-    public static final IHazardType RADIATION = new HazardTypeRadiation();
-    public static final IHazardType CONTAMINATING = new HazardTypeContaminating();
-    public static final IHazardType DIGAMMA = new HazardTypeDigamma();
-    public static final IHazardType HOT = new HazardTypeHot();
-    public static final IHazardType BLINDING = new HazardTypeBlinding();
-    public static final IHazardType ASBESTOS = new HazardTypeAsbestos();
-    public static final IHazardType COAL = new HazardTypeCoal();
-    public static final IHazardType HYDROACTIVE = new HazardTypeHydroactive();
-    public static final IHazardType EXPLOSIVE = new HazardTypeExplosive();
-    public static final IHazardType TOXIC = new HazardTypeToxic();
-    public static final IHazardType COLD = new HazardTypeCold();
+    public static final IHazardType RADIATION = registerType(hazardId("radiation"), new HazardTypeRadiation());
+    public static final IHazardType CONTAMINATING = registerType(hazardId("contaminating"), new HazardTypeContaminating());
+    public static final IHazardType DIGAMMA = registerType(hazardId("digamma"), new HazardTypeDigamma());
+    public static final IHazardType HOT = registerType(hazardId("hot"), new HazardTypeHot());
+    public static final IHazardType BLINDING = registerType(hazardId("blinding"), new HazardTypeBlinding());
+    public static final IHazardType ASBESTOS = registerType(hazardId("asbestos"), new HazardTypeAsbestos());
+    public static final IHazardType COAL = registerType(hazardId("coal"), new HazardTypeCoal());
+    public static final IHazardType HYDROACTIVE = registerType(hazardId("hydroactive"), new HazardTypeHydroactive());
+    public static final IHazardType EXPLOSIVE = registerType(hazardId("explosive"), new HazardTypeExplosive());
+    public static final IHazardType TOXIC = registerType(hazardId("toxic"), new HazardTypeToxic());
+    public static final IHazardType COLD = registerType(hazardId("cold"), new HazardTypeCold());
 
     public static void registerTrafos() {
         HazardSystem.trafos.add(new HazardTransformerRadiationNBT());
         HazardSystem.trafos.add(new HazardTransformerZirnox());
-        // Deferred: ForgeFluid / RadiationContainer / RadiationME / PostCustom transformers
+        HazardSystem.trafos.add(HazardTransformerCustom.INSTANCE);
+        // Deferred: ForgeFluid / RadiationContainer / RadiationME transformers
     }
 
     public static void registerItems() {

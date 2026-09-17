@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -243,20 +244,45 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                 .rotate(Gem.Axes.Y, 90F)
                 .rotate(Gem.Axes.X, 25F)
                 .rotate(Gem.Axes.Y, 45F)
-                .translate(0.5F, 0F, 0F);
+                .translate(0F, 1F, 0F);
         left.child(obj.part("Gun"), body);
         left.child(obj.parts(parts), body);
 
         Gem.Part<WeaponPose> right = declaration.joint()
                 .visibleIf(state -> !state.animated)
                 .translate(0F, 0F, 5F)
-                .rotate(Gem.Axes.Z, -225F)
-                .rotate(Gem.Axes.Y, 90F)
+                .rotate(Gem.Axes.Z, 225F)
+                .rotate(Gem.Axes.Y, -90F)
                 .rotate(Gem.Axes.X, -90F)
                 .rotate(Gem.Axes.X, 25F)
                 .rotate(Gem.Axes.Y, -45F)
-                .translate(-0.5F, 0F, 0F);
+                .translate(0F, 1F, 0F);
         right.child(obj.part("GunMirror"), body);
         right.child(obj.parts(parts), body);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        if (variant == Variant.UZI_AKIMBO) {
+            pose.scale(1F, 1F, -1F);
+            pose.translate(8F, 8F, 0F);
+            pose.scale(1.5F, 1.5F, 1.5F);
+            return;
+        }
+        super.setupInv(pose, stack);
+        pose.scale(1.5F, 1.5F, 1.5F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        switch (variant) {
+            case GREASEGUN -> pose.translate(-0.5F, 2F, 0F);
+            case LAG -> pose.translate(2.5F, 1F, 0F);
+            default -> pose.translate(0F, 1F, 0F);
+        }
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.translate(0F, 1F, variant == Variant.GREASEGUN ? 3F : 1F);
     }
 }

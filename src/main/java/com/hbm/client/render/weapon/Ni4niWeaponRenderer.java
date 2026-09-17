@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.impl.ItemGunNI4NI;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
@@ -123,5 +124,21 @@ public final class Ni4niWeaponRenderer extends WeaponRenderer {
     private static int coinColor(WeaponPose state, int readyAt) {
         return ItemGunNI4NI.getCoinCount(state.stack) > readyAt
                 ? 0xFFFFFF00 : 0xFF00FF00;
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(2.5F, 2.5F, 2.5F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(0F, 0F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.translate(0F, 0.25F, 3F);
+        pose.scale(1.5F, 1.5F, 1.5F);
     }
 }

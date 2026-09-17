@@ -24,5 +24,6 @@ public final class Hazards {
         com.hbm.util.DamageResistanceHandler.init();  // threshold/resistance profiles + damage event seam
         com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
         com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables(); // missile item -> entity table
+        HazardSystem.install();                       // carried hazards, resolved per slot edit
     }
 }
