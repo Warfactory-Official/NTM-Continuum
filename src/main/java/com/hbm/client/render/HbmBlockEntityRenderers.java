@@ -180,7 +180,7 @@ public final class HbmBlockEntityRenderers {
 
         regCustom(sink, ModRBMKBlockEntities.RBMK_TERMINAL.get(), RBMKTerminalRenderer::new);
         regCustom(sink, ModBlockEntities.CARGO_ELEVATOR.get(), CargoElevatorRenderer::new);
-        regCustom(sink, ModBlockEntities.BARREL.get(), BarrelRenderer::new);
+        regGem(sink, ModBlockEntities.BARREL.get(), BarrelRenderer::new);
         regCustom(sink, ModBlockEntities.MACHINE_CHUNGUS.get(), ctx -> new ChungusRenderer());
         regCustom(sink, ModBlockEntities.MACHINE_SATLINK.get(), ctx -> new SatLinkRenderer());
         regCustom(sink, ModBlockEntities.PILE_CONTROL.get(), ctx -> new PileDeviceRenderers.Control());
