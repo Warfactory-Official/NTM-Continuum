@@ -1,14 +1,28 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "hbm:item/machine_obj_base",
-    "model": {
-      "type": "hbm:machine_obj",
-      "obj": "hbm:models/particleaccelerator/rfc.obj",
-      "texture": "hbm:textures/models/particleaccelerator/rfc.png",
-      "scale": 0.5,
-      "yaw": 90,
-      "ty": -1.0
-    }
-  }
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/particleaccelerator/rfc.obj",
+    "texture": "hbm:textures/models/particleaccelerator/rfc.png",
+    "scale": 0.5,
+    "yaw": 90.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [
+      0.0,
+      -1.0,
+      0.0
+    ],
+    "guiScale": 4.0,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
 }

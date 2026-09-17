@@ -65,7 +65,11 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
     }
 
     /** One additional ordered OBJ/texture pass; an omitted OBJ reuses the primary OBJ. */
-    public record Pass(Optional<Identifier> obj, Identifier texture, List<String> parts, List<Float> translate) {}
+    public record Pass(Optional<Identifier> obj, Identifier texture, List<String> parts, List<Float> translate,
+                       List<Step> steps) {}
+
+    /** One step of a pass's own transform; exactly one of the two is present. */
+    public record Step(List<Float> rotate, List<Float> translate) {}
 
     /** The data-driven, codec-backed factory for this renderer (one entry per machine in the item JSON). */
     public record Unbaked(Identifier obj, Identifier texture, boolean noCull, float scale, boolean rawLegacyTransform,
@@ -134,11 +138,16 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                    Codec.STRING.listOf().optionalFieldOf("parts", List.of());
            private static final MapCodec<List<Float>> TRANSLATE =
                    Codec.FLOAT.listOf().optionalFieldOf("translate", List.of());
+          private static final Codec<Step> STEP_CODEC = RecordCodecBuilder.create(i -> i.group(
+                  Codec.FLOAT.listOf().optionalFieldOf("rotate", List.of()).forGetter(Step::rotate),
+                  Codec.FLOAT.listOf().optionalFieldOf("translate", List.of()).forGetter(Step::translate)
+          ).apply(i, Step::new));
           private static final Codec<Pass> PASS_CODEC = RecordCodecBuilder.create(i -> i.group(
                   Identifier.CODEC.optionalFieldOf("obj").forGetter(Pass::obj),
                   Identifier.CODEC.fieldOf("texture").forGetter(Pass::texture),
                   Codec.STRING.listOf().optionalFieldOf("parts", List.of()).forGetter(Pass::parts),
-                  Codec.FLOAT.listOf().optionalFieldOf("translate", List.of()).forGetter(Pass::translate)
+                  Codec.FLOAT.listOf().optionalFieldOf("translate", List.of()).forGetter(Pass::translate),
+                  STEP_CODEC.listOf().optionalFieldOf("steps", List.of()).forGetter(Pass::steps)
           ).apply(i, Pass::new));
           private static final MapCodec<List<Pass>> PASSES =
                   PASS_CODEC.listOf().optionalFieldOf("passes", List.of());
@@ -283,8 +292,15 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                   Identifier passObj = pass.obj().orElse(obj);
                   Vector3f translation = vector(pass.translate());
                   WavefrontObj passModel = obj.equals(passObj) ? loaded : WavefrontObj.load(passObj);
+                  List<MachineItemModel.PassStep> steps = new java.util.ArrayList<>();
+                  for (Step step : pass.steps()) {
+                      boolean rotate = step.rotate().size() == 3;
+                      steps.add(new MachineItemModel.PassStep(rotate,
+                              vector(rotate ? step.rotate() : step.translate())));
+                  }
                   modelPasses.add(new MachineItemModel.ModelPass(passModel,
-                          cutout(pass.texture(), noCull), List.copyOf(pass.parts()), translation));
+                          cutout(pass.texture(), noCull), List.copyOf(pass.parts()), translation,
+                          List.copyOf(steps)));
               }
               Vector3f primaryTranslation = vector(translate);
               return new MachineItemModel(loaded, cutout(texture, noCull),

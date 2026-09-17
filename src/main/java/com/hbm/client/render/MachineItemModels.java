@@ -290,7 +290,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                  List<Float> translate = floats(pass, "translate");
                  WavefrontObj passModel = objId.equals(passObj) ? obj : WavefrontObj.load(passObj);
                  modelPasses.add(new MachineItemModel.ModelPass(passModel,
-                         cutout(passTexture, noCull), strings(pass, "parts"), vector(translate)));
+                         cutout(passTexture, noCull), strings(pass, "parts"), vector(translate),
+                         passSteps(pass)));
              }
          }
 
@@ -366,6 +367,22 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                     vector(rotation), vector(translation), f(transform, "scale", 1F)));
         }
         return Map.copyOf(out);
+    }
+
+    // A pass's own ordered transform: [{"rotate": [..]}, {"translate": [..]}, ...].
+    private static List<MachineItemModel.PassStep> passSteps(JsonObject pass) {
+        JsonElement value = pass.get("steps");
+        if (value == null || !value.isJsonArray()) return List.of();
+        List<MachineItemModel.PassStep> steps = new java.util.ArrayList<>();
+        for (JsonElement element : value.getAsJsonArray()) {
+            if (!element.isJsonObject()) continue;
+            JsonObject step = element.getAsJsonObject();
+            if (step.has("rotate")) steps.add(new MachineItemModel.PassStep(true, vector(floats(step, "rotate"))));
+            else if (step.has("translate")) {
+                steps.add(new MachineItemModel.PassStep(false, vector(floats(step, "translate"))));
+            }
+        }
+        return List.copyOf(steps);
     }
 
     private static Vector3f vector(List<Float> values) {

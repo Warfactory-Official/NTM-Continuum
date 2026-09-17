@@ -1,1 +1,59 @@
-{ "model": { "type": "minecraft:model", "model": "hbm:block/cargo_elevator" } }
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/elevator.obj",
+    "texture": "hbm:textures/models/machines/elevator.png",
+    "scale": 1.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [
+      0.0,
+      -2.75,
+      0.0
+    ],
+    "guiScale": 3.25,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ty": 0.0,
+    "parts": [
+      "Base",
+      "Piston",
+      "Guides"
+    ],
+    "passes": [
+      {
+        "texture": "hbm:textures/models/machines/elevator.png",
+        "parts": [
+          "Piston",
+          "Guides",
+          "Platform"
+        ],
+        "translate": [
+          0.0,
+          1.0,
+          0.0
+        ]
+      },
+      {
+        "texture": "hbm:textures/models/machines/elevator.png",
+        "parts": [
+          "Guides"
+        ],
+        "translate": [
+          0.0,
+          2.0,
+          0.0
+        ]
+      }
+    ]
+  },
+  "oversized_in_gui": true
+}

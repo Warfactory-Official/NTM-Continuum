@@ -1,6 +1,14 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "hbm:block/barrel_iron"
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/barrel_iron.obj",
+      "texture": "hbm:textures/blocks/barrel_iron.png",
+      "scale": 1.0,
+      "yaw": 0,
+      "ty": -0.5
+    }
   }
 }

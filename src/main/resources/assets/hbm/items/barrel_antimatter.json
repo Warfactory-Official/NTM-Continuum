@@ -1,6 +1,14 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "hbm:block/barrel_antimatter"
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/barrel_antimatter.obj",
+      "texture": "hbm:textures/blocks/barrel_antimatter.png",
+      "scale": 1.0,
+      "yaw": 0,
+      "ty": -0.5
+    }
   }
 }

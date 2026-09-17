@@ -4,10 +4,27 @@
     "property": "hbm:item_variant",
     "fallback": {
       "type": "hbm:machine_obj",
-      "obj": "hbm:models/pile/pile_loader.obj",
-      "texture": "hbm:textures/models/pile/pile_loader.png",
-      "scale": 1.1,
-      "yaw": 90,
+      "obj": "hbm:models/pile/pile_control.obj",
+      "texture": "hbm:textures/models/pile/pile_control.png",
+      "scale": 2.0,
+      "yaw": 0.0,
+      "rawLegacyTransform": true,
+      "guiTranslate": [
+        0.0,
+        -3.5,
+        0.0
+      ],
+      "guiScale": 5.0,
+      "itemTranslate": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "itemPreTranslate": [
+        0.0,
+        0.0,
+        0.0
+      ],
       "ty": 0.0
     },
     "cases": [
@@ -15,10 +32,27 @@
         "when": "0",
         "model": {
           "type": "hbm:machine_obj",
-          "obj": "hbm:models/pile/pile_loader.obj",
-          "texture": "hbm:textures/models/pile/pile_loader.png",
-          "scale": 1.1,
-          "yaw": 90,
+          "obj": "hbm:models/pile/pile_control.obj",
+          "texture": "hbm:textures/models/pile/pile_control.png",
+          "scale": 2.0,
+          "yaw": 0.0,
+          "rawLegacyTransform": true,
+          "guiTranslate": [
+            0.0,
+            -3.5,
+            0.0
+          ],
+          "guiScale": 5.0,
+          "itemTranslate": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "itemPreTranslate": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "ty": 0.0
         }
       },
@@ -26,10 +60,27 @@
         "when": "1",
         "model": {
           "type": "hbm:machine_obj",
-          "obj": "hbm:models/pile/pile_vent.obj",
-          "texture": "hbm:textures/models/pile/pile_vent.png",
-          "scale": 1.1,
-          "yaw": 90,
+          "obj": "hbm:models/pile/pile_loader.obj",
+          "texture": "hbm:textures/models/pile/pile_loader.png",
+          "scale": 2.0,
+          "yaw": 0.0,
+          "rawLegacyTransform": true,
+          "guiTranslate": [
+            0.0,
+            -3.5,
+            0.0
+          ],
+          "guiScale": 5.0,
+          "itemTranslate": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "itemPreTranslate": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "ty": 0.0
         }
       },
@@ -37,13 +88,31 @@
         "when": "2",
         "model": {
           "type": "hbm:machine_obj",
-          "obj": "hbm:models/pile/pile_control.obj",
-          "texture": "hbm:textures/models/pile/pile_control.png",
-          "scale": 1.1,
-          "yaw": 90,
+          "obj": "hbm:models/pile/pile_vent.obj",
+          "texture": "hbm:textures/models/pile/pile_vent.png",
+          "scale": 2.0,
+          "yaw": 0.0,
+          "rawLegacyTransform": true,
+          "guiTranslate": [
+            0.0,
+            -3.5,
+            0.0
+          ],
+          "guiScale": 5.0,
+          "itemTranslate": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "itemPreTranslate": [
+            0.0,
+            0.0,
+            0.0
+          ],
           "ty": 0.0
         }
       }
     ]
-  }
+  },
+  "oversized_in_gui": true
 }

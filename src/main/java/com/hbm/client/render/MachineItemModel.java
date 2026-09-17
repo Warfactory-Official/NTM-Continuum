@@ -113,7 +113,22 @@ public final class MachineItemModel {
     }
 
     /** One ordered OBJ pass, optionally restricted to named parts and locally translated. */
-    public record ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation) {}
+    public record ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation,
+                           List<PassStep> steps) {
+
+        public ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation) {
+            this(model, surface, parts, translation, List.of());
+        }
+    }
+
+    /**
+     * One step of a pass's own transform, in declaration order.
+     *
+     * <p>1.7's item renderers never pop between the pieces they draw, so a later piece inherits every
+     * turn the ones before it made. A declared pass is a sibling instead, which is why a pass that is not
+     * the first sometimes has to state a whole chain rather than one offset.
+     */
+    public record PassStep(boolean rotate, Vector3f value) {}
 
     public MachineItemModel(WavefrontObj model, Surface surface, float scale, boolean rawLegacyTransform,
                             boolean blockFramed,
@@ -370,12 +385,18 @@ public final class MachineItemModel {
         }
         pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
         for (ModelPass extra : passes) {
-            pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude, extra.translation());
+            pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude, extra.translation(),
+                    extra.steps());
         }
     }
 
     private void pass(ItemGem.Builder builder, WavefrontObj source, Surface skin, List<String> parts,
                       Set<String> excluded, Vector3f translation) {
+        pass(builder, source, skin, parts, excluded, translation, List.of());
+    }
+
+    private void pass(ItemGem.Builder builder, WavefrontObj source, Surface skin, List<String> parts,
+                      Set<String> excluded, Vector3f translation, List<PassStep> steps) {
         Geometry geometry;
         float[][] box;
         if (parts.isEmpty()) {
@@ -390,6 +411,16 @@ public final class MachineItemModel {
         Gem.Part<ItemPose> declared = builder.part(geometry, skin, box);
         if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
             declared.translate(translation.x, translation.y, translation.z);
+        }
+        for (PassStep step : steps) {
+            Vector3f value = step.value();
+            if (!step.rotate()) {
+                declared.translate(value.x, value.y, value.z);
+                continue;
+            }
+            if (value.x != 0F) declared.rotate(Gem.Axes.X, value.x);
+            if (value.y != 0F) declared.rotate(Gem.Axes.Y, value.y);
+            if (value.z != 0F) declared.rotate(Gem.Axes.Z, value.z);
         }
     }
 
