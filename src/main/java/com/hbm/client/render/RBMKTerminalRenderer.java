@@ -9,16 +9,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
-import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.phys.Vec3;
 
@@ -29,19 +28,26 @@ import net.minecraft.world.phys.Vec3;
  * the open screen rather than synced — the server never sees a command until it is submitted. Lines are
  * clipped to the panel width character by character, and the whole readout turns amber while a repeat
  * broadcast is running, which is the only cue that the terminal is transmitting.
+ *
+ * <p>The casing is declared; the readout is text, which is not geometry and has no mesh to instance, so
+ * it restates the casing's transform and draws through the vanilla pass.
  */
-public final class RBMKTerminalRenderer
-        implements CompatBER<BlockEntityRBMKTerminal, RBMKTerminalRenderer.State> {
+public final class RBMKTerminalRenderer extends GemBER<BlockEntityRBMKTerminal, RBMKTerminalRenderer.State> {
 
     private static final WavefrontObj MODEL = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/terminal.obj"));
-    private static final Identifier TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/network/terminal.png");
+    private static final Surface SURFACE =
+            Surface.solid(Constants.MOD_ID + ":textures/models/network/terminal.png");
     private static final int LINES = BlockEntityRBMKTerminal.HISTORY + 1;
     private static final int MAX_WIDTH = 172;
 
-    private final Font font;
+    private final Font font = Minecraft.getInstance().font;
 
-    public RBMKTerminalRenderer(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context context) {
-        font = Minecraft.getInstance().font;
+    @Override
+    protected void setup(Gem.Model<State> declaration) {
+        declaration.part(MODEL.all(), SURFACE)
+                .translate(.5F, 0F, .5F)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(.25F, 0F, 0F);
     }
 
     @Override
@@ -79,16 +85,13 @@ public final class RBMKTerminalRenderer
     }
 
     @Override
-    public void submit(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
+    protected void submitUndeclared(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         pose.pushPose();
         pose.translate(.5D, 0D, .5D);
         pose.mulPose(Axis.YP.rotationDegrees(state.yaw));
         pose.translate(.25D, 0D, 0D);
-
-        sink.submitCustomGeometry(pose, CompatRenderTypes.entitySolid(TEXTURE),
-                (last, buffer) -> MODEL.renderAll(last, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-
         pose.translate(.0635D, .125D, .0625D * 5.5D);
+
         float scale = 1F / 250F;
         for (int i = 0; i < LINES; i++) {
             pose.translate(0D, 10D * scale, 0D);

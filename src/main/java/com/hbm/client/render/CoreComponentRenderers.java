@@ -12,11 +12,10 @@ import com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -34,22 +33,33 @@ public final class CoreComponentRenderers {
     private CoreComponentRenderers() {}
 
     /** Shared body-placement and long-range visibility; subclasses add their own beam. */
-    public abstract static class Base<T extends BlockEntity> implements CompatBER<T, CoreComponentRenderState> {
+    public abstract static class Base<T extends BlockEntity> extends GemBER<T, CoreComponentRenderState> {
 
         private final WavefrontObj model;
-        private final RenderType renderType;
+        private final Surface surface;
 
         protected Base(String model, String texture) {
             this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + model + ".obj"));
-            this.renderType = CompatRenderTypes.entityCutout(
-                    dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/" + texture + ".png"));
+            this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/" + texture + ".png");
         }
 
         @Override public CoreComponentRenderState createRenderState() { return new CoreComponentRenderState(); }
-        @Override public boolean shouldRenderOffScreen() { return true; }
-        @Override public boolean shouldRender(T be, Vec3 cameraPosition) { return true; }
-        /** The emitter's beam reaches fifty blocks, so the machine has to stay visible from well outside it. */
-        @Override public int getViewDistance() { return 256; }
+
+        /**
+         * The emitter's beam reaches fifty blocks, so the machine has to stay visible from well outside
+         * its own cell.
+         */
+        @Override
+        protected void setup(Gem.Model<CoreComponentRenderState> declaration) {
+            declaration.offScreen().viewDistance(256)
+                    .part(model.all(), surface)
+                    .translate(0.5F, 0F, 0.5F)
+                    .rotate(Gem.Axes.Y, 90F)
+                    .slide(Gem.Axes.Y, state -> aimUp(state.facing))
+                    .slide(Gem.Axes.Z, state -> aimForward(state.facing))
+                    .angle(Gem.Axes.X, state -> aimPitch(state.facing))
+                    .angle(Gem.Axes.Y, state -> aimYaw(state.facing));
+        }
 
         @Override
         public void extract(T be, CoreComponentRenderState state, float partialTicks, Vec3 cameraPosition) {
@@ -61,20 +71,14 @@ public final class CoreComponentRenderers {
 
         protected abstract void extractBeam(T be, CoreComponentRenderState state);
 
+        /** A beam is sized to where it lands and has no resident mesh, so it is drawn rather than declared. */
         @Override
-        public void submit(CoreComponentRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-            int light = s.lightCoords;
+        protected void submitUndeclared(CoreComponentRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
+            if (s.beam <= 0) return;
             ps.pushPose();
             aim(ps, s.facing);
-
-            col.submitCustomGeometry(ps, renderType,
-                    (pose, buffer) -> model.renderAll(pose, buffer, light, OverlayTexture.NO_OVERLAY));
-
-            if (s.beam > 0) {
-                ps.translate(0F, 0.5F, 0F);
-                submitBeam(s, ps, col);
-            }
-
+            ps.translate(0F, 0.5F, 0F);
+            submitBeam(s, ps, col);
             ps.popPose();
         }
 
@@ -82,25 +86,36 @@ public final class CoreComponentRenderers {
 
         /**
          * Upstream's placement, transliterated: a quarter turn about Y, then the facing's own turn, with
-         * the two vertical cases pushed clear of the cell before being tipped over.
+         * the two vertical cases pushed clear of the cell before being tipped over. The declaration above
+         * states the same four steps as channels, which is why they are spelled apart from it.
          */
         private static void aim(PoseStack ps, Direction facing) {
             ps.translate(0.5F, 0F, 0.5F);
             ps.mulPose(Axis.YP.rotationDegrees(90F));
-            switch (facing) {
-                case DOWN -> {
-                    ps.translate(0F, 0.5F, -0.5F);
-                    ps.mulPose(Axis.XP.rotationDegrees(90F));
-                }
-                case UP -> {
-                    ps.translate(0F, 0.5F, 0.5F);
-                    ps.mulPose(Axis.XP.rotationDegrees(-90F));
-                }
-                case NORTH -> ps.mulPose(Axis.YP.rotationDegrees(90F));
-                case WEST -> ps.mulPose(Axis.YP.rotationDegrees(180F));
-                case SOUTH -> ps.mulPose(Axis.YP.rotationDegrees(270F));
-                default -> { }
-            }
+            ps.translate(0F, aimUp(facing), aimForward(facing));
+            ps.mulPose(Axis.XP.rotationDegrees(aimPitch(facing)));
+            ps.mulPose(Axis.YP.rotationDegrees(aimYaw(facing)));
+        }
+
+        private static float aimUp(Direction facing) {
+            return facing.getAxis().isVertical() ? 0.5F : 0F;
+        }
+
+        private static float aimForward(Direction facing) {
+            return switch (facing) { case DOWN -> -0.5F; case UP -> 0.5F; default -> 0F; };
+        }
+
+        private static float aimPitch(Direction facing) {
+            return switch (facing) { case DOWN -> 90F; case UP -> -90F; default -> 0F; };
+        }
+
+        private static float aimYaw(Direction facing) {
+            return switch (facing) {
+                case NORTH -> 90F;
+                case WEST -> 180F;
+                case SOUTH -> 270F;
+                default -> 0F;
+            };
         }
     }
 

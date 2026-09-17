@@ -7,14 +7,9 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.pile.TileEntityPileControl;
 import com.hbm.tileentity.machine.pile.TileEntityPileLoader;
 import com.hbm.tileentity.machine.pile.TileEntityPileVent;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -25,22 +20,27 @@ public final class PileDeviceRenderers {
     private PileDeviceRenderers() {}
 
     /**
-     * Shared chrome: load the model, face the device the way its meta says, and draw. The devices sit
-     * flush against a pile face, so the only orientation that matters is which of the four horizontals
-     * the low two bits of the meta name.
+     * Shared chrome: load the model, face the device the way its meta says, and declare it. The devices
+     * sit flush against a pile face, so the only orientation that matters is which of the four
+     * horizontals the low two bits of the meta name.
      */
-    private abstract static class Base<T extends BlockEntity> implements CompatBER<T, PileDeviceRenderState> {
+    private abstract static class Base<T extends BlockEntity> extends GemBER<T, PileDeviceRenderState> {
 
-        private final WavefrontObj model;
-        private final RenderType renderType;
+        protected final WavefrontObj model;
+        protected final Surface surface;
 
         Base(String name) {
             this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/pile/" + name + ".obj"));
-            this.renderType = CompatRenderTypes.entityCutout(
-                    dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/pile/" + name + ".png"));
+            this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/pile/" + name + ".png");
         }
 
         @Override public PileDeviceRenderState createRenderState() { return new PileDeviceRenderState(); }
+
+        protected Gem.Part<PileDeviceRenderState> device(Gem.Model<PileDeviceRenderState> declaration) {
+            return declaration.joint()
+                    .translate(0.5F, 0F, 0.5F)
+                    .angle(Gem.Axes.Y, state -> state.yaw);
+        }
 
         protected void extractFacing(BlockEntity be, PileDeviceRenderState state) {
             BlockState blockState = be.getBlockState();
@@ -52,11 +52,6 @@ public final class PileDeviceRenderers {
                 default -> 0F;
             };
         }
-
-        protected void part(SubmitSink sink, PoseStack poseStack, String name, int light) {
-            sink.submitCustomGeometry(poseStack, renderType,
-                    (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
-        }
     }
 
     /** The control rod: the whole rod slides up out of its channel as it is withdrawn. */
@@ -65,20 +60,17 @@ public final class PileDeviceRenderers {
         public Control() { super("pile_control"); }
 
         @Override
-        public void extract(TileEntityPileControl be, PileDeviceRenderState state, float partialTicks, Vec3 camera) {
-            extractFacing(be, state);
-            state.motion = (float) (be.lastExtraction + (be.extraction - be.lastExtraction) * partialTicks);
+        protected void setup(Gem.Model<PileDeviceRenderState> declaration) {
+            Gem.Part<PileDeviceRenderState> device = device(declaration);
+            device.child(model.part("Base"), surface);
+            device.child(model.part("Rod"), surface)
+                    .slide(Gem.Axes.Y, state -> state.motion * 0.75F);
         }
 
         @Override
-        public void submit(PileDeviceRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-            poseStack.pushPose();
-            poseStack.translate(0.5F, 0F, 0.5F);
-            poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-            part(sink, poseStack, "Base", state.lightCoords);
-            poseStack.translate(0F, state.motion * 0.75F, 0F);
-            part(sink, poseStack, "Rod", state.lightCoords);
-            poseStack.popPose();
+        public void extract(TileEntityPileControl be, PileDeviceRenderState state, float partialTicks, Vec3 camera) {
+            extractFacing(be, state);
+            state.motion = (float) (be.lastExtraction + (be.extraction - be.lastExtraction) * partialTicks);
         }
     }
 
@@ -88,30 +80,22 @@ public final class PileDeviceRenderers {
         public Loader() { super("pile_loader"); }
 
         @Override
+        protected void setup(Gem.Model<PileDeviceRenderState> declaration) {
+            Gem.Part<PileDeviceRenderState> device = device(declaration);
+            device.child(model.part("Loader"), surface);
+            device.child(model.part("Lever"), surface)
+                    .spin(Gem.Axes.Z, -0.1875F, 0.5F, 0F, state -> state.motion * 90F);
+
+            Gem.Part<PileDeviceRenderState> slider = device.child(model.part("Slider"), surface)
+                    .slide(Gem.Axes.X, state -> state.motion * -0.5F);
+            slider.child(model.part("Rod"), surface).visibleIf(state -> state.loaded);
+        }
+
+        @Override
         public void extract(TileEntityPileLoader be, PileDeviceRenderState state, float partialTicks, Vec3 camera) {
             extractFacing(be, state);
             state.motion = (float) (be.lastTravel + (be.travel - be.lastTravel) * partialTicks);
             state.loaded = !be.syncStack.isEmpty();
-        }
-
-        @Override
-        public void submit(PileDeviceRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-            poseStack.pushPose();
-            poseStack.translate(0.5F, 0F, 0.5F);
-            poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-            part(sink, poseStack, "Loader", state.lightCoords);
-
-            poseStack.pushPose();
-            poseStack.translate(-0.1875F, 0.5F, 0F);
-            poseStack.mulPose(Axis.ZP.rotationDegrees(state.motion * 90F));
-            poseStack.translate(0.1875F, -0.5F, 0F);
-            part(sink, poseStack, "Lever", state.lightCoords);
-            poseStack.popPose();
-
-            poseStack.translate(state.motion * -0.5F, 0F, 0F);
-            part(sink, poseStack, "Slider", state.lightCoords);
-            if (state.loaded) part(sink, poseStack, "Rod", state.lightCoords);
-            poseStack.popPose();
         }
     }
 
@@ -121,20 +105,17 @@ public final class PileDeviceRenderers {
         public Vent() { super("pile_vent"); }
 
         @Override
-        public void extract(TileEntityPileVent be, PileDeviceRenderState state, float partialTicks, Vec3 camera) {
-            extractFacing(be, state);
-            state.motion = be.lastFan + (be.fan - be.lastFan) * partialTicks;
+        protected void setup(Gem.Model<PileDeviceRenderState> declaration) {
+            Gem.Part<PileDeviceRenderState> device = device(declaration);
+            device.child(model.part("Pipe"), surface);
+            device.child(model.part("Fan"), surface)
+                    .angle(Gem.Axes.Y, state -> state.motion);
         }
 
         @Override
-        public void submit(PileDeviceRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-            poseStack.pushPose();
-            poseStack.translate(0.5F, 0F, 0.5F);
-            poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-            part(sink, poseStack, "Pipe", state.lightCoords);
-            poseStack.mulPose(Axis.YP.rotationDegrees(state.motion));
-            part(sink, poseStack, "Fan", state.lightCoords);
-            poseStack.popPose();
+        public void extract(TileEntityPileVent be, PileDeviceRenderState state, float partialTicks, Vec3 camera) {
+            extractFacing(be, state);
+            state.motion = be.lastFan + (be.fan - be.lastFan) * partialTicks;
         }
     }
 }

@@ -4,41 +4,46 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityChungus;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /** Animated renderer for the Leviathan turbine, matching the old three-part TESR. */
-public final class ChungusRenderer implements CompatBER<TileEntityChungus, ChungusRenderState> {
+public final class ChungusRenderer extends GemBER<TileEntityChungus, ChungusRenderState> {
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/chungus.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/chungus.png");
 
-    public ChungusRenderer() {
-        model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/chungus.obj"));
-        renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID,
-                "textures/models/machines/chungus.png"));
+    @Override
+    protected void setup(Gem.Model<ChungusRenderState> declaration) {
+        Gem.Part<ChungusRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(0F, 0F, -3F);
+
+        machine.child(model.part("Body"), surface);
+        machine.child(model.part("Lever"), surface)
+                .spin(Gem.Axes.X, 0F, 0F, 4.5F, state -> state.lever);
+        machine.child(model.part("Blades"), surface)
+                .spin(Gem.Axes.Z, 0F, 2.5F, 0F, state -> -state.rotor);
     }
 
-    @Override public ChungusRenderState createRenderState() { return new ChungusRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityChungus be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    public ChungusRenderState createRenderState() {
+        return new ChungusRenderState();
+    }
 
     @Override
     public void extract(TileEntityChungus be, ChungusRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState blockState = be.getBlockState();
-                state.yaw = 180F + switch (MachineCore.facing(blockState)) {
+        state.yaw = 180F + switch (MachineCore.facing(blockState)) {
             case WEST -> 90F;
             case SOUTH -> 180F;
             case EAST -> 270F;
@@ -54,32 +59,5 @@ public final class ChungusRenderer implements CompatBER<TileEntityChungus, Chung
         if (type == Fluids.SUPERHOTSTEAM) return 2;
         if (type == Fluids.ULTRAHOTSTEAM) return 3;
         return 0;
-    }
-
-    @Override
-    public void submit(ChungusRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.translate(0F, 0F, -3F);
-        part(sink, poseStack, "Body", state.lightCoords);
-
-        poseStack.pushPose();
-        poseStack.translate(0F, 0F, 4.5F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(state.lever));
-        poseStack.translate(0F, 0F, -4.5F);
-        part(sink, poseStack, "Lever", state.lightCoords);
-        poseStack.popPose();
-
-        poseStack.translate(0F, 2.5F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-state.rotor));
-        poseStack.translate(0F, -2.5F, 0F);
-        part(sink, poseStack, "Blades", state.lightCoords);
-        poseStack.popPose();
-    }
-
-    private void part(SubmitSink sink, PoseStack poseStack, String name, int light) {
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 }

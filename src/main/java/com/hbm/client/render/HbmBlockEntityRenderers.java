@@ -178,19 +178,19 @@ public final class HbmBlockEntityRenderers {
         regCustom(sink, ModBlockEntities.STRUCT_TORUS_CORE.get(),
                 ctx -> new StructPreviewRenderer<com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct>());
 
-        regCustom(sink, ModRBMKBlockEntities.RBMK_TERMINAL.get(), RBMKTerminalRenderer::new);
-        regCustom(sink, ModBlockEntities.CARGO_ELEVATOR.get(), CargoElevatorRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_TERMINAL.get(), RBMKTerminalRenderer::new);
+        regGem(sink, ModBlockEntities.CARGO_ELEVATOR.get(), CargoElevatorRenderer::new);
         regGem(sink, ModBlockEntities.BARREL.get(), BarrelRenderer::new);
-        regCustom(sink, ModBlockEntities.MACHINE_CHUNGUS.get(), ctx -> new ChungusRenderer());
-        regCustom(sink, ModBlockEntities.MACHINE_SATLINK.get(), ctx -> new SatLinkRenderer());
-        regCustom(sink, ModBlockEntities.PILE_CONTROL.get(), ctx -> new PileDeviceRenderers.Control());
-        regCustom(sink, ModBlockEntities.PILE_LOADER.get(), ctx -> new PileDeviceRenderers.Loader());
-        regCustom(sink, ModBlockEntities.PILE_VENT.get(), ctx -> new PileDeviceRenderers.Vent());
+        regGem(sink, ModBlockEntities.MACHINE_CHUNGUS.get(), ChungusRenderer::new);
+        regGem(sink, ModBlockEntities.MACHINE_SATLINK.get(), SatLinkRenderer::new);
+        regGem(sink, ModBlockEntities.PILE_CONTROL.get(), PileDeviceRenderers.Control::new);
+        regGem(sink, ModBlockEntities.PILE_LOADER.get(), PileDeviceRenderers.Loader::new);
+        regGem(sink, ModBlockEntities.PILE_VENT.get(), PileDeviceRenderers.Vent::new);
 
-        regCustom(sink, ModBlockEntities.DFC_EMITTER.get(), ctx -> new CoreComponentRenderers.Emitter());
-        regCustom(sink, ModBlockEntities.DFC_RECEIVER.get(), ctx -> new CoreComponentRenderers.Receiver());
-        regCustom(sink, ModBlockEntities.DFC_INJECTOR.get(), ctx -> new CoreComponentRenderers.Injector());
-        regCustom(sink, ModBlockEntities.DFC_STABILIZER.get(), ctx -> new CoreComponentRenderers.Stabilizer());
+        regGem(sink, ModBlockEntities.DFC_EMITTER.get(), CoreComponentRenderers.Emitter::new);
+        regGem(sink, ModBlockEntities.DFC_RECEIVER.get(), CoreComponentRenderers.Receiver::new);
+        regGem(sink, ModBlockEntities.DFC_INJECTOR.get(), CoreComponentRenderers.Injector::new);
+        regGem(sink, ModBlockEntities.DFC_STABILIZER.get(), CoreComponentRenderers.Stabilizer::new);
         regCustom(sink, ModBlockEntities.DFC_CORE.get(), ctx -> new CoreRenderer());
 
         reg(sink, ModBlockEntities.PA_SOURCE.get(), 90F, 1F,
@@ -201,8 +201,8 @@ public final class HbmBlockEntityRenderers {
                 new ModelDef(obj("particleaccelerator/rfc.obj"), tex("particleaccelerator/rfc.png"), -1F));
         reg(sink, ModBlockEntities.PA_QUADRUPOLE.get(), 90F, 1F,
                 new ModelDef(obj("particleaccelerator/quadrupole.obj"), tex("particleaccelerator/quadrupole.png"), -1F));
-        regCustom(sink, ModBlockEntities.PA_DIPOLE.get(),
-                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.albion.TileEntityPADipole>(0F, 1F,
+        regGem(sink, ModBlockEntities.PA_DIPOLE.get(),
+                () -> new MachineObjRenderer<com.hbm.tileentity.machine.albion.TileEntityPADipole>(0F, 1F,
                         new ModelDef(obj("particleaccelerator/dipole.obj"), tex("particleaccelerator/dipole.png"), -1F))
                         .ignoreFacing());
         reg(sink, ModBlockEntities.PA_DETECTOR.get(), 90F, 1F,
