@@ -60,11 +60,11 @@ public class BlockPASource extends BlockMultiblockMachine
         Direction rot = facing.getClockWise();
 
         for (int side = -1; side <= 1; side++) {
-            visitor.cell(core.relative(facing).relative(rot, side * 2), MASK_NORTH, ROLE_ALL);
-            visitor.cell(core.relative(facing, -1).relative(rot, side * 2), MASK_SOUTH, ROLE_ALL);
+            visitor.cell(core.relative(facing).relative(rot, side * 2), MASK_SOUTH, ROLE_ALL);
+            visitor.cell(core.relative(facing, -1).relative(rot, side * 2), MASK_NORTH, ROLE_ALL);
             visitor.cell(core.below().relative(rot, side * 2), MASK_DOWN, ROLE_ALL);
         }
-        visitor.cell(core.relative(rot, 4), MASK_EAST, ROLE_ALL);
+        visitor.cell(core.relative(rot, 4), MASK_WEST, ROLE_ALL);
     }
 
     /** Every port takes both a cable and a coolant duct, so each cell answers for either domain. */

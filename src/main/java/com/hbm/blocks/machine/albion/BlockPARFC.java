@@ -49,8 +49,9 @@ public class BlockPARFC extends BlockMultiblockMachine implements IEnergyConnect
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
+        Direction beam = facing.getCounterClockWise();
         for (int along = -1; along <= 1; along++) {
-            BlockPos at = core.relative(facing, along * 3);
+            BlockPos at = core.relative(beam, along * 3);
             visitor.cell(at.above(), MASK_UP, ROLE_ALL);
             visitor.cell(at.below(), MASK_DOWN, ROLE_ALL);
         }
@@ -59,8 +60,9 @@ public class BlockPARFC extends BlockMultiblockMachine implements IEnergyConnect
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        Direction beam = facing.getCounterClockWise();
         for (int along = -1; along <= 1; along++) {
-            BlockPos at = core.relative(facing, along * 3);
+            BlockPos at = core.relative(beam, along * 3);
             visitor.passiveCell(at.above(), MASK_ALL, domains);
             visitor.passiveCell(at.below(), MASK_ALL, domains);
         }

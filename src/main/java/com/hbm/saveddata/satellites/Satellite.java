@@ -94,13 +94,47 @@ public abstract class Satellite {
         return new float[]{1.0F, 1.0F, 1.0F};
     }
 
+    public static final String CMD_SETTARGET = "settarget";
+    public static final String CMD_GETTARGET = "gettarget";
+    public static final String CMD_GETTARGETX = "gettargetx";
+    public static final String CMD_GETTARGETZ = "gettargetz";
+
     /**
      * Run one radio command. The reply, if any, is left in {@link #tx}; clearing it first is what makes a
      * command that answers nothing read as empty rather than as the previous command's answer.
+     *
+     * <p><b>Deviation from 1.7.</b> Upstream leaves {@code tx} holding the last answer, so a command that
+     * writes nothing reads back as whatever was asked before it.
      */
     public final void onCommand(Level level, String... cmd) {
         this.tx = "";
+        onCommandTarget(cmd);
         onCommandImpl(level, cmd);
+    }
+
+    /** The four commands every satellite answers, whatever it is; 1.7 {@code onCommandTarget}. */
+    private void onCommandTarget(String... cmd) {
+        if (cmd.length == 0) return;
+        switch (cmd[0]) {
+            case CMD_SETTARGET -> {
+                if (cmd.length == 3) {
+                    targetX = parse(cmd[1]);
+                    targetZ = parse(cmd[2]);
+                } else if (cmd.length == 4) {
+                    targetX = parse(cmd[1]);
+                    targetZ = parse(cmd[3]);
+                }
+            }
+            case CMD_GETTARGET -> tx = targetX + ";" + targetZ;
+            case CMD_GETTARGETX -> tx = "" + targetX;
+            case CMD_GETTARGETZ -> tx = "" + targetZ;
+            default -> { }
+        }
+    }
+
+    private static int parse(String value) {
+        return com.hbm.api.redstoneoverradio.IRORInteractive.parseInt(
+                value, Integer.MIN_VALUE, Integer.MAX_VALUE);
     }
 
     protected void onCommandImpl(Level level, String... cmd) {

@@ -81,7 +81,7 @@ public class SoyuzLauncher extends BlockMultiblockMachine
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         BlockPos ground = core.below(HEIGHT);
         for (int[] box : BOXES) MultiblockHandlerXR.visitBox(ground, box, facing, visitor);
-        visitor.cell(ground, MASK_ALL);
+        visitor.cell(ground, MASK_NONE);
         ring(ground, (pos, mask) -> visitor.cell(pos, mask, ROLE_ALL));
     }
 
@@ -91,11 +91,13 @@ public class SoyuzLauncher extends BlockMultiblockMachine
      */
     private static void ring(BlockPos ground, java.util.function.ObjIntConsumer<BlockPos> out) {
         for (int i = -6; i <= 6; i++) {
+            int corner = i == 6 ? MASK_SOUTH : i == -6 ? MASK_NORTH : MASK_NONE;
+            int end = i == 6 ? MASK_EAST : i == -6 ? MASK_WEST : MASK_NONE;
             for (int course = 0; course >= -1; course--) {
-                out.accept(ground.offset(6, course, i), MASK_EAST);
-                out.accept(ground.offset(-6, course, i), MASK_WEST);
-                out.accept(ground.offset(i, course, 6), MASK_SOUTH);
-                out.accept(ground.offset(i, course, -6), MASK_NORTH);
+                out.accept(ground.offset(6, course, i), MASK_EAST | corner);
+                out.accept(ground.offset(-6, course, i), MASK_WEST | corner);
+                out.accept(ground.offset(i, course, 6), MASK_SOUTH | end);
+                out.accept(ground.offset(i, course, -6), MASK_NORTH | end);
             }
         }
     }

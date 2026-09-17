@@ -10,7 +10,7 @@ public final class GunCatalogue {
     public static final int EXPECTED_GUN_ITEMS = 70;
     public static final int EXPECTED_AMMO_ITEMS = 118;
     // Original-hbm's complete GunFactory chain constructs 180 configs, including secret and helper rounds.
-    public static final int EXPECTED_BULLET_CONFIGS = 180;
+    public static final int EXPECTED_BULLET_CONFIGS = 181;
 
     private static boolean initialized;
 

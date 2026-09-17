@@ -51,8 +51,8 @@ public class BlockPAQuadrupole extends BlockMultiblockMachine implements IEnergy
         super.visitCells(core, facing, visitor);
         visitor.cell(core.above(), MASK_UP, ROLE_ALL);
         visitor.cell(core.below(), MASK_DOWN, ROLE_ALL);
-        visitor.cell(core.relative(facing), MASK_NORTH, ROLE_ALL);
-        visitor.cell(core.relative(facing, -1), MASK_SOUTH, ROLE_ALL);
+        visitor.cell(core.relative(facing), MASK_SOUTH, ROLE_ALL);
+        visitor.cell(core.relative(facing, -1), MASK_NORTH, ROLE_ALL);
     }
 
     @Override

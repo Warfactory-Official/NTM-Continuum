@@ -54,11 +54,11 @@ public class BlockPADetector extends BlockMultiblockMachine
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
         BlockPos side = core.relative(facing.getClockWise(), -4);
-        visitor.cell(side, MASK_WEST, ROLE_ALL);
-        visitor.cell(side.above(), MASK_WEST, ROLE_ALL);
-        visitor.cell(side.below(), MASK_WEST, ROLE_ALL);
-        visitor.cell(side.relative(facing), MASK_WEST, ROLE_ALL);
-        visitor.cell(side.relative(facing, -1), MASK_WEST, ROLE_ALL);
+        visitor.cell(side, MASK_EAST, ROLE_ALL);
+        visitor.cell(side.above(), MASK_EAST, ROLE_ALL);
+        visitor.cell(side.below(), MASK_EAST, ROLE_ALL);
+        visitor.cell(side.relative(facing), MASK_EAST, ROLE_ALL);
+        visitor.cell(side.relative(facing, -1), MASK_EAST, ROLE_ALL);
     }
 
     @Override

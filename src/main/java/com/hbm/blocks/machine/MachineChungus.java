@@ -81,12 +81,12 @@ public class MachineChungus extends BlockMultiblockMachine
         MultiblockHandlerXR.visitBox(core, RIDGE, facing, visitor);
         MultiblockHandlerXR.visitBox(core, SHAFT, facing, visitor);
         MultiblockHandlerXR.visitBox(core, GENERATOR, facing, visitor);
-        visitor.cell(core.relative(facing, INTAKE_FORWARD).above(2), MASK_NORTH, ROLE_FLUID);
+        visitor.cell(core.relative(facing, INTAKE_FORWARD).above(2), MASK_SOUTH, ROLE_FLUID);
 
         Direction side = facing.getClockWise();
-        visitor.cell(core.relative(side, 2), MASK_EAST, ROLE_FLUID);
-        visitor.cell(core.relative(side, -2), MASK_WEST, ROLE_FLUID);
-        visitor.cell(core.relative(facing, -10), MASK_SOUTH, ROLE_POWER);
+        visitor.cell(core.relative(side, 2), MASK_WEST, ROLE_FLUID);
+        visitor.cell(core.relative(side, -2), MASK_EAST, ROLE_FLUID);
+        visitor.cell(core.relative(facing, -10), MASK_NORTH, ROLE_POWER);
     }
 
     /** The intake, the generator outlet and the two side inlets are the machine's ports. */

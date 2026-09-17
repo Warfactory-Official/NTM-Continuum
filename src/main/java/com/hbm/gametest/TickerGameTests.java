@@ -43,7 +43,7 @@ public final class TickerGameTests {
      * followed it: each of their block entities existed only to mint a network node once, and a node is
      * now a graph cell the block owns, so nothing is left for any of the three to do each tick.
      */
-    private static final int TICKING_TYPES = 157;
+    private static final int TICKING_TYPES = 186;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();
