@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.soyuz;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.blocks.machine.soyuz.SoyuzLauncher;
@@ -8,6 +9,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Block;
@@ -76,15 +78,10 @@ public class TileEntitySoyuzStruct extends TileEntityLoadedBase {
         SoyuzLauncher launcher = ModSoyuzBlocks.soyuz_launcher.get();
         BlockPos core = pos.above(SoyuzLauncher.HEIGHT);
 
-        BlockDummyable.safeRem = true;
-        try {
+        BlockMultiblockCore.withoutTeardown(() -> {
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-            level.setBlock(core, launcher.defaultBlockState()
-                    .setValue(BlockDummyable.META, ForgeDirection.EAST.ordinal() + BlockDummyable.offset), 3);
-            launcher.formStructure(level, pos, ForgeDirection.EAST);
-        } finally {
-            BlockDummyable.safeRem = false;
-        }
+            MultiblockHandlerXR.placeAssembled(level, core, launcher, Direction.EAST);
+        });
     }
 
     private static boolean isAll(Level level, BlockPos origin, int x0, int y0, int z0, int x1, int y1, int z1,

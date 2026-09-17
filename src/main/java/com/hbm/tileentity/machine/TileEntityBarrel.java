@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -15,11 +15,11 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.EndpointRegistry;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
-import java.util.HashSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -35,7 +35,7 @@ import org.jspecify.annotations.Nullable;
  * A one-block fluid drum, ported from 1.12.2's {@code TileEntityBarrel}.
  *
  * <p>Mechanically it is {@link TileEntityMachineFluidTank} at drum scale and with drum capacities: the
- * same four modes, the same buffer-mode node, the same two interchangeable canister bays. What differs
+ * same four modes, the same buffer-mode cell hold, the same two interchangeable canister bays. What differs
  * is that the capacity comes from the block — six drums share one block entity type — and the six
  * connection points are the drum's own faces rather than a 3×3 footprint's edges.
  *
@@ -53,8 +53,7 @@ public class TileEntityBarrel extends TileEntityMachineBase
     public short mode = 0;
     public final FluidTankNTM tank;
 
-    protected FluidNode node;
-    protected FluidType lastType;
+    private long[] cells = FluidGraph.NONE;
 
     public TileEntityBarrel(BlockPos pos, BlockState state) {
         super(ModBlockEntities.BARREL.get(), pos, state, 6);
@@ -76,36 +75,10 @@ public class TileEntityBarrel extends TileEntityMachineBase
         barrel.bay(4, 5);
         FluidType type = barrel.tank.getTankType();
 
-        if (barrel.mode == 1) {
-            if (barrel.node == null || barrel.node.expired || type != barrel.lastType) {
-                barrel.node = (FluidNode) UniNodespace.getNode(level, pos, type.getNetworkProvider());
-                if (barrel.node == null || barrel.node.expired || type != barrel.lastType) {
-                    barrel.node = barrel.createNode(type);
-                    UniNodespace.createNode(level, barrel.node);
-                    barrel.lastType = type;
-                }
-            }
-            if (barrel.node != null && barrel.node.hasValidNet()) {
-                barrel.node.net.addProvider(barrel);
-                barrel.node.net.addReceiver(barrel);
-            }
-        } else {
-            if (barrel.node != null) {
-                UniNodespace.destroyNode(level, pos, type.getNetworkProvider());
-                barrel.node = null;
-            }
+        if (level instanceof ServerLevel server) barrel.updateCells(server, type);
+        if (barrel.mode == 2) {
             for (DirPos dp : barrel.getConPos()) {
-                FluidNode dirNode = (FluidNode) UniNodespace.getNode(level, dp.getPos(), type.getNetworkProvider());
-                if (barrel.mode == 2) {
-                    barrel.tryProvide(barrel.tank, level, dp.getPos(), dp.getDir());
-                } else if (dirNode != null && dirNode.hasValidNet()) {
-                    dirNode.net.removeProvider(barrel);
-                }
-                if (barrel.mode == 0) {
-                    if (dirNode != null && dirNode.hasValidNet()) dirNode.net.addReceiver(barrel);
-                } else if (dirNode != null && dirNode.hasValidNet()) {
-                    dirNode.net.removeReceiver(barrel);
-                }
+                barrel.tryProvide(barrel.tank, level, dp.getPos(), dp.getDir());
             }
         }
 
@@ -113,13 +86,18 @@ public class TileEntityBarrel extends TileEntityMachineBase
         barrel.networkPackNT();
     }
 
+    /**
+     * Buffer mode makes the drum a length of duct: it holds its own cell, so two runs meeting at it are
+     * one network. Every other mode gives the cell back and lets the ducts find the drum by probing.
+     */
+    private void updateCells(ServerLevel level, FluidType type) {
+        cells = mode == 1 && type != Fluids.NONE
+                ? FluidGraph.hold(level, this, type, getConPos())
+                : FluidGraph.release(level, cells);
+    }
+
     private void bay(int inSlot, int outSlot) {
-        CanisterBays.process(inventory, tank, inSlot, outSlot, before -> {
-            if (before != tank.getTankType() && node != null) {
-                UniNodespace.destroyNode(level, getBlockPos(), before.getNetworkProvider());
-                node = null;
-            }
-        });
+        CanisterBays.process(inventory, tank, inSlot, outSlot, before -> {});
     }
 
     public void cycleMode() {
@@ -137,10 +115,6 @@ public class TileEntityBarrel extends TileEntityMachineBase
         if (type == tank.getTankType()) return;
 
         tank.setTankType(type);
-        if (node != null) {
-            UniNodespace.destroyNode(level, getBlockPos(), tank.getTankType().getNetworkProvider());
-            node = null;
-        }
         inventory.insertItem(1, id.copy(), false);
         inventory.extractItem(0, 1, false);
         setChanged();
@@ -155,18 +129,11 @@ public class TileEntityBarrel extends TileEntityMachineBase
                 new DirPos(x, y + 1, z, Library.POS_Y), new DirPos(x, y - 1, z, Library.NEG_Y)};
     }
 
-    protected FluidNode createNode(FluidType type) {
-        DirPos[] conPos = getConPos();
-        HashSet<BlockPos> posSet = new HashSet<>();
-        posSet.add(getBlockPos());
-        return new FluidNode(type.getNetworkProvider(), posSet.toArray(new BlockPos[0])).setConnections(conPos);
-    }
-
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (level != null && !level.isClientSide() && node != null) {
-            UniNodespace.destroyNode(level, getBlockPos(), tank.getTankType().getNetworkProvider());
+        if (cells.length > 0 && FluidGraph.dropCells(this, cells) && level instanceof ServerLevel server) {
+            EndpointRegistry.of(server).withdraw(getBlockPos());
         }
     }
 

@@ -2,6 +2,7 @@ package com.hbm.tileentity.machine.soyuz;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntitySoyuz;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
 import com.hbm.inventory.fluid.FluidType;
@@ -80,14 +81,6 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     }
 
     protected void tickServer(Level level) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos connection : getConPos()) {
-                trySubscribe(level, connection.getPos(), connection.getDir());
-                trySubscribe(tanks[0].getTankType(), level, connection.getPos(), connection.getDir());
-                trySubscribe(tanks[1].getTankType(), level, connection.getPos(), connection.getDir());
-            }
-        }
-
         com.hbm.inventory.fluid.tank.CanisterBays.process(inventory, tanks[0], 2, 3, before -> { });
         com.hbm.inventory.fluid.tank.CanisterBays.process(inventory, tanks[1], 4, 5, before -> { });
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, maxPower);
@@ -134,7 +127,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
         this.starting = false;
         BlockPos pos = getBlockPos();
 
-        EntitySoyuz soyuz = new EntitySoyuz(level);
+        EntitySoyuz soyuz = new EntitySoyuz(ModNtmEntities.SOYUZ.get(), level);
         soyuz.setSkin(Math.max(0, rocketType()));
         soyuz.setSat(inventory.getStackInSlot(SLOT_SATELLITE));
         soyuz.snapTo(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, 0F, 0F);

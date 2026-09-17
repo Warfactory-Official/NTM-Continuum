@@ -2,13 +2,14 @@ package com.hbm.blocks.machine.albion;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPADipole;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The bending magnet: a 3x3x3 cube that takes the beam from any horizontal side. */
-public class BlockPADipole extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public BlockPADipole(Properties properties) {
         super(properties);
@@ -44,43 +45,32 @@ public class BlockPADipole extends BlockDummyable implements IEnergyConnectorBlo
         return 1;
     }
 
+    /**
+     * The dipole's eight proxies sit on world axes rather than the placement's, exactly as 1.7 writes
+     * them: the four edge cells of the upper course and of the lower one.
+     */
     @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        MultiblockHandlerXR.fillSpace(world, x, y, z, getDimensions(), this, dir);
-
-        makeExtra(world, x + 1, y - 1, z);
-        makeExtra(world, x - 1, y - 1, z);
-        makeExtra(world, x, y - 1, z + 1);
-        makeExtra(world, x, y - 1, z - 1);
-        makeExtra(world, x + 1, y + 1, z);
-        makeExtra(world, x - 1, y + 1, z);
-        makeExtra(world, x, y + 1, z + 1);
-        makeExtra(world, x, y + 1, z - 1);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        for (int dy = -1; dy <= 1; dy += 2) {
+            visitor.passiveCell(core.offset(1, dy, 0), MASK_ALL, domains);
+            visitor.passiveCell(core.offset(-1, dy, 0), MASK_ALL, domains);
+            visitor.passiveCell(core.offset(0, dy, 1), MASK_ALL, domains);
+            visitor.passiveCell(core.offset(0, dy, -1), MASK_ALL, domains);
+        }
     }
 
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityPADipole te
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPADipole te
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityPADipole te
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPADipole te
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.PA_DIPOLE.get(), TileEntityPADipole::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> @Nullable BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

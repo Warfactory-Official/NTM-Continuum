@@ -1,12 +1,12 @@
 package com.hbm.tileentity.machine.albion;
 
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerPAQuadrupole;
 import com.hbm.items.machine.ItemPACoil;
 import com.hbm.items.machine.ItemPACoil.EnumCoilType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
@@ -50,7 +50,7 @@ public class TileEntityPAQuadrupole extends TileEntityCooledBase
     }
 
     private ForgeDirection getBeamDir() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset)
+        return MachineCore.facing(getBlockState())
                 .getRotation(ForgeDirection.DOWN);
     }
 
@@ -95,8 +95,7 @@ public class TileEntityPAQuadrupole extends TileEntityCooledBase
 
     @Override
     public List<DirPos> getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(
-                getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection dir = MachineCore.facing(getBlockState());
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return List.of(
                 new DirPos(x, y + 2, z, Library.POS_Y),

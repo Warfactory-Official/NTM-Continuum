@@ -1,10 +1,10 @@
 package com.hbm.tileentity.machine.albion;
 
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerPARFC;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
@@ -48,7 +48,7 @@ public class TileEntityPARFC extends TileEntityCooledBase implements MenuProvide
     }
 
     private ForgeDirection getBeamDir() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset)
+        return MachineCore.facing(getBlockState())
                 .getRotation(ForgeDirection.DOWN);
     }
 

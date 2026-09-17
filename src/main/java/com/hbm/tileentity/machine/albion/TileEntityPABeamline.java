@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine.albion;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
 import net.minecraft.core.BlockPos;
@@ -20,7 +20,7 @@ public class TileEntityPABeamline extends BlockEntity implements IParticleUser {
     }
 
     private ForgeDirection getBeamDir() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset)
+        return MachineCore.facing(getBlockState())
                 .getRotation(ForgeDirection.DOWN);
     }
 

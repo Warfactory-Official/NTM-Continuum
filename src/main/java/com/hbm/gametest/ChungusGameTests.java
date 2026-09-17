@@ -1,12 +1,12 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineChungus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityChungus;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 
@@ -17,25 +17,24 @@ public final class ChungusGameTests {
 
     private ChungusGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
     /** Far enough into the plot that the 14-block-long machine never reaches a negative coordinate. */
     private static final BlockPos CORE = new BlockPos(3, 1, 6);
 
     public static void structure(GameTestHelper helper) {
         TileEntityChungus chungus = place(helper);
 
-        helper.assertTrue(helper.absolutePos(CORE).equals(chungusBlock().findCore(helper.getLevel(),
+        helper.assertTrue(helper.absolutePos(CORE).equals(MultiblockSurface.coreOfAny(helper.getLevel(),
                         helper.absolutePos(new BlockPos(3, 1, 3)))),
-                "Leviathan turbine dummy did not chain to its core");
+                "Leviathan turbine cell did not resolve to its core");
 
-        assertMeta(helper, new BlockPos(3, 5, 4), 1);
-        assertMeta(helper, new BlockPos(3, 4, 12), 1);
-        assertMeta(helper, new BlockPos(3, 3, 16), 1);
+        FoldedTestSupport.assertCell(helper, CORE, new BlockPos(3, 5, 4));
+        FoldedTestSupport.assertCell(helper, CORE, new BlockPos(3, 4, 12));
+        FoldedTestSupport.assertCell(helper, CORE, new BlockPos(3, 3, 16));
 
-        assertMeta(helper, new BlockPos(3, 3, 2), BlockDummyable.extra + ForgeDirection.NORTH.ordinal());
-        assertMeta(helper, new BlockPos(3, 1, 16), BlockDummyable.extra + ForgeDirection.SOUTH.ordinal());
-        assertMeta(helper, new BlockPos(5, 1, 6), BlockDummyable.extra + ForgeDirection.EAST.ordinal());
-        assertMeta(helper, new BlockPos(1, 1, 6), BlockDummyable.extra + ForgeDirection.WEST.ordinal());
+        FoldedTestSupport.assertPort(helper, CORE, new BlockPos(3, 3, 2));
+        FoldedTestSupport.assertPort(helper, CORE, new BlockPos(3, 1, 16));
+        FoldedTestSupport.assertPort(helper, CORE, new BlockPos(5, 1, 6));
+        FoldedTestSupport.assertPort(helper, CORE, new BlockPos(1, 1, 6));
 
         helper.assertTrue(chungus.getFacing() == ForgeDirection.NORTH, "Leviathan turbine lost its facing");
         helper.succeed();
@@ -140,19 +139,11 @@ public final class ChungusGameTests {
     }
 
     private static TileEntityChungus place(GameTestHelper helper) {
-        MachineChungus block = chungusBlock();
-        helper.setBlock(CORE, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, chungusBlock(), CORE);
         TileEntityChungus chungus = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, CORE, TileEntityChungus.class);
         helper.assertTrue(chungus != null, "Leviathan turbine core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), helper.absolutePos(CORE), ForgeDirection.NORTH);
         return chungus;
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        int actual = helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META);
-        helper.assertTrue(actual == expected,
-                "Leviathan turbine cell at " + pos + " has meta " + actual + ", expected " + expected);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, int x, int y, int z, ForgeDirection direction) {

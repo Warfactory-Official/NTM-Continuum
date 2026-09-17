@@ -8,9 +8,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.serialization.MapCodec;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.Objects;
 
@@ -30,9 +33,15 @@ public class SatelliteRayScan extends Satellite {
 
     public final List<RayEvent> cachedResults = new ArrayList<>();
 
+    public static final MapCodec<SatelliteRayScan> CODEC = MapCodec.unit(SatelliteRayScan::new);
+
     public SatelliteRayScan() {
-        this.ifaceAcs.add(InterfaceActions.HAS_MAP);
-        this.satIface = Interfaces.SAT_PANEL;
+        super(Interfaces.SAT_PANEL, Set.of(InterfaceActions.HAS_MAP), Set.of());
+    }
+
+    @Override
+    public SatelliteType type() {
+        return SatelliteType.RAY_SCAN;
     }
 
     @Override public String getType() { return "NB_RAY_SCANNER"; }

@@ -1,9 +1,9 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -46,9 +46,7 @@ public class SatLinkRenderer implements CompatBER<TileEntityMachineSatLink, SatL
         state.lift = be.prevLift + (be.lift - be.prevLift) * partialTicks;
 
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META)
-                ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection dir = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+                ForgeDirection dir = MachineCore.facing(bs);
         ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
         state.offsetX = (dir.offsetX + rot.offsetX) * 0.5F;
         state.offsetZ = (dir.offsetZ + rot.offsetZ) * 0.5F;

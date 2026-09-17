@@ -1,11 +1,11 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityChungus;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -38,9 +38,7 @@ public final class ChungusRenderer implements CompatBER<TileEntityChungus, Chung
     @Override
     public void extract(TileEntityChungus be, ChungusRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState blockState = be.getBlockState();
-        int meta = blockState.hasProperty(BlockDummyable.META)
-                ? blockState.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = 180F + switch (ForgeDirection.getOrientation(meta - BlockDummyable.offset)) {
+                state.yaw = 180F + switch (MachineCore.facing(blockState)) {
             case WEST -> 90F;
             case SOUTH -> 180F;
             case EAST -> 270F;

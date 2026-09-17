@@ -1,14 +1,17 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.network.FluidValve;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -18,8 +21,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@code TileEntityFluidCounterValve}.
  *
  * <p>It is an ordinary valve first — same gate, same typing, same connection rules — with a running total
- * on top, accumulated from {@code FluidNetMK2.fluidTracker} while the gate is open. Closing the valve
- * tears its node down, so a closed counter stops counting rather than reading a network it is no longer
+ * on top, accumulated from the fluid graph's own per-network throughput while the gate is open. A closed
+ * valve holds no cell, so a closed counter stops counting rather than reading a network it is no longer
  * part of.
  *
  * <p>Redstone-over-radio can both read the total and work the gate, and {@code reset} banks the current
@@ -36,14 +39,10 @@ public class TileEntityFluidCounterValve extends TileEntityFluidValve
 
     public static void serverTick(Level level, BlockPos pos, BlockState state,
             TileEntityFluidCounterValve valve) {
-        TileEntityFluidValve.serverTick(level, pos, state, valve);
-        valve.accumulate();
-    }
+        if (!(level instanceof ServerLevel server) || valve.getFluidType() == Fluids.NONE) return;
 
-    private void accumulate() {
-        if (node != null && node.net != null && getFluidType() != Fluids.NONE) {
-            counter += node.net.fluidTracker;
-        }
+        NodeNetwork<?> net = FluidGraph.get(server).networkAt(pos.asLong());
+        if (net != null) valve.counter += net.tracker;
     }
 
     public long getCounter() {
@@ -94,7 +93,6 @@ public class TileEntityFluidCounterValve extends TileEntityFluidValve
     @Override
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "reset").equals(name)) {
-            accumulate();
             counter = 0;
             setChanged();
         } else if ((PREFIX_FUNCTION + "setState").equals(name) && params.length > 0) {

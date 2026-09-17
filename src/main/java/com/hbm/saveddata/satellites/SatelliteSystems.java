@@ -1,5 +1,6 @@
 package com.hbm.saveddata.satellites;
 
+import com.hbm.saveddata.SatelliteSavedData;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 
@@ -17,13 +18,8 @@ public final class SatelliteSystems {
             SatelliteRayScan.updateSystem(level);
             SatelliteDetector.updateSystem(level);
 
-            SatelliteSavedData data = SatelliteSavedData.get(level);
-            for (Satellite sat : data.all().values()) {
+            for (Satellite sat : SatelliteSavedData.get(level).sats.values()) {
                 sat.onUpdateTick(level);
-                if (sat.isDirty) {
-                    sat.isDirty = false;
-                    data.setDirty();
-                }
             }
         }
     }

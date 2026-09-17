@@ -2,13 +2,14 @@ package com.hbm.blocks.machine.albion;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPADetector;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.level.BlockGetter;
@@ -21,7 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The detector: the 5x5x5 collision chamber that ends the beamline and holds the products. */
-public class BlockPADetector extends BlockDummyable
+public class BlockPADetector extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public BlockPADetector(Properties properties) {
@@ -48,48 +49,36 @@ public class BlockPADetector extends BlockDummyable
         return 2;
     }
 
+    /** The detector's service column: one side face of the hall, three courses tall and one deep either way. */
     @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        MultiblockHandlerXR.fillSpace(world, x, y, z, getDimensions(), this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-
-        makeExtra(world, x - rot.offsetX * 4, y, z - rot.offsetZ * 4);
-        makeExtra(world, x - rot.offsetX * 4, y + 1, z - rot.offsetZ * 4);
-        makeExtra(world, x - rot.offsetX * 4, y - 1, z - rot.offsetZ * 4);
-        makeExtra(world, x - rot.offsetX * 4 + dir.offsetX, y, z - rot.offsetZ * 4 + dir.offsetZ);
-        makeExtra(world, x - rot.offsetX * 4 - dir.offsetX, y, z - rot.offsetZ * 4 - dir.offsetZ);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        BlockPos side = core.relative(rot, -4);
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(side, MASK_ALL, domains);
+        visitor.passiveCell(side.above(), MASK_ALL, domains);
+        visitor.passiveCell(side.below(), MASK_ALL, domains);
+        visitor.passiveCell(side.relative(facing), MASK_ALL, domains);
+        visitor.passiveCell(side.relative(facing, -1), MASK_ALL, domains);
     }
 
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityPADetector te
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPADetector te
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityPADetector te
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPADetector te
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityPADetector detector ? detector : null;
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.PA_DETECTOR.get(), TileEntityPADetector::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> @Nullable BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

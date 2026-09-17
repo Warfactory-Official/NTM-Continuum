@@ -1,11 +1,15 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockCoreIndex;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCargoElevator;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Right-clicking with another elevator in hand adds a course; with anything else, it toggles.
  * Breaking any part drops the whole stack, since the structure is only ever placed as whole courses.
  */
-public class BlockCargoElevator extends BlockDummyable {
+public class BlockCargoElevator extends BlockMultiblockMachine {
 
     public BlockCargoElevator(Properties properties) {
         super(properties);
@@ -56,19 +60,39 @@ public class BlockCargoElevator extends BlockDummyable {
         return 1;
     }
 
+    /**
+     * The lift grows a course at a time, so its real extent is live configuration rather than a function
+     * of the core's state. Teardown is allowed a superset for exactly this case, and the demolition guards
+     * every cell on the index, so overshooting the column costs a lookup and claims nothing that is not
+     * ours.
+     */
+    private static final int MAX_COURSES = 384;
+
+    @Override
+    protected void visitTeardownCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        for (int dy = 0; dy <= MAX_COURSES; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (dx == 0 && dy == 0 && dz == 0) continue;
+                    visitor.cell(core.offset(dx, dy, dz), MASK_NONE);
+                }
+            }
+        }
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return structureShape(world, pos);
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos,
-                                           CollisionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos,
+                                        CollisionContext context) {
         return structureShape(world, pos);
     }
 
     private VoxelShape structureShape(BlockGetter world, BlockPos pos) {
-        BlockPos core = findCore(world, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(world, pos);
         if (core == null || !(world.getBlockEntity(core) instanceof TileEntityCargoElevator lift)) {
             return Shapes.block();
         }
@@ -97,7 +121,7 @@ public class BlockCargoElevator extends BlockDummyable {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityCargoElevator lift)) {
             return InteractionResult.SUCCESS;
         }
@@ -116,7 +140,7 @@ public class BlockCargoElevator extends BlockDummyable {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityCargoElevator lift) {
             lift.toggleElevator();
         }
@@ -135,7 +159,9 @@ public class BlockCargoElevator extends BlockDummyable {
 
         for (int x = core.getX() - 1; x <= core.getX() + 1; x++) {
             for (int z = core.getZ() - 1; z <= core.getZ() + 1; z++) {
-                level.setBlock(new BlockPos(x, top, z), defaultBlockState().setValue(META, 1), 3);
+                BlockPos target = new BlockPos(x, top, z);
+                level.setBlock(target, defaultBlockState().setValue(CELL, Boolean.TRUE), 3);
+                if (level instanceof ServerLevel server) MultiblockCoreIndex.put(server, target, core);
             }
         }
         lift.height++;
@@ -159,17 +185,4 @@ public class BlockCargoElevator extends BlockDummyable {
         return drops;
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                            BlockEntityType<T> type) {
-        return createTickerHelper(type, ModBlockEntities.CARGO_ELEVATOR.get(),
-                level.isClientSide() ? TileEntityCargoElevator::clientTick : TileEntityCargoElevator::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

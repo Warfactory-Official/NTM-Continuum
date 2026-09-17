@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.entity.missile.EntitySoyuz;
 import com.hbm.inventory.fluid.Fluids;
@@ -11,8 +10,9 @@ import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
-import com.hbm.saveddata.satellites.SatelliteSavedData;
+import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
+import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -96,12 +96,13 @@ public final class SoyuzGameTests {
 
     public static void orbit(GameTestHelper helper) {
         SatelliteSavedData data = SatelliteSavedData.get(helper.getLevel());
-        data.remove(FREQ);
+        data.descend(FREQ);
 
         ItemStack satellite = ModSatelliteItems.satellite.get().of(EnumSatType.RAY_SCAN);
         ISatChip.setFreqS(satellite, FREQ);
 
-        EntitySoyuz rocket = new EntitySoyuz(helper.getLevel());
+        EntitySoyuz rocket = new EntitySoyuz(
+                com.hbm.entity.ModNtmEntities.SOYUZ.get(), helper.getLevel());
         rocket.setSat(satellite);
         BlockPos pad = helper.absolutePos(LAUNCHER);
         rocket.snapTo(pad.getX() + 0.5, EntitySoyuz.ORBIT_ALTITUDE + 1, pad.getZ() + 0.5, 0F, 0F);
@@ -114,7 +115,7 @@ public final class SoyuzGameTests {
         helper.assertTrue(sat instanceof SatelliteRayScan,
                 "The payload should be in orbit on the frequency it carried");
 
-        data.remove(FREQ);
+        data.descend(FREQ);
         helper.succeed();
     }
 
@@ -144,8 +145,7 @@ public final class SoyuzGameTests {
     // --- helpers ---
 
     private static TileEntitySoyuzLauncher place(GameTestHelper helper) {
-        helper.setBlock(LAUNCHER, ModSoyuzBlocks.soyuz_launcher.get().defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + ForgeDirection.EAST.ordinal()));
+        FoldedTestSupport.assemble(helper, ModSoyuzBlocks.soyuz_launcher.get(), LAUNCHER, Direction.EAST);
         TileEntitySoyuzLauncher launcher = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, LAUNCHER, TileEntitySoyuzLauncher.class);
         helper.assertTrue(launcher != null, "Soyuz launcher BlockEntity was not created");

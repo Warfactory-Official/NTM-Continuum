@@ -5,6 +5,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.items.machine.ItemPACoil;
 import com.hbm.items.special.ItemCustomLore;
 import com.hbm.items.tool.ItemKey;
 import dev.golem.core.registry.DeferredRegister;
@@ -47,6 +48,14 @@ public final class ModItems {
     private static RegistryObject<ItemKey> key(String name, HbmTab tab, UnaryOperator<Item.Properties> props) {
         RegistryObject<ItemKey> ro = ITEMS.registerItem(name, ItemKey::new, props);
         ModTabs.addTo(tab, ro);
+        return ro;
+    }
+
+    private static RegistryObject<ItemPACoil> paCoil(ItemPACoil.EnumCoilType type) {
+        RegistryObject<ItemPACoil> ro = ITEMS.registerItem(
+                "pa_coil_" + type.name().toLowerCase(java.util.Locale.US),
+                p -> new ItemPACoil(type, p), p -> p.stacksTo(1));
+        ModTabs.addTo(HbmTab.CONTROL, ro);
         return ro;
     }
 
@@ -350,6 +359,11 @@ public final class ModItems {
     public static final RegistryObject<Item> particle_strange = item("particle_strange", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_sparkticle = item("particle_sparkticle", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
     public static final RegistryObject<Item> particle_lutece = item("particle_lutece", HbmTab.CONTROL, p -> p.craftRemainder(ModItems.particle_empty.get()));
+
+    public static final RegistryObject<ItemPACoil> pa_coil_gold = paCoil(ItemPACoil.EnumCoilType.GOLD);
+    public static final RegistryObject<ItemPACoil> pa_coil_niobium = paCoil(ItemPACoil.EnumCoilType.NIOBIUM);
+    public static final RegistryObject<ItemPACoil> pa_coil_bscco = paCoil(ItemPACoil.EnumCoilType.BSCCO);
+    public static final RegistryObject<ItemPACoil> pa_coil_chlorophyte = paCoil(ItemPACoil.EnumCoilType.CHLOROPHYTE);
     public static final RegistryObject<Item> pellet_coolant = item("pellet_coolant", HbmTab.CONTROL, p -> p.stacksTo(1).durability(41400));
     public static final RegistryObject<Item> ams_catalyst_blank = item("ams_catalyst_blank", HbmTab.CONTROL, p -> p.stacksTo(1));
     public static final RegistryObject<Item> gadget_explosive = item("gadget_explosive", HbmTab.BOMBS);

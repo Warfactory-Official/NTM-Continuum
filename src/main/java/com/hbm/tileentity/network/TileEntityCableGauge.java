@@ -1,15 +1,15 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.api.energymk2.IEnergyConductorMK2;
-import com.hbm.api.energymk2.Nodespace;
-import com.hbm.api.energymk2.PowerNetMK2;
+import com.hbm.api.energymk2.PowerGraph;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.tile.ILoadedTile;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.NodeNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -17,21 +17,18 @@ import net.minecraft.world.level.block.state.BlockState;
  * A cable that reports what passes through it. Ported from 1.12.2's nested
  * {@code BlockCableGauge.TileEntityCableGauge}.
  *
- * <p>It conducts exactly as an ordinary cable does — same UNINOS node, same six connections — and reads
- * {@link PowerNetMK2#energyTracker}, the running total the network itself keeps, so the reading is the
- * whole network's throughput rather than this block's. Two numbers come out of that: the current tick's
- * total, and the previous whole second's, accumulated and rolled over on the 20-tick boundary.
+ * <p>It conducts exactly as an ordinary cable does — its block mints the same power-graph cell — and
+ * reads that network's throughput total, so the reading is the whole network's rather than this block's.
+ * Two numbers come out of that: the current tick's total, and the previous whole second's, accumulated
+ * and rolled over on the 20-tick boundary.
  *
  * <p><b>Deviation from the fork.</b> There the gauge extends the cable tile; here it extends
- * {@link TileEntityLoadedBase} and repeats the node lifecycle, because the readout has to reach the
- * client for the look overlay and only that base carries the packet sync. The conduction contract is
- * identical either way — {@link IEnergyConductorMK2} supplies the node, and nothing in the power engine
- * tests for the cable class.
+ * {@link TileEntityLoadedBase}, because the readout has to reach the client for the look overlay and only
+ * that base carries the packet sync. The conduction contract is identical either way — the cell is the
+ * block's, and nothing in the power engine tests for the cable class.
  */
 public class TileEntityCableGauge extends TileEntityLoadedBase
         implements IEnergyConductorMK2, ILoadedTile, IRORValueProvider {
-
-    protected Nodespace.PowerNode node;
 
     public long deltaTick = 10;
     public long deltaLastSecond;
@@ -42,21 +39,16 @@ public class TileEntityCableGauge extends TileEntityLoadedBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCableGauge gauge) {
-        if (gauge.node == null || gauge.node.expired) {
-            gauge.node = UniNodespace.getNode(level, pos, Nodespace.THE_POWER_PROVIDER);
-            if (gauge.node == null || gauge.node.expired) {
-                gauge.node = gauge.createNode();
-                UniNodespace.createNode(level, gauge.node);
+        if (level instanceof ServerLevel server) {
+            NodeNetwork<?> net = PowerGraph.get(server).networkAt(pos.asLong());
+            if (net != null) {
+                gauge.deltaTick = net.tracker;
+                if (level.getGameTime() % 20 == 0) {
+                    gauge.deltaLastSecond = gauge.deltaSecond;
+                    gauge.deltaSecond = 0;
+                }
+                gauge.deltaSecond += gauge.deltaTick;
             }
-        }
-
-        if (gauge.node != null && gauge.node.net != null) {
-            gauge.deltaTick = gauge.node.net.energyTracker;
-            if (level.getGameTime() % 20 == 0) {
-                gauge.deltaLastSecond = gauge.deltaSecond;
-                gauge.deltaSecond = 0;
-            }
-            gauge.deltaSecond += gauge.deltaTick;
         }
 
         gauge.networkPackNT();
@@ -65,9 +57,7 @@ public class TileEntityCableGauge extends TileEntityLoadedBase
     @Override
     public void setRemoved() {
         super.setRemoved();
-        if (level != null && !level.isClientSide()) {
-            UniNodespace.destroyNode(level, getBlockPos(), Nodespace.THE_POWER_PROVIDER);
-        }
+        PowerGraph.dropCells(this, getBlockPos());
     }
 
     @Override

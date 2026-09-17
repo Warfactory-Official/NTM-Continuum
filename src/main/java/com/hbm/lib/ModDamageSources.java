@@ -34,8 +34,6 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> BLACKLUNG = key("blacklung");
     /** The BJ helmet's self-ejection failure (old {@code ModDamageSource.lunar}). */
     public static final ResourceKey<DamageType> LUNAR = key("lunar");
-    /** Standing under a launching rocket. */
-    public static final ResourceKey<DamageType> EXHAUST = key("exhaust");
     /** The dark fusion core's radiation field: absolute, armour-bypassing, and reaches creative. */
     public static final ResourceKey<DamageType> AMS = key("ams");
     /** Standing inside the core, or in an emitter beam: absolute and armour-bypassing. */

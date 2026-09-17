@@ -34,15 +34,6 @@ public class FluidCounterValve extends FluidValve {
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.FLUID_COUNTER_VALVE.get(),
-                TileEntityFluidCounterValve::serverTick);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityFluidCounterValve valve)) return null;
         List<String> text = new ArrayList<>();
@@ -55,12 +46,5 @@ public class FluidCounterValve extends FluidValve {
     private static boolean state(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         return state.hasProperty(OPEN) && state.getValue(OPEN);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 }

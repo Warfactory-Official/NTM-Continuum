@@ -9,8 +9,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
+import com.mojang.serialization.MapCodec;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Watches the whole dimension for detonations. Where the ray scanner reports a running machine at its exact
@@ -18,6 +21,17 @@ import java.util.List;
  * one, five hundred blocks for the largest — so a survey tells you roughly where, and how big.
  */
 public class SatelliteDetector extends Satellite {
+
+    public static final MapCodec<SatelliteDetector> CODEC = MapCodec.unit(SatelliteDetector::new);
+
+    public SatelliteDetector() {
+        super(Interfaces.NONE, Set.of(), Set.of());
+    }
+
+    @Override
+    public SatelliteType type() {
+        return SatelliteType.DETECTOR;
+    }
 
     public static final String CMD_SURVEY = "survey";
     public static final String CMD_COUNT = "count";

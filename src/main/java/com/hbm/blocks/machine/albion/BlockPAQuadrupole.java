@@ -2,13 +2,14 @@ package com.hbm.blocks.machine.albion;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The focusing magnet: a 3x3x3 cube with its ports directly above, below, and along the beam. */
-public class BlockPAQuadrupole extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class BlockPAQuadrupole extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public BlockPAQuadrupole(Properties properties) {
         super(properties);
@@ -44,39 +45,27 @@ public class BlockPAQuadrupole extends BlockDummyable implements IEnergyConnecto
         return 1;
     }
 
+    /** Four proxies on the quadrupole: along the beam both ways, and the column above and below. */
     @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        MultiblockHandlerXR.fillSpace(world, x, y, z, getDimensions(), this, dir);
-
-        makeExtra(world, x + dir.offsetX, y, z + dir.offsetZ);
-        makeExtra(world, x - dir.offsetX, y, z - dir.offsetZ);
-        makeExtra(world, x, y + 1, z);
-        makeExtra(world, x, y - 1, z);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.relative(facing), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -1), MASK_ALL, domains);
+        visitor.passiveCell(core.above(), MASK_ALL, domains);
+        visitor.passiveCell(core.below(), MASK_ALL, domains);
     }
 
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityPAQuadrupole te
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPAQuadrupole te
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityPAQuadrupole te
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPAQuadrupole te
                 && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.PA_QUADRUPOLE.get(), TileEntityPAQuadrupole::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> @Nullable BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

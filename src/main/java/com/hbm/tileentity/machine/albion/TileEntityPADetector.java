@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine.albion;
 
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerPADetector;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes;
 import com.hbm.inventory.recipes.ParticleAcceleratorRecipes.ParticleAcceleratorRecipe;
@@ -9,6 +8,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
@@ -72,14 +72,13 @@ public class TileEntityPADetector extends TileEntityCooledBase
     }
 
     private ForgeDirection getBeamDir() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset)
+        return MachineCore.facing(getBlockState())
                 .getRotation(ForgeDirection.DOWN);
     }
 
     @Override
     public List<DirPos> getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(
-                getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection dir = MachineCore.facing(getBlockState());
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         BlockPos p = worldPosition;
         return List.of(

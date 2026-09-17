@@ -2,8 +2,9 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -15,6 +16,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityChungus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -33,7 +35,7 @@ import java.util.List;
 import java.util.Locale;
 
 /** The 5x4x14 Leviathan steam turbine multiblock. */
-public class MachineChungus extends BlockDummyable
+public class MachineChungus extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     /** The housing ridge that sits one layer above the main body. */
@@ -45,7 +47,7 @@ public class MachineChungus extends BlockDummyable
 
     /**
      * The steam intake nozzle, one block past the front of the body and two up. It is the only cell of
-     * the machine that no footprint pass covers, so it is placed by hand and then flagged as a port.
+     * the machine that no footprint box covers, so the geometry states it on its own.
      */
     private static final int INTAKE_FORWARD = 4;
 
@@ -68,38 +70,36 @@ public class MachineChungus extends BlockDummyable
         return 3;
     }
 
+    /**
+     * Four boxes and one loose cell. The ridge, the shaft and the generator are footprints in their own
+     * right; the steam intake nozzle sits one block past the front of the body and two up, which no
+     * footprint covers, so it is stated on its own.
+     */
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, RIDGE, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, SHAFT, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, GENERATOR, facing, visitor);
+        visitor.cell(core.relative(facing, INTAKE_FORWARD).above(2), MASK_ALL);
+    }
 
-        int x = core.getX();
-        int y = core.getY();
-        int z = core.getZ();
-        MultiblockHandlerXR.fillSpace(level, x, y, z, RIDGE, this, dir);
-        MultiblockHandlerXR.fillSpace(level, x, y, z, SHAFT, this, dir);
-        MultiblockHandlerXR.fillSpace(level, x, y, z, GENERATOR, this, dir);
-
-        BlockPos intake = new BlockPos(x + dir.offsetX * INTAKE_FORWARD, y + 2, z + dir.offsetZ * INTAKE_FORWARD);
-        safeRem = true;
-        level.setBlock(intake, defaultBlockState().setValue(META, dir.ordinal()), 3);
-        safeRem = false;
-        makeExtra(level, intake.getX(), intake.getY(), intake.getZ());
-
-        makeExtra(level, x - dir.offsetX * 10, y, z - dir.offsetZ * 10);
-        ForgeDirection side = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x + side.offsetX * 2, y, z + side.offsetZ * 2);
-        makeExtra(level, x - side.offsetX * 2, y, z - side.offsetZ * 2);
+    /** The intake, the generator outlet and the two side inlets are the machine's ports. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction side = facing.getClockWise();
+        visitor.passiveCell(core.relative(facing, INTAKE_FORWARD).above(2), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.relative(facing, -10), MASK_ALL, PASSIVE_POWER_IN);
+        visitor.passiveCell(core.relative(side, 2), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.relative(side, -2), MASK_ALL, PASSIVE_FLUID_IN);
     }
 
     @Override
-    public boolean checkRequirement(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        int cx = x + dir.offsetX * o;
-        int cy = y + dir.offsetY * o;
-        int cz = z + dir.offsetZ * o;
-        if (!MultiblockHandlerXR.checkSpace(world, cx, cy, cz, getDimensions(), x, y, z, dir)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, cx, cy, cz, SHAFT, x, y, z, dir)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, cx, cy, cz, GENERATOR, x, y, z, dir)) return false;
-        return world.getBlockState(new BlockPos(cx + dir.offsetX * INTAKE_FORWARD, cy + 2, cz + dir.offsetZ * INTAKE_FORWARD)).canBeReplaced();
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return super.checkRequirement(level, core, facing, clicked)
+                && MultiblockHandlerXR.checkSpace(level, core, SHAFT, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core, GENERATOR, clicked, facing)
+                && level.getBlockState(core.relative(facing, INTAKE_FORWARD).above(2)).canBeReplaced();
     }
 
     @Override
@@ -107,7 +107,7 @@ public class MachineChungus extends BlockDummyable
                                                  BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityChungus chungus)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
@@ -139,7 +139,7 @@ public class MachineChungus extends BlockDummyable
 
     @Override
     public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityChungus chungus
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityChungus chungus
                 && IEnergyConnectorBlock.isPort(chungus.getPowerPos(), pos, dir);
     }
 
@@ -147,13 +147,13 @@ public class MachineChungus extends BlockDummyable
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         BlockPos pos = new BlockPos(x, y, z);
         return (CoolingRecipes.get(type) != null || type == Fluids.SPENTSTEAM)
-                && findCoreTE(world, pos) instanceof TileEntityChungus chungus
+                && MultiblockSurface.coreEntity(world, pos) instanceof TileEntityChungus chungus
                 && IEnergyConnectorBlock.isPort(chungus.getConPos(), pos, dir);
     }
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityChungus chungus)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityChungus chungus)) return null;
 
         List<String> text = new ArrayList<>();
         FluidType inputType = chungus.tanks[0].getTankType();
@@ -173,19 +173,4 @@ public class MachineChungus extends BlockDummyable
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_CHUNGUS.get(), TileEntityChungus::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CHUNGUS.get(), TileEntityChungus::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

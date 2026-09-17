@@ -76,7 +76,6 @@ public abstract class TileEntityTurbineBase extends TileEntityLoadedBase
         }
         for (DirPos connection : getConPos()) {
             tryProvide(tanks[1], level, connection);
-            trySubscribe(tanks[0].getTankType(), level, connection);
         }
         networkPackNT();
     }

@@ -44,9 +44,6 @@ public class TileEntityPileVent extends TileEntityPileDeviceBase implements IFlu
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityPileVent vent) {
         ForgeDirection dir = vent.getOrientation();
-        vent.trySubscribe(vent.compair.getTankType(), level,
-                pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir);
-
         vent.isActive = false;
 
         BlockPos inlet = pos.offset(-dir.offsetX, 0, -dir.offsetZ);

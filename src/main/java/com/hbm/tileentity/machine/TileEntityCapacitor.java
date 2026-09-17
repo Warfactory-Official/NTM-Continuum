@@ -78,11 +78,8 @@ public class TileEntityCapacitor extends TileEntityLoadedBase
         }
 
         if (end != null && run != null) {
-            cap.tryUnsubscribe(level, end.getX(), end.getY(), end.getZ());
             cap.tryProvide(level, end.getX(), end.getY(), end.getZ(), run);
         }
-
-        cap.trySubscribe(level, pos.getX() + opp.offsetX, pos.getY() + opp.offsetY, pos.getZ() + opp.offsetZ, opp);
 
         cap.networkPackNT();
 

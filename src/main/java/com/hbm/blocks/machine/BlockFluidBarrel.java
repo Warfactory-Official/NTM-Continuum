@@ -1,7 +1,10 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityBarrel;
 import java.util.ArrayList;
@@ -33,7 +36,8 @@ import org.jspecify.annotations.Nullable;
  * rides on the block. The four horizontal connection flags exist purely so the renderer can bridge a row
  * of drums with a connector piece; nothing reads them for behaviour.
  */
-public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
+public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock
+        implements EntityBlock, ILookOverlay, IFluidConnectorBlockMK2 {
 
     public static final BooleanProperty CONN_POS_X = BooleanProperty.create("conn_pos_x");
     public static final BooleanProperty CONN_NEG_X = BooleanProperty.create("conn_neg_x");
@@ -52,6 +56,12 @@ public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock implement
 
     public int getCapacity() {
         return capacity;
+    }
+
+    /** A drum is one cell, so every face is a port; what it will actually move is the mode's business. */
+    @Override
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+        return true;
     }
 
     @Override

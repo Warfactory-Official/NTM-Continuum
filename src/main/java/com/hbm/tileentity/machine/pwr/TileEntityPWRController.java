@@ -184,7 +184,6 @@ public class TileEntityPWRController extends TileEntityMachineBase
         if (this.assembled) {
             for (DirPos connection : getConPos()) {
                 if (tanks[1].getFill() > 0) tryProvide(tanks[1], level, connection);
-                if (level.getGameTime() % 20 == 0) trySubscribe(tanks[0].getTankType(), level, connection);
             }
 
             if (this.unloadDelay <= 0) {

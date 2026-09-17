@@ -1,11 +1,11 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.sound.ChungusSoundHandler;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -59,9 +59,7 @@ public class TileEntityChungus extends TileEntityTurbineBase {
 
     public ForgeDirection getFacing() {
         BlockState state = getBlockState();
-        int meta = state.hasProperty(BlockDummyable.META)
-                ? state.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        return MachineCore.facing(state);
     }
 
     @Override

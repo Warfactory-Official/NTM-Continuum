@@ -46,6 +46,8 @@ public final class ModDamageTypes {
 
         Damage.declare(NS,
                 type("acid"),
+                type("ams").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
+                type("ams_core").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("asbestos").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("bang").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("blackhole").tags(BYPASSES_ARMOR),

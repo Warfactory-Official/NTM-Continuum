@@ -2,12 +2,13 @@ package com.hbm.tileentity.machine.albion;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.container.ContainerPASource;
 import com.hbm.lib.DirPos;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.lib.Library;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -156,13 +157,7 @@ public class TileEntityPASource extends TileEntityCooledBase
             return;
         }
 
-        Block block = level.getBlockState(particle.pos).getBlock();
-        if (!(block instanceof BlockDummyable dummyable)) {
-            particle.crash(PAState.CRASH_DERAIL);
-            return;
-        }
-
-        BlockPos core = dummyable.findCore(level, particle.pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, particle.pos);
         if (core == null) {
             particle.crash(PAState.CRASH_DERAIL);
             return;
@@ -213,7 +208,7 @@ public class TileEntityPASource extends TileEntityCooledBase
 
     /** The direction the beam leaves in — the machine's facing rotated a quarter turn, as in 1.12.2. */
     private ForgeDirection getBeamDir() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset)
+        return MachineCore.facing(getBlockState())
                 .getRotation(ForgeDirection.DOWN);
     }
 
@@ -226,8 +221,7 @@ public class TileEntityPASource extends TileEntityCooledBase
      */
     @Override
     public List<DirPos> getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(
-                getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection dir = MachineCore.facing(getBlockState());
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         BlockPos p = worldPosition;
         List<DirPos> list = new ArrayList<>(10);

@@ -1,9 +1,15 @@
 package com.hbm.blocks.network;
 
+import com.hbm.api.energymk2.PowerGraph;
+import com.hbm.api.energymk2.PowerGraphProvider;
+import com.hbm.capability.MachineCaps;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.network.TileEntityCableGauge;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.registry.TickingBlock;
+import net.minecraft.server.level.ServerLevel;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -32,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * variants that nothing can select — placement uses the horizontal facing and its meta round-trip folds
  * the Y axis back to north — so this port declares the horizontal property alone.
  */
-public class BlockCableGauge extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
+public class BlockCableGauge extends dev.golem.core.world.CompatBlock implements TickingBlock, ILookOverlay {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -51,6 +57,23 @@ public class BlockCableGauge extends dev.golem.core.world.CompatBlock implements
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    /** The gauge conducts, so it mints the same power cell an ordinary cable does. */
+    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (level instanceof ServerLevel server && !oldState.is(this)) {
+            PowerGraph.get(server).addNode(pos.asLong(), PowerGraphProvider.INSTANCE.createData(state),
+                    MachineCaps.FACE_MASK_ALL);
+        }
+    }
+
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
+        if (level instanceof ServerLevel server) LevelNodeGraph.invalidateEndpointsAt(server, pos);
     }
 
     @Override
@@ -76,18 +99,4 @@ public class BlockCableGauge extends dev.golem.core.world.CompatBlock implements
         builder.add(FACING);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.CABLE_GAUGE.get(), TileEntityCableGauge::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

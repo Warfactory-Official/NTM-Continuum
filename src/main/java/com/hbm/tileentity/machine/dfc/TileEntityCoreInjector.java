@@ -58,12 +58,6 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
     protected void tickServer(Level level) {
         BlockPos pos = getBlockPos();
 
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            BlockPos side = pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
-            trySubscribe(tanks[0].getTankType(), level, side, dir);
-            trySubscribe(tanks[1].getTankType(), level, side, dir);
-        }
-
         setTypeFromFluidId(0, 0);
         setTypeFromFluidId(1, 2);
 

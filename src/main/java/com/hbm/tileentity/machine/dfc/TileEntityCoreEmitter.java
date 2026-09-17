@@ -80,12 +80,6 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase
 
     protected void tickServer(Level level) {
         BlockPos pos = getBlockPos();
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            trySubscribe(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-            trySubscribe(tank.getTankType(), level,
-                    pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
-
         watts = Mth.clamp(watts, 1, 100);
         long demand = maxPower * watts / 2000;
 

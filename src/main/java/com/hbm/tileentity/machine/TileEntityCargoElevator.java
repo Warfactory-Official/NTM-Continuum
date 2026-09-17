@@ -2,8 +2,11 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.machine.BlockCargoElevator;
+import com.hbm.blocks.multiblock.MultiblockCoreIndex;
+import com.hbm.blocks.multiblock.MultiblockSurface;
+import net.minecraft.server.level.ServerLevel;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
@@ -80,10 +83,10 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
 
     /** True when this lift has just been swallowed by one below it and must stop ticking as a core. */
     private boolean spliceIntoLower(Level level, BlockPos pos) {
-        BlockDummyable elevator = ModMachineBlocks.cargo_elevator.get();
+        BlockCargoElevator elevator = ModMachineBlocks.cargo_elevator.get();
         if (level.getBlockState(pos.below()).getBlock() != elevator) return false;
 
-        BlockPos lowerCore = elevator.findCore(level, pos.below());
+        BlockPos lowerCore = MultiblockSurface.coreOfAny(level, pos.below());
         if (lowerCore == null || lowerCore.getX() != pos.getX() || lowerCore.getZ() != pos.getZ()) return false;
         if (!(level.getBlockEntity(lowerCore) instanceof TileEntityCargoElevator lower)) return false;
 
@@ -91,8 +94,12 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
         for (int x = pos.getX() - 1; x <= pos.getX() + 1; x++) {
             for (int z = pos.getZ() - 1; z <= pos.getZ() + 1; z++) {
                 for (int y = pos.getY(); y <= pos.getY() + height; y++) {
-                    level.setBlock(new BlockPos(x, y, z),
-                            elevator.defaultBlockState().setValue(BlockDummyable.META, 1), 3);
+                    BlockPos cell = new BlockPos(x, y, z);
+                    level.setBlock(cell, elevator.defaultBlockState()
+                            .setValue(BlockCargoElevator.CELL, Boolean.TRUE), 3);
+                    if (level instanceof ServerLevel server) {
+                        MultiblockCoreIndex.put(server, cell, lowerCore);
+                    }
                 }
             }
         }

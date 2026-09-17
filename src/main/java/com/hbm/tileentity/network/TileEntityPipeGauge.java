@@ -1,12 +1,15 @@
 package com.hbm.tileentity.network;
 
+import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.uninos.graph.NodeNetwork;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.util.ExponentialMovingAverage;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -15,8 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * {@code FluidDuctGauge.TileEntityPipeGauge}.
  *
  * <p>Extends the ordinary duct, so it carries a fluid type, joins that type's network, and is picked up
- * by the duct block's type-spreading walk exactly like any other segment. On top of that it reads
- * {@code FluidNetMK2.fluidTracker} — the network's own running total — into a per-tick figure and a
+ * by the duct block's type-spreading walk exactly like any other segment. On top of that it reads the
+ * fluid graph's own running total for the network its cell belongs to, into a per-tick figure and a
  * smoothed per-second one.
  *
  * <p>The per-second figure is what the look overlay draws, and it only changes on the 20-tick boundary,
@@ -35,11 +38,12 @@ public class TileEntityPipeGauge extends TileEntityFluidDuctNT implements IRORVa
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityPipeGauge gauge) {
-        TileEntityFluidDuctNT.serverTick(level, pos, state, gauge);
+        if (!(level instanceof ServerLevel server) || gauge.getFluidType() == Fluids.NONE) return;
 
-        if (gauge.node == null || gauge.node.net == null || gauge.getFluidType() == Fluids.NONE) return;
+        NodeNetwork<?> net = FluidGraph.get(server).networkAt(pos.asLong());
+        if (net == null) return;
 
-        gauge.deltaTick = gauge.node.net.fluidTracker;
+        gauge.deltaTick = net.tracker;
         if (level.getGameTime() % 20L == 0) {
             gauge.secondEMA.next(gauge.deltaSecond);
             gauge.deltaSecond = 0;

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.dfc;
 
+import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.effect.EntityCloudFleijaRainbow;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.handler.ArmorUtil;
@@ -156,7 +157,8 @@ public class TileEntityCore extends TileEntityMachineBase implements MenuProvide
         level.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.GENERIC_EXPLODE,
                 SoundSource.BLOCKS, 100_000.0F, 1.0F);
 
-        EntityCloudFleijaRainbow cloud = new EntityCloudFleijaRainbow(level);
+        EntityCloudFleijaRainbow cloud =
+                new EntityCloudFleijaRainbow(ModNtmEntities.CLOUD_RAINBOW.get(), level);
         cloud.setMaxAge(size);
         cloud.snapTo(pos.getX(), pos.getY(), pos.getZ(), 0F, 0F);
         level.addFreshEntity(cloud);

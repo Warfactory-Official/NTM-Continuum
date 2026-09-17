@@ -2,7 +2,6 @@ package com.hbm.gametest;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
@@ -22,6 +21,8 @@ import com.hbm.tileentity.machine.albion.TileEntityPASource;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
 import dev.golem.core.gametest.GameTestHelpers;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -46,10 +47,7 @@ public final class AlbionGameTests {
     }
 
     private static <T extends BlockEntity> T place(GameTestHelper helper, BlockPos relative, Block block, Class<T> type) {
-        BlockPos absolute = helper.absolutePos(relative);
-        BlockDummyable dummyable = (BlockDummyable) block;
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        dummyable.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, (BlockMultiblockCore) block, relative);
         return GameTestHelpers.blockEntity(helper, relative, type);
     }
 
@@ -73,7 +71,7 @@ public final class AlbionGameTests {
         BlockPos core = source.getBlockPos();
         com.hbm.blocks.machine.albion.BlockPASource block = ModMachineBlocks.pa_source.get();
 
-        helper.assertTrue(core.equals(block.findCore(helper.getLevel(), core)),
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), core)),
                 "The particle source core must resolve to itself");
         helper.assertTrue(source.getConPos().size() == 10,
                 "The particle source must expose ten connection points; got " + source.getConPos().size());
@@ -83,7 +81,7 @@ public final class AlbionGameTests {
                     -connection.getDir().offsetY, -connection.getDir().offsetZ);
             helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock() == block,
                     "The particle source is missing the cell behind a port at " + cell);
-            helper.assertTrue(core.equals(block.findCore(helper.getLevel(), cell)),
+            helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                     "A particle source cell at " + cell + " does not resolve to its core");
             helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
                     "A particle source port does not accept a cable at " + cell);

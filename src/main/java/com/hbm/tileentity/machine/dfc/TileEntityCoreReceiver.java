@@ -59,8 +59,6 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase
         power = joules * 5000;
 
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            trySubscribe(tank.getTankType(), level,
-                    pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
             tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
 

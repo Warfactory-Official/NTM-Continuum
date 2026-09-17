@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ISatChip;
 import com.hbm.items.ModSatelliteItems;
@@ -9,8 +8,8 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
-import com.hbm.saveddata.satellites.SatelliteRegistry;
-import com.hbm.saveddata.satellites.SatelliteSavedData;
+import com.hbm.saveddata.SatelliteSavedData;
+import com.hbm.saveddata.satellites.SatelliteType;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -32,51 +31,45 @@ public final class SatelliteGameTests {
     private static final int FREQ = 4242;
 
     public static void registry(GameTestHelper helper) {
-        helper.assertTrue(SatelliteRegistry.create(1) instanceof com.hbm.saveddata.satellites.SatelliteScanner,
-                "Slot 1 must stay the depth scanner: the slot is the persisted id");
-        helper.assertTrue(SatelliteRegistry.create(11) instanceof SatelliteRayScan,
-                "Slot 11 must stay the ray scanner");
-        helper.assertTrue(SatelliteRegistry.create(0) == null, "Slot 0 is not ported yet");
-        helper.assertTrue(SatelliteRegistry.create(99) == null, "A slot past the table is not a satellite");
+        helper.assertTrue(SatelliteType.SCANNER.create() instanceof com.hbm.saveddata.satellites.SatelliteScanner,
+                "The scanner slot must build a depth scanner");
+        helper.assertTrue(SatelliteType.RAY_SCAN.create() instanceof SatelliteRayScan,
+                "The ray-scan slot must build a ray scanner");
 
-        Satellite scanner = SatelliteRegistry.create(1);
-        helper.assertTrue(scanner != null && scanner.getID() == 1,
-                "A satellite must report the slot it was made from");
+        helper.assertTrue("ray_scan".equals(SatelliteType.RAY_SCAN.getSerializedName()),
+                "The serialized name is the save-format contract and must not move");
+        helper.assertTrue("detector".equals(SatelliteType.DETECTOR.getSerializedName()),
+                "The serialized name is the save-format contract and must not move");
 
-        ItemStack stack = ModSatelliteItems.satellite.get().of(EnumSatType.RAY_SCAN);
-        helper.assertTrue(SatelliteRegistry.idFromStack(stack) == 11,
-                "The ray-scan item must map to slot 11");
-        helper.assertTrue(SatelliteRegistry.idFromStack(ItemStack.EMPTY) == -1, "Nothing is not a satellite");
+        Satellite scanner = SatelliteType.SCANNER.create();
+        helper.assertTrue(scanner.type() == SatelliteType.SCANNER,
+                "A satellite must report the type it was made from");
         helper.succeed();
     }
 
     public static void orbit(GameTestHelper helper) {
         SatelliteSavedData data = SatelliteSavedData.get(helper.getLevel());
-        data.remove(FREQ);
+        data.descend(FREQ);
 
         helper.assertTrue(!data.isFreqTaken(FREQ), "The test frequency should start empty");
 
-        Satellite.orbit(helper.getLevel(), 11, FREQ, 100, 700, -250);
+        Satellite.orbit(helper.getLevel(), SatelliteType.RAY_SCAN, FREQ, 100, 700, -250);
         Satellite sat = data.getSatFromFreq(FREQ);
         helper.assertTrue(sat instanceof SatelliteRayScan, "Orbit should have put a ray scanner up");
         helper.assertTrue(sat.targetX == 100 && sat.targetZ == -250,
                 "A satellite takes its target from where it was launched");
 
-        Satellite.orbit(helper.getLevel(), 1, FREQ, 0, 700, 0);
+        Satellite.orbit(helper.getLevel(), SatelliteType.SCANNER, FREQ, 0, 700, 0);
         helper.assertTrue(data.getSatFromFreq(FREQ) == sat,
                 "A second launch on a taken frequency must not replace what is there");
 
-        Satellite.orbit(helper.getLevel(), 0, FREQ + 1, 0, 700, 0);
-        helper.assertTrue(!data.isFreqTaken(FREQ + 1),
-                "An unported slot must not put anything in orbit");
-
-        data.remove(FREQ);
+        data.descend(FREQ);
         helper.succeed();
     }
 
     public static void link(GameTestHelper helper) {
         SatelliteSavedData data = SatelliteSavedData.get(helper.getLevel());
-        data.remove(FREQ);
+        data.descend(FREQ);
 
         TileEntityMachineSatLink link = place(helper);
         link.freq = FREQ;
@@ -86,7 +79,7 @@ public final class SatelliteGameTests {
         helper.assertTrue("FALSE".equals(link.provideRORValue("VAL:connected")),
                 "VAL:connected should report the disconnection");
 
-        Satellite.orbit(helper.getLevel(), 11, FREQ, 40, 700, 60);
+        Satellite.orbit(helper.getLevel(), SatelliteType.RAY_SCAN, FREQ, 40, 700, 60);
         tick(helper, link);
         helper.assertTrue(link.connected, "A taken frequency under open sky is a connection");
         helper.assertTrue("TRUE".equals(link.provideRORValue("VAL:connected")),
@@ -108,7 +101,7 @@ public final class SatelliteGameTests {
         link.runRORFunction("FUN:setfreq", new String[]{"17"});
         helper.assertTrue(link.freq == 17, "setfreq should retune the dish");
 
-        data.remove(FREQ);
+        data.descend(FREQ);
         helper.succeed();
     }
 
@@ -184,8 +177,7 @@ public final class SatelliteGameTests {
     // --- helpers ---
 
     private static TileEntityMachineSatLink place(GameTestHelper helper) {
-        helper.setBlock(LINK, ModMachineBlocks.machine_satlink.get().defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + ForgeDirection.NORTH.ordinal()));
+        FoldedTestSupport.assemble(helper, ModMachineBlocks.machine_satlink.get(), LINK);
         TileEntityMachineSatLink link = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, LINK, TileEntityMachineSatLink.class);
         helper.assertTrue(link != null, "Sat link BlockEntity was not created");

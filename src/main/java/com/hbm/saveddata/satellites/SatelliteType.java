@@ -32,7 +32,9 @@ public enum SatelliteType implements StringRepresentable {
     MINER("miner", "sat_miner", SatelliteMiner::new, SatelliteMiner.CODEC, ItemPools.POOL_SAT_MINER),
     LUNAR_MINER("lunar_miner", "sat_lunar_miner", SatelliteLunarMiner::new, SatelliteLunarMiner.CODEC,
             ItemPools.POOL_SAT_LUNAR),
-    HORIZONS("horizons", "sat_gerald", SatelliteHorizons::new, SatelliteHorizons.CODEC, null);
+    HORIZONS("horizons", "sat_gerald", SatelliteHorizons::new, SatelliteHorizons.CODEC, null),
+    DETECTOR("detector", "sat_detector", SatelliteDetector::new, SatelliteDetector.CODEC, null),
+    RAY_SCAN("ray_scan", "sat_ray_scan", SatelliteRayScan::new, SatelliteRayScan.CODEC, null);
 
     public static final Codec<SatelliteType> CODEC = StringRepresentable.fromEnum(SatelliteType::values);
     /**

@@ -45,7 +45,8 @@ import org.jspecify.annotations.Nullable;
  * so that colour is not reachable without a renderer of its own. The fluid is still named in the look
  * overlay, in its own colour, so nothing is lost but the paint.
  */
-public class FluidDuctGauge extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
+public class FluidDuctGauge extends dev.golem.core.world.CompatBlock
+        implements dev.golem.core.registry.TickingBlock, ILookOverlay {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
@@ -112,18 +113,4 @@ public class FluidDuctGauge extends dev.golem.core.world.CompatBlock implements 
         builder.add(FACING);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.PIPE_GAUGE.get(), TileEntityPipeGauge::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

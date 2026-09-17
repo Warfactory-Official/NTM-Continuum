@@ -1,7 +1,8 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ISatChip;
 import com.hbm.lib.ForgeDirection;
@@ -10,6 +11,7 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The sat link dish. A satellite chip held against it sets which frequency the dish listens on. */
-public class MachineSatLink extends BlockDummyable implements ILookOverlay {
+public class MachineSatLink extends BlockMultiblockMachine implements ILookOverlay {
 
     public MachineSatLink(Properties properties) {
         super(properties);
@@ -48,15 +50,13 @@ public class MachineSatLink extends BlockDummyable implements ILookOverlay {
         return 0;
     }
 
+    /** The dish's three ground cells; 1.7 flags all three as ports, and the link draws no power. */
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        MultiblockHandlerXR.fillSpace(level, x, y, z, getDimensions(), this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x - dir.offsetX, y, z - dir.offsetZ);
-        makeExtra(level, x + rot.offsetX, y, z + rot.offsetZ);
-        makeExtra(level, x - dir.offsetX + rot.offsetX, y, z - dir.offsetZ + rot.offsetZ);
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        visitor.passiveCell(core.relative(facing, -1), MASK_ALL, PASSIVE_POWER_IN);
+        visitor.passiveCell(core.relative(rot), MASK_ALL, PASSIVE_POWER_IN);
+        visitor.passiveCell(core.relative(facing, -1).relative(rot), MASK_ALL, PASSIVE_POWER_IN);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class MachineSatLink extends BlockDummyable implements ILookOverlay {
 
     /** Retunes the dish to the frequency a chip carries. */
     public boolean tuneTo(Level level, BlockPos pos, ItemStack chip, @Nullable Player player) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineSatLink link)) return false;
 
         link.freq = ISatChip.getFreqS(chip);
@@ -86,7 +86,7 @@ public class MachineSatLink extends BlockDummyable implements ILookOverlay {
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineSatLink link)) return null;
 
         List<String> text = new ArrayList<>();
@@ -98,17 +98,4 @@ public class MachineSatLink extends BlockDummyable implements ILookOverlay {
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_SATLINK.get(), TileEntityMachineSatLink::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_SATLINK.get(), TileEntityMachineSatLink::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> @Nullable BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }
