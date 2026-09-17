@@ -33,7 +33,7 @@ import java.util.List;
  * these; {@link #IO_ENABLED} marks the cells that were ports, which are the only ones fluid moves
  * through.
  */
-public class BlockPWR extends CompatBlock implements EntityBlock, IFluidConnectorBlockMK2, ILookOverlay {
+public class BlockPWR extends CompatBlock implements dev.golem.core.registry.TickingBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public static final BooleanProperty IO_ENABLED = BooleanProperty.create("io");
 
@@ -52,11 +52,6 @@ public class BlockPWR extends CompatBlock implements EntityBlock, IFluidConnecto
         return new TileEntityBlockPWR(pos, state);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.PWR_BLOCK.get(), TileEntityBlockPWR::serverTick);
-    }
 
     /**
      * The cell gives back the part it was built from. Upstream puts that block straight back at the

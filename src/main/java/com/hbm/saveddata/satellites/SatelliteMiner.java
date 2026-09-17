@@ -4,7 +4,6 @@ import com.hbm.util.GameTime;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.world.item.Item;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Set;
@@ -33,8 +32,8 @@ public class SatelliteMiner extends Satellite {
     /**
      * 1.7 {@code SatelliteMiner.getCargoForItem}; null where the item launches no mining satellite.
      */
-    public static @Nullable String getCargoForItem(Item item) {
-        SatelliteType type = SatelliteType.fromItem(item);
+    public static @Nullable String getCargoForStack(net.minecraft.world.item.ItemStack stack) {
+        SatelliteType type = SatelliteType.fromStack(stack);
         return type == null ? null : type.cargo();
     }
 

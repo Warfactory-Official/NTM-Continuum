@@ -16,7 +16,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** RTTY command terminal; its screen is a bare client screen rather than a container menu. */
-public class RBMKTerminal extends RBMKMiniPanelBase implements EntityBlock {
+public class RBMKTerminal extends RBMKMiniPanelBase implements dev.golem.core.registry.TickingBlock {
 
     public static Consumer<BlockEntityRBMKTerminal> OPEN_SCREEN = terminal -> {};
 
@@ -39,17 +39,4 @@ public class RBMKTerminal extends RBMKMiniPanelBase implements EntityBlock {
         return InteractionResult.SUCCESS;
     }
 
-    @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                            BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModRBMKBlockEntities.RBMK_TERMINAL.get(),
-                        (tickLevel, pos, tickState, be) -> ((BlockEntityRBMKTerminal) be).serverTick());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

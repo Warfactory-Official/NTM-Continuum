@@ -1,14 +1,12 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.itempool.ItemPools;
-import com.hbm.lib.Library;
+import com.hbm.items.machine.ItemSatellite;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.StringRepresentable;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import org.jspecify.annotations.Nullable;
 
 import java.util.function.Supplier;
@@ -23,18 +21,18 @@ import java.util.function.Supplier;
  */
 public enum SatelliteType implements StringRepresentable {
 
-    MAPPER("mapper", "sat_mapper", SatelliteMapper::new, SatelliteMapper.CODEC, null),
-    SCANNER("scanner", "sat_scanner", SatelliteScanner::new, SatelliteScanner.CODEC, null),
-    RADAR("radar", "sat_radar", SatelliteRadar::new, SatelliteRadar.CODEC, null),
-    LASER("laser", "sat_laser", SatelliteLaser::new, SatelliteLaser.CODEC, null),
-    RESONATOR("resonator", "sat_resonator", SatelliteResonator::new, SatelliteResonator.CODEC, null),
-    RELAY("relay", "sat_foeq", SatelliteRelay::new, SatelliteRelay.CODEC, null),
-    MINER("miner", "sat_miner", SatelliteMiner::new, SatelliteMiner.CODEC, ItemPools.POOL_SAT_MINER),
-    LUNAR_MINER("lunar_miner", "sat_lunar_miner", SatelliteLunarMiner::new, SatelliteLunarMiner.CODEC,
+    MAPPER("mapper", EnumSatType.SPY, SatelliteMapper::new, SatelliteMapper.CODEC, null),
+    SCANNER("scanner", EnumSatType.SCANNER, SatelliteScanner::new, SatelliteScanner.CODEC, null),
+    RADAR("radar", EnumSatType.RADAR, SatelliteRadar::new, SatelliteRadar.CODEC, null),
+    LASER("laser", EnumSatType.DEATH_RAY, SatelliteLaser::new, SatelliteLaser.CODEC, null),
+    RESONATOR("resonator", EnumSatType.XENIUM_RESONATOR, SatelliteResonator::new, SatelliteResonator.CODEC, null),
+    RELAY("relay", EnumSatType.RELAY, SatelliteRelay::new, SatelliteRelay.CODEC, null),
+    MINER("miner", EnumSatType.MINER_ASTRO, SatelliteMiner::new, SatelliteMiner.CODEC, ItemPools.POOL_SAT_MINER),
+    LUNAR_MINER("lunar_miner", EnumSatType.MINER_LUNAR, SatelliteLunarMiner::new, SatelliteLunarMiner.CODEC,
             ItemPools.POOL_SAT_LUNAR),
-    HORIZONS("horizons", "sat_gerald", SatelliteHorizons::new, SatelliteHorizons.CODEC, null),
-    DETECTOR("detector", "sat_detector", SatelliteDetector::new, SatelliteDetector.CODEC, null),
-    RAY_SCAN("ray_scan", "sat_ray_scan", SatelliteRayScan::new, SatelliteRayScan.CODEC, null);
+    HORIZONS("horizons", null, SatelliteHorizons::new, SatelliteHorizons.CODEC, null),
+    DETECTOR("detector", EnumSatType.DETECTOR, SatelliteDetector::new, SatelliteDetector.CODEC, null),
+    RAY_SCAN("ray_scan", EnumSatType.RAY_SCAN, SatelliteRayScan::new, SatelliteRayScan.CODEC, null);
 
     public static final Codec<SatelliteType> CODEC = StringRepresentable.fromEnum(SatelliteType::values);
     /**
@@ -46,31 +44,32 @@ public enum SatelliteType implements StringRepresentable {
             dev.golem.core.data.Codecs.dispatch(CODEC, "type", Satellite::type, SatelliteType::codec);
 
     private final String name;
-    private final String itemPath;
+    private final @Nullable EnumSatType chip;
     private final Supplier<? extends Satellite> factory;
     private final MapCodec<? extends Satellite> codec;
     private final @Nullable String cargo;
-    private @Nullable Item resolved;
 
-    SatelliteType(String name, String itemPath, Supplier<? extends Satellite> factory,
+    SatelliteType(String name, @Nullable EnumSatType chip, Supplier<? extends Satellite> factory,
                   MapCodec<? extends Satellite> codec, @Nullable String cargo) {
         this.name = name;
-        this.itemPath = itemPath;
+        this.chip = chip;
         this.factory = factory;
         this.codec = codec;
         this.cargo = cargo;
     }
 
-    public static @Nullable SatelliteType fromItem(Item item) {
-        if (item == Items.AIR) return null;
-        for (SatelliteType type : values()) {
-            if (type.item() == item) return type;
-        }
-        return null;
+    /** The satellite a chip launches, or null where the stack is not a satellite chip. */
+    public static @Nullable SatelliteType fromStack(ItemStack stack) {
+        if (stack.isEmpty() || !(stack.getItem() instanceof ItemSatellite satellite)) return null;
+        return fromChip(satellite.typeOf(stack));
     }
 
-    public static @Nullable SatelliteType fromStack(ItemStack stack) {
-        return stack.isEmpty() ? null : fromItem(stack.getItem());
+    public static @Nullable SatelliteType fromChip(@Nullable EnumSatType chip) {
+        if (chip == null) return null;
+        for (SatelliteType type : values()) {
+            if (type.chip == chip) return type;
+        }
+        return null;
     }
 
     public Satellite create() {
@@ -89,14 +88,13 @@ public enum SatelliteType implements StringRepresentable {
         return cargo;
     }
 
-    public Item item() {
-        Item cached = resolved;
-        if (cached == null) {
-            cached = BuiltInRegistries.ITEM.getValue(Library.id(itemPath));
-            if (cached == Items.AIR) throw new IllegalStateException(itemPath + " is not registered");
-            resolved = cached;
-        }
-        return cached;
+    /**
+     * The chip that launches this satellite, as a stack. One item carries every satellite here — the chip
+     * is a component on it — so a type with no chip (the Horizons probe, which upstream has no chip for)
+     * answers empty rather than naming an item that was never registered.
+     */
+    public ItemStack stack() {
+        return chip == null ? ItemStack.EMPTY : ItemSatellite.make(chip);
     }
 
     @Override

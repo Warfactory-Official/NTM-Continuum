@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * of drums with a connector piece; nothing reads them for behaviour.
  */
 public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock
-        implements EntityBlock, ILookOverlay, IFluidConnectorBlockMK2 {
+        implements dev.golem.core.registry.TickingBlock, ILookOverlay, IFluidConnectorBlockMK2 {
 
     public static final BooleanProperty CONN_POS_X = BooleanProperty.create("conn_pos_x");
     public static final BooleanProperty CONN_NEG_X = BooleanProperty.create("conn_neg_x");
@@ -133,18 +133,4 @@ public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock
         return new ILookOverlay.Data(getName().getString(), 0xFFFF00, 0x404000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.BARREL.get(), TileEntityBarrel::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

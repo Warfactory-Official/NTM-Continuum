@@ -45,14 +45,23 @@ public class BlockPAQuadrupole extends BlockMultiblockMachine implements IEnergy
         return 1;
     }
 
-    /** Four proxies on the quadrupole: along the beam both ways, and the column above and below. */
+    /** Four ports: the column above and below, and one along the beam either way. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.above(), MASK_UP, ROLE_ALL);
+        visitor.cell(core.below(), MASK_DOWN, ROLE_ALL);
+        visitor.cell(core.relative(facing), MASK_NORTH, ROLE_ALL);
+        visitor.cell(core.relative(facing, -1), MASK_SOUTH, ROLE_ALL);
+    }
+
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
-        visitor.passiveCell(core.relative(facing), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(facing, -1), MASK_ALL, domains);
         visitor.passiveCell(core.above(), MASK_ALL, domains);
         visitor.passiveCell(core.below(), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -1), MASK_ALL, domains);
     }
 
     @Override

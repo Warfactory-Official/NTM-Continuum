@@ -34,7 +34,7 @@ import java.util.function.BiFunction;
  * factory each registration passes in, and a model drawn entirely by the renderer so the beam can leave
  * the block's own cell.
  */
-public class CoreComponent extends CompatBlock implements EntityBlock {
+public class CoreComponent extends CompatBlock implements dev.golem.core.registry.TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
@@ -79,13 +79,6 @@ public class CoreComponent extends CompatBlock implements EntityBlock {
         return factory.apply(pos, state);
     }
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> given) {
-        if (level.isClientSide() || given != type.get()) return null;
-        return (BlockEntityTicker<T>) ticker;
-    }
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,

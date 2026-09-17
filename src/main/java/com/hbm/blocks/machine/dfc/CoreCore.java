@@ -18,7 +18,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The reaction chamber. Invisible as a block; the orb inside it is the renderer's whole job. */
-public class CoreCore extends CompatBlock implements EntityBlock {
+public class CoreCore extends CompatBlock implements dev.golem.core.registry.TickingBlock {
 
     public CoreCore(Properties properties) {
         super(properties);
@@ -29,12 +29,6 @@ public class CoreCore extends CompatBlock implements EntityBlock {
         return new TileEntityCore(pos, state);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.DFC_CORE.get(), TileEntityCore::serverTick);
-    }
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,

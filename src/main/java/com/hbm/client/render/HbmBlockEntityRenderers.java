@@ -177,6 +177,36 @@ public final class HbmBlockEntityRenderers {
                         (te, partial) -> te.prevRotor + (te.rotor - te.prevRotor) * partial));
         regCustom(sink, ModBlockEntities.STRUCT_TORUS_CORE.get(),
                 ctx -> new StructPreviewRenderer<com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct>());
+
+        regCustom(sink, ModRBMKBlockEntities.RBMK_TERMINAL.get(), RBMKTerminalRenderer::new);
+        regCustom(sink, ModBlockEntities.CARGO_ELEVATOR.get(), CargoElevatorRenderer::new);
+        regCustom(sink, ModBlockEntities.BARREL.get(), BarrelRenderer::new);
+        regCustom(sink, ModBlockEntities.MACHINE_CHUNGUS.get(), ctx -> new ChungusRenderer());
+        regCustom(sink, ModBlockEntities.MACHINE_SATLINK.get(), ctx -> new SatLinkRenderer());
+        regCustom(sink, ModBlockEntities.PILE_CONTROL.get(), ctx -> new PileDeviceRenderers.Control());
+        regCustom(sink, ModBlockEntities.PILE_LOADER.get(), ctx -> new PileDeviceRenderers.Loader());
+        regCustom(sink, ModBlockEntities.PILE_VENT.get(), ctx -> new PileDeviceRenderers.Vent());
+
+        regCustom(sink, ModBlockEntities.DFC_EMITTER.get(), ctx -> new CoreComponentRenderers.Emitter());
+        regCustom(sink, ModBlockEntities.DFC_RECEIVER.get(), ctx -> new CoreComponentRenderers.Receiver());
+        regCustom(sink, ModBlockEntities.DFC_INJECTOR.get(), ctx -> new CoreComponentRenderers.Injector());
+        regCustom(sink, ModBlockEntities.DFC_STABILIZER.get(), ctx -> new CoreComponentRenderers.Stabilizer());
+        regCustom(sink, ModBlockEntities.DFC_CORE.get(), ctx -> new CoreRenderer());
+
+        reg(sink, ModBlockEntities.PA_SOURCE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/source.obj"), tex("particleaccelerator/source.png"), -1F));
+        reg(sink, ModBlockEntities.PA_BEAMLINE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/beamline.obj"), tex("particleaccelerator/beamline.png")));
+        reg(sink, ModBlockEntities.PA_RFC.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/rfc.obj"), tex("particleaccelerator/rfc.png"), -1F));
+        reg(sink, ModBlockEntities.PA_QUADRUPOLE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/quadrupole.obj"), tex("particleaccelerator/quadrupole.png"), -1F));
+        regCustom(sink, ModBlockEntities.PA_DIPOLE.get(),
+                ctx -> new MachineObjRenderer<com.hbm.tileentity.machine.albion.TileEntityPADipole>(0F, 1F,
+                        new ModelDef(obj("particleaccelerator/dipole.obj"), tex("particleaccelerator/dipole.png"), -1F))
+                        .ignoreFacing());
+        reg(sink, ModBlockEntities.PA_DETECTOR.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/detector.obj"), tex("particleaccelerator/detector.png"), -2F));
         // SILEX: fully static upstream (it had no TESR at all — it was a StaticTesrBakedModels entry).
         // Old yaw map N90/S270/W180/E0 = base yaw 90 + the standard map, same as the compressor's.
         reg(sink, ModBlockEntities.MACHINE_SILEX.get(), 90F, 1F,

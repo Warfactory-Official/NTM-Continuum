@@ -46,9 +46,21 @@ public class BlockPADipole extends BlockMultiblockMachine implements IEnergyConn
     }
 
     /**
-     * The dipole's eight proxies sit on world axes rather than the placement's, exactly as 1.7 writes
-     * them: the four edge cells of the upper course and of the lower one.
+     * The dipole's eight ports sit on world axes rather than the placement's, exactly as 1.7 writes them:
+     * the four edge cells of the upper course and of the lower one.
      */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int dy = -1; dy <= 1; dy += 2) {
+            int mask = dy > 0 ? MASK_UP : MASK_DOWN;
+            visitor.cell(core.offset(1, dy, 0), mask, ROLE_ALL);
+            visitor.cell(core.offset(-1, dy, 0), mask, ROLE_ALL);
+            visitor.cell(core.offset(0, dy, 1), mask, ROLE_ALL);
+            visitor.cell(core.offset(0, dy, -1), mask, ROLE_ALL);
+        }
+    }
+
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;

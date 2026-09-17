@@ -37,7 +37,7 @@ import java.util.List;
  * <p>Breaking any cell collapses the whole structure back to loose bricks — the core goes with it, and
  * every remaining cell sees its core missing on its next tick and reverts itself.
  */
-public class BlockPile extends dev.golem.core.world.CompatBlock implements EntityBlock, IToolable, ILookOverlay {
+public class BlockPile extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock, IToolable, ILookOverlay {
 
     public static final int META_DUMMY = 0;
     public static final int META_CORE = 1;
@@ -171,21 +171,4 @@ public class BlockPile extends dev.golem.core.world.CompatBlock implements Entit
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        BlockEntityTicker<T> core = createTickerHelper(type, ModBlockEntities.PILE_CORE.get(),
-                TileEntityPileCore::serverTick);
-        return core != null ? core
-                : createTickerHelper(type, ModBlockEntities.PILE_BLOCK.get(), TileEntityPileBaseMK2::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

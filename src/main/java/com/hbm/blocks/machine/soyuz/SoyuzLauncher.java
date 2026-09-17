@@ -82,6 +82,22 @@ public class SoyuzLauncher extends BlockMultiblockMachine
         BlockPos ground = core.below(HEIGHT);
         for (int[] box : BOXES) MultiblockHandlerXR.visitBox(ground, box, facing, visitor);
         visitor.cell(ground, MASK_ALL);
+        ring(ground, (pos, mask) -> visitor.cell(pos, mask, ROLE_ALL));
+    }
+
+    /**
+     * The apron's outer ring, both courses, each cell open on the face it turns outward. The ring is
+     * square and its four sides are stated together, so the set is the same whichever way the pad faces.
+     */
+    private static void ring(BlockPos ground, java.util.function.ObjIntConsumer<BlockPos> out) {
+        for (int i = -6; i <= 6; i++) {
+            for (int course = 0; course >= -1; course--) {
+                out.accept(ground.offset(6, course, i), MASK_EAST);
+                out.accept(ground.offset(-6, course, i), MASK_WEST);
+                out.accept(ground.offset(i, course, 6), MASK_SOUTH);
+                out.accept(ground.offset(i, course, -6), MASK_NORTH);
+            }
+        }
     }
 
     @Override
@@ -93,18 +109,10 @@ public class SoyuzLauncher extends BlockMultiblockMachine
         return true;
     }
 
-    /** The apron's outer ring, both courses: every one of them takes a cable or a duct. */
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
-        BlockPos ground = core.below(HEIGHT);
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
-        for (int ix = -6; ix <= 6; ix++) {
-            for (int iz = -6; iz <= 6; iz++) {
-                if (ix != 6 && ix != -6 && iz != 6 && iz != -6) continue;
-                visitor.passiveCell(ground.offset(ix, 0, iz), MASK_ALL, domains);
-                visitor.passiveCell(ground.offset(ix, 1, iz), MASK_ALL, domains);
-            }
-        }
+        ring(core.below(HEIGHT), (pos, mask) -> visitor.passiveCell(pos, MASK_ALL, domains));
     }
 
     /**

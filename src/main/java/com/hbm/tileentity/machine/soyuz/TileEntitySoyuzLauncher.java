@@ -10,6 +10,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ISatChip;
 import com.hbm.items.special.ItemSoyuz;
+import com.hbm.blocks.machine.soyuz.SoyuzLauncher;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -107,13 +108,16 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
 
         conPos = new ArrayList<>();
         BlockPos pos = getBlockPos();
+        // 1.7 states this ring at the core's own level, four courses above the apron it belongs to, so
+        // upstream's ports sit in open air and nothing can reach them. The ring is stated at the apron.
+        int ground = pos.getY() - SoyuzLauncher.HEIGHT;
         for (ForgeDirection dir : new ForgeDirection[]{Library.POS_X, Library.POS_Z, Library.NEG_X, Library.NEG_Z}) {
             ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
             for (int i = -6; i <= 6; i++) {
                 int x = pos.getX() + dir.offsetX * 7 + rot.offsetX * i;
                 int z = pos.getZ() + dir.offsetZ * 7 + rot.offsetZ * i;
-                conPos.add(new DirPos(x, pos.getY(), z, dir));
-                conPos.add(new DirPos(x, pos.getY() - 1, z, dir));
+                conPos.add(new DirPos(x, ground, z, dir));
+                conPos.add(new DirPos(x, ground - 1, z, dir));
             }
         }
         return conPos;

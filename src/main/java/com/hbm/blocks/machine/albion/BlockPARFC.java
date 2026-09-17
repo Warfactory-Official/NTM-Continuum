@@ -45,17 +45,25 @@ public class BlockPARFC extends BlockMultiblockMachine implements IEnergyConnect
         return 1;
     }
 
-    /** The cavity's six proxies: the two side towers and the column through the core, top and bottom. */
+    /** Six coolant/power ports: the column through the core and the two towers, top and bottom. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int along = -1; along <= 1; along++) {
+            BlockPos at = core.relative(facing, along * 3);
+            visitor.cell(at.above(), MASK_UP, ROLE_ALL);
+            visitor.cell(at.below(), MASK_DOWN, ROLE_ALL);
+        }
+    }
+
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
-        Direction rot = facing.getClockWise();
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
-        visitor.passiveCell(core.relative(rot, 3).above(), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(rot, -3).above(), MASK_ALL, domains);
-        visitor.passiveCell(core.above(), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(rot, 3).below(), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(rot, -3).below(), MASK_ALL, domains);
-        visitor.passiveCell(core.below(), MASK_ALL, domains);
+        for (int along = -1; along <= 1; along++) {
+            BlockPos at = core.relative(facing, along * 3);
+            visitor.passiveCell(at.above(), MASK_ALL, domains);
+            visitor.passiveCell(at.below(), MASK_ALL, domains);
+        }
     }
 
     @Override

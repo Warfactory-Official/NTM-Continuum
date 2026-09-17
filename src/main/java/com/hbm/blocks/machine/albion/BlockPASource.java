@@ -51,20 +51,34 @@ public class BlockPASource extends BlockMultiblockMachine
     }
 
     /**
-     * 1.7 stamps a port proxy on the two beam faces and the side outlet; each one takes both a cable and
-     * a coolant duct, so the cell answers for either domain.
+     * The ten cells the source pushes through, each open on the one face its port looks out of: three
+     * along the beam either way, the side outlet, and three underneath.
      */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+
+        for (int side = -1; side <= 1; side++) {
+            visitor.cell(core.relative(facing).relative(rot, side * 2), MASK_NORTH, ROLE_ALL);
+            visitor.cell(core.relative(facing, -1).relative(rot, side * 2), MASK_SOUTH, ROLE_ALL);
+            visitor.cell(core.below().relative(rot, side * 2), MASK_DOWN, ROLE_ALL);
+        }
+        visitor.cell(core.relative(rot, 4), MASK_EAST, ROLE_ALL);
+    }
+
+    /** Every port takes both a cable and a coolant duct, so each cell answers for either domain. */
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         Direction rot = facing.getClockWise();
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+
+        for (int side = -1; side <= 1; side++) {
+            visitor.passiveCell(core.relative(facing).relative(rot, side * 2), MASK_ALL, domains);
+            visitor.passiveCell(core.relative(facing, -1).relative(rot, side * 2), MASK_ALL, domains);
+            visitor.passiveCell(core.below().relative(rot, side * 2), MASK_ALL, domains);
+        }
         visitor.passiveCell(core.relative(rot, 4), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(facing), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(facing).relative(rot, 2), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(facing).relative(rot, -2), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(facing, -1), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(facing, -1).relative(rot, 2), MASK_ALL, domains);
-        visitor.passiveCell(core.relative(facing, -1).relative(rot, -2), MASK_ALL, domains);
     }
 
     @Override

@@ -33,6 +33,7 @@ public abstract class Satellite {
         SatelliteSavedData data = SatelliteSavedData.get(level);
         if (data.isFreqTaken(freq)) return;
         Satellite sat = type.create();
+        sat.setTarget((int) x, (int) z);
         data.put(freq, sat);
         sat.onOrbit(level, x, y, z);
         data.setDirty();

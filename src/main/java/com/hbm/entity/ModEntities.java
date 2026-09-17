@@ -207,25 +207,6 @@ public final class ModEntities {
                             .clientTrackingRange(64)
                             .updateInterval(1), key));
 
-    /**
-     * A gas cloud. Tracked far out because a chemical shell lands where the player is not, and the
-     * cloud is the only sign it did.
-     */
-    public static final RegistryObject<EntityType<com.hbm.entity.missile.EntitySoyuz>> SOYUZ =
-            ENTITY_TYPES.register("entity_soyuz", key -> dev.golem.core.registry.Entities.build(
-                    EntityType.Builder.<com.hbm.entity.missile.EntitySoyuz>of(
-                                    com.hbm.entity.missile.EntitySoyuz::new, MobCategory.MISC)
-                            .sized(5.0F, 50.0F)
-                            .fireImmune()
-                            .clientTrackingRange(128), key));
-
-    public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityCloudFleijaRainbow>> CLOUD_FLEIJA_RAINBOW =
-            ENTITY_TYPES.register("entity_fleija_rainbow", key -> dev.golem.core.registry.Entities.build(
-                    EntityType.Builder.<com.hbm.entity.effect.EntityCloudFleijaRainbow>of(
-                                    com.hbm.entity.effect.EntityCloudFleijaRainbow::new, MobCategory.MISC)
-                            .sized(20.0F, 40.0F)
-                            .fireImmune()
-                            .clientTrackingRange(64), key));
 
     public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityMist>> MIST =
             ENTITY_TYPES.register("entity_mist", key -> dev.golem.core.registry.Entities.build(

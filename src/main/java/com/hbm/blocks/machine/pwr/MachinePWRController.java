@@ -40,7 +40,7 @@ import java.util.Map;
  * <p>Where upstream marks a rejected block with a floating marker particle, this port reports the
  * problem and its position as a chat message, the same substitution the Chicago Pile's assembly makes.
  */
-public class MachinePWRController extends CompatBlock implements EntityBlock, ILookOverlay {
+public class MachinePWRController extends CompatBlock implements dev.golem.core.registry.TickingBlock, ILookOverlay {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -76,11 +76,6 @@ public class MachinePWRController extends CompatBlock implements EntityBlock, IL
         return new TileEntityPWRController(pos, state);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.PWR_CONTROLLER.get(), TileEntityPWRController::serverTick);
-    }
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

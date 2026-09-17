@@ -23,7 +23,7 @@ public class SatelliteRelay extends Satellite {
 
     @Override
     public void onOrbit(ServerLevel level, double x, double y, double z) {
-        ItemStack chip = new ItemStack(type().item());
+        ItemStack chip = type().stack();
         for (ServerPlayer player : level.players()) HbmCriteria.orbit(player, chip);
     }
 }

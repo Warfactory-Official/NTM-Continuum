@@ -45,7 +45,7 @@ import java.util.List;
  * them by item damage; the block's {@link #META} packs that choice together with the horizontal side of
  * the pile the device faces.
  */
-public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements EntityBlock,
+public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock,
         ILookOverlay, IToolable {
 
     public static final int ITEM_META_LOADER = 0;
@@ -218,27 +218,4 @@ public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements
                 0xffff00, 0x404000, text);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        boolean client = level.isClientSide();
-        BlockEntityTicker<T> ticker = createTickerHelper(type, ModBlockEntities.PILE_LOADER.get(),
-                client ? TileEntityPileLoader::clientTick : TileEntityPileLoader::serverTick);
-        if (ticker != null) return ticker;
-
-        ticker = createTickerHelper(type, ModBlockEntities.PILE_CONTROL.get(),
-                client ? TileEntityPileControl::clientTick : TileEntityPileControl::serverTick);
-        if (ticker != null) return ticker;
-
-        return createTickerHelper(type, ModBlockEntities.PILE_VENT.get(),
-                client ? TileEntityPileVent::clientTick : TileEntityPileVent::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

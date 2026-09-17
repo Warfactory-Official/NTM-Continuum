@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
  * not exist in its assets, so the block is untextured there; this port supplies a JSON model matching the
  * collision box the fork already declares.
  */
-public class GeigerCounter extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class GeigerCounter extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -117,18 +117,4 @@ public class GeigerCounter extends dev.golem.core.world.CompatBlock implements E
         builder.add(FACING);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.GEIGER.get(), TileEntityGeiger::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

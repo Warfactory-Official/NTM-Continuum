@@ -51,9 +51,19 @@ public class BlockPADetector extends BlockMultiblockMachine
 
     /** The detector's service column: one side face of the hall, three courses tall and one deep either way. */
     @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        BlockPos side = core.relative(facing.getClockWise(), -4);
+        visitor.cell(side, MASK_WEST, ROLE_ALL);
+        visitor.cell(side.above(), MASK_WEST, ROLE_ALL);
+        visitor.cell(side.below(), MASK_WEST, ROLE_ALL);
+        visitor.cell(side.relative(facing), MASK_WEST, ROLE_ALL);
+        visitor.cell(side.relative(facing, -1), MASK_WEST, ROLE_ALL);
+    }
+
+    @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
-        Direction rot = facing.getClockWise();
-        BlockPos side = core.relative(rot, -4);
+        BlockPos side = core.relative(facing.getClockWise(), -4);
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
         visitor.passiveCell(side, MASK_ALL, domains);
         visitor.passiveCell(side.above(), MASK_ALL, domains);

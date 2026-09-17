@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
  * variant shares one block entity type. Input is the face the block points at; output runs away from it
  * along {@link MachineCapacitorBus} blocks.
  */
-public class MachineCapacitor extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
+public class MachineCapacitor extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock, ILookOverlay {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
 
@@ -85,18 +85,4 @@ public class MachineCapacitor extends dev.golem.core.world.CompatBlock implement
         builder.add(FACING);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.CAPACITOR.get(), TileEntityCapacitor::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

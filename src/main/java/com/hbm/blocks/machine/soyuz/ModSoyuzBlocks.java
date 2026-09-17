@@ -51,7 +51,7 @@ public final class ModSoyuzBlocks {
     }
 
     /** The seed block: an ordinary block whose entity watches for the complex to be finished around it. */
-    public static final class SoyuzStruct extends dev.golem.core.world.CompatBlock implements EntityBlock {
+    public static final class SoyuzStruct extends dev.golem.core.world.CompatBlock implements dev.golem.core.registry.TickingBlock {
 
         public SoyuzStruct(Properties properties) {
             super(properties);
@@ -60,17 +60,6 @@ public final class ModSoyuzBlocks {
         @Override
         public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
             return new TileEntitySoyuzStruct(pos, state);
-        }
-
-        @Override
-        public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                               BlockEntityType<T> type) {
-            if (level.isClientSide() || type != ModBlockEntities.STRUCT_SOYUZ_CORE.get()) return null;
-            return (l, pos, s, be) -> {
-                if (be instanceof TileEntitySoyuzStruct struct) {
-                    TileEntitySoyuzStruct.serverTick(l, pos, s, struct);
-                }
-            };
         }
     }
 
