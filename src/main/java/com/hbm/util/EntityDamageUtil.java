@@ -26,6 +26,21 @@ public final class EntityDamageUtil {
         dev.golem.core.world.Compat.hurt(victim, level, source, amount);
     }
 
+
+    /**
+     * ntm-next {@code attackEntityFromNT}: one server-side hurt call carrying threshold/resistance piercing.
+     * This port has no {@code NtmDamageContext} knockback-multiplier / early-cancel duck on LivingEntity, so
+     * {@code knockbackMultiplier} and {@code allowSpecialCancel} are accepted for call-site fidelity and not
+     * applied (documented gap in entity-port-manifest.md).
+     */
+    public static boolean attackEntityFromNT(net.minecraft.world.entity.LivingEntity living, DamageSource source,
+                                             float amount, boolean ignoreIFrame, boolean allowSpecialCancel,
+                                             double knockbackMultiplier, float pierceDT, float pierce) {
+        if (!(living.level() instanceof ServerLevel level)) return false;
+        if (ignoreIFrame) living.invulnerableTime = 0;
+        return DamageResistanceHandler.hurt(level, living, source, amount, pierceDT, pierce);
+    }
+
     public static HitResult getMouseOver(Player player, double reach) {
         return getMouseOver(player, reach, 0D);
     }

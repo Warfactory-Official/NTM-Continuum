@@ -28,6 +28,7 @@ import net.minecraft.world.phys.AABB;
  * <li>{@code /hbm rad get <pos>} — read it</li>
  * <li>{@code /hbm rad here} — read at the caller's feet</li>
  * <li>{@code /hbm jetpack_smoke} — development-only disposable client smoke setup</li>
+ * <li>{@code /hbm entity_smoke} — development-only: spawns the ported entity roster for the render smoke</li>
  * </ul>
  */
 public final class HbmCommands {
@@ -53,6 +54,15 @@ public final class HbmCommands {
                             ctx.getSource().sendSuccess(() -> Component.literal(
                                     "Development jetpack smoke setup active for 10 seconds"), false);
                             return 1;
+                        }))
+                .then(Commands.literal("entity_smoke")
+                        .requires(source -> dev.golem.core.platform.Platform.isDevelopment())
+                        .executes(ctx -> {
+                            ServerPlayer player = ctx.getSource().getPlayerOrException();
+                            int placed = EntityRenderSmoke.spawn(player);
+                            ctx.getSource().sendSuccess(() -> Component.literal(
+                                    "Entity render smoke placed " + placed + " of " + EntityRenderSmoke.ROSTER.size()), false);
+                            return placed;
                         }))
                 .then(Commands.literal("torex_benchmark")
                         .requires(source -> dev.golem.core.platform.Platform.isDevelopment())

@@ -659,6 +659,13 @@ public final class ModBlockModels {
                 .blockItem()
                 .register();
 
+        // 1.7 BlockSupplyCrate: setBlockTextureName crate_can, no per-face icons
+        Dejson.block(NS, "crate_supply")
+                .models(Models.cubeAll("hbm:blocks/crate_can"))
+                .states(Variants.simple())
+                .blockItem()
+                .register();
+
         Dejson.block(NS, "crate_template")
                 .models(Models.cubeBottomTop("hbm:blocks/crate_template", "hbm:blocks/crate_template", "hbm:blocks/crate_template"))
                 .states(Variants.facing())

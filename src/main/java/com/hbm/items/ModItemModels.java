@@ -50,6 +50,7 @@ public final class ModItemModels {
         tools();
         blockItems();
         machineFrames();
+        entityItems();
     }
 
     /**
@@ -406,7 +407,7 @@ public final class ModItemModels {
             "rune_thurisaz", "safety_fuse", "sat_base", "sat_head_laser", "sat_head_mapper",
             "sat_head_radar", "sat_head_resonator", "sat_head_scanner", "sawblade", "schrabidium_boots",
             "schrabidium_helmet", "schrabidium_legs", "schrabidium_plate", "scrap", "scrap_nuclear",
-            "scrap_oil", "scrap_plastic", "scraps_liquid", "security_boots", "security_helmet",
+            "scrap_oil", "scrap_plastic", "scraps_liquid", "taurun_boots", "taurun_helmet", "taurun_legs", "taurun_plate", "security_boots", "security_helmet",
             "security_legs", "security_plate", "seg_10", "seg_15", "seg_20", "shell", "shell_aluminium",
             "shell_copper", "shell_saturnite", "shell_steel", "shell_titanium", "shell_weaponsteel",
             "shimmer_axe_head", "shimmer_handle", "singularity", "singularity_counter_resonant",
@@ -1022,6 +1023,47 @@ public final class ModItemModels {
                 .models(Models.guiLight("side", Models.display(frame,
                         Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
                 .register();
+    }
+
+    /**
+     * The ntm-next entity wave's items ({@link ModEntityItems}), drawn from the 1.7 sprites: the
+     * {@code ItemEnumMulti} families keep 1.7's {@code <base>.<constant>} sprite names, and the cart is
+     * 1.7's two passes, chassis under overlay. The chassis pass is fixed to the vanilla sprite: the
+     * {@code CART_BASE} component has no select vocabulary here, so a wood/steel/painted chassis draws
+     * as vanilla in hand (the entity itself is unaffected).
+     */
+    private static void entityItems() {
+        for (String name : new String[] {"chopper", "spawn_worm", "spawn_ufo", "spawn_duck", "boat_rubber",
+                "coupling_tool", "stick_dynamite", "disperser_canister", "glyphid_gland", "plastic_bag",
+                "bottled_cloud", "grenade_universal"}) {
+            Dejson.item(NS, name).models(Models.generated("hbm:items/" + name)).register();
+        }
+        Dejson.item(NS, "battery_creative").models(Models.generated("hbm:items/battery_creative_new")).register();
+        for (String cart : new String[] {"empty", "crate", "destroyer", "powder", "semtex"}) {
+            Dejson.item(NS, "cart_" + cart)
+                    .models(Models.generated("hbm:items/cart.vanilla", "hbm:items/cart_overlay." + cart)).register();
+        }
+        for (String drone : new String[] {"patrol", "patrol_chunkloading", "patrol_express",
+                "patrol_express_chunkloading", "request"}) {
+            Dejson.item(NS, "drone_" + drone).models(Models.generated("hbm:items/drone." + drone)).register();
+        }
+        for (String train : new String[] {"cargo_tram", "cargo_tram_trailer"}) {
+            Dejson.item(NS, "train_" + train).models(Models.generated("hbm:items/train." + train)).register();
+        }
+        for (String shell : new String[] {"frag", "nuke", "stick", "tech"}) {
+            Dejson.item(NS, "grenade_shell_" + shell).models(Models.generated("hbm:items/grenade_shell." + shell)).register();
+        }
+        for (String filling : new String[] {"cluster", "cluster_heavy", "demo", "emp", "he", "inc", "laser", "nuclear",
+                "nuclear_demo", "plasma", "powder", "schrab", "wp"}) {
+            Dejson.item(NS, "grenade_filling_" + filling)
+                    .models(Models.generated("hbm:items/grenade_filling." + filling)).register();
+        }
+        for (String fuze : new String[] {"airburst", "impact", "s15", "s3", "s7"}) {
+            Dejson.item(NS, "grenade_fuze_" + fuze).models(Models.generated("hbm:items/grenade_fuze." + fuze)).register();
+        }
+        for (String extra : new String[] {"frag_sleeve", "glue", "proxy_fuze", "triplex"}) {
+            Dejson.item(NS, "grenade_extra_" + extra).models(Models.generated("hbm:items/grenade_extra." + extra)).register();
+        }
     }
 
     /**

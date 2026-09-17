@@ -44,6 +44,7 @@ final class ForgeClientInit {
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
         dev.golem.core.render.ForgeItemRenderers.install(com.hbm.client.render.MachineItemRenderers::render);
         modBus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent event) ->

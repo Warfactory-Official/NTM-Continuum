@@ -97,4 +97,31 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_small.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_buster.get()); }
     }
+
+    /** 1.7 EntityMissileCluster: a 5-block blast scattering 25 submunitions; also the mid-air cluster split. */
+    public static class EntityMissileCluster extends EntityMissileTier1 {
+        public EntityMissileCluster(EntityType<?> type, Level level) {
+            super(type, level);
+            this.isCluster = true;
+        }
+        public EntityMissileCluster(Level level, float x, float y, float z, int targetX, int targetZ) {
+            super(com.hbm.entity.ModNtmEntities.MISSILE_CLUSTER.get(), level, x, y, z, targetX, targetZ);
+            this.isCluster = true;
+        }
+
+        @Override
+        public void onMissileImpact(HitResult mop) {
+            level().explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.TNT);
+            com.hbm.explosion.ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 25, getYRot(), getXRot(),
+                    (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
+        }
+
+        @Override
+        public void cluster() {
+            this.onMissileImpact(null);
+        }
+
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_cluster_small.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_cluster.get()); }
+    }
 }

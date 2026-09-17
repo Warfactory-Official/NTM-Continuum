@@ -79,6 +79,7 @@ public final class MainRegistry {
         com.hbm.blocks.turret.ModTurretBlocks.init(); // turret pad cell and the turrets on it
         ModStorageBlocks.init();   // storage crates (iron / steel / desh)
         ModBombBlocks.init();      // bomb blocks (also precede block entities)
+        com.hbm.blocks.ModRailBlocks.init(); // the folded rails the ntm-next trains run on
         com.hbm.blocks.ModHazardBlocks.init(); // radioactive / rad-resistant blocks (radiation emitters)
         com.hbm.blocks.ModFalloutBlocks.init(); // fallout layer + waste/sellafite terrain (nuke aftermath)
         com.hbm.blocks.ModSteelBlocks.init();   // stateful steel grate + OBJ scaffold
@@ -96,6 +97,7 @@ public final class MainRegistry {
         com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModEntityItems.init(); // spawn items, carts, drones, trains, grenades, dispersers (entity port)
         com.hbm.items.ModGunSupportItems.init(); // ammo container and stack-backed ammo/casing bags
         com.hbm.items.ModJetpackDependencyItems.init(); // hot steel and the functional xenon thruster part
         com.hbm.items.ModSingularityItems.init(); // dropped singularity capsules and Spark progression
@@ -141,6 +143,7 @@ public final class MainRegistry {
         com.hbm.entity.ModRBMKEntities.init();
         com.hbm.entity.missile.ModMissileEntities.init(); // the missiles
         com.hbm.entity.NtmToolEntityCatalog.init(); // NI4NI's throwable coin, separate from ModEntities
+        com.hbm.entity.ModNtmEntities.init(); // the ntm-next entity port (mobs, vehicles, effects, remaining projectiles)
         com.hbm.particle.HbmParticles.init();
         com.hbm.potion.ModEffects.init(); // status effects (radiation)
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)
@@ -150,6 +153,18 @@ public final class MainRegistry {
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> com.hbm.handler.JetpackHandler.clear(level));
         dev.golem.core.platform.Lifecycle.onServerTick(server ->
                 server.getAllLevels().forEach(com.hbm.handler.JetpackHandler::cleanup));
+        // ntm-next entity port: item pools resolve their registry ids once the server holds registries; the
+        // TOM impact gate is republished for off-thread worldgen readers; per-server caches clear on stop.
+        dev.golem.core.platform.Lifecycle.onServerStarted(server -> {
+            com.hbm.itempool.ItemPool.load(server.registryAccess());
+            com.hbm.saveddata.TomSaveData.publish(server);
+        });
+        dev.golem.core.platform.Lifecycle.onServerStopping(server -> {
+            com.hbm.saveddata.TomSaveData.onServerStopping();
+            com.hbm.tileentity.network.RequestNetwork.onServerStopping();
+            com.hbm.tileentity.network.RTTYSystem.onServerStopping();
+            com.hbm.util.ChunkUtil.onServerStopped();
+        });
         // Needs both the tool items and the convertible blocks, so it runs after every registry.
         com.hbm.handler.NTMToolHandler.register();
     }

@@ -156,6 +156,11 @@ public final class HbmClientRegistrations {
          sink.register(ModMenus.FENSU.get(), GUIMachineFENSU::new);
          sink.register(ModMenus.BATTERY_REDD.get(), GUIBatteryREDD::new);
          sink.register(ModMenus.CRATE.get(), GUICrate::new);
+         // the ntm-next entity port's vehicle menus
+         sink.register(ModMenus.CART_CRATE.get(), com.hbm.inventory.gui.GUICartCrate::new);
+         sink.register(ModMenus.CART_DESTROYER.get(), com.hbm.inventory.gui.GUICartDestroyer::new);
+         sink.register(ModMenus.TRAIN_CARGO_TRAM.get(), com.hbm.inventory.gui.GUITrainCargoTram::new);
+         sink.register(ModMenus.TRAIN_CARGO_TRAM_TRAILER.get(), com.hbm.inventory.gui.GUITrainCargoTramTrailer::new);
           sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
           sink.register(ModMenus.WEAPON_TABLE.get(), GUIWeaponTable::new);
          sink.register(ModMenus.MACHINE_PRESS.get(), GUIMachinePress::new);
@@ -213,13 +218,16 @@ public final class HbmClientRegistrations {
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
-            HbmEntityRenderers.Sink entities) {
+            HbmEntityRenderers.Sink downstream) {
         HbmBlockEntityRenderers.registerAll(blockEntities);
+        java.util.Set<net.minecraft.world.entity.EntityType<?>> bound = new java.util.HashSet<>();
+        HbmEntityRenderers.Sink entities = HbmEntityRenderers.recording(downstream, bound);
         HbmEntityRenderers.registerAll(entities);
         com.hbm.radio.client.RadioClientRegistrations.registerRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerBlockEntityRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
         com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
+        HbmEntityRenderers.verifyCoverage(bound);
 
         // Every instanced visual is optional acceleration beside an already-registered vanilla BER.
         if (com.hbm.client.render.flywheel.FlywheelCompat.isSupportedOnThisVersion()) {
@@ -278,6 +286,7 @@ public final class HbmClientRegistrations {
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
         com.hbm.client.jetpack.JetpackClientVisuals.init();
          com.hbm.client.jetpack.JetpackSmokeClient.register();
+         com.hbm.client.render.entity.EntityRenderSmokeClient.register();
          com.hbm.client.gun.GunSmokeClient.register();
          com.hbm.client.render.TorexBenchmarkClient.register();
         dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "jetpack_visuals",
@@ -338,6 +347,15 @@ public final class HbmClientRegistrations {
         ArmorModTooltips.register();
         com.hbm.client.anim.GunRecoil.register();
         CraneKeybindHandler.register();
+    }
+
+    /**
+     * Client halves of the ported ntm-next entities: the looped-sound factory behind
+     * {@link com.hbm.sound.AudioSystem} (UFO, hunter chopper, worm) and the entity particle handlers.
+     */
+    public static void installEntityEffects() {
+        com.hbm.sound.AudioSystem.installClientFactory(com.hbm.client.sound.ClientAudioFactory.INSTANCE);
+        com.hbm.client.ClientEffects.install();
     }
 
     /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */

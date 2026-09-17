@@ -41,6 +41,9 @@ public class FabricInit implements ModInitializer {
 
         // Fabric has no deferred registration phase; register everything now via vanilla Registry.register.
         DeferredRegister.flushAllToVanilla();
+        // Living entity attribute sets (ModNtmEntities and the self-registering mobs); Forge-like loaders
+        // deliver these through EntityAttributeCreationEvent, Fabric writes them once the types exist.
+        dev.golem.core.registry.LivingAttributes.flushFabric();
 
         // Furnace burn times for the ItemFuel family. NeoForge reads these from the `neoforge:furnace_fuels`
         // data map (plain JSON in common resources, ignored by Fabric); Fabric has no data map for fuels, so

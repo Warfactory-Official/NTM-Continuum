@@ -271,6 +271,25 @@ public final class ModMenus {
     public static final RegistryObject<MenuType<ContainerCrate>> CRATE =
             MENUS.register("crate", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrate::new));
 
+    // --- the ntm-next entity port: vehicle menus opened through vanilla's data-less MenuProvider path ---
+    /** The crate minecart (1.7 ContainerCrate on the cart's own inventory). */
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuCrate>> CART_CRATE =
+            MENUS.register("cart_crate", () -> new MenuType<>(com.hbm.inventory.container.MenuCrate::new,
+                    net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
+    /** The destroyer minecart's two ghost filter grids (1.7 ContainerCartDestroyer). */
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuCartDestroyer>> CART_DESTROYER =
+            MENUS.register("cart_destroyer", () -> new MenuType<>(com.hbm.inventory.container.MenuCartDestroyer::new,
+                    net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
+    /** The cargo tram engine: 28 cargo slots, a charge slot and the power gauge. */
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuTrainCargoTram>> TRAIN_CARGO_TRAM =
+            MENUS.register("train_cargo_tram", () -> new MenuType<>(com.hbm.inventory.container.MenuTrainCargoTram::new,
+                    net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
+    /** The cargo tram trailer: cargo slots only. */
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuTrainCargoTramTrailer>> TRAIN_CARGO_TRAM_TRAILER =
+            MENUS.register("train_cargo_tram_trailer", () -> new MenuType<>(
+                    com.hbm.inventory.container.MenuTrainCargoTramTrailer::new,
+                    net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
+
     public static final RegistryObject<MenuType<ContainerArmorTable>> ARMOR_TABLE =
             MENUS.register("armor_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerArmorTable::new));
     public static final RegistryObject<MenuType<ContainerWeaponTable>> WEAPON_TABLE =

@@ -92,6 +92,17 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorFSB> schrabidium_boots =
             plain("schrabidium_boots", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.BOOTS);
 
+    // ---- Taurun (1.12.2 ModItemsArmor.java:308-318): the undead soldier's loadout. Sprites only; the
+    // 1.12.2 ArmorTaurun OBJ body model is a renderer follow-up recorded in the entity port manifest. ----
+    public static final RegistryObject<ArmorFSB> taurun_helmet =
+            plain("taurun_helmet", HbmArmorMaterials.TAURUN, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> taurun_plate =
+            plain("taurun_plate", HbmArmorMaterials.TAURUN, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> taurun_legs =
+            plain("taurun_legs", HbmArmorMaterials.TAURUN, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> taurun_boots =
+            plain("taurun_boots", HbmArmorMaterials.TAURUN, ArmorSlot.BOOTS);
+
     public static final RegistryObject<ArmorFSB> security_helmet =
             plain("security_helmet", HbmArmorMaterials.SECURITY, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> security_plate =
@@ -270,6 +281,17 @@ public final class ModArmorItems {
         configurePlainSet(cobalt_helmet.get(), cobalt_plate.get(), cobalt_legs.get(), cobalt_boots.get(), 0.125D);
         configurePlainSet(starmetal_helmet.get(), starmetal_plate.get(), starmetal_legs.get(), starmetal_boots.get(), 1.0D);
         configurePlainSet(security_helmet.get(), security_plate.get(), security_legs.get(), security_boots.get(), 0.825D);
+
+        // 1.12.2 ModItemsArmor.java:310-318: strength I, step size 1, hides the hat, full package, 25% rad resist.
+        ArmorFSB taurunHelmet = taurun_helmet.get()
+                .addEffect(Effects.instance(Effects.strength(), 20, 0))
+                .setStepSize(1)
+                .setHides(EnumPlayerPart.HAT)
+                .setHazardClass(FULL_PACKAGE)
+                .setRadResist(0.125D);
+        taurun_plate.get().cloneStats(taurunHelmet);
+        taurun_legs.get().cloneStats(taurunHelmet);
+        taurun_boots.get().cloneStats(taurunHelmet);
 
         ArmorFSB schrabHelmet = schrabidium_helmet.get();
         schrabHelmet.addEffect(Effects.instance(Effects.haste(), 20, 2))

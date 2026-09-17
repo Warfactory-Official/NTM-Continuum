@@ -6,6 +6,13 @@ package com.hbm.config;
  */
 public final class GeneralConfig {
 
+    /** 1.12.2 {@code 1.14_enableBomberShortMode}: bombers spawn closer to the target for small render distances. */
+    public static boolean enableBomberShortMode = false;
+    /** 1.12.2 {@code 1.18_enableExtendedLogging}: logs detonator use, nuclear explosions, launches, grenades. */
+    public static boolean enableExtendedLogging = false;
+    /** 1.12.2 {@code taintTrails} (ServerConfig in ntm-next): tainted creepers leave taint behind them. */
+    public static boolean taintTrails = false;
+
     private GeneralConfig() {}
 
     /** GENERAL SWITCH: enables the radiation system. */

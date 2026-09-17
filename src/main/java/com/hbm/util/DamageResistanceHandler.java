@@ -82,6 +82,14 @@ public final class DamageResistanceHandler {
                 ModArmorItems.security_legs.get(), ModArmorItems.security_boots.get(),
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F)
                         .addCategory(CATEGORY_EXPLOSION, 2F, 0.25F));
+        // 1.12.2 DamageResistanceHandler.java:239-244
+        registerSet(ModArmorItems.taurun_helmet.get(), ModArmorItems.taurun_plate.get(),
+                ModArmorItems.taurun_legs.get(), ModArmorItems.taurun_boots.get(),
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
+                        .addCategory(CATEGORY_FIRE, 0F, 0.25F)
+                        .addCategory(CATEGORY_EXPLOSION, 0F, 0.25F)
+                        .addExact("fall", 4F, 0.5F)
+                        .setOther(2F, 0.1F));
         registerSet(ModArmorItems.robes_helmet.get(), ModArmorItems.robes_plate.get(),
                 ModArmorItems.robes_legs.get(), ModArmorItems.robes_boots.get(), new ResistanceStats());
         registerSet(ModArmorItems.asbestos_helmet.get(), ModArmorItems.asbestos_plate.get(),

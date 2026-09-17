@@ -38,6 +38,8 @@ public class EntityHbmProps {
     public int phosphorus = 0;
     public int fire = 0;
     public int balefire = 0;
+    /** 1.7 HbmPlayerProps.grenadeDeployment: the universal grenade's pin state, kept out of every persistence path. */
+    public int grenadeDeployment = 0;
     private final List<ContaminationEffect> contamination = new ArrayList<>();
     /** Live crane input only; deliberately excluded from persistence and entity sync. */
     private final boolean[] craneKeysPressed = new boolean[EnumCraneKey.VALUES.length];

@@ -58,6 +58,7 @@ public final class HbmPackets {
         GolemNetwork.declarePlayToClient(JetpackSyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(JetpackExhaustPayload.CODEC);
         GolemNetwork.declarePlayToClient(ProjectileStatePayload.CODEC);
+        GolemNetwork.declarePlayToClient(FallingMultiblockPayload.CODEC);
         GolemNetwork.registerPlayToServer(JetpackInputPayload.CODEC,
                 (payload, player) -> com.hbm.handler.JetpackHandler.handleInput(player, payload));
         GolemNetwork.registerPlayToServer(KeybindPayload.CODEC,
@@ -164,6 +165,8 @@ public final class HbmPackets {
                 (payload, context) -> com.hbm.handler.JetpackHandler.dispatchClientExhaust(context.level(), payload));
         GolemNetwork.registerPlayToClient(ProjectileStatePayload.CODEC,
                 (payload, context) -> payload.apply(context.level()));
+        GolemNetwork.registerPlayToClient(FallingMultiblockPayload.CODEC,
+                (payload, context) -> FallingMultiblockPayload.handleClient(context.level(), payload));
     }
 
     /**
@@ -210,12 +213,13 @@ public final class HbmPackets {
         }
     }
 
-    /** Rebuilds the source shockwave using Core's oriented additive particle path. */
+    /**
+     * Rebuilds the source shockwave using Core's oriented additive particle path. The body lives in a
+     * client class: a {@code new ParticlePlasmaBlast(...)} here made the dedicated server's verifier load
+     * {@code net.minecraft.client.particle.Particle} while verifying this class and refuse to construct the mod.
+     */
     public static void handlePlasmaBlast(Level level, PlasmaBlastPayload payload) {
-        if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel client)) return;
-        dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticlePlasmaBlast(client,
-                payload.x(), payload.y(), payload.z(), payload.r(), payload.g(), payload.b(),
-                payload.pitch(), payload.yaw(), payload.scale()));
+        com.hbm.client.particle.PlasmaBlastClient.handle(level, payload);
     }
 
     /**

@@ -82,6 +82,25 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         super(type, level);
     }
 
+    /**
+     * For submunitions (ntm-next): spawned at an explicit position with an explicit motion, no shooter frame.
+     * The source scales the unit heading by {@code config.spread + gunSpread} of scatter.
+     */
+    public EntityBulletBaseMK4(Level level, LivingEntity entity, BulletConfig config, float damage, float gunSpread,
+                               double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
+        this(ModEntities.BULLET_MK4.get(), level);
+
+        this.thrower = entity;
+        this.setBulletConfig(config);
+
+        this.damage = damage;
+
+        this.snapTo(posX, posY, posZ, 0, 0);
+
+        this.setDeltaMovement(motionX, motionY, motionZ);
+        this.shoot(motionX, motionY, motionZ, this.config.spread + gunSpread);
+    }
+
     /** The standard gun constructor: fired from {@code shooter}'s eyes with a muzzle offset. */
     public EntityBulletBaseMK4(LivingEntity shooter, BulletConfig config, float baseDamage, float gunSpread,
             double sideOffset, double heightOffset, double frontOffset) {

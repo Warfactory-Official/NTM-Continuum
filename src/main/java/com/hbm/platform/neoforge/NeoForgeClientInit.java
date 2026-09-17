@@ -54,6 +54,7 @@ public final class NeoForgeClientInit {
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
 
         // Look-overlay HUD (battery charge / duct type / ...) — a GUI layer drawn above the vanilla HUD,

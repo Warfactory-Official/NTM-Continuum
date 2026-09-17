@@ -58,7 +58,8 @@ public final class XFactoryCatapult {
         };
     }
 
-    private static void irradiate(Level level, double x, double y, double z, float multiplier) {
+    /** The 1.7 mini-nuke fallout ring; shared with the grenade fillings (ntm-next {@code incrementRad}). */
+    public static void irradiate(Level level, double x, double y, double z, float multiplier) {
         if (!(level instanceof ServerLevel server)) return;
         for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
             if (Math.abs(dx) + Math.abs(dz) >= 4) continue;

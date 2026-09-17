@@ -20,6 +20,12 @@ import java.text.DecimalFormat;
  */
 public final class Library {
 
+    /** {@code hbm:<path>}; the ntm-next spelling kept by the copied entity classes. */
+    public static net.minecraft.resources.Identifier id(String path) {
+        return dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, path);
+    }
+
+
     private Library() {}
 
     private static final DecimalFormat SHORT_NUMBER_FORMAT = new DecimalFormat("0.00");
@@ -198,5 +204,13 @@ public final class Library {
             hash *= 0x100000001b3L;
         }
         return hash;
+    }
+    /** ntm-next: the integer block columns along {@code vec0} from (x,y,z), with the step index as the 4th slot. */
+    public static java.util.List<int[]> getBlockPosInPath(int x, int y, int z, int length, net.minecraft.world.phys.Vec3 vec0) {
+        java.util.List<int[]> list = new java.util.ArrayList<>();
+        for (int i = 0; i <= length; i++) {
+            list.add(new int[]{(int) (x + (vec0.x * i)), y, (int) (z + (vec0.z * i)), i});
+        }
+        return list;
     }
 }

@@ -29,6 +29,15 @@ public final class ModDataComponents {
     public static final GolemComponent<Float> HAZARD_RADIATION = GolemComponent.floatValue(Constants.MOD_ID, "hazard_radiation");
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
+    /** The universal grenade's four 1.7 NBT selectors (shell, filling, fuze, extra). */
+    public static final GolemComponent<com.hbm.items.weapon.grenade.GrenadeData> GRENADE =
+            GolemComponent.of(Constants.MOD_ID, "grenade", com.hbm.items.weapon.grenade.GrenadeData.CODEC);
+    /** 1.7 ItemModMinecart "base" - the chassis a cart item was crafted on. */
+    public static final GolemComponent<com.hbm.items.tool.ItemModMinecart.EnumCartBase> CART_BASE =
+            GolemComponent.of(Constants.MOD_ID, "cart_base", com.hbm.items.tool.ItemModMinecart.EnumCartBase.CODEC);
+    /** 1.7 satellite chip "freq" NBT (ISatChip); ntm-next keeps it in its persistent-data compound. */
+    public static final GolemComponent<net.minecraft.nbt.CompoundTag> PERSISTENT_DATA =
+            GolemComponent.compound(Constants.MOD_ID, "persistent_data");
     public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
     /** What a cargo artillery shell is carrying. It survives the flight and comes back off the shell. */
     public static final GolemComponent<ItemStack> ARTY_CARGO =

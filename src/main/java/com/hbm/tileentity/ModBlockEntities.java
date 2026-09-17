@@ -318,6 +318,10 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("crate_desh", () -> BlockEntities.type(
                     (pos, state) -> new TileEntityCrate(CrateType.DESH, pos, state), ModStorageBlocks.crate_desh.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityCrateSupply>> CRATE_SUPPLY =
+            BLOCK_ENTITIES.register("crate_supply", () -> BlockEntities.type(
+                    com.hbm.tileentity.machine.storage.TileEntityCrateSupply::new, ModStorageBlocks.crate_supply.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> MASS_STORAGE_WOOD =
             massStorage(com.hbm.tileentity.machine.storage.MassStorageType.WOOD, ModStorageBlocks.mass_storage_wood);
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> MASS_STORAGE_IRON =

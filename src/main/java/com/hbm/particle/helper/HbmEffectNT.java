@@ -71,7 +71,17 @@ public enum HbmEffectNT {
     /** The large explosion's radial shock smoke. */
     Smoke_Shock,
     /** Direct client-side block dust used by the three legacy extinguisher streams. */
-    VanillaExt_BlockDust;
+    VanillaExt_BlockDust,
+    /**
+     * The old {@code gasfire} puff sent by the miner lander's retro burn (ntm-next {@code GasFlamePayload}).
+     * Tag: {@code moX/moY/moZ} motion, optional {@code scale} (6.5 when absent).
+     */
+    GasFlame,
+    /**
+     * Arc endpoints for a tesla/taint crab (ntm-next {@code TeslaArcPayload}). Tag: {@code entityID} and a
+     * {@code targets} list of {@code x/y/z} doubles; the client hands them to the crab it names.
+     */
+    TeslaArc;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

@@ -1216,7 +1216,10 @@
   "weapon.robin_explosion": {
     "category": "player",
     "sounds": [
-      "hbm:weapon/robin_explosion"
+      {
+        "name": "hbm:weapon/robin_explosion",
+        "stream": false
+      }
     ]
   },
   "weapon.rocketflame": {
@@ -1642,7 +1645,10 @@
   "weapon.fire.tesla": {
     "category": "player",
     "sounds": [
-      "hbm:weapon/fire/tesla"
+      {
+        "name": "hbm:weapon/fire/tesla",
+        "stream": false
+      }
     ]
   },
   "weapon.fire.vstar": {
@@ -2197,15 +2203,6 @@
       }
     ]
   },
-  "weapon.revolver_cock": {
-    "category": "player",
-    "sounds": [
-      {
-        "name": "hbm:weapon/reload/revolver_cock",
-        "stream": false
-      }
-    ]
-  },
   "weapon.mag_small_remove": {
     "category": "player",
     "sounds": [
@@ -2273,15 +2270,6 @@
     "sounds": [
       {
         "name": "hbm:weapon/reload/open_latch",
-        "stream": false
-      }
-    ]
-  },
-  "weapon.bolt_open": {
-    "category": "player",
-    "sounds": [
-      {
-        "name": "hbm:weapon/reload/bolt_open",
         "stream": false
       }
     ]
@@ -3034,6 +3022,282 @@
       },
       {
         "name": "hbm:weapon/fire/tau_release3",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.chime": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/chime",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.gambit": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/gambit",
+        "stream": true
+      }
+    ]
+  },
+  "alarm.soyuzed": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/soyuzed",
+        "stream": false
+      }
+    ]
+  },
+  "entity.bomb_whistle": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:entity/bombwhistle",
+        "stream": false
+      }
+    ]
+  },
+  "entity.bomb_det": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/bomb_det1",
+        "stream": false
+      },
+      {
+        "name": "hbm:entity/bomb_det2",
+        "stream": false
+      },
+      {
+        "name": "hbm:entity/bomb_det3",
+        "stream": false
+      }
+    ]
+  },
+  "entity.chopper_charge": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/chopper_charge",
+        "stream": false
+      }
+    ]
+  },
+  "entity.chopper_crashing_loop": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/chopper_crashing_loop",
+        "stream": false
+      }
+    ]
+  },
+  "entity.chopper_damage": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/chopper_damage",
+        "stream": false
+      }
+    ]
+  },
+  "entity.chopper_drop": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/chopper_drop",
+        "stream": false
+      }
+    ]
+  },
+  "entity.chopper_flying_loop": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/chopper_flying_loop",
+        "stream": false
+      }
+    ]
+  },
+  "crate_close": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/crateclose",
+        "stream": false
+      }
+    ]
+  },
+  "entity.bomber_loop": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:entity/bomber1",
+        "stream": false
+      }
+    ]
+  },
+  "entity.bomber_small_loop": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:entity/bomber2",
+        "stream": false
+      }
+    ]
+  },
+  "entity.cybercrab": {
+    "category": "hostile",
+    "sounds": [
+      "hbm:entity/radio_random1",
+      "hbm:entity/radio_random2",
+      "hbm:entity/radio_random3",
+      "hbm:entity/radio_random4",
+      "hbm:entity/radio_random5",
+      "hbm:entity/radio_random6",
+      "hbm:entity/radio_random7",
+      "hbm:entity/radio_random8",
+      "hbm:entity/radio_random9",
+      "hbm:entity/radio_random10",
+      "hbm:entity/radio_random11",
+      "hbm:entity/radio_random12",
+      "hbm:entity/radio_random13",
+      "hbm:entity/radio_random14",
+      "hbm:entity/radio_random15"
+    ]
+  },
+  "entity.ducc": {
+    "category": "neutral",
+    "sounds": [
+      "hbm:entity/ducc1",
+      "hbm:entity/ducc2"
+    ]
+  },
+  "entity.megaquacc": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/megaquacc",
+        "stream": false
+      }
+    ]
+  },
+  "entity.plane_crash": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "hbm:entity/plane_crash",
+        "stream": false
+      }
+    ]
+  },
+  "entity.plane_shot_down": {
+    "category": "neutral",
+    "sounds": [
+      {
+        "name": "hbm:entity/plane_shot_down",
+        "stream": false
+      }
+    ]
+  },
+  "entity.meteorite_falling_loop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:entity/meteorite_falling_loop",
+        "stream": false
+      }
+    ]
+  },
+  "missile_take_off": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:weapon/missiletakeoff",
+        "stream": false
+      }
+    ]
+  },
+  "misc.null_mine": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:misc/null",
+        "stream": false
+      }
+    ]
+  },
+  "entity.old_explosion": {
+    "category": "ambient",
+    "sounds": [
+      {
+        "name": "hbm:entity/old_explosion",
+        "stream": false
+      }
+    ]
+  },
+  "entity.ufo_beam": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/ufo_beam_short",
+        "stream": false
+      }
+    ]
+  },
+  "ufo_blast": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/ufoblast",
+        "stream": false
+      }
+    ]
+  },
+  "crate_break": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/cratebreak1",
+        "stream": false
+      },
+      {
+        "name": "hbm:block/cratebreak2",
+        "stream": false
+      },
+      {
+        "name": "hbm:block/cratebreak3",
+        "stream": false
+      },
+      {
+        "name": "hbm:block/cratebreak4",
+        "stream": false
+      },
+      {
+        "name": "hbm:block/cratebreak5",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.bolt_open": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/reload/bolt_open",
+        "stream": false
+      }
+    ]
+  },
+  "weapon.revolver_cock": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:weapon/reload/revolver_cock",
         "stream": false
       }
     ]

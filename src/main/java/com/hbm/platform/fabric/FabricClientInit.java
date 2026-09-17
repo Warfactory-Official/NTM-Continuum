@@ -48,6 +48,7 @@ public class FabricClientInit implements ClientModInitializer {
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
         HbmClientRegistrations.registerScreens(MenuScreens::register);
 

@@ -173,7 +173,7 @@ public class EntityProcessorCross implements IEntityProcessor {
      * {@code ServerExplosion.getSeenPercent}. That method is on a different class in each era, so the
      * (unchanged) algorithm is spelled out here rather than reached for through a version guard.
      */
-    private static double seenPercent(Level level, Vec3 centre, Entity entity) {
+    public static double seenPercent(Level level, Vec3 centre, Entity entity) {
         AABB box = entity.getBoundingBox();
         double xs = 1.0D / ((box.maxX - box.minX) * 2.0D + 1.0D);
         double ys = 1.0D / ((box.maxY - box.minY) * 2.0D + 1.0D);
@@ -204,6 +204,13 @@ public class EntityProcessorCross implements IEntityProcessor {
      * Projectiles are exempt from knockback: upstream's list names bullets and grenades, both of which
      * carry their own flight model that a shove would corrupt. Only the bullet is ported so far.
      */
+    /** ntm-next: explosion knockback resistance damping (1.7 had none; the attribute is modern). */
+    public static double knockbackDamping(Entity entity) {
+        return entity instanceof LivingEntity living
+                ? 1.0D - dev.golem.core.world.Compat.explosionKnockbackResistance(living)
+                : 1.0D;
+    }
+
     public static boolean shouldDealKnockback(Entity entity) {
         return !(entity instanceof com.hbm.entity.projectile.EntityBulletBaseMK4);
     }

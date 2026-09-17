@@ -132,6 +132,11 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
      * function of the core's blockstate alone, or teardown can orphan cells. The position handed to the
      * visitor is mutable and reused; a caller that keeps it takes a copy.
      */
+    /** Public spelling of {@link #visitCells} for the falling multiblock's structure query. */
+    public final void visitPlacedCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        visitCells(core, facing, visitor);
+    }
+
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         MultiblockHandlerXR.visitBox(core, getDimensions(), facing, visitor);
     }

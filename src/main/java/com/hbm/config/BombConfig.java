@@ -34,6 +34,22 @@ public final class BombConfig {
     public static int n2Radius = 200;
 
     /** Maximum milliseconds per tick allocated to the mk5 chunk-processing (ray/destruction batching). */
+    /** 1.12.2 {@code 3.11_aSchrabRadius}: the anti-schrabidium (small fleija) missile warhead. */
+    public static int aSchrabRadius = 20;
+    /** 1.12.2 {@code 3.06_fleijaRadius}. */
+    public static int fleijaRadius = 50;
+    /** 1.12.2 {@code 3.07_soliniumRadius}. */
+    public static int soliniumRadius = 150;
+    /** 1.12.2 {@code 3.00_prototypeRadius}. */
+    public static int prototypeRadius = 150;
+    /** 1.12.2 {@code mirvRadius}. */
+    public static int mirvRadius = 100;
+    /** 1.12.2 {@code nukaRadius}. */
+    public static int nukaRadius = 25;
+    /** 1.12.2 {@code 3.12_blastSpeed}: blocks the MK3/MK4 blast processes per tick. */
+    public static int blastSpeed = 1024;
+    /** 1.12.2 {@code 3.13_explosionLifespan}: 0 = unlimited MK3 blast lifetime. */
+    public static int limitExplosionLifespan = 0;
     public static int mk5 = 50;
 
     /** Radius of the fallout area, as a percentage of the base radius. */

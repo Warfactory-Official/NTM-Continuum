@@ -8,6 +8,7 @@ import static dev.golem.core.dejson.Damage.BYPASSES_INVULNERABILITY;
 import static dev.golem.core.dejson.Damage.BY_LIVING_NON_PLAYER;
 import static dev.golem.core.dejson.Damage.IS_EXPLOSION;
 import static dev.golem.core.dejson.Damage.IS_FIRE;
+import static dev.golem.core.dejson.Damage.IS_PROJECTILE;
 import static dev.golem.core.dejson.Damage.type;
 
 /**
@@ -64,6 +65,27 @@ public final class ModDamageTypes {
                 type("overdose").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("radiation").tags(BYPASSES_ARMOR),
                 type("taint").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+
+                type("acid_player").message("acidPlayer").exhaustion(0.1),
+                type("boat").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("boxcar").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("building").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("combine").message("cmb").tags(BYPASSES_ARMOR, IS_PROJECTILE),
+                type("electric").exhaustion(0.1),
+                type("emplacer").message("chopperBullet").exhaustion(0.1).tags(IS_PROJECTILE),
+                type("exhaust").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("explosive").exhaustion(0.1).tags(IS_EXPLOSION),
+                type("fire").exhaustion(0.1).tags(IS_FIRE),
+                type("laser").exhaustion(0.1),
+                type("meteorite").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("mud_poisoning").message("mudPoisoning").tags(BYPASSES_ARMOR),
+                type("nuclear_blast").message("nuclearBlast").exhaustion(0.1).tags(IS_EXPLOSION),
+                type("revolver_bullet").message("revolverBullet").exhaustion(0.1).tags(IS_PROJECTILE),
+                type("subatomic").exhaustion(0.1),
+                type("tau").tags(BYPASSES_ARMOR, IS_PROJECTILE),
+
+                type("cloud").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("pink_cloud").message("pc").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
 
                 type("bullet_electric").projectile(),
                 type("bullet_explosive").projectile().tags(IS_EXPLOSION),

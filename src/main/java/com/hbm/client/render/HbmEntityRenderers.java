@@ -55,7 +55,7 @@ public final class HbmEntityRenderers {
         regGem(sink, ModEntities.VORTEX.get(), BlackHoleRenderer::new);
         regGem(sink, ModEntities.RAGING_VORTEX.get(), BlackHoleRenderer::new);
         sink.register(ModEntities.RUBBLE.get(), HbmEntityRenderers::rubbleRenderer);
-        sink.register(ModEntities.SHRAPNEL.get(), NoopRenderer::new);
+        // SHRAPNEL: bound with the ntm-next port's RenderShrapnel below.
         regGem(sink, ModEntities.HIMARS_ROCKET.get(), RenderArtilleryRocket::new);
         regGem(sink, ModEntities.ARTILLERY_SHELL.get(), RenderArtilleryShell::new);
         regGem(sink, ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
@@ -86,6 +86,40 @@ public final class HbmEntityRenderers {
         missile(sink, ModMissileEntities.MISSILE_N2.get(), "missile_atlas.obj", "missile_n2.png", 1.5F);
         missile(sink, ModMissileEntities.MISSILE_STEALTH.get(), "missile_stealth.obj", "missile_stealth.png", 2.0F);
         missile(sink, ModMissileEntities.MISSILE_ANTI_BALLISTIC.get(), "missile_abm.obj", "missile_abm.png", 1.0F);
+
+        com.hbm.client.render.entity.NtmEntityRenderers.registerAll(sink);
+    }
+
+    /**
+     * Every {@code hbm:} entity type must have a renderer bound: on 26.1 the dispatcher dereferences a missing
+     * one and takes the render thread down the frame the entity enters view, and below it the entity is silently
+     * invisible. Loaders call this after {@link #registerAll} with the set of types they saw registered. Missing
+     * types fail loudly in a development run and are logged otherwise.
+     */
+    public static void verifyCoverage(java.util.Set<EntityType<?>> bound) {
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        for (EntityType<?> type : net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE) {
+            String id = EntityType.getKey(type).toString();
+            if (id.startsWith(com.hbm.Constants.MOD_ID + ":") && !bound.contains(type)) missing.add(id);
+        }
+        if (missing.isEmpty()) {
+            com.hbm.Constants.LOG.info("Entity renderers: every hbm entity type has a renderer ({} bound)", bound.size());
+            return;
+        }
+        String message = missing.size() + " hbm entity types have no renderer: " + String.join(", ", missing);
+        if (dev.golem.core.platform.Platform.isDevelopment()) throw new IllegalStateException(message);
+        com.hbm.Constants.LOG.error(message);
+    }
+
+    /** A sink that records what it binds, for {@link #verifyCoverage}. */
+    public static Sink recording(Sink downstream, java.util.Set<EntityType<?>> bound) {
+        return new Sink() {
+            @Override
+            public <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider) {
+                bound.add(type);
+                downstream.register(type, provider);
+            }
+        };
     }
 
     private static <T extends Entity & com.hbm.entity.missile.IMissilePitch> void missile(Sink sink, EntityType<T> type, String model, String texture, float scale) {

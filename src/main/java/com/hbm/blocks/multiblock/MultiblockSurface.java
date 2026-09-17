@@ -153,4 +153,26 @@ public final class MultiblockSurface {
         return owner.block().isPassiveOnlyOpenAt(owner.facing(), pos.getX() - core.getX(),
                 pos.getY() - core.getY(), pos.getZ() - core.getZ(), side, passiveDomains);
     }
+
+    /**
+     * Every block a folded machine at {@code core} is made of: the core plus each placed cell the core
+     * index still attributes to it (ntm-next's {@code rigidStructureBlocks}, for the falling multiblock).
+     */
+    public static java.util.List<BlockPos> rigidStructureBlocks(Level level, BlockPos core) {
+        BlockState state = level.getBlockState(core);
+        BlockMultiblockCore block = foldedCore(state);
+        if (block == null) return java.util.List.of();
+        java.util.List<BlockPos> out = new java.util.ArrayList<>();
+        out.add(core.immutable());
+        long corePacked = core.asLong();
+        ServerLevel server = level instanceof ServerLevel s ? s : null;
+        block.visitPlacedCells(core, state.getValue(BlockMultiblockCore.FACING), (pos, mask) -> {
+            if (server != null) {
+                long recorded = MultiblockCoreIndex.lookup(server, pos);
+                if (recorded != Long.MIN_VALUE && recorded != corePacked) return;
+            }
+            out.add(pos.immutable());
+        });
+        return out;
+    }
 }

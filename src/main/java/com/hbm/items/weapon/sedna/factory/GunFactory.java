@@ -52,6 +52,9 @@ public class GunFactory {
         XFactory75Bolt.init();
         XFactoryFolly.init();
         XFactoryTurret.init();
+        // The bullets the mask man, UFO and Balls-O-Tron fire; without this every NPC shot has a null config.
+        XFactoryNPC.init();
+        XFactoryWarhead.init();
         XFactory10ga.init();
         XFactory35800.init();
         XFactory45.init();

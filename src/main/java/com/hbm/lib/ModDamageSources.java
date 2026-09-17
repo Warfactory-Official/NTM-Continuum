@@ -65,6 +65,48 @@ public final class ModDamageSources {
     /** Eaten by a corrosive fluid. Absolute, and it damages the whole suit on the way through. */
     public static final ResourceKey<DamageType> ACID = key("acid");
 
+    // --- ntm-next entity port (gen_entity_damage_types.py) ---
+    /** ntm-next cloud: bypasses_armor, bypasses_effects. */
+    public static final ResourceKey<DamageType> CLOUD = key("cloud");
+    /** ntm-next pink_cloud: bypasses_armor, bypasses_effects. */
+    public static final ResourceKey<DamageType> PINK_CLOUD = key("pink_cloud");
+
+    // --- ntm-next entity port (gen_entity_damage_types.py) ---
+    /** ntm-next acid_player: no tags. */
+    public static final ResourceKey<DamageType> ACID_PLAYER = key("acid_player");
+    /** ntm-next boat: bypasses_armor, bypasses_effects. */
+    public static final ResourceKey<DamageType> BOAT = key("boat");
+    /** ntm-next boxcar: bypasses_armor, bypasses_effects. */
+    public static final ResourceKey<DamageType> BOXCAR = key("boxcar");
+    /** ntm-next building: bypasses_armor, bypasses_effects. */
+    public static final ResourceKey<DamageType> BUILDING = key("building");
+    /** ntm-next combine: bypasses_armor, is_projectile. */
+    public static final ResourceKey<DamageType> COMBINE = key("combine");
+    /** ntm-next electric: no tags. */
+    public static final ResourceKey<DamageType> ELECTRIC = key("electric");
+    /** ntm-next emplacer: is_projectile. */
+    public static final ResourceKey<DamageType> EMPLACER = key("emplacer");
+    /** ntm-next exhaust: bypasses_armor, bypasses_effects. */
+    public static final ResourceKey<DamageType> EXHAUST = key("exhaust");
+    /** ntm-next explosive: is_explosion. */
+    public static final ResourceKey<DamageType> EXPLOSIVE = key("explosive");
+    /** ntm-next fire: is_fire. */
+    public static final ResourceKey<DamageType> FIRE = key("fire");
+    /** ntm-next laser: no tags. */
+    public static final ResourceKey<DamageType> LASER = key("laser");
+    /** ntm-next meteorite: bypasses_armor, bypasses_effects. */
+    public static final ResourceKey<DamageType> METEORITE = key("meteorite");
+    /** ntm-next mud_poisoning: bypasses_armor. */
+    public static final ResourceKey<DamageType> MUD_POISONING = key("mud_poisoning");
+    /** ntm-next nuclear_blast: is_explosion. */
+    public static final ResourceKey<DamageType> NUCLEAR_BLAST = key("nuclear_blast");
+    /** ntm-next revolver_bullet: is_projectile. */
+    public static final ResourceKey<DamageType> REVOLVER_BULLET = key("revolver_bullet");
+    /** ntm-next subatomic: no tags. */
+    public static final ResourceKey<DamageType> SUBATOMIC = key("subatomic");
+    /** ntm-next tau: bypasses_armor, is_projectile. */
+    public static final ResourceKey<DamageType> TAU = key("tau");
+
     /**
      * The damage categories a bullet can belong to, ported from 1.12.2's
      * {@code DamageResistanceHandler.DamageClass}. Upstream turns the enum's name into a damage-source
@@ -104,6 +146,13 @@ public final class ModDamageSources {
 
     public static DamageSource source(Level level, ResourceKey<DamageType> key) {
         return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key));
+    }
+
+    /** A typed source with a direct (projectile/beam) and a causing entity, the 3-arg {@code DamageSources.source} shape. */
+    public static DamageSource source(Level level, ResourceKey<DamageType> key,
+                                      net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity direct,
+                                      net.minecraft.world.entity.@org.jspecify.annotations.Nullable Entity causing) {
+        return new DamageSource(level.registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key), direct, causing);
     }
 
     /** The hard-landing shockwave, credited to the wearer whose suit made it. */

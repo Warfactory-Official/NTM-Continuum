@@ -269,6 +269,17 @@ public final class WavefrontObj {
         renderExcept(pose, buffer, light, overlay, java.util.Set.of(), doubleSided);
     }
 
+    /** Draws every part tinted with an ARGB vertex colour. */
+    public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color) {
+        for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color);
+    }
+
+    /** Draws every part tinted, with the texture scrolled by {@code (uOffset, vOffset)} — see {@link #renderPart}. */
+    public void renderAll(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, int color,
+                          float uOffset, float vOffset) {
+        for (Group g : groups) drawGroup(g, pose, buffer, light, overlay, color, false, uOffset, vOffset);
+    }
+
     /** Draws every part except those named in {@code exclude} (e.g. dynamic parts like a fluid overlay). */
     public void renderExcept(PoseStack.Pose pose, VertexConsumer buffer, int light, int overlay, java.util.Set<String> exclude) {
         renderExcept(pose, buffer, light, overlay, exclude, false);
