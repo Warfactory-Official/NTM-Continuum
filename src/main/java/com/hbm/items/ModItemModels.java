@@ -8,6 +8,8 @@ import dev.golem.core.render.display.DisplaySlot;
 import dev.golem.core.render.display.Pose17;
 import org.joml.Matrix4f;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +34,73 @@ public final class ModItemModels {
     /** How many items are the plain one-sprite case; quoted in this class's own javadoc. */
     static final int SPRITES = 1372;
 
+    /**
+     * The shape art each material-shape sprite is computed from, and the materials it is computed for.
+     *
+     * <p>These sprites are not files. Golem Core recolours one greyscale plate per shape onto every
+     * material's own light and dark colours while the atlas is stitched, which is what the 1.12.2
+     * {@code ItemAutogen} did with a mutable atlas icon and what this mod did with 187 pre-baked PNGs
+     * until they were deleted. {@link com.hbm.client.AutogenSprites} declares the remap; this says the
+     * same thing to the build, so the sprite check holds the model against the art it is derived from
+     * instead of reporting a file that is never going to be there.
+     *
+     * <p>{@code bedrock_ore_fragment_bismuth} is deliberately absent: bismuth declares one flat colour
+     * for both ends of its band, so a remap would hand it a silhouette. 1.7 answered that with an
+     * authored sprite ({@code ItemAutogen.aot}) and so does this — it stays a file.
+     */
+    private static final Map<String, String[]> REMAPPED_SHAPES = new LinkedHashMap<>();
+
+    static {
+        REMAPPED_SHAPES.put("shell", new String[] {
+                "titanium", "aluminium", "steel", "copper", "weaponsteel", "saturnite"});
+        REMAPPED_SHAPES.put("pipe", new String[] {
+                "iron", "aluminium", "steel", "lead", "copper", "dura_steel", "rubber"});
+        REMAPPED_SHAPES.put("ingot_raw", new String[] {
+                "neodymium", "sodium", "strontium", "borax", "slag", "redstone"});
+        REMAPPED_SHAPES.put("plate_cast", new String[] {
+                "iron", "gold", "titanium", "aluminium", "steel", "lead", "copper", "weaponsteel",
+                "combine_steel", "dura_steel", "saturnite", "schrabidium", "desh", "tungsten", "zirconium",
+                "schrabidate", "osmiridium", "starmetal", "ferrouranium", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("plate_welded", new String[] {
+                "iron", "titanium", "aluminium", "steel", "copper", "combine_steel", "tungsten",
+                "zirconium", "osmiridium", "tcalloy", "cdalloy"});
+        REMAPPED_SHAPES.put("wire_fine", new String[] {
+                "gold", "aluminium", "steel", "lead", "copper", "schrabidium", "red_copper",
+                "magnetized_tungsten", "tungsten", "zirconium", "carbon"});
+        REMAPPED_SHAPES.put("wire_dense", new String[] {
+                "gold", "titanium", "copper", "schrabidium", "red_copper", "magnetized_tungsten",
+                "tungsten", "niobium", "neodymium", "schrabidate", "starmetal", "bscco", "dineutronium"});
+        REMAPPED_SHAPES.put("bolt", new String[] {
+                "steel", "lead", "dura_steel", "tungsten"});
+        REMAPPED_SHAPES.put("part_barrel_light", new String[] {
+                "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("part_barrel_heavy", new String[] {
+                "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "ferrouranium",
+                "tcalloy", "cdalloy"});
+        REMAPPED_SHAPES.put("part_receiver_light", new String[] {
+                "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("part_receiver_heavy", new String[] {
+                "gunmetal", "weaponsteel", "dura_steel", "saturnite", "ferrouranium", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("part_mechanism", new String[] {
+                "gunmetal", "weaponsteel", "saturnite"});
+        REMAPPED_SHAPES.put("part_stock", new String[] {
+                "wood", "gunmetal", "weaponsteel", "saturnite", "desh", "polymer", "bakelite", "pc", "pvc"});
+        REMAPPED_SHAPES.put("part_grip", new String[] {
+                "wood", "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "polymer",
+                "bakelite", "rubber", "pc", "pvc", "bone"});
+        REMAPPED_SHAPES.put("bedrock_ore_fragment", new String[] {
+                "iron", "gold", "titanium", "aluminium", "lead", "copper", "tungsten", "beryllium",
+                "cobalt", "niobium", "zirconium", "boron", "neodymium", "lanthanium", "asbestos", "uranium",
+                "thorium", "polonium", "u238", "technetium", "ra226", "tantalium", "silicon", "sodium",
+                "strontium", "lithium", "sulfur", "fluorite", "red_phosphorus", "chlorocalcite", "molysite",
+                "cinnabar", "borax", "sodalite", "redstone", "coal", "lignite", "diamond", "bauxite",
+                "cryolite", "emerald", "niter", "rare"});
+    }
+
     private static boolean declared;
 
     private ModItemModels() {}
@@ -43,6 +112,7 @@ public final class ModItemModels {
         declared = true;
 
         sprites();
+        remappedShapeSprites();
         renamedSprites();
         layeredSprites();
         tinted();
@@ -114,97 +184,77 @@ public final class ModItemModels {
     };
 
     private static final String[] SPRITE_ITEMS_0 = {
-            "ammo_arty", "ammo_debug", "ammo_dgk", "ammo_fireext", "ammo_fireext_foam", "ammo_fireext_sand",
-            "ammo_secret_m44_equestrian", "ammo_shell",
-            "ammo_shell_apfsds_du", "ammo_shell_apfsds_t", "ammo_shell_explosive", "ammo_shell_w9",
-            "ammo_standard_bmg50_ap", "ammo_standard_bmg50_du", "ammo_standard_bmg50_fmj",
-            "ammo_standard_bmg50_he", "ammo_standard_bmg50_jhp", "ammo_standard_bmg50_sm",
-            "ammo_standard_bmg50_sp", "ammo_standard_flame_diesel", "ammo_standard_m357_ap",
-            "ammo_standard_m357_bp", "ammo_standard_m357_express", "ammo_standard_m357_fmj",
-            "ammo_standard_m357_jhp", "ammo_standard_m357_sp", "ammo_standard_m44_ap",
-            "ammo_standard_m44_bp", "ammo_standard_m44_express", "ammo_standard_m44_fmj",
-            "ammo_standard_m44_jhp", "ammo_standard_m44_sp", "ammo_standard_nuke_high",
-            "ammo_standard_p22_ap", "ammo_standard_p22_fmj", "ammo_standard_p22_jhp",
-            "ammo_standard_p22_sp", "ammo_standard_p9_ap", "ammo_standard_p9_fmj",
-            "ammo_standard_p9_jhp", "ammo_standard_p9_sp", "ammo_standard_r556_ap",
-            "ammo_standard_r556_fmj", "ammo_standard_r556_jhp", "ammo_standard_r556_sp",
-            "ammo_standard_rocket_demo", "ammo_standard_rocket_he", "ammo_standard_rocket_heat",
-            "ammo_standard_rocket_inc", "ammo_standard_rocket_phosphorus", "ammo_standard_stone",
-            "ammo_standard_stone_ap", "ammo_standard_stone_iron", "ammo_standard_stone_shot",
-            "ammo_standard_tau_uranium", "ams_catalyst_aluminium", "ams_catalyst_beryllium",
-            "ams_catalyst_blank", "ams_catalyst_caesium", "ams_catalyst_cerium", "ams_catalyst_cobalt",
-            "ams_catalyst_copper", "ams_catalyst_dineutronium", "ams_catalyst_euphemium",
-            "ams_catalyst_iron", "ams_catalyst_lithium", "ams_catalyst_niobium",
-            "ams_catalyst_schrabidium", "ams_catalyst_strontium", "ams_catalyst_thorium",
-            "ams_catalyst_tungsten", "ams_muzzle", "armor_battery", "armor_battery_mk2",
-            "armor_battery_mk3", "armor_polish", "asbestos_boots", "asbestos_cloth", "asbestos_helmet",
-            "asbestos_legs", "asbestos_plate", "assembly_nuke", "ball_dynamite", "ball_fireclay",
-            "ball_resin", "ball_tatb", "ball_tnt", "ballistite", "battery_sc_americium",
-            "battery_sc_gold", "battery_sc_lead", "battery_sc_plutonium", "battery_sc_polonium",
-            "battery_sc_technetium", "battery_sc_uranium", "battery_spark", "battery_trixite",
-            "bedrock_ore_fragment_aluminium", "bedrock_ore_fragment_asbestos",
-            "bedrock_ore_fragment_bauxite", "bedrock_ore_fragment_beryllium",
-            "bedrock_ore_fragment_bismuth", "bedrock_ore_fragment_borax", "bedrock_ore_fragment_boron",
-            "bedrock_ore_fragment_chlorocalcite", "bedrock_ore_fragment_cinnabar",
-            "bedrock_ore_fragment_coal", "bedrock_ore_fragment_cobalt", "bedrock_ore_fragment_copper",
-            "bedrock_ore_fragment_cryolite", "bedrock_ore_fragment_diamond",
-            "bedrock_ore_fragment_emerald", "bedrock_ore_fragment_fluorite",
-            "bedrock_ore_fragment_gold", "bedrock_ore_fragment_iron", "bedrock_ore_fragment_lanthanium",
-            "bedrock_ore_fragment_lead", "bedrock_ore_fragment_lignite", "bedrock_ore_fragment_lithium",
-            "bedrock_ore_fragment_molysite", "bedrock_ore_fragment_neodymium",
-            "bedrock_ore_fragment_niobium", "bedrock_ore_fragment_niter",
-            "bedrock_ore_fragment_polonium", "bedrock_ore_fragment_ra226", "bedrock_ore_fragment_rare",
-            "bedrock_ore_fragment_red_phosphorus", "bedrock_ore_fragment_redstone",
-            "bedrock_ore_fragment_silicon", "bedrock_ore_fragment_sodalite",
-            "bedrock_ore_fragment_sodium", "bedrock_ore_fragment_strontium",
-            "bedrock_ore_fragment_sulfur", "bedrock_ore_fragment_tantalium",
-            "bedrock_ore_fragment_technetium", "bedrock_ore_fragment_thorium",
-            "bedrock_ore_fragment_titanium", "bedrock_ore_fragment_tungsten",
-            "bedrock_ore_fragment_u238", "bedrock_ore_fragment_uranium",
-            "bedrock_ore_fragment_zirconium", "billet_actinium", "billet_am241", "billet_am242",
-            "billet_am_mix", "billet_americium_fuel", "billet_au198", "billet_australium",
-            "billet_australium_greater", "billet_australium_lesser", "billet_balefire_gold",
-            "billet_beryllium", "billet_bismuth", "billet_co60", "billet_cobalt", "billet_flashlead",
-            "billet_gh336", "billet_hes", "billet_les", "billet_mox_fuel", "billet_neptunium",
-            "billet_neptunium_fuel", "billet_nuclear_waste", "billet_pb209", "billet_plutonium",
-            "billet_plutonium_fuel", "billet_po210be", "billet_polonium", "billet_pu238",
-            "billet_pu238be", "billet_pu239", "billet_pu240", "billet_pu241", "billet_pu_mix",
-            "billet_ra226", "billet_ra226be", "billet_schrabidium", "billet_schrabidium_fuel",
-            "billet_silicon", "billet_solinium", "billet_sr90", "billet_technetium", "billet_th232",
-            "billet_thorium_fuel", "billet_u233", "billet_u235", "billet_u238", "billet_unobtainium",
-            "billet_uranium", "billet_uranium_fuel", "billet_uzh", "billet_yharonite",
-            "billet_zfb_am_mix", "billet_zfb_bismuth", "billet_zfb_pu241", "billet_zirconium",
-            "bio_wafer", "biomass", "biomass_compressed", "black_hole", "blade_titanium",
-            "blade_tungsten", "blades_desh", "blades_steel", "blades_titanium",
+            "ammo_arty", "ammo_debug", "ammo_dgk", "ammo_fireext", "ammo_fireext_foam",
+            "ammo_fireext_sand", "ammo_secret_m44_equestrian", "ammo_shell", "ammo_shell_apfsds_du",
+            "ammo_shell_apfsds_t", "ammo_shell_explosive", "ammo_shell_w9", "ammo_standard_bmg50_ap",
+            "ammo_standard_bmg50_du", "ammo_standard_bmg50_fmj", "ammo_standard_bmg50_he",
+            "ammo_standard_bmg50_jhp", "ammo_standard_bmg50_sm", "ammo_standard_bmg50_sp",
+            "ammo_standard_flame_diesel", "ammo_standard_m357_ap", "ammo_standard_m357_bp",
+            "ammo_standard_m357_express", "ammo_standard_m357_fmj", "ammo_standard_m357_jhp",
+            "ammo_standard_m357_sp", "ammo_standard_m44_ap", "ammo_standard_m44_bp",
+            "ammo_standard_m44_express", "ammo_standard_m44_fmj", "ammo_standard_m44_jhp",
+            "ammo_standard_m44_sp", "ammo_standard_nuke_high", "ammo_standard_p22_ap",
+            "ammo_standard_p22_fmj", "ammo_standard_p22_jhp", "ammo_standard_p22_sp",
+            "ammo_standard_p9_ap", "ammo_standard_p9_fmj", "ammo_standard_p9_jhp",
+            "ammo_standard_p9_sp", "ammo_standard_r556_ap", "ammo_standard_r556_fmj",
+            "ammo_standard_r556_jhp", "ammo_standard_r556_sp", "ammo_standard_rocket_demo",
+            "ammo_standard_rocket_he", "ammo_standard_rocket_heat", "ammo_standard_rocket_inc",
+            "ammo_standard_rocket_phosphorus", "ammo_standard_stone", "ammo_standard_stone_ap",
+            "ammo_standard_stone_iron", "ammo_standard_stone_shot", "ammo_standard_tau_uranium",
+            "ams_catalyst_aluminium", "ams_catalyst_beryllium", "ams_catalyst_blank",
+            "ams_catalyst_caesium", "ams_catalyst_cerium", "ams_catalyst_cobalt", "ams_catalyst_copper",
+            "ams_catalyst_dineutronium", "ams_catalyst_euphemium", "ams_catalyst_iron",
+            "ams_catalyst_lithium", "ams_catalyst_niobium", "ams_catalyst_schrabidium",
+            "ams_catalyst_strontium", "ams_catalyst_thorium", "ams_catalyst_tungsten", "ams_muzzle",
+            "armor_battery", "armor_battery_mk2", "armor_battery_mk3", "armor_polish", "asbestos_boots",
+            "asbestos_cloth", "asbestos_helmet", "asbestos_legs", "asbestos_plate", "assembly_nuke",
+            "ball_dynamite", "ball_fireclay", "ball_resin", "ball_tatb", "ball_tnt", "ballistite",
+            "battery_sc_americium", "battery_sc_gold", "battery_sc_lead", "battery_sc_plutonium",
+            "battery_sc_polonium", "battery_sc_technetium", "battery_sc_uranium", "battery_spark",
+            "battery_trixite", "bedrock_ore_fragment_bismuth", "billet_actinium", "billet_am241",
+            "billet_am242", "billet_am_mix", "billet_americium_fuel", "billet_au198",
+            "billet_australium", "billet_australium_greater", "billet_australium_lesser",
+            "billet_balefire_gold", "billet_beryllium", "billet_bismuth", "billet_co60",
+            "billet_cobalt", "billet_flashlead", "billet_gh336", "billet_hes", "billet_les",
+            "billet_mox_fuel", "billet_neptunium", "billet_neptunium_fuel", "billet_nuclear_waste",
+            "billet_pb209", "billet_plutonium", "billet_plutonium_fuel", "billet_po210be",
+            "billet_polonium", "billet_pu238", "billet_pu238be", "billet_pu239", "billet_pu240",
+            "billet_pu241", "billet_pu_mix", "billet_ra226", "billet_ra226be", "billet_schrabidium",
+            "billet_schrabidium_fuel", "billet_silicon", "billet_solinium", "billet_sr90",
+            "billet_technetium", "billet_th232", "billet_thorium_fuel", "billet_u233", "billet_u235",
+            "billet_u238", "billet_unobtainium", "billet_uranium", "billet_uranium_fuel", "billet_uzh",
+            "billet_yharonite", "billet_zfb_am_mix", "billet_zfb_bismuth", "billet_zfb_pu241",
+            "billet_zirconium", "bio_wafer", "biomass", "biomass_compressed", "black_hole",
+            "blade_titanium", "blade_tungsten", "blades_desh", "blades_steel", "blades_titanium",
             "blueprint_folder_discover", "blueprints_528", "blueprints_discover", "blueprints_secret",
-            "board_copper", "bolt", "bolt_compound", "bolt_dura_steel", "bolt_lead", "bolt_spike",
-            "bolt_steel", "bolt_tungsten", "book_secret", "bottle2_empty", "bottle_empty",
-            "bottle_mercury", "boy_bullet", "boy_igniter", "boy_propellant", "boy_shielding",
-            "boy_target", "broken_item", "burnt_bark", "can_empty", "can_key", "canister_empty",
-            "canister_napalm", "cap_aluminium", "cap_fritz", "cap_korl", "cap_nuka", "cap_quantum",
-            "cap_rad", "cap_sparkle", "cap_star", "cap_sunset", "casing_357", "casing_44", "casing_50",
-            "casing_9", "casing_buckshot", "catalyst_clay", "catalytic_converter", "cbt_device",
-            "cell_balefire", "centrifuge_element", "charge_railgun", "cheese", "chocolate",
-            "chopper_blades", "chopper_gun", "chopper_head", "chopper_tail", "chopper_torso",
-            "chopper_wing", "cinnabar", "circuit_star", "cladding_desh", "cladding_ghiorsium",
-            "cladding_lead", "cladding_paint", "cladding_rubber", "coal_eternal", "coal_infernal",
-            "cobalt_boots", "cobalt_helmet", "cobalt_legs", "cobalt_plate", "coil_copper",
-            "coil_copper_torus", "coil_gold", "coil_gold_torus", "coil_magnetized_tungsten",
-            "coil_tungsten", "coin_creeper", "coin_maskman", "coin_radiation", "coin_token", "coin_ufo",
-            "coin_worm", "coke_coal", "coke_lignite", "coke_petroleum", "combine_scrap", "cordite",
-            "crt_display", "crystal_aluminium", "crystal_asbestos", "crystal_beryllium",
-            "crystal_charred", "crystal_cinnabar", "crystal_coal", "crystal_cobalt", "crystal_copper",
-            "crystal_diamond", "crystal_energy", "crystal_fluorite", "crystal_gold", "crystal_horn",
-            "crystal_iron", "crystal_lapis", "crystal_lead", "crystal_lithium", "crystal_niter",
-            "crystal_osmiridium", "crystal_phosphorus", "crystal_plutonium", "crystal_rare",
-            "crystal_redstone", "crystal_schrabidium", "crystal_schraranium", "crystal_starmetal",
-            "crystal_sulfur", "crystal_thorium", "crystal_titanium", "crystal_trixite",
-            "crystal_tungsten", "crystal_uranium", "crystal_xen", "custom_amat", "custom_dirty",
-            "custom_euph", "custom_fall", "custom_hydro", "custom_nuke", "custom_schrab", "custom_sol",
-            "custom_tnt", "debris_concrete", "debris_element", "debris_exchanger", "debris_fuel",
-            "debris_graphite", "debris_metal", "debris_shrapnel", "definitelyfood", "demon_core_closed",
-            "designator", "designator_arty_range", "deuterium_filter", "dosimeter", "drill_titanium",
-            "ducc", "ducttape", "dust", "dust_tiny", "dysfunctional_reactor", "egg_balefire"
+            "board_copper", "bolt", "bolt_compound", "bolt_spike", "book_secret", "bottle2_empty",
+            "bottle_empty", "bottle_mercury", "boy_bullet", "boy_igniter", "boy_propellant",
+            "boy_shielding", "boy_target", "broken_item", "burnt_bark", "can_empty", "can_key",
+            "canister_empty", "canister_napalm", "cap_aluminium", "cap_fritz", "cap_korl", "cap_nuka",
+            "cap_quantum", "cap_rad", "cap_sparkle", "cap_star", "cap_sunset", "casing_357",
+            "casing_44", "casing_50", "casing_9", "casing_buckshot", "catalyst_clay",
+            "catalytic_converter", "cbt_device", "cell_balefire", "centrifuge_element",
+            "charge_railgun", "cheese", "chocolate", "chopper_blades", "chopper_gun", "chopper_head",
+            "chopper_tail", "chopper_torso", "chopper_wing", "cinnabar", "circuit_star",
+            "cladding_desh", "cladding_ghiorsium", "cladding_lead", "cladding_paint", "cladding_rubber",
+            "coal_eternal", "coal_infernal", "cobalt_boots", "cobalt_helmet", "cobalt_legs",
+            "cobalt_plate", "coil_copper", "coil_copper_torus", "coil_gold", "coil_gold_torus",
+            "coil_magnetized_tungsten", "coil_tungsten", "coin_creeper", "coin_maskman",
+            "coin_radiation", "coin_token", "coin_ufo", "coin_worm", "coke_coal", "coke_lignite",
+            "coke_petroleum", "combine_scrap", "cordite", "crt_display", "crystal_aluminium",
+            "crystal_asbestos", "crystal_beryllium", "crystal_charred", "crystal_cinnabar",
+            "crystal_coal", "crystal_cobalt", "crystal_copper", "crystal_diamond", "crystal_energy",
+            "crystal_fluorite", "crystal_gold", "crystal_horn", "crystal_iron", "crystal_lapis",
+            "crystal_lead", "crystal_lithium", "crystal_niter", "crystal_osmiridium",
+            "crystal_phosphorus", "crystal_plutonium", "crystal_rare", "crystal_redstone",
+            "crystal_schrabidium", "crystal_schraranium", "crystal_starmetal", "crystal_sulfur",
+            "crystal_thorium", "crystal_titanium", "crystal_trixite", "crystal_tungsten",
+            "crystal_uranium", "crystal_xen", "custom_amat", "custom_dirty", "custom_euph",
+            "custom_fall", "custom_hydro", "custom_nuke", "custom_schrab", "custom_sol", "custom_tnt",
+            "debris_concrete", "debris_element", "debris_exchanger", "debris_fuel", "debris_graphite",
+            "debris_metal", "debris_shrapnel", "definitelyfood", "demon_core_closed", "designator",
+            "designator_arty_range", "deuterium_filter", "dosimeter", "drill_titanium", "ducc",
+            "ducttape", "dust", "dust_tiny", "dysfunctional_reactor", "egg_balefire"
     };
 
     private static final String[] SPRITE_ITEMS_1 = {
@@ -237,26 +287,24 @@ public final class ModItemModels {
             "ingot_neptunium_fuel", "ingot_niobium", "ingot_osmiridium", "ingot_pb209", "ingot_pc",
             "ingot_phosphorus", "ingot_plutonium", "ingot_plutonium_fuel", "ingot_polonium",
             "ingot_polymer", "ingot_pu238", "ingot_pu239", "ingot_pu240", "ingot_pu241", "ingot_pu_mix",
-            "ingot_pvc", "ingot_ra226", "ingot_raw_borax", "ingot_raw_neodymium", "ingot_raw_redstone",
-            "ingot_raw_slag", "ingot_raw_sodium", "ingot_raw_strontium", "ingot_red_copper",
-            "ingot_reiium", "ingot_rubber", "ingot_saturnite", "ingot_schrabidate", "ingot_schrabidium",
-            "ingot_schrabidium_fuel", "ingot_schraranium", "ingot_semtex", "ingot_silicon",
-            "ingot_solinium", "ingot_sr90", "ingot_starmetal", "ingot_steel", "ingot_steel_dusted",
-            "ingot_tantalium", "ingot_tcalloy", "ingot_technetium", "ingot_tennessine", "ingot_th232",
-            "ingot_thorium_fuel", "ingot_titanium", "ingot_tungsten", "ingot_tungsten_carbide",
-            "ingot_u233", "ingot_u235", "ingot_u238", "ingot_unobtainium", "ingot_uranium",
-            "ingot_uranium_fuel", "ingot_verticium", "ingot_weaponsteel", "ingot_weidanium",
-            "ingot_zirconium", "insert_doxium", "insert_du", "insert_esapi", "insert_ghiorsium",
-            "insert_kevlar", "insert_polonium", "insert_sapi", "insert_steel", "insert_xsapi",
-            "insert_yharonite", "iv_empty", "jetpack_boost", "jetpack_break", "jetpack_fly",
-            "jetpack_tank", "jetpack_vector", "journal_bj", "journal_pip", "journal_silver",
-            "key_red_cracked", "laser_crystal_bale", "laser_crystal_bismuth", "laser_crystal_cmb",
-            "laser_crystal_co2", "laser_crystal_digamma", "launch_code", "launch_code_piece",
-            "launch_key", "lemon", "levitation_unit", "lignite", "lithium", "loop_stew", "loops",
-            "magnet_circular", "man_core", "man_explosive", "man_explosive8", "man_igniter",
-            "marshmallow", "marshmallow_roasted", "med_bag", "med_ipecac", "med_ptsd",
-            "med_schizophrenia", "mike_cooling_unit", "mike_core", "mike_deut",
-            "missile_anti_ballistic", "missile_assembly", "missile_bhole", "missile_burst",
+            "ingot_pvc", "ingot_ra226", "ingot_red_copper", "ingot_reiium", "ingot_rubber",
+            "ingot_saturnite", "ingot_schrabidate", "ingot_schrabidium", "ingot_schrabidium_fuel",
+            "ingot_schraranium", "ingot_semtex", "ingot_silicon", "ingot_solinium", "ingot_sr90",
+            "ingot_starmetal", "ingot_steel", "ingot_steel_dusted", "ingot_tantalium", "ingot_tcalloy",
+            "ingot_technetium", "ingot_tennessine", "ingot_th232", "ingot_thorium_fuel",
+            "ingot_titanium", "ingot_tungsten", "ingot_tungsten_carbide", "ingot_u233", "ingot_u235",
+            "ingot_u238", "ingot_unobtainium", "ingot_uranium", "ingot_uranium_fuel", "ingot_verticium",
+            "ingot_weaponsteel", "ingot_weidanium", "ingot_zirconium", "insert_doxium", "insert_du",
+            "insert_esapi", "insert_ghiorsium", "insert_kevlar", "insert_polonium", "insert_sapi",
+            "insert_steel", "insert_xsapi", "insert_yharonite", "iv_empty", "jetpack_boost",
+            "jetpack_break", "jetpack_fly", "jetpack_tank", "jetpack_vector", "journal_bj",
+            "journal_pip", "journal_silver", "key_red_cracked", "laser_crystal_bale",
+            "laser_crystal_bismuth", "laser_crystal_cmb", "laser_crystal_co2", "laser_crystal_digamma",
+            "launch_code", "launch_code_piece", "launch_key", "lemon", "levitation_unit", "lignite",
+            "lithium", "loop_stew", "loops", "magnet_circular", "man_core", "man_explosive",
+            "man_explosive8", "man_igniter", "marshmallow", "marshmallow_roasted", "med_bag",
+            "med_ipecac", "med_ptsd", "med_schizophrenia", "mike_cooling_unit", "mike_core",
+            "mike_deut", "missile_anti_ballistic", "missile_assembly", "missile_bhole", "missile_burst",
             "missile_buster", "missile_buster_strong", "missile_carrier", "missile_cluster",
             "missile_cluster_strong", "missile_decoy", "missile_doomsday", "missile_drill",
             "missile_emp", "missile_emp_strong", "missile_endo", "missile_exo", "missile_generic",
@@ -296,32 +344,9 @@ public final class ModItemModels {
             "nugget_unobtainium_lesser", "nugget_uranium", "nugget_uranium_fuel", "nugget_verticium",
             "nugget_weidanium", "nugget_zirconium", "oil_detector", "oil_tar_coal", "oil_tar_crack",
             "oil_tar_crude", "oil_tar_paraffin", "oil_tar_wax", "oil_tar_wood", "paa_boots", "paa_legs",
-            "paa_plate", "part_barrel_heavy", "part_barrel_heavy_cdalloy", "part_barrel_heavy_desh",
-            "part_barrel_heavy_dura_steel", "part_barrel_heavy_ferrouranium",
-            "part_barrel_heavy_gunmetal", "part_barrel_heavy_saturnite", "part_barrel_heavy_steel",
-            "part_barrel_heavy_tcalloy", "part_barrel_heavy_weaponsteel", "part_barrel_light",
-            "part_barrel_light_arsenic_bronze", "part_barrel_light_bismuth_bronze",
-            "part_barrel_light_cdalloy", "part_barrel_light_desh", "part_barrel_light_dura_steel",
-            "part_barrel_light_gunmetal", "part_barrel_light_saturnite", "part_barrel_light_steel",
-            "part_barrel_light_tcalloy", "part_barrel_light_weaponsteel", "part_beryllium",
-            "part_carbon", "part_copper", "part_grip", "part_grip_bakelite", "part_grip_bone",
-            "part_grip_desh", "part_grip_dura_steel", "part_grip_gunmetal", "part_grip_pc",
-            "part_grip_polymer", "part_grip_pvc", "part_grip_rubber", "part_grip_saturnite",
-            "part_grip_steel", "part_grip_weaponsteel", "part_grip_wood", "part_lithium",
-            "part_mechanism", "part_mechanism_gunmetal", "part_mechanism_saturnite",
-            "part_mechanism_weaponsteel", "part_plutonium", "part_receiver_heavy",
-            "part_receiver_heavy_arsenic_bronze", "part_receiver_heavy_bismuth_bronze",
-            "part_receiver_heavy_cdalloy", "part_receiver_heavy_dura_steel",
-            "part_receiver_heavy_ferrouranium", "part_receiver_heavy_gunmetal",
-            "part_receiver_heavy_saturnite", "part_receiver_heavy_tcalloy",
-            "part_receiver_heavy_weaponsteel", "part_receiver_light",
-            "part_receiver_light_arsenic_bronze", "part_receiver_light_bismuth_bronze",
-            "part_receiver_light_cdalloy", "part_receiver_light_desh", "part_receiver_light_dura_steel",
-            "part_receiver_light_gunmetal", "part_receiver_light_saturnite",
-            "part_receiver_light_steel", "part_receiver_light_tcalloy",
-            "part_receiver_light_weaponsteel", "part_stock", "part_stock_bakelite", "part_stock_desh",
-            "part_stock_gunmetal", "part_stock_pc", "part_stock_polymer", "part_stock_pvc",
-            "part_stock_saturnite", "part_stock_weaponsteel", "part_stock_wood", "particle_aelectron",
+            "paa_plate", "part_barrel_heavy", "part_barrel_light", "part_beryllium", "part_carbon",
+            "part_copper", "part_grip", "part_lithium", "part_mechanism", "part_plutonium",
+            "part_receiver_heavy", "part_receiver_light", "part_stock", "particle_aelectron",
             "particle_amat", "particle_aproton", "particle_aschrab", "particle_copper", "particle_dark",
             "particle_digamma", "particle_empty", "particle_higgs", "particle_hydrogen",
             "particle_lead", "particle_lutece", "particle_muon", "particle_sparkticle",
@@ -330,44 +355,33 @@ public final class ModItemModels {
             "pellet_rtg_actinium", "pellet_rtg_americium", "pellet_rtg_balefire", "pellet_rtg_cobalt",
             "pellet_rtg_gold", "pellet_rtg_lead", "pellet_rtg_polonium", "pellet_rtg_radium",
             "pellet_rtg_strontium", "pellet_rtg_weak", "photo_panel", "pill_herbal", "pill_iodine",
-            "pill_red", "pin", "pipe", "pipe_aluminium", "pipe_copper", "pipe_dura_steel", "pipe_iron",
-            "pipe_lead", "pipe_rubber", "pipe_steel", "pipes_steel", "piston_selenium",
-            "piston_set_desh", "piston_set_dura", "piston_set_starmetal", "piston_set_steel", "plan_c",
-            "plate_aluminium", "plate_armor_ajr", "plate_armor_dnt", "plate_armor_fau",
-            "plate_armor_hev", "plate_armor_lunar", "plate_armor_titanium", "plate_bismuth",
-            "plate_cast", "plate_cast_aluminium", "plate_cast_arsenic_bronze",
-            "plate_cast_bismuth_bronze", "plate_cast_cdalloy", "plate_cast_combine_steel",
-            "plate_cast_copper", "plate_cast_desh", "plate_cast_dura_steel", "plate_cast_ferrouranium",
-            "plate_cast_gold", "plate_cast_iron", "plate_cast_lead", "plate_cast_osmiridium",
-            "plate_cast_saturnite", "plate_cast_schrabidate", "plate_cast_schrabidium",
-            "plate_cast_starmetal", "plate_cast_steel", "plate_cast_tcalloy", "plate_cast_titanium",
-            "plate_cast_tungsten", "plate_cast_weaponsteel", "plate_cast_zirconium",
+            "pill_red", "pin", "pipe", "pipes_steel", "piston_selenium", "piston_set_desh",
+            "piston_set_dura", "piston_set_starmetal", "piston_set_steel", "plan_c", "plate_aluminium",
+            "plate_armor_ajr", "plate_armor_dnt", "plate_armor_fau", "plate_armor_hev",
+            "plate_armor_lunar", "plate_armor_titanium", "plate_bismuth", "plate_cast",
             "plate_combine_steel", "plate_copper", "plate_dalekanium", "plate_desh",
             "plate_dineutronium", "plate_dura_steel", "plate_euphemium", "plate_fuel_mox",
             "plate_fuel_pu238be", "plate_fuel_pu239", "plate_fuel_ra226be", "plate_fuel_sa326",
             "plate_fuel_u233", "plate_fuel_u235", "plate_gold", "plate_gunmetal", "plate_iron",
             "plate_kevlar", "plate_lead", "plate_mixed", "plate_paa", "plate_polymer",
             "plate_saturnite", "plate_schrabidium", "plate_steel", "plate_titanium",
-            "plate_weaponsteel", "plate_welded", "plate_welded_aluminium", "plate_welded_cdalloy",
-            "plate_welded_combine_steel", "plate_welded_copper", "plate_welded_iron",
-            "plate_welded_osmiridium", "plate_welded_steel", "plate_welded_tcalloy",
-            "plate_welded_titanium", "plate_welded_tungsten", "plate_welded_zirconium",
-            "powder_actinium", "powder_actinium_tiny", "powder_aluminium", "powder_asbestos",
-            "powder_astatine", "powder_at209", "powder_at209_tiny", "powder_au198", "powder_au198_tiny",
-            "powder_australium", "powder_bakelite", "powder_balefire", "powder_beryllium",
-            "powder_bismuth", "powder_borax", "powder_boron", "powder_boron_tiny", "powder_bromine",
-            "powder_cadmium", "powder_caesium", "powder_calcium", "powder_cdalloy", "powder_cement",
-            "powder_cerium", "powder_cerium_tiny", "powder_chlorocalcite", "powder_chlorophyte",
-            "powder_cloud", "powder_co60", "powder_co60_tiny", "powder_coal", "powder_coal_tiny",
-            "powder_cobalt", "powder_cobalt_tiny", "powder_coltan", "powder_coltan_ore",
-            "powder_combine_steel", "powder_copper", "powder_cs137", "powder_cs137_tiny",
-            "powder_daffergon", "powder_desh", "powder_desh_mix", "powder_desh_ready", "powder_diamond",
-            "powder_dineutronium", "powder_dura_steel", "powder_emerald", "powder_euphemium",
-            "powder_fire", "powder_flux", "powder_gold", "powder_i131", "powder_i131_tiny",
-            "powder_ice", "powder_impure_osmiridium", "powder_iodine", "powder_iodine_tiny",
-            "powder_iron", "powder_lanthanium", "powder_lanthanium_tiny", "powder_lapis", "powder_lead",
-            "powder_lignite", "powder_limestone", "powder_lithium", "powder_lithium_tiny",
-            "powder_magic", "powder_magnetized_tungsten", "powder_meteorite", "powder_meteorite_tiny",
+            "plate_weaponsteel", "plate_welded", "powder_actinium", "powder_actinium_tiny",
+            "powder_aluminium", "powder_asbestos", "powder_astatine", "powder_at209",
+            "powder_at209_tiny", "powder_au198", "powder_au198_tiny", "powder_australium",
+            "powder_bakelite", "powder_balefire", "powder_beryllium", "powder_bismuth", "powder_borax",
+            "powder_boron", "powder_boron_tiny", "powder_bromine", "powder_cadmium", "powder_caesium",
+            "powder_calcium", "powder_cdalloy", "powder_cement", "powder_cerium", "powder_cerium_tiny",
+            "powder_chlorocalcite", "powder_chlorophyte", "powder_cloud", "powder_co60",
+            "powder_co60_tiny", "powder_coal", "powder_coal_tiny", "powder_cobalt",
+            "powder_cobalt_tiny", "powder_coltan", "powder_coltan_ore", "powder_combine_steel",
+            "powder_copper", "powder_cs137", "powder_cs137_tiny", "powder_daffergon", "powder_desh",
+            "powder_desh_mix", "powder_desh_ready", "powder_diamond", "powder_dineutronium",
+            "powder_dura_steel", "powder_emerald", "powder_euphemium", "powder_fire", "powder_flux",
+            "powder_gold", "powder_i131", "powder_i131_tiny", "powder_ice", "powder_impure_osmiridium",
+            "powder_iodine", "powder_iodine_tiny", "powder_iron", "powder_lanthanium",
+            "powder_lanthanium_tiny", "powder_lapis", "powder_lead", "powder_lignite",
+            "powder_limestone", "powder_lithium", "powder_lithium_tiny", "powder_magic",
+            "powder_magnetized_tungsten", "powder_meteorite", "powder_meteorite_tiny",
             "powder_molysite", "powder_neodymium", "powder_neodymium_tiny", "powder_neptunium",
             "powder_niobium", "powder_niobium_tiny", "powder_nitan_mix", "powder_osmiridium",
             "powder_paleogenite", "powder_paleogenite_tiny", "powder_pb209", "powder_pb209_tiny",
@@ -407,58 +421,50 @@ public final class ModItemModels {
             "rune_thurisaz", "safety_fuse", "sat_base", "sat_head_laser", "sat_head_mapper",
             "sat_head_radar", "sat_head_resonator", "sat_head_scanner", "sawblade", "schrabidium_boots",
             "schrabidium_helmet", "schrabidium_legs", "schrabidium_plate", "scrap", "scrap_nuclear",
-            "scrap_oil", "scrap_plastic", "scraps_liquid", "taurun_boots", "taurun_helmet", "taurun_legs", "taurun_plate", "security_boots", "security_helmet",
-            "security_legs", "security_plate", "seg_10", "seg_15", "seg_20", "shell", "shell_aluminium",
-            "shell_copper", "shell_saturnite", "shell_steel", "shell_titanium", "shell_weaponsteel",
-            "shimmer_axe_head", "shimmer_handle", "singularity", "singularity_counter_resonant",
-            "singularity_spark", "singularity_super_heated", "siox", "solid_fuel", "solid_fuel_bf",
-            "solid_fuel_presto", "solid_fuel_presto_bf", "solid_fuel_presto_triplet",
-            "solid_fuel_presto_triplet_bf", "sphere_steel", "spongebob_macaroni", "stamp_357",
-            "stamp_44", "stamp_50", "stamp_9", "stamp_desh_357", "stamp_desh_44", "stamp_desh_50",
-            "stamp_desh_9", "stamp_desh_circuit", "stamp_desh_flat", "stamp_desh_plate",
-            "stamp_desh_wire", "stamp_iron_circuit", "stamp_iron_flat", "stamp_iron_plate",
-            "stamp_iron_wire", "stamp_obsidian_circuit", "stamp_obsidian_flat", "stamp_obsidian_plate",
-            "stamp_obsidian_wire", "stamp_steel_circuit", "stamp_steel_flat", "stamp_steel_plate",
-            "stamp_steel_wire", "stamp_stone_circuit", "stamp_stone_flat", "stamp_stone_plate",
-            "stamp_stone_wire", "stamp_titanium_circuit", "stamp_titanium_flat", "stamp_titanium_plate",
-            "stamp_titanium_wire", "starmetal_boots", "starmetal_helmet", "starmetal_legs",
-            "starmetal_plate", "static_sandwich", "steel_boots", "steel_helmet", "steel_legs",
-            "steel_plate", "stick_c4", "stick_semtex", "stick_tnt", "sulfur", "syringe_antidote",
-            "syringe_awesome", "syringe_empty", "syringe_metal_empty", "syringe_metal_medx",
-            "syringe_metal_psycho", "syringe_metal_stimpak", "syringe_metal_super", "syringe_mkunicorn",
-            "syringe_poison", "syringe_taint", "tank_steel", "telepad", "template_folder",
-            "thermo_element", "thermo_unit_empty", "thermo_unit_endo", "thermo_unit_exo",
-            "thruster_large", "thruster_medium", "thruster_nuclear", "thruster_small", "titanium_boots",
-            "titanium_helmet", "titanium_legs", "titanium_plate", "toothpicks", "trinitite",
-            "tritium_deuterium_cake", "tsar_core", "turbine_titanium", "turbine_tungsten",
-            "turret_chip", "turret_mob_filter", "twinkie", "undefined", "upgrade_afterburn_1",
-            "upgrade_afterburn_2", "upgrade_afterburn_3", "upgrade_centrifuge", "upgrade_crystallizer",
-            "upgrade_effect_1", "upgrade_effect_2", "upgrade_effect_3", "upgrade_fortune_1",
-            "upgrade_fortune_2", "upgrade_fortune_3", "upgrade_gc_speed", "upgrade_nullifier",
-            "upgrade_overdrive_1", "upgrade_overdrive_2", "upgrade_overdrive_3", "upgrade_power_1",
-            "upgrade_power_2", "upgrade_power_3", "upgrade_screm", "upgrade_shredder",
-            "upgrade_smelter", "upgrade_speed_1", "upgrade_speed_2", "upgrade_speed_3",
-            "upgrade_template", "warhead_buster_large", "warhead_buster_medium", "warhead_buster_small",
-            "warhead_cluster_large", "warhead_cluster_medium", "warhead_cluster_small",
-            "warhead_generic_large", "warhead_generic_medium", "warhead_generic_small",
-            "warhead_incendiary_large", "warhead_incendiary_medium", "warhead_incendiary_small",
-            "warhead_mirv", "warhead_mirvlet", "warhead_n2", "warhead_nuclear", "warhead_thermo_endo",
-            "warhead_thermo_exo", "warhead_volcano", "watch", "watz_pellet_boron",
-            "watz_pellet_depleted_boron", "watz_pellet_depleted_du", "watz_pellet_depleted_hen",
-            "watz_pellet_depleted_hes", "watz_pellet_depleted_lead", "watz_pellet_depleted_les",
-            "watz_pellet_depleted_mep", "watz_pellet_depleted_mes", "watz_pellet_depleted_meu",
-            "watz_pellet_depleted_nqd", "watz_pellet_depleted_nqr", "watz_pellet_depleted_schrabidium",
-            "watz_pellet_du", "watz_pellet_hen", "watz_pellet_hes", "watz_pellet_lead",
-            "watz_pellet_les", "watz_pellet_mep", "watz_pellet_mes", "watz_pellet_meu",
-            "watz_pellet_nqd", "watz_pellet_nqr", "watz_pellet_schrabidium", "wings_limp", "wings_murk",
-            "wire_dense", "wire_dense_bscco", "wire_dense_copper", "wire_dense_dineutronium",
-            "wire_dense_gold", "wire_dense_magnetized_tungsten", "wire_dense_neodymium",
-            "wire_dense_niobium", "wire_dense_red_copper", "wire_dense_schrabidate",
-            "wire_dense_schrabidium", "wire_dense_starmetal", "wire_dense_titanium",
-            "wire_dense_tungsten", "wire_fine", "wire_fine_aluminium", "wire_fine_carbon",
-            "wire_fine_copper", "wire_fine_gold", "wire_fine_lead", "wire_fine_magnetized_tungsten",
-            "wire_fine_red_copper", "wire_fine_schrabidium", "wire_fine_steel", "wire_fine_tungsten",
-            "wire_fine_zirconium", "xanax"
+            "scrap_oil", "scrap_plastic", "scraps_liquid", "taurun_boots", "taurun_helmet",
+            "taurun_legs", "taurun_plate", "security_boots", "security_helmet", "security_legs",
+            "security_plate", "seg_10", "seg_15", "seg_20", "shell", "shimmer_axe_head",
+            "shimmer_handle", "singularity", "singularity_counter_resonant", "singularity_spark",
+            "singularity_super_heated", "siox", "solid_fuel", "solid_fuel_bf", "solid_fuel_presto",
+            "solid_fuel_presto_bf", "solid_fuel_presto_triplet", "solid_fuel_presto_triplet_bf",
+            "sphere_steel", "spongebob_macaroni", "stamp_357", "stamp_44", "stamp_50", "stamp_9",
+            "stamp_desh_357", "stamp_desh_44", "stamp_desh_50", "stamp_desh_9", "stamp_desh_circuit",
+            "stamp_desh_flat", "stamp_desh_plate", "stamp_desh_wire", "stamp_iron_circuit",
+            "stamp_iron_flat", "stamp_iron_plate", "stamp_iron_wire", "stamp_obsidian_circuit",
+            "stamp_obsidian_flat", "stamp_obsidian_plate", "stamp_obsidian_wire", "stamp_steel_circuit",
+            "stamp_steel_flat", "stamp_steel_plate", "stamp_steel_wire", "stamp_stone_circuit",
+            "stamp_stone_flat", "stamp_stone_plate", "stamp_stone_wire", "stamp_titanium_circuit",
+            "stamp_titanium_flat", "stamp_titanium_plate", "stamp_titanium_wire", "starmetal_boots",
+            "starmetal_helmet", "starmetal_legs", "starmetal_plate", "static_sandwich", "steel_boots",
+            "steel_helmet", "steel_legs", "steel_plate", "stick_c4", "stick_semtex", "stick_tnt",
+            "sulfur", "syringe_antidote", "syringe_awesome", "syringe_empty", "syringe_metal_empty",
+            "syringe_metal_medx", "syringe_metal_psycho", "syringe_metal_stimpak",
+            "syringe_metal_super", "syringe_mkunicorn", "syringe_poison", "syringe_taint", "tank_steel",
+            "telepad", "template_folder", "thermo_element", "thermo_unit_empty", "thermo_unit_endo",
+            "thermo_unit_exo", "thruster_large", "thruster_medium", "thruster_nuclear",
+            "thruster_small", "titanium_boots", "titanium_helmet", "titanium_legs", "titanium_plate",
+            "toothpicks", "trinitite", "tritium_deuterium_cake", "tsar_core", "turbine_titanium",
+            "turbine_tungsten", "turret_chip", "turret_mob_filter", "twinkie", "undefined",
+            "upgrade_afterburn_1", "upgrade_afterburn_2", "upgrade_afterburn_3", "upgrade_centrifuge",
+            "upgrade_crystallizer", "upgrade_effect_1", "upgrade_effect_2", "upgrade_effect_3",
+            "upgrade_fortune_1", "upgrade_fortune_2", "upgrade_fortune_3", "upgrade_gc_speed",
+            "upgrade_nullifier", "upgrade_overdrive_1", "upgrade_overdrive_2", "upgrade_overdrive_3",
+            "upgrade_power_1", "upgrade_power_2", "upgrade_power_3", "upgrade_screm",
+            "upgrade_shredder", "upgrade_smelter", "upgrade_speed_1", "upgrade_speed_2",
+            "upgrade_speed_3", "upgrade_template", "warhead_buster_large", "warhead_buster_medium",
+            "warhead_buster_small", "warhead_cluster_large", "warhead_cluster_medium",
+            "warhead_cluster_small", "warhead_generic_large", "warhead_generic_medium",
+            "warhead_generic_small", "warhead_incendiary_large", "warhead_incendiary_medium",
+            "warhead_incendiary_small", "warhead_mirv", "warhead_mirvlet", "warhead_n2",
+            "warhead_nuclear", "warhead_thermo_endo", "warhead_thermo_exo", "warhead_volcano", "watch",
+            "watz_pellet_boron", "watz_pellet_depleted_boron", "watz_pellet_depleted_du",
+            "watz_pellet_depleted_hen", "watz_pellet_depleted_hes", "watz_pellet_depleted_lead",
+            "watz_pellet_depleted_les", "watz_pellet_depleted_mep", "watz_pellet_depleted_mes",
+            "watz_pellet_depleted_meu", "watz_pellet_depleted_nqd", "watz_pellet_depleted_nqr",
+            "watz_pellet_depleted_schrabidium", "watz_pellet_du", "watz_pellet_hen", "watz_pellet_hes",
+            "watz_pellet_lead", "watz_pellet_les", "watz_pellet_mep", "watz_pellet_mes",
+            "watz_pellet_meu", "watz_pellet_nqd", "watz_pellet_nqr", "watz_pellet_schrabidium",
+            "wings_limp", "wings_murk", "wire_dense", "wire_fine", "xanax"
     };
 
     /**
@@ -478,6 +484,20 @@ public final class ModItemModels {
         for (String name : SPRITE_ITEMS_3) {
             Dejson.item(NS, name).models(Models.generated("hbm:items/" + name)).register();
         }
+    }
+
+    /**
+     * The material-shape items, whose sprite is computed rather than shipped. The model is the plain
+     * one-sprite case like any other; only the texture behind it is generated.
+     */
+    private static void remappedShapeSprites() {
+        REMAPPED_SHAPES.forEach((art, materials) -> {
+            Dejson.generatedSprites(NS + ":items/" + art, "_", List.of(materials));
+            for (String material : materials) {
+                String name = art + "_" + material;
+                Dejson.item(NS, name).models(Models.generated(NS + ":items/" + name)).register();
+            }
+        });
     }
 
     /** Items whose sprite is not named after them; the sprite is given rather than derived. */

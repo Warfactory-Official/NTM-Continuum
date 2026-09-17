@@ -786,6 +786,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("dejson_item_parity", 40, () -> DejsonGameTests::matchesShippedItems);
     public static final GameTests.Function DEJSON_DATA_PARITY =
             TESTS.function("dejson_data_parity", 40, () -> DejsonGameTests::matchesShippedData);
+    public static final GameTests.Function DEJSON_AUTOGEN_SPRITES =
+            TESTS.function("dejson_autogen_sprites", 40, () -> DejsonGameTests::everyAutogenSpriteIsDrawn);
 
     // --- code-declared material tags (implementations live in MaterialTagGameTests) ---
     public static final GameTests.Function MATERIAL_TAG_COMPLETENESS =

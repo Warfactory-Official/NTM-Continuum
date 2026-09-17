@@ -43,6 +43,9 @@ public class FabricClientInit implements ClientModInitializer {
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
         com.hbm.client.ClientGameTime.install();
+        // The material-shape sprites are computed onto the atlas, not shipped; this has to be declared
+        // before the first resource load.
+        com.hbm.client.AutogenSprites.install();
         HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();

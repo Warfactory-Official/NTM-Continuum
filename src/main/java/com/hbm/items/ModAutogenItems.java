@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * The auto-generated metal-shape items — one registered {@link ItemAutogen} per (material, shape), built
  * by iterating {@link Mats} × the autogen shapes (gated by each material's {@link NTMMaterial#autogen}
- * set). Registry id is {@code <shape-base>_<material>} (e.g. {@code plate_cast_iron}), matching the
- * pre-baked texture from {@code port-tools/gen_autogen_textures.py}.
+ * set). Registry id is {@code <shape-base>_<material>} (e.g. {@code plate_cast_iron}), which is also the
+ * sprite id {@link com.hbm.client.AutogenSprites} computes for it at load time.
  *
  * <p>The set of autogen shapes registered here (raw ingot, bedrock fragment, cast/welded plate, shell,
  * pipe, fine/dense wire, bolt, heavy component, gun parts) corresponds to the 1.12.2
@@ -31,7 +31,7 @@ public final class ModAutogenItems {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
-    /** The autogen shapes + their registry-name base (must match gen_autogen_textures.py SHAPE_TO_BASE). */
+    /** The autogen shapes and their registry-name base, which also names the shape art each is drawn from. */
     private static final Map<MaterialShapes, String> SHAPES = new LinkedHashMap<>();
     static {
         SHAPES.put(MaterialShapes.SHELL, "shell");
@@ -89,6 +89,17 @@ public final class ModAutogenItems {
     /** The legacy declaration order used for the material-shape item families. */
     public static List<MaterialShapes> shapeOrder() {
         return List.copyOf(SHAPES.keySet());
+    }
+
+    /**
+     * The registry-name base for a shape — {@code plate_cast} for {@link MaterialShapes#CASTPLATE}.
+     *
+     * <p>It names the greyscale art too ({@code hbm:items/plate_cast}), which is what lets
+     * {@code com.hbm.client.AutogenSprites} derive every sprite id from the same table the items are
+     * registered from, rather than restating it.
+     */
+    public static @Nullable String base(MaterialShapes shape) {
+        return SHAPES.get(shape);
     }
 
     public static void init() {}

@@ -9,13 +9,18 @@ import com.hbm.blocks.ModBlockDrops;
 import com.hbm.blocks.ModBlockModels;
 import com.hbm.inventory.material.ModMaterialTags;
 import com.hbm.inventory.recipes.ModCraftingRecipes;
+import com.hbm.inventory.material.Mats;
+import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModItemModels;
+import com.hbm.items.special.ItemAutogen;
 import com.hbm.lib.ModDamageTypes;
 import com.hbm.world.gen.ModBiomeModifiers;
 import dev.golem.core.dejson.BlockStates;
 import dev.golem.core.dejson.Data;
 import dev.golem.core.dejson.Dejson;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
 import java.io.InputStream;
@@ -83,6 +88,61 @@ public final class DejsonGameTests {
                         + "every state of every one of them is modelled ({} declared for blocks "
                         + "this port has assets for but has not registered)",
                 checked, Dejson.declarations().size(), unregistered);
+        helper.succeed();
+    }
+
+    /**
+     * Every material-shape sprite is either computed or authored — nothing is left to a file that was
+     * deleted.
+     *
+     * <p>This is the failure the build cannot see. {@code dejsonVerify} holds the declarations against
+     * the texture tree, but both halves of a material-shape sprite are declarations: the item comes
+     * from {@link Mats}, and the remap that draws it comes from the table in {@link ModItemModels}.
+     * Add a shape to a material and the item registers, the recipe resolves, and the only symptom is
+     * a black-and-magenta square in a creative tab. So the question is asked of the live registry:
+     * for every {@link ItemAutogen} that actually exists, is there something that draws it?
+     */
+    public static void everyAutogenSpriteIsDrawn(GameTestHelper helper) {
+        declareAll();
+        List<String> problems = new ArrayList<>();
+        Map<String, String> generated = Dejson.generatedSprites();
+        int computed = 0;
+        int authored = 0;
+
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof ItemAutogen autogen)) {
+                continue;
+            }
+            String art = ModAutogenItems.base(autogen.shape);
+            String id = art + "_" + autogen.material.name;
+            String sprite = Constants.MOD_ID + ":items/" + id;
+            boolean isComputed = generated.containsKey(sprite);
+            boolean hasFile = DejsonGameTests.class.getResource(
+                    "/assets/" + Constants.MOD_ID + "/textures/items/" + id + ".png") != null;
+
+            if (isComputed && hasFile) {
+                // Harmless but worth saying: the file is what the atlas ends up using, and the
+                // declaration next to it is then dead weight that reads as if it were in charge.
+                problems.add(id + " is both computed and shipped as a file; one of the two is stale");
+            } else if (isComputed) {
+                computed++;
+                if (autogen.material.solidColorLight == autogen.material.solidColorDark) {
+                    problems.add(id + " is computed from a flat colour band, which draws a silhouette;"
+                            + " it needs an authored sprite the way 1.7's aot() gave bismuth one");
+                }
+            } else if (hasFile) {
+                authored++;
+            } else {
+                problems.add(id + " has no sprite at all: not computed from " + art
+                        + " and no texture file either");
+            }
+        }
+
+        helper.assertTrue(problems.isEmpty(), join(problems));
+        helper.assertTrue(computed > 0, "no material-shape sprite is computed, so nothing was checked");
+        Constants.LOG.info("[DEJSON] material-shape sprites: {} computed from {} piece(s) of shape art, "
+                        + "{} authored",
+                computed, generated.values().stream().distinct().count(), authored);
         helper.succeed();
     }
 

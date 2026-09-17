@@ -39,6 +39,9 @@ final class ForgeClientInit {
         GolemNetwork.flushClientRegistrations();
 
         com.hbm.client.ClientGameTime.install();
+        // The material-shape sprites are computed onto the atlas, not shipped; this has to be declared
+        // before the first resource load.
+        com.hbm.client.AutogenSprites.install();
         HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
