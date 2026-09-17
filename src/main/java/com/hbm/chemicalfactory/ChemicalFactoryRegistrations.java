@@ -38,8 +38,7 @@ public final class ChemicalFactoryRegistrations {
             "machine_chemical_factory", MACHINE_CHEMICAL_FACTORY);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineChemicalFactory>> MACHINE_CHEMICAL_FACTORY_BE =
-            BLOCK_ENTITIES.register("machine_chemical_factory", () -> BlockEntities.type(
-                    TileEntityMachineChemicalFactory::new, MACHINE_CHEMICAL_FACTORY.get()));
+            BLOCK_ENTITIES.register("machine_chemical_factory", () -> BlockEntities.ticking(TileEntityMachineChemicalFactory::new, TileEntityMachineChemicalFactory::clientTick, TileEntityMachineChemicalFactory::serverTick, MACHINE_CHEMICAL_FACTORY.get()));
 
     public static final RegistryObject<MenuType<ContainerMachineChemicalFactory>> MACHINE_CHEMICAL_FACTORY_MENU =
             MENUS.register("machine_chemical_factory", () -> Menus.typeWithPos(ContainerMachineChemicalFactory::new));

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.capability.MachineCaps;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
@@ -18,7 +19,6 @@ import com.hbm.lib.Library;
 import com.hbm.modules.machine.ModuleMachinePlasma;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -66,8 +66,6 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
     public double neutronEnergy;
     public boolean connected;
 
-    private PlasmaNetwork.PlasmaNode receiverNode;
-    private PlasmaNetwork.PlasmaNode providerNode;
     public int booster;
     public int maxBooster;
     /** Client-only random phase used by the legacy renderer to keep neighbouring machines out of sync. */
@@ -137,24 +135,14 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         te.plasmaEnergy = 0;
 
         ForgeDirection facing = FusionNodes.facing(state);
-        te.receiverNode = FusionNodes.plasma(level, te.receiverNode,
-                pos.offset(facing.offsetX * 5, 2, facing.offsetZ * 5),
-                new DirPos(pos.getX() + facing.offsetX * 6, pos.getY() + 2, pos.getZ() + facing.offsetZ * 6, facing));
-        te.providerNode = FusionNodes.plasma(level, te.providerNode,
-                pos.offset(-facing.offsetX * 5, 2, -facing.offsetZ * 5),
-                new DirPos(pos.getX() - facing.offsetX * 6, pos.getY() + 2, pos.getZ() - facing.offsetZ * 6, facing.getOpposite()));
-        if (te.receiverNode.hasValidNet()) te.receiverNode.net.addReceiver(te);
-        if (te.providerNode.hasValidNet()) te.providerNode.net.addProvider(te);
+        FusionLink.claim(level, te, intake(pos, facing), MachineCaps.PLASMA_IN);
+        FusionLink.claim(level, te, outlet(pos, facing), MachineCaps.PLASMA_OUT);
 
         PlasmaForgeRecipe recipe = te.plasmaModule.getRecipe() instanceof PlasmaForgeRecipe plasma ? plasma : null;
         if (recipe != null) te.maxPower = recipe.power * 100L;
         te.maxPower = Math.max(Math.max(te.power, te.maxPower), 100_000L);
         te.power = Library.chargeTEFromItems(te.inventory, SLOT_BATTERY, te.power, te.maxPower);
 
-        for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, port);
-        }
 
         if (te.booster <= 0) {
             for (Booster candidate : BOOSTERS) {
@@ -174,13 +162,12 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         if (te.plasmaModule.markDirty) te.setChanged();
 
         long powerReceived = (long) Math.ceil(te.plasmaEnergySync * 0.75D);
-        te.connected = te.providerNode.hasValidNet() && !te.providerNode.net.receiverEntries.isEmpty();
-        if (powerReceived > 0 && te.providerNode.hasValidNet()) {
-            for (net.minecraft.world.level.block.entity.BlockEntity thing : te.providerNode.net.receiverEntries.keySet()) {
-                if (thing instanceof IFusionPowerReceiver receiver) {
-                    receiver.receiveFusionPower(powerReceived, te.neutronEnergy, te.plasmaRed, te.plasmaGreen, te.plasmaBlue);
-                }
-            }
+        ForgeDirection out = FusionNodes.facing(te.getBlockState());
+        net.minecraft.world.level.block.entity.BlockEntity downstream =
+                FusionLink.at(level, beam(pos, out), MachineCaps.PLASMA_IN);
+        te.connected = downstream != null;
+        if (powerReceived > 0 && downstream instanceof IFusionPowerReceiver receiver) {
+            receiver.receiveFusionPower(powerReceived, te.neutronEnergy, te.plasmaRed, te.plasmaGreen, te.plasmaBlue);
         }
         if (te.didProcess && te.booster > 0) te.booster--;
         te.neutronEnergy = 0D;
@@ -275,6 +262,12 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         }
     }
 
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachinePlasmaForge menu
+                && menu.getForge() == this && menu.stillValid(player);
+    }
+
     @Override public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new ContainerMachinePlasmaForge(id, inventory, this);
     }
@@ -319,8 +312,8 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
 
     @Override
     public void setRemoved() {
-        FusionNodes.destroy(level, null, receiverNode);
-        FusionNodes.destroy(level, null, providerNode);
+        ForgeDirection facing = FusionNodes.facing(getBlockState());
+        FusionLink.release(level, intake(worldPosition, facing), outlet(worldPosition, facing));
         super.setRemoved();
     }
 
@@ -400,4 +393,18 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
     }
 
     private enum ArmState { REPOSITION, EXTEND1, RETRACT1, EXTEND2, RETRACT2, RETIRE }
+
+    /** Where an upstream torus's beam lands, five blocks out the front at +2. */
+    private static BlockPos intake(BlockPos pos, ForgeDirection facing) {
+        return pos.offset(facing.offsetX * 5, 2, facing.offsetZ * 5);
+    }
+
+    /** Where this forge emits, five blocks out the back — and one further, where its own beam lands. */
+    private static BlockPos outlet(BlockPos pos, ForgeDirection facing) {
+        return pos.offset(-facing.offsetX * 5, 2, -facing.offsetZ * 5);
+    }
+
+    private static BlockPos beam(BlockPos pos, ForgeDirection facing) {
+        return pos.offset(-facing.offsetX * 6, 2, -facing.offsetZ * 6);
+    }
 }

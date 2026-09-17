@@ -1,9 +1,9 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachineCentrifuge;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.container.ContainerCentrifuge;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
@@ -11,6 +11,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -41,12 +42,12 @@ public final class CentrifugeGameTests {
         MachineCentrifuge block = ModMachineBlocks.machine_centrifuge.get();
         BlockPos core = new BlockPos(2, 1, 2);
         BlockPos absolute = helper.absolutePos(core);
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.NORTH);
+        helper.setBlock(core, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
 
         helper.assertTrue(helper.getLevel().getBlockEntity(absolute) instanceof TileEntityMachineCentrifuge,
                 "centrifuge core block entity was not created");
-        helper.assertTrue(block.findCore(helper.getLevel(), absolute.above()).equals(absolute),
+        helper.assertTrue(absolute.equals(MultiblockSurface.coreOfCell(helper.getLevel(), absolute.above())),
                 "centrifuge tower dummy did not resolve to the core");
         helper.assertTrue(block.canConnect(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.EAST),
                 "centrifuge east power port did not connect");
@@ -58,7 +59,7 @@ public final class CentrifugeGameTests {
     public static void processing(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(2, 1, 2));
         MachineCentrifuge block = ModMachineBlocks.machine_centrifuge.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
+        helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
         TileEntityMachineCentrifuge centrifuge = (TileEntityMachineCentrifuge) helper.getLevel().getBlockEntity(pos);
         centrifuge.power = TileEntityMachineCentrifuge.MAX_POWER;
         centrifuge.inventory.setStackInSlot(0, new ItemStack(Items.IRON_ORE));
@@ -122,7 +123,7 @@ public final class CentrifugeGameTests {
     private static TileEntityMachineCentrifuge place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachineCentrifuge block = ModMachineBlocks.machine_centrifuge.get();
-        helper.setBlock(relativePos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(relativePos, block.defaultBlockState());
         return (TileEntityMachineCentrifuge) helper.getLevel().getBlockEntity(pos);
     }
 }

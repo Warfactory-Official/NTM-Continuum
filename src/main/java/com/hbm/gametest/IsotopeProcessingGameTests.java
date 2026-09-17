@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineF6Tank;
 import com.hbm.blocks.machine.MachineUF6Tank;
 import com.hbm.blocks.machine.MachineDeuteriumTower;
@@ -80,10 +79,9 @@ public final class IsotopeProcessingGameTests {
         Fluids.init();
         BlockPos relative = new BlockPos(4, 1, 4);
         MachineDeuteriumTower block = ModMachineBlocks.machine_deuterium_tower.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, relative);
         TileEntityDeuteriumTower tower = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityDeuteriumTower.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
 
         helper.assertTrue(tower.tanks[0].getMaxFill() == 50_000 && tower.tanks[1].getMaxFill() == 5_000,
                 "heavy-water tower capacities must be 50,000 and 5,000 mB");
@@ -100,10 +98,8 @@ public final class IsotopeProcessingGameTests {
 
     private static TileEntityMachineUF6Tank placeUf6(GameTestHelper helper, BlockPos relative) {
         MachineUF6Tank block = ModMachineBlocks.machine_uf6_tank.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        TileEntityMachineUF6Tank tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
+        FoldedTestSupport.assemble(helper, block, relative);
+        return dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineUF6Tank.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
-        return tank;
     }
 }

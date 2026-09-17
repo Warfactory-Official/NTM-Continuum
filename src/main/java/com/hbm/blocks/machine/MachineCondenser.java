@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.interfaces.ILookOverlay;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCondenser;
@@ -19,13 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Passive steam condenser; the look overlay lists both tanks, as the 1.12.2 {@code printHook} did. */
-public class MachineCondenser extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
+public class MachineCondenser extends dev.golem.core.world.CompatBlock implements TickingBlock, ILookOverlay {
     public MachineCondenser(Properties properties) { super(properties); }
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new TileEntityCondenser(pos, state); }
-    @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntities.MACHINE_CONDENSER.get(), TileEntityCondenser::serverTick);
-    }
-    /** Look-overlay: green {@code ->} for the incoming spent steam, red {@code <-} for the water it sends. */
+        /** Look-overlay: green {@code ->} for the incoming spent steam, red {@code <-} for the water it sends. */
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
         if (!(level.getBlockEntity(pos) instanceof TileEntityCondenser condenser)) return null;
@@ -41,9 +39,4 @@ public class MachineCondenser extends dev.golem.core.world.CompatBlock implement
         return tank.getTankType().getDisplayNameString() + ": " + tank.getFill() + "/" + tank.getMaxFill() + "mB";
     }
 
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

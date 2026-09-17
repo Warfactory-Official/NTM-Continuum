@@ -17,6 +17,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -101,7 +102,6 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
         fan.power = Library.chargeItemsFromTE(fan.inventory, 3, fan.power, fan.power);
         for (DirPos connection : fan.getConPos()) {
             fan.tryProvide(level, connection.getPos(), connection.getDir());
-            fan.trySubscribe(fan.tank.getTankType(), level, connection);
             if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection);
         }
         fan.power = Math.min(fan.power, MAX_POWER);
@@ -190,9 +190,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
     }
 
     public ForgeDirection getFacing() {
-        int meta = getBlockState().hasProperty(com.hbm.blocks.BlockDummyable.META)
-                ? getBlockState().getValue(com.hbm.blocks.BlockDummyable.META) : com.hbm.blocks.BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     public DirPos[] getConPos() {

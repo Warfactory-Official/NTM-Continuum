@@ -52,13 +52,6 @@ public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                   BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, blockEntityType.get(), TileEntityMassStorage::serverTick);
-    }
-
-    @Override
     public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
@@ -98,9 +91,4 @@ public class BlockMassStorage extends CarriedBlock implements ILookOverlay {
                 full ? 0xffff00 : 0x00ffff, full ? 0x404000 : 0x004040, lines);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

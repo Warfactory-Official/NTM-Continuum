@@ -1,8 +1,0 @@
-{
-  "parent": "block/cube_bottom_top",
-  "textures": {
-    "top": "hbm:blocks/machine_deuterium_extractor_top",
-    "bottom": "hbm:blocks/machine_deuterium_extractor_bottom",
-    "side": "hbm:blocks/machine_deuterium_extractor_side"
-  }
-}

@@ -8,10 +8,12 @@ import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -20,37 +22,34 @@ import net.minecraft.world.phys.Vec3;
 
 /** Shared static-model and hazard-diamond pass for the two old giant storage machines. */
 public abstract class GiantTankRenderer<T extends TileEntityMachineGiantTank>
-        implements CompatBER<T, GiantTankRenderState> {
+        extends GemBER<T, GiantTankRenderState> {
 
     private static final Identifier DANGER = Ids.of(Constants.MOD_ID, "textures/models/misc/danger_diamond.png");
     protected final WavefrontObj model;
-    protected final RenderType bodyType;
+    protected final Surface body;
     protected final RenderType dangerType = CompatRenderTypes.entityTranslucentEmissive(DANGER);
 
     protected GiantTankRenderer(String modelName, String textureName) {
         model = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/machines/" + modelName + ".obj"));
-        bodyType = CompatRenderTypes.entityCutout(
-                Ids.of(Constants.MOD_ID, "textures/models/machines/" + textureName + ".png"));
+        body = Surface.cutout(Constants.MOD_ID + ":textures/models/machines/" + textureName + ".png");
     }
+
+    @Override
+    protected final void setup(Gem.Model<GiantTankRenderState> declaration) {
+        placeMachine(declaration.offScreen().viewDistance(256).part(model.all(), body)
+                .translate(0.5F, 0F, 0.5F));
+    }
+
+    /**
+     * The machine's own placement, stated for the declared body. Its twin
+     * {@link #applyMachineTransform} says the same thing to a pose stack, for the contents and the
+     * hazard plate — those are built from the fill level rather than placed, so they keep drawing.
+     */
+    protected abstract void placeMachine(Gem.Part<GiantTankRenderState> part);
 
     @Override
     public GiantTankRenderState createRenderState() {
         return new GiantTankRenderState();
-    }
-
-    @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(T blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
     }
 
     @Override
@@ -66,12 +65,10 @@ public abstract class GiantTankRenderer<T extends TileEntityMachineGiantTank>
     protected abstract void extractMachine(T blockEntity, GiantTankRenderState state);
 
     @Override
-    public final void submit(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
+    protected final void submitUndeclared(GiantTankRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
         applyMachineTransform(state, poseStack);
-        collector.submitCustomGeometry(poseStack, bodyType,
-                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
         if (state.fluidType != null && state.fluidType != Fluids.NONE) {
             submitHazards(state, poseStack, collector);
             submitFluid(state, poseStack, collector);

@@ -1,6 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
@@ -34,7 +35,7 @@ import java.util.List;
 
 /** A manually toggled, typed fluid-pipe gate. */
 public class FluidValve extends dev.golem.core.world.CompatBlock
-        implements EntityBlock, IFluidConnectorBlockMK2, ILookOverlay {
+        implements TickingBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public static final BooleanProperty OPEN = BooleanProperty.create("open");
 
@@ -60,14 +61,6 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.FLUID_VALVE.get(), TileEntityFluidValve::serverTick);
-    }
-
-    @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!(stack.getItem() instanceof IItemFluidId identifier)) return InteractionResult.TRY_WITH_EMPTY_HAND;
@@ -86,6 +79,19 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
             }
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * A block appearing beside a valve is the one endpoint transition nothing else announces, exactly as
+     * for a duct — an open valve is a conductor with faces of its own.
+     */
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
+        if (level instanceof net.minecraft.server.level.ServerLevel server) {
+            com.hbm.uninos.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
+        }
     }
 
     @Override
@@ -121,10 +127,4 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

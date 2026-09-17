@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/slab",
-  "textures": {
-    "bottom": "hbm:blocks/lightstone.bricks",
-    "top": "hbm:blocks/lightstone.bricks",
-    "side": "hbm:blocks/lightstone.bricks"
-  }
-}

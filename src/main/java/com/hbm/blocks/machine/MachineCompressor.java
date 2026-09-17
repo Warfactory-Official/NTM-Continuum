@@ -2,15 +2,13 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineCompressor;
 import com.hbm.tileentity.machine.TileEntityMachineCompressorBase;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -20,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Compressor block — 1:1 port of the 1.12.2 {@code MachineCompressor} (dims {@code {2,0,1,2,1,1}},
  * offset 2; two extra body fills + 3 makeExtra power/fluid ports). */
-public class MachineCompressor extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineCompressor extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineCompressor(Properties properties) {
         super(properties);
@@ -34,51 +32,35 @@ public class MachineCompressor extends BlockDummyable implements IEnergyConnecto
     @Override public int[] getDimensions() { return new int[]{2, 0, 1, 2, 1, 1}; }
     @Override public int getOffset() { return 2; }
 
+    private static final int[] FAN_PLATFORM = {3, -3, 1, 1, 1, 1};
+    private static final int[] CHIMNEY = {8, -4, 0, 0, 1, 1};
+
     @Override
-    public boolean checkRequirement(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        return super.checkRequirement(world, x, y, z, dir, o) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{3, -3, 1, 1, 1, 1}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x + dir.offsetX * o, y + dir.offsetY * o, z + dir.offsetZ * o, new int[]{8, -4, 0, 0, 1, 1}, x, y, z, dir);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return super.checkRequirement(level, core, facing, clicked)
+                && MultiblockHandlerXR.checkSpace(level, core, FAN_PLATFORM, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core, CHIMNEY, clicked, facing);
+    }
+
+    /** The body is three boxes, and three cells around the core's waist are the power and fluid surface. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, FAN_PLATFORM, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, CHIMNEY, facing, visitor);
+
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.offset(-facing.getStepX(), 0, -facing.getStepZ()), MASK_NORTH);
+        visitor.cell(core.offset(rot.getStepX(), 0, rot.getStepZ()), MASK_WEST);
+        visitor.cell(core.offset(-rot.getStepX(), 0, -rot.getStepZ()), MASK_EAST);
     }
 
     @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        super.formStructure(world, core, dir);
-
-        int cx = core.getX(), cy = core.getY(), cz = core.getZ();
-        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{3, -3, 1, 1, 1, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, cx, cy, cz, new int[]{8, -4, 0, 0, 1, 1}, this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        this.makeExtra(world, cx - dir.offsetX, cy, cz - dir.offsetZ);
-        this.makeExtra(world, cx + rot.offsetX, cy, cz + rot.offsetZ);
-        this.makeExtra(world, cx - rot.offsetX, cy, cz - rot.offsetZ);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineCompressor te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineCompressor te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_COMPRESSOR.get(), TileEntityMachineCompressor::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_COMPRESSOR.get(), TileEntityMachineCompressorBase::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.offset(-facing.getStepX(), 0, -facing.getStepZ()), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(rot.getStepX(), 0, rot.getStepZ()), MASK_ALL, domains);
+        visitor.passiveCell(core.offset(-rot.getStepX(), 0, -rot.getStepZ()), MASK_ALL, domains);
     }
 }

@@ -9,20 +9,19 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.ChunkPos;
 import dev.golem.core.world.CompatSavedData;
 
 /**
- * Persists chunk radiation across save/load — the cross-loader replacement for the fork's per-chunk NBT
- * payload. Holds, per <b>unloaded</b> chunk, its per-section pocket densities (loaded chunks live in
- * {@link RadiationSystemNT.WorldRadiationData}; they're flushed here on unload and before a level save).
- * On chunk load the entry is popped and re-applied by pocket index (deterministic flood-fill order → the
- * indices line up as long as the blocks didn't change, which they can't while a chunk is unloaded).
+ * The world blob radiation used to live in, kept only to empty it. Radiation is now stored per chunk in
+ * its own region files ({@link RadiationPayload}, through {@code ChunkSidecar}); a world saved before
+ * that move still has its parked densities here, and {@link RadiationSystemNT} drains them across on the
+ * first load. Nothing writes to it any more, so once drained it saves empty and stays that way.
  */
 public final class RadiationSavedData extends CompatSavedData<RadiationSavedData> {
 
     private static final String ID = "hbm_radiation";
 
-    // chunkKey (ChunkPos.asLong) -> [sectionIndex] -> densities[pocket]  (rows may be null)
     private final Long2ObjectMap<double[][]> data = new Long2ObjectOpenHashMap<>();
 
     // ---- codec ----
@@ -54,20 +53,21 @@ public final class RadiationSavedData extends CompatSavedData<RadiationSavedData
         return CODEC;
     }
 
-    /** Pops (removes + returns) the stored densities for a chunk, or null. */
-    public double[][] take(long chunkKey) {
-        double[][] v = data.remove(chunkKey);
-        if (v != null) setDirty();
-        return v;
+    /** One parked chunk, with the packing this blob used already undone. */
+    @FunctionalInterface
+    public interface ParkedChunk {
+        void accept(int chunkX, int chunkZ, double[][] densities);
     }
 
-    public void put(long chunkKey, double[][] densities) {
-        data.put(chunkKey, densities);
+    /** Hands every parked chunk to {@code sink} and empties the blob. */
+    public void drainTo(ParkedChunk sink) {
+        if (data.isEmpty()) return;
+        for (Long2ObjectMap.Entry<double[][]> e : data.long2ObjectEntrySet()) {
+            long key = e.getLongKey();
+            sink.accept(ChunkPos.getX(key), ChunkPos.getZ(key), e.getValue());
+        }
+        data.clear();
         setDirty();
-    }
-
-    public void remove(long chunkKey) {
-        if (data.remove(chunkKey) != null) setDirty();
     }
 
     // ---- codec conversion ----

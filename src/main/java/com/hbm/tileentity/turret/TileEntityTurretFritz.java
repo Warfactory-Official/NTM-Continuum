@@ -10,7 +10,6 @@ import com.hbm.items.ModAmmoItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryFlamer;
-import com.hbm.lib.DirPos;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
@@ -137,9 +136,6 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
     protected void tickServer() {
         super.tickServer();
 
-        for (DirPos port : getConPos()) {
-            trySubscribe(tank.getTankType(), level, port.getPos(), port.getDir());
-        }
 
         for (int i = SLOT_AMMO_FIRST; i <= SLOT_AMMO_LAST; i++) {
             if (!getItem(i).is(ModAmmoItems.flame_diesel.get())) continue;

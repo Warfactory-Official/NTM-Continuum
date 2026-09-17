@@ -3,6 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.inventory.container.ContainerFurnaceIron;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -92,8 +93,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceIron furnace) {
         if (furnace.progress <= 0) return;
-        com.hbm.lib.ForgeDirection dir = com.hbm.lib.ForgeDirection.getOrientation(
-                state.getValue(com.hbm.blocks.BlockDummyable.META) - com.hbm.blocks.BlockDummyable.offset);
+        com.hbm.lib.ForgeDirection dir = com.hbm.tileentity.MachineCore.facing(state);
         com.hbm.lib.ForgeDirection rotation = dir.getRotation(com.hbm.lib.ForgeDirection.UP);
         double offset = furnace.progress % 2 == 0 ? 1D : 0.5D;
         level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE,

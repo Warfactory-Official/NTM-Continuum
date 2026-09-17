@@ -1,6 +1,6 @@
 package com.hbm.blocks.network;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.tileentity.network.TileEntityRadioTelex;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The 1.12.2 {@code radio_telex}: a two-cell-wide, five-line wireless text machine. */
-public final class RadioTelex extends BlockDummyable {
+public final class RadioTelex extends BlockMultiblockMachine {
 
     public RadioTelex(Properties properties) {
         super(properties);
@@ -44,17 +44,4 @@ public final class RadioTelex extends BlockDummyable {
         return super.onUseWithoutItem(state, level, pos, player, hit);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModRadioBlockEntities.RADIO_TELEX.get(),
-                (tickLevel, pos, tickState, blockEntity) -> ((TileEntityRadioTelex) blockEntity).serverTick());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

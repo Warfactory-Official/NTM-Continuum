@@ -2,15 +2,13 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -20,7 +18,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The four-wide legacy turbofan multiblock. */
-public class MachineTurbofan extends BlockDummyable
+public class MachineTurbofan extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineTurbofan(Properties properties) {
@@ -36,61 +34,35 @@ public class MachineTurbofan extends BlockDummyable
     @Override public int getOffset() { return 1; }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x, y, z);
-        makeExtra(level, x - rot.offsetX, y, z - rot.offsetZ);
-        makeExtra(level, x - dir.offsetX * 2, y, z - dir.offsetZ * 2);
-        makeExtra(level, x - dir.offsetX * 2 - rot.offsetX, y, z - dir.offsetZ * 2 - rot.offsetZ);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        int x = core.getX() + dir.offsetX * getOffset();
-        int z = core.getZ() + dir.offsetZ * getOffset();
-        makeExtra(level, x, core.getY(), z);
-        makeExtra(level, x - rot.offsetX, core.getY(), z - rot.offsetZ);
-        makeExtra(level, x - dir.offsetX * 2, core.getY(), z - dir.offsetZ * 2);
-        makeExtra(level, x - dir.offsetX * 2 - rot.offsetX, core.getY(),
-                z - dir.offsetZ * 2 - rot.offsetZ);
-    }
-
-    @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                   BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return super.onUseWithoutItem(state, level, pos, player, hit);
     }
 
+    /** Four intake anchors, two in front of the core and two behind. */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineTurbofan fan
-                && IEnergyConnectorBlock.isPort(fan.getConPos(), pos, dir);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+        int dx = facing.getStepX(), dz = facing.getStepZ();
+        int rx = rot.getStepX(), rz = rot.getStepZ();
+
+        visitor.cell(core.offset(dx, 0, dz), MASK_SOUTH);
+        visitor.cell(core.offset(dx - rx, 0, dz - rz), MASK_SOUTH);
+        visitor.cell(core.offset(-dx, 0, -dz), MASK_NORTH);
+        visitor.cell(core.offset(-dx - rx, 0, -dz - rz), MASK_NORTH);
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityMachineTurbofan fan
-                && IEnergyConnectorBlock.isPort(fan.getConPos(), pos, dir);
-    }
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int dx = facing.getStepX(), dz = facing.getStepZ();
+        int rx = rot.getStepX(), rz = rot.getStepZ();
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_TURBOFAN.get(), TileEntityMachineTurbofan::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_TURBOFAN.get(), TileEntityMachineTurbofan::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+        visitor.passiveCell(core.offset(dx, 0, dz), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(dx - rx, 0, dz - rz), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-dx, 0, -dz), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-dx - rx, 0, -dz - rz), MASK_ALL, PASSIVE_FLUID_IN);
     }
 }

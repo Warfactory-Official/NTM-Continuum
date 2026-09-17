@@ -54,7 +54,15 @@ public final class MainRegistry {
         com.hbm.inventory.material.Mats.init(); // material registry (tag-based ore-dict replacement)
         // Order matters: blocks before items (block items reference blocks), tabs last.
         ModBlocks.init();
+        com.hbm.blocks.ModBlockModels.declare();
+        com.hbm.items.ModItemModels.declare();
+        com.hbm.blocks.ModBlockDrops.declare();
+        com.hbm.inventory.material.ModMaterialTags.declare();
+        com.hbm.lib.ModDamageTypes.declare();
+        com.hbm.world.gen.ModBiomeModifiers.declare();
+        com.hbm.inventory.recipes.ModCraftingRecipes.declare();
         com.hbm.blocks.machine.ModArmorTableBlocks.init();
+        com.hbm.blocks.machine.ModWeaponTableBlocks.init();
         com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)
         com.hbm.radio.ModRadioContent.init(); // Redstone-over-Radio blocks, block entities, and menus
@@ -65,17 +73,13 @@ public final class MainRegistry {
         com.hbm.items.solar.ModSolarItems.init();
         com.hbm.tileentity.machine.solar.ModSolarBlockEntities.init();
         com.hbm.smoke.SmokeChainRegistration.init();
-        com.hbm.blocks.machine.pile.ModPileBlocks.init();
-        com.hbm.blocks.machine.pwr.ModPWRBlocks.init();
-        com.hbm.blocks.machine.dfc.ModDFCBlocks.init();
-        com.hbm.items.ModSatelliteItems.init();
-        com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.init();
         com.hbm.foundry.FoundryExpansion.init();
         com.hbm.blocks.machine.DiFurnaceContent.init();
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)
         com.hbm.blocks.turret.ModTurretBlocks.init(); // turret pad cell and the turrets on it
         ModStorageBlocks.init();   // storage crates (iron / steel / desh)
         ModBombBlocks.init();      // bomb blocks (also precede block entities)
+        com.hbm.blocks.ModRailBlocks.init(); // the folded rails the ntm-next trains run on
         com.hbm.blocks.ModHazardBlocks.init(); // radioactive / rad-resistant blocks (radiation emitters)
         com.hbm.blocks.ModFalloutBlocks.init(); // fallout layer + waste/sellafite terrain (nuke aftermath)
         com.hbm.blocks.ModSteelBlocks.init();   // stateful steel grate + OBJ scaffold
@@ -93,6 +97,8 @@ public final class MainRegistry {
         com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        com.hbm.items.ModEntityItems.init(); // spawn items, carts, drones, trains, grenades, dispersers (entity port)
+        com.hbm.items.ModGunSupportItems.init(); // ammo container and stack-backed ammo/casing bags
         com.hbm.items.ModJetpackDependencyItems.init(); // hot steel and the functional xenon thruster part
         com.hbm.items.ModSingularityItems.init(); // dropped singularity capsules and Spark progression
         com.hbm.items.ModSelfchargerItems.init(); // deprecated powered-armour auxiliary batteries
@@ -123,22 +129,21 @@ public final class MainRegistry {
         com.hbm.items.ModGearItems.init(); // radiation gear (geiger/dosimeter + hazmat armor)
         com.hbm.items.ModArmorItems.init(); // modelled power armour (T-51b)
         com.hbm.items.ModArmorModules.init(); // complete armor modules (storage, cladding, inserts)
-        com.hbm.items.ModAmmoItems.init();  // Sedna ammunition (one item per old ammo_standard variant)
-        // The bullet configs must exist before a gun's magazine names them; the gun items themselves are
-        // built lazily at registration, well after this.
-        com.hbm.items.weapon.sedna.factory.GunFactory.init();
-        com.hbm.tileentity.machine.pile.TileEntityPileCore.initDebris();
-        com.hbm.items.ModGunItems.init();   // the Sedna guns
+        // Ammo, factories, and gun suppliers must all be declared before any loader flushes ITEMs.
+        com.hbm.items.weapon.sedna.factory.GunCatalogue.init();
         com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them
         com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)
         com.hbm.world.biome.ModBiomes.init(); // crater biome keys, backed by worldgen biome JSON
         ModBlockEntities.init();
         com.hbm.tileentity.ModRBMKBlockEntities.init();
         ModMenus.init();
+        com.hbm.inventory.ModGunSupportMenus.init();
         com.hbm.inventory.ModRBMKMenus.init();
         ModEntities.init();        // entity types (the explosion + fallout entities)
         com.hbm.entity.ModRBMKEntities.init();
         com.hbm.entity.missile.ModMissileEntities.init(); // the missiles
+        com.hbm.entity.NtmToolEntityCatalog.init(); // NI4NI's throwable coin, separate from ModEntities
+        com.hbm.entity.ModNtmEntities.init(); // the ntm-next entity port (mobs, vehicles, effects, remaining projectiles)
         com.hbm.particle.HbmParticles.init();
         com.hbm.potion.ModEffects.init(); // status effects (radiation)
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)
@@ -148,6 +153,18 @@ public final class MainRegistry {
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> com.hbm.handler.JetpackHandler.clear(level));
         dev.golem.core.platform.Lifecycle.onServerTick(server ->
                 server.getAllLevels().forEach(com.hbm.handler.JetpackHandler::cleanup));
+        // ntm-next entity port: item pools resolve their registry ids once the server holds registries; the
+        // TOM impact gate is republished for off-thread worldgen readers; per-server caches clear on stop.
+        dev.golem.core.platform.Lifecycle.onServerStarted(server -> {
+            com.hbm.itempool.ItemPool.load(server.registryAccess());
+            com.hbm.saveddata.TomSaveData.publish(server);
+        });
+        dev.golem.core.platform.Lifecycle.onServerStopping(server -> {
+            com.hbm.saveddata.TomSaveData.onServerStopping();
+            com.hbm.tileentity.network.RequestNetwork.onServerStopping();
+            com.hbm.tileentity.network.RTTYSystem.onServerStopping();
+            com.hbm.util.ChunkUtil.onServerStopped();
+        });
         // Needs both the tool items and the convertible blocks, so it runs after every registry.
         com.hbm.handler.NTMToolHandler.register();
     }

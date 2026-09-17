@@ -1,13 +1,15 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCrucible;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -31,7 +33,7 @@ import java.util.List;
  * scraps instead. The block face is an {@link ICrucibleAcceptor} so channels/outlets can pour into the
  * basin from above (delegating to the core BlockEntity).
  */
-public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor {
+public class MachineCrucible extends BlockMultiblockMachine implements ICrucibleAcceptor {
 
     public MachineCrucible(Properties properties) {
         super(properties);
@@ -64,7 +66,7 @@ public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (!stack.isEmpty() && stack.is(ItemTags.SHOVELS)) {
             if (!level.isClientSide() && !player.isShiftKeyDown()) {
-                if (findCoreTE(level, pos) instanceof TileEntityCrucible crucible) {
+                if (MultiblockSurface.coreEntity(level, pos) instanceof TileEntityCrucible crucible) {
                     List<Mats.MaterialStack> stacks = new ArrayList<>();
                     stacks.addAll(crucible.recipeStack);
                     stacks.addAll(crucible.wasteStack);
@@ -86,31 +88,17 @@ public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor
         return super.onUseItem(state, level, pos, player, hand, stack, hit);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CRUCIBLE.get(), TileEntityCrucible::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     // --- ICrucibleAcceptor: delegate to the core (pour from the top only) ---
 
     @Override
     public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
-        return findCoreTE(world, pos) instanceof TileEntityCrucible crucible
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityCrucible crucible
                 && crucible.canAcceptPartialPour(world, pos, dX, dY, dZ, side, stack);
     }
 
     @Override
     public Mats.MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
-        if (!(findCoreTE(world, pos) instanceof TileEntityCrucible crucible)) return stack;
+        if (!(MultiblockSurface.coreEntity(world, pos) instanceof TileEntityCrucible crucible)) return stack;
         return crucible.pour(world, pos, dX, dY, dZ, side, stack);
     }
 
@@ -119,4 +107,9 @@ public class MachineCrucible extends BlockDummyable implements ICrucibleAcceptor
 
     @Override
     public Mats.MaterialStack flow(Level world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return null; }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        passiveEverywhere(core, facing, visitor, PASSIVE_ITEMS);
+    }
 }

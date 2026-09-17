@@ -39,7 +39,6 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityDeuteriumExtractor extractor) {
         for (DirPos connection : extractor.getConPos()) {
-            extractor.trySubscribe(extractor.tanks[0].getTankType(), level, connection);
             if (extractor.tanks[1].getFill() > 0) extractor.tryProvide(extractor.tanks[1], level, connection);
         }
 

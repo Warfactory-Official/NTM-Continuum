@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine.struct;
 
 import dev.golem.core.registry.BlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.struct.TileEntityStructBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -14,7 +15,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * The seed block of a hand-built multiblock: place it, build the machine's shape around it out of
  * component blocks, and its {@link TileEntityStructBase} scans once a second until the shape matches —
- * at which point it replaces itself with the finished {@link com.hbm.blocks.BlockDummyable} core and
+ * at which point it replaces itself with the finished multiblock core and
  * fills in the dummy shell. Port of 1.12.2's {@code BlockStruct}.
  *
  * <p>Upstream's comment still applies: <b>this is not direction sensitive</b>. Assembly always forms
@@ -24,7 +25,7 @@ import org.jspecify.annotations.Nullable;
  * <p>It renders as an ordinary block model (it has a real texture — the player needs to see where the
  * seed is), unlike the invisible dummyable cells it eventually becomes.
  */
-public class BlockStruct extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class BlockStruct extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     private final BlockEntities.Factory<?> factory;
     private final java.util.function.Supplier<BlockEntityType<?>> type;
@@ -42,14 +43,4 @@ public class BlockStruct extends dev.golem.core.world.CompatBlock implements Ent
         return factory.create(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> given) {
-        // The scan is server-only; the client half of the BlockEntity exists purely so the ghost
-        // preview renderer has something to hang off.
-        if (level.isClientSide() || given != type.get()) return null;
-        return (l, pos, s, be) -> {
-            if (be instanceof TileEntityStructBase struct) TileEntityStructBase.serverTick(l, pos, s, struct);
-        };
-    }
 }

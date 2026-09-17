@@ -1,5 +1,11 @@
 package com.hbm.explosion;
 
+import com.hbm.entity.projectile.EntityShrapnel;
+import com.hbm.particle.helper.ExplosionCreator;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 import com.hbm.config.CompatibilityConfig;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
@@ -127,6 +133,15 @@ public final class ExplosionLarge {
     }
 
     /** Sends the legacy radial shock smoke to tracking clients. */
+    private static int rubbleCount(float strength) {
+        return (int) (strength / 10F);
+    }
+
+    private static int shrapnelCount(float strength) {
+        return (int) (strength / 3F);
+    }
+
+    // 1.7 spawnShock/spawnParticles: "smoke" broadcasts.
     public static void spawnShock(Level world, double x, double y, double z, int count, double strength) {
         net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
         data.putInt("count", count);
@@ -231,6 +246,83 @@ public final class ExplosionLarge {
             shrapnel.setDeltaMovement(motionX, motionY, motionZ);
             shrapnel.setTrail(true);
             world.addFreshEntity(shrapnel);
+        }
+    }
+
+    // --- ntm-next entity port (merge_explosion_helpers.py) ---
+
+
+    public static void explode(Level level, double x, double y, double z, float strength, boolean cloud, boolean rubble,
+                               boolean shrapnel) {
+        explode(level, null, x, y, z, strength, false, cloud, rubble, shrapnel);
+    }
+
+
+    public static void explodeFire(Level level, double x, double y, double z, float strength, boolean cloud,
+                                   boolean rubble, boolean shrapnel) {
+        explode(level, null, x, y, z, strength, true, cloud, rubble, shrapnel);
+    }
+
+
+    private static void explode(Level level, Entity detonator, double x, double y, double z, float strength,
+                                boolean fire, boolean cloud, boolean rubble, boolean shrapnel) {
+        level.explode(detonator, null, null, x, y, z, strength, fire, Level.ExplosionInteraction.TNT);
+        // 1.12.2: cosmetic +2 Y.
+        if (cloud) ExplosionCreator.composeEffectStandard(level, x, y + 2, z);
+        if (rubble) spawnRubble(level, x, y + 2, z, rubbleCount(strength));
+        if (shrapnel) spawnShrapnels(level, x, y + 2, z, shrapnelCount(strength));
+    }
+
+    public static void spawnBurst(Level level, double x, double y, double z, int count, double strength) {
+        if (!(level instanceof ServerLevel server)) return;
+        spawnShock(server, x, y, z, count, strength); // 1.7 SmokeShockPayload.MODE_BURST: gas-flame burst drawn as shock smoke
+    }
+
+/**
+     * Bunker-buster 'drill' - a chained line of vanilla explosions along the flight vector.
+     */
+    public static void buster(Level level, double x, double y, double z, Vec3 vector, float strength, int depth) {
+        Vec3 dir = vector.normalize();
+        for (int i = 0; i < depth; i += 2) {
+            level.explode(null, null, null, x + dir.x * i, y + dir.y * i, z + dir.z * i, strength, false,
+                    Level.ExplosionInteraction.TNT);
+        }
+    }
+
+/**
+     * Uniform-sphere-sampled rays that yank the first low-resistance block on each ray into a flying EntityRubble.
+     */
+    public static void jolt(Level level, double x, double y, double z, int strength, int count, double vel) {
+        RandomSource rand = level.getRandom();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (int n = 0; n < count; n++) {
+            double phi = rand.nextDouble() * Math.PI * 2;
+            double cosTheta = rand.nextDouble() * 2 - 1;
+            double sinTheta = Math.sqrt(1 - cosTheta * cosTheta);
+            double dx = sinTheta * Math.cos(phi);
+            double dy = cosTheta;
+            double dz = sinTheta * Math.sin(phi);
+            for (int i = 0; i < strength; i++) {
+                int bx = (int) Math.floor(x + dx * i);
+                int by = (int) Math.floor(y + dy * i);
+                int bz = (int) Math.floor(z + dz * i);
+                pos.set(bx, by, bz);
+                BlockState state = level.getBlockState(pos);
+                if (state.liquid()) {
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                    continue;
+                }
+                if (state.isAir()) continue;
+                if (state.getBlock().getExplosionResistance() > 70F) continue;
+                EntityRubble rubble = new EntityRubble(level, bx + 0.5, by + 0.5, bz + 0.5);
+                rubble.setBlockState(state);
+                // 1.7 :240 discards Vec3.normalize()'s return value, so the velocity scales with the ray length
+                Vec3 back = new Vec3(x - (bx + 0.5), y - (by + 0.5), z - (bz + 0.5)).scale(vel);
+                rubble.setDeltaMovement(back);
+                level.addFreshEntity(rubble);
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                break;
+            }
         }
     }
 }

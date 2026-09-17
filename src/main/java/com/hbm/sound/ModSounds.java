@@ -49,6 +49,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> TECH_BLEEP = register("item.tech_bleep");
     /** The detonator's bind confirmation. Old id {@code hbm:item.techBoop}. */
     public static final RegistryObject<SoundEvent> TECH_BOOP = register("item.tech_boop");
+    /** Ammo-container release sound from ntm-next's {@code item.unpack} pool. */
+    public static final RegistryObject<SoundEvent> ITEM_UNPACK = register("item.unpack");
     public static final RegistryObject<SoundEvent> BOLTGUN = register("item.boltgun");
     public static final RegistryObject<SoundEvent> SYRINGE = register("item.syringe");
     public static final RegistryObject<SoundEvent> RADAWAY = register("item.radaway");
@@ -64,6 +66,8 @@ public final class ModSounds {
     /** Block fragment impact sounds used by the black-hole rubble entity. */
     public static final RegistryObject<SoundEvent> DEBRIS = register("block.debris");
     public static final RegistryObject<SoundEvent> VICE = register("item.vice");
+    public static final RegistryObject<SoundEvent> GUN_SMACK = register("weapon.fire.smack");
+    public static final RegistryObject<SoundEvent> GUN_STAB = register("weapon.fire.stab");
     /** Looping hum of the current BigInteger FEnSU. */
     public static final RegistryObject<SoundEvent> FENSU_HUM = SOUNDS.register("block.fensu_hum",
             () -> SoundEvent.createFixedRangeEvent(
@@ -151,6 +155,51 @@ public final class ModSounds {
     @SuppressWarnings("unchecked")
     public static final RegistryObject<SoundEvent>[] GEIGER_SOUNDS =
             new RegistryObject[] {GEIGER_1, GEIGER_2, GEIGER_3, GEIGER_4, GEIGER_5, GEIGER_6};
+
+    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    public static final RegistryObject<SoundEvent> ALARM_CHIME = register("alarm.chime");
+    public static final RegistryObject<SoundEvent> ALARM_GAMBIT = register("alarm.gambit");
+    public static final RegistryObject<SoundEvent> ALARM_SOYUZED = register("alarm.soyuzed");
+    public static final RegistryObject<SoundEvent> BALLS_LASER = register("weapon.balls_laser");
+    public static final RegistryObject<SoundEvent> BOMBER_WHISTLE = register("entity.bomb_whistle");
+    public static final RegistryObject<SoundEvent> BOMB_DET = register("entity.bomb_det");
+    public static final RegistryObject<SoundEvent> CHOPPER_CHARGE = register("entity.chopper_charge");
+    public static final RegistryObject<SoundEvent> CHOPPER_CRASHING_LOOP = register("entity.chopper_crashing_loop");
+    public static final RegistryObject<SoundEvent> CHOPPER_DAMAGE = register("entity.chopper_damage");
+    public static final RegistryObject<SoundEvent> CHOPPER_DROP = register("entity.chopper_drop");
+    public static final RegistryObject<SoundEvent> CHOPPER_FLYING_LOOP = register("entity.chopper_flying_loop");
+    public static final RegistryObject<SoundEvent> CRATE_CLOSE = register("crate_close");
+    public static final RegistryObject<SoundEvent> ENTITY_BOMBER_LOOP = register("entity.bomber_loop");
+    public static final RegistryObject<SoundEvent> ENTITY_BOMBER_SMALL_LOOP = register("entity.bomber_small_loop");
+    public static final RegistryObject<SoundEvent> ENTITY_CYBERCRAB = register("entity.cybercrab");
+    public static final RegistryObject<SoundEvent> ENTITY_DUCC = register("entity.ducc");
+    public static final RegistryObject<SoundEvent> ENTITY_MEGAQUACC = register("entity.megaquacc");
+    public static final RegistryObject<SoundEvent> ENTITY_PLANE_CRASH = register("entity.plane_crash");
+    public static final RegistryObject<SoundEvent> ENTITY_PLANE_SHOT_DOWN = register("entity.plane_shot_down");
+    public static final RegistryObject<SoundEvent> FSTBMB_PING = register("weapon.fstbmb_ping");
+    public static final RegistryObject<SoundEvent> GRENADE_BOUNCE = register("weapon.grenade_bounce");
+    public static final RegistryObject<SoundEvent> GUN_MINIGUN_FIRE = register("weapon.cal_shoot");
+    public static final RegistryObject<SoundEvent> GUN_UNDERBARREL_FIRE = register("weapon.fire.underbarrel");
+    public static final RegistryObject<SoundEvent> G_BOUNCE = register("weapon.g_bounce");
+    public static final RegistryObject<SoundEvent> METEORITE_FALLING_LOOP = register("entity.meteorite_falling_loop");
+    public static final RegistryObject<SoundEvent> MISSILE_TAKE_OFF = register("missile_take_off");
+    public static final RegistryObject<SoundEvent> NULL_MINE = register("misc.null_mine");
+    public static final RegistryObject<SoundEvent> OLD_EXPLOSION = register("entity.old_explosion");
+    public static final RegistryObject<SoundEvent> ROBIN_EXPLOSION = register("weapon.robin_explosion");
+    public static final RegistryObject<SoundEvent> SAW_SHOOT = register("weapon.saw_shoot");
+    public static final RegistryObject<SoundEvent> TRAIN_IMPACT = register("weapon.train_impact");
+    public static final RegistryObject<SoundEvent> UFO_BEAM = register("entity.ufo_beam");
+    public static final RegistryObject<SoundEvent> UFO_BLAST = register("ufo_blast");
+
+    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    public static final RegistryObject<SoundEvent> GRENADE_NUKA = register("weapon.reload.grenade_nuka");
+    public static final RegistryObject<SoundEvent> GRENADE_TECH = register("weapon.reload.grenade_tech");
+
+    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    public static final RegistryObject<SoundEvent> TESLA_ZAP = register("weapon.tesla");
+
+    // --- ntm-next entity port (gen_entity_sounds.py) ---
+    public static final RegistryObject<SoundEvent> CRATE_BREAK = register("crate_break");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(

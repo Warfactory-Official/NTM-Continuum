@@ -99,6 +99,10 @@ dependencies {
     // Embeddium is the Forge port of Sodium — Sodium itself ships no Forge build, so this is the
     // equivalent dev renderer for this node. Client-side only, dev runtime only, never published.
     propOrNull("deps.embeddium")?.let { modRuntimeOnly("maven.modrinth:embeddium:$it") }
+
+    // Pipez: the real third-party energy peer the foreign-bridge gametests run against. `modRuntimeOnly`
+    // so the production jar is remapped for this node's dev mappings; nothing compiles against it.
+    propOrNull("deps.pipez")?.let { modRuntimeOnly("maven.modrinth:pipez:$it") }
 }
 
 mixin {
@@ -153,6 +157,7 @@ apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-biomes.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-assets.gradle.kts"))
+apply(from = rootProject.file("gradle/dejson.gradle.kts"))
 apply(from = rootProject.file("gradle/mixin-validation.gradle.kts"))
 
 dependencies { compileOnly("org.jspecify:jspecify:1.0.0") }

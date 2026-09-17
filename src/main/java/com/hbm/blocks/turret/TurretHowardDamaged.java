@@ -26,12 +26,6 @@ public class TurretHowardDamaged extends TurretBaseNT {
     }
 
     @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return ticker(level, type, ModBlockEntities.TURRET_HOWARD_DAMAGED.get());
-    }
-
-    @Override
     protected InteractionResult useAtCore(BlockState coreState, Level level, BlockPos core, Player player,
                                           BlockHitResult hit) {
         return InteractionResult.TRY_WITH_EMPTY_HAND;

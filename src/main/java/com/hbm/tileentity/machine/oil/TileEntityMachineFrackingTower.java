@@ -134,13 +134,6 @@ public class TileEntityMachineFrackingTower extends TileEntityOilDrillBase {
         };
     }
 
-    @Override
-    protected void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
-            this.trySubscribe(tanks[2].getTankType(), level, dp);
-        }
-    }
 
     @Override
     public Component getDisplayName() {

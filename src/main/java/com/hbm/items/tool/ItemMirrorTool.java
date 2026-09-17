@@ -2,6 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.blocks.machine.solar.MachineSolarBoiler;
 import com.hbm.blocks.machine.solar.SolarMirror;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.solar.SolarDataComponents;
 import com.hbm.tileentity.machine.solar.TileEntitySolarMirror;
 import dev.golem.core.world.CompatItem;
@@ -42,7 +43,7 @@ public class ItemMirrorTool extends CompatItem {
 
         if (level.getBlockState(clicked).getBlock() instanceof MachineSolarBoiler boilerBlock) {
             if (!shifting) return super.useOn(context);
-            BlockPos core = boilerBlock.findCore(level, clicked);
+            BlockPos core = MultiblockSurface.coreOfAny(level, clicked);
             if (core != null && !level.isClientSide()) {
                 // The legacy mirror aims at one block above the boiler core, then resolves tY - 1.
                 SolarDataComponents.MIRROR_TARGET.set(stack, core.above());

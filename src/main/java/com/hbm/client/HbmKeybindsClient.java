@@ -118,6 +118,11 @@ public final class HbmKeybindsClient {
         if (holdingGun && mc.screen == null) {
             suppressAttack(mc);
             updateAiming(player);
+            ItemGunBaseNT.clientHeldTick(player);
+            if (player.getMainHandItem().getItem() instanceof com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower) {
+                com.hbm.items.weapon.sedna.impl.ItemGunChargeThrower.clientGrappleTick(player,
+                        player.getMainHandItem(), primary, !suppressed && gunSecondaryKey.isHeld());
+            }
         }
     }
 

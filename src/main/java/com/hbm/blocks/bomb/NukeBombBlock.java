@@ -1,6 +1,9 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.config.BombConfig;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.entity.effect.EntityNukeTorex;
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.interfaces.IBomb;
@@ -29,7 +32,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.UUID;
 
 /** Common block-side behavior shared by the four old MK5/Torex bomb blocks. */
-public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock implements EntityBlock, IBomb {
+public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock implements TickingBlock, IBomb {
 
     /** Legacy horizontal facing ordinals: north=2, south=3, west=4, east=5. */
     public static final IntegerProperty FACING = IntegerProperty.create("facing", 2, 5);
@@ -150,5 +153,17 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
     /** Little Boy alone used the integer block origin for its old Torex call; all other bombs use the centre. */
     protected double cloudOffset() {
         return 0.5D;
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(FACING,
+                rotation.rotate(Direction.from3DDataValue(state.getValue(FACING))).get3DDataValue());
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.setValue(FACING,
+                mirror.mirror(Direction.from3DDataValue(state.getValue(FACING))).get3DDataValue());
     }
 }

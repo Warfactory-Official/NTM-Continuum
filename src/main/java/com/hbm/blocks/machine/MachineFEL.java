@@ -1,14 +1,14 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityFEL;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * front of where the player clicked. Power enters at the single rear port {@link #fillSpace} places
  * behind the machine, {@code o - 4} along the facing axis at {@code y+1}.
  */
-public class MachineFEL extends BlockDummyable implements IEnergyConnectorBlock, WorldlyContainerHolder {
+public class MachineFEL extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineFEL(Properties properties) {
         super(properties);
@@ -42,32 +42,8 @@ public class MachineFEL extends BlockDummyable implements IEnergyConnectorBlock,
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityFEL te ? te : null;
-    }
-
-    /** Cables connect only at the single rear power port the core reports. */
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityFEL te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Client ticks too: the FEL runs its own audio ramp and triggers a render update when the
-        // beam length changes.
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_FEL.get(), TileEntityFEL::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_FEL.get(), TileEntityFEL::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override
@@ -80,10 +56,16 @@ public class MachineFEL extends BlockDummyable implements IEnergyConnectorBlock,
         return 2;
     }
 
+    /** The single rear power port, four back along the facing axis and one up. */
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-        // The rear power port: o - 4 along the facing axis puts it behind the machine, at y+1.
-        this.makeExtra(world, x + dir.offsetX * (o - 4), y + 1, z + dir.offsetZ * (o - 4));
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.offset(-facing.getStepX() * 4, 1, -facing.getStepZ() * 4), MASK_NORTH);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        visitor.passiveCell(core.offset(-facing.getStepX() * 4, 1, -facing.getStepZ() * 4), MASK_ALL,
+                PASSIVE_POWER_IN);
     }
 }

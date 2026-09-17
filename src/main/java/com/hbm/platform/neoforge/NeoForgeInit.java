@@ -17,7 +17,6 @@ import com.hbm.packet.HbmPackets;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.hazard.Hazards;
 import dev.golem.core.net.GolemNetwork;
-import com.hbm.uninos.UniNodespace;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -49,7 +48,6 @@ public class NeoForgeInit {
         Constants.LOG.info("Hello NeoForge world!");
 
         // Test functions are a NeoForge-only dev registry. Do not initialize this common class on Fabric.
-        //? if >=26.1 {
         com.hbm.gametest.HbmGameTestFunctions.init();
         com.hbm.gametest.FoodCatalystGameTests.init();
         com.hbm.gametest.OutgasGameTests.init();
@@ -65,6 +63,7 @@ public class NeoForgeInit {
         com.hbm.gametest.MaterialCompletionGameTests.init();
         com.hbm.gametest.BedrockOreGameTests.init();
         com.hbm.gametest.ExplosiveContentGameTests.init();
+        com.hbm.gametest.NtmEntityPortGameTests.init();
          com.hbm.gametest.Gen3SednaGameTests.init();
          com.hbm.gametest.RadioGameTests.init();
          com.hbm.gametest.CounterControllerGameTests.init();
@@ -75,7 +74,19 @@ public class NeoForgeInit {
          com.hbm.gametest.RtgGameTests.init();
          com.hbm.gametest.SingularityGameTests.init();
          com.hbm.gametest.TurretGameTests.init();
-        //?}
+         com.hbm.gametest.PowerNetworkGameTests.init();
+         com.hbm.gametest.NetworkReachGameTests.init();
+         com.hbm.gametest.FluidNetworkGameTests.init();
+         com.hbm.gametest.ForeignEnergyGameTests.init();
+         com.hbm.gametest.FoldedGeometryGameTests.init();
+         com.hbm.gametest.NetworkSyncGameTests.init();
+         com.hbm.gametest.ChunkPromotionGameTests.init();
+         com.hbm.gametest.TickPhaseGameTests.init();
+         com.hbm.gametest.MultiblockMenuGameTests.init();
+         com.hbm.gametest.RadiationPersistenceGameTests.init();
+         com.hbm.gametest.FoldedPortParityGameTests.init();
+         com.hbm.gametest.WeaponTableGameTests.init();
+         com.hbm.gametest.GunSupportGameTests.init();
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
 
@@ -118,6 +129,8 @@ public class NeoForgeInit {
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ExplosiveContentGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.NtmEntityPortGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Gen3SednaGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.RadioGameTests.TESTS));
@@ -136,7 +149,33 @@ public class NeoForgeInit {
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.TurretGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.PowerNetworkGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.NetworkReachGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.FluidNetworkGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.ForeignEnergyGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.FoldedGeometryGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.NetworkSyncGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.ChunkPromotionGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.TickPhaseGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.MultiblockMenuGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.RadiationPersistenceGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.FoldedPortParityGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.GunSupportGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.FlywheelGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.WeaponTableGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {
@@ -148,14 +187,12 @@ public class NeoForgeInit {
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Pre event) ->
                 com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
-            UniNodespace.updateNodespace(event.getServer());
             RadiationSystemNT.tickServer(event.getServer());
             com.hbm.saveddata.satellites.SatelliteSystems.tickServer(event.getServer());
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
-                UniNodespace.clearLevel(level);
-                RadiationSystemNT.clearWorld(level);
+                RadiationSystemNT.closeWorld(level);
                 com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }
         });

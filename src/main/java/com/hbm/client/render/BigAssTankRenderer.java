@@ -6,6 +6,7 @@ import com.mojang.math.Axis;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec3;
@@ -27,6 +28,14 @@ public final class BigAssTankRenderer extends GiantTankRenderer<TileEntityMachin
             default -> 0F;
         };
         state.tilted = tank.tilted;
+    }
+
+    @Override
+    protected void placeMachine(Gem.Part<GiantTankRenderState> part) {
+        part.slide(Gem.Axes.Y, state -> state.tilted ? -1F : 0F)
+                .angle(Gem.Axes.Z, state -> state.tilted ? 10F : 0F)
+                .angle(Gem.Axes.Y, state -> state.tilted ? 5F : 0F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
     }
 
     @Override

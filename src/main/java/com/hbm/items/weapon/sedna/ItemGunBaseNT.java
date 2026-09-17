@@ -1,21 +1,37 @@
 package com.hbm.items.weapon.sedna;
 
 import com.hbm.handler.HbmKeybinds.EnumKeybind;
+import com.hbm.client.ClientPlayerAccess;
 import com.hbm.items.IKeybindReceiver;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.items.machine.ItemFluidIcon;
+import com.hbm.items.machine.ItemFluidId;
+import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
+import com.hbm.items.ModBatteryItems;
 import dev.golem.core.data.Tags;
+import dev.golem.core.world.CompatTooltipContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.ChatFormatting;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.function.Supplier;
 
 /**
  * The base class for every Sedna-generation gun.
@@ -40,17 +56,22 @@ import net.minecraft.world.level.Level;
  * write marks the stack dirty and re-syncs it to the client, so a gun sitting idle in a hotbar would
  * otherwise generate a packet every tick forever.
  *
- * <p>Not ported in this slice: the tooltip's weapon-mod and quality lines, {@code getItemStackDisplayName}'s
- * name mutator, {@code renderHUD} (see the HUD components), smoke nodes, and the looped-sound map.
+ * <p>Still outside this shared class: the tooltip's client HUD rendering and looped-sound map. Modifier
+ * evaluation itself lives in {@code XWeaponModManager}; smoke node evolution is shared here so renderers
+ * only consume the source-shaped attached list.
  */
 public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IKeybindReceiver {
 
     public static final List<ItemGunBaseNT> INSTANCES = new ArrayList<>();
+    public static final List<Item> secrets = new ArrayList<>();
 
-    /** Timestamp of the last shot per config index, for muzzle flash and smoke on the client. */
-    public long[] lastShot;
+    /** Timestamp of the last shot per hand and config index, for muzzle flash and smoke on the client. */
+    public long[][] lastShotByHand;
+    /** Per-shot client rotation seed, copied from the source animation payload path. */
+    public double[] shotRandByHand = new double[2];
 
     public static final String KEY_AIMING = "aiming";
+    public static final String KEY_DRAWN = "drawn";
     public static final String KEY_MODE = "mode_";
     public static final String KEY_WEAR = "wear_";
     public static final String KEY_TIMER = "timer_";
@@ -66,6 +87,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static final String KEY_CANCELRELOAD = "cancel";
     /** Spelled as upstream spells it, typo included, so saved stacks stay readable across the port. */
     public static final String KEY_EQUIPPED = "eqipped";
+    public static final String O_GUNCONFIG = "O_GUNCONFIG_";
 
     /** How far the aim transition has progressed on the client, [0;1]. */
     public static float prevAimingProgress;
@@ -82,17 +104,162 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     protected final GunConfig[] configs_DNA;
     public final WeaponQuality quality;
 
+    /** {@code "#.##"} with US symbols, as the original {@code FORMAT_DMG}. */
+    private static final java.text.DecimalFormat FORMAT_DMG = new java.text.DecimalFormat("#.##",
+            java.text.DecimalFormatSymbols.getInstance(java.util.Locale.US));
+
+    /** The original {@code addInformation}: one diagnostic block per receiver configuration, then the quality line. */
+    @Override
+    protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
+                                         List<Component> tooltip, TooltipFlag flag) {
+        Player player = ClientPlayerAccess.player();
+        Container inventory = player == null ? null : player.getInventory();
+
+        for (int configIndex = 0; configIndex < configs_DNA.length; configIndex++) {
+            GunConfig config = getConfig(stack, configIndex);
+            Receiver[] receivers = config == null ? null : config.getReceivers(stack);
+            if (receivers == null) continue;
+            for (Receiver receiver : receivers) {
+                if (receiver == null) continue;
+                IMagazine<?> magazine = receiver.getMagazine(stack);
+                if (magazine == null) continue;
+                if (!(magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineInfinite)) {
+                    ItemStack icon = player != null ? magazine.getIconForHUD(stack, player)
+                            : tooltipAmmoIcon(magazine, stack, magazine.getType(stack, null));
+                    String state = player != null ? magazine.reportAmmoStateForHUD(stack, player)
+                            : tooltipAmmoState(magazine, stack);
+                    tooltip.add(Component.translatable("gui.weapon.ammo").append(": ")
+                            .append(icon == null || icon.isEmpty() ? Component.empty() : icon.getHoverName())
+                            .append(" " + state));
+                }
+                float damage = receiver.getBaseDamage(stack);
+                tooltip.add(Component.translatable("gui.weapon.baseDamage").append(": " + FORMAT_DMG.format(damage)));
+                if (magazine.getType(stack, inventory) instanceof BulletConfig bullet) {
+                    int minimum = (int) (bullet.projectilesMin * receiver.getSplitProjectiles(stack));
+                    int maximum = (int) (bullet.projectilesMax * receiver.getSplitProjectiles(stack));
+                    tooltip.add(Component.translatable("gui.weapon.damageWithAmmo")
+                            .append(": " + FORMAT_DMG.format(damage * bullet.damageMult)
+                                    + (minimum > 1 ? (" x" + (minimum != maximum ? (minimum + "-" + maximum) : minimum)) : "")));
+                }
+            }
+            float maximum = config.getDurability(stack);
+            if (maximum > 0) {
+                int condition = Math.max(0, Math.min(100,
+                        (int) ((maximum - getWear(stack, configIndex)) * 100 / maximum)));
+                tooltip.add(Component.translatable("gui.weapon.condition").append(": " + condition + "%"));
+            }
+            for (ItemStack modifier : XWeaponModManager.getUpgradeItems(stack, configIndex)) {
+                if (modifier != null && !modifier.isEmpty()) {
+                    tooltip.add(modifier.getHoverName().copy().withStyle(ChatFormatting.YELLOW));
+                }
+            }
+        }
+        boolean blink = System.currentTimeMillis() % 1000 < 500; // BobMathUtil.getBlink()
+        switch (quality) {
+            case A_SIDE -> tooltip.add(Component.translatable("gui.weapon.quality.aside").withStyle(ChatFormatting.YELLOW));
+            case B_SIDE -> tooltip.add(Component.translatable("gui.weapon.quality.bside").withStyle(ChatFormatting.GOLD));
+            case LEGENDARY -> tooltip.add(Component.translatable("gui.weapon.quality.legendary").withStyle(ChatFormatting.RED));
+            case SPECIAL -> tooltip.add(Component.translatable("gui.weapon.quality.special").withStyle(ChatFormatting.AQUA));
+            case UTILITY -> tooltip.add(Component.translatable("gui.weapon.quality.utility").withStyle(ChatFormatting.GREEN));
+            case SECRET -> tooltip.add(Component.translatable("gui.weapon.quality.secret")
+                    .withStyle(blink ? ChatFormatting.DARK_RED : ChatFormatting.RED));
+            case DEBUG -> tooltip.add(Component.translatable("gui.weapon.quality.debug")
+                    .withStyle(blink ? ChatFormatting.YELLOW : ChatFormatting.GOLD));
+        }
+
+        // Only while the weapon table is open: every modifier this gun has a binding for.
+        if (ClientPlayerAccess.weaponTableOpen()) {
+            List<ItemStack> recognized = XWeaponModManager.recognizedMods(stack);
+            if (!recognized.isEmpty()) {
+                tooltip.add(Component.translatable("gui.weapon.accepts").append(":").withStyle(ChatFormatting.RED));
+                for (ItemStack mod : recognized) {
+                    tooltip.add(Component.literal("  ").append(mod.getHoverName()).withStyle(ChatFormatting.RED));
+                }
+            }
+        }
+        super.appendCompatHoverText(stack, context, tooltip, flag);
+    }
+
+    private static ItemStack tooltipAmmoIcon(IMagazine<?> magazine, ItemStack stack, Object ammo) {
+        if (ammo instanceof BulletConfig bullet) return bullet.toStack();
+        if (ammo instanceof FluidType fluid && fluid != Fluids.NONE) return ItemFluidIcon.make(fluid);
+        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineEnergy
+                || magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineElectricEngine) {
+            return new ItemStack(ModBatteryItems.PACKS.get(EnumBatteryPack.BATTERY_REDSTONE).get());
+        }
+        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineFluid fluidMagazine) {
+            FluidType fluid = fluidMagazine.getType(stack, null);
+            return fluid == null || fluid == Fluids.NONE ? ItemStack.EMPTY : ItemFluidId.make(fluid);
+        }
+        return ItemStack.EMPTY;
+    }
+
+    private static String tooltipAmmoState(IMagazine<?> magazine, ItemStack stack) {
+        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineInfinite) return "∞";
+        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineEnergy
+                || magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineElectricEngine) {
+            return com.hbm.lib.Library.getShortNumber(magazine.getAmount(stack, null)) + "/"
+                    + com.hbm.lib.Library.getShortNumber(magazine.getCapacity(stack)) + "HE";
+        }
+        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineFluid) {
+            return magazine.getAmount(stack, null) + "mB";
+        }
+        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineLiquidEngine) {
+            return magazine.getAmount(stack, null) + "/" + magazine.getCapacity(stack) + "mB";
+        }
+        if (magazine instanceof com.hbm.items.weapon.sedna.mags.MagazineBelt) {
+            return "x" + magazine.getAmount(stack, null);
+        }
+        return magazine.getAmount(stack, null) + " / " + magazine.getCapacity(stack);
+    }
+
+    public Supplier<? extends Item> defaultAmmo;
+    public int defaultAmmoAmount;
+    public boolean isDefaultExpensive;
+    public Function<ItemStack, String> LAMBDA_NAME_MUTATOR;
+
     public ItemGunBaseNT(Properties properties, WeaponQuality quality, GunConfig... cfg) {
         super(properties.stacksTo(1));
         this.configs_DNA = cfg;
         this.quality = quality;
-        this.lastShot = new long[cfg.length];
+        this.lastShotByHand = new long[2][cfg.length];
         for (int i = 0; i < cfg.length; i++) cfg[i].index = i;
         INSTANCES.add(this);
+        if (quality == WeaponQuality.LEGENDARY || quality == WeaponQuality.SECRET) secrets.add(this);
+    }
+
+    /** ntm-next constructor order retained for factory compatibility. */
+    public ItemGunBaseNT(WeaponQuality quality, Properties properties, GunConfig... cfg) {
+        this(properties, quality, cfg);
     }
 
     public GunConfig getConfig(ItemStack stack, int index) {
-        return configs_DNA[index];
+        return XWeaponModManager.eval(configs_DNA[index], stack, O_GUNCONFIG + index, this, index);
+    }
+
+    public ItemGunBaseNT setDefaultAmmo(Supplier<? extends Item> ammo, int amount) {
+        this.defaultAmmo = ammo;
+        this.defaultAmmoAmount = amount;
+        return this;
+    }
+
+    public ItemGunBaseNT setDefaultAmmoExpensive(Supplier<? extends Item> ammo, int amount) {
+        this.isDefaultExpensive = true;
+        return setDefaultAmmo(ammo, amount);
+    }
+
+    public ItemGunBaseNT setNameMutator(Function<ItemStack, String> lambda) {
+        this.LAMBDA_NAME_MUTATOR = lambda;
+        return this;
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        if (LAMBDA_NAME_MUTATOR != null) {
+            String key = LAMBDA_NAME_MUTATOR.apply(stack);
+            if (key != null) return Component.translatable(key);
+        }
+        return super.getName(stack);
     }
 
     /** Guards client payloads before they can reach a config or its magazine. */
@@ -135,6 +302,9 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
     /* KEYBINDS */
 
+    public static boolean getIsDrawn(ItemStack stack) { return getValueBool(stack, KEY_DRAWN); }
+    public static void setIsDrawn(ItemStack stack, boolean value) { setValueBool(stack, KEY_DRAWN, value); }
+
     @Override
     public boolean canHandleKeybind(Player player, ItemStack stack, EnumKeybind keybind) {
         return keybind == EnumKeybind.GUN_PRIMARY || keybind == EnumKeybind.GUN_SECONDARY
@@ -157,7 +327,7 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
             EnumKeybind keybind, boolean newState) {
         for (int i = 0; i < configs_DNA.length; i++) {
             GunConfig config = getConfig(stack, i);
-            LambdaContext ctx = new LambdaContext(config, entity, inventory, i);
+            LambdaContext ctx = new LambdaContext(config, entity, inventory, handOf(entity, stack), i);
 
             switch (keybind) {
                 case GUN_PRIMARY -> edge(stack, i, newState, getPrimary(stack, i),
@@ -188,8 +358,13 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
     /** Resets button state and plays the draw animation when the gun is brought out. */
     public void onEquip(Player player, ItemStack stack) {
+        onEquip(player, stack, handOf(player, stack));
+    }
+
+    /** Resets one hand's button state and plays its draw animation. */
+    public void onEquip(Player player, ItemStack stack, InteractionHand hand) {
         for (int i = 0; i < configs_DNA.length; i++) {
-            playAnimation(player, stack, GunAnimation.EQUIP, i);
+            playAnimation(player, stack, GunAnimation.EQUIP, hand, i);
             setPrimary(stack, i, false);
             setSecondary(stack, i, false);
             setTertiary(stack, i, false);
@@ -198,8 +373,13 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     }
 
     public static void playAnimation(Player player, ItemStack stack, GunAnimation type, int index) {
+        playAnimation(player, stack, type, handOf(player, stack), index);
+    }
+
+    public static void playAnimation(Player player, ItemStack stack, GunAnimation type, InteractionHand hand,
+            int index) {
         if (player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
-            com.hbm.packet.HbmPackets.sendGunAnimation(serverPlayer, stack, type, index);
+            com.hbm.packet.HbmPackets.sendGunAnimation(serverPlayer, stack, type, hand, 0, index);
             setLastAnim(stack, index, type);
             setAnimTimer(stack, index, 0);
         }
@@ -215,6 +395,40 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
     public static void setupRecoil(float vertical, float horizontal) {
         setupRecoil(vertical, horizontal, 0.75F, 0.25F);
+    }
+
+    /** Runs each held gun's client-owned portion once, including hand-local smoke node evolution. */
+    public static void clientHeldTick(Player player) {
+        if (player == null) return;
+
+        ItemStack main = player.getMainHandItem();
+        ItemStack off = player.getOffhandItem();
+        ItemStack aimingStack = main.getItem() instanceof ItemGunBaseNT ? main : off;
+
+        prevAimingProgress = aimingProgress;
+        boolean aiming = aimingStack.getItem() instanceof ItemGunBaseNT && getIsAiming(aimingStack);
+        if (aiming && aimingProgress < 1F) aimingProgress += 0.25F;
+        if (!aiming && aimingProgress > 0F) aimingProgress -= 0.25F;
+        aimingProgress = Math.max(0F, Math.min(1F, aimingProgress));
+
+        clientHeldTick(player, InteractionHand.MAIN_HAND);
+        // A stack is normally present in only one hand; do not evolve one history twice if a caller or
+        // fixture temporarily aliases the same stack into both slots.
+        if (off != main) clientHeldTick(player, InteractionHand.OFF_HAND);
+    }
+
+    private static void clientHeldTick(Player player, InteractionHand hand) {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!(stack.getItem() instanceof ItemGunBaseNT gun)) return;
+
+        for (int i = 0; i < gun.configs_DNA.length; i++) {
+            GunConfig config = gun.getConfig(stack, i);
+            LambdaContext context = new LambdaContext(config, player, player.getInventory(), hand, i);
+            BiConsumer<ItemStack, LambdaContext> smoke = config.getSmokeHandler(stack);
+            if (smoke != null) smoke.accept(stack, context);
+            BiConsumer<ItemStack, LambdaContext> orchestra = config.getOrchestra(stack);
+            if (orchestra != null) orchestra.accept(stack, context);
+        }
     }
 
     /** Clears the client-only recoil accumulators when visual recoil is disabled. */
@@ -246,7 +460,9 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     @Override
     protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
             Entity entity, net.minecraft.world.entity.EquipmentSlot slotType, boolean isHeld) {
-        serverTick(stack, level, entity, isHeld);
+        serverTick(stack, level, entity, isHeld,
+                slotType == net.minecraft.world.entity.EquipmentSlot.OFFHAND
+                        ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
     }
 
     /**
@@ -255,6 +471,11 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
      */
     public void serverTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
             Entity entity, boolean isHeld) {
+        serverTick(stack, level, entity, isHeld, handOf(entity, stack));
+    }
+
+    public void serverTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+            Entity entity, boolean isHeld, InteractionHand hand) {
         if (!(entity instanceof LivingEntity living)) return;
         Player player = entity instanceof Player p ? p : null;
 
@@ -263,10 +484,11 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
         LambdaContext[] ctx = new LambdaContext[confNo];
         for (int i = 0; i < confNo; i++) {
             configs[i] = getConfig(stack, i);
-            ctx[i] = new LambdaContext(configs[i], living, player != null ? player.getInventory() : null, i);
+            ctx[i] = new LambdaContext(configs[i], living, player != null ? player.getInventory() : null,
+                    hand, i);
         }
 
-        if (player != null && !getIsEquipped(stack) && isHeld) onEquip(player, stack);
+        if (player != null && !getIsEquipped(stack) && isHeld) onEquip(player, stack, hand);
         setIsEquipped(stack, isHeld);
 
         // Put the gun away and it re-draws when next selected — you cannot dodge a reload by
@@ -286,13 +508,22 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
         }
 
         for (int i = 0; i < confNo; i++) {
+            // Keep the upstream order: cue zero is played on the tick before the animation timer moves.
+            if (configs[i].getOrchestra(stack) != null) {
+                configs[i].getOrchestra(stack).accept(stack, ctx[i]);
+            }
             setAnimTimer(stack, i, getAnimTimer(stack, i) + 1);
 
             int timer = getTimer(stack, i);
             if (timer > 0) setTimer(stack, i, timer - 1);
             // The decider runs on the tick the timer reaches its end, and every tick while idle at 0.
-            if (timer <= 1 && configs[i].getDecider(stack) != null) {
-                configs[i].getDecider(stack).accept(stack, ctx[i]);
+            if (timer <= 1) {
+                var decider = configs[i].getDecider(stack);
+                if (decider == null) {
+                    throw new IllegalStateException("Gun config " + i + " on "
+                            + getClass().getName() + " has no state decider");
+                }
+                decider.accept(stack, ctx[i]);
             }
         }
     }
@@ -345,6 +576,16 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static boolean getIsEquipped(ItemStack stack) { return getValueBool(stack, KEY_EQUIPPED); }
     public static void setIsEquipped(ItemStack stack, boolean value) { setValueBool(stack, KEY_EQUIPPED, value); }
 
+    /** Identity, rather than item type, distinguishes two identical akimbo stacks. */
+    private static InteractionHand handOf(Player player, ItemStack stack) {
+        return player.getItemInHand(InteractionHand.OFF_HAND) == stack
+                ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND;
+    }
+
+    private static InteractionHand handOf(Entity entity, ItemStack stack) {
+        return entity instanceof Player player ? handOf(player, stack) : InteractionHand.MAIN_HAND;
+    }
+
     /* THE CHOKE POINT */
 
     /**
@@ -352,7 +593,9 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
      * component; anything a player would notice losing goes to the durable one.
      */
     private static boolean isPersistent(String key) {
-        return key.startsWith(KEY_WEAR) || key.startsWith(KEY_MODE) || key.startsWith("mag");
+        return key.startsWith(KEY_WEAR) || key.startsWith(KEY_MODE) || key.startsWith("mag")
+                || key.startsWith("KEY_MOD_LIST_") || key.equals("coincount") || key.equals("coincharge")
+                || key.equals("colors");
     }
 
     private static CompoundTag read(ItemStack stack, String key) {
@@ -377,6 +620,15 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
 
     private static final CompoundTag EMPTY = new CompoundTag();
 
+    /** Snapshot helpers used by the modifier manager for its dynamic per-config integer lists. */
+    public static CompoundTag getGunData(ItemStack stack) {
+        return ModDataComponents.GUN_DATA.getOr(stack, EMPTY).copy();
+    }
+
+    public static void setGunData(ItemStack stack, CompoundTag data) {
+        ModDataComponents.GUN_DATA.set(stack, data);
+    }
+
     public static int getValueInt(ItemStack stack, String name) { return Tags.getIntOr(read(stack, name), name, 0); }
     public static void setValueInt(ItemStack stack, String name, int value) { write(stack, name, tag -> tag.putInt(name, value)); }
 
@@ -389,22 +641,50 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     public static String getValueString(ItemStack stack, String name) { return Tags.getStringOr(read(stack, name), name, ""); }
     public static void setValueString(ItemStack stack, String name, String value) { write(stack, name, tag -> tag.putString(name, value)); }
 
+    public static int[] getValueIntArray(ItemStack stack, String name) {
+        return Tags.getIntArrayOr(read(stack, name), name, new int[0]);
+    }
+
+    public static void setValueIntArray(ItemStack stack, String name, int[] value) {
+        write(stack, name, tag -> tag.putIntArray(name, value));
+    }
+
+    public static void removeValue(ItemStack stack, String name) {
+        write(stack, name, tag -> tag.remove(name));
+    }
+
     /** Extra context handed to every gun lambda. */
     public static class LambdaContext {
         public final GunConfig config;
         public final LivingEntity entity;
         public final Container inventory;
+        public final InteractionHand hand;
         public final int configIndex;
 
-        public LambdaContext(GunConfig config, LivingEntity entity, Container inventory, int configIndex) {
+        public LambdaContext(GunConfig config, LivingEntity entity, Container inventory,
+                InteractionHand hand, int configIndex) {
             this.config = config;
             this.entity = entity;
             this.inventory = inventory;
+            this.hand = hand;
             this.configIndex = configIndex;
         }
 
         public Player getPlayer() {
             return entity instanceof Player player ? player : null;
+        }
+    }
+
+    /** One mutable segment in a gun's client-side smoke ribbon. */
+    public static class SmokeNode {
+        public double forward;
+        public double side;
+        public double lift;
+        public double alpha;
+        public double width = 1D;
+
+        public SmokeNode(double alpha) {
+            this.alpha = alpha;
         }
     }
 

@@ -2,24 +2,48 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.entity.projectile.EntitySawblade;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatEntityRenderer;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemEntityRenderer;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Quads;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
 
 /** Renders the ejected blade as two crossed, item-textured planes. */
-public class SawbladeRenderer extends CompatEntityRenderer<EntitySawblade, SawbladeRenderState> {
+public class SawbladeRenderer extends GemEntityRenderer<EntitySawblade, SawbladeRenderState> {
 
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/items/sawblade.png");
+    private static final Surface SURFACE = Surface.cutout(Constants.MOD_ID + ":textures/items/sawblade.png");
+
+    /** Half the blade's width, in blocks. */
+    private static final float REACH = 0.65F;
+
+    /** A flung blade is lit as an item is, not by the block it happens to be passing. */
+    private static final int FULL_BRIGHT = 0xF000F0;
+
+    private static final Geometry BLADE = Quads.named(Constants.MOD_ID + ":sawblade")
+            .normal(0F, 0F, 1F)
+            .vertex(-REACH, -REACH, 0F, 0F, 1F)
+            .vertex(REACH, -REACH, 0F, 1F, 1F)
+            .vertex(REACH, REACH, 0F, 1F, 0F)
+            .vertex(-REACH, REACH, 0F, 0F, 0F)
+            .normal(1F, 0F, 0F)
+            .vertex(0F, -REACH, -REACH, 0F, 1F)
+            .vertex(0F, -REACH, REACH, 1F, 1F)
+            .vertex(0F, REACH, REACH, 1F, 0F)
+            .vertex(0F, REACH, -REACH, 0F, 0F)
+            .build();
 
     public SawbladeRenderer(EntityRendererProvider.Context context) {
         super(context);
+    }
+
+    @Override
+    protected void setup(Gem.Model<SawbladeRenderState> declaration) {
+        declaration.light(state -> FULL_BRIGHT)
+                .part(BLADE, SURFACE)
+                .scale(0.8F)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .angle(Gem.Axes.Z, state -> state.rotation);
     }
 
     @Override
@@ -31,40 +55,5 @@ public class SawbladeRenderer extends CompatEntityRenderer<EntitySawblade, Sawbl
     public void extract(EntitySawblade entity, SawbladeRenderState state, float partialTicks) {
         state.rotation = entity.lastRotation + (entity.rotation - entity.lastRotation) * partialTicks;
         state.yaw = entity.getOrientation() % 6 * 60F;
-    }
-
-    @Override
-    public void submit(SawbladeRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.scale(0.8F, 0.8F, 0.8F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.rotation));
-        collector.submitCustomGeometry(poseStack, CompatRenderTypes.entityCutout(TEXTURE),
-                (pose, buffer) -> {
-                    plane(pose, buffer, true);
-                    plane(pose, buffer, false);
-                });
-        poseStack.popPose();
-    }
-
-    private static void plane(PoseStack.Pose pose, com.mojang.blaze3d.vertex.VertexConsumer buffer,
-                              boolean xAligned) {
-        if (xAligned) {
-            vertex(buffer, pose, -0.65F, -0.65F, 0F, 0F, 1F, 0F, 0F, 1F);
-            vertex(buffer, pose, 0.65F, -0.65F, 0F, 1F, 1F, 0F, 0F, 1F);
-            vertex(buffer, pose, 0.65F, 0.65F, 0F, 1F, 0F, 0F, 0F, 1F);
-            vertex(buffer, pose, -0.65F, 0.65F, 0F, 0F, 0F, 0F, 0F, 1F);
-        } else {
-            vertex(buffer, pose, 0F, -0.65F, -0.65F, 0F, 1F, 1F, 0F, 0F);
-            vertex(buffer, pose, 0F, -0.65F, 0.65F, 1F, 1F, 1F, 0F, 0F);
-            vertex(buffer, pose, 0F, 0.65F, 0.65F, 1F, 0F, 1F, 0F, 0F);
-            vertex(buffer, pose, 0F, 0.65F, -0.65F, 0F, 0F, 1F, 0F, 0F);
-        }
-    }
-
-    private static void vertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
-                               float x, float y, float z, float u, float v, float nx, float ny, float nz) {
-        Vertexes.vertex(buffer, pose, x, y, z, 0xFFFFFFFF, u, v,
-                OverlayTexture.NO_OVERLAY, 0xF000F0, nx, ny, nz);
     }
 }

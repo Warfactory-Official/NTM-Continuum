@@ -1,54 +1,46 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityChimneyBase;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Shared multiblock and port behavior for the two smoke stacks. */
-public abstract class MachineChimneyBase extends BlockDummyable implements IFluidConnectorBlockMK2 {
+public abstract class MachineChimneyBase extends BlockMultiblockMachine implements IFluidConnectorBlockMK2 {
 
     protected MachineChimneyBase(Properties properties) {
         super(properties);
     }
 
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        makeExtra(level, x + 1, y, z);
-        makeExtra(level, x - 1, y, z);
-        makeExtra(level, x, y, z + 1);
-        makeExtra(level, x, y, z - 1);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        if (!TileEntityChimneyBase.isSmoke(type)
-                || dir == ForgeDirection.UNKNOWN || dir == ForgeDirection.UP || dir == ForgeDirection.DOWN) {
-            return false;
-        }
-
-        BlockPos cell = new BlockPos(x, y, z);
-        BlockState state = world.getBlockState(cell);
-        if (state.getBlock() != this || state.getValue(META) < extra || state.getValue(META) >= offset + 2) {
-            return false;
-        }
-
-        BlockPos core = findCore(world, cell);
-        if (core == null || !(world.getBlockEntity(core) instanceof TileEntityChimneyBase)) return false;
-        return cell.getY() == core.getY()
-                && cell.getX() - core.getX() == dir.offsetX
-                && cell.getZ() - core.getZ() == dir.offsetZ;
-    }
-
-    @Override
     protected abstract BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state);
+
+    /** The four cells at the foot of the stack, each open on the side it faces away from the flue. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.offset(1, 0, 0), MASK_EAST);
+        visitor.cell(core.offset(-1, 0, 0), MASK_WEST);
+        visitor.cell(core.offset(0, 0, 1), MASK_SOUTH);
+        visitor.cell(core.offset(0, 0, -1), MASK_NORTH);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        visitor.passiveCell(core.offset(1, 0, 0), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-1, 0, 0), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(0, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(0, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
+    }
+
+    /** Only smoke reaches a stack; the geometry alone would take anything a duct offered. */
+    @Override
+    public boolean acceptsFluid(FluidType type) {
+        return TileEntityChimneyBase.isSmoke(type);
+    }
 }

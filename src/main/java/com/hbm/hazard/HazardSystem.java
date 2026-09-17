@@ -59,6 +59,7 @@ public class HazardSystem {
     /** Per-item memo of the registered (component-agnostic) HazardData chronology. */
     private static final Map<Item, List<HazardData>> chronologyCache = new ConcurrentHashMap<>();
 
+
     public static void register(TagKey<Item> tag, HazardData data) {
         tagMap.put(tag, data);
         chronologyCache.clear();
@@ -197,7 +198,7 @@ public class HazardSystem {
         if (stack.isEmpty()) return;
 
         int tickRate = Math.max(1, RadiationConfig.itemHazardDropTickRate);
-        if (entity.level().getGameTime() % tickRate != 0) return;
+        if (Math.floorMod(entity.level().getGameTime(), tickRate) != 0) return;
 
         for (HazardEntry entry : getHazardsFromStack(stack)) {
             entry.type.updateEntity(entity,

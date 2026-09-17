@@ -10,15 +10,27 @@ import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import java.util.function.BiConsumer;
 
 /** Shared invisible folded cell for future cores that do not supply their own visible cell state. */
 public class BlockMultiblockCell extends dev.golem.core.world.CompatBlock {
 
+    /**
+     * A piston may not take one cell out of a machine. 1.7 refused the stroke because
+     * {@code BlockDummyable} extends {@code BlockContainer}, so every cell answered {@code hasTileEntity}
+     * and vanilla declined; a folded cell carries no block entity, so the refusal has to be stated here.
+     * The machines whose cells are their own block get it back from {@code TickingBlock} and state nothing.
+     */
+    public static Properties rigid(Properties properties) {
+        return properties.pushReaction(PushReaction.BLOCK);
+    }
+
     public BlockMultiblockCell(Properties properties) { super(properties); }
 
     @Override public RenderShape getRenderShape(BlockState state) { return RenderShape.INVISIBLE; }
+
 
     @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         BlockPos core = MultiblockSurface.coreOfCell(level, pos);

@@ -4,12 +4,15 @@ import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.recipes.FusionRecipe;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionTorus;
+import com.hbm.util.GameTime;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.phys.Vec3;
@@ -37,7 +40,7 @@ import net.minecraft.world.phys.Vec3;
  * and culling is off so the shell is seen from inside. The scroll is baked into the vertices, giving
  * one cached type per texture instead of a fresh one every frame.
  */
-public class FusionTorusRenderer implements CompatBER<TileEntityFusionTorus, FusionTorusRenderState> {
+public class FusionTorusRenderer extends GemBER<TileEntityFusionTorus, FusionTorusRenderState> {
 
     /** OBJ part names, indexed by arm. Upstream's numbering is not in direction order. */
     private static final String[] BOLTS = {"Bolts2", "Bolts4", "Bolts3", "Bolts1"};
@@ -45,15 +48,14 @@ public class FusionTorusRenderer implements CompatBER<TileEntityFusionTorus, Fus
     private static final double DETAIL_RANGE_SQ = 100 * 100;
 
     private final WavefrontObj model;
-    private final RenderType body;
+    private final Surface shell;
     private final RenderType plasmaLayer;
     private final RenderType glowLayer;
     private final RenderType sparkleLayer;
 
     public FusionTorusRenderer() {
         this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/fusion/torus.obj"));
-        this.body = CompatRenderTypes.entityCutout(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/torus.png"));
+        this.shell = Surface.cutout(Constants.MOD_ID + ":textures/models/fusion/torus.png");
         this.plasmaLayer = CompatRenderTypes.plasmaGlow(
                 dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma.png"));
         this.glowLayer = CompatRenderTypes.plasmaGlow(
@@ -62,14 +64,24 @@ public class FusionTorusRenderer implements CompatBER<TileEntityFusionTorus, Fus
                 dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/fusion/plasma_sparkle.png"));
     }
 
-    @Override public FusionTorusRenderState createRenderState() { return new FusionTorusRenderState(); }
-
-    @Override public boolean shouldRenderOffScreen() { return true; }
-
-    @Override public boolean shouldRender(TileEntityFusionTorus be, Vec3 cameraPosition) { return true; }
-
     /** The model is fifteen blocks across; it has to keep drawing from well outside its own cell. */
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    protected void setup(Gem.Model<FusionTorusRenderState> declaration) {
+        Gem.Part<FusionTorusRenderState> reactor = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F);
+
+        reactor.child(model.part("Torus"), shell);
+        reactor.child(model.part("Magnet"), shell)
+                .angle(Gem.Axes.Y, state -> state.magnet);
+        for (int i = 0; i < BOLTS.length; i++) {
+            final int arm = i;
+            reactor.child(model.part(BOLTS[i]), shell)
+                    .visibleIf(state -> state.connections[arm]);
+        }
+    }
+
+    @Override public FusionTorusRenderState createRenderState() { return new FusionTorusRenderState(); }
 
     @Override
     public void extract(TileEntityFusionTorus be, FusionTorusRenderState state, float partialTicks, Vec3 cameraPosition) {
@@ -86,7 +98,7 @@ public class FusionTorusRenderer implements CompatBER<TileEntityFusionTorus, Fus
 
         // Upstream offsets each reactor's clock by a random amount so neighbouring ones do not pulse in
         // lockstep. Deriving it from the position instead keeps that without a synced field.
-        long time = System.currentTimeMillis() + Math.floorMod(be.getBlockPos().hashCode(), 30_000);
+        long time = GameTime.now() + Math.floorMod(be.getBlockPos().hashCode(), 30_000);
 
         state.plasmaAlpha = 0.35F + (float) (Math.sin(time / 1000D) * 0.25D);
         state.mainScroll = (float) (sps(time / 1000D) % 1D);
@@ -103,27 +115,15 @@ public class FusionTorusRenderer implements CompatBER<TileEntityFusionTorus, Fus
         return Math.sin(Math.PI / 2D * Math.cos(x));
     }
 
+    /**
+     * The plasma is the same shell mesh three times over with its texture scrolled by the clock, and the
+     * scroll is baked into the vertices rather than into the render type — so its triangles differ every
+     * frame and it has no resident form.
+     */
     @Override
-    public void submit(FusionTorusRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
+    protected void submitUndeclared(FusionTorusRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
         poseStack.pushPose();
         poseStack.translate(0.5F, 0F, 0.5F);
-
-        sink.submitCustomGeometry(poseStack, body, (pose, buffer) ->
-                model.renderPart("Torus", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.magnet));
-        sink.submitCustomGeometry(poseStack, body, (pose, buffer) ->
-                model.renderPart("Magnet", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        poseStack.popPose();
-
-        for (int i = 0; i < BOLTS.length; i++) {
-            if (!state.connections[i]) continue;
-            String part = BOLTS[i];
-            sink.submitCustomGeometry(poseStack, body, (pose, buffer) ->
-                    model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        }
-
         if (state.burning) {
             // The banded base sheet, drifting upward.
             drawLayer(state, poseStack, sink, plasmaLayer, 0F, state.mainScroll,

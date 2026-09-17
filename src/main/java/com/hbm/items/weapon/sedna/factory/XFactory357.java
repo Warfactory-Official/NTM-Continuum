@@ -51,7 +51,7 @@ public class XFactory357 {
         m357_ap = BulletConfigs.register("m357_ap", new BulletConfig()
                 .setItem(ModAmmoItems.m357_ap)
                 .setDoesPenetrate(true).setDamageFalloffByPen(false)
-                .setDamage(1.5F).setThresholdNegation(5F).setArmorPiercing(0.15F));
+                .setDamage(1.25F).setThresholdNegation(5F).setArmorPiercing(0.15F));
         m357_express = BulletConfigs.register("m357_express", new BulletConfig()
                 .setItem(ModAmmoItems.m357_express)
                 .setDoesPenetrate(true).setDamage(1.5F)

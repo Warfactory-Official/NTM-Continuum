@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/outer_stairs",
-  "textures": {
-    "bottom": "hbm:blocks/concrete_colored_ext.machine_stripe",
-    "top": "hbm:blocks/concrete_colored_ext.machine_stripe",
-    "side": "hbm:blocks/concrete_colored_ext.machine_stripe"
-  }
-}

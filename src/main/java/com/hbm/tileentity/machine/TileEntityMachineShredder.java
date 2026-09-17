@@ -82,8 +82,6 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineShredder te) {
-        for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
-
         te.gearLeft = te.gearState(SLOT_BLADE_LEFT);
         te.gearRight = te.gearState(SLOT_BLADE_RIGHT);
 

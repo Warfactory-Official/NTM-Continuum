@@ -1,38 +1,41 @@
 package com.hbm.client.render.turret;
 
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.Poses;
 import dev.golem.core.render.SubmitSink;
-import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
-import java.util.HashMap;
-import java.util.Map;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Draws a turret from its core. Everything visible — the pad, its edge plugs, the carriage and the gun
  * — comes from here, which is why the block itself has no model.
+ *
+ * <p>A turret's shape is not fixed: how many plugs it shows depends on its pad, and a HIMARS shows one
+ * rocket cap per round still loaded. So the declaration is a fixed run of slots and the emitted
+ * {@link TurretFrame} says, each frame, which mesh sits in each one and where. Slots past the end of
+ * the frame draw nothing.
  */
 public abstract class RenderTurretBase<T extends TileEntityTurretBaseNT>
-        implements CompatBER<T, TurretRenderState<T>> {
+        extends GemBER<T, TurretRenderState<T>> {
 
-    private static final Map<Identifier, RenderType> TYPES = new HashMap<>();
+    /** More slots than any turret emits: eight plugs, a pad, a carriage, a gun and a full rocket pod. */
+    private static final int MAX_PARTS = 24;
+
+    private static final Matrix4fc REST = new Matrix4f();
 
     /** 1.12.2 {@code RenderTurretBase}: (rotation, z offset) per plug cell, in the mask's bit order. */
     private static final float[] PLUG_ROT = {0F, 0F, 90F, 90F, 180F, 180F, 270F, 270F};
     private static final float[] PLUG_OZ = {0F, -1F, -1F, 0F, -1F, 0F, -1F, 0F};
-
-    protected static RenderType typeFor(Identifier texture) {
-        return TYPES.computeIfAbsent(texture, CompatRenderTypes::entityCutout);
-    }
 
     protected static void connectors(TurretFrame frame, int mask) {
         for (int i = 0; i < 8; i++) {
@@ -68,53 +71,58 @@ public abstract class RenderTurretBase<T extends TileEntityTurretBaseNT>
     protected void submitEffects(TurretRenderState<T> state, PoseStack poseStack, SubmitSink sink) {}
 
     @Override
+    protected void setup(Gem.Model<TurretRenderState<T>> declaration) {
+        Geometry placeholder = TurretResources.CHEKHOV.part("Base");
+        Surface unpainted = Surface.cutout(TurretResources.BASE.toString());
+
+        Gem.Part<TurretRenderState<T>> pad = declaration.offScreen().viewDistance(256)
+                .joint()
+                .slide(Gem.Axes.X, state -> (float) state.turret.offsetX)
+                .slide(Gem.Axes.Z, state -> (float) state.turret.offsetZ);
+
+        for (int i = 0; i < MAX_PARTS; i++) {
+            final int slot = i;
+            pad.child(placeholder, unpainted)
+               .visibleIf(state -> emitted(state, slot) != null)
+               .mesh(state -> {
+                   TurretFrame.Part part = emitted(state, slot);
+                   return part == null ? placeholder : part.geometry();
+               })
+               .skin(state -> {
+                   TurretFrame.Part part = emitted(state, slot);
+                   return part == null ? unpainted : part.surface();
+               })
+               .pose(state -> {
+                   TurretFrame.Part part = emitted(state, slot);
+                   return part == null ? REST : part.pose;
+               });
+        }
+    }
+
+    private static TurretFrame.@Nullable Part emitted(TurretRenderState<?> state, int slot) {
+        TurretFrame frame = state.turret.frame;
+        if (slot >= frame.size()) return null;
+        TurretFrame.Part part = frame.get(slot);
+        return part.geometry() == null || part.surface() == null ? null : part;
+    }
+
+    @Override
     public TurretRenderState<T> createRenderState() {
         return new TurretRenderState<>(emitter());
     }
 
-    @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(T blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int viewDistance() {
-        return 256;
-    }
-
+    /** Emitted here, not at draw time: the instanced backend reads it without a submit step at all. */
     @Override
     public void extract(T turret, TurretRenderState<T> state, float partialTicks, Vec3 cameraPosition) {
         state.turret.sample(turret, partialTicks);
+        state.turret.emit();
     }
 
     @Override
-    public void submit(TurretRenderState<T> state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        TurretState<T> turret = state.turret;
-        TurretFrame frame = turret.emit();
-        int light = state.lightCoords;
-
+    protected void submitUndeclared(TurretRenderState<T> state, PoseStack poseStack, SubmitSink sink,
+                                    CameraInfo camera) {
         poseStack.pushPose();
-        poseStack.translate(turret.offsetX, 0D, turret.offsetZ);
-
-        for (int i = 0; i < frame.size(); i++) {
-            TurretFrame.Part part = frame.get(i);
-            WavefrontObj model = part.model;
-            String group = part.group;
-            Identifier texture = part.texture;
-            if (model == null || group == null || texture == null) continue;
-
-            poseStack.pushPose();
-            Poses.mulPose(poseStack, part.pose);
-            sink.submitCustomGeometry(poseStack, typeFor(texture),
-                    (pose, buffer) -> model.renderPart(group, pose, buffer, light, OverlayTexture.NO_OVERLAY));
-            poseStack.popPose();
-        }
-
+        poseStack.translate(state.turret.offsetX, 0D, state.turret.offsetZ);
         submitEffects(state, poseStack, sink);
         poseStack.popPose();
     }

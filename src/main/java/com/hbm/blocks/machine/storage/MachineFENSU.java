@@ -2,7 +2,9 @@ package com.hbm.blocks.machine.storage;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockMaskTable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.ForgeDirection;
@@ -10,6 +12,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.player.Player;
@@ -39,7 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Legacy FEnSU flywheel energy store: the MBB-sized, single-bottom-port battery. */
-public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBlock, ILookOverlay,
+public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConnectorBlock, ILookOverlay,
         WorldlyContainerHolder {
 
     /** The one top-level box in old {@code bb_fensu0.mbb}; it is core-relative. */
@@ -78,7 +81,7 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.isClientSide()) return;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu) {
             int color = ModDataComponents.fensuColor(stack, DyeColor.LIGHT_BLUE.ordinal());
             fensu.color = DyeColor.values()[Math.max(0, Math.min(color, DyeColor.values().length - 1))];
@@ -97,62 +100,37 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
     }
 
     @Override
-    public boolean canConnect(BlockGetter level, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineFENSU fensu
-                && IEnergyConnectorBlock.isPort(fensu.getConPos(), pos, dir);
-    }
-
-    @Override
     public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineFENSU fensu
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu
                 ? fensu.getComparatorPower() : 0;
     }
 
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu ? fensu : null;
     }
 
+    /**
+     * The old detailed MBB hitbox turns with the machine, which the generic silhouette does not do — 1.7
+     * rotates this one box about the core's half-block centre and leaves every other machine's alone.
+     */
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FENSU.get(), TileEntityMachineFENSU::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FENSU.get(), TileEntityMachineFENSU::serverTick);
+    public @Nullable VoxelShape cellShape(int lx, int ly, int lz, Direction facing, boolean open,
+                                          boolean forCollision) {
+        return Shapes.create(rotateBounds(LEGACY_BOUNDS, facing.getClockWise()).move(
+                -MultiblockMaskTable.worldX(lx, ly, lz, facing) + 0.5D, -ly,
+                -MultiblockMaskTable.worldZ(lx, ly, lz, facing) + 0.5D));
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    /** The old detailed MBB hitbox rotates around the core's half-block centre. */
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        BlockPos core = findCore(level, pos);
-        if (core == null) return Shapes.block();
-
-        BlockState coreState = level.getBlockState(core);
-        int meta = coreState.hasProperty(META) ? coreState.getValue(META) : offset + 2;
-        ForgeDirection rotation = ForgeDirection.getOrientation(meta - offset).getRotation(ForgeDirection.UP);
-        AABB box = rotateBounds(LEGACY_BOUNDS, rotation).move(
-                core.getX() + 0.5D - pos.getX(),
-                core.getY() - pos.getY(),
-                core.getZ() + 0.5D - pos.getZ());
-        return Shapes.create(box);
-    }
-
-    private static AABB rotateBounds(AABB box, ForgeDirection rotation) {
+    private static AABB rotateBounds(AABB box, Direction rotation) {
         return switch (rotation) {
             case EAST -> new AABB(-box.maxZ, box.minY, box.minX, -box.minZ, box.maxY, box.maxX);
             case SOUTH -> new AABB(-box.maxX, box.minY, -box.maxZ, -box.minX, box.maxY, -box.minZ);
@@ -170,7 +148,7 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
         if (player.isShiftKeyDown()) return net.minecraft.world.InteractionResult.TRY_WITH_EMPTY_HAND;
         DyeColor dyeColor = dyeColor(stack);
         if (dyeColor != null) {
-            BlockPos core = findCore(level, pos);
+            BlockPos core = MultiblockSurface.coreOfAny(level, pos);
             if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu) {
                 if (!level.isClientSide()) {
                     fensu.color = dyeColor;
@@ -197,7 +175,7 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         BlockPos pos = BlockPos.containing(params.getParameter(LootContextParams.ORIGIN));
-        BlockPos core = findCore(params.getLevel(), pos);
+        BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), pos);
         ItemStack stack = new ItemStack(this);
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityMachineFENSU fensu) {
             ModDataComponents.fensuPower(stack, fensu.power);
@@ -219,7 +197,7 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
 
     private ItemStack cloneStack(BlockGetter level, BlockPos pos) {
         ItemStack stack = new ItemStack(this);
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu) {
             ModDataComponents.fensuPower(stack, fensu.power);
             ModDataComponents.setFensuColor(stack, fensu.color.ordinal());
@@ -232,7 +210,8 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachineFENSU fensu)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
+        if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineFENSU fensu)) return null;
 
         List<String> text = new ArrayList<>();
         text.add("§6<> §rStored Energy: " + Library.getShortNumber(fensu.power) + "/9.22EHE");
@@ -243,5 +222,11 @@ public class MachineFENSU extends BlockDummyable implements IEnergyConnectorBloc
         text.add("&[" + Library.getColorProgress(fraction) + "&]    "
                 + Library.getPercentage(fraction) + "%");
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    /** 1.7 takes power under the core alone. */
+    @Override
+    public int coreMask() {
+        return MASK_DOWN;
     }
 }

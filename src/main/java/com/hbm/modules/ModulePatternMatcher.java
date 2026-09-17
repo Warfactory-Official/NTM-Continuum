@@ -89,6 +89,22 @@ public final class ModulePatternMatcher {
         }
     }
 
+    /**
+     * ntm-next static form: one (mode, filter, input) test without a matcher instance - what the request
+     * network stores per demand. Modes are this port's: exact, wildcard (damage-blind) or a tag id.
+     */
+    public static boolean matches(String mode, ItemStack filter, ItemStack input) {
+        if (filter == null || filter.isEmpty() || input == null || input.isEmpty()) return false;
+        if (mode == null) mode = MODE_EXACT;
+        ItemStack oneFilter = filter.copyWithCount(1);
+        ItemStack oneInput = input.copyWithCount(1);
+        if (MODE_EXACT.equals(mode)) return dev.golem.core.world.ItemStacks.sameItemAndData(oneInput, oneFilter);
+        if (MODE_WILDCARD.equals(mode)) {
+            return dev.golem.core.world.ItemStacks.sameItemAndDataIgnoringDamage(oneInput, oneFilter);
+        }
+        return tagNames(oneInput).contains(mode);
+    }
+
     public boolean isValidForFilter(ItemStack filter, int index, ItemStack input) {
         if (filter == null || filter.isEmpty() || input == null || input.isEmpty()) return false;
 

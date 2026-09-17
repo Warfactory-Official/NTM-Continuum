@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityFurnaceBrick;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,7 +28,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The single-block brick furnace; lit is a block state rather than a second registered block. */
-public class MachineFurnaceBrick extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class MachineFurnaceBrick extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -39,16 +40,6 @@ public class MachineFurnaceBrick extends dev.golem.core.world.CompatBlock implem
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityFurnaceBrick(pos, state);
-    }
-
-    @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntities.FURNACE_BRICK.get(), TileEntityFurnaceBrick::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {

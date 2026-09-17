@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityCreativeFluidSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Infinite fluid source for testing; backed by {@link TileEntityCreativeFluidSource}. */
-public class BlockCreativeFluidSource extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class BlockCreativeFluidSource extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public BlockCreativeFluidSource(Properties properties) {
         super(properties);
@@ -25,17 +26,4 @@ public class BlockCreativeFluidSource extends dev.golem.core.world.CompatBlock i
         return new TileEntityCreativeFluidSource(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.CREATIVE_FLUID_SOURCE.get(), TileEntityCreativeFluidSource::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

@@ -21,9 +21,4 @@ public class TurretRichard extends TurretBaseNT {
         return new TileEntityTurretRichard(pos, state);
     }
 
-    @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return ticker(level, type, ModBlockEntities.TURRET_RICHARD.get());
-    }
 }

@@ -1,6 +1,0 @@
-{
-  "parent": "hbm:block/tinted_cube_all",
-  "textures": {
-    "all": "hbm:blocks/ore_sellafield_radgem_2"
-  }
-}

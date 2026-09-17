@@ -36,10 +36,4 @@ public class FoundryBasin extends FoundryCastingBase {
         return new TileEntityFoundryBasin(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : FoundryChannel.createTickerHelper(type, ModBlockEntities.FOUNDRY_BASIN.get(), TileEntityFoundryCastingBase::serverTick);
-    }
 }

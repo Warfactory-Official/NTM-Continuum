@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,14 +19,10 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** Single-block steam turbine; its input tank type (set with a fluid identifier) selects the steam stage. */
-public class MachineTurbine extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class MachineTurbine extends dev.golem.core.world.CompatBlock implements TickingBlock {
     public MachineTurbine(Properties properties) { super(properties); }
 
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return new TileEntityMachineTurbine(pos, state); }
-
-    @Override public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, ModBlockEntities.MACHINE_TURBINE.get(), TileEntityMachineTurbine::serverTick);
-    }
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
@@ -44,9 +41,4 @@ public class MachineTurbine extends dev.golem.core.world.CompatBlock implements 
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

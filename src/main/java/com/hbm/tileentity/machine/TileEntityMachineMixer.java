@@ -87,11 +87,6 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         te.consumption *= overdriveLevel * 3 + 1;
 
         // The legacy machine only exposed five connection anchors around the core.
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            if (te.tanks[0].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-            if (te.tanks[1].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[1].getTankType(), level, dp);
-        }
 
         te.wasOn = te.canProcess();
         if (te.wasOn) {
@@ -254,8 +249,8 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
 
     @Override
     public boolean hasPermission(Player player) {
-        return player.distanceToSqr(worldPosition.getX() + 0.5D, worldPosition.getY() + 0.5D,
-                worldPosition.getZ() + 0.5D) <= 256D;
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMixer menu
+                && menu.getMixer() == this && menu.stillValid(player);
     }
 
     @Override public Component getDisplayName() { return Component.translatable("block.hbm.machine_mixer"); }

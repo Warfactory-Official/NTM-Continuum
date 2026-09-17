@@ -8,39 +8,51 @@ import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatEntityRenderState;
-import dev.golem.core.render.CompatEntityRenderer;
-import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.LightningRenderType;
 import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemEntityRenderer;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 
 import java.util.Random;
 
 /** The 1.12.2 digamma spear: full-bright lance blade, settling ghost and stable 64-spike flash. */
-public final class RenderSpear extends CompatEntityRenderer<EntitySpear, RenderSpear.State> {
+public final class RenderSpear extends GemEntityRenderer<EntitySpear, RenderSpear.State> {
     private static final WavefrontObj LANCE = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/weapons/lance.obj"));
     private static final Identifier LANCE_TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/weapons/lance.png");
     private static final Identifier WHITE_TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/misc/white.png");
 
     public RenderSpear(net.minecraft.client.renderer.entity.EntityRendererProvider.Context context) { super(context); }
+
+    /** The lance, and the ghost of it that fades in while it stands in the ground. */
+    @Override protected void setup(Gem.Model<State> declaration) {
+        Gem.Part<State> lance = declaration.offScreen()
+                .joint()
+                .translate(0F, 15F, 0F)
+                .rotate(Gem.Axes.X, 180F)
+                .scale(2F);
+        lance.child(LANCE.part("Spear"), Surface.cutout(LANCE_TEXTURE.toString()))
+                .light(state -> 0xF000F0);
+        lance.child(LANCE.part("Spear"), Surface.translucent(WHITE_TEXTURE.toString()))
+                .visibleIf(state -> state.ticks > 0F)
+                .light(state -> 0xF000F0)
+                .tint(state -> argb(Math.min(state.ticks / 100F, 1F), 1F, 1F, 1F));
+    }
+
     @Override public State createRenderState() { return new State(); }
-    @Override public boolean culled(EntitySpear entity) { return false; }
     @Override public void extract(EntitySpear spear, State state, float partial) {
         state.ticks = spear.ticksInGround > 0 ? spear.ticksInGround + partial : 0F;
     }
-    @Override public void submit(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
+    /** The charge spikes are 64 randomly oriented triangles rebuilt every frame. */
+    @Override protected void submitUndeclared(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         pose.pushPose();
         pose.translate(0D, 15D, 0D);
         pose.mulPose(Axis.XP.rotationDegrees(180F));
         pose.scale(2F, 2F, 2F);
-        sink.submitCustomGeometry(pose, CompatRenderTypes.entityCutout(LANCE_TEXTURE),
-                (last, buffer) -> LANCE.renderPart("Spear", last, buffer, 0xF000F0, -1));
         if (state.ticks > 0F) {
-            int ghost = argb(Math.min(state.ticks / 100F, 1F), 1F, 1F, 1F);
-            sink.submitCustomGeometry(pose, CompatRenderTypes.entityTranslucent(WHITE_TEXTURE),
-                    (last, buffer) -> LANCE.renderPart("Spear", last, buffer, 0xF000F0, ghost));
             float intensity = state.ticks / 200F, squared = intensity * intensity;
             int tip = argb(Math.min(1F, squared * 2F), 1F, .6F, .6F);
             int edge = argb(0F, 1F, .6F, .6F);

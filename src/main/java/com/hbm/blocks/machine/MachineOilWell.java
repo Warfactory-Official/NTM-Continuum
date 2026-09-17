@@ -2,14 +2,12 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -22,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  * 3×3 base at ground level, a 9-high 1×1 tower above the core, and the 4 base corners one block up
  * (the old custom checkRequirement/fillSpace, copied verbatim). Core at the clicked position (offset 0).
  */
-public class MachineOilWell extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineOilWell extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineOilWell(Properties properties) {
         super(properties);
@@ -43,49 +41,34 @@ public class MachineOilWell extends BlockDummyable implements IEnergyConnectorBl
         return 0;
     }
 
-    @Override
-    public boolean checkRequirement(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        return MultiblockHandlerXR.checkSpace(world, x, y, z, new int[]{1, -1, 0, 0, 0, 0}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x, y + 1, z, new int[]{8, 0, 1, 1, 1, 1}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x + 1, y + 1, z + 1, new int[]{-1, 1, 0, 0, 0, 0}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x + 1, y + 1, z - 1, new int[]{-1, 1, 0, 0, 0, 0}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x - 1, y + 1, z + 1, new int[]{-1, 1, 0, 0, 0, 0}, x, y, z, dir) &&
-                MultiblockHandlerXR.checkSpace(world, x - 1, y + 1, z - 1, new int[]{-1, 1, 0, 0, 0, 0}, x, y, z, dir);
-    }
+    private static final int[] PLINTH = {1, -1, 0, 0, 0, 0};
+    private static final int[] TOWER = {8, 0, 1, 1, 1, 1};
+    private static final int[] LEG = {-1, 1, 0, 0, 0, 0};
 
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        MultiblockHandlerXR.fillSpace(world, x, y, z, new int[]{1, -1, 0, 0, 0, 0}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x, y + 1, z, new int[]{8, 0, 1, 1, 1, 1}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + 1, y + 1, z + 1, new int[]{-1, 1, 0, 0, 0, 0}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x + 1, y + 1, z - 1, new int[]{-1, 1, 0, 0, 0, 0}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x - 1, y + 1, z + 1, new int[]{-1, 1, 0, 0, 0, 0}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x - 1, y + 1, z - 1, new int[]{-1, 1, 0, 0, 0, 0}, this, dir);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return MultiblockHandlerXR.checkSpace(level, core, PLINTH, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.above(), TOWER, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.offset(1, 1, 1), LEG, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.offset(1, 1, -1), LEG, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.offset(-1, 1, 1), LEG, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.offset(-1, 1, -1), LEG, clicked, facing);
     }
 
+    /**
+     * No super: getDimensions is the placement envelope and is wider than what 1.7 actually fills -- the
+     * four edge-centre cells at ground level stay empty, which is what the derrick stands on.
+     */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineOilWell te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        MultiblockHandlerXR.visitBox(core, PLINTH, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.above(), TOWER, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.offset(1, 1, 1), LEG, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.offset(1, 1, -1), LEG, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.offset(-1, 1, 1), LEG, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.offset(-1, 1, -1), LEG, facing, visitor);
     }
 
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineOilWell te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_OIL_WELL.get(), TileEntityMachineOilWell::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
+    /** The whole port surface is the core's own four horizontals. */
+    @Override public int coreMask() { return MASK_HORIZONTAL; }
 }

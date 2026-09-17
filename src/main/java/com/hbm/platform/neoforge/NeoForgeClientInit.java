@@ -37,6 +37,9 @@ public final class NeoForgeClientInit {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
                 (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
                         com.hbm.handler.JetpackHandler.clearClientState());
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
+                (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
+                        com.hbm.client.gun.GunSmokeClient.onDisconnect());
         // The vendored 26.1 engine is a library and must be subscribed from the constructor: two of
         // its listeners are mod-bus registry events. No-op where the engine is a mod, or absent.
         com.hbm.client.render.flywheel.FlywheelCompat.startEngine();
@@ -45,10 +48,16 @@ public final class NeoForgeClientInit {
         // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
         // the engine applies them; below it Golem Core wires the loader's colour registry to the same
         // stored colour. One call, every version, both loaders.
+        com.hbm.client.ClientGameTime.install();
+        // The material-shape sprites are computed onto the atlas, not shipped; this has to be declared
+        // before the first resource load.
+        com.hbm.client.AutogenSprites.install();
+        HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
 
         // Look-overlay HUD (battery charge / duct type / ...) — a GUI layer drawn above the vanilla HUD,

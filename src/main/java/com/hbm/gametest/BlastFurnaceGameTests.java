@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -53,9 +53,9 @@ public final class BlastFurnaceGameTests {
         TileEntityMachineBlastFurnace furnace = GameTestHelpers.blockEntity(helper, core,
                 TileEntityMachineBlastFurnace.class);
         helper.assertTrue(furnace != null, "Blast furnace controller setup failed");
-        helper.assertBlockProperty(core, BlockDummyable.META, 12);
-        helper.assertBlockProperty(core.above(6), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.offset(1, 0, 0), BlockDummyable.META, 11);
+        helper.assertBlockProperty(core, BlockMultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
+        FoldedTestSupport.assertPort(helper, core, core.above(6));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 0));
         helper.assertTrue(furnace.getConPos().length == 6, "Blast furnace must expose six fluid/power ports");
         var eastCell = helper.absolutePos(core.offset(1, 0, 0));
         helper.assertTrue(block.canConnect(Fluids.AIRBLAST, helper.getLevel(), eastCell.getX(), eastCell.getY(), eastCell.getZ(), ForgeDirection.EAST),
@@ -186,8 +186,7 @@ public final class BlastFurnaceGameTests {
     }
 
     private static TileEntityMachineBlastFurnace place(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
-        helper.setBlock(pos, ModMachineBlocks.machine_blast_furnace.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, ModMachineBlocks.machine_blast_furnace.get().defaultBlockState());
         return GameTestHelpers.blockEntity(helper, pos, TileEntityMachineBlastFurnace.class);
     }
 

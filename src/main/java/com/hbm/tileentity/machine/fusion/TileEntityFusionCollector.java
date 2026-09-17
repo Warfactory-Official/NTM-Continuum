@@ -1,10 +1,9 @@
 package com.hbm.tileentity.machine.fusion;
 
-import com.hbm.lib.DirPos;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -20,7 +19,6 @@ import net.minecraft.world.level.block.state.BlockState;
  */
 public class TileEntityFusionCollector extends TileEntityLoadedBase implements IFusionPowerReceiver {
 
-    private PlasmaNetwork.PlasmaNode plasmaNode;
 
     public TileEntityFusionCollector(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_COLLECTOR.get(), pos, state);
@@ -28,10 +26,7 @@ public class TileEntityFusionCollector extends TileEntityLoadedBase implements I
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionCollector te) {
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
-        te.plasmaNode = FusionNodes.plasma(level, te.plasmaNode,
-                new BlockPos(pos.getX() + dir.offsetX * 2, pos.getY() + 2, pos.getZ() + dir.offsetZ * 2),
-                new DirPos(pos.getX() + dir.offsetX * 3, pos.getY() + 2, pos.getZ() + dir.offsetZ * 3, dir));
-        if (te.plasmaNode.hasValidNet()) te.plasmaNode.net.addReceiver(te);
+        FusionLink.claim(level, te, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
     }
 
     /** False — the collector adds to the reactor's rate without taking a share of its output. */
@@ -43,7 +38,14 @@ public class TileEntityFusionCollector extends TileEntityLoadedBase implements I
 
     @Override
     public void setRemoved() {
-        FusionNodes.destroy(level, null, plasmaNode);
+        FusionLink.release(level, plasmaCell(worldPosition,
+                FusionNodes.facing(getBlockState()).getOpposite()));
         super.setRemoved();
+    }
+
+    /** Where this machine claims its end of the torus beam, 2 blocks out the back at +2. */
+    private static BlockPos plasmaCell(BlockPos pos, ForgeDirection dir) {
+        return new BlockPos(pos.getX() + dir.offsetX * 2, pos.getY() + 2,
+                pos.getZ() + dir.offsetZ * 2);
     }
 }

@@ -1,23 +1,23 @@
 package com.hbm.blocks.machine.fusion;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystronCreative;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.lib.ForgeDirection;
 
 /**
  * Creative klystron - same shell as the real one, but it needs no power, no air and no ports, so it
  * has none. Behaviour lives in {@link TileEntityFusionKlystronCreative}.
  */
-public class MachineFusionKlystronCreative extends BlockDummyable {
+public class MachineFusionKlystronCreative extends BlockMultiblockMachine {
 
     public MachineFusionKlystronCreative(Properties properties) {
         super(properties);
@@ -32,23 +32,17 @@ public class MachineFusionKlystronCreative extends BlockDummyable {
 
     @Override public int getOffset() { return 3; }
 
+    private static final int[] WAVEGUIDE = {4, -3, 4, 3, 1, 1};
+
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(),
-                new int[]{4, -3, 4, 3, 1, 1}, this, dir);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return super.checkRequirement(level, core, facing, clicked)
+                && MultiblockHandlerXR.checkSpace(level, core, WAVEGUIDE, clicked, facing);
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FUSION_KLYSTRON_CREATIVE.get(), TileEntityFusionKlystronCreative::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FUSION_KLYSTRON_CREATIVE.get(), TileEntityFusionKlystronCreative::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, WAVEGUIDE, facing, visitor);
     }
 }

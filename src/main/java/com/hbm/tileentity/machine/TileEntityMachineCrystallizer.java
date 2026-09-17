@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.sound.CrystallizerSoundHandler;
 import com.hbm.interfaces.IClimbable;
@@ -11,6 +10,7 @@ import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerCrystallizer;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -90,10 +90,6 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
         te.ensureClimbRegistered();
         te.isOn = false;
 
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, dp);
-        }
 
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.getPower(), te.getMaxPower());
         te.updateTankType();
@@ -321,7 +317,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
 
     private AABB getLadderAABB() {
         if (ladderAABB == null) {
-            ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+            ForgeDirection dir = MachineCore.facing(getBlockState());
             ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
             BlockPos p = getBlockPos();
             ladderAABB = new AABB(p.getX() + 0.25, p.getY() + 1, p.getZ() + 0.25, p.getX() + 0.75, p.getY() + 6, p.getZ() + 0.75)

@@ -1,11 +1,15 @@
 package com.hbm.tileentity.machine.fusion;
 
+import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.recipes.FusionRecipes;
+import com.hbm.lib.DirPos;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.List;
 
 /**
  * Creative klystron — emits the highest ignition temperature any fuel cycle asks for, unconditionally,
@@ -25,12 +29,22 @@ public class TileEntityFusionKlystronCreative extends TileEntityFusionKlystron {
 
     @Override public String getDefaultName() { return "container.fusionKlystronCreative"; }
 
+    /**
+     * Nothing. The creative klystron takes no power and no compressed air, so it subscribes nowhere --
+     * inheriting the real klystron's three ports would advertise a surface its own tick never reads.
+     */
+    @Override
+    public List<DirPos> getConPos() {
+        return List.of();
+    }
+
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionKlystronCreative te) {
         // maxInput is only known once the cycles are loaded; registration is idempotent.
         FusionRecipes.INSTANCE.registerRecipes();
-        te.klystronNode = FusionNodes.emitterNode(level, te.klystronNode, pos, FusionNodes.facing(state));
-        if (te.klystronNode.net != null) te.klystronNode.net.addProvider(te);
-        te.isConnected = FusionNodes.provideKyU(te.klystronNode, FusionRecipes.INSTANCE.maxInput);
+        FusionLink.claim(level, te, FusionNodes.emitter(pos, FusionNodes.facing(state)),
+                MachineCaps.KLYSTRON_OUT);
+        te.isConnected = FusionNodes.provideKyU(level, pos, FusionNodes.facing(state),
+                FusionRecipes.INSTANCE.maxInput);
         te.networkPackNT();
     }
 

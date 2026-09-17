@@ -6,7 +6,6 @@ import com.hbm.items.ModAmmoItems;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.weapon.ItemAmmoArty;
 import com.hbm.items.weapon.sedna.BulletConfig;
-import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
@@ -282,8 +281,6 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
         }
 
         if (aligned) updateFiringTick();
-
-        for (DirPos port : getConPos()) trySubscribe(level, port);
 
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, getMaxPower());
 

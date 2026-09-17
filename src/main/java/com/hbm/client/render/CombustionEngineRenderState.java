@@ -6,6 +6,5 @@ import dev.golem.core.render.CompatRenderState;
 public final class CombustionEngineRenderState extends CompatRenderState {
     public float yaw;
     public float doorAngle;
-    public boolean canisterTint;
     public int canisterColor;
 }

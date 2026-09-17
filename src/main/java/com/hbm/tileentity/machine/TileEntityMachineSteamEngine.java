@@ -2,13 +2,13 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -74,7 +74,6 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
 
         for (DirPos connection : engine.getConPos()) {
             if (engine.powerBuffer > 0) engine.tryProvide(level, connection.getPos(), connection.getDir());
-            engine.trySubscribe(engine.tanks[0].getTankType(), level, connection);
             engine.tryProvide(engine.tanks[1], level, connection);
         }
         engine.setChanged();
@@ -93,9 +92,7 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
     }
 
     public ForgeDirection getFacing() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META)
-                ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     public DirPos[] getConPos() {

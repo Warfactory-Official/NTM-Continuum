@@ -1,16 +1,23 @@
 package com.hbm.entity.missile;
 
-import com.hbm.entity.ModEntities;
-import com.hbm.items.ISatChip;
-import com.hbm.lib.ModDamageSources;
-import com.hbm.saveddata.satellites.Satellite;
-import com.hbm.saveddata.satellites.SatelliteRegistry;
-import com.hbm.util.EntityDamageUtil;
-import dev.golem.core.data.CompatEntity;
-import dev.golem.core.data.DataIn;
-import dev.golem.core.data.DataOut;
+import com.hbm.entity.ModNtmEntities;
+import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
-import dev.golem.core.world.Effects;
+import dev.golem.core.data.CompatEntity;
+import com.hbm.interfaces.StoredItems;
+import com.hbm.advancement.DetonationTrigger;
+import com.hbm.advancement.HbmCriteria;
+import net.minecraft.server.level.ServerPlayer;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
+import com.hbm.client.ClientEffects;
+import com.hbm.explosion.ExplosionLarge;
+import com.hbm.util.ChunkUtil;
+import com.hbm.lib.ModDamageSources;
+import com.hbm.items.ISatChip;
+import com.hbm.saveddata.satellites.Satellite;
+import com.hbm.saveddata.satellites.SatelliteType;
+import com.hbm.items.ModItems;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -18,107 +25,239 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-/**
- * The satellite launch vehicle in flight. It accelerates straight up until it is past six hundred, then
- * hands its payload to orbit on the frequency the satellite carries and disappears.
- *
- * <p>Deviations from CE: only the satellite flight is ported. Upstream's second mode carries cargo to a
- * landing pad and needs the return capsule, its receiving pad and the designator round trip, none of which
- * are ported; so is the flame-pony easter egg and the achievements the launch grants.
- */
-public class EntitySoyuz extends CompatEntity {
+import java.util.Arrays;
+import java.util.List;
 
+/**
+ * 1.7 {@code entity/missile/EntitySoyuz} - the launch vehicle: rides its own acceleration straight up,
+ * cooks anything under the plume, and past y=600 either orbits the satellite stack (mode 0) or drops an
+ * {@link EntitySoyuzCapsule} lander onto the target column (mode 1).
+ */
+public class EntitySoyuz extends CompatEntity implements StoredItems {
+
+    // 1.7 dataWatcher id 8, watchableObjectInt
     private static final EntityDataAccessor<Integer> SKIN =
             SynchedEntityData.defineId(EntitySoyuz.class, EntityDataSerializers.INT);
+    private static final long NONE = Long.MIN_VALUE;
 
-    /** The altitude at which the payload separates. */
-    public static final double ORBIT_ALTITUDE = 600;
+    double acceleration = 0.00D;
+    public int mode;
+    public int targetX;
+    public int targetZ;
+    boolean memed = false;
+    // 18 slots like 1.7; EMPTY stands in for 1.7's null slots
+    private final ItemStack[] payload = new ItemStack[18];
 
-    private double acceleration;
-    private ItemStack satellite = ItemStack.EMPTY;
+    @Override
+    public void visitStoredItems(Visitor visitor) {
+        for (int i = 0; i < payload.length; i++) {
+            if (visitor.visit(payload[i]) && payload[i].isEmpty()) payload[i] = ItemStack.EMPTY;
+        }
+    }
+    // 1.7 loaded the landing chunk once pre-drop; forced-chunk window released on removal
+    private long forcedChunk = NONE;
 
     public EntitySoyuz(EntityType<? extends EntitySoyuz> type, Level level) {
         super(type, level);
-        this.noPhysics = true;
-    }
-
-    public EntitySoyuz(Level level) {
-        this(ModEntities.SOYUZ.get(), level);
-    }
-
-    public EntitySoyuz setSkin(int skin) {
-        this.entityData.set(SKIN, skin);
-        return this;
-    }
-
-    public int getSkin() {
-        return this.entityData.get(SKIN);
-    }
-
-    public void setSat(ItemStack stack) {
-        this.satellite = stack.copy();
-    }
-
-    public ItemStack getSat() {
-        return satellite;
+        Arrays.fill(this.payload, ItemStack.EMPTY);
+        // 1.7 also set ignoreFrustumCheck here; render-side concerns moved to the renderer.
     }
 
     @Override
-    protected void defineData(SynchedData data) {
-        data.define(SKIN, 0);
-    }
-
-    @Override
-    protected boolean onHurt(DamageSource source, float amount) {
-        return false;
+    protected void defineData(SynchedData builder) {
+        builder.define(SKIN, 0);
     }
 
     @Override
     public void tick() {
-        if (getDeltaMovement().y < 2.0D) {
-            acceleration += 0.00025D;
-            setDeltaMovement(getDeltaMovement().add(0, acceleration, 0));
-        }
+        // 1.7 onUpdate replaces Entity.onUpdate wholesale - no super.tick(), no baseTick side effects
 
         Vec3 motion = getDeltaMovement();
+        if (motion.y < 2.0D) {
+            acceleration += 0.00025D;
+            motion = new Vec3(motion.x, motion.y + acceleration, motion.z);
+            setDeltaMovement(motion);
+        }
+
+        // 1.7 setLocationAndAngles(posX + motionX, posY + motionY, posZ + motionZ, 0, 0) - pinned upright
         setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
+        setYRot(0.0F);
+        setXRot(0.0F);
 
-        if (level() instanceof ServerLevel server) scorch(server);
+        if (level() instanceof ServerLevel server) {
 
-        if (getY() > ORBIT_ALTITUDE) deployPayload();
+            List<Entity> list = level().getEntities(this, new AABB(getX() - 5, getY() - 15, getZ() - 5,
+                    getX() + 5, getY(), getZ() + 5));
+
+            for (Entity e : list) {
+                dev.golem.core.world.Effects.ignite(e, 15); // 1.7 setFire(15)
+
+                // 1.7 attackEntityFrom: i-frames throttle the plume to one hit per 20 ticks
+                Compat.hurt(e, server, ModDamageSources.source(level(), ModDamageSources.EXHAUST), 100.0F);
+
+                if (e instanceof Player) {
+                    if (!memed) {
+                        memed = true;
+                        level().playSound(null, getX(), getY(), getZ(), ModSounds.ALARM_SOYUZED.get(),
+                                SoundSource.NEUTRAL, 100.0F, 1.0F);
+                    }
+
+                    if (e instanceof ServerPlayer serverPlayer) {
+                        HbmCriteria.detonation(serverPlayer, DetonationTrigger.Kind.SOYUZ_EXHAUST);
+                    }
+                }
+            }
+        }
+
+        if (level().isClientSide()) {
+            spawnExhaust(getX(), getY(), getZ());
+            spawnExhaust(getX() + 2.75, getY(), getZ());
+            spawnExhaust(getX() - 2.75, getY(), getZ());
+            spawnExhaust(getX(), getY(), getZ() + 2.75);
+            spawnExhaust(getX(), getY(), getZ() - 2.75);
+        }
+
+        if (getY() > 600 && !level().isClientSide()) {
+            deployPayload();
+        }
     }
 
-    /** Everything standing in the exhaust column under the rocket. */
-    private void scorch(ServerLevel level) {
-        AABB plume = new AABB(getX() - 5, getY() - 15, getZ() - 5, getX() + 5, getY(), getZ() + 5);
-        for (Entity e : level.getEntities(this, plume)) {
-            Effects.ignite(e, 15);
-            EntityDamageUtil.attackEntityFromIgnoreIFrame(e, ModDamageSources.source(level, ModDamageSources.EXHAUST), 100F);
-        }
+    // 1.7 effectNT "exhaust"/"soyuz": one rocket-flame per nozzle per tick, default scale 1,
+    // maxAge 300 + rand(50), downward wash -0.75..-0.25, gaussian jitter through the nozzle
+    // width rand*0.25-0.5 (the 350-block cull rode the removed effectNT packet)
+    private void spawnExhaust(double x, double y, double z) {
+        double width = random.nextDouble() * 0.25 - 0.5;
+        ClientEffects.spawnRocketFlame(level(), x + random.nextGaussian() * width, y,
+                z + random.nextGaussian() * width, 1.0F, 0.0D, -0.75D + random.nextDouble() * 0.5D, 0.0D,
+                300 + random.nextInt(50));
     }
 
     private void deployPayload() {
-        if (!satellite.isEmpty() && satellite.getItem() instanceof ISatChip) {
-            Satellite.orbit(level(), SatelliteRegistry.idFromStack(satellite), satellite,
-                    ISatChip.getFreqS(satellite), getX(), getY(), getZ());
+
+        if (mode == 0) {
+
+            ItemStack load = this.payload[0];
+
+            if (!load.isEmpty()) {
+
+                if (load.is(ModItems.flame_pony.get())) {
+                    ExplosionLarge.spawnTracers(level(), getX(), getY(), getZ(), 25);
+                    for (Player p : level().players()) {
+                        if (p instanceof ServerPlayer serverPlayer) HbmCriteria.orbit(serverPlayer, load);
+                    }
+                }
+
+                // 1.7:109-113 awards achFOEQ a second time here; SatelliteRelay.onOrbit below is the same
+                // award on the same tick, so the port fires it once.
+
+                // 1.7:115-120 - every satellite reaches orbit here, and nowhere else
+                SatelliteType type = SatelliteType.fromStack(load);
+                if (type != null && level() instanceof ServerLevel orbitLevel) {
+                    Satellite.orbit(orbitLevel, type, ISatChip.getFreqS(load), getX(), getY(), getZ());
+                }
+            }
         }
-        discard();
+
+        if (mode == 1) {
+
+            EntitySoyuzCapsule capsule = new EntitySoyuzCapsule(ModNtmEntities.SOYUZ_CAPSULE.get(), level());
+            capsule.payload = this.payload;
+            capsule.soyuz = this.getSkin();
+            capsule.setPos(targetX + 0.5, 600, targetZ + 0.5);
+
+            // 1.7: provider.loadChunk(targetX >> 4, targetZ >> 4)
+            if (level() instanceof ServerLevel server) {
+                forcePayloadChunk(server, targetX >> 4, targetZ >> 4);
+            }
+
+            level().addFreshEntity(capsule);
+        }
+
+        this.discard(); // 1.7 setDead()
+    }
+
+    private void forcePayloadChunk(ServerLevel server, int cx, int cz) {
+        long key = ChunkPos.pack(cx, cz);
+        if (key == forcedChunk) return;
+        releaseForcedChunk();
+        ChunkUtil.claimForced(server, key);
+        forcedChunk = key;
+    }
+
+    private void releaseForcedChunk() {
+        if (forcedChunk != NONE && level() instanceof ServerLevel server) {
+            ChunkUtil.releaseForced(server, forcedChunk);
+        }
+        forcedChunk = NONE;
     }
 
     @Override
-    protected void saveData(DataOut output) {
-        output.putInt("skin", getSkin());
-        output.store("satellite", ItemStack.OPTIONAL_CODEC, satellite);
+    public void remove(RemovalReason reason) {
+        releaseForcedChunk();
+        super.remove(reason);
+    }
+
+    public void setSat(ItemStack stack) {
+        this.payload[0] = stack == null ? ItemStack.EMPTY : stack;
+    }
+
+    public void setPayload(List<ItemStack> payload) {
+        for (int i = 0; i < payload.size() && i < this.payload.length; i++) {
+            ItemStack stack = payload.get(i);
+            this.payload[i] = stack == null ? ItemStack.EMPTY : stack;
+        }
+    }
+
+    public void setSkin(int i) {
+        entityData.set(SKIN, i);
+    }
+
+    public int getSkin() {
+        return entityData.get(SKIN);
+    }
+
+    @Override
+    protected boolean onHurt(DamageSource source, float amount) {
+        // 1.7 did not override attackEntityFrom, so it took the plain Entity default: not damageable.
+        return false;
+    }
+
+    // 1.7 isInRangeToRenderDist(distance < 500000); the argument was already squared there too
+    @Override
+    public boolean shouldRenderAtSqrDistance(double distance) {
+        return distance < 500000;
     }
 
     @Override
     protected void loadData(DataIn input) {
         setSkin(input.getIntOr("skin", 0));
-        satellite = input.read("satellite", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+        targetX = input.getIntOr("targetX", targetX);
+        targetZ = input.getIntOr("targetZ", targetZ);
+        mode = input.getIntOr("mode", mode);
+
+        // 1.7 "items" tag list with per-entry "slot" bytes; the codec list preserves slot order instead
+        List<ItemStack> list = input.read("items", dev.golem.core.world.ItemStacks.optionalCodec().listOf()).orElse(List.of());
+        for (int i = 0; i < list.size() && i < payload.length; i++) {
+            payload[i] = list.get(i);
+        }
+    }
+
+    @Override
+    protected void saveData(DataOut output) {
+        output.putInt("skin", getSkin());
+        output.putInt("targetX", targetX);
+        output.putInt("targetZ", targetZ);
+        output.putInt("mode", mode);
+
+        output.store("items", dev.golem.core.world.ItemStacks.optionalCodec().listOf(), List.of(payload));
     }
 }

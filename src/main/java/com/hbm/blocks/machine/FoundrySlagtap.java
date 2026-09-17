@@ -25,10 +25,4 @@ public class FoundrySlagtap extends FoundryOutlet {
         return new TileEntityFoundrySlagtap(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : FoundryChannel.createTickerHelper(type, ModBlockEntities.FOUNDRY_SLAGTAP.get(), TileEntityFoundryOutlet::serverTick);
-    }
 }

@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine.oil;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerMachineCoker;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
@@ -14,6 +14,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -66,9 +67,6 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
         te.tryPullHeat();
         te.setTypeFromFluidId();
 
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos dp : te.getConPos()) te.trySubscribe(te.tanks[0].getTankType(), level, dp);
-        }
 
         te.wasOn = false;
 
@@ -109,7 +107,7 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCoker te) {
-        if (te.wasOn && level.getGameTime() % 2 == 0) {
+        if (te.wasOn && TickPhase.every(level, pos, 2)) {
             level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, pos.getX() + 0.5, pos.getY() + 22, pos.getZ() + 0.5, 0.0, 0.05, 0.0);
         }
     }
@@ -151,8 +149,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
         if (this.heat >= maxHeat) return;
         BlockPos below = worldPosition.below();
         BlockEntity con = level.getBlockEntity(below);
-        if (!(con instanceof IHeatSource) && level.getBlockState(below).getBlock() instanceof BlockDummyable dummy) {
-            con = dummy.findCoreTE(level, below);
+        if (!(con instanceof IHeatSource)) {
+            con = MachineCore.at(level, below, level.getBlockState(below));
         }
 
         if (con instanceof IHeatSource source) {

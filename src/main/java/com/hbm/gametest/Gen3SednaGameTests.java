@@ -91,6 +91,17 @@ public final class Gen3SednaGameTests {
                 5F, 27, 27, 67, 58, 6, XFactoryBlackPowder.stone, false);
         assertReceiver(helper, ModGunItems.gun_g3.get(), 0,
                 5F, 2, 15, 50, 47, 30, XFactory556mm.r556_sp, true);
+        helper.assertTrue(ModGunItems.gun_light_revolver.get().defaultAmmo.get() == ModAmmoItems.m357_sp.get()
+                        && ModGunItems.gun_light_revolver.get().defaultAmmoAmount == 12
+                        && ModGunItems.gun_g3.get().defaultAmmo.get() == ModAmmoItems.r556_sp.get()
+                        && ModGunItems.gun_g3.get().defaultAmmoAmount == 30
+                        && ModGunItems.gun_fatman.get().defaultAmmo.get() == ModAmmoItems.nuke_standard.get()
+                        && ModGunItems.gun_fatman.get().isDefaultExpensive,
+                "source default ammunition must remain attached to the registered gun item");
+        ItemStack stinger = new ItemStack(ModGunItems.gun_stinger.get());
+        helper.assertTrue(ModGunItems.gun_stinger.get().getConfig(stinger, 0).getPressSecondary(stinger) != null
+                        && ModGunItems.gun_stinger.get().getConfig(stinger, 0).getReleaseSecondary(stinger) != null,
+                "Stinger lock-on must remain an explicit source secondary handler");
 
         ItemStack dani = new ItemStack(ModGunItems.gun_light_revolver_dani.get());
         ItemGunBaseNT gun = (ItemGunBaseNT) dani.getItem();

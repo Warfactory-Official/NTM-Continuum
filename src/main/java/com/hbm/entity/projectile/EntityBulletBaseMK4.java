@@ -16,10 +16,12 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import org.jspecify.annotations.Nullable;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -72,9 +74,31 @@ public class EntityBulletBaseMK4 extends CompatEntity {
      */
     public @Nullable Entity lockonTarget;
     public double prevVelocity;
+    /** Source charge-thrower hook state; culling is consumed by the client renderer. */
+    public boolean ignoreFrustum;
+    private boolean inGround;
 
-    public EntityBulletBaseMK4(EntityType<EntityBulletBaseMK4> type, Level level) {
+    public EntityBulletBaseMK4(EntityType<? extends EntityBulletBaseMK4> type, Level level) {
         super(type, level);
+    }
+
+    /**
+     * For submunitions (ntm-next): spawned at an explicit position with an explicit motion, no shooter frame.
+     * The source scales the unit heading by {@code config.spread + gunSpread} of scatter.
+     */
+    public EntityBulletBaseMK4(Level level, LivingEntity entity, BulletConfig config, float damage, float gunSpread,
+                               double posX, double posY, double posZ, double motionX, double motionY, double motionZ) {
+        this(ModEntities.BULLET_MK4.get(), level);
+
+        this.thrower = entity;
+        this.setBulletConfig(config);
+
+        this.damage = damage;
+
+        this.snapTo(posX, posY, posZ, 0, 0);
+
+        this.setDeltaMovement(motionX, motionY, motionZ);
+        this.shoot(motionX, motionY, motionZ, this.config.spread + gunSpread);
     }
 
     /** The standard gun constructor: fired from {@code shooter}'s eyes with a muzzle offset. */
@@ -139,6 +163,10 @@ public class EntityBulletBaseMK4 extends CompatEntity {
                 random.nextGaussian() * 0.0075D * spread);
         setDeltaMovement(heading);
         alignRotationWithMotion();
+        // The source keeps the spawn angle as both previous and current; subsequent movement updates
+        // only the current angle so the renderer can interpolate the displacement turn.
+        yRotO = getYRot();
+        xRotO = getXRot();
     }
 
     @Override
@@ -193,6 +221,11 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         return BulletConfigs.byIndex(entityData.get(BULLET_CONFIG));
     }
 
+    /** Keeps callers on the entity's seeded RNG without exposing the inherited field. */
+    public RandomSource randomSource() {
+        return random;
+    }
+
     public void setBulletConfig(BulletConfig config) {
         this.config = config;
         entityData.set(BULLET_CONFIG, config == null ? -1 : BulletConfigs.indexOf(config));
@@ -203,6 +236,12 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         return thrower;
     }
 
+    /** Keeps a hook embedded in its block rather than launching it again on the next tick. */
+    public void getStuck(BlockPos pos, int side) {
+        inGround = true;
+        setDeltaMovement(Vec3.ZERO);
+    }
+
     @Override
     public boolean isPickable() {
         return false;
@@ -211,6 +250,8 @@ public class EntityBulletBaseMK4 extends CompatEntity {
     @Override
     public void tick() {
         super.tick();
+
+        if (inGround) return;
 
         if (config == null) config = getBulletConfig();
         if (config == null) {
@@ -254,16 +295,19 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         if (isRemoved()) return;
 
         prevVelocity = velocity;
-        velocity = position().distanceTo(from);
+        // The old renderer receives the distance covered by this tick, not the distance from the
+        // entity to its starting point (which is zero before the move).  Preserve the shortened
+        // block-hit segment as well; tracer length must stop at the wall.
+        velocity = from.distanceTo(to);
 
-        setPos(position().add(getDeltaMovement().scale(step())));
+        Vec3 displacement = getDeltaMovement().scale(step());
+        setPos(position().add(displacement));
+        updateRotationFromDisplacement(displacement);
         // Gravity acts on the heading, so a heavy round's arc builds up over its flight. Air drag is
         // deliberately absent — upstream's getAirDrag() returns 1.0 for bullets.
         if (config.gravity != 0F) {
             setDeltaMovement(getDeltaMovement().subtract(0D, config.gravity, 0D));
         }
-        alignRotationWithMotion();
-
         if (!level().isClientSide() && tickCount > config.expires) {
             discard();
             return;
@@ -314,8 +358,24 @@ public class EntityBulletBaseMK4 extends CompatEntity {
         if (motion.lengthSqr() < 1.0E-7D) return;
         setYRot((float) (Math.atan2(motion.x, motion.z) * 180D / Math.PI));
         setXRot((float) (Math.atan2(motion.y, Math.sqrt(motion.x * motion.x + motion.z * motion.z)) * 180D / Math.PI));
-        yRotO = getYRot();
-        xRotO = getXRot();
+    }
+
+    /** Source-style rotation from the actual displacement, retaining the old angle for interpolation. */
+    private void updateRotationFromDisplacement(Vec3 displacement) {
+        if (displacement.lengthSqr() < 1.0E-7D) return;
+        float previousYaw = getYRot();
+        float previousPitch = getXRot();
+        yRotO = previousYaw;
+        xRotO = previousPitch;
+        float yaw = (float) (Math.atan2(displacement.x, displacement.z) * 180D / Math.PI);
+        float pitch = (float) (Math.atan2(displacement.y,
+                Math.sqrt(displacement.x * displacement.x + displacement.z * displacement.z)) * 180D / Math.PI);
+        setYRot(yaw);
+        setXRot(pitch);
+        while (getXRot() - xRotO < -180F) xRotO -= 360F;
+        while (getXRot() - xRotO >= 180F) xRotO += 360F;
+        while (getYRot() - yRotO < -180F) yRotO -= 360F;
+        while (getYRot() - yRotO >= 180F) yRotO += 360F;
     }
 
     @Override

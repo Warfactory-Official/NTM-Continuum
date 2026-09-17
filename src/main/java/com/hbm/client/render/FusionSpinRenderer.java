@@ -1,17 +1,12 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import com.hbm.tileentity.MachineCore;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -19,7 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.function.BiFunction;
 
 /**
- * A fusion machine drawn as one static body plus one part that spins about the machine's own axis —
+ * A fusion machine declared as one static body plus one part that spins about the machine's own axis —
  * the klystron's fan and the MHD turbine's coils, which upstream gives near-identical renderers.
  *
  * <p>Two details matter and are easy to get wrong. The spin is about <b>X after the facing rotation</b>,
@@ -28,10 +23,10 @@ import java.util.function.BiFunction;
  * authored one block off its core cell, and without that shift the whole machine draws a block away
  * from where it actually is — which also makes its ports look like they are in the wrong place.
  */
-public class FusionSpinRenderer<T extends BlockEntity> implements CompatBER<T, FusionSpinRenderState> {
+public class FusionSpinRenderer<T extends BlockEntity> extends GemBER<T, FusionSpinRenderState> {
 
     private final WavefrontObj model;
-    private final RenderType renderType;
+    private final Surface surface;
     private final String bodyPart;
     private final String spinPart;
     private final float pivotY;
@@ -55,8 +50,7 @@ public class FusionSpinRenderer<T extends BlockEntity> implements CompatBER<T, F
                               float pivotY, float offsetX, float baseYaw, float angleModulus,
                               BiFunction<T, Float, Float> angle) {
         this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + obj));
-        this.renderType = CompatRenderTypes.entityCutout(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/" + texture));
+        this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/" + texture);
         this.bodyPart = bodyPart;
         this.spinPart = spinPart;
         this.pivotY = pivotY;
@@ -66,46 +60,35 @@ public class FusionSpinRenderer<T extends BlockEntity> implements CompatBER<T, F
         this.angleModulus = angleModulus;
     }
 
-    @Override public FusionSpinRenderState createRenderState() { return new FusionSpinRenderState(); }
+    @Override
+    protected void setup(Gem.Model<FusionSpinRenderState> declaration) {
+        Gem.Part<FusionSpinRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> baseYaw + state.yaw);
+        if (offsetX != 0F) machine.translate(offsetX, 0F, 0F);
 
-    @Override public boolean shouldRenderOffScreen() { return true; }
+        machine.child(model.part(bodyPart), surface);
+        machine.child(model.part(spinPart), surface)
+                .spin(Gem.Axes.X, 0F, pivotY, 0F, state -> state.spin);
+    }
 
-    @Override public boolean shouldRender(T blockEntity, Vec3 cameraPosition) { return true; }
-
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    public FusionSpinRenderState createRenderState() {
+        return new FusionSpinRenderState();
+    }
 
     @Override
     public void extract(T blockEntity, FusionSpinRenderState state, float partialTicks, Vec3 cameraPosition) {
         BlockState bs = blockEntity.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (ForgeDirection.getOrientation(meta - BlockDummyable.offset)) {
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = switch (ForgeDirection.getOrientation(meta)) {
             case WEST -> 90F;
             case SOUTH -> 180F;
             case EAST -> 270F;
-            default -> 0F; // NORTH
+            default -> 0F;
         };
         float spin = angle.apply(blockEntity, partialTicks);
         state.spin = angleModulus > 0F ? spin % angleModulus : spin;
-    }
-
-    @Override
-    public void submit(FusionSpinRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(baseYaw + state.yaw));
-        if (offsetX != 0F) poseStack.translate(offsetX, 0F, 0F);
-
-        sink.submitCustomGeometry(poseStack, renderType, (pose, buffer) ->
-                model.renderPart(bodyPart, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-
-        poseStack.pushPose();
-        poseStack.translate(0F, pivotY, 0F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(state.spin));
-        poseStack.translate(0F, -pivotY, 0F);
-        sink.submitCustomGeometry(poseStack, renderType, (pose, buffer) ->
-                model.renderPart(spinPart, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        poseStack.popPose();
-
-        poseStack.popPose();
     }
 }

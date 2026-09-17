@@ -1,9 +1,9 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CoolingRecipes;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ZirnoxFuel;
@@ -122,6 +122,17 @@ public final class HbmGameTestFunctions {
             TESTS.function("advanced_oil_combustion_gate", 40, 8, () -> AdvancedOilParityGameTests::combustionOperationGate);
     public static final GameTests.Function ADVANCED_OIL_REFUELER_GATE =
             TESTS.function("advanced_oil_refueler_gate", 40, 8, () -> AdvancedOilParityGameTests::refuelerIdleGate);
+    public static final GameTests.Function ADVANCED_OIL_REFUELER_TRANSFER =
+            TESTS.function("advanced_oil_refueler_transfer", 40, 8, () -> AdvancedOilParityGameTests::refuelerFillsAcrossTicks);
+    public static final GameTests.Function FLUID_TANK_EXTRACTION =
+            TESTS.function("fluid_tank_extraction", 40, 8, () -> FluidTankGameTests::extractionUsesOutputBay);
+    public static final GameTests.Function FLUID_TANK_INVALID_FLUID =
+            TESTS.function("fluid_tank_invalid_fluid", 40, 8, () -> FluidTankGameTests::invalidFluidStaysInInput);
+    public static final GameTests.Function FLUID_TANK_SLOT_DIRECTION =
+            TESTS.function("fluid_tank_slot_direction", 40, 8, () -> FluidTankGameTests::menuSlotsAreOneWay);
+    public static final GameTests.Function ADVANCED_OIL_MENU_DIRECTION =
+            TESTS.function("advanced_oil_menu_direction", 40, 8,
+                    () -> AdvancedOilParityGameTests::oilWellMenuKeepsTankInputAboveOutput);
     public static final GameTests.Function TURBINE_CONVERSION =
             TESTS.function("turbine_conversion", 20, () -> HbmGameTestFunctions::turbineConversion);
     public static final GameTests.Function TURBINE_IDENTIFIER =
@@ -258,9 +269,9 @@ public final class HbmGameTestFunctions {
             TESTS.function("steam_pump_conversion", 40, 8, () -> PumpGameTests::steamConversion);
     public static final GameTests.Function STEAM_PUMP_RECIPE =
             TESTS.function("steam_pump_recipe", 40, () -> PumpGameTests::steamRecipe);
-    public static final GameTests.Function STEAM_PUMP_NETWORK_SUBSCRIPTION =
-            TESTS.function("steam_pump_network_subscription", 40, 8,
-                    () -> PumpGameTests::steamNetworkSubscription);
+    public static final GameTests.Function STEAM_PUMP_NETWORK_REACH =
+            TESTS.function("steam_pump_network_reach", 40, 8,
+                    () -> PumpGameTests::steamNetworkReach);
     public static final GameTests.Function STIRLING_LAYOUT =
             TESTS.function("stirling_layout", 100, 8, () -> StirlingGameTests::layout);
     public static final GameTests.Function STIRLING_PORTS =
@@ -491,6 +502,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("ammo_press_shift_click", 40, () -> AmmoPressGameTests::shiftClickInput);
     public static final GameTests.Function AMMO_PRESS_PROCESSING =
             TESTS.function("ammo_press_processing", 40, 8, () -> AmmoPressGameTests::controlAndProcessing);
+    public static final GameTests.Function AMMO_PARITY_CATALOG =
+            TESTS.function("ammo_parity_catalog", 20, () -> AmmoParityGameTests::enumCatalog);
+    public static final GameTests.Function AMMO_PARITY_CONFIGURATION =
+            TESTS.function("ammo_parity_configuration", 20, () -> AmmoParityGameTests::configuration);
+    public static final GameTests.Function AMMO_PARITY_EXTINGUISHER =
+            TESTS.function("ammo_parity_extinguisher", 40, () -> AmmoParityGameTests::extinguisherImpacts);
 
     // --- FEnSU ---
     public static final GameTests.Function FENSU_NUMERIC =
@@ -707,6 +724,14 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_reload_keeps_type", 300, () -> GunGameTests::gunReloadKeepsType);
     public static final GameTests.Function GUN_FIRE =
             TESTS.function("gun_fire", 200, () -> GunGameTests::gunFire);
+    public static final GameTests.Function GUN_FIRING_ROUTES =
+            TESTS.function("gun_firing_routes", 20, () -> GunGameTests::gunFiringRoutes);
+    public static final GameTests.Function GUN_DEBUG_SECONDARY_FIRE =
+            TESTS.function("gun_debug_secondary_fire", 200, () -> GunGameTests::gunDebugSecondaryFire);
+    public static final GameTests.Function GUN_MINIGUN_FIRING_ROUTES =
+            TESTS.function("gun_minigun_firing_routes", 300, () -> GunGameTests::minigunFiringRoutes);
+    public static final GameTests.Function GUN_LAG_FIRING_ROUTE =
+            TESTS.function("gun_lag_firing_route", 200, () -> GunGameTests::gunLagFiringRoute);
     public static final GameTests.Function GUN_DRY_FIRE =
             TESTS.function("gun_dry_fire", 100, () -> GunGameTests::gunDryFire);
     public static final GameTests.Function GUN_AMMO_STATS =
@@ -747,8 +772,44 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_animation_math", 20, () -> GunGameTests::gunAnimationMath);
     public static final GameTests.Function GUN_FOV_MATH =
             TESTS.function("gun_fov_math", 20, () -> GunGameTests::gunFovMath);
+    public static final GameTests.Function GUN_PROJECTILE_ENTITY_REGISTRATIONS =
+            TESTS.function("gun_projectile_entity_registrations", 20,
+                    () -> GunProjectileEntityGameTests::projectileEntityRegistrations);
+    public static final GameTests.Function GUN_PROJECTILE_CHUNK_LIFECYCLE =
+            TESTS.function("gun_projectile_chunk_lifecycle", 40,
+                    () -> GunProjectileEntityGameTests::chunkloadingBulletClaimLifecycle);
+    public static final GameTests.Function GUN_PROJECTILE_BEAM_STOP =
+            TESTS.function("gun_projectile_beam_stop", 40,
+                    () -> GunProjectileEntityGameTests::beamStopsAtNearestBlock);
+    public static final GameTests.Function GUN_PROJECTILE_BEAM_CLIENT_STATE =
+            TESTS.function("gun_projectile_beam_client_state", 20,
+                    () -> GunProjectileEntityGameTests::beamPayloadAppliesClientState);
+    public static final GameTests.Function GUN_PROJECTILE_ROTATION_INTERPOLATION =
+            TESTS.function("gun_projectile_rotation_interpolation", 20,
+                    () -> GunProjectileEntityGameTests::bulletRotationInterpolatesDisplacement);
+    public static final GameTests.Function GUN_PROJECTILE_CHEMICAL_STYLE =
+            TESTS.function("gun_projectile_chemical_style", 20,
+                    () -> GunProjectileEntityGameTests::chemicalFluidStyleAndLifetime);
+    public static final GameTests.Function B92_REGISTRY =
+            TESTS.function("b92_registry", 20, () -> B92GameTests::registry);
+    public static final GameTests.Function B92_FIRES_BEAMS =
+            TESTS.function("b92_fires_beams", 40, () -> B92GameTests::firesBeams);
+    public static final GameTests.Function B92_CELL_DRAWS_CHARGE =
+            TESTS.function("b92_cell_draws_charge", 40, () -> B92GameTests::cellDrawsCharge);
     public static final GameTests.Function GUN_CREATIVE_QUALITY_VISIBILITY =
             TESTS.function("gun_creative_quality_visibility", 20, () -> GunGameTests::gunCreativeQualityVisibility);
+    public static final GameTests.Function GUN_OBTAINMENT_AMMO_PRESS_CATALOGUE =
+            TESTS.function("gun_obtainment_ammo_press_catalogue", 40,
+                    () -> GunObtainmentDataAuditGameTests::ammoPressCatalogue);
+    public static final GameTests.Function GUN_OBTAINMENT_REGISTRY_NAMES =
+            TESTS.function("gun_obtainment_registry_names", 40,
+                    () -> GunObtainmentDataAuditGameTests::gunRegistryNames);
+    public static final GameTests.Function GUN_OBTAINMENT_CATALOGUE_REGISTRATION =
+            TESTS.function("gun_obtainment_catalogue_registration", 40,
+                    () -> GunObtainmentDataAuditGameTests::catalogueRegistration);
+    public static final GameTests.Function GUN_OBTAINMENT_ANVIL_AMMO_GATEWAY =
+            TESTS.function("gun_obtainment_anvil_ammo_gateway", 40,
+                    () -> GunObtainmentDataAuditGameTests::anvilAmmoGateway);
     public static final GameTests.Function BULLET_DAMAGES_MOB =
             TESTS.function("bullet_damages_mob", 100, () -> GunGameTests::bulletDamagesMob);
     public static final GameTests.Function BULLET_ARMOR_PIERCING =
@@ -805,6 +866,40 @@ public final class HbmGameTestFunctions {
             TESTS.function("block_family_registry", 40, () -> BlockFamilyGameTests::registryAndTags);
     public static final GameTests.Function BLOCK_FAMILY_BEHAVIOUR =
             TESTS.function("block_family_behaviour", 40, () -> BlockFamilyGameTests::familyBehaviour);
+
+    // --- rotation (implementations live in RotationGameTests) ---
+    public static final GameTests.Function ROTATION_DIRECTIONAL_BLOCKS =
+            TESTS.function("rotation_directional_blocks", 40, () -> RotationGameTests::everyDirectionalBlockStatesItsRotation);
+
+    // --- tickers declared at registration (implementations live in TickerGameTests) ---
+    public static final GameTests.Function TICKER_BLOCKS_ANSWER =
+            TESTS.function("ticker_blocks_answer", 40, () -> TickerGameTests::everyTickingBlockAnswersWithItsTicker);
+    public static final GameTests.Function TICKER_DECLARATIONS_USED =
+            TESTS.function("ticker_declarations_used", 40, () -> TickerGameTests::everyDeclaredTickerBelongsToABlock);
+
+    // --- code-declared block models (implementations live in DejsonGameTests) ---
+    public static final GameTests.Function DEJSON_STATE_COVERAGE =
+            TESTS.function("dejson_state_coverage", 40, () -> DejsonGameTests::coversEveryBlockState);
+    public static final GameTests.Function DEJSON_BLOCKSTATE_PARITY =
+            TESTS.function("dejson_blockstate_parity", 40, () -> DejsonGameTests::matchesShippedBlockStates);
+    public static final GameTests.Function DEJSON_MODEL_PARITY =
+            TESTS.function("dejson_model_parity", 40, () -> DejsonGameTests::matchesShippedModels);
+    public static final GameTests.Function DEJSON_ITEM_PARITY =
+            TESTS.function("dejson_item_parity", 40, () -> DejsonGameTests::matchesShippedItems);
+    public static final GameTests.Function DEJSON_DATA_PARITY =
+            TESTS.function("dejson_data_parity", 40, () -> DejsonGameTests::matchesShippedData);
+    public static final GameTests.Function DEJSON_AUTOGEN_SPRITES =
+            TESTS.function("dejson_autogen_sprites", 40, () -> DejsonGameTests::everyAutogenSpriteIsDrawn);
+
+    // --- code-declared material tags (implementations live in MaterialTagGameTests) ---
+    public static final GameTests.Function MATERIAL_TAG_COMPLETENESS =
+            TESTS.function("material_tag_completeness", 40, () -> MaterialTagGameTests::everyShapeItemIsTagged);
+    public static final GameTests.Function MATERIAL_TAGS_LOADED =
+            TESTS.function("material_tags_loaded", 40, () -> MaterialTagGameTests::declaredTagsAreLoaded);
+
+    // --- code-declared damage types (implementations live in DamageTypeGameTests) ---
+    public static final GameTests.Function DAMAGE_TYPES_KEYED =
+            TESTS.function("damage_types_keyed", 40, () -> DamageTypeGameTests::everyDamageTypeIsKeyedAndTagged);
 
     // --- chunk loading + missiles (implementations live in MissileGameTests) ---
     public static final GameTests.Function CHUNK_REFCOUNTING =
@@ -1350,7 +1445,7 @@ public final class HbmGameTestFunctions {
 
     private static TileEntityMachinePUREX placePurex(GameTestHelper helper, net.minecraft.core.BlockPos pos) {
         helper.setBlock(pos, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState());
-        helper.setBlock(pos, ModMachineBlocks.machine_purex.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, ModMachineBlocks.machine_purex.get().defaultBlockState());
         return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityMachinePUREX.class);
     }
 
@@ -1367,7 +1462,7 @@ public final class HbmGameTestFunctions {
 
     private static void zirnoxGoldenTick(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        helper.setBlock(pos, ModMachineBlocks.machine_zirnox.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, ModMachineBlocks.machine_zirnox.get().defaultBlockState());
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityReactorZirnox.class);
         reactor.heat = 50_000;
         reactor.isOn = true;
@@ -1495,23 +1590,31 @@ public final class HbmGameTestFunctions {
      */
     private static void multiblockInteractionRange(GameTestHelper helper) {
         // Every multiblock must be usable from any cell it occupies, plus a player's reach.
-        record Case(String name, BlockDummyable block) {}
+        // Mixed while the migration runs: a folded core answers its own range, a dummyable the old one.
+        record Case(String name, double rangeSq, int[] dimensions) {}
         var cases = new Case[]{
-                new Case("fusion_torus", ModMachineBlocks.fusion_torus.get()),
-                new Case("watz", ModMachineBlocks.watz.get()),
-                new Case("coker", ModMachineBlocks.machine_coker.get()),
-                new Case("gas flare", ModMachineBlocks.machine_flare.get()),
-                new Case("oil well", ModMachineBlocks.machine_well.get()),
-                new Case("fracking tower", ModMachineBlocks.machine_fracking_tower.get()),
-                new Case("assembly machine", ModMachineBlocks.machine_assembly_machine.get()),
+                new Case("fusion_torus", ModMachineBlocks.fusion_torus.get().getInteractionRangeSq(),
+                        ModMachineBlocks.fusion_torus.get().getDimensions()),
+                new Case("watz", ModMachineBlocks.watz.get().getInteractionRangeSq(),
+                        ModMachineBlocks.watz.get().getDimensions()),
+                new Case("coker", ModMachineBlocks.machine_coker.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_coker.get().getDimensions()),
+                new Case("gas flare", ModMachineBlocks.machine_flare.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_flare.get().getDimensions()),
+                new Case("oil well", ModMachineBlocks.machine_well.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_well.get().getDimensions()),
+                new Case("fracking tower", ModMachineBlocks.machine_fracking_tower.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_fracking_tower.get().getDimensions()),
+                new Case("assembly machine", ModMachineBlocks.machine_assembly_machine.get().getInteractionRangeSq(),
+                        ModMachineBlocks.machine_assembly_machine.get().getDimensions()),
         };
         for (Case c : cases) {
-            int[] dim = c.block().getDimensions();
+            int[] dim = c.dimensions();
             double y = Math.max(dim[0], dim[1]);
             double z = Math.max(dim[2], dim[3]);
             double x = Math.max(dim[4], dim[5]);
             double corner = Math.sqrt(x * x + y * y + z * z);
-            double range = Math.sqrt(c.block().getInteractionRangeSq());
+            double range = Math.sqrt(c.rangeSq());
             helper.assertTrue(range >= corner + 4D,
                     c.name() + " range " + Math.round(range) + " must clear its furthest cell ("
                             + Math.round(corner) + ") plus reach");
@@ -1525,39 +1628,36 @@ public final class HbmGameTestFunctions {
         // And the live predicate must agree, at the torus's edge and at the top of a tall machine.
         var core = new net.minecraft.core.BlockPos(8, 1, 8);
         var torus = ModMachineBlocks.fusion_torus.get();
-        helper.setBlock(core, torus.defaultBlockState().setValue(BlockDummyable.META, 12));
-        torus.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, torus, core);
 
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var absCore = helper.absolutePos(core);
         player.setPos(absCore.getX() + 8.5D, absCore.getY(), absCore.getZ() + 0.5D);
-        helper.assertTrue(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absCore, player),
+        helper.assertTrue(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
                 "A player at the torus's edge must be able to use it");
 
         player.setPos(absCore.getX() + 64.5D, absCore.getY(), absCore.getZ() + 0.5D);
-        helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absCore, player),
+        helper.assertFalse(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
                 "The range must still cut off at distance");
 
-        // The fracking tower is the case a dimensions-derived radius CANNOT cover: it declares a radius
-        // of 3 and then erects a derrick 24 blocks tall. A player at the top is standing on the machine
-        // and must be able to use it, which only the cell fallback can establish.
+        // The fracking tower is the case a dimensions-derived radius cannot cover: getDimensions says
+        // three and the derrick is twenty-four tall. The reach comes off the baked footprint instead.
         var towerCore = new net.minecraft.core.BlockPos(2, 1, 2);
         var tower = ModMachineBlocks.machine_fracking_tower.get();
-        helper.setBlock(towerCore, tower.defaultBlockState().setValue(BlockDummyable.META, 12));
-        tower.formStructure(helper.getLevel(), helper.absolutePos(towerCore), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, tower, towerCore);
         var absTower = helper.absolutePos(towerCore);
 
-        helper.assertTrue(Math.sqrt(tower.getInteractionRangeSq()) < 24D,
-                "This test is only meaningful while the tower's declared radius is too small");
+        helper.assertTrue(Math.sqrt(tower.getInteractionRangeSq()) > 20D,
+                "The tower's reach must come from its baked footprint, not its declared dimensions");
 
         // Standing at the crown, 20 blocks up the derrick.
         player.setPos(absTower.getX() + 0.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
-        helper.assertTrue(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
+        helper.assertTrue(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "A player on top of the fracking tower must be able to use it");
 
         // But standing 20 blocks up in open air well to the side must not count.
         player.setPos(absTower.getX() + 40.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
-        helper.assertFalse(BlockDummyable.isWithinInteractionRange(helper.getLevel(), absTower, player),
+        helper.assertFalse(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "Being high up near nothing must not grant access");
         helper.succeed();
     }
@@ -1639,8 +1739,7 @@ public final class HbmGameTestFunctions {
     private static void poweredCondenserConversion(GameTestHelper helper) {
         com.hbm.inventory.fluid.Fluids.init();
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState()
-                .setValue(com.hbm.blocks.BlockDummyable.META, 12);
+        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
         helper.setBlock(pos, state);
         var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
@@ -1662,8 +1761,7 @@ public final class HbmGameTestFunctions {
     /** The six anchored fluid/power positions are the legacy powered-condenser ports. */
     private static void poweredCondenserPorts(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
-        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState()
-                .setValue(com.hbm.blocks.BlockDummyable.META, 12);
+        var state = com.hbm.blocks.machine.ModMachineBlocks.machine_condenser_powered.get().defaultBlockState();
         helper.setBlock(pos, state);
         var condenser = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityCondenserPowered.class);
@@ -1697,7 +1795,7 @@ public final class HbmGameTestFunctions {
     private static void combinationTick(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.machine_furnace_combination.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
         furnace.inventory.setStackInSlot(0, new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.COAL));
@@ -1716,7 +1814,7 @@ public final class HbmGameTestFunctions {
     private static void combinationMenu(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.machine_furnace_combination.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var furnace = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.TileEntityFurnaceCombination.class);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
@@ -1767,8 +1865,7 @@ public final class HbmGameTestFunctions {
     private static void fusionChain(GameTestHelper helper) {
         var torusCore = new net.minecraft.core.BlockPos(9, 1, 9);
         var torus = ModMachineBlocks.fusion_torus.get();
-        helper.setBlock(torusCore, torus.defaultBlockState().setValue(BlockDummyable.META, 12));
-        torus.formStructure(helper.getLevel(), helper.absolutePos(torusCore), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, torus, torusCore);
         var torusTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, torusCore,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class);
         helper.assertTrue(torusTe != null, "Torus setup failed");
@@ -1788,8 +1885,7 @@ public final class HbmGameTestFunctions {
 
         var boilerCore = new net.minecraft.core.BlockPos(2, 1, 2);
         var boiler = ModMachineBlocks.fusion_boiler.get();
-        helper.setBlock(boilerCore, boiler.defaultBlockState().setValue(BlockDummyable.META, 12));
-        boiler.formStructure(helper.getLevel(), helper.absolutePos(boilerCore), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, boiler, boilerCore);
         var boilerTe = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, boilerCore,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionBoiler.class);
         helper.assertTrue(boilerTe != null, "Boiler setup failed");
@@ -1865,7 +1961,7 @@ public final class HbmGameTestFunctions {
 
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
         forge.plasmaModule.recipe = hde.getInternalName();
@@ -1886,7 +1982,7 @@ public final class HbmGameTestFunctions {
     private static void fusionPlasmaForgeMenu(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
@@ -1911,7 +2007,7 @@ public final class HbmGameTestFunctions {
     private static void fusionPlasmaForgeProcessing(GameTestHelper helper) {
         var pos = new net.minecraft.core.BlockPos(1, 1, 1);
         var block = ModMachineBlocks.fusion_plasma_forge.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(pos, block.defaultBlockState());
         var forge = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionPlasmaForge.class);
         var castIron = com.hbm.items.ModAutogenItems.get(
@@ -1942,8 +2038,7 @@ public final class HbmGameTestFunctions {
     private static void fusionBreeder(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(2, 1, 2);
         var block = ModMachineBlocks.fusion_breeder.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, core);
 
         var breeder = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder.class);
@@ -1968,14 +2063,14 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    private static void checkPorts(GameTestHelper helper, net.minecraft.core.BlockPos core, BlockDummyable block,
+    private static void checkPorts(GameTestHelper helper, net.minecraft.core.BlockPos core,
+                                   net.minecraft.world.level.block.Block block,
                                    java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity,
                                            java.util.List<com.hbm.lib.DirPos>> ports) {
         String name = block.getName().getString();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, (BlockMultiblockCore) block, core);
         var te = helper.getLevel().getBlockEntity(helper.absolutePos(core));
         helper.assertTrue(te != null, name + " controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
 
         var declared = ports.apply(te);
         helper.assertFalse(declared.isEmpty(), name + " declares no ports at all");
@@ -2009,12 +2104,9 @@ public final class HbmGameTestFunctions {
     private static void fusionTorusLayout(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(8, 1, 8);
         var block = ModMachineBlocks.fusion_torus.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
                 com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null, "Torus controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-
-        helper.assertBlockProperty(core, BlockDummyable.META, 12);
 
         // Every non-zero mask cell must be filled, and every zero one must not be — that hollow centre
         // is what makes it a torus rather than a cylinder.
@@ -2036,13 +2128,11 @@ public final class HbmGameTestFunctions {
         helper.assertTrue(occupied == 925, "Torus must contain exactly 925 cells, found " + occupied);
 
         // The centre-top port plus the twenty-four ring ports.
-        helper.assertBlockProperty(core.above(4), BlockDummyable.META, 7);
+        FoldedTestSupport.assertPort(helper, core, core.above(4));
         for (int dy : new int[]{0, 4}) {
             for (int off : new int[]{-2, 0, 2}) {
                 for (int[] p : new int[][]{{6, dy, off}, {-6, dy, off}, {off, dy, 6}, {off, dy, -6}}) {
-                    int meta = helper.getBlockState(core.offset(p[0], p[1], p[2])).getValue(BlockDummyable.META);
-                    helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
-                            "Torus port " + p[0] + "," + p[1] + "," + p[2] + " must be an extra dummy, was " + meta);
+                    FoldedTestSupport.assertPort(helper, core, core.offset(p[0], p[1], p[2]));
                 }
             }
         }
@@ -2071,7 +2161,8 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.fusion_torus.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Torus struct core did not become a fusion reactor");
-            helper.assertBlockProperty(seed, BlockDummyable.META, 12);
+            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
+                    net.minecraft.core.Direction.NORTH);
             helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
                     com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null,
                     "Assembled torus has no controller");
@@ -2096,12 +2187,9 @@ public final class HbmGameTestFunctions {
     private static void watzLayout(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(4, 1, 4);
         var block = ModMachineBlocks.watz.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
                 com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Watz controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-
-        helper.assertBlockProperty(core, BlockDummyable.META, 12);
         // The cross: |x| + |z| reaches 3 along the axes and 2 on the diagonals, three blocks tall.
         int occupied = 0;
         for (int dx = -3; dx <= 3; dx++) {
@@ -2117,10 +2205,7 @@ public final class HbmGameTestFunctions {
         // The nine promoted port cells.
         for (int[] p : new int[][]{{2, 0, 0}, {-2, 0, 0}, {0, 0, 2}, {0, 0, -2},
                 {2, 2, 0}, {-2, 2, 0}, {0, 2, 2}, {0, 2, -2}, {0, 2, 0}}) {
-            var cell = core.offset(p[0], p[1], p[2]);
-            int meta = helper.getBlockState(cell).getValue(BlockDummyable.META);
-            helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
-                    "Watz port cell " + p[0] + "," + p[1] + "," + p[2] + " must be an extra dummy, was meta " + meta);
+            FoldedTestSupport.assertPort(helper, core, core.offset(p[0], p[1], p[2]));
         }
 
         var watz = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core,
@@ -2145,7 +2230,8 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.watz.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Struct core did not become a Watz reactor");
-            helper.assertBlockProperty(seed, BlockDummyable.META, 12);
+            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
+                    net.minecraft.core.Direction.NORTH);
             helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
                     com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Assembled Watz has no controller");
             // The shell must have formed too, not just the core.
@@ -2173,12 +2259,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxLayout(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class) != null,
                 "ZIRNOX controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-
-        helper.assertBlockProperty(core, BlockDummyable.META, 12);
         int occupied = 0;
         for (int dx = -2; dx <= 2; dx++) {
             for (int dy = 0; dy <= 4; dy++) {
@@ -2194,11 +2277,12 @@ public final class HbmGameTestFunctions {
             }
         }
         helper.assertTrue(occupied == 83, "ZIRNOX must contain exactly 83 cells, found " + occupied);
-        helper.assertBlockProperty(core.offset(2, 1, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.offset(2, 3, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.offset(-2, 1, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.offset(-2, 3, 0), BlockDummyable.META, 7);
-        helper.assertBlockProperty(core.above(4), BlockDummyable.META, 7);
+        FoldedTestSupport.assertPort(helper, core, core.offset(2, 1, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(2, 3, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-2, 1, 0));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-2, 3, 0));
+        FoldedTestSupport.assertProxy(helper, core, core.above(4),
+                com.hbm.blocks.multiblock.BlockMultiblockCore.PASSIVE_ITEMS);
 
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         var ports = reactor.getConPos();
@@ -2222,10 +2306,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxWorldTick(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
         var rod = new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.NATURAL_URANIUM));
         reactor.inventory.setStackInSlot(0, rod);
         reactor.isOn = true;
@@ -2240,10 +2323,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxSteamOutput(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var reactorBlock = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, reactorBlock.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, reactorBlock, core);
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
-        reactorBlock.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
 
         var reactorDuctPos = core.offset(3, 1, 0);
         var tankDuctPos = core.offset(4, 1, 0);
@@ -2256,7 +2338,7 @@ public final class HbmGameTestFunctions {
 
         var tankCore = core.offset(6, 1, 1);
         helper.setBlock(tankCore, ModMachineBlocks.machine_fluidtank.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 13));
+                .setValue(BlockMultiblockCore.FACING, net.minecraft.core.Direction.SOUTH));
         var tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankCore, com.hbm.tileentity.machine.TileEntityMachineFluidTank.class);
         helper.assertTrue(tank != null, "Fluid tank controller setup failed");
         tank.mode = 1; // Buffer mode owns the network node at its physical port cells.
@@ -2279,10 +2361,9 @@ public final class HbmGameTestFunctions {
     private static void zirnoxMeltdown(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
         var block = ModMachineBlocks.machine_zirnox.get();
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        FoldedTestSupport.assemble(helper, block, core);
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         helper.assertTrue(reactor != null, "ZIRNOX controller setup failed");
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
         reactor.heat = TileEntityReactorZirnox.MAX_HEAT + 1;
         TileEntityReactorZirnox.serverTick(helper.getLevel(), helper.absolutePos(core), reactor.getBlockState(), reactor);
 
@@ -2309,7 +2390,7 @@ public final class HbmGameTestFunctions {
 
     private static void zirnoxWreckHazards(GameTestHelper helper) {
         var core = new net.minecraft.core.BlockPos(3, 1, 3);
-        helper.setBlock(core, ModMachineBlocks.zirnox_destroyed.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(core, ModMachineBlocks.zirnox_destroyed.get().defaultBlockState());
         var wreck = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, com.hbm.tileentity.machine.TileEntityZirnoxDestroyed.class);
         helper.assertTrue(wreck != null && wreck.isOnFire(), "Fresh ZIRNOX wreck must start burning");
         wreck.extinguish();

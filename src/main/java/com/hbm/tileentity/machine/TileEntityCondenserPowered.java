@@ -3,7 +3,9 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -41,7 +43,7 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
             condenser.lastSpin -= 360F;
         }
 
-        if (level.getGameTime() % 4 != 0) return;
+        if (!TickPhase.every(level, pos, 4)) return;
         ForgeDirection direction = condenser.getFacing();
         level.addParticle(net.minecraft.core.particles.ParticleTypes.CLOUD,
                 pos.getX() + 0.5D + direction.offsetX * 1.5D,
@@ -69,19 +71,13 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
     @Override
     protected void updateConnections(Level level) {
         for (DirPos connection : getConPos()) {
-            trySubscribe(input.getTankType(), level, connection);
-            trySubscribe(level, connection);
-        }
-        for (DirPos connection : getConPos()) {
             tryProvide(output, level, connection);
         }
     }
 
     public ForgeDirection getFacing() {
-        int meta = getBlockState().hasProperty(com.hbm.blocks.BlockDummyable.META)
-                ? getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                : com.hbm.blocks.BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        return ForgeDirection.getOrientation(meta);
     }
 
     @Override

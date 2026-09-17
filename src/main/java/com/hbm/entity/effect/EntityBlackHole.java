@@ -80,12 +80,10 @@ public class EntityBlackHole extends CompatEntity {
         return distance < 25_000D;
     }
 
-    //? if >=1.21.1 {
     @Override
-    public boolean ignoreExplosion(net.minecraft.world.level.Explosion explosion) {
+    protected boolean shouldIgnoreExplosion() {
         return true;
     }
-    //?}
 
     @Override
     public void tick() {

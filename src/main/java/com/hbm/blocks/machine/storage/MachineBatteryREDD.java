@@ -1,12 +1,13 @@
 package com.hbm.blocks.machine.storage;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.items.ModDataComponents;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.LivingEntity;
@@ -25,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** Current FEnSU: the separate 9x5 footprint, six-port BigInteger storage machine. */
-public final class MachineBatteryREDD extends BlockDummyable implements IEnergyConnectorBlock, WorldlyContainerHolder {
+public final class MachineBatteryREDD extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineBatteryREDD(Properties properties) {
         super(properties);
@@ -47,32 +48,10 @@ public final class MachineBatteryREDD extends BlockDummyable implements IEnergyC
     }
 
     @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection direction) {
-        super.formStructure(level, core, direction);
-        addPortCells(level, core, direction);
-    }
-
-    private void addPortCells(Level level, BlockPos core, ForgeDirection direction) {
-        ForgeDirection rotation = direction.getRotation(ForgeDirection.UP);
-        makeExtra(level, core.getX() + direction.offsetX * 2 + rotation.offsetX * 2,
-                core.getY(), core.getZ() + direction.offsetZ * 2 + rotation.offsetZ * 2);
-        makeExtra(level, core.getX() + direction.offsetX * 2 - rotation.offsetX * 2,
-                core.getY(), core.getZ() + direction.offsetZ * 2 - rotation.offsetZ * 2);
-        makeExtra(level, core.getX() - direction.offsetX * 2 + rotation.offsetX * 2,
-                core.getY(), core.getZ() - direction.offsetZ * 2 + rotation.offsetZ * 2);
-        makeExtra(level, core.getX() - direction.offsetX * 2 - rotation.offsetX * 2,
-                core.getY(), core.getZ() - direction.offsetZ * 2 - rotation.offsetZ * 2);
-        makeExtra(level, core.getX() + rotation.offsetX * 4,
-                core.getY(), core.getZ() + rotation.offsetZ * 4);
-        makeExtra(level, core.getX() - rotation.offsetX * 4,
-                core.getY(), core.getZ() - rotation.offsetZ * 4);
-    }
-
-    @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.isClientSide()) return;
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityBatteryREDD battery) {
             battery.power = ModDataComponents.batteryReddPower(stack);
             battery.muffled = ModDataComponents.batteryReddMuffled(stack);
@@ -82,46 +61,26 @@ public final class MachineBatteryREDD extends BlockDummyable implements IEnergyC
     }
 
     @Override
-    public boolean canConnect(BlockGetter level, BlockPos pos, ForgeDirection direction) {
-        return findCoreTE(level, pos) instanceof TileEntityBatteryREDD battery
-                && IEnergyConnectorBlock.isPort(battery.getConPos(), pos, direction);
-    }
-
-    @Override
     public boolean hasAnalogOutputSignal(BlockState state) {
         return true;
     }
 
     @Override
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-        return findCoreTE(level, pos) instanceof TileEntityBatteryREDD battery
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityBatteryREDD battery
                 ? battery.getComparatorPower() : 0;
     }
 
     @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityBatteryREDD battery ? battery : null;
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                            BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.BATTERY_REDD.get(), TileEntityBatteryREDD::clientTick)
-                : createTickerHelper(type, ModBlockEntities.BATTERY_REDD.get(), TileEntityBatteryREDD::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         BlockPos pos = BlockPos.containing(params.getParameter(LootContextParams.ORIGIN));
-        BlockPos core = findCore(params.getLevel(), pos);
+        BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), pos);
         ItemStack stack = new ItemStack(asItem());
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntityBatteryREDD battery) {
             ModDataComponents.setBatteryReddPower(stack, battery.power);
@@ -140,11 +99,36 @@ public final class MachineBatteryREDD extends BlockDummyable implements IEnergyC
 
     private ItemStack cloneStack(BlockGetter level, BlockPos pos) {
         ItemStack stack = new ItemStack(asItem());
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityBatteryREDD battery) {
             ModDataComponents.setBatteryReddPower(stack, battery.power);
             ModDataComponents.setBatteryReddMuffled(stack, battery.muffled);
         }
         return stack;
+    }
+
+    /** Four cable anchors at the corners of the deck, and one at the middle of each long flank. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction rot = facing.getClockWise();
+        visitor.cell(core.relative(facing, 2).relative(rot, 2), MASK_SOUTH);
+        visitor.cell(core.relative(facing, 2).relative(rot, -2), MASK_SOUTH);
+        visitor.cell(core.relative(facing, -2).relative(rot, 2), MASK_NORTH);
+        visitor.cell(core.relative(facing, -2).relative(rot, -2), MASK_NORTH);
+        visitor.cell(core.relative(rot, 4), MASK_WEST);
+        visitor.cell(core.relative(rot, -4), MASK_EAST);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_ITEMS;
+        visitor.passiveCell(core.relative(facing, 2).relative(rot, 2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, 2).relative(rot, -2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -2).relative(rot, 2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(facing, -2).relative(rot, -2), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot, 4), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot, -4), MASK_ALL, domains);
     }
 }

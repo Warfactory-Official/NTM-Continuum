@@ -82,6 +82,14 @@ public final class DamageResistanceHandler {
                 ModArmorItems.security_legs.get(), ModArmorItems.security_boots.get(),
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 5F, 0.5F)
                         .addCategory(CATEGORY_EXPLOSION, 2F, 0.25F));
+        // 1.12.2 DamageResistanceHandler.java:239-244
+        registerSet(ModArmorItems.taurun_helmet.get(), ModArmorItems.taurun_plate.get(),
+                ModArmorItems.taurun_legs.get(), ModArmorItems.taurun_boots.get(),
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 2F, 0.15F)
+                        .addCategory(CATEGORY_FIRE, 0F, 0.25F)
+                        .addCategory(CATEGORY_EXPLOSION, 0F, 0.25F)
+                        .addExact("fall", 4F, 0.5F)
+                        .setOther(2F, 0.1F));
         registerSet(ModArmorItems.robes_helmet.get(), ModArmorItems.robes_plate.get(),
                 ModArmorItems.robes_legs.get(), ModArmorItems.robes_boots.get(), new ResistanceStats());
         registerSet(ModArmorItems.asbestos_helmet.get(), ModArmorItems.asbestos_plate.get(),
@@ -107,6 +115,18 @@ public final class DamageResistanceHandler {
                 new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 1000F, 1F)
                         .addCategory(CATEGORY_EXPLOSION, 100F, 0.99F)
                         .addCategory(CATEGORY_FIRE, 0F, 1F).setOther(1000F, 1F));
+        registerSet(ModArmorItems.rpa_helmet.get(), ModArmorItems.rpa_plate.get(),
+                ModArmorItems.rpa_legs.get(), ModArmorItems.rpa_boots.get(),
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
+                        .addCategory(CATEGORY_FIRE, 10F, 0.9F).addCategory(CATEGORY_EXPLOSION, 15F, 0.25F)
+                        .addCategory(CATEGORY_ENERGY, 25F, 0.75F).addExact("fall", 0F, 1F)
+                        .setOther(15F, 0.3F));
+        registerSet(ModArmorItems.ncrpa_helmet.get(), ModArmorItems.ncrpa_plate.get(),
+                ModArmorItems.ncrpa_legs.get(), ModArmorItems.ncrpa_boots.get(),
+                new ResistanceStats().addCategory(CATEGORY_PHYSICAL, 25F, 0.65F)
+                        .addCategory(CATEGORY_FIRE, 10F, 0.9F).addCategory(CATEGORY_EXPLOSION, 15F, 0.25F)
+                        .addCategory(CATEGORY_ENERGY, 10F, 0.5F).addExact("fall", 0F, 1F)
+                        .setOther(15F, 0.25F));
 
         // The four legacy hazmat sets have intentionally empty resistance profiles; registering them
         // keeps full-set identity available to the tooltip and to future profile overrides.

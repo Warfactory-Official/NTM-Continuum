@@ -10,7 +10,6 @@ import com.hbm.packet.AnvilCraftPayload;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.packet.HbmPackets;
 import com.hbm.handler.radiation.RadiationSystemNT;
-import com.hbm.uninos.UniNodespace;
 import dev.golem.core.net.GolemNetwork;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -66,6 +65,7 @@ public final class ForgeInit {
         com.hbm.gametest.MaterialCompletionGameTests.init();
         com.hbm.gametest.BedrockOreGameTests.init();
         com.hbm.gametest.ExplosiveContentGameTests.init();
+        com.hbm.gametest.NtmEntityPortGameTests.init();
         com.hbm.gametest.Gen3SednaGameTests.init();
         com.hbm.gametest.RadioGameTests.init();
         com.hbm.gametest.CounterControllerGameTests.init();
@@ -75,6 +75,19 @@ public final class ForgeInit {
         com.hbm.gametest.RadioProviderGameTests.init();
         com.hbm.gametest.RtgGameTests.init();
         com.hbm.gametest.TurretGameTests.init();
+        com.hbm.gametest.PowerNetworkGameTests.init();
+        com.hbm.gametest.NetworkReachGameTests.init();
+        com.hbm.gametest.FluidNetworkGameTests.init();
+        com.hbm.gametest.ForeignEnergyGameTests.init();
+        com.hbm.gametest.FoldedGeometryGameTests.init();
+        com.hbm.gametest.NetworkSyncGameTests.init();
+        com.hbm.gametest.ChunkPromotionGameTests.init();
+        com.hbm.gametest.TickPhaseGameTests.init();
+        com.hbm.gametest.MultiblockMenuGameTests.init();
+        com.hbm.gametest.RadiationPersistenceGameTests.init();
+        com.hbm.gametest.FoldedPortParityGameTests.init();
+        com.hbm.gametest.WeaponTableGameTests.init();
+        com.hbm.gametest.GunSupportGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -110,6 +123,8 @@ public final class ForgeInit {
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ExplosiveContentGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.NtmEntityPortGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.Gen3SednaGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.RadioGameTests.TESTS));
@@ -126,6 +141,32 @@ public final class ForgeInit {
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.TurretGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.PowerNetworkGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.NetworkReachGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FluidNetworkGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ForeignEnergyGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FoldedGeometryGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.NetworkSyncGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ChunkPromotionGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.TickPhaseGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.MultiblockMenuGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RadiationPersistenceGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FoldedPortParityGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.WeaponTableGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.GunSupportGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FlywheelGameTests.TESTS));
 
         HbmPackets.declare();
@@ -140,14 +181,12 @@ public final class ForgeInit {
                 com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer());
             }
             if (event.phase == TickEvent.Phase.END) {
-                UniNodespace.updateNodespace(event.getServer());
                 RadiationSystemNT.tickServer(event.getServer());
             }
         });
         MinecraftForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
-                UniNodespace.clearLevel(level);
-                RadiationSystemNT.clearWorld(level);
+                RadiationSystemNT.closeWorld(level);
                 com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
             }
         });

@@ -1,17 +1,21 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.api.energymk2.CableData;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.energymk2.PowerGraph;
+import com.hbm.api.energymk2.PowerGraphProvider;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.api.energymk2.Nodespace;
+import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
@@ -53,7 +57,6 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     public ConnectionPriority priority = ConnectionPriority.LOW;
 
     private boolean indirectlyPowered = false;
-    private Nodespace.PowerNode node;
 
     private long lastPowerForDelta = 0L;
     private int deltaTimer = 0;
@@ -89,34 +92,11 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         battery.indirectlyPowered = level.hasNeighborSignal(pos);
         int mode = battery.getRelevantMode();
 
-        if (mode == MODE_BUFFER) {
-            // Acts like a cable: owns a node and feeds power into its own network (provider + receiver).
-            if (battery.node == null || battery.node.expired) {
-                battery.node = UniNodespace.getNode(level, pos, Nodespace.THE_POWER_PROVIDER);
-                if (battery.node == null || battery.node.expired) {
-                    battery.node = battery.createNode();
-                    UniNodespace.createNode(level, battery.node);
-                }
-            }
-            battery.tryProvide(level, pos, ForgeDirection.UNKNOWN);
-            if (battery.node != null && battery.node.hasValidNet()) battery.node.net.addReceiver(battery);
-        } else {
-            if (battery.node != null) {
-                UniNodespace.destroyNode(level, pos, Nodespace.THE_POWER_PROVIDER);
-                battery.node = null;
-            }
+        if (level instanceof ServerLevel server) battery.updateBufferCell(server, state, mode);
+
+        if (mode == MODE_OUTPUT) {
             for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                BlockPos np = pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
-                Nodespace.PowerNode dirNode = UniNodespace.getNode(level, np, Nodespace.THE_POWER_PROVIDER);
-
-                if (mode == MODE_OUTPUT) battery.tryProvide(level, np, dir);
-                else if (dirNode != null && dirNode.hasValidNet()) dirNode.net.removeProvider(battery);
-
-                if (mode == MODE_INPUT) {
-                    if (dirNode != null && dirNode.hasValidNet()) dirNode.net.addReceiver(battery);
-                } else if (dirNode != null && dirNode.hasValidNet()) {
-                    dirNode.net.removeReceiver(battery);
-                }
+                battery.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
             }
         }
 
@@ -130,15 +110,33 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
         battery.networkPackNT(); // broadcast power/mode/priority to tracking clients (deduped when unchanged)
     }
 
-    @Override
-    public void setRemoved() {
-        super.setRemoved();
-        if (level != null && !level.isClientSide() && node != null) {
-            UniNodespace.destroyNode(level, getBlockPos(), Nodespace.THE_POWER_PROVIDER);
+    /**
+     * 1.7: "in buffer mode, becomes a cable block and provides power to itself". The cell is what makes
+     * that literal — two cable runs meeting at the battery are one network, so a generator on either
+     * side reaches a machine on the other in a single round instead of every watt crossing through
+     * storage at a twentieth of the buffer a tick. Its own two roles reach that network through the
+     * pseudo-face.
+     */
+    private void updateBufferCell(ServerLevel level, BlockState state, int mode) {
+        LevelNodeGraph<CableData> graph = PowerGraph.get(level);
+        long key = getBlockPos().asLong();
+        if (mode != MODE_BUFFER) {
+            if (graph.containsCell(key)) graph.removeNode(key);
+            return;
         }
+        if (!graph.containsCell(key)) {
+            graph.addNode(key, PowerGraphProvider.INSTANCE.createData(state), MachineCaps.FACE_MASK_ALL);
+        }
+        graph.setSelfEndpoint(key, true);
     }
 
     // --- IEnergyHandler / receiver / provider (isLoaded() inherited from the tower) ---
+
+    @Override
+    public void setRemoved() {
+        super.setRemoved();
+        PowerGraph.dropCells(this, getBlockPos());
+    }
 
     @Override
     public long getPower() {
@@ -175,6 +173,11 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     public long getProviderSpeed() {
         int mode = getRelevantMode();
         return (mode == MODE_OUTPUT || mode == MODE_BUFFER) ? MAX_POWER / 20L : 0L;
+    }
+
+    @Override
+    public boolean bufferedEndpoint() {
+        return getRelevantMode() == MODE_BUFFER;
     }
 
     // --- per-tick sync ---

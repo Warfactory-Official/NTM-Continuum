@@ -1,14 +1,15 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineSawmill;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.SawmillRecipes;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.machine.TileEntitySawmill;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.ItemTags;
@@ -41,11 +42,12 @@ public final class SawmillGameTests {
     public static void layout(GameTestHelper helper) {
         var block = ModMachineBlocks.machine_sawmill.get();
         BlockPos core = new BlockPos(2, 1, 2);
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
-        block.formStructure(helper.getLevel(), helper.absolutePos(core), com.hbm.lib.ForgeDirection.NORTH);
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core)).getValue(BlockDummyable.META) >= 12,
+        helper.setBlock(core, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
+        helper.assertTrue(MultiblockSurface.foldedCore(helper.getLevel().getBlockState(helper.absolutePos(core))) != null,
                 "sawmill core was not formed");
-        helper.assertTrue(block.findCore(helper.getLevel(), helper.absolutePos(core.offset(-1, 0, 0))).equals(helper.absolutePos(core)),
+        helper.assertTrue(helper.absolutePos(core).equals(MultiblockSurface.coreOfAny(helper.getLevel(),
+                        helper.absolutePos(core.offset(-1, 0, 0)))),
                 "sawmill dummy did not resolve to the core");
         helper.succeed();
     }
@@ -133,7 +135,7 @@ public final class SawmillGameTests {
     private static TileEntitySawmill place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachineSawmill block = ModMachineBlocks.machine_sawmill.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
+        helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntitySawmill,
                 "sawmill core block entity was not created");
         return (TileEntitySawmill) helper.getLevel().getBlockEntity(pos);

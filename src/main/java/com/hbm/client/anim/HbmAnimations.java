@@ -1,7 +1,10 @@
 package com.hbm.client.anim;
 
+import com.hbm.util.GameTime;
+import dev.golem.core.render.anim.BusAnimation;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
@@ -20,7 +23,8 @@ import net.minecraft.world.item.ItemStack;
 public final class HbmAnimations {
 
     /** [hotbar slot][rail]. Eight rails so a gun's several configs can animate independently. */
-    private static final Animation[][] HOTBAR = new Animation[9][8];
+    private static final Animation[][][] HANDS = new Animation[2][9][8];
+    private static InteractionHand buildingHand = InteractionHand.MAIN_HAND;
 
     /** What a bus looks like when nothing is playing: no movement, no rotation, unit scale, XYZ order. */
     private static final double[] IDENTITY = {
@@ -51,26 +55,34 @@ public final class HbmAnimations {
 
     /** Starts {@code animation} on the held slot's given rail, replacing whatever was playing there. */
     public static void start(Item item, BusAnimation animation, int rail) {
+        start(item, animation, InteractionHand.MAIN_HAND, rail);
+    }
+
+    public static void start(Item item, BusAnimation animation, InteractionHand hand, int rail) {
         Player player = Minecraft.getInstance().player;
         if (player == null || animation == null) return;
         int slot = slotOf(player);
-        if (rail < 0 || rail >= HOTBAR[slot].length) return;
-        HOTBAR[slot][rail] = new Animation(item, System.currentTimeMillis(), animation, false);
+        if (rail < 0 || rail >= HANDS[hand.ordinal()][slot].length) return;
+        HANDS[hand.ordinal()][slot][rail] = new Animation(item, GameTime.millis(), animation, false);
     }
 
     /** The animation currently applying to the held item on {@code rail}, or null. */
     public static Animation getRelevantAnim(int rail) {
+        return getRelevantAnim(InteractionHand.MAIN_HAND, rail);
+    }
+
+    public static Animation getRelevantAnim(InteractionHand hand, int rail) {
         Minecraft minecraft = Minecraft.getInstance();
         Player player = minecraft.player;
         if (player == null) return null;
 
-        ItemStack stack = player.getMainHandItem();
+        ItemStack stack = player.getItemInHand(hand);
         if (stack.isEmpty()) return null;
 
         int slot = slotOf(player);
-        if (rail < 0 || rail >= HOTBAR[slot].length) return null;
+        if (rail < 0 || rail >= HANDS[hand.ordinal()][slot].length) return null;
 
-        Animation animation = HOTBAR[slot][rail];
+        Animation animation = HANDS[hand.ordinal()][slot][rail];
         if (animation == null) return null;
         // The slot's animation belongs to a different item — the player swapped. Do not replay it.
         return animation.key == stack.getItem() ? animation : null;
@@ -87,18 +99,33 @@ public final class HbmAnimations {
      * current animation does not mention simply stays at rest.
      */
     public static double[] getRelevantTransformation(String bus, int rail) {
-        Animation animation = getRelevantAnim(rail);
+        return getRelevantTransformation(bus, InteractionHand.MAIN_HAND, rail);
+    }
+
+    public static double[] getRelevantTransformation(String bus, InteractionHand hand, int rail) {
+        Animation animation = getRelevantAnim(hand, rail);
         if (animation != null) {
-            int millis = (int) (System.currentTimeMillis() - animation.startMillis);
+            int millis = (int) (GameTime.now() - animation.startMillis);
             double[] transform = animation.animation.getTimedTransformation(bus, millis);
             if (transform != null) return transform;
         }
         return IDENTITY.clone();
     }
 
+    /** Selects the hand used by animation-table helpers while a packet is being resolved. */
+    public static void setBuildingHand(InteractionHand hand) {
+        buildingHand = hand;
+    }
+
+    public static double[] getRelevantTransformationForBuild(String bus, int rail) {
+        return getRelevantTransformation(bus, buildingHand, rail);
+    }
+
     /** Clears every rail — on world change, so a stale animation cannot leak into a new session. */
     public static void clear() {
-        for (Animation[] rails : HOTBAR) java.util.Arrays.fill(rails, null);
+        for (Animation[][] slots : HANDS) {
+            for (Animation[] rails : slots) java.util.Arrays.fill(rails, null);
+        }
     }
 
     /** The player's selected hotbar slot, folded into range for non-vanilla hotbar sizes. */

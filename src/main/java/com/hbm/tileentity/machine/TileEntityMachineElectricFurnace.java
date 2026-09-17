@@ -74,13 +74,11 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectricFurnace te) {
-        if (level.getGameTime() % 40 == 0) com.hbm.Constants.LOG.info("[FURNACE-VERIFY] ticks @{}", pos);
         if (!(level instanceof ServerLevel serverLevel)) return;
 
         if (te.cooldown > 0) te.cooldown--;
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
-        if (level.getGameTime() % 40 == 0) for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
 
         te.consumption = 50;
         te.maxProgress = 100;

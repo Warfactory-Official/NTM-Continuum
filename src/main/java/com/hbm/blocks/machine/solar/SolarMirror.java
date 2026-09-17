@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine.solar;
 
 import com.hbm.tileentity.machine.solar.ModSolarBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.solar.TileEntitySolarMirror;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -13,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Non-opaque solar mirror whose base and aimed panel are drawn by its block-entity renderer. */
-public class SolarMirror extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class SolarMirror extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public SolarMirror(Properties properties) {
         super(properties);
@@ -30,18 +31,4 @@ public class SolarMirror extends dev.golem.core.world.CompatBlock implements Ent
         return new TileEntitySolarMirror(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModSolarBlockEntities.SOLAR_MIRROR.get(), TileEntitySolarMirror::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

@@ -1,15 +1,15 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.Poses;
-import dev.golem.core.Ids;
-import dev.golem.core.render.Vertexes;
 import com.hbm.Constants;
 import com.hbm.tileentity.machine.TileEntityZirnoxDestroyed;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.Ids;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.Poses;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.Vertexes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
@@ -38,8 +38,7 @@ public class ZirnoxDestroyedRenderer extends MachineObjRenderer<TileEntityZirnox
     }
 
     @Override
-    public void submit(MachineRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        super.submit(state, poseStack, collector, camera);
+    protected void submitUndeclared(MachineRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
         if (!state.burningWreck) return;
 
         SubmitSink flameCollector = collector.order(1);

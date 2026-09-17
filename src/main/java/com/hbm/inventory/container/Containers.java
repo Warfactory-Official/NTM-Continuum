@@ -1,6 +1,6 @@
 package com.hbm.inventory.container;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.level.block.Block;
@@ -16,8 +16,7 @@ import net.minecraft.world.level.block.Block;
  * pressed against the machine.
  *
  * <p>{@link #stillValidMultiblock} fixes that by widening the radius to cover the structure, using the
- * range the block itself declares ({@link BlockDummyable#getInteractionRangeSq()}). Non-multiblock
- * blocks fall through to vanilla's behaviour unchanged.
+ * range the block itself declares. Non-multiblock blocks fall through to vanilla's behaviour unchanged.
  */
 public final class Containers {
 
@@ -25,13 +24,22 @@ public final class Containers {
 
     /**
      * Whether {@code player} may keep a menu bound to {@code access} open, where {@code block} is the
-     * machine that owns it. Identical to vanilla's check for an ordinary block; for a
-     * {@link BlockDummyable} the range covers the whole footprint rather than just the core cell.
+     * machine that owns it. Identical to vanilla's check for an ordinary block; for a multiblock the
+     * range covers the whole footprint rather than just the core cell.
      */
+    /** Whether {@code player} is in range of the multiblock cored at {@code pos}. */
+    public static boolean inRangeOfMultiblock(net.minecraft.world.level.BlockGetter level,
+                                              net.minecraft.core.BlockPos pos, Player player) {
+        return level.getBlockState(pos).getBlock() instanceof BlockMultiblockCore
+                && BlockMultiblockCore.isWithinInteractionRange(level, pos, player);
+    }
+
     public static boolean stillValidMultiblock(ContainerLevelAccess access, Player player, Block block) {
         return access.evaluate((level, pos) -> {
             if (!level.getBlockState(pos).is(block)) return false;
-            if (block instanceof BlockDummyable) return BlockDummyable.isWithinInteractionRange(level, pos, player);
+            if (block instanceof BlockMultiblockCore) {
+                return inRangeOfMultiblock(level, pos, player);
+            }
             // Not a multiblock: vanilla's plain 8-block radius, spelled the era-neutral way
             // (26.1's isWithinBlockInteractionRange has no counterpart below it).
             return player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D) <= 64.0D;

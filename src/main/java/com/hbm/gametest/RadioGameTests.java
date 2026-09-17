@@ -291,10 +291,9 @@ public final class RadioGameTests {
     private static void assertMachineDoesNotBlockLight(net.minecraft.gametest.framework.GameTestHelper helper,
                                                        Level level, Block block, String name, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
-        for (int meta = 0; meta < 16; meta++) {
-            BlockState state = block.defaultBlockState().setValue(com.hbm.blocks.BlockDummyable.META, meta);
+        for (BlockState state : block.getStateDefinition().getPossibleStates()) {
             helper.assertTrue(!state.canOcclude() && !Compat.isSolidRender(state, level, absolute),
-                    name + " meta=" + meta + " became an opaque light-blocking state");
+                    name + " " + state + " became an opaque light-blocking state");
         }
     }
 

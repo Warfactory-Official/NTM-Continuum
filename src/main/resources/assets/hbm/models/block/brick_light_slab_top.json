@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/slab_top",
-  "textures": {
-    "bottom": "hbm:blocks/brick_light",
-    "top": "hbm:blocks/brick_light",
-    "side": "hbm:blocks/brick_light"
-  }
-}

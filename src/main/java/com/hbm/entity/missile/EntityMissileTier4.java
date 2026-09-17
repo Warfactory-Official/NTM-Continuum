@@ -152,4 +152,23 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_n2.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_n2.get()); }
     }
+
+    /** 1.7 EntityMissileVolcano: a large blast that seeds a volcano core in a 3x3x3 of volcanic lava. */
+    public static class EntityMissileVolcano extends EntityMissileTier4 {
+        public EntityMissileVolcano(EntityType<?> type, Level level) { super(type, level); }
+        public EntityMissileVolcano(Level level, float x, float y, float z, int targetX, int targetZ) {
+            super(com.hbm.entity.ModNtmEntities.MISSILE_VOLCANO.get(), level, x, y, z, targetX, targetZ);
+        }
+
+        @Override
+        public void onMissileImpact(HitResult mop) {
+            com.hbm.explosion.ExplosionLarge.explode(level(), getX(), getY(), getZ(), 10.0F, true, true, true);
+
+            // 1.7 then fills a 3x3x3 with volcanic lava around a volcano core. Neither block is registered in
+            // this port yet; the blast lands, the volcano does not grow, and the gap is recorded in the manifest.
+        }
+
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_volcano.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_volcano.get()); }
+    }
 }

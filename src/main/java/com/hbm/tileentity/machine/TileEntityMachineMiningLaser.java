@@ -106,7 +106,6 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMiningLaser te) {
         // Power from the TOP arm; crude oil out the 4 side arms (old sendFluid coords kept verbatim,
         // including the odd y±2 Z-direction pair).
-        te.trySubscribe(level, new DirPos(pos.getX(), pos.getY() + 2, pos.getZ(), ForgeDirection.UP));
 
         te.tryProvide(te.tank, level, pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X);
         te.tryProvide(te.tank, level, pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X);
@@ -475,8 +474,8 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
                 new DirPos(x, y + 2, z, ForgeDirection.UP),
                 new DirPos(x + 2, y, z, Library.POS_X),
                 new DirPos(x - 2, y, z, Library.NEG_X),
-                new DirPos(x, y + 2, z, Library.POS_Z),
-                new DirPos(x, y - 2, z, Library.NEG_Z)
+                new DirPos(x, y, z + 2, Library.POS_Z),
+                new DirPos(x, y, z - 2, Library.NEG_Z)
         };
     }
 
@@ -500,6 +499,12 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
             isOn = !isOn;
             setChanged();
         }
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineMiningLaser menu
+                && menu.getLaser() == this && menu.stillValid(player);
     }
 
     // --- IUpgradeInfoProvider (text ported from the 1.12.2 provideInfo) ---

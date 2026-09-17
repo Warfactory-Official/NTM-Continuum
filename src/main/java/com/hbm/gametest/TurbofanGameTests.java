@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineTurbofan;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.fluid.Fluids;
@@ -8,20 +7,20 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineTurbofan;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 /** GameTests for the turbofan's footprint, exhaust ports, burn path, and menu. */
 public final class TurbofanGameTests {
     private TurbofanGameTests() {}
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachineTurbofan block = ModMachineBlocks.machine_turbofan.get();
         TileEntityMachineTurbofan fan = place(helper, core);
         helper.assertTrue(fan != null, "Turbofan core BlockEntity was not created");
-        assertMeta(helper, core.offset(-1, 0, -1), 10);
-        assertMeta(helper, core.offset(0, 0, 1), 9);
+        FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, -1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(0, 0, 1));
         helper.succeed();
     }
 
@@ -57,16 +56,11 @@ public final class TurbofanGameTests {
 
     private static TileEntityMachineTurbofan place(GameTestHelper helper, BlockPos pos) {
         MachineTurbofan block = ModMachineBlocks.machine_turbofan.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(pos, block.defaultBlockState());
         TileEntityMachineTurbofan fan = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, pos, TileEntityMachineTurbofan.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(pos), ForgeDirection.NORTH);
+        block.fillSpace(helper.getLevel(), helper.absolutePos(pos), Direction.NORTH);
         return fan;
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META) == expected,
-                "Turbofan extra cell mismatch at " + pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, int x, int y, int z, ForgeDirection direction) {

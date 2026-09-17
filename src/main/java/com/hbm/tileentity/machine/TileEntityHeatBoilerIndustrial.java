@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HeatRecipes;
@@ -37,7 +37,6 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoilerIndustrial te) {
         te.setupTanks();
-        te.updateConnections(level);
         te.tryPullHeat(level);
         te.isOn = false;
         te.tryConvert(level);
@@ -76,8 +75,8 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         if (heat >= maxHeat) return;
         BlockPos below = worldPosition.below();
         BlockEntity sourceEntity = level.getBlockEntity(below);
-        if (!(sourceEntity instanceof IHeatSource) && level.getBlockState(below).getBlock() instanceof BlockDummyable dummy) {
-            sourceEntity = dummy.findCoreTE(level, below);
+        if (!(sourceEntity instanceof IHeatSource)) {
+            sourceEntity = MachineCore.at(level, below, level.getBlockState(below));
         }
         if (sourceEntity instanceof IHeatSource source) {
             int diff = source.getHeatStored() - heat;
@@ -91,9 +90,6 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         heat = Math.max(heat - Math.max(heat / 1000, 1), 0);
     }
 
-    private void updateConnections(Level level) {
-        for (DirPos connection : getConPos()) trySubscribe(tanks[0].getTankType(), level, connection);
-    }
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();

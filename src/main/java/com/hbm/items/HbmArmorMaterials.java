@@ -49,6 +49,9 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial DNS = new GolemArmorMaterial(
             Constants.MOD_ID, "dns", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/dns");
 
+    public static final GolemArmorMaterial AJR = new GolemArmorMaterial(
+            Constants.MOD_ID, "ajr", 150, 3, 8, 6, 3, 0, 2.0F, 0.0F, "repairs/ajr");
+
     /** Jetpack modules were not armor themselves in 1.12; this material keeps direct wear non-protective. */
     public static final GolemArmorMaterial JETPACK = new GolemArmorMaterial(
             Constants.MOD_ID, "jetpack", 1, 0, 0, 0, 0, 0, 0.0F, 0.0F, "repairs/steel");
@@ -64,6 +67,10 @@ public final class HbmArmorMaterials {
     /** 1.12.2 {@code aMatSchrab}: multiplier 100, defense {3, 6, 8, 3}, enchantability 50. */
     public static final GolemArmorMaterial SCHRABIDIUM = new GolemArmorMaterial(
             Constants.MOD_ID, "schrabidium", 100, 3, 8, 6, 3, 50, 2.0F, 0.0F, "repairs/schrabidium");
+
+    /** 1.12.2 {@code aMatTaurun} ("HBM_TRENCH"): multiplier 150, defense {3, 8, 6, 3}, enchantability 10, repaired by iron plate. */
+    public static final GolemArmorMaterial TAURUN = new GolemArmorMaterial(
+            Constants.MOD_ID, "taurun", 150, 3, 8, 6, 3, 10, 0.0F, 0.0F, "repairs/taurun");
 
     /** 1.12.2 {@code aMatSecurity}: multiplier 100, defense {3, 6, 8, 3}, enchantability 15. */
     public static final GolemArmorMaterial SECURITY = new GolemArmorMaterial(

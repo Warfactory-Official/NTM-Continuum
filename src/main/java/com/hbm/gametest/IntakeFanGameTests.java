@@ -3,11 +3,11 @@ package com.hbm.gametest;
 import com.hbm.Constants;
 import com.hbm.api.block.IBlowable;
 import com.hbm.api.block.IToolable.ToolType;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.FanPhysics;
 import com.hbm.blocks.machine.MachineFan;
 import com.hbm.blocks.machine.MachineIntake;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -167,10 +167,9 @@ public final class IntakeFanGameTests {
 
     private static TileEntityMachineIntake placeIntake(GameTestHelper helper, MachineIntake block, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + 2));
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
-        BlockPos core = block.findCore(helper.getLevel(), pos);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), pos, Direction.NORTH);
+        BlockPos core = MultiblockSurface.coreOfAny(helper.getLevel(), pos);
         TileEntityMachineIntake intake = core == null ? null
                 : (TileEntityMachineIntake) helper.getLevel().getBlockEntity(core);
         helper.assertTrue(intake != null, "Intake core BlockEntity was not created");

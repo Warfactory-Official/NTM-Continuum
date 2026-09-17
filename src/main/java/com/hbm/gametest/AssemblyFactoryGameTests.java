@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineAssemblyFactory;
 import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
@@ -77,7 +77,7 @@ public final class AssemblyFactoryGameTests {
 
     private static void assertPort(GameTestHelper helper, MachineAssemblyFactory block, BlockPos core, DirPos port) {
         BlockPos cell = port.getPos().relative(port.getDir().toDirection().getOpposite());
-        helper.assertTrue(block.findCore(helper.getLevel(), cell).equals(core),
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                 "Assembly Factory port cell does not resolve to its core: " + cell);
         helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir()),
                 "Assembly Factory power/coolant port does not connect: " + port.getPos());
@@ -172,8 +172,7 @@ public final class AssemblyFactoryGameTests {
         var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         factory.serialize(buffer);
         TileEntityMachineAssemblyFactory copy = new TileEntityMachineAssemblyFactory(BlockPos.ZERO,
-                AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get().defaultBlockState()
-                        .setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+                AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.inputTanks[0].getTankType() == com.hbm.inventory.fluid.Fluids.WATER
                         && copy.inputTanks[0].getFill() == 123
@@ -268,11 +267,10 @@ public final class AssemblyFactoryGameTests {
     private static TileEntityMachineAssemblyFactory place(GameTestHelper helper, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
         MachineAssemblyFactory block = AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineAssemblyFactory factory = GameTestHelpers.blockEntity(helper, relative,
                 TileEntityMachineAssemblyFactory.class);
         helper.assertTrue(factory != null, "Assembly Factory core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
         return factory;
     }
 }

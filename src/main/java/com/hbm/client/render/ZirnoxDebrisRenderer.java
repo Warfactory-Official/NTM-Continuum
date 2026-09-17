@@ -1,27 +1,27 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
-import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
+import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import org.joml.Quaternionf;
 
 /** Renders the six physical debris variants ejected by a ZIRNOX meltdown. */
-public class ZirnoxDebrisRenderer extends dev.golem.core.render.CompatEntityRenderer<EntityZirnoxDebris, ZirnoxDebrisRenderState> {
+public class ZirnoxDebrisRenderer extends dev.golem.core.render.gem.GemEntityRenderer<EntityZirnoxDebris, ZirnoxDebrisRenderState> {
 
     private static final float DIAGONAL_AXIS = 0.57735026F;
-    private final WavefrontObj[] models = new WavefrontObj[DebrisType.values().length];
-    private final RenderType[] renderTypes = new RenderType[DebrisType.values().length];
+    private final Geometry[] meshes = new Geometry[DebrisType.values().length];
+    private final Surface[] skins = new Surface[DebrisType.values().length];
 
     public ZirnoxDebrisRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -34,9 +34,21 @@ public class ZirnoxDebrisRenderer extends dev.golem.core.render.CompatEntityRend
     }
 
     private void register(DebrisType type, String model, String texture) {
-        models[type.ordinal()] = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + model));
-        renderTypes[type.ordinal()] = CompatRenderTypes.entityCutout(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/" + texture));
+        meshes[type.ordinal()] = WavefrontObj.load(
+                dev.golem.core.Ids.of(Constants.MOD_ID, "models/" + model)).all(true);
+        skins[type.ordinal()] = Surface.cutout(Constants.MOD_ID + ":textures/" + texture);
+    }
+
+    /** One debris-shaped slot holding whichever of the six pieces this one is, tumbling about a diagonal. */
+    @Override
+    protected void setup(Gem.Model<ZirnoxDebrisRenderState> declaration) {
+        declaration.part(meshes[0], skins[0])
+                .mesh(state -> meshes[state.type == null ? 0 : state.type.ordinal()])
+                .skin(state -> skins[state.type == null ? 0 : state.type.ordinal()])
+                .visibleIf(state -> state.type != null)
+                .translate(0.0F, 0.125F, 0.0F)
+                .angle(Gem.Axes.Y, state -> Math.floorMod(state.entityId, 360))
+                .pose(state -> state.tumble);
     }
 
     @Override
@@ -49,21 +61,8 @@ public class ZirnoxDebrisRenderer extends dev.golem.core.render.CompatEntityRend
         state.type = entity.getDebrisType();
         state.entityId = entity.getId();
         state.rotation = entity.lastRot + (entity.rot - entity.lastRot) * partialTicks;
+        state.tumble.rotation(new Quaternionf().rotationAxis((float) Math.toRadians(state.rotation),
+                DIAGONAL_AXIS, DIAGONAL_AXIS, DIAGONAL_AXIS));
     }
 
-    @Override
-    public void submit(ZirnoxDebrisRenderState state, PoseStack poseStack, SubmitSink collector,
-                       CameraInfo camera) {
-        if (state.type == null) return;
-        int index = state.type.ordinal();
-        poseStack.pushPose();
-        poseStack.translate(0.0F, 0.125F, 0.0F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(Math.floorMod(state.entityId, 360)));
-        poseStack.mulPose(new Quaternionf().rotationAxis((float) Math.toRadians(state.rotation),
-                DIAGONAL_AXIS, DIAGONAL_AXIS, DIAGONAL_AXIS));
-        collector.submitCustomGeometry(poseStack, renderTypes[index],
-                (pose, buffer) -> models[index].renderAll(pose, buffer, state.lightCoords,
-                        OverlayTexture.NO_OVERLAY, true));
-        poseStack.popPose();
-    }
 }

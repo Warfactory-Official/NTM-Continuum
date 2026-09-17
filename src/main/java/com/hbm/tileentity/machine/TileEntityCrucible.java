@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.material.MaterialShapes;
@@ -33,6 +33,7 @@ import dev.golem.core.data.DataOut;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.hbm.util.CrucibleUtil;
+import com.hbm.util.TickPhase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,7 +92,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         te.tryPullHeat(level, pos);
 
         /* collect items */
-        if (level.getGameTime() % 5 == 0) {
+        if (TickPhase.every(level, pos, 5)) {
             List<ItemEntity> list = level.getEntitiesOfClass(ItemEntity.class,
                     new AABB(pos.getX() - 0.5, pos.getY() + 0.5, pos.getZ() - 0.5, pos.getX() + 1.5, pos.getY() + 1, pos.getZ() + 1.5));
 
@@ -148,7 +149,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
         /* pour waste stack (out the back) */
         if (!te.wasteStack.isEmpty()) {
-            ForgeDirection dir = ForgeDirection.getOrientation(state.getValue(BlockDummyable.META) - BlockDummyable.offset).getOpposite();
+            ForgeDirection dir = MachineCore.facing(state).getOpposite();
             Vec3[] impact = new Vec3[1];
             double sx = pos.getX() + 0.5D + dir.offsetX * 1.875D;
             double sy = pos.getY() + 0.25D;
@@ -164,7 +165,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
         /* pour recipe stack (out the front) */
         if (!te.recipeStack.isEmpty()) {
-            ForgeDirection dir = ForgeDirection.getOrientation(state.getValue(BlockDummyable.META) - BlockDummyable.offset);
+            ForgeDirection dir = MachineCore.facing(state);
             List<Mats.MaterialStack> toCast = new ArrayList<>();
 
             CrucibleRecipe recipe = te.getLoadedRecipe();
@@ -266,7 +267,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         CrucibleRecipe recipe = this.getLoadedRecipe();
 
         if (recipe == null) return;
-        if (level.getGameTime() % recipe.frequency > 0) return;
+        if (!TickPhase.every(level, worldPosition, recipe.frequency)) return;
 
         for (Mats.MaterialStack stack : recipe.input) {
             if (getQuantaFromType(this.recipeStack, stack.material) < stack.amount) return;
@@ -452,7 +453,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
     @Override
     public boolean hasPermission(Player player) {
-        return stillValid(player);
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerCrucible menu
+                && menu.getCrucible() == this && menu.stillValid(player);
     }
 
     @Override

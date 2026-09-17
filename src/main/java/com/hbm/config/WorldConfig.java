@@ -27,6 +27,18 @@ public final class WorldConfig {
 
     private WorldConfig() {}
 
+    // ---------------------------------------------------------------- meteors (1.12.2 CATEGORY_METEOR)
+    /** {@code 5.00_enableMeteorStrikes}: toggles the spawning of meteors. */
+    public static boolean enableMeteorStrikes = true;
+    /** {@code 5.01_enableMeteorShowers}: meteor showers, a 1% chance for every spawned meteor. */
+    public static boolean enableMeteorShowers = true;
+    /** {@code 5.03_enableSpecialMeteors}: rare, special meteor types with different impact effects. */
+    public static boolean enableSpecialMeteors = true;
+    /** {@code 5.02_enableMeteorTails}: the particle effect created by falling meteors. */
+    public static boolean enableMeteorTails = true;
+    /** {@code 5.03_meteorStrikeChance}: one meteor every n ticks on average. */
+    public static int meteorStrikeChance = 20 * 60 * 60 * 5;
+
     // ---------------------------------------------------------------- overworld veins (count/chunk)
     // Field names mirror upstream's CompatibilityConfig keys (thoriumSpawn = 01.11_thoriumSpawnrate);
     // only the ones that do something extra carry a note.

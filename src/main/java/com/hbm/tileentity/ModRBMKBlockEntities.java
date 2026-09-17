@@ -13,7 +13,33 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 public final class ModRBMKBlockEntities {
     private ModRBMKBlockEntities() {}
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
-    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> RegistryObject<BlockEntityType<T>> type(String id, BlockEntities.Factory<T> factory, RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks){return BLOCK_ENTITIES.register(id,()->BlockEntities.type(factory,java.util.Arrays.stream(blocks).map(RegistryObject::get).toArray(net.minecraft.world.level.block.Block[]::new)));}
+    /**
+     * Every RBMK column ticks on both sides through {@link IRBMKTicking}, so the ticker is bound
+     * here once rather than restated by each of the twenty blocks that used to ask
+     * {@code RBMKTickers.ticker(level, type, beType())}.
+     */
+    private static <T extends net.minecraft.world.level.block.entity.BlockEntity & IRBMKTicking> RegistryObject<BlockEntityType<T>> type(
+            String id, BlockEntities.Factory<T> factory,
+            RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks) {
+        return BLOCK_ENTITIES.register(id, () -> BlockEntities.ticking(factory,
+                (level, pos, state, be) -> be.tickClient(),
+                (level, pos, state, be) -> be.tickServer(),
+                java.util.Arrays.stream(blocks).map(RegistryObject::get)
+                        .toArray(net.minecraft.world.level.block.Block[]::new)));
+    }
+    /**
+     * The debris left by a meltdown: a block entity that carries what was destroyed and never ticks.
+     * The only RBMK type that is not an {@link IRBMKTicking} column.
+     */
+    @SafeVarargs
+    private static <T extends net.minecraft.world.level.block.entity.BlockEntity> RegistryObject<BlockEntityType<T>> inert(
+            String id, BlockEntities.Factory<T> factory,
+            RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks) {
+        return BLOCK_ENTITIES.register(id, () -> BlockEntities.type(factory,
+                java.util.Arrays.stream(blocks).map(RegistryObject::get)
+                        .toArray(net.minecraft.world.level.block.Block[]::new)));
+    }
+
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKRod>> RBMK_ROD=type("rbmk_fuel_rod",BlockEntityRBMKRod::new,ModRBMKBlocks.rbmk_fuel_rod,ModRBMKBlocks.rbmk_fuel_rod_moderated);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKRodReaSim>> RBMK_ROD_REASIM=type("rbmk_fuel_rod_reasim",BlockEntityRBMKRodReaSim::new,ModRBMKBlocks.rbmk_fuel_rod_reasim,ModRBMKBlocks.rbmk_fuel_rod_reasim_moderated);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKControlManual>> RBMK_CONTROL=type("rbmk_control",BlockEntityRBMKControlManual::new,ModRBMKBlocks.rbmk_control,ModRBMKBlocks.rbmk_control_mod,ModRBMKBlocks.rbmk_control_reasim);
@@ -32,7 +58,6 @@ public final class ModRBMKBlockEntities {
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKConsole>> RBMK_CONSOLE=type("rbmk_console",BlockEntityRBMKConsole::new,ModRBMKBlocks.rbmk_console);
     public static final RegistryObject<BlockEntityType<BlockEntityCraneConsole>> RBMK_CRANE_CONSOLE=type("rbmk_crane_console",BlockEntityCraneConsole::new,ModRBMKBlocks.rbmk_crane_console);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKGauge>> RBMK_GAUGE=type("rbmk_gauge",BlockEntityRBMKGauge::new,ModRBMKBlocks.rbmk_gauge);
-    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal>> RBMK_TERMINAL=type("rbmk_terminal",com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal::new,ModRBMKBlocks.rbmk_terminal);
-    public static final RegistryObject<BlockEntityType<BlockEntityRBMKDebris>> RBMK_DEBRIS=type("rbmk_debris",BlockEntityRBMKDebris::new,ModRBMKBlocks.rbmk_debris,ModRBMKBlocks.rbmk_debris_burning,ModRBMKBlocks.rbmk_debris_radiating,ModRBMKBlocks.rbmk_debris_digamma);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKDebris>> RBMK_DEBRIS=inert("rbmk_debris",BlockEntityRBMKDebris::new,ModRBMKBlocks.rbmk_debris,ModRBMKBlocks.rbmk_debris_burning,ModRBMKBlocks.rbmk_debris_radiating,ModRBMKBlocks.rbmk_debris_digamma);
     public static void init() {}
 }

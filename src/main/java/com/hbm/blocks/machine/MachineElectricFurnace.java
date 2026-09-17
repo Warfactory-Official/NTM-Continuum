@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineElectricFurnace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -36,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * block with a {@link #LIT} property (the TE flips it while smelting), driving the lit front texture in
  * the blockstate. Right-click opens the menu. The lit "flame particle" effect is deferred (§18).
  */
-public class MachineElectricFurnace extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class MachineElectricFurnace extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -50,20 +51,6 @@ public class MachineElectricFurnace extends dev.golem.core.world.CompatBlock imp
     @Nullable
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachineElectricFurnace(pos, state);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_ELECTRIC_FURNACE.get(), TileEntityMachineElectricFurnace::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     /** Smoke + flame puffing from the front face while smelting (LIT) — ported from the 1.12.2

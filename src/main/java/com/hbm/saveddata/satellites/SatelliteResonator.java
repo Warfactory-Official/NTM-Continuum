@@ -1,47 +1,37 @@
 package com.hbm.saveddata.satellites;
 
-import com.hbm.items.machine.ItemSatellite;
-import com.hbm.items.machine.ItemSatellite.EnumSatType;
-import net.minecraft.network.chat.Component;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.entity.player.Player;
 
-/** Puts a player wherever they ask, which is the whole of what it does. */
+import java.util.Set;
+
 public class SatelliteResonator extends Satellite {
 
+    public static final MapCodec<SatelliteResonator> CODEC = MapCodec.unit(SatelliteResonator::new);
+
     public SatelliteResonator() {
-        this.coordAcs.add(CoordActions.HAS_Y);
-        this.satIface = Interfaces.SAT_COORD;
-    }
-
-    @Override public String getType() { return "XEN_RELAY"; }
-
-    @Override
-    public Component[] getInfo(Level level) {
-        return new Component[]{Component.translatable(ItemSatellite.nameKey(EnumSatType.XENIUM_RESONATOR))};
+        super(Interfaces.SAT_COORD, Set.of(), Set.of(CoordActions.HAS_Y));
     }
 
     @Override
-    public void onCoordAction(Level level, ServerPlayer player, int x, int y, int z) {
-        if (!(level instanceof ServerLevel server)) return;
-
-        server.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
-        player.stopRiding();
-        server.getChunk(x >> 4, z >> 4);
-        int target = y < server.getMinY() ? server.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) : y;
-        player.teleportTo(server, x + 0.5D, target, z + 0.5D, java.util.Set.of(),
-                player.getYRot(), player.getXRot(), true);
-        server.playSound(null, player.getX(), player.getY(), player.getZ(),
-                SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+    public SatelliteType type() {
+        return SatelliteType.RESONATOR;
     }
 
     @Override
-    public float[] getColor() {
-        return new float[]{1.0F, 0.646F, 0.181F};
+    public void onCoordAction(ServerLevel level, Player player, int x, int y, int z) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT,
+                SoundSource.PLAYERS, 1.0F, 1.0F);
+        serverPlayer.stopRiding();
+        serverPlayer.connection.teleport(x + 0.5D, y, z + 0.5D, player.getYRot(), player.getXRot());
+        // 1.7: the second play reads the position AFTER the move, so it lands at the destination.
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENDERMAN_TELEPORT,
+                SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 }

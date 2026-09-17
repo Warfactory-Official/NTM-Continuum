@@ -3,25 +3,16 @@ package com.hbm.radio;
 import com.hbm.api.redstoneoverradio.IRORInfo;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Resolves an ROR attachment the same way old Compat.getTileStandard did for multiblock dummies.
- *
- * <p>A folded multiblock is the other case: its cells carry no block entity, so a torch stuck to one is
- * walked to the core that does. That walk is gated on the cell state test rather than attempted for
- * every block, because the client half of the lookup is a 33-cubed scan and this runs from
- * {@code canAttachTo} on every neighbour update.
- */
+/** Resolves an ROR attachment the same way old Compat.getTileStandard did for multiblock cells. */
 public final class RadioTargets {
     private RadioTargets() {}
 
@@ -53,17 +44,11 @@ public final class RadioTargets {
         BlockEntity blockEntity = level.getBlockEntity(pos);
         if (blockEntity instanceof IRORInfo) return blockEntity;
 
-        if (block instanceof BlockDummyable dummyable) {
-            BlockEntity core = dummyable.findCoreTE(level, pos);
+        // The state test comes first for the same reason the crumbling hook makes it: a folded cell's
+        // owner is only known to the index, and asking for a plain block's owner costs a client-side scan.
+        if (MultiblockSurface.foldedCore(state) != null || MultiblockSurface.isFoldedCell(state)) {
+            BlockEntity core = MultiblockSurface.coreEntity(level, pos);
             if (core != null) return core;
-        }
-
-        if (level instanceof Level world && MultiblockSurface.isFoldedCell(state)) {
-            BlockPos core = MultiblockSurface.coreOfCell(world, pos);
-            if (core != null) {
-                BlockEntity coreEntity = world.getBlockEntity(core);
-                if (coreEntity != null) return coreEntity;
-            }
         }
         // Containers are also direct targets, even though vanilla inventory block entities are not ROR info.
         return blockEntity;

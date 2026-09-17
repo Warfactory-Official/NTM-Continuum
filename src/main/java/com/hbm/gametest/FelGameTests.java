@@ -1,9 +1,10 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.inventory.container.ContainerFEL;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
@@ -11,6 +12,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.tileentity.machine.TileEntityFEL;
 import com.hbm.tileentity.machine.TileEntitySILEX;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -27,19 +29,18 @@ public final class FelGameTests {
     private FelGameTests() {}
 
     /** FEL cores face NORTH here, i.e. −Z, so the beam runs toward decreasing Z. */
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     private static TileEntityFEL placeFel(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_fel.get().defaultBlockState()
-                .setValue(BlockDummyable.META, FACING_NORTH));
+                .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
         TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityFEL.class);
         helper.assertTrue(te != null, "FEL BlockEntity was not created");
         return te;
     }
 
-    private static TileEntitySILEX placeSilex(GameTestHelper helper, BlockPos pos, int meta) {
+    private static TileEntitySILEX placeSilex(GameTestHelper helper, BlockPos pos, Direction facing) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockDummyable.META, meta));
+                .setValue(BlockMultiblockCore.FACING, facing));
         TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;
@@ -79,10 +80,10 @@ public final class FelGameTests {
         // −Z a core at z = felZ − 7 is found by the beam cell at z = felZ − 6, i.e. i = 6 (>= 5). ✓
         BlockPos silex = new BlockPos(2, 1, 1);
         TileEntityFEL te = placeFel(helper, fel);
-        TileEntitySILEX chamber = placeSilex(helper, silex, FACING_NORTH);
+        TileEntitySILEX chamber = placeSilex(helper, silex, Direction.NORTH);
         // The beam travels at y+1 and must find a solid SILEX cell there.
         helper.setBlock(silex.offset(0, 1, 1), ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 0));
+                .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
 
         arm(te, EnumWavelengths.UV);
         tick(helper, te, fel);
@@ -102,10 +103,10 @@ public final class FelGameTests {
         BlockPos fel = new BlockPos(2, 1, 8);
         BlockPos silex = new BlockPos(2, 1, 1);
         TileEntityFEL te = placeFel(helper, fel);
-        // Facing WEST (meta offset + 4) while the FEL faces NORTH: a perpendicular axis, so invalid.
-        placeSilex(helper, silex, BlockDummyable.offset + 4);
+        // Facing WEST while the FEL faces NORTH: a perpendicular axis, so invalid.
+        placeSilex(helper, silex, Direction.WEST);
         helper.setBlock(silex.offset(0, 1, 1), ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 0));
+                .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
 
         arm(te, EnumWavelengths.UV);
         tick(helper, te, fel);

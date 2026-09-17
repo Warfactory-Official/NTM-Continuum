@@ -1,6 +1,14 @@
 package com.hbm.blocks.network;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.api.energymk2.PowerGraph;
+import com.hbm.api.energymk2.PowerGraphProvider;
+import com.hbm.capability.MachineCaps;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -36,13 +44,13 @@ import java.util.Map;
  * HBM's red power cable: a connecting conductor. Six {@link BooleanProperty} connection flags drive a
  * multipart model (a central core + an arm per connected side), like vanilla {@code PipeBlock}. It
  * connects to any neighbour whose BlockEntity is an {@link IEnergyConnectorMK2} (cables, machines,
- * batteries, generators). Power conduction itself lives in {@link TileEntityCableBaseNT} (a UNINOS
- * node); these flags are purely the visual/collision shape.
+ * batteries, generators). These flags are purely the visual/collision shape; conduction is the graph
+ * cell this block owns, which lives and dies with the block rather than with its BlockEntity.
  *
  * <p>Ported from 1.12.2's {@code BlockCable} (which used an OBJ-baked model + {@code getActualState});
  * the 26.1 equivalent is connection properties + a multipart blockstate + {@code updateShape}.
  */
-public class BlockCable extends dev.golem.core.world.CompatBlock implements EntityBlock, SimpleWaterloggedBlock {
+public class BlockCable extends dev.golem.core.world.CompatBlock implements TickingBlock, SimpleWaterloggedBlock {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -129,6 +137,27 @@ public class BlockCable extends dev.golem.core.world.CompatBlock implements Enti
     }
 
     @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean movedByPiston) {
+        super.onPlace(state, level, pos, oldState, movedByPiston);
+        if (level instanceof ServerLevel server && !oldState.is(this)) {
+            PowerGraph.get(server).addNode(pos.asLong(), PowerGraphProvider.INSTANCE.createData(state),
+                    MachineCaps.FACE_MASK_ALL);
+        }
+    }
+
+    /**
+     * A block appearing beside a conductor is the one endpoint transition nothing else announces. Our
+     * own machines say so from {@code clearRemoved}, but a foreign one has no reason to, and a face
+     * that has already probed absent stays absent until something asks it again.
+     */
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
+        if (level instanceof ServerLevel server) LevelNodeGraph.invalidateEndpointsAt(server, pos);
+    }
+
+    @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         VoxelShape shape = CORE;
         for (Map.Entry<Direction, BooleanProperty> e : PROPERTY_BY_DIRECTION.entrySet()) {
@@ -144,16 +173,12 @@ public class BlockCable extends dev.golem.core.world.CompatBlock implements Enti
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.RED_CABLE.get(), TileEntityCableBaseNT::serverTick);
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return ConnectionRing.rotate(state, rotation, PROPERTY_BY_DIRECTION);
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return ConnectionRing.mirror(state, mirror, PROPERTY_BY_DIRECTION);
     }
 }

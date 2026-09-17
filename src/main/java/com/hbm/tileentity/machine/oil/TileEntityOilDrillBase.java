@@ -16,6 +16,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.MenuProvider;
@@ -70,10 +71,9 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityOilDrillBase te) {
-        te.updateConnections();
-
         te.unloadTank(0, 1, 2);
         te.unloadTank(1, 3, 4);
+
 
         te.upgradeManager.checkSlots(te.inventory, 5, 7);
         te.speedLevel = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -101,7 +101,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
 
             te.power -= te.getPowerReqEff();
 
-            if (level.getGameTime() % te.getDelayEff() == 0) {
+            if (TickPhase.every(level, pos, te.getDelayEff())) {
                 te.indicator = 0;
 
                 for (int y = pos.getY() - 1; y >= te.getDrillDepth(); y--) {
@@ -240,11 +240,6 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
 
     public abstract DirPos[] getConPos();
 
-    protected void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
-        }
-    }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

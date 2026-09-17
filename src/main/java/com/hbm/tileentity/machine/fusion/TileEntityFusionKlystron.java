@@ -6,12 +6,12 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerFusionKlystron;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.networkproviders.KlystronNetwork;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -49,7 +49,6 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
     public static final int AIR_CONSUMPTION = 2_500;
     public static final float FAN_ACCELERATION = 0.125F;
 
-    protected KlystronNetwork.KlystronNode klystronNode;
 
     /** What the player asked for. */
     public long outputTarget;
@@ -87,10 +86,6 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
         te.maxPower = Math.max(1_000_000L, te.outputTarget * 100L);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.maxPower);
 
-        for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            te.trySubscribe(te.compair.getTankType(), level, port);
-        }
 
         te.output = 0;
         double powerFactor = TileEntityFusionTorus.getSpeedScaled(te.maxPower, te.power);
@@ -108,9 +103,9 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
         // Below 2% of target, emit nothing at all rather than a useless trickle.
         if (te.output < te.outputTarget / 50) te.output = 0;
 
-        te.klystronNode = FusionNodes.emitterNode(level, te.klystronNode, pos, FusionNodes.facing(state));
-        if (te.klystronNode.net != null) te.klystronNode.net.addProvider(te);
-        FusionNodes.provideKyU(te.klystronNode, te.output);
+        FusionLink.claim(level, te, FusionNodes.emitter(pos, FusionNodes.facing(state)),
+                MachineCaps.KLYSTRON_OUT);
+        FusionNodes.provideKyU(level, pos, FusionNodes.facing(state), te.output);
 
         te.setChanged();
         te.networkPackNT();
@@ -147,7 +142,7 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
 
     @Override
     public void setRemoved() {
-        FusionNodes.destroy(level, klystronNode, null);
+        FusionLink.release(level, FusionNodes.emitter(worldPosition, FusionNodes.facing(getBlockState())));
         super.setRemoved();
     }
 

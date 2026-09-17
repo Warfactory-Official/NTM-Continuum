@@ -2,12 +2,13 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +17,6 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -27,7 +27,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The standard 5×1×5 cyclotron multiblock. */
-public class MachineCyclotron extends BlockDummyable
+public class MachineCyclotron extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineCyclotron(Properties properties) {
@@ -42,23 +42,9 @@ public class MachineCyclotron extends BlockDummyable
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineCyclotron cyclotron)) return null;
         return new SidedContainer(cyclotron, pos);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineCyclotron cyclotron
-                && IEnergyConnectorBlock.isPort(cyclotron.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter world, int x, int y, int z,
-                              ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityMachineCyclotron cyclotron
-                && IEnergyConnectorBlock.isPort(cyclotron.getConPos(), pos, dir);
     }
 
     @Override
@@ -66,7 +52,7 @@ public class MachineCyclotron extends BlockDummyable
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityMachineCyclotron cyclotron) {
             for (int i = 0; i < 4; i++) {
                 net.minecraft.world.item.Item plug = TileEntityMachineCyclotron.getItemForPlug(i);
@@ -90,45 +76,8 @@ public class MachineCyclotron extends BlockDummyable
         return super.onUseWithoutItem(state, level, pos, player, hit);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_CYCLOTRON.get(), TileEntityMachineCyclotron::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CYCLOTRON.get(), TileEntityMachineCyclotron::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     @Override public int[] getDimensions() { return new int[]{2, 0, 2, 2, 2, 2}; }
     @Override public int getOffset() { return 2; }
-
-    @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        addExtraPerimeter(level, new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset));
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        addExtraPerimeter(level, core);
-    }
-
-    private void addExtraPerimeter(Level level, BlockPos core) {
-        for (int i = -1; i <= 1; i++) {
-            makeExtra(level, core.getX() + 2, core.getY(), core.getZ() + i);
-            makeExtra(level, core.getX() - 2, core.getY(), core.getZ() + i);
-            makeExtra(level, core.getX() + i, core.getY(), core.getZ() + 2);
-            makeExtra(level, core.getX() + i, core.getY(), core.getZ() - 2);
-        }
-    }
 
     /** Carries the queried footprint cell into the old proxy-relative sided-inventory contract. */
     private static final class SidedContainer implements WorldlyContainer {
@@ -165,6 +114,34 @@ public class MachineCyclotron extends BlockDummyable
         private boolean contains(int slot) {
             for (int allowed : slots) if (allowed == slot) return true;
             return false;
+        }
+    }
+
+    /**
+     * Twelve perimeter cells, of which the eight either side of each face centre are ports. 1.7 names
+     * them in world axes; the ring is symmetric under a quarter turn, so the facing frame lands them in
+     * the same places.
+     */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int i = -1; i <= 1; i += 2) {
+            visitor.cell(core.offset(2, 0, i), MASK_EAST);
+            visitor.cell(core.offset(-2, 0, i), MASK_WEST);
+            visitor.cell(core.offset(i, 0, 2), MASK_SOUTH);
+            visitor.cell(core.offset(i, 0, -2), MASK_NORTH);
+        }
+    }
+
+    /** 1.7 stamps {@code inventory().power().fluid()} on all twelve, face centres included. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        for (int i = -1; i <= 1; i++) {
+            visitor.passiveCell(core.offset(2, 0, i), MASK_ALL, domains);
+            visitor.passiveCell(core.offset(-2, 0, i), MASK_ALL, domains);
+            visitor.passiveCell(core.offset(i, 0, 2), MASK_ALL, domains);
+            visitor.passiveCell(core.offset(i, 0, -2), MASK_ALL, domains);
         }
     }
 }

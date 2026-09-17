@@ -35,6 +35,11 @@ public final class ModStorageBlocks {
             "crate_desh", p -> new BlockCrate(p, CrateType.DESH),
             p -> p.strength(7.5F, 300.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
 
+    /** 1.7 ModBlocks.crate_supply: wood, 1.0/2.5, missile tab; placed by EntityParachuteCrate. */
+    public static final RegistryObject<BlockCrateSupply> crate_supply = BLOCKS.registerBlock(
+            "crate_supply", BlockCrateSupply::new,
+            p -> p.strength(1.0F, 2.5F).sound(SoundType.WOOD).noOcclusion().ignitedByLava());
+
     public static final RegistryObject<BlockMassStorage> mass_storage_wood = massStorage(MassStorageType.WOOD);
     public static final RegistryObject<BlockMassStorage> mass_storage_iron = massStorage(MassStorageType.IRON);
     public static final RegistryObject<BlockMassStorage> mass_storage_desh = massStorage(MassStorageType.DESH);
@@ -47,6 +52,8 @@ public final class ModStorageBlocks {
         tabItem("crate_iron", crate_iron, CrateType.IRON);
         tabItem("crate_steel", crate_steel, CrateType.STEEL);
         tabItem("crate_desh", crate_desh, CrateType.DESH);
+        RegistryObject<net.minecraft.world.item.BlockItem> supply = ITEMS.registerBlockItem("crate_supply", crate_supply);
+        ModTabs.addTo(HbmTab.MISSILES, supply);
         massStorageItem(MassStorageType.WOOD, mass_storage_wood);
         massStorageItem(MassStorageType.IRON, mass_storage_iron);
         massStorageItem(MassStorageType.DESH, mass_storage_desh);

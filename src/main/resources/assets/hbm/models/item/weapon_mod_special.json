@@ -1,0 +1,173 @@
+{
+  "parent": "hbm:item/weapon_mod_special.silencer",
+  "overrides": [
+    {
+      "predicate": {
+        "hbm:item_variant": 1
+      },
+      "model": "hbm:item/weapon_mod_special.scope"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 2
+      },
+      "model": "hbm:item/weapon_mod_special.saw"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 3
+      },
+      "model": "hbm:item/weapon_mod_special.greasegun"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 4
+      },
+      "model": "hbm:item/weapon_mod_special.slowdown"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 5
+      },
+      "model": "hbm:item/weapon_mod_special.speedup"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 6
+      },
+      "model": "hbm:item/weapon_mod_special.choke"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 7
+      },
+      "model": "hbm:item/weapon_mod_special.speedloader"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 8
+      },
+      "model": "hbm:item/weapon_mod_special.furniture_green"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 9
+      },
+      "model": "hbm:item/weapon_mod_special.furniture_black"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 10
+      },
+      "model": "hbm:item/weapon_mod_special.bayonet"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 11
+      },
+      "model": "hbm:item/weapon_mod_special.stack_mag"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 12
+      },
+      "model": "hbm:item/weapon_mod_special.skin_saturnite"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 13
+      },
+      "model": "hbm:item/weapon_mod_special.las_shotgun"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 14
+      },
+      "model": "hbm:item/weapon_mod_special.las_capacitor"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 15
+      },
+      "model": "hbm:item/weapon_mod_special.las_auto"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 16
+      },
+      "model": "hbm:item/weapon_mod_special.nickel"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 17
+      },
+      "model": "hbm:item/weapon_mod_special.doubloons"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 18
+      },
+      "model": "hbm:item/weapon_mod_special.drill_hss"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 19
+      },
+      "model": "hbm:item/weapon_mod_special.drill_weaponsteel"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 20
+      },
+      "model": "hbm:item/weapon_mod_special.drill_tcalloy"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 21
+      },
+      "model": "hbm:item/weapon_mod_special.drill_saturnite"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 22
+      },
+      "model": "hbm:item/weapon_mod_special.engine_diesel"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 23
+      },
+      "model": "hbm:item/weapon_mod_special.engine_aviation"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 24
+      },
+      "model": "hbm:item/weapon_mod_special.engine_electric"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 25
+      },
+      "model": "hbm:item/weapon_mod_special.engine_turbo"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 26
+      },
+      "model": "hbm:item/weapon_mod_special.magnet"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 27
+      },
+      "model": "hbm:item/weapon_mod_special.sifter"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 28
+      },
+      "model": "hbm:item/weapon_mod_special.canisters"
+    }
+  ]
+}

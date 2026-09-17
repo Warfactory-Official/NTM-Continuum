@@ -178,14 +178,6 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     public abstract double getLaunchOffset();
 
     protected void serverTickBase(Level level) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos pos : getConPos()) {
-                this.trySubscribe(level, pos);
-                for (FluidTankNTM tank : tanks) {
-                    if (tank.getTankType() != Fluids.NONE) this.trySubscribe(tank.getTankType(), level, pos);
-                }
-            }
-        }
 
         // Rising edge only: a pad wired to a lever fires once when it is thrown, not every tick it is on.
         if (this.redstonePower > 0 && this.prevRedstonePower <= 0) {

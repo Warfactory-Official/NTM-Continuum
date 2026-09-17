@@ -1,27 +1,19 @@
 package com.hbm.saveddata.satellites;
 
-import com.hbm.items.machine.ItemSatellite;
-import com.hbm.items.machine.ItemSatellite.EnumSatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
+import com.mojang.serialization.MapCodec;
 
-/** Reads ore through the ground under its target. */
+import java.util.Set;
+
 public class SatelliteScanner extends Satellite {
 
+    public static final MapCodec<SatelliteScanner> CODEC = MapCodec.unit(SatelliteScanner::new);
+
     public SatelliteScanner() {
-        this.ifaceAcs.add(InterfaceActions.HAS_ORES);
-        this.satIface = Interfaces.SAT_PANEL;
-    }
-
-    @Override public String getType() { return "DEPTH_SCANNER"; }
-
-    @Override
-    public Component[] getInfo(Level level) {
-        return new Component[]{Component.translatable(ItemSatellite.nameKey(EnumSatType.SCANNER))};
+        super(Interfaces.SAT_PANEL, Set.of(InterfaceActions.HAS_ORES), Set.of());
     }
 
     @Override
-    public float[] getColor() {
-        return new float[]{0.544F, 0.680F, 1.0F};
+    public SatelliteType type() {
+        return SatelliteType.SCANNER;
     }
 }

@@ -1,0 +1,215 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "property": "hbm:item_variant",
+    "cases": [
+      {
+        "when": "0",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.silencer"
+        }
+      },
+      {
+        "when": "1",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.scope"
+        }
+      },
+      {
+        "when": "2",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.saw"
+        }
+      },
+      {
+        "when": "3",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.greasegun"
+        }
+      },
+      {
+        "when": "4",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.slowdown"
+        }
+      },
+      {
+        "when": "5",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.speedup"
+        }
+      },
+      {
+        "when": "6",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.choke"
+        }
+      },
+      {
+        "when": "7",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.speedloader"
+        }
+      },
+      {
+        "when": "8",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.furniture_green"
+        }
+      },
+      {
+        "when": "9",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.furniture_black"
+        }
+      },
+      {
+        "when": "10",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.bayonet"
+        }
+      },
+      {
+        "when": "11",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.stack_mag"
+        }
+      },
+      {
+        "when": "12",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.skin_saturnite"
+        }
+      },
+      {
+        "when": "13",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.las_shotgun"
+        }
+      },
+      {
+        "when": "14",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.las_capacitor"
+        }
+      },
+      {
+        "when": "15",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.las_auto"
+        }
+      },
+      {
+        "when": "16",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.nickel"
+        }
+      },
+      {
+        "when": "17",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.doubloons"
+        }
+      },
+      {
+        "when": "18",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.drill_hss"
+        }
+      },
+      {
+        "when": "19",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.drill_weaponsteel"
+        }
+      },
+      {
+        "when": "20",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.drill_tcalloy"
+        }
+      },
+      {
+        "when": "21",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.drill_saturnite"
+        }
+      },
+      {
+        "when": "22",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.engine_diesel"
+        }
+      },
+      {
+        "when": "23",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.engine_aviation"
+        }
+      },
+      {
+        "when": "24",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.engine_electric"
+        }
+      },
+      {
+        "when": "25",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.engine_turbo"
+        }
+      },
+      {
+        "when": "26",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.magnet"
+        }
+      },
+      {
+        "when": "27",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.sifter"
+        }
+      },
+      {
+        "when": "28",
+        "model": {
+          "type": "minecraft:model",
+          "model": "hbm:item/weapon_mod_special.canisters"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "hbm:item/weapon_mod_special.silencer"
+    }
+  }
+}

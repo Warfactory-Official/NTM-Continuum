@@ -13,5 +13,4 @@ public class TorexRenderState extends CompatEntityRenderState {
 
     public EntityNukeTorex torex;
     public float partialTicks;
-    public int entityId;
 }

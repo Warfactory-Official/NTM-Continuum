@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.packet.HbmPackets;
 import com.hbm.radio.ModRadioBlocks;
 import com.hbm.tileentity.network.RTTYSystem;
@@ -11,6 +11,7 @@ import dev.golem.core.net.GolemBuffers;
 import io.netty.buffer.Unpooled;
 import dev.golem.core.world.ItemStacks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -224,7 +225,7 @@ public final class TelexGameTests {
 
     private static TileEntityRadioTelex place(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, ModRadioBlocks.RADIO_TELEX.get().defaultBlockState()
-                .setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+                .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
         return GameTestHelpers.blockEntity(helper, relative, TileEntityRadioTelex.class);
     }
 

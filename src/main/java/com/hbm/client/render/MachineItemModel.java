@@ -4,36 +4,45 @@ import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.render.SubmitSink;
-import net.minecraft.world.item.ItemDisplayContext;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector3fc;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Surface;
 
 import org.jspecify.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.world.item.ItemDisplayContext;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 /**
- * A machine's OBJ model posed as an inventory/hand item: the geometry, the render types, and the
- * framing transform, with nothing version-specific in it.
+ * A machine's OBJ model posed as an inventory/hand item: a declared part tree, plus the framing
+ * transform that puts it in an item slot.
  *
  * <p>The two eras disagree only about <em>who calls this</em>. 26.1 has a special-model system, so
  * {@link MachineItemModelRenderer} wraps this in a {@code NoDataSpecialModelRenderer} and its config
  * arrives through a codec. Older versions have no such system: {@code MachineItemModels} parses the same
- * item-definition JSON itself and a per-loader BEWLR draws it. Both paths end here, submitting through
- * {@link SubmitSink} — the same facade the in-world {@link MachineObjRenderer} uses — so the item icon
- * and the placed machine cannot drift apart.
+ * item-definition JSON itself and a per-loader BEWLR draws it. Both paths end here.
+ *
+ * <p>The body is a {@link Gem.Model}, the same vocabulary the placed machine declares in. The frame —
+ * the item display transform — stays on the pose stack where the caller left it, as a block entity's
+ * placement does. {@link #extents} is therefore the same walk as the draw; it used to be a second
+ * traversal reproducing the first, and the two had drifted.
  */
 public final class MachineItemModel {
 
+    /** The arm pitch the old autosaw item renderer posed its icon at — {@code 80 - rotationPitch}, at rest. */
+    private static final float AUTOSAW_PITCH = 80F;
+
     private final WavefrontObj model;
-    private final RenderType renderType;
+    private final Surface surface;
     private final float scale;
     /** Uses the literal legacy item transform instead of the block-space framing convention. */
     private final boolean rawLegacyTransform;
@@ -59,10 +68,10 @@ public final class MachineItemModel {
     /** The caller's exclusions only — what the icon is framed on. See the constructor. */
     private final Set<String> userExclude;
     /** Optional second texture + the parts drawn with it (e.g. a tank body vs its frame); may be null. */
-    private final @Nullable RenderType overlayType;
+    private final @Nullable Surface overlaySurface;
     private final List<String> overlayParts;
     /** An opaque pass for parts whose legacy item renderer drew with texture sampling disabled. */
-    private final @Nullable RenderType blackType;
+    private final @Nullable Surface blackSurface;
     private final List<String> blackParts;
     /** Parts drawn with an extra X-axis rotation about {@link #rotatePivot} (e.g. the mining laser barrel,
      * so the item icon poses it like the placed machine); rendered separately from the static passes. */
@@ -72,10 +81,10 @@ public final class MachineItemModel {
     /** Parts that use the legacy inventory spin around {@link #spinPivot}. */
     private final List<String> spinParts;
     private final Vector3f spinPivot;
-    /** Multi-texture mode ({@code "mtl": true}): material name → its render type, from the OBJ's .mtl. */
-    private final Map<String, RenderType> materialTypes;
+    /** Multi-texture mode ({@code "mtl": true}): material name → its surface, from the OBJ's .mtl. */
+    private final Map<String, Surface> materialSurfaces;
     /** Explicit OBJ-part texture overrides for models whose sockets do not use an .mtl file. */
-    private final Map<String, RenderType> partTypes;
+    private final Map<String, Surface> partSurfaces;
     /** Whether this item has the old continuously rotating inventory pose. */
     private final boolean spin;
     private final Map<String, ContextTransform> contextTransforms;
@@ -90,6 +99,8 @@ public final class MachineItemModel {
     /** Degrees per millisecond for the old GUI-only continuous spin, zero when unused. */
     private final float guiSpinSpeed;
 
+    private final ItemGem body;
+
     /** A legacy renderer adjustment applied after the context display matrix and before the model pose. */
     public record ContextTransform(Vector3f rotation, Vector3f translation, float scale) {
         public void apply(PoseStack poseStack) {
@@ -102,48 +113,41 @@ public final class MachineItemModel {
     }
 
     /** One ordered OBJ pass, optionally restricted to named parts and locally translated. */
-    public record ModelPass(WavefrontObj model, RenderType renderType, List<String> parts,
-                            Vector3f translation) {
-        public void apply(PoseStack poseStack) {
-            if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
-                poseStack.translate(translation.x, translation.y, translation.z);
-            }
-        }
-    }
+    public record ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation) {}
 
-    public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, boolean rawLegacyTransform,
+    public MachineItemModel(WavefrontObj model, Surface surface, float scale, boolean rawLegacyTransform,
                             boolean blockFramed,
                             float yaw, float pitch, float ty,
                             Vector3f itemTranslate, Vector3f itemPreTranslate, Vector3f guiTranslate, float guiScale,
                             float guiYaw, Set<String> exclude,
-                            @Nullable RenderType overlayType, List<String> overlayParts,
-                            @Nullable RenderType blackType, List<String> blackParts,
+                            @Nullable Surface overlaySurface, List<String> overlayParts,
+                            @Nullable Surface blackSurface, List<String> blackParts,
                               List<String> rotateParts, float rotateX, Vector3f rotatePivot,
-                              List<String> spinParts, Vector3f spinPivot, Map<String, RenderType> materialTypes,
-                              Map<String, RenderType> partTypes,
+                              List<String> spinParts, Vector3f spinPivot, Map<String, Surface> materialSurfaces,
+                              Map<String, Surface> partSurfaces,
                               boolean spin, Map<String, ContextTransform> contextTransforms, String animation) {
-        this(model, renderType, scale, rawLegacyTransform, blockFramed, yaw, pitch, ty,
+        this(model, surface, scale, rawLegacyTransform, blockFramed, yaw, pitch, ty,
                 itemTranslate, itemPreTranslate, guiTranslate, guiScale, guiYaw, exclude,
-                overlayType, overlayParts, blackType, blackParts, rotateParts, rotateX, rotatePivot,
-                spinParts, spinPivot, materialTypes, partTypes, spin, contextTransforms, animation,
+                overlaySurface, overlayParts, blackSurface, blackParts, rotateParts, rotateX, rotatePivot,
+                spinParts, spinPivot, materialSurfaces, partSurfaces, spin, contextTransforms, animation,
                 List.of(), new Vector3f(), List.of(), 0F);
     }
 
-    public MachineItemModel(WavefrontObj model, RenderType renderType, float scale, boolean rawLegacyTransform,
+    public MachineItemModel(WavefrontObj model, Surface surface, float scale, boolean rawLegacyTransform,
                              boolean blockFramed,
                              float yaw, float pitch, float ty,
                              Vector3f itemTranslate, Vector3f itemPreTranslate, Vector3f guiTranslate, float guiScale,
                              float guiYaw, Set<String> exclude,
-                             @Nullable RenderType overlayType, List<String> overlayParts,
-                             @Nullable RenderType blackType, List<String> blackParts,
+                             @Nullable Surface overlaySurface, List<String> overlayParts,
+                             @Nullable Surface blackSurface, List<String> blackParts,
                              List<String> rotateParts, float rotateX, Vector3f rotatePivot,
-                             List<String> spinParts, Vector3f spinPivot, Map<String, RenderType> materialTypes,
-                             Map<String, RenderType> partTypes,
+                             List<String> spinParts, Vector3f spinPivot, Map<String, Surface> materialSurfaces,
+                             Map<String, Surface> partSurfaces,
                              boolean spin, Map<String, ContextTransform> contextTransforms, String animation,
                              List<String> primaryParts, Vector3f primaryTranslation, List<ModelPass> passes,
                              float guiSpinSpeed) {
         this.model = model;
-        this.renderType = renderType;
+        this.surface = surface;
         this.scale = scale;
         this.rawLegacyTransform = rawLegacyTransform;
         this.blockFramed = blockFramed;
@@ -155,17 +159,17 @@ public final class MachineItemModel {
         this.guiTranslate = guiTranslate;
         this.guiScale = guiScale;
         this.guiYaw = guiYaw;
-        this.overlayType = overlayType;
+        this.overlaySurface = overlaySurface;
         this.overlayParts = overlayParts;
-        this.blackType = blackType;
+        this.blackSurface = blackSurface;
         this.blackParts = blackParts;
         this.rotateParts = rotateParts;
         this.rotateX = rotateX;
         this.rotatePivot = rotatePivot;
         this.spinParts = spinParts;
         this.spinPivot = spinPivot;
-        this.materialTypes = materialTypes;
-        this.partTypes = Map.copyOf(partTypes);
+        this.materialSurfaces = materialSurfaces;
+        this.partSurfaces = Map.copyOf(partSurfaces);
         this.spin = spin;
         this.contextTransforms = Map.copyOf(contextTransforms);
         this.animation = animation;
@@ -179,17 +183,17 @@ public final class MachineItemModel {
         // The overlay parts are textured separately, so the base pass must skip them. Rotated parts are
         // also drawn in their own pass, so exclude them from both static passes.
         Set<String> merged = new HashSet<>(exclude);
-        if (overlayType != null && !overlayParts.isEmpty()) merged.addAll(overlayParts);
-        if (blackType != null && !blackParts.isEmpty()) merged.addAll(blackParts);
+        if (overlaySurface != null && !overlayParts.isEmpty()) merged.addAll(overlayParts);
+        if (blackSurface != null && !blackParts.isEmpty()) merged.addAll(blackParts);
         merged.addAll(rotateParts);
         merged.addAll(spinParts);
         if (spinParts.contains("Stirling")) merged.addAll(List.of("Cog", "CogSmall", "Piston"));
         this.exclude = merged;
+        this.body = declare();
     }
 
-    /** Whether {@code part} is drawn in the separate rotated pass (so the static passes must skip it). */
-    private boolean isRotated(String part) {
-        return rotateParts.contains(part);
+    public Gem.Model<ItemPose> gem() {
+        return body.model();
     }
 
     /** Draws the model, framed for an item slot. The pose is left as it was found. */
@@ -202,124 +206,8 @@ public final class MachineItemModel {
                        @Nullable ItemDisplayContext context) {
         poseStack.pushPose();
         applyTransform(poseStack, context);
-        if ("pump".equals(animation)) {
-            submitPumpAnimation(poseStack, sink, lightCoords, overlayCoords);
-            poseStack.popPose();
-            return;
-        }
-        if ("armor_bj_jetpack_chest".equals(animation) && !partTypes.isEmpty()) {
-            for (String part : List.of("Body", "LeftArm", "RightArm")) submitPartType(part, poseStack, sink,
-                    lightCoords, overlayCoords);
-            poseStack.pushPose();
-            poseStack.translate(0F, 0F, -0.1F);
-            submitPartType("Jetpack", poseStack, sink, lightCoords, overlayCoords);
-            poseStack.popPose();
-            poseStack.popPose();
-            return;
-        }
-        if (!partTypes.isEmpty()) {
-            for (Map.Entry<String, RenderType> entry : partTypes.entrySet()) {
-                if (userExclude.contains(entry.getKey())) continue;
-                sink.submitCustomGeometry(poseStack, entry.getValue(),
-                        (pose, buffer) -> model.renderPart(entry.getKey(), pose, buffer, lightCoords, overlayCoords));
-            }
-            poseStack.popPose();
-            return;
-        }
-        if (!materialTypes.isEmpty()) {
-            for (Map.Entry<String, RenderType> e : materialTypes.entrySet()) {
-                String mat = e.getKey();
-                sink.submitCustomGeometry(poseStack, e.getValue(),
-                        (pose, buffer) -> model.renderMaterial(mat, pose, buffer, lightCoords, overlayCoords));
-            }
-            poseStack.popPose();
-            return;
-        }
-        if (passes.isEmpty()) {
-            sink.submitCustomGeometry(poseStack, renderType,
-                    (pose, buffer) -> model.renderExcept(pose, buffer, lightCoords, overlayCoords, exclude));
-        } else {
-            poseStack.pushPose();
-            applyTranslation(poseStack, primaryTranslation);
-            submitPass(poseStack, sink, model, renderType, primaryParts, exclude, lightCoords, overlayCoords);
-            poseStack.popPose();
-            for (ModelPass pass : passes) {
-                poseStack.pushPose();
-                pass.apply(poseStack);
-                submitPass(poseStack, sink, pass.model(), pass.renderType(), pass.parts(), userExclude,
-                        lightCoords, overlayCoords);
-                poseStack.popPose();
-            }
-        }
-        if (blackType != null && !blackParts.isEmpty()) {
-            sink.submitCustomGeometry(poseStack, blackType, (pose, buffer) -> {
-                for (String part : blackParts) if (!isRotated(part)) {
-                    model.renderPart(part, pose, buffer, lightCoords, overlayCoords, 0xFF000000);
-                }
-            });
-        }
-        if (overlayType != null && !overlayParts.isEmpty()) {
-            sink.submitCustomGeometry(poseStack, overlayType, (pose, buffer) -> {
-                for (String part : overlayParts) if (!isRotated(part)) model.renderPart(part, pose, buffer, lightCoords, overlayCoords);
-            });
-        }
-
-        // Rotated parts (e.g. the mining laser barrel): the same X-rotation the placed machine applies,
-        // about the connection pivot, so the item icon poses like the in-world model.
-        if (!rotateParts.isEmpty()) {
-            RenderType type = overlayType != null ? overlayType : renderType;
-            poseStack.pushPose();
-            poseStack.translate(rotatePivot.x, rotatePivot.y, rotatePivot.z);
-            poseStack.mulPose(Axis.XP.rotationDegrees(rotateX));
-            poseStack.translate(-rotatePivot.x, -rotatePivot.y, -rotatePivot.z);
-            sink.submitCustomGeometry(poseStack, type, (pose, buffer) -> {
-                for (String part : rotateParts) model.renderPart(part, pose, buffer, lightCoords, overlayCoords);
-            });
-            poseStack.popPose();
-        }
-        if (spin && spinParts.contains("Stirling")) {
-            submitStirlingAnimation(poseStack, sink, lightCoords, overlayCoords);
-        } else if (spin && !spinParts.isEmpty()) {
-            poseStack.pushPose();
-            spinAround(poseStack, spinPivot, System.currentTimeMillis() % 3600L * 0.1F);
-            sink.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
-                for (String part : spinParts) if (!userExclude.contains(part)) {
-                    model.renderPart(part, pose, buffer, lightCoords, overlayCoords);
-                }
-            });
-            poseStack.popPose();
-        }
+        body.submit(poseStack, sink, lightCoords, overlayCoords);
         poseStack.popPose();
-    }
-
-    private void submitPass(PoseStack poseStack, SubmitSink sink, WavefrontObj passModel, RenderType passType,
-                            List<String> parts, Set<String> excluded, int lightCoords, int overlayCoords) {
-        sink.submitCustomGeometry(poseStack, passType, (pose, buffer) -> {
-            if (parts.isEmpty()) {
-                passModel.renderExcept(pose, buffer, lightCoords, overlayCoords, excluded);
-            } else {
-                for (String part : parts) {
-                    if (!excluded.contains(part)) {
-                        passModel.renderPart(part, pose, buffer, lightCoords, overlayCoords);
-                    }
-                }
-            }
-        });
-    }
-
-    private void applyTranslation(PoseStack poseStack, Vector3f translation) {
-        if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
-            poseStack.translate(translation.x, translation.y, translation.z);
-        }
-    }
-
-    private void submitPartType(String part, PoseStack poseStack, SubmitSink sink, int lightCoords,
-            int overlayCoords) {
-        RenderType type = partTypes.get(part);
-        if (type != null && !userExclude.contains(part)) {
-            sink.submitCustomGeometry(poseStack, type,
-                    (pose, buffer) -> model.renderPart(part, pose, buffer, lightCoords, overlayCoords));
-        }
     }
 
     /** The eight transformed corners of the model's bounding box (26.1 uses these to size the icon). */
@@ -327,151 +215,241 @@ public final class MachineItemModel {
         extents(output, null);
     }
 
-    /** The transformed corners for a display context. */
     public void extents(Consumer<Vector3fc> output, @Nullable ItemDisplayContext context) {
-        PoseStack ps = new PoseStack();
-        applyTransform(ps, context);
-        if ("pump".equals(animation)) {
-            pumpExtents(ps, output);
-            return;
-        }
-        if (!partTypes.isEmpty()) {
-            Set<String> included = new HashSet<>(partTypes.keySet());
-            included.removeAll(userExclude);
-            emitPartBounds(ps, included, output);
-            return;
-        }
-        if (!materialTypes.isEmpty()) {
-            emitBounds(ps, model.boundsIncludingMaterials(materialTypes.keySet()), output);
-            return;
-        }
-
-        if (passes.isEmpty()) {
-            emitBounds(ps, model.boundsExcludingExact(exclude), output);
-        } else {
-            ps.pushPose();
-            applyTranslation(ps, primaryTranslation);
-            if (primaryParts.isEmpty()) {
-                emitBounds(ps, model.boundsExcludingExact(exclude), output);
-            } else {
-                Set<String> included = new HashSet<>(primaryParts);
-                included.removeAll(exclude);
-                emitPartBounds(ps, model, included, output);
-            }
-            ps.popPose();
-            for (ModelPass pass : passes) {
-                ps.pushPose();
-                pass.apply(ps);
-                if (pass.parts().isEmpty()) {
-                    emitBounds(ps, pass.model().boundsExcludingExact(userExclude), output);
-                } else {
-                    Set<String> included = new HashSet<>(pass.parts());
-                    included.removeAll(userExclude);
-                    emitPartBounds(ps, pass.model(), included, output);
-                }
-                ps.popPose();
-            }
-        }
-        emitPartBounds(ps, blackParts.stream().filter(part -> !isRotated(part)).collect(java.util.stream.Collectors.toSet()), output);
-        emitPartBounds(ps, overlayParts.stream().filter(part -> !isRotated(part)).collect(java.util.stream.Collectors.toSet()), output);
-
-        if (!rotateParts.isEmpty()) {
-            ps.pushPose();
-            ps.translate(rotatePivot.x, rotatePivot.y, rotatePivot.z);
-            ps.mulPose(Axis.XP.rotationDegrees(rotateX));
-            ps.translate(-rotatePivot.x, -rotatePivot.y, -rotatePivot.z);
-            emitPartBounds(ps, Set.copyOf(rotateParts), output);
-            ps.popPose();
-        }
-        if (spin && spinParts.contains("Stirling")) {
-            stirlingExtents(ps, output);
-        } else if (spin && !spinParts.isEmpty()) {
-            Set<String> rendered = new HashSet<>(spinParts);
-            rendered.removeAll(userExclude);
-            ps.pushPose();
-            spinAround(ps, spinPivot, System.currentTimeMillis() % 3600L * 0.1F);
-            emitPartBounds(ps, rendered, output);
-            ps.popPose();
-        }
+        PoseStack framed = new PoseStack();
+        applyTransform(framed, context);
+        body.extents(framed, output);
     }
 
-    private void emitPartBounds(PoseStack poseStack, Set<String> parts, Consumer<Vector3fc> output) {
-        emitBounds(poseStack, model.boundsIncluding(parts), output);
-    }
-
-    private void emitPartBounds(PoseStack poseStack, WavefrontObj passModel, Set<String> parts,
-                                Consumer<Vector3fc> output) {
-        emitBounds(poseStack, passModel.boundsIncluding(parts), output);
-    }
-
-    private void emitBounds(PoseStack poseStack, @Nullable float[][] bounds, Consumer<Vector3fc> output) {
-        if (bounds == null) return;
-        Matrix4f m = poseStack.last().pose();
-        float[] mn = bounds[0];
-        float[] mx = bounds[1];
-        for (int xi = 0; xi < 2; xi++) for (int yi = 0; yi < 2; yi++) for (int zi = 0; zi < 2; zi++) {
-            Vector3f v = new Vector3f(xi == 0 ? mn[0] : mx[0], yi == 0 ? mn[1] : mx[1], zi == 0 ? mn[2] : mx[2]);
-            m.transformPosition(v);
-            output.accept(v);
-        }
-    }
-
-    private void pumpExtents(PoseStack poseStack, Consumer<Vector3fc> output) {
-        emitPartBounds(poseStack, Set.of("Base"), output);
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
-
-        poseStack.pushPose();
-        poseStack.translate(0F, 2.25F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(rotation - 90F));
-        poseStack.translate(0F, -2.25F, 0F);
-        emitPartBounds(poseStack, Set.of("Rotor"), output);
-        poseStack.popPose();
-
-        double sin = Math.sin(rotation * Math.PI / 180D) * 0.5D - 0.5D;
-        double cos = Math.cos(rotation * Math.PI / 180D) * 0.5D;
-        double angle = Math.acos(cos / 2D) * 180D / Math.PI - 90D;
-        double lift = 1D - Math.sqrt(1D + (cos * cos) / 2D) + sin;
-
-        poseStack.pushPose();
-        poseStack.translate(0D, lift, 0D);
-        poseStack.translate(0D, 4.75D, 0D);
-        poseStack.mulPose(Axis.ZN.rotationDegrees((float) angle));
-        poseStack.translate(0D, -4.75D, 0D);
-        emitPartBounds(poseStack, Set.of("Arms"), output);
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(0D, lift, 0D);
-        emitPartBounds(poseStack, Set.of("Piston"), output);
-        poseStack.popPose();
-    }
-
-    private void stirlingExtents(PoseStack poseStack, Consumer<Vector3fc> output) {
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
-        if (!userExclude.contains("Cog")) {
-            poseStack.pushPose();
-            spinAround(poseStack, new Vector3f(0F, 1.375F, 0F), -rotation);
-            emitPartBounds(poseStack, Set.of("Cog"), output);
-            poseStack.popPose();
-        }
-        poseStack.pushPose();
-        poseStack.translate(0F, 1.375F, 0.25F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(rotation * 2F + 3F));
-        poseStack.translate(0F, -1.375F, -0.25F);
-        emitPartBounds(poseStack, Set.of("CogSmall"), output);
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(Math.sin(rotation * Math.PI / 90D) * 0.25D + 0.125D, 0F, 0F);
-        emitPartBounds(poseStack, Set.of("Piston"), output);
-        poseStack.popPose();
-    }
-
-    /** The transformed corners for an item-model layer's bounds supplier. */
     public Vector3fc[] extents(@Nullable ItemDisplayContext context) {
-        java.util.List<Vector3fc> points = new java.util.ArrayList<>(8);
+        List<Vector3fc> points = new ArrayList<>(8);
         extents(points::add, context);
         return points.toArray(Vector3fc[]::new);
+    }
+
+    private ItemGem declare() {
+        ItemGem.Builder builder = ItemGem.builder();
+        if ("pump".equals(animation)) {
+            pump(builder);
+        } else if ("autosaw".equals(animation)) {
+            autosaw(builder);
+        } else if ("rbmk_gauge".equals(animation)) {
+            RBMKGaugeIcon.declare(builder, model, surface, partSurfaces);
+        } else if ("armor_bj_jetpack_chest".equals(animation) && !partSurfaces.isEmpty()) {
+            jetpackChest(builder);
+        } else if (!partSurfaces.isEmpty()) {
+            sockets(builder);
+        } else if (!materialSurfaces.isEmpty()) {
+            materials(builder);
+        } else {
+            body(builder);
+            black(builder);
+            overlay(builder);
+            rotated(builder);
+            spinning(builder);
+        }
+        return builder.build();
+    }
+
+    /** The old pump item renderer moves every pump part from one shared millisecond-derived rotor angle. */
+    private void pump(ItemGem.Builder builder) {
+        named(builder, "Base", surface);
+        named(builder, "Rotor", surface).spin(Gem.Axes.Z, 0F, 2.25F, 0F, state -> state.animation - 90F);
+        named(builder, "Arms", surface)
+                .slide(Gem.Axes.Y, MachineItemModel::pumpLift)
+                .spin(Gem.Axes.Z, 0F, 4.75F, 0F, state -> -pumpArmAngle(state));
+        named(builder, "Piston", surface).slide(Gem.Axes.Y, MachineItemModel::pumpLift);
+    }
+
+    private static float pumpArmAngle(ItemPose state) {
+        double cos = Math.cos(state.animation * Math.PI / 180D) * 0.5D;
+        return (float) (Math.acos(cos / 2D) * 180D / Math.PI - 90D);
+    }
+
+    /**
+     * The autosaw icon is the placed machine's own arm chain, parked at the pitch the old item renderer
+     * asked for and with the blade turning. Drawing the OBJ flat leaves the three segments lying in a
+     * straight line, which is a pose the machine never holds.
+     */
+    private void autosaw(ItemGem.Builder builder) {
+        Gem.Part<ItemPose> ground = builder.joint();
+        segment(builder, ground, "Base");
+        segment(builder, ground, "Main");
+        segment(builder, ground, "Engine");
+
+        Gem.Part<ItemPose> upper = ground.joint()
+                .translate(0F, 1.75F, 0F)
+                .rotate(Gem.Axes.X, AUTOSAW_PITCH)
+                .translate(0F, -1.75F, 0F);
+        segment(builder, upper, "ArmUpper");
+
+        Gem.Part<ItemPose> lower = upper.joint()
+                .translate(0F, 1.75F, -4F)
+                .rotate(Gem.Axes.X, -AUTOSAW_PITCH * 2F)
+                .translate(0F, -1.75F, 4F)
+                .translate(-0.01F, 0F, 0F);
+        segment(builder, lower, "ArmLower");
+
+        Gem.Part<ItemPose> tip = lower.joint()
+                .translate(0.01F, 0F, 0F)
+                .translate(0F, 1.75F, -8F)
+                .rotate(Gem.Axes.X, AUTOSAW_PITCH)
+                .translate(0F, -1.75F, 8F);
+        segment(builder, tip, "ArmTip");
+
+        Gem.Part<ItemPose> blade = tip.joint()
+                .translate(0F, 1.75F, -10F)
+                .angle(Gem.Axes.Y, state -> -state.animation)
+                .translate(0F, -1.75F, 10F);
+        segment(builder, blade, "Sawblade");
+    }
+
+    private void segment(ItemGem.Builder builder, Gem.Part<ItemPose> parent, String part) {
+        builder.child(parent, model.part(part), surface, model.boundsIncluding(Set.of(part)));
+    }
+
+    private static float pumpLift(ItemPose state) {
+        double sin = Math.sin(state.animation * Math.PI / 180D) * 0.5D - 0.5D;
+        double cos = Math.cos(state.animation * Math.PI / 180D) * 0.5D;
+        return (float) (1D - Math.sqrt(1D + (cos * cos) / 2D) + sin);
+    }
+
+    /**
+     * The BJ jetpack chestplate: the suit's own three sockets, then the pack a tenth of a unit behind
+     * them. That offset is the whole reason this is not the ordinary socket branch.
+     */
+    private void jetpackChest(ItemGem.Builder builder) {
+        Set<String> framed = new LinkedHashSet<>();
+        Gem.Part<ItemPose> first = null;
+        for (String part : List.of("Body", "LeftArm", "RightArm")) {
+            Gem.Part<ItemPose> declared = socket(builder, part);
+            if (declared == null) continue;
+            if (first == null) first = declared;
+            framed.add(part);
+        }
+        if (first != null) builder.frame(first, model.boundsIncluding(framed));
+
+        Gem.Part<ItemPose> pack = socket(builder, "Jetpack");
+        if (pack != null) {
+            pack.translate(0F, 0F, -0.1F);
+            builder.frame(pack, model.boundsIncluding(Set.of("Jetpack")));
+        }
+    }
+
+    private void sockets(ItemGem.Builder builder) {
+        Set<String> framed = new LinkedHashSet<>();
+        Gem.Part<ItemPose> first = null;
+        for (String part : partSurfaces.keySet()) {
+            Gem.Part<ItemPose> declared = socket(builder, part);
+            if (declared == null) continue;
+            if (first == null) first = declared;
+            framed.add(part);
+        }
+        if (first != null) builder.frame(first, model.boundsIncluding(framed));
+    }
+
+    private Gem.@Nullable Part<ItemPose> socket(ItemGem.Builder builder, String part) {
+        Surface skin = partSurfaces.get(part);
+        if (skin == null || userExclude.contains(part)) return null;
+        return builder.part(model.part(part), skin, null);
+    }
+
+    private void materials(ItemGem.Builder builder) {
+        Gem.Part<ItemPose> first = null;
+        for (Map.Entry<String, Surface> entry : materialSurfaces.entrySet()) {
+            Gem.Part<ItemPose> declared = builder.part(model.material(entry.getKey()), entry.getValue(), null);
+            if (first == null) first = declared;
+        }
+        if (first != null) builder.frame(first, model.boundsIncludingMaterials(materialSurfaces.keySet()));
+    }
+
+    private void body(ItemGem.Builder builder) {
+        if (passes.isEmpty()) {
+            pass(builder, model, surface, List.of(), exclude, new Vector3f());
+            return;
+        }
+        pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
+        for (ModelPass extra : passes) {
+            pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude, extra.translation());
+        }
+    }
+
+    private void pass(ItemGem.Builder builder, WavefrontObj source, Surface skin, List<String> parts,
+                      Set<String> excluded, Vector3f translation) {
+        Geometry geometry;
+        float[][] box;
+        if (parts.isEmpty()) {
+            geometry = source.allExcept(excluded);
+            box = source.boundsExcludingExact(excluded);
+        } else {
+            Set<String> chosen = remaining(parts, excluded);
+            if (chosen.isEmpty()) return;
+            geometry = source.parts(chosen, false);
+            box = source.boundsIncluding(chosen);
+        }
+        Gem.Part<ItemPose> declared = builder.part(geometry, skin, box);
+        if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
+            declared.translate(translation.x, translation.y, translation.z);
+        }
+    }
+
+    private void black(ItemGem.Builder builder) {
+        if (blackSurface == null) return;
+        Set<String> chosen = remaining(blackParts, Set.copyOf(rotateParts));
+        if (chosen.isEmpty()) return;
+        builder.part(model.parts(chosen, false), blackSurface, model.boundsIncluding(chosen))
+                .tint(state -> 0xFF000000);
+    }
+
+    private void overlay(ItemGem.Builder builder) {
+        if (overlaySurface == null) return;
+        Set<String> chosen = remaining(overlayParts, Set.copyOf(rotateParts));
+        if (chosen.isEmpty()) return;
+        builder.part(model.parts(chosen, false), overlaySurface, model.boundsIncluding(chosen));
+    }
+
+    /** The same X-rotation the placed machine applies, about the connection pivot. */
+    private void rotated(ItemGem.Builder builder) {
+        if (rotateParts.isEmpty()) return;
+        Set<String> chosen = new LinkedHashSet<>(rotateParts);
+        builder.part(model.parts(chosen, false), overlaySurface != null ? overlaySurface : surface,
+                        model.boundsIncluding(chosen))
+                .translate(rotatePivot.x, rotatePivot.y, rotatePivot.z)
+                .rotate(Gem.Axes.X, rotateX)
+                .translate(-rotatePivot.x, -rotatePivot.y, -rotatePivot.z);
+    }
+
+    private void spinning(ItemGem.Builder builder) {
+        if (!spin || spinParts.isEmpty()) return;
+        if (spinParts.contains("Stirling")) {
+            stirling(builder);
+            return;
+        }
+        Set<String> chosen = remaining(spinParts, userExclude);
+        if (chosen.isEmpty()) return;
+        builder.part(model.parts(chosen, false), surface, model.boundsIncluding(chosen))
+                .spin(Gem.Axes.Z, spinPivot.x, spinPivot.y, spinPivot.z, state -> state.animation);
+    }
+
+    /** The legacy Stirling inventory icon animates its three moving parts independently. */
+    private void stirling(ItemGem.Builder builder) {
+        if (!userExclude.contains("Cog")) {
+            named(builder, "Cog", surface).spin(Gem.Axes.Z, 0F, 1.375F, 0F, state -> -state.animation);
+        }
+        named(builder, "CogSmall", surface)
+                .spin(Gem.Axes.X, 0F, 1.375F, 0.25F, state -> state.animation * 2F + 3F);
+        named(builder, "Piston", surface)
+                .slide(Gem.Axes.X, state -> (float) (Math.sin(state.animation * Math.PI / 90D) * 0.25D + 0.125D));
+    }
+
+    private Gem.Part<ItemPose> named(ItemGem.Builder builder, String part, Surface skin) {
+        return builder.part(model.part(part), skin, model.boundsIncluding(Set.of(part)));
+    }
+
+    private static Set<String> remaining(List<String> parts, Set<String> excluded) {
+        Set<String> chosen = new LinkedHashSet<>(parts);
+        chosen.removeAll(excluded);
+        return chosen;
     }
 
     private void applyTransform(PoseStack poseStack, @Nullable ItemDisplayContext context) {
@@ -561,71 +539,5 @@ public final class MachineItemModel {
             poseStack.scale(0.25F, 0.25F, 0.25F);
             poseStack.translate(0F, -22F, 0F);
         }
-    }
-
-    /** The old pump item renderer moves every pump part from one shared millisecond-derived rotor angle. */
-    private void submitPumpAnimation(PoseStack poseStack, SubmitSink sink, int lightCoords, int overlayCoords) {
-        submitPart(poseStack, sink, "Base", lightCoords, overlayCoords);
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
-
-        poseStack.pushPose();
-        poseStack.translate(0F, 2.25F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(rotation - 90F));
-        poseStack.translate(0F, -2.25F, 0F);
-        submitPart(poseStack, sink, "Rotor", lightCoords, overlayCoords);
-        poseStack.popPose();
-
-        double sin = Math.sin(rotation * Math.PI / 180D) * 0.5D - 0.5D;
-        double cos = Math.cos(rotation * Math.PI / 180D) * 0.5D;
-        double angle = Math.acos(cos / 2D) * 180D / Math.PI - 90D;
-        double cath = Math.sqrt(1D + (cos * cos) / 2D);
-        double lift = 1D - cath + sin;
-
-        poseStack.pushPose();
-        poseStack.translate(0D, lift, 0D);
-        poseStack.translate(0D, 4.75D, 0D);
-        poseStack.mulPose(Axis.ZN.rotationDegrees((float) angle));
-        poseStack.translate(0D, -4.75D, 0D);
-        submitPart(poseStack, sink, "Arms", lightCoords, overlayCoords);
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(0D, lift, 0D);
-        submitPart(poseStack, sink, "Piston", lightCoords, overlayCoords);
-        poseStack.popPose();
-    }
-
-    private void spinAround(PoseStack poseStack, Vector3f pivot, float angle) {
-        // applyTransform has already centred the OBJ. Pivots remain in its original local coordinates.
-        poseStack.translate(pivot.x, pivot.y, pivot.z);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(angle));
-        poseStack.translate(-pivot.x, -pivot.y, -pivot.z);
-    }
-
-    /** The legacy Stirling inventory icon animates its three moving parts independently. */
-    private void submitStirlingAnimation(PoseStack poseStack, SubmitSink sink, int lightCoords, int overlayCoords) {
-        float rotation = System.currentTimeMillis() % 3600L * 0.1F;
-        if (!userExclude.contains("Cog")) {
-            poseStack.pushPose();
-            spinAround(poseStack, new Vector3f(0F, 1.375F, 0F), -rotation);
-            submitPart(poseStack, sink, "Cog", lightCoords, overlayCoords);
-            poseStack.popPose();
-        }
-        poseStack.pushPose();
-        poseStack.translate(0F, 1.375F, 0.25F);
-        poseStack.mulPose(Axis.XP.rotationDegrees(rotation * 2F + 3F));
-        poseStack.translate(0F, -1.375F, -0.25F);
-        submitPart(poseStack, sink, "CogSmall", lightCoords, overlayCoords);
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(Math.sin(rotation * Math.PI / 90D) * 0.25D + 0.125D, 0F, 0F);
-        submitPart(poseStack, sink, "Piston", lightCoords, overlayCoords);
-        poseStack.popPose();
-    }
-
-    private void submitPart(PoseStack poseStack, SubmitSink sink, String part, int lightCoords, int overlayCoords) {
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart(part, pose, buffer, lightCoords, overlayCoords));
     }
 }

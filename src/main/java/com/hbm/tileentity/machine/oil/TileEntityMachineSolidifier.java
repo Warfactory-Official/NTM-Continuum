@@ -67,7 +67,6 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSolidifier te) {
         te.power = Library.chargeTEFromItems(te.inventory, 1, te.power, maxPower);
         te.setTypeFromFluidId();
-        te.updateConnections();
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         int speed = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -82,12 +81,6 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
-            this.trySubscribe(tank.getTankType(), level, dp);
-        }
-    }
 
     private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(4);

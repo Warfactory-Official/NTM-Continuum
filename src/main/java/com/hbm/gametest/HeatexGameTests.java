@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.HeaterHeatex;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
@@ -11,6 +10,7 @@ import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityHeaterHeatex;
+import com.hbm.util.TickPhase;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -22,8 +22,6 @@ import net.minecraft.world.level.GameType;
 
 /** Focused contracts for the legacy FT_Coolable table and Heater Heatex machine. */
 public final class HeatexGameTests {
-
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     private HeatexGameTests() {}
 
@@ -68,10 +66,10 @@ public final class HeatexGameTests {
         HeaterHeatex block = ModMachineBlocks.heater_heatex.get();
 
         helper.assertTrue(heater.getConPos().length == 4, "Heatex must expose four fluid ports");
-        assertMeta(helper, core.offset(-1, 0, -1), 10);
-        assertMeta(helper, core.offset(1, 0, -1), 11);
-        assertMeta(helper, core.offset(-1, 0, 1), 10);
-        assertMeta(helper, core.offset(1, 0, 1), 11);
+        FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, -1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, -1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(-1, 0, 1));
+        FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 1));
         assertPort(helper, heater.getConPos()[0], new BlockPos(4, 1, 1), ForgeDirection.NORTH);
         assertPort(helper, heater.getConPos()[1], new BlockPos(2, 1, 1), ForgeDirection.NORTH);
         assertPort(helper, heater.getConPos()[2], new BlockPos(4, 1, 5), ForgeDirection.SOUTH);
@@ -119,9 +117,13 @@ public final class HeatexGameTests {
         heater.amountToCool = 10;
         heater.tickDelay = 2;
 
-        long time = helper.getLevel().getGameTime();
         heater.tickDelay = 2;
-        while (time % heater.tickDelay == 0L) heater.tickDelay++;
+        while (heater.tickDelay < 64
+                && TickPhase.every(helper.getLevel(), heater.getBlockPos(), heater.tickDelay)) {
+            heater.tickDelay++;
+        }
+        helper.assertTrue(heater.tickDelay < 64,
+                "no throttle setting left this heatex off its own cadence, so the delayed tick cannot be tested");
         TileEntityHeaterHeatex.serverTick(helper.getLevel(), heater.getBlockPos(), heater.getBlockState(), heater);
         helper.assertTrue(heater.tanks[0].getFill() == 10 && heater.tanks[1].getFill() == 23_999,
                 "Heatex converted during a delayed tick");
@@ -156,7 +158,7 @@ public final class HeatexGameTests {
         var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         original.serialize(buffer);
         TileEntityHeaterHeatex copy = new TileEntityHeaterHeatex(BlockPos.ZERO,
-                ModMachineBlocks.heater_heatex.get().defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+                ModMachineBlocks.heater_heatex.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.tanks[0].getTankType() == original.tanks[0].getTankType()
                         && copy.tanks[0].getFill() == 1234 && copy.tanks[1].getTankType() == Fluids.LEAD
@@ -197,16 +199,10 @@ public final class HeatexGameTests {
 
     private static TileEntityHeaterHeatex place(GameTestHelper helper, BlockPos pos) {
         HeaterHeatex block = ModMachineBlocks.heater_heatex.get();
-        helper.setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, block, pos);
         TileEntityHeaterHeatex heater = GameTestHelpers.blockEntity(helper, pos, TileEntityHeaterHeatex.class);
         helper.assertTrue(heater != null, "Heatex core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), helper.absolutePos(pos), ForgeDirection.NORTH);
         return heater;
-    }
-
-    private static void assertMeta(GameTestHelper helper, BlockPos pos, int expected) {
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(pos)).getValue(BlockDummyable.META) == expected,
-                "Heatex dummy metadata mismatch at " + pos);
     }
 
     private static void assertPort(GameTestHelper helper, DirPos port, BlockPos expected, ForgeDirection direction) {

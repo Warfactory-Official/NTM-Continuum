@@ -16,9 +16,11 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.InventoryUtil;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -69,13 +71,9 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasCent te) {
         GasCentrifugeRecipes.register();
-        for (DirPos port : te.getConPos()) te.trySubscribe(level, port);
 
         te.power = Library.chargeTEFromItems(te.inventory, 4, te.power, MAX_POWER);
         te.setTankTypeFromIdentifier();
-        if (te.tank.getTankType() != Fluids.NONE) {
-            for (DirPos port : te.getConPos()) te.trySubscribe(te.tank.getTankType(), level, port);
-        }
 
         if (GasCentrifugeRecipes.FLUID_CONVERSIONS.containsValue(te.inputTank.getTankType())) {
             te.attemptConversion();
@@ -96,7 +94,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
             te.progress = 0;
         }
 
-        if (level.getGameTime() % 10 == 0) te.transferCascade(level);
+        if (TickPhase.every(level, pos, 10)) te.transferCascade(level);
         te.networkPackNT();
     }
 
@@ -139,7 +137,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
     }
 
     private void transferCascade(Level level) {
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META) - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         BlockPos adjacent = worldPosition.offset(-facing.offsetX, 0, -facing.offsetZ);
         if (level.getBlockEntity(adjacent) instanceof TileEntityMachineGasCent target
                 && target.tank.getFill() == 0 && target.tank.getTankType() == tank.getTankType()) {

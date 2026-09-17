@@ -16,5 +16,6 @@
       { "texture": "hbm:textures/models/turrets/chekhov.png", "parts": ["Body"] },
       { "texture": "hbm:textures/models/turrets/chekhov_barrels.png", "parts": ["Barrels"] }
     ]
-  }
+  },
+  "oversized_in_gui": true
 }

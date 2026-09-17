@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "hbm:blocks/rbmk/rbmk_debris_digamma"
-  }
-}

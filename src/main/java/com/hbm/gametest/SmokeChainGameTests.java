@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineAshpit;
 import com.hbm.blocks.machine.MachineChimneyBrick;
 import com.hbm.blocks.machine.MachineChimneyIndustrial;
@@ -31,20 +30,14 @@ public final class SmokeChainGameTests {
 
     private SmokeChainGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
-
     public static void layouts(GameTestHelper helper) {
         BlockPos brickPos = new BlockPos(3, 1, 3);
         MachineChimneyBrick brick = SmokeChainRegistration.chimney_brick.get();
-        helper.getLevel().setBlock(helper.absolutePos(brickPos),
-                brick.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        brick.formStructure(helper.getLevel(), helper.absolutePos(brickPos), ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, brick, brickPos);
 
         BlockPos industrialPos = new BlockPos(12, 1, 3);
         MachineChimneyIndustrial industrial = SmokeChainRegistration.chimney_industrial.get();
-        helper.getLevel().setBlock(helper.absolutePos(industrialPos),
-                industrial.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        industrial.formStructure(helper.getLevel(), helper.absolutePos(industrialPos), ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, industrial, industrialPos);
 
         helper.assertTrue(Arrays.equals(brick.getDimensions(), new int[]{12, 0, 1, 1, 1, 1}),
                 "Brick chimney dimensions changed");
@@ -52,10 +45,8 @@ public final class SmokeChainGameTests {
                 "Industrial chimney dimensions changed");
         assertTowerCells(helper, helper.absolutePos(brickPos), 12, brick);
         assertTowerCells(helper, helper.absolutePos(industrialPos), 22, industrial);
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(brickPos).east()).getValue(BlockDummyable.META) >= 6,
-                "Brick east smoke port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(industrialPos).north()).getValue(BlockDummyable.META) >= 6,
-                "Industrial north smoke port was not marked extra");
+        FoldedTestSupport.assertPort(helper, brickPos, brickPos.east());
+        FoldedTestSupport.assertPort(helper, industrialPos, industrialPos.north());
         helper.succeed();
     }
 
@@ -89,7 +80,7 @@ public final class SmokeChainGameTests {
         MachineAshpit ashpitBlock = SmokeChainRegistration.machine_ashpit.get();
         BlockPos ashpitPos = helper.absolutePos(new BlockPos(3, 2, 3));
         helper.getLevel().setBlock(ashpitPos,
-                ashpitBlock.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+                ashpitBlock.defaultBlockState(), 3);
         TileEntityAshpit ashpit = (TileEntityAshpit) helper.getLevel().getBlockEntity(ashpitPos);
         helper.assertTrue(ashpit != null, "Ashpit core BlockEntity was not created");
 
@@ -159,7 +150,7 @@ public final class SmokeChainGameTests {
                 io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         ashpit.serialize(buffer);
         TileEntityAshpit copy = new TileEntityAshpit(BlockPos.ZERO,
-                SmokeChainRegistration.machine_ashpit.get().defaultBlockState().setValue(BlockDummyable.META, 12));
+                SmokeChainRegistration.machine_ashpit.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.playersUsing == 2 && copy.isFull,
                 "Ashpit GUI sync fields did not round-trip");
@@ -168,35 +159,33 @@ public final class SmokeChainGameTests {
 
     public static void itemModels(GameTestHelper helper) {
         assertItemModel(helper, "chimney_brick", "hbm:models/machines/chimney_brick.obj",
-                "hbm:textures/models/machines/chimney_brick.png", 0.5D, 0D);
+                "hbm:textures/models/machines/chimney_brick.png", 0.5D, 0D, true);
         assertItemModel(helper, "chimney_industrial", "hbm:models/machines/chimney_industrial.obj",
-                "hbm:textures/models/machines/chimney_industrial.png", 0.25D, 0D);
+                "hbm:textures/models/machines/chimney_industrial.png", 0.25D, 0D, true);
         assertItemModel(helper, "machine_ashpit", "hbm:models/machines/heating_oven.obj",
-                "hbm:textures/models/machines/ashpit.png", 0.329411765D, 180D);
+                "hbm:textures/models/machines/ashpit.png", 1.0D, 0D, true);
         helper.succeed();
     }
 
     private static TileEntityChimneyBrick placeBrick(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
         MachineChimneyBrick block = SmokeChainRegistration.chimney_brick.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityChimneyBrick) helper.getLevel().getBlockEntity(pos);
     }
 
     private static TileEntityChimneyIndustrial placeIndustrial(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
         MachineChimneyIndustrial block = SmokeChainRegistration.chimney_industrial.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityChimneyIndustrial) helper.getLevel().getBlockEntity(pos);
     }
 
     private static TileEntityAshpit placeAshpit(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
         MachineAshpit block = SmokeChainRegistration.machine_ashpit.get();
-        helper.getLevel().setBlock(pos, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
-        block.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        helper.getLevel().setBlock(pos, block.defaultBlockState(), 3);
+        block.fillSpace(helper.getLevel(), pos, net.minecraft.core.Direction.NORTH);
         return (TileEntityAshpit) helper.getLevel().getBlockEntity(pos);
     }
 
@@ -225,22 +214,27 @@ public final class SmokeChainGameTests {
     }
 
     private static void assertItemModel(GameTestHelper helper, String name, String obj, String texture,
-                                        double scale, double yaw) {
+                                        double scale, double yaw, boolean legacy) {
         try (InputStream stream = SmokeChainGameTests.class.getClassLoader()
                 .getResourceAsStream("assets/hbm/items/" + name + ".json")) {
             com.google.gson.JsonObject root = stream == null ? null
                     : com.google.gson.JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
                     .getAsJsonObject();
-            com.google.gson.JsonObject special = root == null ? null : root.getAsJsonObject("model");
-            com.google.gson.JsonObject model = special == null ? null : special.getAsJsonObject("model");
-            helper.assertTrue(special != null && "minecraft:special".equals(special.get("type").getAsString())
-                            && "hbm:item/machine_obj_base".equals(special.get("base").getAsString())
+            com.google.gson.JsonObject outer = root == null ? null : root.getAsJsonObject("model");
+            boolean direct = outer != null && "hbm:machine_obj".equals(outer.get("type").getAsString());
+            com.google.gson.JsonObject model = direct ? outer
+                    : outer == null ? null : outer.getAsJsonObject("model");
+            boolean shape = direct == legacy && (direct
+                    || (outer != null && "minecraft:special".equals(outer.get("type").getAsString())
+                            && "hbm:item/machine_obj_base".equals(outer.get("base").getAsString())));
+            helper.assertTrue(shape
                             && model != null && "hbm:machine_obj".equals(model.get("type").getAsString())
                             && obj.equals(model.get("obj").getAsString())
                             && texture.equals(model.get("texture").getAsString())
                             && Math.abs(model.get("scale").getAsDouble() - scale) < 0.000001D
                             && Math.abs(model.get("yaw").getAsDouble() - yaw) < 0.000001D
-                            && model.get("ty").getAsDouble() == 0D,
+                            && model.get("ty").getAsDouble() == 0D
+                            && model.has("rawLegacyTransform") == legacy,
                     "Invalid smoke-chain item model: " + name);
         } catch (IOException | RuntimeException exception) {
             helper.fail("Could not read item model " + name + ": " + exception);

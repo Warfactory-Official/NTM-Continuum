@@ -1,5 +1,8 @@
 package com.hbm.items.weapon.sedna.mags;
 
+import com.hbm.items.tool.ItemCasingBag;
+import com.hbm.items.tool.ItemAmmoBag;
+import com.hbm.items.weapon.sedna.BulletConfig;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -9,13 +12,21 @@ import net.minecraft.world.item.ItemStack;
  * whether that is a detachable box, a shotgun tube, a belt or an energy cell — the magazine owns
  * capacity, type restrictions and the whole reload sequence.
  *
- * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.mags.IMagazine}. Two members are dropped with
- * their subsystems: {@code getCasing} (the spent-casing particle is not ported) and the static
- * {@code handleAmmoBag}/{@code shouldUseUpTrenchie} helpers (no ammo bag, no Trenchmaster armour yet).
+     * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.mags.IMagazine}. The casing bag is an
+     * inventory-side sink, so casing collection remains independent of the projectile renderer.
  * {@code Container} stands in for the old {@code IInventory}; a null container means "no inventory to
  * draw from", exactly as upstream, which is how turret and creative magazines work.
  */
 public interface IMagazine<T> {
+
+    /** Source-shaped view of a carried ammo bag used by magazine implementations. */
+    static ItemAmmoBag.InventoryAmmoBag ammoBag(ItemStack slot) {
+        return slot.getItem() instanceof ItemAmmoBag ? new ItemAmmoBag.InventoryAmmoBag(slot) : null;
+    }
+
+    static boolean isInfiniteBag(ItemStack slot) {
+        return slot.getItem() instanceof ItemAmmoBag bag && bag.isInfinite();
+    }
 
     /** What ammo is loaded right now. */
     T getType(ItemStack stack, Container inventory);
@@ -64,4 +75,24 @@ public interface IMagazine<T> {
 
     /** The load level after the most recent reload cycle. */
     int getAmountAfterReload(ItemStack stack);
+
+    /** Casing definition used by the optional spent-casing path. */
+    default ItemStack getCasing(ItemStack stack, Container inventory) {
+        T type = getType(stack, inventory);
+        return type instanceof BulletConfig bullet && bullet.casingStack() != null
+                ? bullet.casingStack().copy() : ItemStack.EMPTY;
+    }
+
+    /** Adds spent casing progress to the first casing bag in the player's inventory. */
+    static void handleAmmoBag(Container inventory, BulletConfig config, int shotsFired) {
+        if (!(inventory instanceof net.minecraft.world.entity.player.Inventory)
+                || config == null || config.casingStack() == null
+                || config.casingAmount <= 0 || shotsFired <= 0) return;
+        for (int i = 0; i < Math.min(36, inventory.getContainerSize()); i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.getItem() instanceof ItemCasingBag
+                    && ItemCasingBag.pushCasing(stack, config.casingStack(),
+                    (float) shotsFired / config.casingAmount * 0.5F)) return;
+        }
+    }
 }

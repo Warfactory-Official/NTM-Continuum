@@ -1,10 +1,11 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -106,8 +107,8 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
         else te.doorAngle -= swingSpeed;
         te.doorAngle = net.minecraft.util.Mth.clamp(te.doorAngle, 0F, 135F);
 
-        if (te.wasOn && level.getGameTime() % 5 == 0) {
-            ForgeDirection dir = ForgeDirection.getOrientation(state.getValue(BlockDummyable.META) - BlockDummyable.offset);
+        if (te.wasOn && TickPhase.every(level, pos, 5)) {
+            ForgeDirection dir = MachineCore.facing(state);
             double x = pos.getX() + 0.5 + dir.offsetX;
             double y = pos.getY() + 0.25;
             double z = pos.getZ() + 0.5 + dir.offsetZ;

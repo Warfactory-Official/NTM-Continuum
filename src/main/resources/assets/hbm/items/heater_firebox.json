@@ -1,14 +1,16 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "hbm:item/machine_obj_base",
-    "model": {
-      "type": "hbm:machine_obj",
-      "obj": "hbm:models/machines/firebox.obj",
-      "scale": 0.35,
-      "yaw": 90,
-      "ty": 0.0,
-      "texture": "hbm:textures/models/machines/firebox.png"
-    }
-  }
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/firebox.obj",
+    "scale": 1.0,
+    "yaw": 0.0,
+    "texture": "hbm:textures/models/machines/firebox.png",
+    "rawLegacyTransform": true,
+    "guiTranslate": [0.0, -1.0, 0.0],
+    "guiScale": 3.25,
+    "itemTranslate": [0.0, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
 }

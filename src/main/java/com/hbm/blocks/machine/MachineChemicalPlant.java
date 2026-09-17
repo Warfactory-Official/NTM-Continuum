@@ -2,15 +2,14 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  * {@link IEnergyConnectorBlock} (cables) and {@link IFluidConnectorBlockMK2} (ducts) so power and fluid
  * connect only at the core's 12 edge ports ({@code getConPos}), not every footprint face.
  */
-public class MachineChemicalPlant extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class MachineChemicalPlant extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineChemicalPlant(Properties properties) {
         super(properties);
@@ -39,38 +38,8 @@ public class MachineChemicalPlant extends BlockDummyable implements IEnergyConne
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineChemicalPlant te ? te : null;
-    }
-
-    /** Cables connect only at the machine's true power ports (the core's {@code getConPos} edge positions). */
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineChemicalPlant te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
-    }
-
-    /** Ducts connect at the same 12 edge ports (the geometry is fluid-agnostic — reuse the energy helper). */
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineChemicalPlant te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Server: power/fluids/processing. Client: the slider/spinner animation + sound (gated by didProcess).
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), TileEntityMachineChemicalPlant::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_CHEMICAL_PLANT.get(), TileEntityMachineChemicalPlant::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override
@@ -83,15 +52,24 @@ public class MachineChemicalPlant extends BlockDummyable implements IEnergyConne
         return 1;
     }
 
+    /** The eight cells around the core are the port ring; each opens on the side it faces outward. */
     @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (i != 0 || j != 0) visitor.cell(core.offset(i, 0, j), outwardMask(i, j, 1));
+            }
+        }
+    }
 
-        x -= dir.offsetX;
-        z -= dir.offsetZ;
-
-        for (int i = -1; i <= 1; i++) for (int j = -1; j <= 1; j++) {
-            if (i != 0 || j != 0) this.makeExtra(world, x + i, y, z + j);
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (i != 0 || j != 0) visitor.passiveCell(core.offset(i, 0, j), MASK_ALL, domains);
+            }
         }
     }
 }

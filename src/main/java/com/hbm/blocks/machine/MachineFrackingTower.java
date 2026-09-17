@@ -2,15 +2,13 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import com.hbm.tileentity.machine.oil.TileEntityOilDrillBase;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -23,7 +21,7 @@ import org.jspecify.annotations.Nullable;
  * 1×1 core column (dims {@code {3,0,0,0,0,0}}, offset 0), plus a y+2 platform, four corner legs, two
  * downward drill shafts and a y+15 crown (the old custom checkRequirement/fillSpace, copied verbatim).
  */
-public class MachineFrackingTower extends BlockDummyable implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class MachineFrackingTower extends BlockMultiblockMachine implements IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public MachineFrackingTower(Properties properties) {
         super(properties);
@@ -44,64 +42,50 @@ public class MachineFrackingTower extends BlockDummyable implements IEnergyConne
         return 0;
     }
 
-    @Override
-    public boolean checkRequirement(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        if (!MultiblockHandlerXR.checkSpace(world, x, y + 2, z, new int[]{1, 0, 3, 3, 3, 3}, x, y, z, dir)) return false;
-
-        if (!MultiblockHandlerXR.checkSpace(world, x - 2, y + 2, z - 2, new int[]{-1, 2, 0, 1, 0, 1}, x, y, z, ForgeDirection.NORTH)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, x - 2, y + 2, z + 3, new int[]{-1, 2, 0, 1, 0, 1}, x, y, z, ForgeDirection.NORTH)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, x + 3, y + 2, z - 2, new int[]{-1, 2, 0, 1, 0, 1}, x, y, z, ForgeDirection.NORTH)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, x + 3, y + 2, z + 3, new int[]{-1, 2, 0, 1, 0, 1}, x, y, z, ForgeDirection.NORTH)) return false;
-
-        if (!MultiblockHandlerXR.checkSpace(world, x, y, z, new int[]{10, -4, 2, 2, 2, 2}, x, y, z, dir)) return false;
-        if (!MultiblockHandlerXR.checkSpace(world, x, y, z, new int[]{24, -9, 1, 1, 1, 1}, x, y, z, dir)) return false;
-
-        if (!MultiblockHandlerXR.checkSpace(world, x, y + 15, z, new int[]{1, 0, 1, 1, -2, 3}, x, y, z, dir)) return false;
-
-        return super.checkRequirement(world, x, y, z, dir, o);
-    }
+    /** 1.7: the platform, the four legs, the two drill shafts and the crown, all beyond getDimensions. */
+    private static final int[] PLATFORM = {1, 0, 3, 3, 3, 3};
+    private static final int[] LEG = {-1, 2, 0, 1, 0, 1};
+    private static final int[] SHAFT_UPPER = {10, -4, 2, 2, 2, 2};
+    private static final int[] SHAFT_LOWER = {24, -9, 1, 1, 1, 1};
+    private static final int[] CROWN = {1, 0, 1, 1, -2, 3};
 
     @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-
-        MultiblockHandlerXR.fillSpace(world, x, y, z, getDimensions(), this, dir);
-        MultiblockHandlerXR.fillSpace(world, x, y + 2, z, new int[]{1, 0, 3, 3, 3, 3}, this, dir);
-
-        MultiblockHandlerXR.fillSpace(world, x - 2, y + 2, z - 2, new int[]{-1, 2, 0, 1, 0, 1}, this, ForgeDirection.NORTH);
-        MultiblockHandlerXR.fillSpace(world, x - 2, y + 2, z + 3, new int[]{-1, 2, 0, 1, 0, 1}, this, ForgeDirection.NORTH);
-        MultiblockHandlerXR.fillSpace(world, x + 3, y + 2, z - 2, new int[]{-1, 2, 0, 1, 0, 1}, this, ForgeDirection.NORTH);
-        MultiblockHandlerXR.fillSpace(world, x + 3, y + 2, z + 3, new int[]{-1, 2, 0, 1, 0, 1}, this, ForgeDirection.NORTH);
-
-        MultiblockHandlerXR.fillSpace(world, x, y, z, new int[]{10, -4, 2, 2, 2, 2}, this, dir);
-        MultiblockHandlerXR.fillSpace(world, x, y, z, new int[]{24, -9, 1, 1, 1, 1}, this, dir);
-
-        MultiblockHandlerXR.fillSpace(world, x, y + 15, z, new int[]{1, 0, 1, 1, -2, 3}, this, ForgeDirection.WEST);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return MultiblockHandlerXR.checkSpace(level, core.above(2), PLATFORM, clicked, facing)
+                && legsFree(level, core, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core, SHAFT_UPPER, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core, SHAFT_LOWER, clicked, facing)
+                && MultiblockHandlerXR.checkSpace(level, core.above(15), CROWN, clicked, facing)
+                && super.checkRequirement(level, core, facing, clicked);
     }
 
+    private static boolean legsFree(Level level, BlockPos core, BlockPos clicked, Direction facing) {
+        for (BlockPos leg : legs(core)) {
+            if (!MultiblockHandlerXR.checkSpace(level, leg, LEG, clicked, Direction.NORTH)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * No super: the derrick's own boxes are the footprint, and the legs and the crown are stated in
+     * world axes rather than rotated, as upstream states them.
+     */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityMachineFrackingTower te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        MultiblockHandlerXR.visitBox(core, getDimensions(), facing, visitor);
+        MultiblockHandlerXR.visitBox(core.above(2), PLATFORM, facing, visitor);
+        for (BlockPos leg : legs(core)) MultiblockHandlerXR.visitBox(leg, LEG, Direction.NORTH, visitor);
+        MultiblockHandlerXR.visitBox(core, SHAFT_UPPER, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, SHAFT_LOWER, facing, visitor);
+        MultiblockHandlerXR.visitBox(core.above(15), CROWN, Direction.WEST, visitor);
     }
 
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineFrackingTower te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), new BlockPos(x, y, z), dir);
+    private static BlockPos[] legs(BlockPos core) {
+        return new BlockPos[]{
+                core.offset(-2, 2, -2), core.offset(-2, 2, 3),
+                core.offset(3, 2, -2), core.offset(3, 2, 3)};
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_FRACKING_TOWER.get(), TileEntityOilDrillBase::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
+    /** The whole port surface is the core's own four horizontals. */
+    @Override public int coreMask() { return MASK_HORIZONTAL; }
 }

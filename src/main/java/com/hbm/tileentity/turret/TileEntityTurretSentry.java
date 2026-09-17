@@ -193,12 +193,23 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT {
         }
     }
 
-    /** A shot is sent as an edge, and the client turns it into a retraction it plays out on its own. */
+    /**
+     * A shot is sent as an edge, and the client turns it into a retraction it plays out on its own.
+     * The edge is cleared by the tick that raised it rather than by this method, because serialisation
+     * no longer runs every tick — a machine nobody is watching does not build a payload at all, and a
+     * flag consumed only on write would survive until the next viewer and fire a muzzle flash for a
+     * shot taken minutes earlier.
+     */
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
         buf.writeBoolean(didJustShootLeft);
         buf.writeBoolean(didJustShootRight);
+    }
+
+    @Override
+    protected void tickServer() {
+        super.tickServer();
         didJustShootLeft = false;
         didJustShootRight = false;
     }

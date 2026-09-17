@@ -1,6 +1,11 @@
 package com.hbm.blocks.network;
 
 import com.hbm.interfaces.ILookOverlay;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.IItemFluidId;
@@ -48,14 +53,14 @@ import java.util.Map;
  * HBM's solid fluid duct: a connecting fluid conductor backed by {@link TileEntityFluidDuctNT}. Six
  * {@link BooleanProperty} connection flags drive the {@code pipe_neo.obj} model (via
  * {@link com.hbm.client.render.FluidDuctObjRenderer}), exactly like the power cable's
- * {@code cable_neo.obj}. Conduction lives in the BlockEntity (a UNINOS node); these flags are purely the
- * visual/collision shape.
+ * {@code cable_neo.obj}. Conduction is a cell of the level's fluid graph, which the block entity keeps
+ * in step with the type it carries; these flags are purely the visual/collision shape.
  *
  * <p>The duct's fluid type defaults to {@code NONE} (no connections) and is set by right-clicking it with
  * a {@code fluid_identifier}: the connection flags are then recomputed against that one fluid, so a typed
  * duct only links to neighbours carrying the same fluid.
  */
-public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements EntityBlock, SimpleWaterloggedBlock, ILookOverlay {
+public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements TickingBlock, SimpleWaterloggedBlock, ILookOverlay {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -180,6 +185,18 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
                 canConnectTo(level, pos, directionToNeighbour));
     }
 
+    /**
+     * A block appearing beside a duct is the one endpoint transition nothing else announces. Our own
+     * machines say so from {@code clearRemoved}, and a face that has already probed absent stays absent
+     * until something asks it again.
+     */
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
+        if (level instanceof ServerLevel server) LevelNodeGraph.invalidateEndpointsAt(server, pos);
+    }
+
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         // The hitbox must match what FluidDuctObjRenderer.selectParts DRAWS, not just the raw connection
@@ -234,20 +251,6 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         return new TileEntityFluidDuctNT(pos, state);
     }
 
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.FLUID_DUCT.get(), TileEntityFluidDuctNT::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
     /** Look-overlay: the duct's carried fluid type, tinted by its colour. */
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
@@ -256,5 +259,15 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         List<String> text = new ArrayList<>();
         text.add("&[" + type.getColor() + "&]" + type.getDisplayNameString());
         return new ILookOverlay.Data(this.getName().getString(), 0xffff00, 0x404000, text);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return ConnectionRing.rotate(state, rotation, PROPERTY_BY_DIRECTION);
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return ConnectionRing.mirror(state, mirror, PROPERTY_BY_DIRECTION);
     }
 }

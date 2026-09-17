@@ -1,0 +1,47 @@
+{
+  "parent": "hbm:item/weapon_mod_caliber.p9",
+  "overrides": [
+    {
+      "predicate": {
+        "hbm:item_variant": 1
+      },
+      "model": "hbm:item/weapon_mod_caliber.p45"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 2
+      },
+      "model": "hbm:item/weapon_mod_caliber.p22"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 3
+      },
+      "model": "hbm:item/weapon_mod_caliber.m357"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 4
+      },
+      "model": "hbm:item/weapon_mod_caliber.m44"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 5
+      },
+      "model": "hbm:item/weapon_mod_caliber.r556"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 6
+      },
+      "model": "hbm:item/weapon_mod_caliber.r762"
+    },
+    {
+      "predicate": {
+        "hbm:item_variant": 7
+      },
+      "model": "hbm:item/weapon_mod_caliber.bmg50"
+    }
+  ]
+}

@@ -13,8 +13,10 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
@@ -68,7 +70,6 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {
         for (DirPos connection : furnace.getConPos()) {
-            furnace.trySubscribe(furnace.tanks[0].getTankType(), level, connection);
             if (furnace.tanks[1].getFill() > 0) furnace.tryProvide(furnace.tanks[1], level, connection);
         }
 
@@ -112,7 +113,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {
-        if (!level.getBlockState(pos.above(7)).isAir() || !furnace.isProgressing || level.getGameTime() % 2 != 0) return;
+        if (!level.getBlockState(pos.above(7)).isAir() || !furnace.isProgressing || !TickPhase.every(level, pos, 2)) return;
         level.addParticle(net.minecraft.core.particles.ParticleTypes.LAVA,
                 pos.getX() + 0.25D + level.getRandom().nextDouble() * 0.5D, pos.getY() + 7.25D,
                 pos.getZ() + 0.25D + level.getRandom().nextDouble() * 0.5D, 0D, 0D, 0D);
@@ -120,7 +121,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META) - 10);
+        ForgeDirection facing = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2));
         return new DirPos[]{
                 new DirPos(x + 2, y, z, Library.POS_X),
                 new DirPos(x - 2, y, z, Library.NEG_X),

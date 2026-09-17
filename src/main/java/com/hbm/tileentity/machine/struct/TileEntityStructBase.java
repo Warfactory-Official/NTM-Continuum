@@ -1,11 +1,15 @@
 package com.hbm.tileentity.machine.struct;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
 import com.hbm.blocks.machine.struct.StructPattern;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -15,8 +19,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * whose hand-written {@code cbr(...)} ladders are now the pattern.
  *
  * <p>The scan runs once a second, matching upstream's {@code getTotalWorldTime() % 20}. On a match the
- * struct block becomes the multiblock's core (META 12 = facing NORTH) and the core block fills in its
- * own dummy shell — which necessarily overwrites the component blocks the player just built, exactly
+ * struct block becomes the multiblock's core, facing north -- assembly is not direction sensitive
+ * upstream -- and the core block fills in its own cells — which necessarily overwrites the component blocks the player just built, exactly
  * as upstream does.
  */
 public abstract class TileEntityStructBase extends TileEntityLoadedBase {
@@ -29,22 +33,15 @@ public abstract class TileEntityStructBase extends TileEntityLoadedBase {
     public abstract StructPattern pattern();
 
     /** The multiblock this becomes once the shape is complete. */
-    protected abstract BlockDummyable target();
+    protected abstract BlockMultiblockCore target();
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityStructBase te) {
-        if (level.getGameTime() % 20 != 0) return;
+        if (!TickPhase.every(level, pos, 20)) return;
         if (!te.pattern().matches(level, pos)) return;
 
-        BlockDummyable machine = te.target();
-        BlockDummyable.safeRem = true;
-        try {
-            // META 12 = ForgeDirection.NORTH (2) + BlockDummyable.offset (10). Assembly is not direction
-            // sensitive upstream, so a struct-built machine always ends up facing north.
-            level.setBlock(pos, machine.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
-            machine.formStructure(level, pos, ForgeDirection.NORTH);
-        } finally {
-            BlockDummyable.safeRem = false;
-        }
+        BlockMultiblockCore machine = te.target();
+        BlockMultiblockCore.withoutTeardown(() ->
+                MultiblockHandlerXR.placeAssembled(level, pos, machine, Direction.NORTH));
         // `te` no longer exists — setBlock above destroyed this BlockEntity. Touch nothing after here.
     }
 }

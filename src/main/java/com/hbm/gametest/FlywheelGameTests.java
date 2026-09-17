@@ -1,13 +1,11 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.blocks.machine.solar.MachineSolarBoiler;
-import com.hbm.blocks.machine.solar.ModSolarBlocks;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.client.render.flywheel.FlywheelCompat;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.effect.EntityNukeTorex;
 import dev.golem.core.render.Instancing;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
@@ -34,9 +32,6 @@ public final class FlywheelGameTests {
             TESTS.function("flywheel_engine_client_only", 20, () -> FlywheelGameTests::engineClientOnly);
     public static final GameTests.Function CRUMBLING_CORE_FOLDED =
             TESTS.function("flywheel_crumbling_core_folded", 60, 8, () -> FlywheelGameTests::crumblingCoreFolded);
-    public static final GameTests.Function CRUMBLING_CORE_DUMMYABLE =
-            TESTS.function("flywheel_crumbling_core_dummyable", 60, 8,
-                    () -> FlywheelGameTests::crumblingCoreDummyable);
 
     private FlywheelGameTests() {}
 
@@ -58,6 +53,9 @@ public final class FlywheelGameTests {
                 "A server level must never report as visualized");
         helper.assertTrue(!FlywheelCompat.isAvailable(helper.getLevel()),
                 "FlywheelCompat.isAvailable must follow it and refuse a server level");
+        EntityNukeTorex torex = new EntityNukeTorex(ModEntities.NUKE_TOREX.get(), helper.getLevel());
+        helper.assertTrue(!FlywheelCompat.isTorexBillboardsActive(torex),
+                "A dedicated server must always retain Torex fallback ownership");
         helper.assertTrue(!Instancing.isVisualizing(null), "A null level must not report as visualized");
         helper.succeed();
     }
@@ -119,23 +117,4 @@ public final class FlywheelGameTests {
         helper.succeed();
     }
 
-    /** A {@link BlockDummyable} keeps its block entity at a core offset from the dummies. */
-    public static void crumblingCoreDummyable(GameTestHelper helper) {
-        MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
-        BlockPos relative = new BlockPos(2, 1, 2);
-        BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
-
-        BlockPos dummy = core.above(2);
-        BlockState dummyState = helper.getLevel().getBlockState(dummy);
-        helper.assertTrue(dummyState.getBlock() instanceof BlockDummyable,
-                "Expected a dummy cell above the boiler core, found " + dummyState);
-        helper.assertTrue(core.equals(FlywheelCompat.crumblingCore(helper.getLevel(), dummy, dummyState)),
-                "A dummy must resolve to the core carrying the block entity");
-        helper.assertTrue(core.equals(FlywheelCompat.crumblingCore(helper.getLevel(), core,
-                        helper.getLevel().getBlockState(core))),
-                "The core must resolve to itself");
-        helper.succeed();
-    }
 }

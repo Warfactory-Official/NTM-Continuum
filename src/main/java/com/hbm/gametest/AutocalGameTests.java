@@ -1,7 +1,6 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.radio.ModRadioBlocks;
 import com.hbm.modules.IParse;
 import com.hbm.modules.ParseMSES1Ext1;
@@ -160,8 +159,7 @@ public final class AutocalGameTests {
     }
 
     private static TileEntityRadioAUTOCAL place(GameTestHelper helper, BlockPos relative) {
-        helper.setBlock(relative, ModRadioBlocks.RADIO_AUTOCAL.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+        helper.setBlock(relative, ModRadioBlocks.RADIO_AUTOCAL.get().defaultBlockState());
         return GameTestHelpers.blockEntity(helper, relative, TileEntityRadioAUTOCAL.class);
     }
 }

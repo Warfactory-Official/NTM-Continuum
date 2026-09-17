@@ -15,6 +15,7 @@ import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -105,7 +106,6 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         furnace.upgrade = furnace.upgradeManager.getLevel(ItemMachineUpgrade.UpgradeType.SPEED);
         furnace.power = Library.chargeTEFromItems(furnace.inventory, 3, furnace.power, MAX_POWER);
 
-        for (DirPos connection : furnace.getConPos()) furnace.trySubscribe(level, connection);
         if (furnace.lid > 0F) furnace.loadIngredients();
 
         furnace.isProgressing = false;
@@ -347,8 +347,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     }
 
     private ForgeDirection facing() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override public long getPower() { return power; }

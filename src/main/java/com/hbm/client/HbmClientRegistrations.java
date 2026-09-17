@@ -7,6 +7,7 @@ import com.hbm.blocks.machine.rbmk.RBMKGauge;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.gui.GUIAnvil;
 import com.hbm.inventory.gui.GUIArmorTable;
+import com.hbm.inventory.gui.GUIWeaponTable;
 import com.hbm.inventory.gui.GUIBatterySocket;
 import com.hbm.inventory.gui.GUIBatteryREDD;
 import com.hbm.inventory.gui.GUIMachineFENSU;
@@ -167,9 +168,16 @@ public final class HbmClientRegistrations {
          sink.register(ModMenus.FENSU.get(), GUIMachineFENSU::new);
          sink.register(ModMenus.BATTERY_REDD.get(), GUIBatteryREDD::new);
          sink.register(ModMenus.CRATE.get(), GUICrate::new);
-         sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
+         // the ntm-next entity port's vehicle menus
+         sink.register(ModMenus.CART_CRATE.get(), com.hbm.inventory.gui.GUICartCrate::new);
+         sink.register(ModMenus.CART_DESTROYER.get(), com.hbm.inventory.gui.GUICartDestroyer::new);
+         sink.register(ModMenus.TRAIN_CARGO_TRAM.get(), com.hbm.inventory.gui.GUITrainCargoTram::new);
+         sink.register(ModMenus.TRAIN_CARGO_TRAM_TRAILER.get(), com.hbm.inventory.gui.GUITrainCargoTramTrailer::new);
+          sink.register(ModMenus.ARMOR_TABLE.get(), GUIArmorTable::new);
+          sink.register(ModMenus.WEAPON_TABLE.get(), GUIWeaponTable::new);
          sink.register(ModMenus.MACHINE_PRESS.get(), GUIMachinePress::new);
-         sink.register(ModMenus.MACHINE_AMMO_PRESS.get(), GUIMachineAmmoPress::new);
+          sink.register(ModMenus.MACHINE_AMMO_PRESS.get(), GUIMachineAmmoPress::new);
+          com.hbm.inventory.gui.GunSupportClientRegistrations.registerScreens(sink);
          sink.register(ModMenus.MACHINE_EPRESS.get(), GUIMachineEPress::new);
         sink.register(ModMenus.MACHINE_ELECTRIC_FURNACE.get(), GUIMachineElectricFurnace::new);
         sink.register(ModMenus.FURNACE_BRICK.get(), GUIFurnaceBrick::new);
@@ -211,30 +219,58 @@ public final class HbmClientRegistrations {
     }
 
     public static void registerHud(HudSink sink) {
+        com.hbm.items.weapon.sedna.factory.GunFactoryClient.init();
         sink.register("look_overlay", HbmLookOverlay::render);
         sink.register("rad_counter", RadCounterOverlay::render);
         sink.register("nuke_flash", NukeScreenEffects::render);
         sink.register("gun_hud", GunHudOverlay::render);
+        sink.register("gun_scope", GunScopeOverlay::render);
         sink.register("armor_hud", ArmorHudOverlay::render);
         sink.register("jetpack_hud", com.hbm.client.jetpack.JetpackHudOverlay::render);
         if (System.getenv("HBM_JETPACK_SCREENSHOTS") != null && dev.golem.core.platform.Platform.isDevelopment())
             sink.register("jetpack_visual_check", com.hbm.client.jetpack.JetpackSmokeClient::render);
+        if (com.hbm.client.gun.GunSmokeClient.enabled() && dev.golem.core.platform.Platform.isDevelopment())
+            sink.register("gun_smoke_capture", com.hbm.client.gun.GunSmokeClient::render);
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
-            HbmEntityRenderers.Sink entities) {
+            HbmEntityRenderers.Sink downstream) {
         HbmBlockEntityRenderers.registerAll(blockEntities);
+        java.util.Set<net.minecraft.world.entity.EntityType<?>> bound = new java.util.HashSet<>();
+        HbmEntityRenderers.Sink entities = HbmEntityRenderers.recording(downstream, bound);
         HbmEntityRenderers.registerAll(entities);
         com.hbm.radio.client.RadioClientRegistrations.registerRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerBlockEntityRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
         com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
+        HbmEntityRenderers.verifyCoverage(bound);
 
         // Every instanced visual is optional acceleration beside an already-registered vanilla BER.
         if (com.hbm.client.render.flywheel.FlywheelCompat.isSupportedOnThisVersion()) {
             com.hbm.client.render.flywheel.FlywheelCompat.registerVisuals();
         }
 
+    }
+
+    /**
+     * The instancing engine's own count, on the F3 screen.
+     *
+     * <p>An instanced draw and a vanilla draw are pixel-identical when both are right, so the only way
+     * to tell an engine that is working from one that silently received nothing is to count what it
+     * holds. Models against models drawn is that count; draws against parts is the claim instancing
+     * actually makes, which is that many copies of a machine cost one draw rather than many.
+     */
+    public static void installDebugLines() {
+        dev.golem.core.client.DebugLines.register(com.hbm.Constants.MOD_ID, "gemrender", out -> {
+            dev.golem.core.render.Instancing.Report report = dev.golem.core.render.Instancing.report();
+            out.accept("gemrender: " + report.backend() + ", " + report.owning() + "/" + report.visuals()
+                    + " models (" + report.animated() + " animated, " + report.moving() + " moving), "
+                    + report.instances() + " parts, " + report.draws() + " draws");
+            out.accept("gemrender: " + report.writes() + " transforms written, " + report.skipped()
+                    + " parts skipped");
+            int fallen = report.visuals() - report.healthy();
+            if (fallen > 0) out.accept("gemrender: " + fallen + " models fell back to vanilla");
+        });
     }
 
     public static void installTints() {
@@ -265,7 +301,10 @@ public final class HbmClientRegistrations {
         dev.golem.core.render.HeatDistortionRenderType.configure(
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
         com.hbm.client.jetpack.JetpackClientVisuals.init();
-        com.hbm.client.jetpack.JetpackSmokeClient.register();
+         com.hbm.client.jetpack.JetpackSmokeClient.register();
+         com.hbm.client.render.entity.EntityRenderSmokeClient.register();
+         com.hbm.client.gun.GunSmokeClient.register();
+         com.hbm.client.render.TorexBenchmarkClient.register();
         dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID, "jetpack_visuals",
                 () -> {
                     com.hbm.client.render.armor.ArmorRenderers.reload();
@@ -273,8 +312,12 @@ public final class HbmClientRegistrations {
                 });
         dev.golem.core.client.PlayerRenderHooks.register(
                 com.hbm.client.jetpack.JetpackClientVisuals::applyPlayerPose);
-        dev.golem.core.client.PlayerRenderHooks.registerModel(
-                com.hbm.client.jetpack.JetpackClientVisuals::applyPlayerModelPose);
+        dev.golem.core.client.PlayerRenderHooks.registerModel(parts -> {
+            // The source applies gun aimedBow during model setup; keep its arm pose after the glider's
+            // flight freeze while retaining the glider's body, head and leg precedence.
+            com.hbm.client.jetpack.JetpackClientVisuals.applyPlayerModelPose(parts);
+            com.hbm.client.render.weapon.GunPlayerPose.apply(parts);
+        });
         dev.golem.core.client.CameraHooks.register(
                 com.hbm.client.jetpack.JetpackClientVisuals::lowerThirdPersonCamera);
         dev.golem.core.render.HumanoidLayers.register(
@@ -322,9 +365,29 @@ public final class HbmClientRegistrations {
         CraneKeybindHandler.register();
     }
 
+    /**
+     * Client halves of the ported ntm-next entities: the looped-sound factory behind
+     * {@link com.hbm.sound.AudioSystem} (UFO, hunter chopper, worm) and the entity particle handlers.
+     */
+    public static void installEntityEffects() {
+        com.hbm.sound.AudioSystem.installClientFactory(com.hbm.client.sound.ClientAudioFactory.INSTANCE);
+        com.hbm.client.ClientEffects.install();
+    }
+
     /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */
     public static void installGunAnimations() {
+        GunEffectState.install();
+        com.hbm.client.render.projectile.TracerRegistry.init();
+        com.hbm.client.particle.CasingParticles.init();
+        com.hbm.client.particle.DisintegrationParticles.init();
+        GunEffectState.setCasingHandler(event -> com.hbm.client.particle.CasingParticles.spawn(event));
+        GunEffectState.setGunCasingHandler(payload -> com.hbm.client.particle.CasingParticles.spawn(
+                new com.hbm.particle.helper.CasingCreator.Event(payload.x(), payload.y(), payload.z(), payload.mX(),
+                        payload.mY(), payload.mZ(), payload.yaw(), payload.pitch(), payload.mPitch(), payload.mYaw(),
+                        payload.casing(), payload.smoking(), payload.smokeLife(), payload.smokeLift(), payload.nodeLife(),
+                        true, payload.legacy())));
         com.hbm.client.anim.GunAnimations.init();
+        com.hbm.client.render.weapon.DrillHighlightClient.init();
         dev.golem.core.client.ClientResourceReloads.register(com.hbm.Constants.MOD_ID,
                 "lag_animations", com.hbm.client.anim.LagAnimationLoader::invalidate);
         // The weapon renderers a gun item definition can name. Both eras read the same definitions:
@@ -333,4 +396,5 @@ public final class HbmClientRegistrations {
         dev.golem.core.client.Fov.register(com.hbm.client.render.weapon.WeaponRenderers::viewFov);
         dev.golem.core.client.Crosshairs.register(GunCrosshairOverlay::render);
     }
+
 }

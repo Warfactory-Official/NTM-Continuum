@@ -9,15 +9,18 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Flushes loaded-chunk radiation into {@code RadiationSavedData} before the level serialises, so autosave,
+ * Writes loaded-chunk radiation to its per-chunk store before the level serialises, so autosave,
  * {@code /save-all} and shutdown all persist current radiation. The cross-loader hook (NeoForge has
  * {@code LevelEvent.Save} but Fabric has no level-save event) — one common mixin covers both.
+ *
+ * <p>{@code flush} is passed on rather than assumed: vanilla waits for the disk only when the caller
+ * asked it to, and an autosave that does not is the one that must not stall the server thread.
  */
 @Mixin(ServerLevel.class)
 public class MixinServerLevel {
 
     @Inject(method = "save(Lnet/minecraft/util/ProgressListener;ZZ)V", at = @At("HEAD"))
     private void hbm$flushRadiation(ProgressListener progress, boolean flush, boolean skipSave, CallbackInfo ci) {
-        RadiationSystemNT.flushForSave((ServerLevel) (Object) this);
+        RadiationSystemNT.flushForSave((ServerLevel) (Object) this, flush);
     }
 }

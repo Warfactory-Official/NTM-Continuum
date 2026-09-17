@@ -98,10 +98,10 @@ public final class FoundryExpansion {
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineStrandCaster>> STRAND_CASTER_BE =
             BLOCK_ENTITIES.register("machine_strand_caster", () ->
-                    dev.golem.core.registry.BlockEntities.type(TileEntityMachineStrandCaster::new, STRAND_CASTER.get()));
+                    dev.golem.core.registry.BlockEntities.serverTicking(TileEntityMachineStrandCaster::new, TileEntityMachineStrandCaster::serverTick, STRAND_CASTER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineArcFurnaceLarge>> ARC_FURNACE_BE =
             BLOCK_ENTITIES.register("machine_arc_furnace", () ->
-                    dev.golem.core.registry.BlockEntities.type(TileEntityMachineArcFurnaceLarge::new, ARC_FURNACE.get()));
+                    dev.golem.core.registry.BlockEntities.ticking(TileEntityMachineArcFurnaceLarge::new, TileEntityMachineArcFurnaceLarge::clientTick, TileEntityMachineArcFurnaceLarge::serverTick, ARC_FURNACE.get()));
 
     public static final RegistryObject<MenuType<ContainerMachineStrandCaster>> STRAND_CASTER_MENU = MENUS.register(
             "machine_strand_caster", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineStrandCaster::new));

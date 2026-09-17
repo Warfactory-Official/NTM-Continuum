@@ -1,5 +1,6 @@
 package com.hbm.client.particle;
 
+import dev.golem.core.Ids;
 import dev.golem.core.render.CompatParticle;
 import dev.golem.core.render.ParticleLayer;
 import dev.golem.core.render.Particles;
@@ -8,17 +9,14 @@ import net.minecraft.client.multiplayer.ClientLevel;
 /**
  * A single hot ember thrown from a muzzle: a tiny glowing dot that arcs, slows and dies fast.
  *
- * <p>Ported from 1.12.2 {@code ParticleBlackPowderSpark}. One texture deviation: upstream called
- * {@code setParticleTextureIndex(0)} to pick cell 0 of the 1.12 vanilla particle sheet, which no
- * longer exists as an addressable cell — modern sprites are stitched individually. It draws with
- * HBM's own {@code particle_base} blob instead, which is the same soft round dot and is what every
- * other particle in this set already uses.
+ * <p>Ported from ntm-next's {@code ParticleBlackPowderSpark}; the direct effect path selects the
+ * modern atlas equivalent of the source vanilla sheet's cell zero.
  */
 public class ParticleBlackPowderSpark extends CompatParticle {
 
     public ParticleBlackPowderSpark(ClientLevel level, double x, double y, double z,
             double xa, double ya, double za) {
-        super(level, x, y, z, xa, ya, za, Particles.sprite(ParticleFXRotating.PARTICLE_BASE));
+        super(level, x, y, z, xa, ya, za, Particles.sprite(Ids.of("minecraft", "generic_0")));
 
         // The super ctor derives motion from the speed arguments with a spread applied; these are
         // aimed sparks, so upstream overwrites it with the exact vector afterwards.

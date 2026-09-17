@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.interfaces.ILookOverlay;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
@@ -28,7 +29,7 @@ import java.util.List;
  * the cross-loader platform service. Implements {@link ILookOverlay} to show its charge/throughput when
  * looked at.
  */
-public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
+public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implements TickingBlock, ILookOverlay {
 
     public BlockMachineBattery(Properties properties) {
         super(properties);
@@ -41,15 +42,6 @@ public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implem
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) {
-            return null;
-        }
-        return createTickerHelper(type, ModBlockEntities.MACHINE_BATTERY.get(), TileEntityMachineBattery::serverTick);
-    }
-
-    @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             if (level.getBlockEntity(pos) instanceof MenuProvider provider) {
@@ -57,13 +49,6 @@ public class BlockMachineBattery extends dev.golem.core.world.CompatBlock implem
             }
         }
         return InteractionResult.SUCCESS;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     /** Look-overlay: charge / max, throughput (±HE/s), and a colour-coded fill percentage. */

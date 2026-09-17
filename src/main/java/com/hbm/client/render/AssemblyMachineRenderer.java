@@ -1,19 +1,19 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyMachine;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import dev.golem.core.render.CameraInfo;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
@@ -21,6 +21,8 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.function.Function;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -33,19 +35,60 @@ import org.jspecify.annotations.Nullable;
  * <p>Each part is a separate {@code submitCustomGeometry} call — that snapshots the current pose, so
  * the accumulated joint transforms apply per part.
  */
-public class AssemblyMachineRenderer implements CompatBER<TileEntityMachineAssemblyMachine, AssemblyRenderState> {
+public class AssemblyMachineRenderer extends GemBER<TileEntityMachineAssemblyMachine, AssemblyRenderState> {
 
     private static final float BASE_YAW = 90F;
     private static final int FRAME_HEIGHT = 3;
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/assembly_machine.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/assembly_machine.png");
 
-    public AssemblyMachineRenderer() {
-        Identifier ns = dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/assembly_machine.obj");
-        Identifier tex = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/assembly_machine.png");
-        this.model = WavefrontObj.load(ns);
-        this.renderType = CompatRenderTypes.entityCutout(tex);
+    /**
+     * The ring carries both arms, and each arm is a chain of three hinges with a striker sliding on the
+     * end — upstream walks one pose stack down it without pushing, which is the same thing nested.
+     * The second arm is the first mirrored across Z, with its rotations negated.
+     */
+    @Override
+    protected void setup(Gem.Model<AssemblyRenderState> declaration) {
+        Gem.Part<AssemblyRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> BASE_YAW + state.yaw);
+
+        machine.child(model.part("Base"), surface);
+        machine.child(model.part("Frame"), surface)
+                .visibleIf(state -> state.showFrame);
+
+        Gem.Part<AssemblyRenderState> ring = machine.joint()
+                .angle(Gem.Axes.Y, state -> (float) state.ring);
+        ring.child(model.part("Ring"), surface);
+        arm(ring, "1", 1F, state -> state.arm1);
+        arm(ring, "2", -1F, state -> state.arm2);
+    }
+
+    private void arm(Gem.Part<AssemblyRenderState> ring, String suffix, float side,
+                     Function<AssemblyRenderState, double[]> angles) {
+        Gem.Part<AssemblyRenderState> lower = ring.joint()
+                .translate(0F, 1.625F, side * 0.9375F)
+                .angle(Gem.Axes.X, state -> (float) (side * angles.apply(state)[0]))
+                .translate(0F, -1.625F, side * -0.9375F);
+        lower.child(model.part("ArmLower" + suffix), surface);
+
+        Gem.Part<AssemblyRenderState> upper = lower.joint()
+                .translate(0F, 2.375F, side * 0.9375F)
+                .angle(Gem.Axes.X, state -> (float) (side * angles.apply(state)[1]))
+                .translate(0F, -2.375F, side * -0.9375F);
+        upper.child(model.part("ArmUpper" + suffix), surface);
+
+        Gem.Part<AssemblyRenderState> head = upper.joint()
+                .translate(0F, 2.375F, side * 0.4375F)
+                .angle(Gem.Axes.X, state -> (float) (side * angles.apply(state)[2]))
+                .translate(0F, -2.375F, side * -0.4375F);
+        head.child(model.part("Head" + suffix), surface);
+        head.child(model.part("Spike" + suffix), surface)
+                .slide(Gem.Axes.Y, state -> (float) angles.apply(state)[3]);
     }
 
     @Override
@@ -54,30 +97,15 @@ public class AssemblyMachineRenderer implements CompatBER<TileEntityMachineAssem
     }
 
     @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(TileEntityMachineAssemblyMachine blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
-    }
-
-    @Override
     public void extract(TileEntityMachineAssemblyMachine be, AssemblyRenderState state, float partialTicks,
                                    Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = switch (meta) {
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
         state.showFrame = be.getLevel() != null
                 && !be.getLevel().getBlockState(be.getBlockPos().above(FRAME_HEIGHT)).isAir();
@@ -106,81 +134,24 @@ public class AssemblyMachineRenderer implements CompatBER<TileEntityMachineAssem
         if (!state.showItem) state.outputItem.clear();
     }
 
+    /** The floating product is a recipe-chosen item model, so it has no mesh either backend could hold. */
     @Override
-    public void submit(AssemblyRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
-        int light = s.lightCoords;
+    protected void submitUndeclared(AssemblyRenderState s, PoseStack ps, SubmitSink col, CameraInfo camera) {
+        if (!s.showItem) return;
         ps.pushPose();
         ps.translate(0.5F, 0F, 0.5F);
         ps.mulPose(Axis.YP.rotationDegrees(BASE_YAW + s.yaw));
-
-        part(col, ps, "Base", light);
-        if (s.showFrame) part(col, ps, "Frame", light);
-
-        // Ring (and the arms beneath it) spin together.
-        ps.pushPose();
-        ps.mulPose(Axis.YP.rotationDegrees((float) s.ring));
-        part(col, ps, "Ring", light);
-
-        // Arm 1.
-        ps.pushPose();
-        ps.translate(0F, 1.625F, 0.9375F);
-        ps.mulPose(Axis.XP.rotationDegrees((float) s.arm1[0]));
-        ps.translate(0F, -1.625F, -0.9375F);
-        part(col, ps, "ArmLower1", light);
-        ps.translate(0F, 2.375F, 0.9375F);
-        ps.mulPose(Axis.XP.rotationDegrees((float) s.arm1[1]));
-        ps.translate(0F, -2.375F, -0.9375F);
-        part(col, ps, "ArmUpper1", light);
-        ps.translate(0F, 2.375F, 0.4375F);
-        ps.mulPose(Axis.XP.rotationDegrees((float) s.arm1[2]));
-        ps.translate(0F, -2.375F, -0.4375F);
-        part(col, ps, "Head1", light);
-        ps.translate(0F, (float) s.arm1[3], 0F);
-        part(col, ps, "Spike1", light);
-        ps.popPose();
-
-        // Arm 2 (mirrored across Z; rotations negated).
-        ps.pushPose();
-        ps.translate(0F, 1.625F, -0.9375F);
-        ps.mulPose(Axis.XP.rotationDegrees((float) -s.arm2[0]));
-        ps.translate(0F, -1.625F, 0.9375F);
-        part(col, ps, "ArmLower2", light);
-        ps.translate(0F, 2.375F, -0.9375F);
-        ps.mulPose(Axis.XP.rotationDegrees((float) -s.arm2[1]));
-        ps.translate(0F, -2.375F, 0.9375F);
-        part(col, ps, "ArmUpper2", light);
-        ps.translate(0F, 2.375F, -0.4375F);
-        ps.mulPose(Axis.XP.rotationDegrees((float) -s.arm2[2]));
-        ps.translate(0F, -2.375F, 0.4375F);
-        part(col, ps, "Head2", light);
-        ps.translate(0F, (float) s.arm2[3], 0F);
-        part(col, ps, "Spike2", light);
-        ps.popPose();
-
-        ps.popPose(); // ring
-
-        // Floating product: the recipe output hovering above the machine centre (1.12.2 transforms).
-        if (s.showItem) {
-            ps.pushPose();
-            ps.translate(0F, 1.0625F, 0F);
-            if (s.itemIs3d) {
-                ps.translate(0F, 0.125F, 0F);
-                ps.scale(1.25F, 1.25F, 1.25F);
-            } else {
-                ps.translate(0F, 0.015F, 0F);
-                ps.mulPose(Axis.XP.rotationDegrees(-90F));
-                ps.mulPose(Axis.ZP.rotationDegrees(-90F));
-                ps.scale(0.85F, 0.85F, 0.85F);
-            }
-            col.submitItem(ps, s.outputItem, light, OverlayTexture.NO_OVERLAY, 0);
-            ps.popPose();
+        ps.translate(0F, 1.0625F, 0F);
+        if (s.itemIs3d) {
+            ps.translate(0F, 0.125F, 0F);
+            ps.scale(1.25F, 1.25F, 1.25F);
+        } else {
+            ps.translate(0F, 0.015F, 0F);
+            ps.mulPose(Axis.XP.rotationDegrees(-90F));
+            ps.mulPose(Axis.ZP.rotationDegrees(-90F));
+            ps.scale(0.85F, 0.85F, 0.85F);
         }
-
-        ps.popPose(); // machine
-    }
-
-    private void part(SubmitSink col, PoseStack ps, String name, int light) {
-        col.submitCustomGeometry(ps, renderType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
+        col.submitItem(ps, s.outputItem, s.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+        ps.popPose();
     }
 }

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.storage;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.inventory.container.ContainerBatteryREDD;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -132,8 +133,7 @@ public final class TileEntityBatteryREDD extends TileEntityBatteryBase implement
     }
 
     private ForgeDirection facing() {
-        int meta = getBlockState().getValue(com.hbm.blocks.BlockDummyable.META);
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override

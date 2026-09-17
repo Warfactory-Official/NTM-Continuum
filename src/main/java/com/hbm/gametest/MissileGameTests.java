@@ -14,7 +14,6 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMissileItems;
 import com.hbm.inventory.container.ContainerLaunchPad;
 import com.hbm.items.tool.ItemDesignator;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.bomb.LaunchPad;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
@@ -181,8 +180,13 @@ public final class MissileGameTests {
 
         helper.assertTrue(steepest < -90F,
                 "missile pitch never passed horizontal on the way down (steepest was " + steepest + ")");
-        helper.assertTrue(missile.getXRot() >= -90F,
-                "xRot held a value outside vanilla's clamp, so this test is no longer testing anything");
+        // PITCH exists because the vanilla field cannot hold this value — but that is only true where
+        // setXRot clamps, which is 26.1 and up. Below it xRot legitimately carries the same number,
+        // and asserting the clamp there would be asserting something vanilla never promised.
+        if (dev.golem.core.registry.Entities.clampsXRot()) {
+            helper.assertTrue(missile.getXRot() >= -90F,
+                    "xRot held a value outside vanilla's clamp, so this test is no longer testing anything");
+        }
 
         missile.discard();
         helper.succeed();
@@ -445,12 +449,9 @@ public final class MissileGameTests {
         }
         helper.assertTrue(cells == 9, "the pad footprint must fill 3x3 cells, found " + cells);
 
-        // The four corners carry the "extra" flag (meta 6-11) — upstream's proxy cells.
         for (int dx = -1; dx <= 1; dx += 2) {
             for (int dz = -1; dz <= 1; dz += 2) {
-                int meta = helper.getBlockState(core.offset(dx, 0, dz)).getValue(BlockDummyable.META);
-                helper.assertTrue(meta >= BlockDummyable.extra && meta < 12,
-                        "the corner at " + dx + "/" + dz + " was not flagged extra (meta " + meta + ")");
+                FoldedTestSupport.assertPort(helper, core, core.offset(dx, 0, dz));
             }
         }
 
@@ -790,7 +791,7 @@ public final class MissileGameTests {
 
     /**
      * A launch pad block entity bound to the test level. It is constructed directly rather than placed:
-     * the pad is a {@code BlockDummyable} multiblock and building the 3×3 would test the placement code,
+     * the pad is a folded multiblock and building the 3x3 would test the placement code,
      * not the launch code. {@code setLevel} is what makes {@code finalizeLaunch} able to spawn.
      */
     private static TileEntityLaunchPad pad(GameTestHelper helper) {

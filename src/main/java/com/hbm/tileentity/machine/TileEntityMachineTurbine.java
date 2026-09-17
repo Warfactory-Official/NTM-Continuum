@@ -60,9 +60,6 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbine te) {
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             te.tryProvide(level, pos.relative(direction.toDirection()), direction);
-            if (te.input.getTankType() != Fluids.NONE) {
-                te.trySubscribe(te.input.getTankType(), level, pos.relative(direction.toDirection()), direction);
-            }
         }
 
         te.updateTypeFromFluidId();

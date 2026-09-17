@@ -90,15 +90,7 @@ public final class GuiUtil {
 
     /** The exact legacy fluid-tank tooltip: name, fill, optional pressure, then fluid metadata. */
     public static List<Component> tankTooltip(FluidTankNTM tank) {
-        List<Component> lines = new ArrayList<>();
-        lines.add(tank.getTankType().getDisplayName());
-        lines.add(Component.literal(tank.getFill() + "/" + tank.getMaxFill() + "mB"));
-        if (tank.getPressure() != 0) {
-            lines.add(Component.literal("Pressure: " + tank.getPressure() + " PU")
-                    .withStyle(ChatFormatting.RED));
-        }
-        tank.getTankType().addInfo(lines);
-        return lines;
+        return TankDisplay.tooltip(tank);
     }
 
     /** The shared HBM {@code gui_utility.png} icon sheet (info/warning glyphs) — the 1.12.2 {@code GuiInfoContainer.guiUtil}. */

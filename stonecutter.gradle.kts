@@ -101,9 +101,16 @@ stonecutter parameters {
             replace("net.minecraft.world.entity.animal.equine.ZombieHorse", "net.minecraft.world.entity.animal.horse.ZombieHorse")
             replace("net.minecraft.world.entity.animal.feline.Cat", "net.minecraft.world.entity.animal.Cat")
             replace("net.minecraft.world.entity.animal.feline.Ocelot", "net.minecraft.world.entity.animal.Ocelot")
+            replace("net.minecraft.world.entity.animal.chicken.Chicken", "net.minecraft.world.entity.animal.Chicken")
+            replace("net.minecraft.world.entity.animal.squid.Squid", "net.minecraft.world.entity.animal.Squid")
+            replace("net.minecraft.world.entity.animal.sheep.Sheep", "net.minecraft.world.entity.animal.Sheep")
+            replace("net.minecraft.world.entity.vehicle.minecart.MinecartTNT", "net.minecraft.world.entity.vehicle.MinecartTNT")
+            replace("net.minecraft.world.entity.projectile.arrow.Arrow", "net.minecraft.world.entity.projectile.Arrow")
+            replace("net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg", "net.minecraft.world.entity.projectile.ThrownEgg")
             // Straight renames. Each 26.1 spelling is absent below, and each older spelling is absent
             // on 26.1, so the mapping is reversible.
             replace("EntitySpawnReason", "MobSpawnType")
+            replace("SPAWN_ITEM_USE", "SPAWN_EGG")
             replace("VegetationBlock", "BushBlock")
             replace("getMinSectionY()", "getMinSection()")
             replace("snapTo(", "moveTo(")
@@ -124,6 +131,10 @@ stonecutter parameters {
             replace("MobEffects.INSTANT_DAMAGE", "MobEffects.HARM")
             replace("InteractionResult.TRY_WITH_EMPTY_HAND", "InteractionResult.PASS")
             replace("MobEffects.NAUSEA", "MobEffects.CONFUSION")
+            replace("MobEffects.SPEED", "MobEffects.MOVEMENT_SPEED")
+            replace("SoundEvents.GENERIC_EAT.value()", "SoundEvents.GENERIC_EAT")
+            replace("SoundEvents.CHICKEN_STEP.value()", "SoundEvents.CHICKEN_STEP")
+            replace("ClientboundGameEventPacket.PLAY_ARROW_HIT_SOUND", "ClientboundGameEventPacket.ARROW_HIT_PLAYER")
             // Fabric API's own rename, not vanilla's. Qualified with the owning type so the rule can
             // only ever hit these calls, and reversible: neither spelling exists in the other era.
             replace("PayloadTypeRegistry.clientboundPlay()", "PayloadTypeRegistry.playS2C()")

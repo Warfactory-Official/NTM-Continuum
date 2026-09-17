@@ -1,28 +1,18 @@
 package com.hbm.client.render.weapon;
 
-import com.hbm.client.anim.HbmAnimations;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 
 /**
  * The break-action revolver, a direct port of 1.12.2 {@code ItemRenderAtlas}.
  *
- * <p>The part tree, its pivots and every constant are upstream's. Two things are worth knowing when
- * reading them: the model is authored at 8× (hence the 0.125 scale), and several joints read a bus's
- * <b>Z component as an angle</b> rather than a translation — {@code RECOIL} drives both the shove back
- * and the muzzle rise that way. That is upstream's shorthand, not a transcription slip.
- *
- * <p>The grip carries the whole weapon, so recoil, the draw sweep and the reload swing all apply there
- * and everything else inherits. The barrel assembly hinges as one under {@code FRONT} — which is what
- * makes it break-action — with the latch and drum nested inside it.
+ * <p>The model is authored at 8×, hence the 0.125 scale, and several joints read a bus's Z component
+ * as an <em>angle</em> rather than a translation — upstream's shorthand, not a transcription slip.
  */
 public class AtlasWeaponRenderer extends WeaponRenderer {
 
@@ -30,7 +20,6 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
     private final Identifier texture;
 
     private WavefrontObj model;
-    private RenderType body;
 
     public AtlasWeaponRenderer() {
         this("bio_revolver");
@@ -40,12 +29,8 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
         this.texture = dev.golem.core.Ids.of("hbm", "textures/models/weapons/" + texture + ".png");
     }
 
-    /** Loaded on first draw: the resource manager is not ready when renderers are declared. */
     private WavefrontObj model() {
-        if (model == null) {
-            model = WavefrontObj.load(MODEL);
-            body = CompatRenderTypes.entityCutout(texture);
-        }
+        if (model == null) model = WavefrontObj.load(MODEL);
         return model;
     }
 
@@ -82,88 +67,43 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
         return aimingFov(stack, fov, partialTick, 0.33F);
     }
 
-    @Override
-    public void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
-        pose.scale(0.125F, 0.125F, 0.125F);
-        submitParts(pose, collector, light, overlay, true);
-    }
-
-    @Override
-    public void renderStatic(ItemStack stack, PoseStack pose, SubmitSink collector,
-            int light, int overlay) {
-        submitParts(pose, collector, light, overlay, false);
-    }
-
-    // No setupStatic override: the non-first-person framing lives in the base model's display{} block.
-    // Upstream's setupInv/setupThirdPerson/setupEntity bodies are GL op chains in 1.12's own GUI space
-    // (their setupInv opens with translate(8, 8, 0) — sixteenths of a slot, not block units), so
-    // transcribing the calls into a modern PoseStack puts the model somewhere off screen. Composed into
-    // a matrix and decomposed into MC's translation/rotation/scale, they are exactly the display entries
-    // in gun_obj_base.json, which is where they now live.
-
-    /** The shared part tree. Buses read live when {@code animated}, otherwise the rest pose. */
-    private void submitParts(PoseStack pose, SubmitSink collector, int light, int overlay,
-            boolean animated) {
-        WavefrontObj obj = model();
-
-        double[] recoil = bus("RECOIL", animated);
-        double[] reloadMove = bus("RELOAD_MOVE", animated);
-        double[] reloadRot = bus("RELOAD_ROT", animated);
-        double[] equip = bus("EQUIP", animated);
-
-        pose.translate(recoil[0], recoil[1], recoil[2]);
-        pose.mulPose(Axis.XP.rotationDegrees((float) (recoil[2] * 10)));
-
-        // The draw sweep pivots behind the weapon so it swings up into view.
-        pose.translate(0, 0, -7);
-        pose.mulPose(Axis.XN.rotationDegrees((float) equip[0]));
-        pose.translate(0, 0, 7);
-
-        pose.translate(reloadMove[0], reloadMove[1], reloadMove[2]);
-        // Deliberately X, Z, Y — the order upstream applies them in.
-        pose.mulPose(Axis.XP.rotationDegrees((float) reloadRot[0]));
-        pose.mulPose(Axis.ZP.rotationDegrees((float) reloadRot[2]));
-        pose.mulPose(Axis.YP.rotationDegrees((float) reloadRot[1]));
-        submitPart(collector, pose, body, obj, "Grip", light, overlay);
-
-        pose.pushPose(); // barrel assembly, hinged as one
-        pose.mulPose(Axis.XP.rotationDegrees((float) bus("FRONT", animated)[2]));
-        submitPart(collector, pose, body, obj, "Barrel", light, overlay);
-
-        pose.pushPose(); // latch, hinged at the top rear of the barrel
-        pose.translate(0, 2.3125, -0.875);
-        pose.mulPose(Axis.XP.rotationDegrees((float) bus("LATCH", animated)[2]));
-        pose.translate(0, -2.3125, 0.875);
-        submitPart(collector, pose, body, obj, "Latch", light, overlay);
-        pose.popPose();
-
-        pose.pushPose(); // drum: one chamber (60°) per shot, and slides out to reload
-        pose.translate(0, 1, 0);
-        pose.mulPose(Axis.ZP.rotationDegrees((float) (bus("DRUM", animated)[2] * 60)));
-        pose.translate(0, -1, 0);
-        pose.translate(0, 0, bus("DRUM_PUSH", animated)[2]);
-        submitPart(collector, pose, body, obj, "Drum", light, overlay);
-        pose.popPose();
-
-        pose.popPose(); // end barrel assembly
-
-        pose.pushPose(); // hammer: rests cocked at -45° and falls to 0 as it strikes
-        pose.translate(0, 0, -4.5);
-        pose.mulPose(Axis.XP.rotationDegrees((float) (-45 + 45 * bus("HAMMER", animated)[2])));
-        pose.translate(0, 0, 4.5);
-        submitPart(collector, pose, body, obj, "Hammer", light, overlay);
-        pose.popPose();
-    }
-
     /**
-     * A bus's transform, or the rest pose for a static draw.
-     *
-     * <p>The animation state belongs to the <em>held</em> item, so an inventory icon that read it live
-     * would replay whatever the player's hands are doing.
+     * Two details are upstream's and read like slips: the draw sweep pivots seven units <em>behind</em>
+     * the weapon so it swings up into view rather than growing out of nothing, and the reload rotation
+     * is applied X, Z, Y — not X, Y, Z.
      */
-    private static double[] bus(String name, boolean animated) {
-        return animated ? HbmAnimations.getRelevantTransformation(name)
-                : new double[] {0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 2};
+    @Override
+    protected void setup(Gem.Model<WeaponPose> declaration) {
+        WavefrontObj obj = model();
+        Surface body = Surface.cutout(texture.toString());
+
+        Gem.Part<WeaponPose> grip = declaration.part(obj.part("Grip"), body)
+                .stretch(state -> state.animated ? 0.125F : 1F)
+                .slide(Gem.Axes.X, state -> (float) state.bus("RECOIL")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("RECOIL")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL")[2])
+                .angle(Gem.Axes.X, state -> (float) (state.bus("RECOIL")[2] * 10))
+                .spin(Gem.Axes.X, 0F, 0F, -7F, state -> (float) -state.bus("EQUIP")[0])
+                .slide(Gem.Axes.X, state -> (float) state.bus("RELOAD_MOVE")[0])
+                .slide(Gem.Axes.Y, state -> (float) state.bus("RELOAD_MOVE")[1])
+                .slide(Gem.Axes.Z, state -> (float) state.bus("RELOAD_MOVE")[2])
+                .angle(Gem.Axes.X, state -> (float) state.bus("RELOAD_ROT")[0])
+                .angle(Gem.Axes.Z, state -> (float) state.bus("RELOAD_ROT")[2])
+                .angle(Gem.Axes.Y, state -> (float) state.bus("RELOAD_ROT")[1]);
+
+        Gem.Part<WeaponPose> barrel = grip.child(obj.part("Barrel"), body)
+                .angle(Gem.Axes.X, state -> (float) state.bus("FRONT")[2]);
+
+        barrel.child(obj.part("Latch"), body)
+                .spin(Gem.Axes.X, 0F, 2.3125F, -0.875F, state -> (float) state.bus("LATCH")[2]);
+
+        barrel.child(obj.part("Drum"), body)
+                .spin(Gem.Axes.Z, 0F, 1F, 0F, state -> (float) (state.bus("DRUM")[2] * 60))
+                .slide(Gem.Axes.Z, state -> (float) state.bus("DRUM_PUSH")[2]);
+
+        grip.child(obj.part("Hammer"), body)
+                .spin(Gem.Axes.X, 0F, 0F, -4.5F,
+                        state -> (float) (-45 + 45 * state.bus("HAMMER")[2]));
     }
+
 }

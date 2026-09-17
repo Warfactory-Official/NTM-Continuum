@@ -34,7 +34,7 @@ public class HbmKeybinds {
         public static final EnumKeybind[] VALUES = values();
 
         public static EnumKeybind byOrdinal(int ordinal) {
-            return ordinal >= 0 && ordinal < VALUES.length ? VALUES[ordinal] : GUN_PRIMARY;
+            return ordinal >= 0 && ordinal < VALUES.length ? VALUES[ordinal] : null;
         }
     }
 }

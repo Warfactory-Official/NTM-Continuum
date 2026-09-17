@@ -14,8 +14,8 @@ import java.util.Random;
  * The 1.12.2 {@code BeamPronter} SOLID/STRAIGHT beam, ported to the 26.1 submit API. The original drew
  * layered concentric quad prisms (4 axis-plane quads per layer) in POSITION_COLOR with additive blending,
  * no depth write and no cull; {@code CompatRenderTypes.dragonRays()} is the exact modern pipeline match
- * (POSITION_COLOR triangles, {@code BlendFunction.LIGHTNING} additive, depth-write OFF) — each quad is
- * emitted as two triangles, double-wound to reproduce the original's cull-off visibility.
+ * (POSITION_COLOR triangles, {@code BlendFunction.LIGHTNING} additive, depth-write OFF). The source
+ * emitted each quad once with culling disabled, so the submit path does not duplicate its additive energy.
  *
  * <p>The legacy helper also emitted randomized/spiral line beams. Those use the same thin crossed-prism
  * geometry here because the modern lightning pipeline does not expose the old immediate-mode line width.
@@ -32,6 +32,52 @@ public final class BeamPronter {
                                  int outerColor, int innerColor, int layers, float thickness) {
         prontBeam(ps, collector, skeleton, EnumWaveType.STRAIGHT, EnumBeamType.SOLID,
                 0, 1, 0F, outerColor, innerColor, layers, thickness);
+    }
+
+    /** Source {@code renderBulletStandard}: a narrow material pass with endpoint colours. */
+    public static void prontBeamGradient(PoseStack ps, SubmitSink collector, Vec3 skeleton,
+                                         int startColor, int endColor, float thickness) {
+        ps.pushPose();
+        float sYaw = (float) Math.toDegrees(Math.atan2(skeleton.x, skeleton.z));
+        float sqrt = (float) Math.sqrt(skeleton.x * skeleton.x + skeleton.z * skeleton.z);
+        float sPitch = (float) Math.toDegrees(Math.atan2(skeleton.y, sqrt));
+        ps.mulPose(Axis.YP.rotationDegrees(180));
+        ps.mulPose(Axis.YP.rotationDegrees(sYaw));
+        ps.mulPose(Axis.XP.rotationDegrees(sPitch - 90));
+        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+                (pose, buffer) -> gradientPrism(pose, buffer, startColor, endColor,
+                        (float) skeleton.length(), thickness));
+        ps.popPose();
+    }
+
+    /** The source six-face projectile pass used by NI4NI and the .358-00 beams. */
+    public static void prontBulletGradient(PoseStack ps, SubmitSink collector, Vec3 skeleton,
+                                           int startColor, int endColor, float muzzleWidth, float endpointWidth) {
+        ps.pushPose();
+        float sYaw = (float) Math.toDegrees(Math.atan2(skeleton.x, skeleton.z));
+        float sqrt = (float) Math.sqrt(skeleton.x * skeleton.x + skeleton.z * skeleton.z);
+        float sPitch = (float) Math.toDegrees(Math.atan2(skeleton.y, sqrt));
+        ps.mulPose(Axis.YP.rotationDegrees(180));
+        ps.mulPose(Axis.YP.rotationDegrees(sYaw));
+        ps.mulPose(Axis.XP.rotationDegrees(sPitch - 90));
+        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+                (pose, buffer) -> bulletPrism(pose, buffer, startColor, endColor,
+                        (float) skeleton.length(), muzzleWidth, endpointWidth));
+        ps.popPose();
+    }
+
+    /**
+     * The ntm-next {@code LegoClient.renderBulletStandard} pass used by NI4NI. The source ribbon starts
+     * at the translated endpoint with the white, wider head and runs back toward the muzzle with the
+     * narrower cyan tail. The current submit API has no source ribbon vertex format, so two crossed
+     * untextured additive quads provide the same camera-independent fullbright silhouette.
+     */
+    public static void prontBulletStandard(PoseStack ps, SubmitSink collector, double length,
+                                           int darkColor, int lightColor) {
+        if (length <= 0D) return;
+        collector.submitCustomGeometry(ps, CompatRenderTypes.dragonRays(),
+                (pose, buffer) -> bulletRibbon(pose, buffer, (float) length,
+                        0.03125F, 0.0078125F, lightColor, darkColor));
     }
 
     /** Full legacy beam contract used by the Exposure Chamber's animated line effects. */
@@ -131,35 +177,98 @@ public final class BeamPronter {
                 x1 - radius, y1, z1 - radius, x1 + radius, y1, z1 - radius);
     }
 
+    private static void gradientPrism(PoseStack.Pose pose, VertexConsumer buffer,
+                                      int startColor, int endColor, float length, float radius) {
+        gradientQuad(pose, buffer, startColor, endColor, radius, 0F, radius, radius, 0F, -radius,
+                radius, length, -radius, radius, length, radius);
+        gradientQuad(pose, buffer, startColor, endColor, -radius, 0F, radius, -radius, 0F, -radius,
+                -radius, length, -radius, -radius, length, radius);
+        gradientQuad(pose, buffer, startColor, endColor, radius, 0F, radius, -radius, 0F, radius,
+                -radius, length, radius, radius, length, radius);
+        gradientQuad(pose, buffer, startColor, endColor, radius, 0F, -radius, -radius, 0F, -radius,
+                -radius, length, -radius, radius, length, -radius);
+    }
+
+    private static void gradientQuad(PoseStack.Pose pose, VertexConsumer buffer, int startColor, int endColor,
+                                     float ax, float ay, float az, float bx, float by, float bz,
+                                     float cx, float cy, float cz, float dx, float dy, float dz) {
+        gradientTris(pose, buffer, startColor, endColor, ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz);
+    }
+
+    private static void gradientTris(PoseStack.Pose pose, VertexConsumer buffer, int startColor, int endColor,
+                                     float ax, float ay, float az, float bx, float by, float bz,
+                                     float cx, float cy, float cz, float dx, float dy, float dz) {
+        vert(pose, buffer, startColor, ax, ay, az);
+        vert(pose, buffer, startColor, bx, by, bz);
+        vert(pose, buffer, endColor, cx, cy, cz);
+        vert(pose, buffer, startColor, ax, ay, az);
+        vert(pose, buffer, endColor, cx, cy, cz);
+        vert(pose, buffer, endColor, dx, dy, dz);
+        vert(pose, buffer, endColor, cx, cy, cz);
+        vert(pose, buffer, startColor, bx, by, bz);
+        vert(pose, buffer, startColor, ax, ay, az);
+        vert(pose, buffer, endColor, dx, dy, dz);
+        vert(pose, buffer, endColor, cx, cy, cz);
+        vert(pose, buffer, startColor, ax, ay, az);
+    }
+
+    private static void bulletPrism(PoseStack.Pose pose, VertexConsumer buffer, int startColor,
+                                    int endColor, float length, float near, float far) {
+        gradientQuad(pose, buffer, startColor, endColor, near, 0F, -near, near, 0F, near,
+                far, length, far, far, length, -far);
+        gradientQuad(pose, buffer, startColor, endColor, -near, 0F, -near, -near, 0F, near,
+                -far, length, far, -far, length, -far);
+        gradientQuad(pose, buffer, startColor, endColor, near, 0F, near, -near, 0F, near,
+                -far, length, far, far, length, far);
+        gradientQuad(pose, buffer, startColor, endColor, near, 0F, -near, -near, 0F, -near,
+                -far, length, -far, far, length, -far);
+        gradientQuad(pose, buffer, startColor, startColor, near, 0F, near, near, 0F, -near,
+                near, 0F, -near, -near, 0F, near);
+        gradientQuad(pose, buffer, endColor, endColor, far, length, far, far, length, -far,
+                -far, length, -far, -far, length, far);
+    }
+
+    private static void bulletRibbon(PoseStack.Pose pose, VertexConsumer buffer, float length,
+                                     float headWidth, float tailWidth, int headColor, int tailColor) {
+        // The source renderBulletStandard ribbon is endpoint-first. Keep both planes unculled so the
+        // additive pass remains visible from the same angles as the source's screen-facing ribbon.
+        gradientQuad(pose, buffer, headColor, tailColor,
+                0F, -headWidth, 0F, 0F, headWidth, 0F,
+                length, tailWidth, 0F, length, -tailWidth, 0F);
+        gradientQuad(pose, buffer, headColor, tailColor,
+                0F, 0F, -headWidth, 0F, 0F, headWidth,
+                length, 0F, tailWidth, length, 0F, -tailWidth);
+    }
+
     private static void quad(PoseStack.Pose pose, VertexConsumer buffer, int color,
                              float ax, float ay, float az, float bx, float by, float bz,
                              float cx, float cy, float cz, float dx, float dy, float dz) {
         tris(pose, buffer, color, ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz);
     }
 
-    /** Emits the quad (a,b,c,d) as two triangles, in both windings (the old no-cull additive pass). */
+    /** Emits the quad (a,b,c,d) as two triangles, matching the source's single no-cull quad. */
     private static void tris(PoseStack.Pose pose, VertexConsumer buf, int color,
                              float ax, float ay, float az, float bx, float by, float bz,
                              float cx, float cy, float cz, float dx, float dy, float dz) {
-        int argb = 0xFF000000 | (color & 0xFFFFFF);
-        // front winding
-        vert(pose, buf, argb, ax, ay, az); vert(pose, buf, argb, bx, by, bz); vert(pose, buf, argb, cx, cy, cz);
-        vert(pose, buf, argb, ax, ay, az); vert(pose, buf, argb, cx, cy, cz); vert(pose, buf, argb, dx, dy, dz);
-        // reverse winding (visible from the far side; cull discards whichever faces away)
-        vert(pose, buf, argb, cx, cy, cz); vert(pose, buf, argb, bx, by, bz); vert(pose, buf, argb, ax, ay, az);
-        vert(pose, buf, argb, dx, dy, dz); vert(pose, buf, argb, cx, cy, cz); vert(pose, buf, argb, ax, ay, az);
+        // The source disables culling instead of submitting a second winding.
+        vert(pose, buf, color, ax, ay, az); vert(pose, buf, color, bx, by, bz); vert(pose, buf, color, cx, cy, cz);
+        vert(pose, buf, color, ax, ay, az); vert(pose, buf, color, cx, cy, cz); vert(pose, buf, color, dx, dy, dz);
     }
 
-    private static void vert(PoseStack.Pose pose, VertexConsumer buf, int argb, float x, float y, float z) {
+    private static void vert(PoseStack.Pose pose, VertexConsumer buf, int color, float x, float y, float z) {
+        // Source beam tables use RGB literals; modern VertexConsumer.setColor(int) reads ARGB.
+        // Preserve explicit alpha for fading callers, but never turn an RGB beam fully transparent.
+        int argb = (color & 0xFF000000) == 0 ? 0xFF000000 | (color & 0xFFFFFF) : color;
         Vertexes.color(buf, pose, x, y, z, argb);
     }
 
     /** Per-channel linear colour interpolation (the old {@code BobMathUtil.interpolateColor}). */
     private static int interpolateColor(int from, int to, float inter) {
+        int a = (int) ((from >> 24 & 0xFF) + ((to >> 24 & 0xFF) - (from >> 24 & 0xFF)) * inter);
         int r = (int) ((from >> 16 & 0xFF) + ((to >> 16 & 0xFF) - (from >> 16 & 0xFF)) * inter);
         int g = (int) ((from >> 8 & 0xFF) + ((to >> 8 & 0xFF) - (from >> 8 & 0xFF)) * inter);
         int b = (int) ((from & 0xFF) + ((to & 0xFF) - (from & 0xFF)) * inter);
-        return (r << 16) | (g << 8) | b;
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
     public enum EnumWaveType { STRAIGHT, RANDOM, SPIRAL }

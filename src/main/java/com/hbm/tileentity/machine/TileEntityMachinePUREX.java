@@ -20,6 +20,7 @@ import com.hbm.modules.machine.ModuleMachinePUREX;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -91,8 +92,6 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePUREX te) {
         for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, port);
         }
 
@@ -112,7 +111,7 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
         te.didProcess = te.purexModule.didProcess;
         if (te.purexModule.markDirty) te.setChanged();
 
-        if (level.getGameTime() % 20 == 0) te.frame = !level.getBlockState(pos.above(5)).isAir();
+        if (TickPhase.every(level, pos, 20)) te.frame = !level.getBlockState(pos.above(5)).isAir();
         te.networkPackNT();
     }
 
@@ -231,6 +230,11 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
     @Override
     public String[] getFunctionInfo() {
         return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active"};
+    }
+
+    @Override public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachinePUREX menu
+                && menu.getPurex() == this && menu.stillValid(player);
     }
 
     @Override

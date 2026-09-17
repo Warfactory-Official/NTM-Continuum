@@ -1,54 +1,68 @@
 package com.hbm.entity.effect;
 
-import com.hbm.config.CompatibilityConfig;
-import com.hbm.entity.ModEntities;
-import dev.golem.core.data.CompatEntity;
-import dev.golem.core.data.DataIn;
-import dev.golem.core.data.DataOut;
+import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
+import dev.golem.core.data.CompatEntity;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.level.Level;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
 
 /**
- * The storm a dark fusion core leaves behind when it lets go: an invisible box that calls down a bolt
- * of lightning every tick above itself until it ages out. Upstream has no renderer for it either — the
- * whole effect is the weather.
+ * The B92 / weaponised-cell blast sphere: same tick body as EntityCloudSolinium, drawn in per-frame random colours.
  */
 public class EntityCloudFleijaRainbow extends CompatEntity {
 
+    // 1.7: dataWatcher slot 16
     private static final EntityDataAccessor<Integer> MAX_AGE =
             SynchedEntityData.defineId(EntityCloudFleijaRainbow.class, EntityDataSerializers.INT);
 
     public int age;
-    public float scale;
+    public float scale = 0;
 
     public EntityCloudFleijaRainbow(EntityType<? extends EntityCloudFleijaRainbow> type, Level level) {
         super(type, level);
-        this.noPhysics = true;
+        this.age = 0;
+        this.scale = 0;
     }
 
-    public EntityCloudFleijaRainbow(Level level) {
-        this(ModEntities.CLOUD_FLEIJA_RAINBOW.get(), level);
-    }
-
-    public EntityCloudFleijaRainbow setMaxAge(int maxAge) {
-        this.entityData.set(MAX_AGE, maxAge);
-        return this;
-    }
-
-    public int getMaxAge() {
-        return this.entityData.get(MAX_AGE);
+    public static EntityCloudFleijaRainbow statFac(Level level, int maxAge, double x, double y, double z) {
+        EntityCloudFleijaRainbow cloud = new EntityCloudFleijaRainbow(ModNtmEntities.CLOUD_RAINBOW.get(), level);
+        cloud.setPos(x, y, z);
+        cloud.setMaxAge(maxAge);
+        return cloud;
     }
 
     @Override
-    protected void defineData(SynchedData data) {
-        data.define(MAX_AGE, 100);
+    protected void defineData(SynchedData builder) {
+        builder.define(MAX_AGE, 0);
+    }
+
+    // 1.7: onUpdate without super - no movement/gravity
+    @Override
+    public void tick() {
+        this.age++;
+
+        // 26.2: server-only spawn - see EntityCloudSolinium.
+        if (level() instanceof ServerLevel server) {
+            LightningBolt bolt = dev.golem.core.registry.Entities.createTriggered(net.minecraft.world.entity.EntityType.LIGHTNING_BOLT, server);
+            if (bolt != null) {
+                bolt.snapTo(getX(), getY() + 200, getZ());
+                server.addFreshEntity(bolt);
+            }
+        }
+
+        if (this.age >= this.getMaxAge()) {
+            this.age = 0;
+            this.discard();
+        }
+
+        this.scale++;
     }
 
     @Override
@@ -57,41 +71,27 @@ public class EntityCloudFleijaRainbow extends CompatEntity {
     }
 
     @Override
-    public void tick() {
-        if (!CompatibilityConfig.isWarDim(level())) {
-            discard();
-            return;
-        }
-
-        this.age++;
-
-        if (level() instanceof ServerLevel server) {
-            LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(server, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
-            if (bolt != null) {
-                bolt.snapTo(getX(), getY() + 200, getZ(), getYRot(), getXRot());
-                bolt.setVisualOnly(true);
-                server.addFreshEntity(bolt);
-            }
-        }
-
-        if (this.age >= getMaxAge()) {
-            this.age = 0;
-            discard();
-            return;
-        }
-
-        this.scale++;
-    }
-
-    @Override
-    protected void saveData(DataOut output) {
-        output.putInt("age", age);
-        output.putDouble("scale", scale);
+    public boolean shouldRenderAtSqrDistance(double distSq) {
+        return distSq < 25000; // 1.7: isInRangeToRenderDist
     }
 
     @Override
     protected void loadData(DataIn input) {
-        age = input.getIntOr("age", 0);
-        scale = (float) input.getDoubleOr("scale", 0D);
+        age = input.getShortOr("age", (short) 0);
+        scale = input.getShortOr("scale", (short) 0);
+    }
+
+    @Override
+    protected void saveData(DataOut output) {
+        output.putShort("age", (short) age);
+        output.putShort("scale", (short) scale);
+    }
+
+    public int getMaxAge() {
+        return this.entityData.get(MAX_AGE);
+    }
+
+    public void setMaxAge(int i) {
+        this.entityData.set(MAX_AGE, i);
     }
 }

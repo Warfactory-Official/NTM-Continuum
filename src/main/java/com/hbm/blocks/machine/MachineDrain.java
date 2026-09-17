@@ -1,7 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
@@ -30,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The legacy three-port drainage pipe. */
-public class MachineDrain extends BlockDummyable implements IFluidConnectorBlockMK2, ILookOverlay {
+public class MachineDrain extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineDrain(Properties properties) {
         super(properties);
@@ -57,7 +58,7 @@ public class MachineDrain extends BlockDummyable implements IFluidConnectorBlock
         if (!(stack.getItem() instanceof IItemFluidId identifier)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!level.isClientSide() && !player.isShiftKeyDown()
-                && findCoreTE(level, pos) instanceof TileEntityMachineDrain drain) {
+                && MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineDrain drain) {
             FluidType type = identifier.getType(level, drain.getBlockPos().getX(), drain.getBlockPos().getY(),
                     drain.getBlockPos().getZ(), stack);
             drain.setTankType(type);
@@ -77,7 +78,7 @@ public class MachineDrain extends BlockDummyable implements IFluidConnectorBlock
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
         if (dir == ForgeDirection.UNKNOWN) return false;
         BlockPos cell = new BlockPos(x, y, z);
-        BlockPos core = findCore(world, cell);
+        BlockPos core = MultiblockSurface.coreOfAny(world, cell);
         if (core == null || !(world.getBlockEntity(core) instanceof TileEntityMachineDrain drain)) return false;
         for (DirPos port : drain.getConPos()) {
             BlockPos outside = cell.offset(dir.offsetX, dir.offsetY, dir.offsetZ);
@@ -88,25 +89,16 @@ public class MachineDrain extends BlockDummyable implements IFluidConnectorBlock
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachineDrain drain)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineDrain drain)) return null;
         List<String> text = new ArrayList<>();
         text.add("§a-> §r" + drain.tank.getTankType().getDisplayNameString() + ": "
                 + drain.tank.getFill() + "/" + drain.tank.getMaxFill() + "mB");
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    /** 1.7 reaches out on three sides only; the fourth is the drain's own inlet column. */
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                  BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.MACHINE_DRAIN.get(), TileEntityMachineDrain::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    public int coreMask() {
+        return MASK_SOUTH | MASK_WEST | MASK_EAST;
     }
 }

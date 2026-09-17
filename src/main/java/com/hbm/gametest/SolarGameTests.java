@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.solar.MachineSolarBoiler;
 import com.hbm.blocks.machine.solar.ModSolarBlocks;
 import com.hbm.blocks.machine.solar.SolarMirror;
@@ -170,9 +169,7 @@ public final class SolarGameTests {
         TileEntitySolarBoiler.serverTick(helper.getLevel(), core, boiler.getBlockState(), boiler);
         helper.assertTrue(boiler.tanks[0].getFill() == 0 && boiler.tanks[1].getFill() == 100 && boiler.heat == 0,
                 "One water operation must consume 50 TU and produce 100 steam");
-        helper.assertTrue(helper.getLevel().getBlockState(core.above(2)).getValue(BlockDummyable.META)
-                        >= BlockDummyable.extra,
-                "Solar boiler top port cell must be marked extra");
+        FoldedTestSupport.assertPort(helper, relative, relative.above(2));
 
         DirPos[] ports = boiler.getConPos();
         helper.assertTrue(ports.length == 2
@@ -224,8 +221,8 @@ public final class SolarGameTests {
     private static TileEntitySolarBoiler placeBoiler(GameTestHelper helper, BlockPos relative) {
         MachineSolarBoiler block = ModSolarBlocks.machine_solar_boiler.get();
         BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
         TileEntitySolarBoiler boiler = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntitySolarBoiler.class);
         helper.assertTrue(boiler != null, "Solar boiler core BlockEntity was not created");

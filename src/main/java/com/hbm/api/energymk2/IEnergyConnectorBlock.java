@@ -18,7 +18,7 @@ public interface IEnergyConnectorBlock {
     /**
      * Whether a multiblock cell at {@code cell} exposes a real power port on side {@code dir} — i.e. one
      * of the machine's network connection points ({@code getConPos()}) sits at the neighbouring block in
-     * that direction, looking back. Lets a {@link com.hbm.blocks.BlockDummyable} machine connect a cable
+     * that direction, looking back. Lets a multiblock machine connect a cable
      * only at its true ports instead of every footprint face. {@code dir} is the cell's side facing the
      * cable, matching the value passed to {@link #canConnect}.
      */

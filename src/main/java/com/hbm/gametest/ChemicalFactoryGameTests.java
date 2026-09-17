@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineChemicalFactory;
 import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
@@ -44,7 +44,7 @@ public final class ChemicalFactoryGameTests {
         MachineChemicalFactory block = ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get();
         BlockPos core = factory.getBlockPos();
 
-        helper.assertTrue(block.findCore(helper.getLevel(), core).equals(core),
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), core)),
                 "Chemical Factory core did not resolve to itself");
         helper.assertTrue(factory.getConPos().length == 26 && factory.getCoolPos().length == 4
                         && factory.getIOPos().length == 4,
@@ -65,7 +65,7 @@ public final class ChemicalFactoryGameTests {
         BlockPos cell = port.getPos().relative(port.getDir().toDirection().getOpposite());
         helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock() == block,
                 "Chemical Factory port cell is not part of the structure: " + cell);
-        helper.assertTrue(block.findCore(helper.getLevel(), cell).equals(core),
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                 "Chemical Factory port cell does not resolve to the core: " + cell);
         helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir()),
                 "Chemical Factory power port does not connect: " + port.getPos());
@@ -213,8 +213,7 @@ public final class ChemicalFactoryGameTests {
         var buffer = dev.golem.core.net.GolemBuffers.wrap(io.netty.buffer.Unpooled.buffer(), helper.getLevel());
         factory.serialize(buffer);
         TileEntityMachineChemicalFactory copy = new TileEntityMachineChemicalFactory(BlockPos.ZERO,
-                ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get().defaultBlockState()
-                        .setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+                ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get().defaultBlockState());
         copy.deserialize(buffer);
         helper.assertTrue(copy.inputTanks[0].getTankType() == Fluids.WATER && copy.inputTanks[0].getFill() == 123
                         && copy.outputTanks[0].getTankType() == Fluids.OXYGEN && copy.outputTanks[0].getFill() == 456
@@ -273,11 +272,10 @@ public final class ChemicalFactoryGameTests {
     private static TileEntityMachineChemicalFactory place(GameTestHelper helper, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
         MachineChemicalFactory block = ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
+        FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineChemicalFactory factory = GameTestHelpers.blockEntity(helper, relative,
                 TileEntityMachineChemicalFactory.class);
         helper.assertTrue(factory != null, "Chemical Factory core BlockEntity was not created");
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
         return factory;
     }
 }

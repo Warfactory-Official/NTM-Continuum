@@ -1,11 +1,11 @@
 package com.hbm.tileentity.machine.struct;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.struct.StructPattern;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -26,7 +26,7 @@ public class TileEntityWatzStruct extends TileEntityStructBase {
 
     @Override public StructPattern pattern() { return PATTERN; }
 
-    @Override protected BlockDummyable target() { return ModMachineBlocks.watz.get(); }
+    @Override protected BlockMultiblockCore target() { return ModMachineBlocks.watz.get(); }
 
     private static StructPattern buildPattern() {
         StructPattern.Builder b = StructPattern.builder();

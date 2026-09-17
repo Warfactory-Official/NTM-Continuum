@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/stairs",
-  "textures": {
-    "bottom": "hbm:blocks/lightstone.tile",
-    "top": "hbm:blocks/lightstone.tile",
-    "side": "hbm:blocks/lightstone.tile"
-  }
-}

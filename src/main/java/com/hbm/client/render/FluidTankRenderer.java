@@ -1,24 +1,19 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Draws the fluid-tank multiblock from {@code fluidtank.obj}. Unlike the generic
@@ -28,7 +23,7 @@ import java.util.Map;
  * {@code machines/tank.png}. Base yaw 180° (the tank's facing→yaw differs from the machines' — see
  * {@link HbmBlockEntityRenderers}).
  */
-public class FluidTankRenderer implements CompatBER<TileEntityMachineFluidTank, FluidTankRenderState> {
+public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidTankRenderState> {
 
     private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/fluidtank.obj");
     private static final Identifier FRAME_TEX = dev.golem.core.Ids.of("hbm", "textures/models/machines/tank.png");
@@ -36,10 +31,10 @@ public class FluidTankRenderer implements CompatBER<TileEntityMachineFluidTank, 
     private static final float BASE_YAW = 180F;
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType frameType = CompatRenderTypes.entityCutout(FRAME_TEX);
-    private final Map<Identifier, RenderType> bodyTypes = new HashMap<>();
+    private final Surface frame = Surface.cutout(FRAME_TEX.toString());
+    private final Map<Identifier, Surface> skins = new ConcurrentHashMap<>();
     /** Cache of fluid name → resolved body texture (falling back to tank_none when a fluid has no skin). */
-    private static final Map<String, Identifier> BODY_TEX = new HashMap<>();
+    private static final Map<String, Identifier> BODY_TEX = new ConcurrentHashMap<>();
 
     /**
      * The body skin for a fluid, falling back to {@code tank_none} when that fluid ships no
@@ -54,50 +49,39 @@ public class FluidTankRenderer implements CompatBER<TileEntityMachineFluidTank, 
         });
     }
 
+    /** The model spans the 5x3x5 footprint well past the 1-block core, hence the off-screen pass. */
+    @Override
+    protected void setup(Gem.Model<FluidTankRenderState> declaration) {
+        Gem.Part<FluidTankRenderState> tank = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> BASE_YAW + state.yaw);
+
+        tank.child(model.part("Frame"), frame);
+        tank.child(model.part("Tank"), frame).skin(this::skinOf);
+    }
+
+    private Surface skinOf(FluidTankRenderState state) {
+        return skins.computeIfAbsent(state.bodyTexture, id -> Surface.cutout(id.toString()));
+    }
+
     @Override
     public FluidTankRenderState createRenderState() {
         return new FluidTankRenderState();
     }
 
     @Override
-    public boolean shouldRenderOffScreen() {
-        return true; // the model spans the 5×3×5 footprint well past the 1-block core
-    }
-
-    @Override
-    public boolean shouldRender(TileEntityMachineFluidTank be, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
-    }
-
-    @Override
     public void extract(TileEntityMachineFluidTank be, FluidTankRenderState state, float partialTicks,
                                    Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH (2)
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = switch (meta) {
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
         state.bodyTexture = bodyTextureFor(be.tank.getTankType().getName());
     }
 
-    @Override
-    public void submit(FluidTankRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        RenderType bodyType = bodyTypes.computeIfAbsent(state.bodyTexture, CompatRenderTypes::entityCutout);
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(BASE_YAW + state.yaw));
-        collector.submitCustomGeometry(poseStack, frameType,
-                (pose, buffer) -> model.renderPart("Frame", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        collector.submitCustomGeometry(poseStack, bodyType,
-                (pose, buffer) -> model.renderPart("Tank", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        poseStack.popPose();
-    }
 }

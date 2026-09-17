@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineAmmoPress;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineAmmoPress;
@@ -23,8 +22,9 @@ public final class AmmoPressGameTests {
     private AmmoPressGameTests() {}
 
     public static void recipes(GameTestHelper helper) {
-        helper.assertTrue(AmmoPressRecipes.getRecipes().size() == 20,
-                "Ammo Press should expose the 20 feasible legacy recipes");
+        helper.assertTrue(AmmoPressRecipes.getRecipes().size() == AmmoPressRecipes.SOURCE_RECIPE_COUNT,
+                "Ammo Press should expose all dependency-complete original-hbm rows (89), got "
+                        + AmmoPressRecipes.getRecipes().size());
         helper.assertTrue(AmmoPressRecipes.recipes.get(0).output.is(ModAmmoItems.m357_bp.get())
                         && AmmoPressRecipes.recipes.get(6).output.is(ModAmmoItems.m44_bp.get())
                         && AmmoPressRecipes.recipes.get(12).output.is(ModAmmoItems.p22_sp.get())
@@ -40,14 +40,14 @@ public final class AmmoPressGameTests {
         MachineAmmoPress block = ModMachineBlocks.machine_ammo_press.get();
         BlockPos core = new BlockPos(3, 1, 3);
         BlockPos absolute = helper.absolutePos(core);
-        helper.setBlock(core, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.NORTH);
+        helper.setBlock(core, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
 
         helper.assertTrue(helper.getLevel().getBlockEntity(absolute) instanceof com.hbm.tileentity.machine.TileEntityMachineAmmoPress,
                 "Ammo Press core block entity was not created");
-        helper.assertBlockProperty(core.above(), BlockDummyable.META, 1);
-        helper.assertBlockProperty(core.west(), BlockDummyable.META, 4);
-        helper.assertBlockProperty(core.east(), BlockDummyable.META, 5);
+        FoldedTestSupport.assertCell(helper, core, core.above());
+        FoldedTestSupport.assertCell(helper, core, core.west());
+        FoldedTestSupport.assertCell(helper, core, core.east());
 
         Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
                 net.minecraft.world.level.GameType.SURVIVAL);
@@ -120,8 +120,7 @@ public final class AmmoPressGameTests {
 
     private static com.hbm.tileentity.machine.TileEntityMachineAmmoPress place(GameTestHelper helper, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, ModMachineBlocks.machine_ammo_press.get().defaultBlockState()
-                .setValue(BlockDummyable.META, 12));
+        helper.setBlock(relative, ModMachineBlocks.machine_ammo_press.get().defaultBlockState());
         return (com.hbm.tileentity.machine.TileEntityMachineAmmoPress) helper.getLevel().getBlockEntity(absolute);
     }
 }

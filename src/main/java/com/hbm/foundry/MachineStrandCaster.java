@@ -3,10 +3,10 @@ package com.hbm.foundry;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.block.IToolable;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemMold;
 import com.hbm.items.machine.ItemScraps;
@@ -22,7 +22,6 @@ import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -36,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** The six-cell Strand Caster foundry leaf, preserving the old caster footprint and ports. */
-public class MachineStrandCaster extends BlockDummyable
+public class MachineStrandCaster extends BlockMultiblockMachine
         implements IFluidConnectorBlockMK2, ICrucibleAcceptor, IToolable, WorldlyContainerHolder, ILookOverlay {
 
     public MachineStrandCaster(Properties properties) {
@@ -52,62 +51,21 @@ public class MachineStrandCaster extends BlockDummyable
     @Override public int getOffset() { return 0; }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        formStructure(level, new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset), dir);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        MultiblockHandlerXR.fillSpace(level, x, y, z, getDimensions(), this, dir);
-        MultiblockHandlerXR.fillSpace(level, x, y, z, new int[]{2, 0, 1, 0, 1, 0}, this, dir);
-
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x + rot.offsetX - dir.offsetX, y, z + rot.offsetZ - dir.offsetZ);
-        makeExtra(level, x - dir.offsetX, y, z - dir.offsetZ);
-        makeExtra(level, x - dir.offsetX * 5, y, z - dir.offsetZ * 5);
-        makeExtra(level, x + rot.offsetX - dir.offsetX * 5, y, z + rot.offsetZ - dir.offsetZ * 5);
-        makeExtra(level, x + rot.offsetX - dir.offsetX, y + 2, z + rot.offsetZ - dir.offsetZ);
-        makeExtra(level, x - dir.offsetX, y + 2, z - dir.offsetZ);
-        makeExtra(level, x + rot.offsetX, y + 2, z + rot.offsetZ);
-        makeExtra(level, x, y + 2, z);
-    }
-
-    @Override
-    public boolean checkRequirement(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        if (!super.checkRequirement(level, x, y, z, dir, offset)) return false;
-        x += dir.offsetX * offset;
-        z += dir.offsetZ * offset;
-        return MultiblockHandlerXR.checkSpace(level, x, y, z,
-                new int[]{2, 0, 1, 0, 1, 0}, x, y, z, dir);
-    }
-
-    @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineStrandCaster caster ? caster : null;
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        if (!(findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityMachineStrandCaster caster)) return false;
-        for (com.hbm.lib.DirPos port : caster.getFluidConPos()) {
-            if (port.getPos().getX() == x && port.getPos().getY() == y && port.getPos().getZ() == z
-                    && port.getDir() == dir) return true;
-        }
-        return false;
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineStrandCaster caster ? caster : null;
     }
 
     @Override
     public boolean canAcceptPartialPour(Level level, BlockPos pos, double dX, double dY, double dZ,
                                         ForgeDirection side, Mats.MaterialStack stack) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineStrandCaster caster
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineStrandCaster caster
                 && caster.canAcceptPartialPour(level, pos, dX, dY, dZ, side, stack);
     }
 
     @Override
     public Mats.MaterialStack pour(Level level, BlockPos pos, double dX, double dY, double dZ,
                                    ForgeDirection side, Mats.MaterialStack stack) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineStrandCaster caster
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineStrandCaster caster
                 ? caster.pour(level, pos, dX, dY, dZ, side, stack) : stack;
     }
 
@@ -122,7 +80,7 @@ public class MachineStrandCaster extends BlockDummyable
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                            InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineStrandCaster caster)) {
             return InteractionResult.SUCCESS;
         }
@@ -161,7 +119,7 @@ public class MachineStrandCaster extends BlockDummyable
     public boolean onScrew(Level level, Player player, BlockPos pos, Direction side, net.minecraft.world.phys.Vec3 hit,
                            InteractionHand hand, ToolType tool) {
         if (tool != ToolType.SCREWDRIVER) return false;
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineStrandCaster caster)
                 || caster.inventory.getStackInSlot(0).isEmpty()) return false;
         if (!level.isClientSide()) {
@@ -177,7 +135,7 @@ public class MachineStrandCaster extends BlockDummyable
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachineStrandCaster caster)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineStrandCaster caster)) return null;
         List<String> text = new ArrayList<>();
         ItemMold.Mold mold = caster.getInstalledMold();
         if (mold == null) text.add("§cNo mold installed");
@@ -191,16 +149,39 @@ public class MachineStrandCaster extends BlockDummyable
         return new ILookOverlay.Data("Strand Caster", 0xFF4000, 0x401000, text);
     }
 
+    /** 1.7: the two courses of runout table above the strand. */
+    private static final int[] TABLE = {2, 0, 1, 0, 1, 0};
+
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : ticker(type, FoundryExpansion.STRAND_CASTER_BE.get(), TileEntityMachineStrandCaster::serverTick);
+    protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
+        return super.checkRequirement(level, core, facing, clicked)
+                && MultiblockHandlerXR.checkSpace(level, core, TABLE, clicked, facing);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> ticker(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    /** A water inlet and a steam outlet at each end of the strand, on opposite flanks. */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        MultiblockHandlerXR.visitBox(core, TABLE, facing, visitor);
+
+        Direction rot = facing.getClockWise();
+        for (int along : new int[]{-1, -5}) {
+            visitor.cell(core.relative(facing, along).relative(rot), MASK_WEST);
+            visitor.cell(core.relative(facing, along), MASK_EAST);
+        }
+    }
+
+    /** The four cells the crucible pours into take the mold and the scraps, and carry no fluid face. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        for (int along : new int[]{-1, -5}) {
+            visitor.passiveCell(core.relative(facing, along).relative(rot), MASK_ALL, PASSIVE_FLUID_IN);
+            visitor.passiveCell(core.relative(facing, along), MASK_ALL, PASSIVE_FLUID_IN);
+        }
+        visitor.passiveCell(core.relative(facing, -1).relative(rot).above(2), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.relative(facing, -1).above(2), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.relative(rot).above(2), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.above(2), MASK_ALL, PASSIVE_ITEMS);
     }
 }

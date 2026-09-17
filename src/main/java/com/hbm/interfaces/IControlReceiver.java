@@ -15,8 +15,12 @@ public interface IControlReceiver {
     /** Applies a control event. Runs server-side on the main thread. */
     void receiveControl(CompoundTag data);
 
-    /** Whether {@code player} is allowed to control this tile (default: within reach — see the packet handler). */
+    /**
+     * Whether {@code player} is allowed to control this tile. Receivers that are controlled through a
+     * menu must explicitly verify that the player's current menu owns this receiver. Receivers with an
+     * intentional remote-control policy may provide their own server-side check.
+     */
     default boolean hasPermission(Player player) {
-        return true;
+        return false;
     }
 }

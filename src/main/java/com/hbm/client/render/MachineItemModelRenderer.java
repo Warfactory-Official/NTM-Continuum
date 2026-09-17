@@ -2,8 +2,8 @@ package com.hbm.client.render;
 
 //? if >=26.1 {
 
-import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.VanillaSubmitSink;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -15,7 +15,6 @@ import net.minecraft.client.renderer.item.ItemModel;
 import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.ModelRenderProperties;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.special.NoDataSpecialModelRenderer;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.resources.Identifier;
@@ -241,9 +240,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
         }
 
         private MachineItemModel createModel(boolean blockFramed) {
-            RenderType overlay = overlayTexture.map(texture -> cutout(texture, noCull)).orElse(null);
-            RenderType black = blackParts.isEmpty() ? null :
-                    CompatRenderTypes.entitySolid(dev.golem.core.Ids.of("hbm", "textures/models/misc/white.png"));
+            Surface overlay = overlayTexture.map(texture -> cutout(texture, noCull)).orElse(null);
+            Surface black = blackParts.isEmpty() ? null : Surface.solid("hbm:textures/models/misc/white.png");
             WavefrontObj loaded = WavefrontObj.load(obj);
             Vector3f pivot = rotatePivot.size() == 3
                     ? new Vector3f(rotatePivot.get(0), rotatePivot.get(1), rotatePivot.get(2))
@@ -260,20 +258,20 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
             Vector3f guiTranslation = guiTranslate.size() == 3
                     ? new Vector3f(guiTranslate.get(0), guiTranslate.get(1), guiTranslate.get(2))
                     : new Vector3f();
-            java.util.Map<String, RenderType> types = java.util.Map.of();
+            java.util.Map<String, Surface> types = java.util.Map.of();
              if (mtl) {
                 // Multi-texture OBJ: resolve per-material textures from the .mtl next to the model.
                 var lib = WavefrontObj.loadMtl(dev.golem.core.Ids.of(obj.getNamespace(), obj.getPath().replace(".obj", ".mtl")));
-                java.util.Map<String, RenderType> resolved = new java.util.LinkedHashMap<>();
+                java.util.Map<String, Surface> resolved = new java.util.LinkedHashMap<>();
                 for (String mat : loaded.materialNames()) {
                     Identifier tex = lib.get(mat);
                     if (tex != null) resolved.put(mat, cutout(tex, noCull));
                 }
                  types = resolved;
              }
-             Map<String, RenderType> partTypes = Map.of();
+             Map<String, Surface> partTypes = Map.of();
              if (!partTextures.isEmpty()) {
-                  java.util.Map<String, RenderType> resolved = new java.util.LinkedHashMap<>();
+                  java.util.Map<String, Surface> resolved = new java.util.LinkedHashMap<>();
                  resolved.put("Body", cutout(texture, noCull));
                  for (Map.Entry<String, Identifier> entry : partTextures.entrySet()) {
                      resolved.put(entry.getKey(), cutout(entry.getValue(), noCull));
@@ -364,8 +362,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
         }
     }
 
-    private static RenderType cutout(Identifier texture, boolean noCull) {
-        return noCull ? CompatRenderTypes.entityCutoutNoCull(texture) : CompatRenderTypes.entityCutout(texture);
+    private static Surface cutout(Identifier texture, boolean noCull) {
+        return noCull ? Surface.cutoutNoCull(texture.toString()) : Surface.cutout(texture.toString());
     }
 }
 //?}

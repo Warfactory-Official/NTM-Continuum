@@ -1,7 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "hbm:ore_cobalt",
-    "hbm:ore_nether_cobalt"
-  ]
-}

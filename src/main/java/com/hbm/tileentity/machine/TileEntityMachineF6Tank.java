@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -47,7 +46,6 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineF6Tank tank) {
         for (DirPos connection : tank.getConPos()) {
-            tank.trySubscribe(tank.tank.getTankType(), level, connection);
             if (tank.tank.getFill() > 0) tank.tryProvide(tank.tank, level, connection);
         }
 

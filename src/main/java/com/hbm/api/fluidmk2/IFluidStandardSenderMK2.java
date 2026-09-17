@@ -4,8 +4,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.uninos.GenNode;
-import com.hbm.uninos.UniNodespace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -13,8 +11,8 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * {@link IFluidProviderMK2} with a standard implementation of provision/removal backed by the tile's own
- * sending tanks. {@code tryProvide} both subscribes this provider to an adjacent pipe network and
- * handles direct (network-less) transfer to a touching receiver.
+ * sending tanks. {@code tryProvide} is now only the direct, network-less transfer to a touching
+ * receiver: a duct network finds its own providers by probing the faces of its cells.
  */
 public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
 
@@ -29,17 +27,6 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
     default void tryProvide(FluidType type, int pressure, Level world, int x, int y, int z, ForgeDirection dir) {
 
         BlockEntity te = world.getBlockEntity(new BlockPos(x, y, z));
-
-        if (te instanceof IFluidConnectorMK2 con) {
-            if (con.canConnect(type, dir.getOpposite())) {
-
-                GenNode<FluidNetMK2> node = UniNodespace.getNode(world, new BlockPos(x, y, z), type.getNetworkProvider());
-
-                if (node != null && node.net != null) {
-                    node.net.addProvider(this);
-                }
-            }
-        }
 
         if (te != this && te instanceof IFluidReceiverMK2 rec) {
             if (rec.canConnect(type, dir.getOpposite())) {

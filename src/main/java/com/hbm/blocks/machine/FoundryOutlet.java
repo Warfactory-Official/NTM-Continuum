@@ -1,6 +1,9 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.Mirror;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.material.Mats.MaterialStack;
 import com.hbm.items.machine.ItemScraps;
@@ -39,7 +42,7 @@ import java.util.List;
  * filter; empty-hand right-click clears it (the invert toggles are deferred with IToolable). Drawn by
  * the BER (the old {@code foundry_outlet.obj}).
  */
-public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements EntityBlock, ICrucibleAcceptor, ILookOverlay {
+public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements TickingBlock, ICrucibleAcceptor, ILookOverlay {
 
     public FoundryOutlet(Properties properties) {
         super(properties);
@@ -83,13 +86,6 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements E
     @Nullable
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityFoundryOutlet(pos, state);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : FoundryChannel.createTickerHelper(type, ModBlockEntities.FOUNDRY_OUTLET.get(), TileEntityFoundryOutlet::serverTick);
     }
 
     protected TileEntityFoundryOutlet getTE(Level level, BlockPos pos) {
@@ -164,5 +160,15 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements E
         if (te.invertFilter) text.add("§eFilter inverted");
         if (te.invertRedstone) text.add("§2Redstone inverted");
         return new ILookOverlay.Data(this.getName().getString(), 0xFF4000, 0x401000, text);
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rotation) {
+        return state.setValue(BlockStateProperties.HORIZONTAL_FACING, rotation.rotate(state.getValue(BlockStateProperties.HORIZONTAL_FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirror) {
+        return state.rotate(mirror.getRotation(state.getValue(BlockStateProperties.HORIZONTAL_FACING)));
     }
 }

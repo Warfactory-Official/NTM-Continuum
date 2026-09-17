@@ -10,5 +10,6 @@
     "guiScale": 7.0,
     "scale": 1.0,
     "yaw": 90.0
-  }
+  },
+  "oversized_in_gui": true
 }

@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.block.IToolable;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
@@ -31,7 +32,7 @@ import java.util.List;
 
 /** The single-block autosaw and its legacy fluid-typing, suspension, and look-overlay hooks. */
 public class MachineAutosaw extends dev.golem.core.world.CompatBlock
-        implements EntityBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay {
+        implements TickingBlock, IFluidConnectorBlockMK2, IToolable, ILookOverlay {
 
     public MachineAutosaw(Properties properties) {
         super(properties);
@@ -46,17 +47,6 @@ public class MachineAutosaw extends dev.golem.core.world.CompatBlock
     @Nullable
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachineAutosaw(pos, state);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                   BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, AutosawFeature.MACHINE_AUTOSAW.get(),
-                TileEntityMachineAutosaw::clientTick)
-                : createTickerHelper(type, AutosawFeature.MACHINE_AUTOSAW.get(),
-                TileEntityMachineAutosaw::serverTick);
     }
 
     @Override
@@ -125,10 +115,4 @@ public class MachineAutosaw extends dev.golem.core.world.CompatBlock
                 0xffff00, 0x404000, text);
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

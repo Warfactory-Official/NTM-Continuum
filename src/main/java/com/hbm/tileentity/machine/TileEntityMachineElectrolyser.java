@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
@@ -23,6 +22,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.CrucibleUtil;
@@ -98,9 +98,6 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
         for (DirPos connection : te.getConPos()) {
-            te.trySubscribe(level, connection);
-            te.trySubscribe(te.tanks[0].getTankType(), level, connection);
-            te.trySubscribe(te.tanks[3].getTankType(), level, connection);
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
             if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
         }
@@ -246,7 +243,7 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
     }
 
     private void pourMaterial(Level level, boolean left, boolean right) {
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         ForgeDirection leftDirection = facing.getOpposite();
         if (left && leftStack != null) leftStack = pour(level, leftStack, leftDirection);
         if (right && rightStack != null) rightStack = pour(level, rightStack, facing);
@@ -331,7 +328,7 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
 
     public DirPos[] getConPos() {
         if (conPos == null) {
-            ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+            ForgeDirection dir = MachineCore.facing(getBlockState());
             ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
             conPos = new DirPos[]{
                     new DirPos(worldPosition.getX() - dir.offsetX * 6, worldPosition.getY(), worldPosition.getZ() - dir.offsetZ * 6, dir.getOpposite()),

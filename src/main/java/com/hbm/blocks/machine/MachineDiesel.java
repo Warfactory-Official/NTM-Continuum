@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineDiesel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  * INVISIBLE block drawn by {@code DieselGenRenderer} (an OBJ TESR, like the 1.12.2 fork). Right-click
  * opens the menu; while burning fuel it puffs smoke from the exhaust corner (old {@code randomDisplayTick}).
  */
-public class MachineDiesel extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class MachineDiesel extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
@@ -50,20 +51,6 @@ public class MachineDiesel extends dev.golem.core.world.CompatBlock implements E
     @Override
     public RenderShape getRenderShape(BlockState state) {
         return RenderShape.INVISIBLE; // the DieselGenRenderer draws the OBJ
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_DIESEL.get(), TileEntityMachineDiesel::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override

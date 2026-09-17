@@ -4,7 +4,6 @@ import com.hbm.Constants;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityRagingVortex;
 import com.hbm.entity.projectile.EntityRubble;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineCyclotron;
 import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -14,7 +13,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
@@ -27,6 +26,7 @@ import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.Recipes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -242,12 +242,11 @@ public final class SingularityGameTests {
             TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(
                     helper.absolutePos(ductPos));
             duct.setFluidType(Fluids.AMAT);
-            TileEntityFluidDuctNT.serverTick(helper.getLevel(), duct.getBlockPos(), duct.getBlockState(), duct);
         }
         tank.tank.setTankType(Fluids.AMAT);
-        tank.mode = 1; // Buffer mode owns the tank's network node at its physical port cells.
+        tank.mode = 1;
         TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
-        UniNodespace.updateNodespace(helper.getLevel().getServer());
+        FluidNetwork.distributeAll(helper.getLevel());
 
         cyclotron.power = TileEntityMachineCyclotron.MAX_POWER;
         cyclotron.inventory.setStackInSlot(0, new ItemStack(ModItems.part_plutonium.get(), 4));
@@ -259,7 +258,7 @@ public final class SingularityGameTests {
             TileEntityMachineCyclotron.serverTick(helper.getLevel(), cyclotron.getBlockPos(),
                     cyclotron.getBlockState(), cyclotron);
             TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
-            UniNodespace.updateNodespace(helper.getLevel().getServer());
+            FluidNetwork.distributeAll(helper.getLevel());
         }
         helper.assertTrue(tank.tank.getTankType() == Fluids.AMAT && tank.tank.getFill() == 4_000,
                 "cyclotron AMAT did not cross the duct network into the ordinary tank: output="
@@ -315,17 +314,15 @@ public final class SingularityGameTests {
 
     private static TileEntityMachineCyclotron placeCyclotron(GameTestHelper helper, BlockPos relative) {
         MachineCyclotron block = ModMachineBlocks.machine_cyclotron.get();
-        BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
+        BlockPos absolute = FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityMachineCyclotron) helper.getLevel().getBlockEntity(absolute);
     }
 
     private static TileEntityMachineFluidTank placeFluidTank(GameTestHelper helper, BlockPos relative) {
         MachineFluidTank block = ModMachineBlocks.machine_fluidtank.get();
         BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, BlockDummyable.offset + 2));
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
         return (TileEntityMachineFluidTank) helper.getLevel().getBlockEntity(absolute);
     }
 

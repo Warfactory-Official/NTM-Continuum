@@ -128,9 +128,4 @@ public class RBMKConsole extends BlockMultiblockCore {
         return new BlockEntityRBMKConsole(pos, state);
     }
 
-    @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                              BlockEntityType<T> type) {
-        return RBMKTickers.ticker(level, type, ModRBMKBlockEntities.RBMK_CONSOLE.get());
-    }
 }

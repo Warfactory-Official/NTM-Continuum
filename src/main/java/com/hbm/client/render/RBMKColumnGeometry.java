@@ -1,32 +1,53 @@
 package com.hbm.client.render;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.golem.core.render.Vertexes;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Quads;
 
-/** Small box emitter for the column pieces which cannot be baked because their Y is runtime-configured. */
+/**
+ * Box faces for the RBMK column pieces, which have no OBJ of their own. Stated as {@link Quads} so a
+ * column's icon and the placed column are the same geometry; the height is a dial, but the boxes are
+ * not. Sides and caps stay apart because they wear different textures.
+ */
 final class RBMKColumnGeometry {
+
     private RBMKColumnGeometry() {}
-    static void box(PoseStack.Pose pose, VertexConsumer out, float x0, float y0, float z0, float x1, float y1, float z1,
-                    int light, boolean caps) {
-        box(pose, out, x0, y0, z0, x1, y1, z1, light, light, caps);
+
+    /** The lid, a quarter-block cap sitting on the column's top cell. */
+    static final float LID_HEIGHT = .25F;
+    static final Geometry LID_SIDES =
+            sides(Quads.named("hbm:rbmk_lid_side"), 0F, 0F, 0F, 1F, LID_HEIGHT, 1F).build();
+    static final Geometry LID_CAPS =
+            caps(Quads.named("hbm:rbmk_lid_cap"), 0F, 0F, 0F, 1F, LID_HEIGHT, 1F).build();
+
+    static Quads.Builder sides(Quads.Builder faces, float x0, float y0, float z0,
+                               float x1, float y1, float z1) {
+        face(faces, 0F, 0F, -1F, x1, y0, z0, x0, y0, z0, x0, y1, z0, x1, y1, z0);
+        face(faces, 0F, 0F, 1F, x0, y0, z1, x1, y0, z1, x1, y1, z1, x0, y1, z1);
+        face(faces, -1F, 0F, 0F, x0, y0, z0, x0, y0, z1, x0, y1, z1, x0, y1, z0);
+        face(faces, 1F, 0F, 0F, x1, y0, z1, x1, y0, z0, x1, y1, z0, x1, y1, z1);
+        return faces;
     }
-    static void box(PoseStack.Pose pose, VertexConsumer out, float x0, float y0, float z0, float x1, float y1, float z1,
-                    int sideLight, int capLight, boolean caps) {
-        if (caps) {
-            face(out, pose, x0,y1,z0, x1,y1,z0, x1,y1,z1, x0,y1,z1, capLight, 0,1,0);
-            face(out, pose, x1,y0,z1, x1,y0,z0, x0,y0,z0, x0,y0,z1, capLight, 0,-1,0);
-        } else {
-            face(out, pose, x1,y0,z0, x0,y0,z0, x0,y1,z0, x1,y1,z0, sideLight, 0,0,-1);
-            face(out, pose, x0,y0,z1, x1,y0,z1, x1,y1,z1, x0,y1,z1, sideLight, 0,0,1);
-            face(out, pose, x0,y0,z0, x0,y0,z1, x0,y1,z1, x0,y1,z0, sideLight, -1,0,0);
-            face(out, pose, x1,y0,z1, x1,y0,z0, x1,y1,z0, x1,y1,z1, sideLight, 1,0,0);
-        }
+
+    static Quads.Builder caps(Quads.Builder faces, float x0, float y0, float z0,
+                              float x1, float y1, float z1) {
+        face(faces, 0F, 1F, 0F, x0, y1, z0, x1, y1, z0, x1, y1, z1, x0, y1, z1);
+        face(faces, 0F, -1F, 0F, x1, y0, z1, x1, y0, z0, x0, y0, z0, x0, y0, z1);
+        return faces;
     }
-    private static void face(VertexConsumer out, PoseStack.Pose pose, float ax,float ay,float az,float bx,float by,float bz,
-                             float cx,float cy,float cz,float dx,float dy,float dz,int light,float nx,float ny,float nz) {
-        Vertexes.vertex(out,pose,ax,ay,az,-1,0,0,OverlayTexture.NO_OVERLAY,light,nx,ny,nz); Vertexes.vertex(out,pose,bx,by,bz,-1,1,0,OverlayTexture.NO_OVERLAY,light,nx,ny,nz);
-        Vertexes.vertex(out,pose,cx,cy,cz,-1,1,1,OverlayTexture.NO_OVERLAY,light,nx,ny,nz); Vertexes.vertex(out,pose,dx,dy,dz,-1,0,1,OverlayTexture.NO_OVERLAY,light,nx,ny,nz);
+
+    /** The model-space box those faces enclose, for an icon's framing. */
+    static float[][] bounds(float x0, float y0, float z0, float x1, float y1, float z1) {
+        return new float[][] {{x0, y0, z0}, {x1, y1, z1}};
     }
+
+    private static void face(Quads.Builder faces, float nx, float ny, float nz,
+            float ax, float ay, float az, float bx, float by, float bz,
+            float cx, float cy, float cz, float dx, float dy, float dz) {
+        faces.normal(nx, ny, nz)
+                .vertex(ax, ay, az, 0F, 0F)
+                .vertex(bx, by, bz, 1F, 0F)
+                .vertex(cx, cy, cz, 1F, 1F)
+                .vertex(dx, dy, dz, 0F, 1F);
+    }
+
 }

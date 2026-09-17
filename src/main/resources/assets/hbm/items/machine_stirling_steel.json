@@ -6,35 +6,40 @@
       {
         "when": "1",
         "model": {
-          "type": "minecraft:special",
-          "base": "hbm:item/machine_obj_base",
-          "model": {
-            "type": "hbm:machine_obj",
-            "obj": "hbm:models/machines/stirling.obj",
-            "texture": "hbm:textures/models/machines/stirling_steel.png",
-            "scale": 0.372,
-            "yaw": 90.0,
-            "exclude": ["Cog"],
-            "spinParts": ["Stirling"],
-            "spinPivot": [0.0, 1.375, 0.0],
-            "spin": true
-          }
+          "type": "hbm:machine_obj",
+          "obj": "hbm:models/machines/stirling.obj",
+          "texture": "hbm:textures/models/machines/stirling_steel.png",
+          "scale": 1.0,
+          "yaw": 90.0,
+          "exclude": ["Cog"],
+          "spinParts": ["Stirling"],
+          "spinPivot": [0.0, 1.375, 0.0],
+          "spin": true,
+          "rawLegacyTransform": true,
+          "guiTranslate": [0.0, -1.5, 0.0],
+          "guiScale": 3.25,
+          "itemTranslate": [0.0, 0.0, 0.0],
+          "itemPreTranslate": [0.0, 0.0, 0.0],
+          "ty": 0.0
         }
       }
     ],
     "fallback": {
-      "type": "minecraft:special",
-      "base": "hbm:item/machine_obj_base",
-      "model": {
-        "type": "hbm:machine_obj",
-        "obj": "hbm:models/machines/stirling.obj",
-        "texture": "hbm:textures/models/machines/stirling_steel.png",
-        "scale": 0.372,
-        "yaw": 90.0,
-        "spinParts": ["Stirling"],
-        "spinPivot": [0.0, 1.375, 0.0],
-        "spin": true
-      }
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/machines/stirling.obj",
+      "texture": "hbm:textures/models/machines/stirling_steel.png",
+      "scale": 1.0,
+      "yaw": 90.0,
+      "spinParts": ["Stirling"],
+      "spinPivot": [0.0, 1.375, 0.0],
+      "spin": true,
+      "rawLegacyTransform": true,
+      "guiTranslate": [0.0, -1.5, 0.0],
+      "guiScale": 3.25,
+      "itemTranslate": [0.0, 0.0, 0.0],
+      "itemPreTranslate": [0.0, 0.0, 0.0],
+      "ty": 0.0
     }
-  }
+  },
+  "oversized_in_gui": true
 }

@@ -20,10 +20,6 @@ import java.util.Optional;
 public class GUIMachineTurbineGas extends dev.golem.core.gui.CompatContainerScreen<ContainerMachineTurbineGas> {
     private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/gui/generators/gui_turbinegas.png");
     private static final Identifier GAUGE = dev.golem.core.Ids.of("hbm", "textures/gui/gauges/button_big.png");
-    public static final int FUEL_TANK_TOP = 17;
-    public static final int LUBRICANT_TANK_TOP = 71;
-    public static final int WATER_TANK_TOP = 62;
-    public static final int STEAM_TANK_TOP = 22;
     private boolean sliderLocked;
     private int numberToDisplay;
     private int digitNumber;
@@ -63,10 +59,10 @@ public class GUIMachineTurbineGas extends dev.golem.core.gui.CompatContainerScre
         int temperature = Mth.clamp(turbine.temp, 0, 800);
         int heat = temperature * 64 / 800;
         if (heat > 0) GuiDraw.blit(graphics, TEXTURE, leftPos + 136, topPos + 28 + 64 - heat, 176F, 64F - heat, 2, heat, 256, 256);
-        drawTank(graphics, turbine.tanks[0], 8, FUEL_TANK_TOP, 16, 48);
-        drawTank(graphics, turbine.tanks[1], 8, LUBRICANT_TANK_TOP, 16, 32);
-        drawTank(graphics, turbine.tanks[2], 147, WATER_TANK_TOP, 16, 36);
-        drawTank(graphics, turbine.tanks[3], 147, STEAM_TANK_TOP, 16, 36);
+        drawTank(graphics, turbine.tanks[0], 8, ContainerMachineTurbineGas.FUEL_TANK_TOP, 16, 48);
+        drawTank(graphics, turbine.tanks[1], 8, ContainerMachineTurbineGas.LUBRICANT_TANK_TOP, 16, 32);
+        drawTank(graphics, turbine.tanks[2], 147, ContainerMachineTurbineGas.WATER_TANK_TOP, 16, 36);
+        drawTank(graphics, turbine.tanks[3], 147, ContainerMachineTurbineGas.STEAM_TANK_TOP, 16, 36);
 
         GuiUtil.drawInfoPanel(graphics, leftPos - 16, topPos + 34, 3);
         GuiUtil.drawInfoPanel(graphics, leftPos - 16, topPos + 50, 2);
@@ -109,21 +105,8 @@ public class GUIMachineTurbineGas extends dev.golem.core.gui.CompatContainerScre
     }
 
     /** Local GUI rectangle for the visible portion of a tank fill. The y argument is the top of the tank. */
-    public record TankFill(int x, int top, int width, int bottom, int tint) {}
-
-    public static TankFill visibleTankFill(FluidTankNTM tank, int x, int top, int width, int height) {
-        int max = tank.getMaxFill();
-        int fill = max <= 0 ? 0 : tank.getFill() * height / max;
-        if (fill <= 0) return null;
-        return new TankFill(x, top + height - fill, width, top + height, tankTint(tank));
-    }
-
-    public static int tankTint(FluidTankNTM tank) {
-        return 0xFF000000 | (tank.getTankType().getTint() & 0xFFFFFF);
-    }
-
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
-        TankFill visible = visibleTankFill(tank, x, y, width, height);
+        TankDisplay.Fill visible = TankDisplay.visibleFill(tank, x, y, width, height);
         if (visible == null) return;
         int x0 = leftPos + visible.x(), top = topPos + visible.top(), bottom = topPos + visible.bottom();
         Identifier texture = tank.getTankType().getTexture();

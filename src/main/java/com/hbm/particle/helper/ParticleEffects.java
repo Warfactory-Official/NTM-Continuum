@@ -69,7 +69,34 @@ public final class ParticleEffects {
         data.putInt("entityID", entity.getId());
         data.putInt("ashesCount", ashesCount);
         data.putFloat("ashesScale", ashesScale);
-        HbmEffectNT.Ashes.send(level, entity.getX(), entity.getY(), entity.getZ(), data);
+        HbmEffectNT.Ashes.send(level, entity.getX(), entity.getY(), entity.getZ(), data, 100D);
+    }
+
+    /** Source skeleton strip used by laser, electric, plasma, and fire death effects. */
+    public static void skeleton(Level level, Entity entity, float brightness) {
+        CompoundTag data = new CompoundTag();
+        data.putInt("entityID", entity.getId());
+        data.putFloat("brightness", brightness);
+        HbmEffectNT.Skeleton.send(level, entity.getX(), entity.getY(), entity.getZ(), data, 100D);
+    }
+
+    /** Source skeleton burst used as the first half of an explosive gib effect. */
+    public static void skeletonGib(Level level, Entity entity, float force) {
+        CompoundTag data = new CompoundTag();
+        data.putInt("entityID", entity.getId());
+        data.putFloat("brightness", 1F);
+        data.putFloat("force", force);
+        data.putBoolean("gib", true);
+        HbmEffectNT.Skeleton.send(level, entity.getX(), entity.getY(), entity.getZ(), data, 100D);
+    }
+
+    /** Source meat/slime/metal giblet burst, including the entity id used by the client hide gate. */
+    public static void giblets(Level level, Entity entity, int gibType) {
+        CompoundTag data = new CompoundTag();
+        data.putInt("ent", entity.getId());
+        data.putInt("gibType", gibType);
+        HbmEffectNT.Giblets.send(level, entity.getX(), entity.getY() + entity.getBbHeight() * 0.5D,
+                entity.getZ(), data, 150D);
     }
 
     /** RBMK's 250-block melt cloud. Scale is sent explicitly because the vanilla particle payload has no scale field. */

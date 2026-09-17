@@ -1,14 +1,10 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.blocks.network.BlockCable;
 import com.hbm.client.model.WavefrontObj;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,13 +24,26 @@ import java.util.Set;
  * <p>Mirrors the original part selection exactly, including the Z-axis quirk (a NORTH connection draws
  * the {@code posZ} part, SOUTH draws {@code negZ}).
  */
-public class CableObjRenderer<T extends BlockEntity> implements CompatBER<T, CableRenderState> {
+public class CableObjRenderer<T extends BlockEntity> extends GemBER<T, CableRenderState> {
 
     private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/blocks/cable_neo.obj");
-    private static final Identifier TEXTURE = dev.golem.core.Ids.of("hbm", "textures/models/blocks/cable_neo.png");
+    private static final String[] PARTS = {"CX", "CY", "CZ", "Core", "posX", "negX", "posY", "negY", "posZ", "negZ"};
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType renderType = CompatRenderTypes.entityCutout(TEXTURE);
+    private final Surface surface = Surface.cutout("hbm:textures/models/blocks/cable_neo.png");
+
+    /**
+     * Every piece the cable can show, each behind the connection that calls for it. The OBJ is centred
+     * on the origin (-0.5..0.5), hence the half-block shift.
+     */
+    @Override
+    protected void setup(Gem.Model<CableRenderState> declaration) {
+        for (String name : PARTS) {
+            declaration.part(model.part(name), surface)
+                    .visibleIf(state -> state.parts.contains(name))
+                    .translate(0.5F, 0.5F, 0.5F);
+        }
+    }
 
     @Override
     public CableRenderState createRenderState() {
@@ -67,18 +76,5 @@ public class CableObjRenderer<T extends BlockEntity> implements CompatBER<T, Cab
         if (nZ) parts.add("posZ"); // mirrors the original (NORTH -> posZ)
         if (pZ) parts.add("negZ"); // mirrors the original (SOUTH -> negZ)
         return parts;
-    }
-
-    @Override
-    public void submit(CableRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        if (state.parts.isEmpty()) return;
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0.5F, 0.5F); // OBJ is centred on the origin (-0.5..0.5)
-        collector.submitCustomGeometry(poseStack, renderType, (pose, buffer) -> {
-            for (String part : state.parts) {
-                model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY);
-            }
-        });
-        poseStack.popPose();
     }
 }

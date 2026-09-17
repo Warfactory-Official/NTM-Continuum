@@ -1,4 +1,0 @@
-{
-  "replace": false,
-  "values": ["hbm:chemical_dye_gray", "hbm:crayon_gray", "hbm:oil_tar_coal", "hbm:powder_ash_misc", "minecraft:gray_dye"]
-}

@@ -1,14 +1,14 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityFurnaceCombination;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The combination furnace: a 2x2x2 dummyable heat furnace with fluid output ports. */
-public class MachineFurnaceCombination extends BlockDummyable
+public class MachineFurnaceCombination extends BlockMultiblockMachine
         implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     public MachineFurnaceCombination(Properties properties) {
@@ -36,31 +36,26 @@ public class MachineFurnaceCombination extends BlockDummyable
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityFurnaceCombination furnace
                 ? furnace : null;
     }
 
+    /**
+     * Every perimeter cell turns its own outward faces, at both courses, and the whole upper course --
+     * the centre included -- vents through its top.
+     */
     @Override
-    public boolean canConnect(com.hbm.inventory.fluid.FluidType type, BlockGetter level,
-                              int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(level, new BlockPos(x, y, z)) instanceof TileEntityFurnaceCombination furnace
-                && com.hbm.api.energymk2.IEnergyConnectorBlock.isPort(furnace.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                   BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FURNACE_COMBINATION.get(), TileEntityFurnaceCombination::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FURNACE_COMBINATION.get(), TileEntityFurnaceCombination::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int dy = 0; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (dy == 0 && dx == 0 && dz == 0) continue;
+                    int mask = outwardMask(dx, dz, 1) | (dy == 1 ? MASK_UP : MASK_NONE);
+                    visitor.cell(core.offset(dx, dy, dz), mask);
+                }
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.hbm.blocks.network;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.tileentity.network.TileEntityRadioAUTOCAL;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /** The one-block-core AUTOCAL unit from the old Redstone-over-Radio network. */
-public final class RadioAUTOCAL extends BlockDummyable {
+public final class RadioAUTOCAL extends BlockMultiblockMachine {
     public RadioAUTOCAL(Properties properties) {
         super(properties);
     }
@@ -42,16 +42,4 @@ public final class RadioAUTOCAL extends BlockDummyable {
                 : super.onUseWithoutItem(state, level, pos, player, hit);
     }
 
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(
-            Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type,
-                ModRadioBlockEntities.RADIO_AUTOCAL.get(), (tickLevel, pos, tickState, autocal) -> autocal.serverTick());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
 }

@@ -97,8 +97,6 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
         // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
         for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            for (FluidTankNTM tank : te.inputTanks) if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, dp);
             for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
         }
         te.fillInputTanks();
@@ -329,6 +327,12 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     public String[] getFunctionInfo() {
         return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active",
                 PREFIX_FUNCTION + "setrecipe" + NAME_SEPARATOR + "name"};
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineChemicalPlant menu
+                && menu.getChemplant() == this && menu.stillValid(player);
     }
 
     @Override

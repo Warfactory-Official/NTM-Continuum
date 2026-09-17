@@ -54,6 +54,8 @@ public final class ModRBMKBlocks {
     /** Hand-written because foam is a machine-safety block, not generated decoration content. */
     public static final RegistryObject<BlockLayering> foam_layer = BLOCKS.registerBlock("foam_layer",
             p -> new BlockLayering(p, true), p -> p.strength(0.1F).sound(net.minecraft.world.level.block.SoundType.SNOW).noOcclusion().randomTicks());
+    public static final RegistryObject<BlockLayering> sand_boron_layer = BLOCKS.registerBlock("sand_boron_layer",
+            BlockLayering::new, p -> p.strength(0.1F).sound(net.minecraft.world.level.block.SoundType.SAND).noOcclusion().randomTicks());
 
     private static <B extends Block> RegistryObject<B> column(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory, boolean fuel) { return BLOCKS.registerBlock(id, factory, p -> p.strength(3F, 30F).requiresCorrectToolForDrops()); }
     private static <B extends Block> RegistryObject<B> peripheral(String id, java.util.function.Function<BlockBehaviour.Properties, B> factory) { return BLOCKS.registerBlock(id, factory, p -> p.strength(50F, 60F).sound(net.minecraft.world.level.block.SoundType.METAL).requiresCorrectToolForDrops()); }
@@ -66,6 +68,8 @@ public final class ModRBMKBlocks {
         }
         RegistryObject<BlockItem> graphite = ITEMS.registerBlockItem("block_graphite", block_graphite::get);
         ModTabs.addTo(HbmTab.RESOURCES, graphite);
+        RegistryObject<BlockItem> sandBoronLayer = ITEMS.registerBlockItem("sand_boron_layer", sand_boron_layer::get);
+        ModTabs.addTo(HbmTab.BLOCKS, sandBoronLayer);
     }
     public static void init() {}
 }

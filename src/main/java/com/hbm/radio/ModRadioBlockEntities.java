@@ -23,29 +23,37 @@ public final class ModRadioBlockEntities {
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
 
     public static final RegistryObject<BlockEntityType<TileEntityRadioTorchSender>> RADIO_TORCH_SENDER =
-            BLOCK_ENTITIES.register("radio_torch_sender", () -> BlockEntities.type(
-                    TileEntityRadioTorchSender::new, ModRadioBlocks.RADIO_TORCH_SENDER.get()));
+            BLOCK_ENTITIES.register("radio_torch_sender", () -> BlockEntities.serverTicking(
+                    TileEntityRadioTorchSender::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_TORCH_SENDER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioTorchReceiver>> RADIO_TORCH_RECEIVER =
-            BLOCK_ENTITIES.register("radio_torch_receiver", () -> BlockEntities.type(
-                    TileEntityRadioTorchReceiver::new, ModRadioBlocks.RADIO_TORCH_RECEIVER.get()));
+            BLOCK_ENTITIES.register("radio_torch_receiver", () -> BlockEntities.serverTicking(
+                    TileEntityRadioTorchReceiver::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_TORCH_RECEIVER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioTorchReader>> RADIO_TORCH_READER =
-            BLOCK_ENTITIES.register("radio_torch_reader", () -> BlockEntities.type(
-                    TileEntityRadioTorchReader::new, ModRadioBlocks.RADIO_TORCH_READER.get()));
+            BLOCK_ENTITIES.register("radio_torch_reader", () -> BlockEntities.serverTicking(
+                    TileEntityRadioTorchReader::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_TORCH_READER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioTorchLogic>> RADIO_TORCH_LOGIC =
-            BLOCK_ENTITIES.register("radio_torch_logic", () -> BlockEntities.type(
-                    TileEntityRadioTorchLogic::new, ModRadioBlocks.RADIO_TORCH_LOGIC.get()));
+            BLOCK_ENTITIES.register("radio_torch_logic", () -> BlockEntities.serverTicking(
+                    TileEntityRadioTorchLogic::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_TORCH_LOGIC.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioTorchCounter>> RADIO_TORCH_COUNTER =
-            BLOCK_ENTITIES.register("radio_torch_counter", () -> BlockEntities.type(
-                    TileEntityRadioTorchCounter::new, ModRadioBlocks.RADIO_TORCH_COUNTER.get()));
+            BLOCK_ENTITIES.register("radio_torch_counter", () -> BlockEntities.serverTicking(
+                    TileEntityRadioTorchCounter::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_TORCH_COUNTER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioTorchController>> RADIO_TORCH_CONTROLLER =
-            BLOCK_ENTITIES.register("radio_torch_controller", () -> BlockEntities.type(
-                    TileEntityRadioTorchController::new, ModRadioBlocks.RADIO_TORCH_CONTROLLER.get()));
+            BLOCK_ENTITIES.register("radio_torch_controller", () -> BlockEntities.serverTicking(
+                    TileEntityRadioTorchController::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_TORCH_CONTROLLER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioTelex>> RADIO_TELEX =
-            BLOCK_ENTITIES.register("radio_telex", () -> BlockEntities.type(
-                    TileEntityRadioTelex::new, ModRadioBlocks.RADIO_TELEX.get()));
+            BLOCK_ENTITIES.register("radio_telex", () -> BlockEntities.serverTicking(
+                    TileEntityRadioTelex::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_TELEX.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioAUTOCAL>> RADIO_AUTOCAL =
-            BLOCK_ENTITIES.register("radio_autocal", () -> BlockEntities.type(
-                    TileEntityRadioAUTOCAL::new, ModRadioBlocks.RADIO_AUTOCAL.get()));
+            BLOCK_ENTITIES.register("radio_autocal", () -> BlockEntities.serverTicking(
+                    TileEntityRadioAUTOCAL::new,
+                    (level, pos, state, be) -> be.serverTick(), ModRadioBlocks.RADIO_AUTOCAL.get()));
 
     public static void init() {}
 }

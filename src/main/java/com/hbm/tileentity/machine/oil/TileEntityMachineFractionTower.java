@@ -8,6 +8,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
@@ -56,9 +57,8 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         }
 
         te.setupTanks();
-        te.updateConnections();
 
-        if (level.getGameTime() % 10 == 0) te.fractionate();
+        if (TickPhase.every(level, pos, 10)) te.fractionate();
 
         te.sendFluid();
         te.networkPackNT();
@@ -71,11 +71,6 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         }
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-        }
-    }
 
     private void setupTanks() {
         FractionRecipes.FractionPair pair = FractionRecipes.getFractions(tanks[0].getTankType());

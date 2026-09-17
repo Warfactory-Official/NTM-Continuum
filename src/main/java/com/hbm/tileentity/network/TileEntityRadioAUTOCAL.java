@@ -10,6 +10,7 @@ import com.hbm.modules.ParseMSES1Ext1;
 import com.hbm.radio.RadioAutocalMenu;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -47,7 +48,7 @@ public final class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
 
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
-        if (level.getGameTime() % 60L == 0L) markChanged();
+        if (TickPhase.every(this, 60L)) markChanged();
 
         ensureContext();
         if (!isOn && autoReboot) isOn = true;

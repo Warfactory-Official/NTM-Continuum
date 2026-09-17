@@ -7,9 +7,30 @@ import net.minecraft.world.item.ItemDisplayContext;
 /** Shared item-space submitter used by the modern special renderer and legacy BEWLR bridge. */
 public final class JetpackGliderItemModel {
 
+    private static JetpackGliderItemModel shared;
+
     private final JetpackColladaModel model;
     private final org.joml.Vector3f center;
     private final float scale;
+
+    /**
+     * The one glider item body. Building one parses the animation scene and loads its meshes, which is
+     * a model-load cost: 26.1 pays it once when it bakes the special model, and the older versions have
+     * no bake step to pay it in — their renderer is called per draw and must find this already built.
+     */
+    public static JetpackGliderItemModel shared() {
+        JetpackGliderItemModel built = shared;
+        if (built == null) {
+            built = new JetpackGliderItemModel();
+            shared = built;
+        }
+        return built;
+    }
+
+    /** A resource reload replaces the meshes the declaration holds onto. */
+    public static void clear() {
+        shared = null;
+    }
 
     public JetpackGliderItemModel() {
         this.model = JetpackColladaModel.load();

@@ -4,7 +4,6 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModFallingBlocks;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
@@ -53,10 +52,6 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpElectric pump) {
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos connection : pump.getConPos()) pump.trySubscribe(level, connection);
-        }
-
         for (DirPos connection : pump.getConPos()) {
             if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection);
         }

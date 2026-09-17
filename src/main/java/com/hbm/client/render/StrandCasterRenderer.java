@@ -1,23 +1,20 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Quads;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.phys.Vec3;
 
 /** Strand Caster BER: old caster/plate parts plus a fullbright tinted molten surface. */
-public class StrandCasterRenderer implements CompatBER<TileEntityMachineStrandCaster, StrandCasterRenderer.State> {
+public class StrandCasterRenderer extends GemBER<TileEntityMachineStrandCaster, StrandCasterRenderer.State> {
 
     public static class State extends CompatRenderState {
         public ForgeDirection direction = ForgeDirection.NORTH;
@@ -27,26 +24,45 @@ public class StrandCasterRenderer implements CompatBER<TileEntityMachineStrandCa
         public float plateOffset;
     }
 
-    private final WavefrontObj model;
-    private final RenderType bodyType;
-    private final RenderType lavaType;
+    private final WavefrontObj model = WavefrontObj.load(
+            dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/strand_caster.obj"));
+    private final Surface body = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/strand_caster.png");
+    private static final Surface LAVA =
+            Surface.emissive(Constants.MOD_ID + ":textures/models/machines/lava_gray.png");
 
-    public StrandCasterRenderer() {
-        this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/strand_caster.obj"));
-        this.bodyType = CompatRenderTypes.entityCutout(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/strand_caster.png"));
-        this.lavaType = CompatRenderTypes.entityTranslucentEmissive(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/lava_gray.png"));
+    private static final Geometry MELT = Quads.named(Constants.MOD_ID + ":strand_caster_melt")
+            .normal(0F, 1F, 0F)
+            .vertex(-0.9F, 0F, -0.999F, 0F, 0F).vertex(-0.9F, 0F, 0.999F, 0F, 1F)
+            .vertex(0.9F, 0F, 0.999F, 1F, 1F).vertex(0.9F, 0F, -0.999F, 1F, 0F)
+            .build();
+
+    @Override
+    protected void setup(Gem.Model<State> declaration) {
+        Gem.Part<State> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> yaw(state.direction))
+                .translate(0.5F, 0F, 0.5F)
+                .rotate(Gem.Axes.Y, 180F);
+
+        machine.child(model.part("caster"), body);
+        machine.child(model.part("plate"), body)
+                .visibleIf(state -> state.hasMelt)
+                .slide(Gem.Axes.Z, state -> Math.max(-state.plateOffset + 3.4F, 0F));
+
+        machine.child(MELT, LAVA)
+                .visibleIf(state -> state.hasMelt)
+                .slide(Gem.Axes.Y, state -> 2.3F + state.level)
+                .tint(state -> state.color)
+                .light(state -> FoundryRenderHelper.FULLBRIGHT);
     }
 
     @Override public State createRenderState() { return new State(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachineStrandCaster be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
 
     @Override
     public void extract(TileEntityMachineStrandCaster be, State state, float partialTicks, Vec3 cameraPosition) {
-        int meta = be.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(be.getBlockState(), 2);
         state.direction = ForgeDirection.getOrientation(meta);
         state.hasMelt = be.amount > 0 && be.type != null && be.getInstalledMold() != null;
         if (state.hasMelt) {
@@ -56,31 +72,7 @@ public class StrandCasterRenderer implements CompatBER<TileEntityMachineStrandCa
         }
     }
 
-    @Override
-    public void submit(State state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(yaw(state.direction)));
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(180F));
-
-        collector.submitCustomGeometry(poseStack, bodyType,
-                (pose, buffer) -> model.renderPart("caster", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-
-        if (state.hasMelt) {
-            poseStack.pushPose();
-            poseStack.translate(0F, 0F, Math.max(-state.plateOffset + 3.4F, 0F));
-            collector.submitCustomGeometry(poseStack, bodyType,
-                    (pose, buffer) -> model.renderPart("plate", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-            poseStack.popPose();
-
-            float y = 2.3F + state.level;
-            collector.submitCustomGeometry(poseStack, lavaType,
-                    (pose, buffer) -> FoundryRenderHelper.flatQuad(pose, buffer, -0.9F, -0.999F,
-                            0.9F, 0.999F, y, state.color));
-        }
-        poseStack.popPose();
-    }
+    /** The melt surface is one quad whose height is the fill level, built rather than placed. */
 
     private static float yaw(ForgeDirection direction) {
         return switch (direction) {

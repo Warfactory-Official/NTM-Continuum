@@ -1,9 +1,10 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachinePump;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.api.fluidmk2.DuctData;
+import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.lib.DirPos;
@@ -11,8 +12,11 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.GraphNode;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.uninos.graph.NodeNetwork;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 
@@ -21,22 +25,17 @@ public final class PumpGameTests {
 
     private PumpGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void layout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachinePump pump = ModMachineBlocks.machine_pump_electric.get();
-        helper.setBlock(core, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
-        pump.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
+        helper.setBlock(core, pump.defaultBlockState());
+        pump.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
-                "Pump east port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.west())).getValue(BlockDummyable.META) >= 6,
-                "Pump west port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.north())).getValue(BlockDummyable.META) >= 6,
-                "Pump north port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.south())).getValue(BlockDummyable.META) >= 6,
-                "Pump south port was not marked extra");
+        FoldedTestSupport.assertPort(helper, core, core.east());
+        FoldedTestSupport.assertPort(helper, core, core.west());
+        FoldedTestSupport.assertPort(helper, core, core.north());
+        FoldedTestSupport.assertPort(helper, core, core.south());
         helper.succeed();
     }
 
@@ -83,17 +82,13 @@ public final class PumpGameTests {
     public static void steamLayout(GameTestHelper helper) {
         BlockPos core = new BlockPos(3, 1, 3);
         MachinePump pump = ModMachineBlocks.machine_pump_steam.get();
-        helper.setBlock(core, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
-        pump.formStructure(helper.getLevel(), helper.absolutePos(core), ForgeDirection.NORTH);
+        helper.setBlock(core, pump.defaultBlockState());
+        pump.fillSpace(helper.getLevel(), helper.absolutePos(core), Direction.NORTH);
 
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.east())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump east port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.west())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump west port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.north())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump north port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(core.south())).getValue(BlockDummyable.META) >= 6,
-                "Steam pump south port was not marked extra");
+        FoldedTestSupport.assertPort(helper, core, core.east());
+        FoldedTestSupport.assertPort(helper, core, core.west());
+        FoldedTestSupport.assertPort(helper, core, core.north());
+        FoldedTestSupport.assertPort(helper, core, core.south());
         helper.succeed();
     }
 
@@ -139,49 +134,52 @@ public final class PumpGameTests {
         helper.succeed();
     }
 
-    public static void steamNetworkSubscription(GameTestHelper helper) {
+    /**
+     * A typed duct finds the pump through its multiblock port. Nothing subscribes any more — what used to
+     * be asserted here, that the pump renewed its subscription on a non-20th tick, is a question the graph
+     * cannot ask: a face stays live until something changes beside it. So what is asserted is discovery
+     * itself, and through the one route that has no block entity at the cell it probes.
+     */
+    public static void steamNetworkReach(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         TileEntityMachinePumpSteam pump = placeSteam(helper, new BlockPos(3, 1, 3));
         BlockPos ductPos = pump.getBlockPos().east(2);
         level.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.STEAM);
-        TileEntityFluidDuctNT.serverTick(level, ductPos, duct.getBlockState(), duct);
-        UniNodespace.updateNodespace(level.getServer());
 
-        FluidNode node = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.STEAM.getNetworkProvider());
-        helper.assertTrue(node != null && node.hasValidNet(), "typed steam duct did not create a fluid network");
-        node.net.removeReceiver(pump);
+        LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
+        NodeNetwork<DuctData> net = graph.networkAt(ductPos.asLong());
+        helper.assertTrue(net != null, "a typed steam duct formed no network");
+        helper.assertTrue(FluidGraph.typeAt(graph, ductPos.asLong()) == Fluids.STEAM,
+                "a duct typed to steam conducts " + FluidGraph.typeAt(graph, ductPos.asLong()));
 
-        int delay = (int) ((1 - (level.getGameTime() % 20) + 20) % 20);
-        Runnable tick = () -> {
-            TileEntityMachinePumpSteam.serverTick(level, pump.getBlockPos(), pump.getBlockState(), pump);
-            FluidNode current = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.STEAM.getNetworkProvider());
-            helper.assertTrue(current != null && current.hasValidNet() && current.net.isSubscribed(pump),
-                    "steam pump must refresh its network subscription on a non-20th tick");
-            helper.succeed();
-        };
-        if (delay == 0) tick.run();
-        else helper.runAfterDelay(delay, tick);
+        FluidNetwork.distribute(level, graph, net);
+
+        GraphNode<DuctData> node = graph.getNode(ductPos.asLong());
+        helper.assertTrue(node != null && node.ef != null
+                        && (node.ef.activeMask & (1 << Direction.WEST.ordinal())) != 0,
+                "the duct never found the pump through its port cell, which has no block entity of its own");
+        helper.succeed();
     }
 
     private static TileEntityMachinePumpElectric place(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachinePump pump = ModMachineBlocks.machine_pump_electric.get();
-        helper.getLevel().setBlock(pos, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+        helper.getLevel().setBlock(pos, pump.defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityMachinePumpElectric,
                 "Pump core BlockEntity was not created");
-        pump.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        pump.fillSpace(helper.getLevel(), pos, Direction.NORTH);
         return (TileEntityMachinePumpElectric) helper.getLevel().getBlockEntity(pos);
     }
 
     private static TileEntityMachinePumpSteam placeSteam(GameTestHelper helper, BlockPos relativePos) {
         BlockPos pos = helper.absolutePos(relativePos);
         MachinePump pump = ModMachineBlocks.machine_pump_steam.get();
-        helper.getLevel().setBlock(pos, pump.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH), 3);
+        helper.getLevel().setBlock(pos, pump.defaultBlockState(), 3);
         helper.assertTrue(helper.getLevel().getBlockEntity(pos) instanceof TileEntityMachinePumpSteam,
                 "Steam pump core BlockEntity was not created");
-        pump.formStructure(helper.getLevel(), pos, ForgeDirection.NORTH);
+        pump.fillSpace(helper.getLevel(), pos, Direction.NORTH);
         return (TileEntityMachinePumpSteam) helper.getLevel().getBlockEntity(pos);
     }
 

@@ -1,0 +1,26 @@
+package com.hbm.entity.mob.ai;
+
+import com.hbm.entity.mob.IFlyingCreature;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
+
+public class EntityAIStopFlying extends Goal {
+
+    private final LivingEntity living;
+    private final IFlyingCreature flying;
+
+    public EntityAIStopFlying(LivingEntity living, IFlyingCreature flying) {
+        this.living = living;
+        this.flying = flying;
+    }
+
+    @Override
+    public boolean canUse() {
+        return flying.getFlyingState() == IFlyingCreature.STATE_FLYING && living.getRandom().nextInt(200) == 0;
+    }
+
+    @Override
+    public void start() {
+        flying.setFlyingState(IFlyingCreature.STATE_WALKING);
+    }
+}

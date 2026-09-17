@@ -11,7 +11,6 @@ import com.hbm.items.ModFuelItems;
 import com.hbm.packet.HbmPackets;
 import com.hbm.packet.AnvilCraftPayload;
 import dev.golem.core.registry.DeferredRegister;
-import com.hbm.uninos.UniNodespace;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
@@ -42,6 +41,9 @@ public class FabricInit implements ModInitializer {
 
         // Fabric has no deferred registration phase; register everything now via vanilla Registry.register.
         DeferredRegister.flushAllToVanilla();
+        // Living entity attribute sets (ModNtmEntities and the self-registering mobs); Forge-like loaders
+        // deliver these through EntityAttributeCreationEvent, Fabric writes them once the types exist.
+        dev.golem.core.registry.LivingAttributes.flushFabric();
 
         // Furnace burn times for the ItemFuel family. NeoForge reads these from the `neoforge:furnace_fuels`
         // data map (plain JSON in common resources, ignored by Fabric); Fabric has no data map for fuels, so
@@ -105,13 +107,11 @@ public class FabricInit implements ModInitializer {
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.START_SERVER_TICK.register(
                 com.hbm.tileentity.network.RTTYSystem::updateBroadcastQueue);
         dev.golem.core.platform.Lifecycle.onServerTick(server -> {
-            UniNodespace.updateNodespace(server);
             RadiationSystemNT.tickServer(server);
             com.hbm.saveddata.satellites.SatelliteSystems.tickServer(server);
         });
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> {
-            UniNodespace.clearLevel(level);
-            RadiationSystemNT.clearWorld(level);
+            RadiationSystemNT.closeWorld(level);
             com.hbm.tileentity.network.RTTYSystem.clearLevel(level);
         });
 

@@ -1,21 +1,20 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModAutogenItems;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityWatz;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -37,7 +36,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Unlike most machines this block has no item: it only comes into being by building the shape
  * around a {@code struct_watz_core} and letting it assemble.
  */
-public class Watz extends BlockDummyable implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
+public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlockMK2, WorldlyContainerHolder {
 
     /** Suppresses the component drop while the reactor is tearing itself apart in a meltdown. */
     public static boolean drop = true;
@@ -64,48 +63,9 @@ public class Watz extends BlockDummyable implements IFluidConnectorBlockMK2, Wor
     };
 
     @Override
-    public boolean checkRequirement(Level level, int x, int y, int z, ForgeDirection dir, int o) {
-        if (!super.checkRequirement(level, x, y, z, dir, o)) return false;
-        int cx = x + dir.offsetX * o, cy = y + dir.offsetY * o, cz = z + dir.offsetZ * o;
-        for (int[] arm : ARMS) {
-            if (!MultiblockHandlerXR.checkSpace(level, cx, cy, cz, arm, x, y, z, dir)) return false;
-        }
-        return true;
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        int cx = core.getX(), cy = core.getY(), cz = core.getZ();
-        MultiblockHandlerXR.fillSpace(level, cx, cy, cz, getDimensions(), this, dir);
-        for (int[] arm : ARMS) MultiblockHandlerXR.fillSpace(level, cx, cy, cz, arm, this, dir);
-
-        // Upstream declares the ports in world axes rather than rotated ones; the Watz is symmetric
-        // about both horizontal axes, so facing makes no difference to where they land.
-        makeExtra(level, cx + 2, cy, cz);
-        makeExtra(level, cx - 2, cy, cz);
-        makeExtra(level, cx, cy, cz + 2);
-        makeExtra(level, cx, cy, cz - 2);
-        makeExtra(level, cx + 2, cy + 2, cz);
-        makeExtra(level, cx - 2, cy + 2, cz);
-        makeExtra(level, cx, cy + 2, cz + 2);
-        makeExtra(level, cx, cy + 2, cz - 2);
-        makeExtra(level, cx, cy + 2, cz);
-    }
-
-    @Override
     public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        if (state.getValue(META) < extra) return null;
-        return findCoreTE(level, pos) instanceof TileEntityWatz watz ? watz : null;
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection direction) {
-        BlockPos cell = new BlockPos(x, y, z);
-        BlockState state = world.getBlockState(cell);
-        if (state.getBlock() != this || state.getValue(META) < extra || state.getValue(META) >= offset + 2) return false;
-        BlockPos outside = cell.offset(direction.offsetX, direction.offsetY, direction.offsetZ);
-        return findCoreTE(world, cell) instanceof TileEntityWatz watz
-                && watz.getConPos().stream().anyMatch(port -> port.getPos().equals(outside) && port.getDir() == direction);
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityWatz watz ? watz : null;
     }
 
     /**
@@ -114,7 +74,7 @@ public class Watz extends BlockDummyable implements IFluidConnectorBlockMK2, Wor
      */
     @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && !BlockDummyable.safeRem && state.getValue(META) >= 12 && drop) {
+        if (!level.isClientSide() && !state.getValue(CELL) && drop) {
             drop(level, pos, new ItemStack(ModMachineBlocks.watz_casing_tooled.get(), 48));
             for (int i = 0; i < 3; i++) {
                 drop(level, pos, new ItemStack(ModAutogenItems.get(MaterialShapes.BOLT, Mats.MAT_DURA), 64));
@@ -131,15 +91,34 @@ public class Watz extends BlockDummyable implements IFluidConnectorBlockMK2, Wor
         Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
     }
 
+    /**
+     * The nine promoted cells: the four arm tips at core level take their feed from below, and the four
+     * at +2 plus the crown vent upward. Upstream states them in world axes; the cross is symmetric about
+     * both, so the facing makes no difference to where they land.
+     */
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.WATZ.get(), TileEntityWatz::serverTick);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int[] arm : ARMS) MultiblockHandlerXR.visitBox(core, arm, facing, visitor);
+
+        for (int[] arm : new int[][]{{2, 0}, {-2, 0}, {0, 2}, {0, -2}}) {
+            visitor.cell(core.offset(arm[0], 0, arm[1]), MASK_DOWN);
+            visitor.cell(core.offset(arm[0], 2, arm[1]), MASK_UP);
+        }
+        visitor.cell(core.offset(0, 2, 0), MASK_UP);
     }
 
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    /** The column's own inlet hangs beneath the core itself. */
+    @Override public int coreMask() { return MASK_DOWN; }
+
+    /** 1.7 stamps {@code inventory().fluid()} on every one of the nine. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        for (int[] arm : new int[][]{{2, 0}, {-2, 0}, {0, 2}, {0, -2}}) {
+            visitor.passiveCell(core.offset(arm[0], 0, arm[1]), MASK_ALL, domains);
+            visitor.passiveCell(core.offset(arm[0], 2, arm[1]), MASK_ALL, domains);
+        }
+        visitor.passiveCell(core.offset(0, 2, 0), MASK_ALL, domains);
     }
 }

@@ -5,6 +5,7 @@ import dev.golem.core.render.SubmitSink;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.Ids;
 import dev.golem.core.render.Vertexes;
+import dev.golem.core.render.gem.Gem;
 import com.hbm.Constants;
 import com.hbm.client.NukeScreenEffects;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -24,7 +25,6 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.Comparator;
 
 /**
  * Renders {@link EntityNukeTorex}: the camera-facing cloudlet billboards (the mushroom cloud + its
@@ -32,10 +32,10 @@ import java.util.Comparator;
  * 1.12.2's {@code RenderTorex} to the 26.1 submit API.
  *
  * <ul>
- *   <li><b>Cloudlets</b> — one {@code submitCustomGeometry} batch on a custom translucent, no-depth-write
- *       PARTICLE-format {@link RenderType} (vanilla {@code WEATHER_NO_DEPTH_WRITE} pipeline). Distance-sorted
- *       once per client tick, coloured/lit by the old heat-and-life math (lightmap = colour brightness).</li>
- *   <li><b>Flare</b> — 3 additive gaussian billboards ({@code energySwirl} pipeline), fade baked into RGB.</li>
+ *   <li><b>Cloudlets</b> — shared interpolated/sorted render rows feed either Core's optional persistent
+ *       billboard instances or one fallback {@code submitCustomGeometry} batch on a depth-writing
+ *       {@link RenderType}. They retain the old heat/life colour and brightness-derived lightmap math.</li>
+ *   <li><b>Flare</b> — 3 source-alpha additive gaussian billboards with no depth write, matching old GL state.</li>
  *   <li><b>Flash</b> — the 300-spike additive burst ({@code dragonRays} pipeline, POSITION_COLOR triangles —
  *       the 1.12.2 code was structurally the vanilla dragon-death rays), Euler-damped intensity.</li>
  * </ul>
@@ -43,7 +43,8 @@ import java.util.Comparator;
  * It also latches the HUD {@link NukeScreenEffects} flash/shake timestamps and the local player's
  * hurt-camera-tilt when the blast is close, exactly like the original.
  */
-public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<EntityNukeTorex, TorexRenderState> {
+public class TorexRenderer
+        extends dev.golem.core.render.gem.GemEntityRenderer<EntityNukeTorex, TorexRenderState> {
 
     private static final Identifier CLOUDLET_TEX = Ids.of(Constants.MOD_ID, "textures/particle/particle_base.png");
     private static final Identifier FLARE_TEX = Ids.of(Constants.MOD_ID, "textures/particle/flare.png");
@@ -74,13 +75,6 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
     public static final int flashBaseDuration = 30;
     public static final int flareBaseDuration = 100;
 
-    private static final Comparator<Cloudlet> CLOUD_SORTER =
-            (a, b) -> {
-                int distance = Double.compare(b.renderSortDistanceSq, a.renderSortDistanceSq);
-                return distance != 0 ? distance
-                        : Long.compare(a.getCreationOrdinal(), b.getCreationOrdinal());
-            };
-
     public TorexRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
@@ -90,10 +84,15 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
         return new TorexRenderState();
     }
 
-    /** Always render — the cloud has no meaningful bounding box and must be visible at any distance. */
+    /**
+     * Nothing here is a resident mesh — the cloudlets and flare are camera-facing billboards and the
+     * flash is three hundred rays rebuilt each frame — so the declaration holds no parts. What it does
+     * carry is the one property of the model rather than of a frame: the cloud reaches far outside its
+     * own bounding box and must never be culled with it.
+     */
     @Override
-    public boolean culled(EntityNukeTorex entity) {
-        return false;
+    protected void setup(Gem.Model<TorexRenderState> declaration) {
+        declaration.offScreen();
     }
 
     @Override
@@ -101,11 +100,11 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
         entity.prepareClientAnimation();
         state.torex = entity;
         state.partialTicks = partialTicks;
-        state.entityId = entity.getId();
     }
 
     @Override
-    public void submit(TorexRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
+    protected void submitUndeclared(TorexRenderState state, PoseStack poseStack, SubmitSink collector,
+                                    CameraInfo camera) {
         EntityNukeTorex cloud = state.torex;
         if (cloud == null || !cloud.isClientAnimationReady()) return;
 
@@ -113,23 +112,25 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
         float scale = (float) cloud.getScale();
         float flashDuration = scale * flashBaseDuration;
         float flareDuration = scale * flareBaseDuration;
+        TorexBenchmarkClient.frame(cloud);
 
-        // Draw order via explicit buckets — needed because BOTH the cloudlets (entityTranslucent) and
-        // the flare (energySwirl, DepthStencilState.DEFAULT) WRITE DEPTH, and the ray burst originates
-        // INSIDE the cloud core: drawn after either of them, its fragments fail the depth test and the
-        // burst disappears (the "white png just sits there, no rays" playtest bug). Within one bucket,
+        // Draw order via explicit buckets — the depth-writing cloudlets must follow the ray burst and the
+        // no-depth additive flare must follow the cloudlets. Within one bucket,
         // custom geometry is stored in a HashMap keyed by RenderType (CustomFeatureRenderer.Storage),
         // so cross-RenderType submission order is NOT preserved — buckets are the only guarantee.
         //   order 0: flash rays (drawn first, nothing can cull them; the cloud blends over them)
         //   order 1: cloudlets (depth-write on — the far-water/clouds occlusion fix)
-        //   order 2: flare (additive glow blended over the cloud — the old drew flare after cloudlets too)
+        //   order 2: flare (no-depth additive glow over the cloud — the old drew flare after cloudlets too)
         if (cloud.tickCount < flashDuration) {
             submitFlash(cloud, poseStack, collector, flashDuration, partialTicks);
         }
-        sortCloudlets(cloud, camera);
-        submitCloudlets(cloud, poseStack, collector.order(1), camera, partialTicks);
-        if (cloud.tickCount < flareDuration + 1) {
-            submitFlare(cloud, state.entityId, poseStack, collector.order(2), camera, partialTicks, flareDuration);
+        boolean instanced = com.hbm.client.render.flywheel.FlywheelCompat.isTorexBillboardsActive(cloud);
+        if (!instanced) {
+            TorexCloudletRenderData.sort(cloud, camera.pos);
+            submitCloudlets(cloud, poseStack, collector.order(1), camera, partialTicks);
+            if (cloud.tickCount < flareDuration + 1) {
+                submitFlare(cloud, poseStack, collector.order(2), camera, partialTicks);
+            }
         }
 
         // Latch the HUD flash while the cloud is very young, and the shake once (with the hurt tilt).
@@ -152,25 +153,6 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
 
     // ---- Cloudlets ----
 
-    private void sortCloudlets(EntityNukeTorex cloud, CameraInfo camera) {
-        Vec3 cam = camera.pos;
-        if (cloud.lastRenderSortTick == cloud.tickCount
-                && Double.compare(cloud.lastRenderSortCameraX, cam.x) == 0
-                && Double.compare(cloud.lastRenderSortCameraY, cam.y) == 0
-                && Double.compare(cloud.lastRenderSortCameraZ, cam.z) == 0) return;
-        for (Cloudlet cloudlet : cloud.cloudlets) {
-            double dx = cam.x - cloudlet.posX;
-            double dy = cam.y - cloudlet.posY;
-            double dz = cam.z - cloudlet.posZ;
-            cloudlet.renderSortDistanceSq = dx * dx + dy * dy + dz * dz;
-        }
-        cloud.cloudlets.sort(CLOUD_SORTER);
-        cloud.lastRenderSortTick = cloud.tickCount;
-        cloud.lastRenderSortCameraX = cam.x;
-        cloud.lastRenderSortCameraY = cam.y;
-        cloud.lastRenderSortCameraZ = cam.z;
-    }
-
     private void submitCloudlets(EntityNukeTorex cloud, PoseStack poseStack, SubmitSink collector,
                                  CameraInfo camera, float partialTicks) {
         if (cloud.cloudlets.isEmpty()) return;
@@ -178,39 +160,17 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
         Quaternionf q = camera.orientation;
         Vector3f rightBase = q.transform(new Vector3f(1F, 0F, 0F));
         Vector3f upBase = q.transform(new Vector3f(0F, 1F, 0F));
-        float cloudAlphaBase = cloud.getAlpha();
         double ox = cloud.getX();
         double oy = cloud.getY();
         double oz = cloud.getZ();
 
         collector.submitCustomGeometry(poseStack, CLOUDLET_TYPE, (pose, buffer) -> {
-            for (Cloudlet c : cloud.cloudlets) {
-                float lifeFrac = (float) c.age / (float) c.cloudletLife;
-                float alpha = (1F - lifeFrac) * cloudAlphaBase;
-                if (c.type == EntityNukeTorex.TorexType.CONDENSATION) alpha *= 0.25F;
-                alpha = Mth.clamp(alpha, 0.0001F, 1F);
-
-                float cs = c.startingScale + lifeFrac * c.growingScale;
-                float brightness = c.type == EntityNukeTorex.TorexType.CONDENSATION ? 0.9F : 0.75F * c.colorMod;
-                double greying = c.type == EntityNukeTorex.TorexType.RING ? 0.05D : 0D;
-
-                float r = clampColor(color(c, c.prevColorR, c.colorR, partialTicks, greying), brightness);
-                float g = clampColor(color(c, c.prevColorG, c.colorG, partialTicks, greying), brightness);
-                float b = clampColor(color(c, c.prevColorB, c.colorB, partialTicks, greying), brightness);
-                // Faithful to the old renderer: vertex colour = the plain (r,g,b), and the brightness-derived
-                // lightmap `br` rides UV2. The non-emissive pipeline then does colour × lightmapColor(br) —
-                // the real (non-linear, brighter) lightmap curve, NOT a dim linear br/255 fold. Up-facing
-                // normals get a per-face factor of 1.0 (0.808·2·0.6+0.4 clamps to 1), so no extra dimming.
-                int br = lightmap(r, g, b);
-                int packedLight = br | (br << 16);
-
-                float px = (float) (c.prevPosX + (c.posX - c.prevPosX) * partialTicks - ox);
-                float py = (float) (c.prevPosY + (c.posY - c.prevPosY) * partialTicks - oy);
-                float pz = (float) (c.prevPosZ + (c.posZ - c.prevPosZ) * partialTicks - oz);
-
-                float rx = rightBase.x * cs, ry = rightBase.y * cs, rz = rightBase.z * cs;
-                float ux = upBase.x * cs, uy = upBase.y * cs, uz = upBase.z * cs;
-
+            long benchmarkStart = TorexBenchmarkClient.fallbackStart(cloud);
+            TorexCloudletRenderData.write(cloud, partialTicks,
+                    (x, y, z, size, r, g, b, alpha, packedLight) -> {
+                float px = (float) (x - ox), py = (float) (y - oy), pz = (float) (z - oz);
+                float rx = rightBase.x * size, ry = rightBase.y * size, rz = rightBase.z * size;
+                float ux = upBase.x * size, uy = upBase.y * size, uz = upBase.z * size;
                 // Counter-clockwise from the camera (BL→BR→TR→TL, the DragonFireballRenderer order) so the
                 // quad is a FRONT face: the PER_FACE_LIGHTING shader negates the light dots for back faces
                 // (lightAccum 0.4 instead of 1.0), which rendered the whole cloud at 40% brightness when
@@ -219,7 +179,8 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
                 cloudletVertex(buffer, pose, px + rx - ux, py + ry - uy, pz + rz - uz, 0F, 1F, r, g, b, alpha, packedLight);
                 cloudletVertex(buffer, pose, px + rx + ux, py + ry + uy, pz + rz + uz, 0F, 0F, r, g, b, alpha, packedLight);
                 cloudletVertex(buffer, pose, px - rx + ux, py - ry + uy, pz - rz + uz, 1F, 0F, r, g, b, alpha, packedLight);
-            }
+            });
+            TorexBenchmarkClient.fallbackEnd(benchmarkStart, cloud.cloudlets.size());
         });
     }
 
@@ -229,64 +190,42 @@ public class TorexRenderer extends dev.golem.core.render.CompatEntityRenderer<En
                 OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
     }
 
-    private static double color(Cloudlet c, double prev, double cur, float partialTicks, double greying) {
-        if (c.type == EntityNukeTorex.TorexType.CONDENSATION) return 1D;
-        return (prev + (cur - prev) * partialTicks) + greying;
-    }
-
-    private static float clampColor(double color, float brightness) {
-        float channel = (float) color * brightness;
-        if (channel < 0.15F) return 0.15F;
-        return channel > 1F ? 1F : channel;
-    }
-
-    private static int lightmap(float r, float g, float b) {
-        float avg = (r + g + b) / 3F;
-        if (avg > 1F) avg = 1F;
-        int br = (int) (avg * 240F);
-        return br < 48 ? 48 : br;
-    }
-
     // ---- Flare ----
 
-    private void submitFlare(EntityNukeTorex cloud, int entityId, PoseStack poseStack, SubmitSink collector,
-                             CameraInfo camera, float partialTicks, float flareDuration) {
-        double age = Math.min(cloud.tickCount + partialTicks, flareDuration);
-        float alpha = (float) Math.min(1, (flareDuration - age) / flareDuration);
-        if (alpha <= 0F) return;
-
+    private void submitFlare(EntityNukeTorex cloud, PoseStack poseStack, SubmitSink collector,
+                             CameraInfo camera, float partialTicks) {
         Quaternionf q = camera.orientation;
         Vector3f rightBase = q.transform(new Vector3f(1F, 0F, 0F));
         Vector3f upBase = q.transform(new Vector3f(0F, 1F, 0F));
-        float size = (float) (10 * cloud.rollerSize);
-        double coreHeight = cloud.coreHeight;
-        RandomSource rand = RandomSource.create(entityId);
+        double ox = cloud.getX(), oy = cloud.getY(), oz = cloud.getZ();
 
-        float[][] offsets = new float[3][3];
-        for (int i = 0; i < 3; i++) {
-            offsets[i][0] = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);
-            offsets[i][1] = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize) + (float) coreHeight;
-            offsets[i][2] = (float) (rand.nextGaussian() * 0.5F * cloud.rollerSize);
-        }
-
-        collector.submitCustomGeometry(poseStack, CompatRenderTypes.energySwirl(FLARE_TEX, 0F, 0F), (pose, buffer) -> {
-            float rx = rightBase.x * size, ry = rightBase.y * size, rz = rightBase.z * size;
-            float ux = upBase.x * size, uy = upBase.y * size, uz = upBase.z * size;
-            for (float[] o : offsets) {
-                float px = o[0], py = o[1], pz = o[2];
-                flareVertex(buffer, pose, px - rx - ux, py - ry - uy, pz - rz - uz, 1F, 1F, alpha);
-                flareVertex(buffer, pose, px - rx + ux, py - ry + uy, pz - rz + uz, 1F, 0F, alpha);
-                flareVertex(buffer, pose, px + rx + ux, py + ry + uy, pz + rz + uz, 0F, 0F, alpha);
-                flareVertex(buffer, pose, px + rx - ux, py + ry - uy, pz + rz - uz, 0F, 1F, alpha);
-            }
-        });
+        SubmitSink.CustomGeometry geometry = (pose, buffer) -> {
+            TorexCloudletRenderData.writeFlare(cloud, partialTicks,
+                    (x, y, z, size, r, g, b, alpha, packedLight) -> {
+                float px = (float) (x - ox), py = (float) (y - oy), pz = (float) (z - oz);
+                float rx = rightBase.x * size, ry = rightBase.y * size, rz = rightBase.z * size;
+                float ux = upBase.x * size, uy = upBase.y * size, uz = upBase.z * size;
+                var vertex = CompatRenderTypes.torexFlareVertex(r, g, b, alpha, packedLight);
+                flareVertex(buffer, pose, px - rx - ux, py - ry - uy, pz - rz - uz,
+                        1F, 1F, vertex.red(), vertex.green(), vertex.blue(), vertex.alpha(), vertex.packedLight());
+                flareVertex(buffer, pose, px - rx + ux, py - ry + uy, pz - rz + uz,
+                        1F, 0F, vertex.red(), vertex.green(), vertex.blue(), vertex.alpha(), vertex.packedLight());
+                flareVertex(buffer, pose, px + rx + ux, py + ry + uy, pz + rz + uz,
+                        0F, 0F, vertex.red(), vertex.green(), vertex.blue(), vertex.alpha(), vertex.packedLight());
+                flareVertex(buffer, pose, px + rx - ux, py + ry - uy, pz + rz - uz,
+                        0F, 1F, vertex.red(), vertex.green(), vertex.blue(), vertex.alpha(), vertex.packedLight());
+            });
+        };
+        RenderType type = CompatRenderTypes.torexFlare(FLARE_TEX);
+        collector.submitCustomGeometry(poseStack, type, geometry);
     }
 
     private static void flareVertex(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
-                                    float x, float y, float z, float u, float v, float alpha) {
-        // Additive pipeline ignores alpha in the blend, so the fade is baked into RGB.
-        Vertexes.vertex(buffer, pose, x, y, z, alpha, alpha, alpha, 1F, u, v,
-                OverlayTexture.NO_OVERLAY, 0x00F000F0, 0F, 1F, 0F);
+                                     float x, float y, float z, float u, float v,
+                                     float r, float g, float b, float alpha, int packedLight) {
+        // Core preserves old white/alpha/lightmap rows on 26.1 and adapts them for legacy energySwirl.
+        Vertexes.vertex(buffer, pose, x, y, z, r, g, b, alpha, u, v,
+                OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
     }
 
     // ---- Flash ----

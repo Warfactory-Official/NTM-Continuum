@@ -2,16 +2,12 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.entity.missile.IMissilePitch;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemEntityRenderer;
+import dev.golem.core.render.gem.Surface;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 
 /**
@@ -27,18 +23,25 @@ import net.minecraft.world.entity.Entity;
  * Pitch runs 0° straight up, −90° horizontal, −180° straight down, and comes from the missile's own
  * synchronized field rather than {@code xRot} — see {@link EntityMissileBaseNT#PITCH}.
  */
-public class MissileRenderer<T extends Entity & IMissilePitch> extends dev.golem.core.render.CompatEntityRenderer<T, MissileRenderState> {
+public class MissileRenderer<T extends Entity & IMissilePitch> extends GemEntityRenderer<T, MissileRenderState> {
 
     private final WavefrontObj model;
-    private final RenderType renderType;
+    private final Surface surface;
     private final float scale;
 
     public MissileRenderer(EntityRendererProvider.Context context, String model, String texture, float scale) {
         super(context);
         this.model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID, "models/missiles/" + model));
-        this.renderType = CompatRenderTypes.entityCutout(
-                dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/missiles/" + texture));
+        this.surface = Surface.cutout(Constants.MOD_ID + ":textures/models/missiles/" + texture);
         this.scale = scale;
+    }
+
+    @Override
+    protected void setup(Gem.Model<MissileRenderState> declaration) {
+        Gem.Part<MissileRenderState> body = declaration.part(model.all(true), surface)
+                .angle(Gem.Axes.Y, state -> state.yaw - 90F)
+                .angle(Gem.Axes.Z, state -> state.pitch);
+        if (scale != 1.0F) body.scale(scale);
     }
 
     /**
@@ -65,17 +68,5 @@ public class MissileRenderer<T extends Entity & IMissilePitch> extends dev.golem
         // Not getViewXRot: Entity.setXRot clamps to [-90, 90], and a missile's pitch runs to -180 as
         // it noses over. EntityMissileBaseNT carries the real value itself.
         state.pitch = entity.getMissilePitch(partialTicks);
-    }
-
-    @Override
-    public void submit(MissileRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw - 90.0F));
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.pitch));
-        if (scale != 1.0F) poseStack.scale(scale, scale, scale);
-
-        collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, true));
-        poseStack.popPose();
     }
 }

@@ -1,27 +1,38 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntitySawmill;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.resources.Identifier;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Set;
+/** Sawmill: the frame, the blade it only has when one is fitted, and the two counter-turning gears. */
+public class SawmillRenderer extends GemBER<TileEntitySawmill, SawmillRenderState> {
 
-/** Renderer for the sawmill's three animated OBJ parts. */
-public class SawmillRenderer implements CompatBER<TileEntitySawmill, SawmillRenderState> {
-
-    private final com.hbm.client.model.WavefrontObj model = com.hbm.client.model.WavefrontObj.load(
+    private final WavefrontObj model = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/sawmill.obj"));
-    private final net.minecraft.client.renderer.rendertype.RenderType renderType = CompatRenderTypes.entityCutout(
-            dev.golem.core.Ids.of(Constants.MOD_ID, "textures/models/machines/sawmill.png"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/sawmill.png");
+
+    @Override
+    protected void setup(Gem.Model<SawmillRenderState> declaration) {
+        Gem.Part<SawmillRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+
+        machine.child(model.part("Main"), surface);
+        machine.child(model.part("Blade"), surface)
+                .visibleIf(state -> state.hasBlade)
+                .spin(Gem.Axes.Z, 0F, 1.375F, 0F, state -> -state.rotation * 2F);
+        machine.child(model.part("GearLeft"), surface)
+                .spin(Gem.Axes.Z, 0.5625F, 1.375F, 0F, state -> state.rotation);
+        machine.child(model.part("GearRight"), surface)
+                .spin(Gem.Axes.Z, -0.5625F, 1.375F, 0F, state -> -state.rotation);
+    }
 
     @Override
     public SawmillRenderState createRenderState() {
@@ -29,26 +40,10 @@ public class SawmillRenderer implements CompatBER<TileEntitySawmill, SawmillRend
     }
 
     @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(TileEntitySawmill blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
-    }
-
-    @Override
     public void extract(TileEntitySawmill blockEntity, SawmillRenderState state, float partialTicks,
                         Vec3 cameraPosition) {
-        int meta = blockEntity.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int meta = MachineCore.facingOrdinal(blockEntity.getBlockState(), 2);
         state.yaw = switch (meta) {
-            case 3 -> 0F;
             case 5 -> 90F;
             case 2 -> 180F;
             case 4 -> 270F;
@@ -56,39 +51,5 @@ public class SawmillRenderer implements CompatBER<TileEntitySawmill, SawmillRend
         };
         state.rotation = blockEntity.lastSpin + (blockEntity.spin - blockEntity.lastSpin) * partialTicks;
         state.hasBlade = blockEntity.hasBlade;
-    }
-
-    @Override
-    public void submit(SawmillRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart("Main", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        if (state.hasBlade) {
-            poseStack.pushPose();
-            poseStack.translate(0F, 1.375F, 0F);
-            poseStack.mulPose(Axis.ZP.rotationDegrees(-state.rotation * 2F));
-            poseStack.translate(0F, -1.375F, 0F);
-            collector.submitCustomGeometry(poseStack, renderType,
-                    (pose, buffer) -> model.renderPart("Blade", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-            poseStack.popPose();
-        }
-        poseStack.pushPose();
-        poseStack.translate(0.5625F, 1.375F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(state.rotation));
-        poseStack.translate(-0.5625F, -1.375F, 0F);
-        collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart("GearLeft", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        poseStack.popPose();
-
-        poseStack.pushPose();
-        poseStack.translate(-0.5625F, 1.375F, 0F);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(-state.rotation));
-        poseStack.translate(0.5625F, -1.375F, 0F);
-        collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart("GearRight", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        poseStack.popPose();
-        poseStack.popPose();
     }
 }

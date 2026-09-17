@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerFurnaceSteel;
 import com.hbm.items.ItemEnums.EnumAshType;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -82,8 +82,7 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements Men
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceSteel furnace) {
         if (!furnace.wasOn) return;
-        com.hbm.lib.ForgeDirection dir = com.hbm.lib.ForgeDirection.getOrientation(
-                state.getValue(BlockDummyable.META) - BlockDummyable.offset);
+        com.hbm.lib.ForgeDirection dir = com.hbm.tileentity.MachineCore.facing(state);
         com.hbm.lib.ForgeDirection rotation = dir.getRotation(com.hbm.lib.ForgeDirection.UP);
         level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE,
                 pos.getX() + 0.5 - dir.offsetX * 1.125 - rotation.offsetX * 0.75,

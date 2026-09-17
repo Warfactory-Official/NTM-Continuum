@@ -5,13 +5,16 @@ import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.assemblyfactory.AssemblyFactoryPorts;
 import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.assemblyfactory.AssemblyFactorySidedContainer;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockMaskTable;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.Containers;
@@ -27,7 +30,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** The legacy 5x3 Assembly Factory: four independent Assembly Machine lanes. */
-public final class MachineAssemblyFactory extends BlockDummyable
+public final class MachineAssemblyFactory extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, WorldlyContainerHolder, ILookOverlay {
 
     public MachineAssemblyFactory(Properties properties) {
@@ -42,60 +45,19 @@ public final class MachineAssemblyFactory extends BlockDummyable
     @Override public int[] getDimensions() { return new int[]{2, 0, 2, 2, 2, 2}; }
     @Override public int getOffset() { return 2; }
 
-    @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        addFactoryExtras(level, new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset), dir);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        super.formStructure(level, core, dir);
-        addFactoryExtras(level, core, dir);
-    }
-
-    private void addFactoryExtras(Level level, BlockPos core, ForgeDirection dir) {
-        for (int i = -2; i <= 2; i++) for (int j = -2; j <= 2; j++) {
-            if (Math.abs(i) == 2 || Math.abs(j) == 2) {
-                makeExtra(level, core.getX() + i, core.getY(), core.getZ() + j);
-            }
-        }
-
-        ForgeDirection rotation = dir.getRotation(ForgeDirection.UP);
-        for (int i = -2; i <= 2; i++) {
-            makeExtra(level, core.getX() + dir.offsetX * i + rotation.offsetX * 2, core.getY() + 2,
-                    core.getZ() + dir.offsetZ * i + rotation.offsetZ * 2);
-            makeExtra(level, core.getX() + dir.offsetX * i - rotation.offsetX * 2, core.getY() + 2,
-                    core.getZ() + dir.offsetZ * i - rotation.offsetZ * 2);
-        }
-    }
-
     /** Ordinary dummies have no proxy inventory; promoted dummies retain the old accessor-relative view. */
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        if (state.getValue(META) < extra) return null;
-        BlockPos core = findCore(level, pos);
+        if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineAssemblyFactory factory)) return null;
         return core.equals(pos) ? factory : new AssemblyFactorySidedContainer(factory, pos);
     }
 
     @Override
-    public boolean canConnect(BlockGetter level, BlockPos pos, ForgeDirection direction) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineAssemblyFactory factory
-                && AssemblyFactoryPorts.isPort(factory, pos, direction);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter level, int x, int y, int z, ForgeDirection direction) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(level, pos) instanceof TileEntityMachineAssemblyFactory factory
-                && AssemblyFactoryPorts.isFluidPort(factory, pos, direction, type);
-    }
-
-    @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && state.getValue(META) >= BlockDummyable.offset + 2
+        if (!level.isClientSide() && !state.getValue(CELL)
                 && level.getBlockEntity(pos) instanceof TileEntityMachineAssemblyFactory factory) {
             Containers.dropContents(level, pos, factory);
         }
@@ -103,26 +65,8 @@ public final class MachineAssemblyFactory extends BlockDummyable
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY_BE.get(),
-                TileEntityMachineAssemblyFactory::clientTick)
-                : createTickerHelper(type, AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY_BE.get(),
-                TileEntityMachineAssemblyFactory::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, net.minecraft.world.entity.player.Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityMachineAssemblyFactory factory)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineAssemblyFactory factory)) return null;
 
         for (DirPos port : factory.getCoolPos()) {
             if (port.getPos().equals(pos.relative(port.getDir().toDirection()))) {
@@ -141,5 +85,73 @@ public final class MachineAssemblyFactory extends BlockDummyable
             }
         }
         return null;
+    }
+
+    /**
+     * The 5x5 ring at ground level and the two upper strips. Every cell on the ring's ends is open
+     * outward; the two odd cells on each end are the coolant anchors, and the two on each flank are
+     * the recipe-field proxies, which 1.7 subscribes on as well as reading items through.
+     */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int dx = -2; dx <= 2; dx += 2) {
+            for (int dz = -2; dz <= 2; dz += 2) {
+                if (dx == 0 && dz == 0) continue;
+                visitor.cell(core.offset(dx, 0, dz), outwardMask(dx, dz, 2));
+            }
+        }
+
+        Direction rot = facing.getClockWise();
+        for (int side = -1; side <= 1; side += 2) {
+            visitor.cell(core.relative(facing, 2).relative(rot, side), MASK_SOUTH);
+            visitor.cell(core.relative(facing, -2).relative(rot, side), MASK_NORTH);
+            visitor.cell(core.relative(rot, 2).relative(facing, side), MASK_WEST);
+            visitor.cell(core.relative(rot, -2).relative(facing, side), MASK_EAST);
+        }
+        for (int along = -2; along <= 2; along++) {
+            visitor.cell(core.relative(facing, along).relative(rot, 2).above(2), MASK_UP);
+            visitor.cell(core.relative(facing, along).relative(rot, -2).above(2), MASK_UP);
+        }
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        for (int dx = -2; dx <= 2; dx++) {
+            for (int dz = -2; dz <= 2; dz++) {
+                if (Math.abs(dx) == 2 || Math.abs(dz) == 2) {
+                    visitor.passiveCell(core.offset(dx, 0, dz), MASK_ALL, domains);
+                }
+            }
+        }
+        Direction rot = facing.getClockWise();
+        for (int along = -2; along <= 2; along++) {
+            visitor.passiveCell(core.relative(facing, along).relative(rot, 2).above(2), MASK_ALL, domains);
+            visitor.passiveCell(core.relative(facing, along).relative(rot, -2).above(2), MASK_ALL, domains);
+        }
+    }
+
+    /**
+     * The four coolant anchors take the factory's own water and spent-steam channels and nothing else.
+     * A per-cell commodity gate, which the geometry cannot carry -- {@code acceptsFluid} answers for the
+     * whole block.
+     */
+    @Override
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+        BlockPos cell = new BlockPos(x, y, z);
+        if (!super.canConnect(type, world, x, y, z, dir)) return false;
+        return type == com.hbm.inventory.fluid.Fluids.WATER
+                || type == com.hbm.inventory.fluid.Fluids.SPENTSTEAM
+                || !coolantAnchor(world, cell);
+    }
+
+    private static boolean coolantAnchor(BlockGetter world, BlockPos cell) {
+        BlockPos core = MultiblockSurface.coreOfAny(world, cell);
+        if (core == null || cell.getY() != core.getY()) return false;
+        Direction facing = world.getBlockState(core).getValue(FACING);
+        int dx = cell.getX() - core.getX(), dz = cell.getZ() - core.getZ();
+        return Math.abs(MultiblockMaskTable.localX(dx, 0, dz, facing)) == 1
+                && Math.abs(MultiblockMaskTable.localZ(dx, 0, dz, facing)) == 2;
     }
 }

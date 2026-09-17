@@ -1,29 +1,32 @@
 package com.hbm.items;
 
 import net.minecraft.world.item.ItemStack;
+import dev.golem.core.data.Tags;
+import net.minecraft.nbt.CompoundTag;
 
 /**
- * An item that carries a satellite frequency. The frequency is what addresses a satellite in orbit, so a
- * chip is how a machine on the ground says which one it is talking to.
- *
- * <p>Upstream keeps the value in the stack's NBT; here it rides {@link ModDataComponents#SAT_FREQUENCY}.
+ * 1.7 satellite-chip frequency contract. 1.7 "freq" NBT field lives in PERSISTENT_DATA.
  */
 public interface ISatChip {
 
     static int getFreqS(ItemStack stack) {
-        if (stack != null && stack.getItem() instanceof ISatChip chip) return chip.getFreq(stack);
-        return 0;
+        return stack.getItem() instanceof ISatChip chip ? chip.getFreq(stack) : 0;
     }
 
     static void setFreqS(ItemStack stack, int freq) {
-        if (stack != null && stack.getItem() instanceof ISatChip chip) chip.setFreq(stack, freq);
+        if (stack.getItem() instanceof ISatChip chip) chip.setFreq(stack, freq);
     }
 
     default int getFreq(ItemStack stack) {
-        return ModDataComponents.SAT_FREQUENCY.getOr(stack, 0);
+        CompoundTag data = ModDataComponents.PERSISTENT_DATA.get(stack).orElse(null);
+        return data == null ? 0 : Tags.getIntOr(data, "freq", 0);
     }
 
     default void setFreq(ItemStack stack, int freq) {
-        ModDataComponents.SAT_FREQUENCY.set(stack, freq);
+        ModDataComponents.PERSISTENT_DATA.update(stack, new CompoundTag(), tag -> {
+            CompoundTag copy = tag.copy();
+            copy.putInt("freq", freq);
+            return copy;
+        });
     }
 }

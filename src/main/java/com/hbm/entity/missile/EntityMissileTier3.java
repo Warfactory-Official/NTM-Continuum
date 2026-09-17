@@ -87,4 +87,62 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_incendiary_large.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_inferno.get()); }
     }
+
+    /** 1.7 EntityMissileRain: a 25-block blast scattering 100 submunitions. */
+    public static class EntityMissileRain extends EntityMissileTier3 {
+        public EntityMissileRain(EntityType<?> type, Level level) {
+            super(type, level);
+            this.isCluster = true;
+        }
+        public EntityMissileRain(Level level, float x, float y, float z, int targetX, int targetZ) {
+            super(com.hbm.entity.ModNtmEntities.MISSILE_RAIN.get(), level, x, y, z, targetX, targetZ);
+            this.isCluster = true;
+        }
+
+        @Override
+        public void onMissileImpact(HitResult mop) {
+            level().explode(this, getX(), getY(), getZ(), 25F, Level.ExplosionInteraction.TNT);
+            com.hbm.explosion.ExplosionChaos.cluster(level(), getX(), getY(), getZ(), 100, getYRot(), getXRot(),
+                    (float) Math.PI * 0.25F, (float) Math.PI * 0.25F, 1F);
+        }
+
+        @Override
+        public void cluster() {
+            this.onMissileImpact(null);
+        }
+
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_cluster_large.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_rain.get()); }
+    }
+
+    /**
+     * 1.7 EntityMissileDrill: bores a 30-deep shaft of eroding blasts straight down.
+     */
+    public static class EntityMissileDrill extends EntityMissileTier3 {
+        public EntityMissileDrill(EntityType<?> type, Level level) { super(type, level); }
+        public EntityMissileDrill(Level level, float x, float y, float z, int targetX, int targetZ) {
+            super(com.hbm.entity.ModNtmEntities.MISSILE_DRILL.get(), level, x, y, z, targetX, targetZ);
+        }
+
+        @Override
+        public void onMissileImpact(HitResult mop) {
+            // 1.7 stacked 30 ExplosionNT(10F) with ExAttrib.ERRODE. ExplosionNT was never ported (see
+            // ExplosionNukeSmall); the VNT equivalent of ERRODE is a standard blast that drops nothing.
+            for (int i = 0; i < 30; i++) {
+                com.hbm.explosion.vanillant.ExplosionVNT vnt = new com.hbm.explosion.vanillant.ExplosionVNT(
+                        level(), getX(), getY() - i, getZ(), 10F, this);
+                vnt.setBlockAllocator(new com.hbm.explosion.vanillant.standard.BlockAllocatorStandard(24));
+                vnt.setBlockProcessor(new com.hbm.explosion.vanillant.standard.BlockProcessorStandard().setNoDrop());
+                vnt.setEntityProcessor(new com.hbm.explosion.vanillant.standard.EntityProcessorStandard());
+                vnt.setPlayerProcessor(new com.hbm.explosion.vanillant.standard.PlayerProcessorStandard());
+                vnt.explode();
+            }
+            com.hbm.explosion.ExplosionLarge.spawnParticles(level(), getX(), getY(), getZ(), 25);
+            com.hbm.explosion.ExplosionLarge.spawnShrapnels(level(), getX(), getY(), getZ(), 12);
+            com.hbm.explosion.ExplosionLarge.jolt(level(), getX(), getY(), getZ(), 10, 50, 1);
+        }
+
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_buster_large.get()); }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_drill.get()); }
+    }
 }

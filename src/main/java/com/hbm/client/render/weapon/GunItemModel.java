@@ -72,7 +72,7 @@ public class GunItemModel implements ItemModel {
 
         // Without extents the layer reports an empty bounding box and the GUI icon never appears.
         layer.setExtents(extents);
-        layer.setupSpecialModel(body, new Argument(item, renderer, firstPerson, otherArm, displayContext));
+        layer.setupSpecialModel(body, new Argument(item, renderer, firstPerson, otherArm, displayContext, owner));
         // A held gun animates every frame, so its render state must not be cached.
         if (firstPerson) output.setAnimated();
         properties.applyToLayer(layer, displayContext);
@@ -80,7 +80,7 @@ public class GunItemModel implements ItemModel {
 
     /** What the renderer needs, resolved once per frame from the stack and its display context. */
     public record Argument(ItemStack stack, WeaponRenderer renderer, boolean firstPerson, boolean otherArm,
-            ItemDisplayContext context) {}
+            ItemDisplayContext context, @Nullable ItemOwner owner) {}
 
     /** The draw itself. Stateless — everything it needs arrives in the argument. */
     private static class Body implements SpecialModelRenderer<Argument> {
@@ -99,7 +99,8 @@ public class GunItemModel implements ItemModel {
             }
             pose.pushPose();
             argument.renderer().setupStatic(pose, argument.context());
-            argument.renderer().renderStatic(argument.stack(), pose, sink, lightCoords, overlayCoords);
+            argument.renderer().renderStatic(argument.stack(), pose, sink, lightCoords, overlayCoords,
+                    argument.owner() == null ? null : argument.owner().asLivingEntity());
             pose.popPose();
         }
 

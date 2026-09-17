@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.items.ModDataComponents;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.deco.TileEntityDeco;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -20,7 +21,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /** The four-way steel scaffold, including the old metadata-backed colour variants. */
-public class BlockScaffold extends CompatBlock implements EntityBlock {
+public class BlockScaffold extends CompatBlock implements TickingBlock {
 
     public static final EnumProperty<Orientation> ORIENT = EnumProperty.create("orient", Orientation.class);
     public static final EnumProperty<Variant> VARIANT = EnumProperty.create("variant", Variant.class);

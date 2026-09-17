@@ -65,7 +65,6 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineVacuumDistill te) {
         te.isOn = false;
-        te.updateConnections();
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
@@ -85,12 +84,6 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-        }
-    }
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();

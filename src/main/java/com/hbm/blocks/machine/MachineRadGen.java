@@ -1,15 +1,14 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.BlockDummyable;
-import com.hbm.handler.MultiblockHandlerXR;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -21,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** The 12-channel radiation generator and its three extra dummy cells. */
-public class MachineRadGen extends BlockDummyable implements IEnergyConnectorBlock, WorldlyContainerHolder {
+public class MachineRadGen extends BlockMultiblockMachine implements IEnergyConnectorBlock, WorldlyContainerHolder {
 
     public MachineRadGen(Properties properties) {
         super(properties);
@@ -43,57 +42,29 @@ public class MachineRadGen extends BlockDummyable implements IEnergyConnectorBlo
     }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x - dir.offsetX * 5, y, z - dir.offsetZ * 5);
-        makeExtra(level, x + dir.offsetX * offset + rot.offsetX, y,
-                z + dir.offsetZ * offset + rot.offsetZ);
-        makeExtra(level, x + dir.offsetX * offset - rot.offsetX, y,
-                z + dir.offsetZ * offset - rot.offsetZ);
-    }
-
-    @Override
-    public void formStructure(Level level, BlockPos core, ForgeDirection dir) {
-        MultiblockHandlerXR.fillSpace(level, core.getX(), core.getY(), core.getZ(), getDimensions(), this, dir);
-        ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, core.getX() - dir.offsetX * 3, core.getY(), core.getZ() - dir.offsetZ * 3);
-        makeExtra(level, core.getX() + rot.offsetX, core.getY(), core.getZ() + rot.offsetZ);
-        makeExtra(level, core.getX() - rot.offsetX, core.getY(), core.getZ() - rot.offsetZ);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter level, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineRadGen generator
-                && IEnergyConnectorBlock.isPort(generator.getConPos(), pos, dir);
-    }
-
-    @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachineRadGen generator
                 ? generator : null;
     }
 
+    /** One port, at the back of the hall: 1.7 provides at {@code core - facing*4} facing away. */
     @Override
-    public RenderShape getRenderShape(BlockState state) {
-        return RenderShape.INVISIBLE;
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        visitor.cell(core.relative(facing, -3), MASK_NORTH);
     }
 
+    /**
+     * 1.7 stamps three item proxies. Their power arm is inert -- the proxy gates it on the core being a
+     * receiver, and this machine only ever provides.
+     */
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.MACHINE_RAD_GEN.get(),
-                TileEntityMachineRadGen::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction rot = facing.getClockWise();
+        visitor.passiveCell(core.relative(facing, -3), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.relative(rot), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.relative(rot, -1), MASK_ALL, PASSIVE_ITEMS);
     }
 }

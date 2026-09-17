@@ -1,14 +1,16 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "hbm:item/machine_obj_base",
-    "model": {
-      "type": "hbm:machine_obj",
-      "obj": "hbm:models/machines/industrial_turbine.obj",
-      "texture": "hbm:textures/models/machines/industrial_turbine.png",
-      "scale": 0.25,
-      "yaw": 90,
-      "ty": 0.0
-    }
-  }
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/industrial_turbine.obj",
+    "texture": "hbm:textures/models/machines/industrial_turbine.png",
+    "scale": 0.75,
+    "yaw": 90.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [1.0, 0.0, 0.0],
+    "guiScale": 3.0,
+    "itemTranslate": [0.0, 0.0, -0.375],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
 }

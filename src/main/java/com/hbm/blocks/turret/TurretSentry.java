@@ -1,6 +1,7 @@
 package com.hbm.blocks.turret;
 
 import com.hbm.tileentity.ModBlockEntities;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import com.hbm.tileentity.turret.TileEntityTurretSentry;
 import dev.golem.core.gui.Menus;
@@ -25,7 +26,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jspecify.annotations.Nullable;
 
 /** 1.12.2's {@code TurretSentry} is a plain block container: the one turret that occupies a single cell. */
-public class TurretSentry extends CompatBlock implements EntityBlock {
+public class TurretSentry extends CompatBlock implements TickingBlock {
 
     private static final VoxelShape SHAPE = Shapes.block();
 
@@ -36,12 +37,6 @@ public class TurretSentry extends CompatBlock implements EntityBlock {
     @Override
     public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityTurretSentry(pos, state);
-    }
-
-    @Override
-    public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                           BlockEntityType<T> type) {
-        return TurretBaseNT.ticker(level, type, ModBlockEntities.TURRET_SENTRY.get());
     }
 
     @Override

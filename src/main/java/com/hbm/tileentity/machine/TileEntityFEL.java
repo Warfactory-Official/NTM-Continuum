@@ -1,7 +1,6 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.ModFallingBlocks;
@@ -12,6 +11,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.main.MainRegistry;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.ContaminationUtil;
@@ -94,9 +94,6 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFEL te) {
         ForgeDirection dir = te.facing();
-        // Subscribe through getConPos so the tick and the block-level connector can never disagree
-        // about where (or which way round) the power port is.
-        for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
         ItemStack crystal = te.inventory.getStackInSlot(1);
@@ -147,7 +144,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     /** Walks the beam from 3 blocks out to {@link #RANGE}, driving SILEX chambers and burning blocks. */
     private void trace(Level level, ForgeDirection dir) {
         boolean silexSpacing = false;
-        int felMeta = getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+        int felMeta = MachineCore.facingOrdinal(getBlockState(), 2);
 
         for (int i = 3; i < RANGE; i++) {
             BlockPos beam = new BlockPos(worldPosition.getX() + dir.offsetX * i,
@@ -156,7 +153,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             BlockState b = level.getBlockState(beam);
 
             // The SILEX check comes FIRST. Upstream relied on the chamber being Material.IRON (opaque)
-            // to reach this branch, but the port renders every BlockDummyable as INVISIBLE with
+            // to reach this branch, but the port renders every multiblock cell as INVISIBLE with
             // noOcclusion(), so an opacity test would let the beam pass straight through it. Testing
             // for the block explicitly is equivalent for the original and correct for the port.
             if (b.is(ModMachineBlocks.machine_silex.get())) {
@@ -165,7 +162,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
                 BlockPos silexPos = new BlockPos(beam.getX() + dir.offsetX, worldPosition.getY(),
                         beam.getZ() + dir.offsetZ);
                 if (level.getBlockEntity(silexPos) instanceof TileEntitySILEX silex) {
-                    int silexMeta = silex.getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset;
+                    int silexMeta = MachineCore.facingOrdinal(silex.getBlockState(), 2);
                     if (rotationIsValid(silexMeta, felMeta) && i >= 5 && !silexSpacing) {
                         if (silex.mode != this.mode) {
                             silex.mode = this.mode;
@@ -289,7 +286,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
     }
 
     private ForgeDirection facing() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     /**
@@ -299,8 +296,8 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
      *
      * <p><b>Deliberate deviation.</b> Upstream passed {@code dir} (the facing) as this port's direction,
      * but a {@code DirPos}'s direction means "the machine's side that faces the connecting cable" —
-     * that is what {@code trySubscribe} inverts to ask the cable {@code canConnect(dir.getOpposite())},
-     * and what {@code IEnergyConnectorBlock.isPort} matches against. Since the port sits behind the
+     * that is what the graph inverts when it probes a conductor's face, and what
+     * {@code IEnergyConnectorBlock.isPort} matches against. Since the port sits behind the
      * machine, that direction is {@code facing.getOpposite()}, not {@code facing}; every other ported
      * machine (assembly, crystallizer, …) already uses the outward convention. With upstream's value a
      * cable placed at the port <b>fails to connect</b>: {@code isPort} rejects the direction mismatch,

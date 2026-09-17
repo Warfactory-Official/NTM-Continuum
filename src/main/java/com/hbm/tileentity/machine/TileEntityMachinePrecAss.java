@@ -22,6 +22,7 @@ import com.hbm.modules.machine.ModuleMachinePrecAss;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -99,8 +100,6 @@ public final class TileEntityMachinePrecAss extends TileEntityMachineBase implem
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         for (DirPos connection : te.getConPos()) {
-            te.trySubscribe(level, connection);
-            if (te.inputTank.getTankType() != Fluids.NONE) te.trySubscribe(te.inputTank.getTankType(), level, connection);
             if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, connection);
         }
 
@@ -119,7 +118,7 @@ public final class TileEntityMachinePrecAss extends TileEntityMachineBase implem
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePrecAss te) {
         boolean running = te.didProcess;
         PrecisionAssemblerSoundHandler.tickLoop(te);
-        if (level.getGameTime() % 20L == 0L) te.frame = !level.getBlockState(pos.above(3)).isAir();
+        if (TickPhase.every(level, pos, 20L)) te.frame = !level.getBlockState(pos.above(3)).isAir();
 
         System.arraycopy(te.armAngles, 0, te.prevArmAngles, 0, 3);
         System.arraycopy(te.strikers, 0, te.prevStrikers, 0, 4);

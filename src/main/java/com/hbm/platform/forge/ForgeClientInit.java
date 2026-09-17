@@ -29,16 +29,25 @@ final class ForgeClientInit {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
                 (net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
                         com.hbm.handler.JetpackHandler.clearClientState());
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.addListener(
+                (net.minecraftforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
+                        com.hbm.client.gun.GunSmokeClient.onDisconnect());
         com.hbm.client.particle.HbmParticleHandlers.register();
         com.hbm.client.particle.SingularityParticleHandlers.register();
         GolemNetwork.setClientContextSupplier(() -> new GolemNetwork.ClientContext(
                 Minecraft.getInstance().level, Minecraft.getInstance().player));
         GolemNetwork.flushClientRegistrations();
 
+        com.hbm.client.ClientGameTime.install();
+        // The material-shape sprites are computed onto the atlas, not shipped; this has to be declared
+        // before the first resource load.
+        com.hbm.client.AutogenSprites.install();
+        HbmClientRegistrations.installDebugLines();
         HbmClientRegistrations.installTints();
         HbmClientRegistrations.installItemModelProperties();
         HbmClientRegistrations.installKeybinds();
         HbmClientRegistrations.installGunAnimations();
+        HbmClientRegistrations.installEntityEffects();
         HbmClientRegistrations.installArmorLayers();
         dev.golem.core.render.ForgeItemRenderers.install(com.hbm.client.render.MachineItemRenderers::render);
         modBus.addListener((net.minecraftforge.client.event.RegisterClientReloadListenersEvent event) ->

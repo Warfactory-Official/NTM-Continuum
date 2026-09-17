@@ -7,6 +7,7 @@ import com.hbm.inventory.container.ContainerFusionTorus;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.FusionRecipe;
+import com.hbm.capability.MachineCaps;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -14,10 +15,6 @@ import com.hbm.modules.machine.ModuleMachineFusion;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
-import com.hbm.uninos.INetworkProvider;
-import com.hbm.uninos.UniNodespace;
-import com.hbm.uninos.networkproviders.KlystronNetwork;
-import com.hbm.uninos.networkproviders.PlasmaNetwork;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -69,8 +66,6 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     public final FluidTankNTM[] tanks;
     public final ModuleMachineFusion fusionModule;
 
-    private final KlystronNetwork.KlystronNode[] klystronNodes = new KlystronNetwork.KlystronNode[4];
-    private final PlasmaNetwork.PlasmaNode[] plasmaNodes = new PlasmaNetwork.PlasmaNode[4];
     /** Which of the four arms has something attached; drives the port glow in the renderer. */
     public final boolean[] connections = new boolean[4];
 
@@ -118,28 +113,12 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionTorus te) {
         for (int i = 0; i < 4; i++) {
-            ForgeDirection dir = ForgeDirection.getOrientation(i + 2);
-            if (te.klystronNodes[i] == null || te.klystronNodes[i].expired) {
-                te.klystronNodes[i] = te.createKlystronNode(level, KlystronNetwork.THE_PROVIDER, dir);
-            }
-            if (te.plasmaNodes[i] == null || te.plasmaNodes[i].expired) {
-                te.plasmaNodes[i] = te.createPlasmaNode(level, PlasmaNetwork.THE_PROVIDER, dir);
-            }
-            if (te.klystronNodes[i].net != null) te.klystronNodes[i].net.addReceiver(te);
-            if (te.plasmaNodes[i].net != null) te.plasmaNodes[i].net.addProvider(te);
+            FusionLink.claim(level, te, te.nodePos(ForgeDirection.getOrientation(i + 2)),
+                    MachineCaps.PLASMA_OUT | MachineCaps.KLYSTRON_IN);
         }
 
         te.updateCooling();
 
-        if (level.getGameTime() % 20 == 0) {
-            for (DirPos port : te.getConPos()) {
-                te.trySubscribe(level, port);
-                te.trySubscribe(te.coolantTanks[0].getTankType(), level, port);
-                for (int i = 0; i < 3; i++) {
-                    if (te.tanks[i].getTankType() != Fluids.NONE) te.trySubscribe(te.tanks[i].getTankType(), level, port);
-                }
-            }
-        }
         for (DirPos port : te.getConPos()) {
             if (te.coolantTanks[1].getFill() > 0) te.tryProvide(te.coolantTanks[1], level, port);
             if (te.tanks[3].getFill() > 0) te.tryProvide(te.tanks[3], level, port);
@@ -151,22 +130,16 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         int receiverCount = 0;
         int collectors = 0;
         for (int i = 0; i < 4; i++) {
-            boolean klystronAttached = te.klystronNodes[i] != null && te.klystronNodes[i].hasValidNet()
-                    && !te.klystronNodes[i].net.providerEntries.isEmpty();
-            boolean plasmaAttached = te.plasmaNodes[i] != null && te.plasmaNodes[i].hasValidNet()
-                    && !te.plasmaNodes[i].net.receiverEntries.isEmpty();
-            te.connections[i] = klystronAttached || plasmaAttached;
+            BlockPos beam = te.linkPos(ForgeDirection.getOrientation(i + 2));
+            BlockEntity consumer = FusionLink.at(level, beam, MachineCaps.PLASMA_IN);
+            te.connections[i] = consumer != null
+                    || FusionLink.at(level, beam, MachineCaps.KLYSTRON_OUT) != null;
 
-            if (!plasmaAttached) continue;
-            for (BlockEntity thing : te.plasmaNodes[i].net.receiverEntries.keySet()) {
-                if (thing.isRemoved()) continue;
-                if (thing instanceof TileEntityLoadedBase loaded && !loaded.isLoaded()) continue;
-                if (thing instanceof IFusionPowerReceiver receiver) {
-                    if (receiver.receivesFusionPower()) receiverCount++;
-                    if (receiver.providesCollectorBonus()) collectors++;
-                }
-                break; // upstream counts one receiver per arm, not per net member
-            }
+            // Upstream counts one receiver per arm, which a claim per position gives for nothing.
+            if (!(consumer instanceof IFusionPowerReceiver receiver) || consumer.isRemoved()) continue;
+            if (consumer instanceof TileEntityLoadedBase loaded && !loaded.isLoaded()) continue;
+            if (receiver.receivesFusionPower()) receiverCount++;
+            if (receiver.providesCollectorBonus()) collectors++;
         }
 
         FusionRecipe recipe = te.fusionModule.getRecipe() instanceof FusionRecipe fusion ? fusion : null;
@@ -200,9 +173,9 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
             long share = (long) Math.ceil(te.plasmaEnergy * intensity);
 
             for (int i = 0; i < 4; i++) {
-                if (te.plasmaNodes[i] == null || !te.plasmaNodes[i].hasValidNet()) continue;
-                for (BlockEntity thing : te.plasmaNodes[i].net.receiverEntries.keySet()) {
-                    if (thing instanceof IFusionPowerReceiver receiver) receiver.receiveFusionPower(share, flux, r, g, b);
+                if (FusionLink.at(level, te.linkPos(ForgeDirection.getOrientation(i + 2)),
+                        MachineCaps.PLASMA_IN) instanceof IFusionPowerReceiver receiver) {
+                    receiver.receiveFusionPower(share, flux, r, g, b);
                 }
             }
         }
@@ -252,35 +225,15 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
                 worldPosition.getZ() + dir.offsetZ * 7);
     }
 
-    private DirPos nodeConnection(ForgeDirection dir) {
-        return new DirPos(worldPosition.getX() + dir.offsetX * 8, worldPosition.getY() + 2,
-                worldPosition.getZ() + dir.offsetZ * 8, dir);
-    }
-
-    private PlasmaNetwork.PlasmaNode createPlasmaNode(Level level, INetworkProvider<PlasmaNetwork> provider, ForgeDirection dir) {
-        PlasmaNetwork.PlasmaNode node = UniNodespace.getNode(level, nodePos(dir), provider);
-        if (node != null) return node;
-        node = new PlasmaNetwork.PlasmaNode(provider, nodePos(dir));
-        node.setConnections(nodeConnection(dir));
-        UniNodespace.createNode(level, node);
-        return node;
-    }
-
-    private KlystronNetwork.KlystronNode createKlystronNode(Level level, INetworkProvider<KlystronNetwork> provider, ForgeDirection dir) {
-        KlystronNetwork.KlystronNode node = UniNodespace.getNode(level, nodePos(dir), provider);
-        if (node != null) return node;
-        node = new KlystronNetwork.KlystronNode(provider, nodePos(dir));
-        node.setConnections(nodeConnection(dir));
-        UniNodespace.createNode(level, node);
-        return node;
+    /** Where a klystron or a consumer meets this arm: one block beyond the position this torus claims. */
+    private BlockPos linkPos(ForgeDirection dir) {
+        return new BlockPos(worldPosition.getX() + dir.offsetX * 8, worldPosition.getY() + 2,
+                worldPosition.getZ() + dir.offsetZ * 8);
     }
 
     @Override
     public void setRemoved() {
-        if (level != null && !level.isClientSide()) {
-            for (KlystronNetwork.KlystronNode node : klystronNodes) if (node != null) UniNodespace.destroyNode(level, node);
-            for (PlasmaNetwork.PlasmaNode node : plasmaNodes) if (node != null) UniNodespace.destroyNode(level, node);
-        }
+        for (int i = 0; i < 4; i++) FusionLink.release(level, nodePos(ForgeDirection.getOrientation(i + 2)));
         super.setRemoved();
     }
 
@@ -311,7 +264,10 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         return ports;
     }
 
-    @Override public boolean hasPermission(Player player) { return stillValid(player); }
+    @Override public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerFusionTorus menu
+                && menu.getTorus() == this && menu.stillValid(player);
+    }
 
     @Override
     public void receiveControl(CompoundTag data) {

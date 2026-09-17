@@ -2,16 +2,15 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityDeuteriumTower;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Ten-block deuterium tower with an irregular 3x3 base and eight network ports. */
-public class MachineDeuteriumTower extends BlockDummyable
+public class MachineDeuteriumTower extends BlockMultiblockMachine
         implements IEnergyConnectorBlock, IFluidConnectorBlockMK2, ILookOverlay {
 
     public MachineDeuteriumTower(Properties properties) {
@@ -47,33 +46,8 @@ public class MachineDeuteriumTower extends BlockDummyable
     }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-
-        x += dir.offsetX * offset;
-        z += dir.offsetZ * offset;
-        ForgeDirection rotation = dir.getRotation(ForgeDirection.UP);
-        makeExtra(level, x - dir.offsetX - rotation.offsetX, y, z - dir.offsetZ - rotation.offsetZ);
-        makeExtra(level, x, y, z - dir.offsetZ - rotation.offsetZ);
-        makeExtra(level, x - dir.offsetX - rotation.offsetX, y, z);
-    }
-
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityDeuteriumTower tower
-                && IEnergyConnectorBlock.isPort(tower.getConPos(), pos, dir);
-    }
-
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return findCoreTE(world, new BlockPos(x, y, z)) instanceof TileEntityDeuteriumTower tower
-                && (type == Fluids.NONE || type == Fluids.WATER || type == Fluids.HEAVYWATER)
-                && IEnergyConnectorBlock.isPort(tower.getConPos(), new BlockPos(x, y, z), dir);
-    }
-
-    @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntityDeuteriumTower tower)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntityDeuteriumTower tower)) return null;
 
         List<String> text = new ArrayList<>();
         text.add(Library.getShortNumber(tower.power) + "/" + Library.getShortNumber(tower.getMaxPower()) + " HE");
@@ -84,18 +58,27 @@ public class MachineDeuteriumTower extends BlockDummyable
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 
+    /** The four cells of the 2x2 base, each open on the two faces its corner turns outward. */
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_DEUTERIUM_TOWER.get(),
-                TileEntityDeuteriumTower::serverTick);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getCounterClockWise();
+        visitor.cell(core.relative(back), MASK_NORTH | MASK_WEST);
+        visitor.cell(core.relative(rot), MASK_SOUTH | MASK_EAST);
+        visitor.cell(core.relative(back).relative(rot), MASK_NORTH | MASK_EAST);
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    @Override public int coreMask() { return MASK_SOUTH | MASK_WEST; }
+
+    /** 1.7 stamps {@code TileEntityProxyCombo(false, true, true)} -- fluid and power, no inventory. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        Direction back = facing.getOpposite();
+        Direction rot = facing.getCounterClockWise();
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
+        visitor.passiveCell(core.relative(back), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(rot), MASK_ALL, domains);
+        visitor.passiveCell(core.relative(back).relative(rot), MASK_ALL, domains);
     }
 }

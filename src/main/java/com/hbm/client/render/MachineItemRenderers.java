@@ -49,7 +49,8 @@ public final class MachineItemRenderers {
         if (model == null && column == null && block == null) return;
 
         // In a GUI these models must not paint outside their slot; see clipToSlot.
-        boolean clipped = context == ItemDisplayContext.GUI && clipToSlot(poseStack);
+        boolean clipped = context == ItemDisplayContext.GUI
+                && !MachineItemModels.isOversizedInGui(id) && clipToSlot(poseStack);
 
         RecordingSubmitSink sink = new RecordingSubmitSink();
         if (column != null) column.submit(poseStack, sink, light, overlay);
@@ -75,7 +76,9 @@ public final class MachineItemRenderers {
      * ordinary item is exactly its slot — and an item may only exceed it by declaring
      * {@code oversized_in_gui}. Nothing equivalent exists here: a custom item renderer draws wherever its
      * geometry reaches, so a machine model spills over the surrounding inventory frame. Re-imposing the
-     * slot reproduces 26.1's default.
+     * slot reproduces 26.1's default — and reading the same {@code oversized_in_gui} flag reproduces the
+     * opt-out, which the machines framed from 1.7 need: 1.7 clipped nothing, and its inventory scales put
+     * the larger multiblocks a few pixels outside the slot on purpose.
      *
      * <p>The rectangle is recovered from the pose rather than passed in, because the callback is never
      * told which slot it is drawing into. By the time vanilla calls a custom renderer it has translated to

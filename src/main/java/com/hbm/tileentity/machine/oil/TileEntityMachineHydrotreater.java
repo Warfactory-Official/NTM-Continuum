@@ -15,6 +15,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -62,12 +63,11 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
     @Override public String getDefaultName() { return "container.hydrotreater"; }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHydrotreater te) {
-        te.updateConnections();
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         te.loadInput();
 
-        if (level.getGameTime() % 2 == 0) te.reform();
+        if (TickPhase.every(level, pos, 2)) te.reform();
 
         te.unloadTank(2, 3, 4);
         te.unloadTank(3, 5, 6);
@@ -81,13 +81,6 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
         te.networkPackNT();
     }
 
-    private void updateConnections() {
-        for (DirPos dp : getConPos()) {
-            this.trySubscribe(level, dp);
-            this.trySubscribe(tanks[0].getTankType(), level, dp);
-            this.trySubscribe(tanks[1].getTankType(), level, dp);
-        }
-    }
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();

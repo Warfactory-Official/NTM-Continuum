@@ -1,7 +1,8 @@
 package com.hbm.gametest;
 
-import com.hbm.api.fluidmk2.FluidNode;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.api.fluidmk2.DuctData;
+import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.blocks.machine.MachineBigAssTank9000;
 import com.hbm.blocks.machine.MachineBigAssTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -14,7 +15,8 @@ import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
 import com.hbm.tileentity.machine.TileEntityMachineBigAssTank;
 import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.UniNodespace;
+import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.uninos.graph.NodeNetwork;
 import dev.golem.core.Ids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -33,7 +35,6 @@ import net.minecraft.world.phys.Vec3;
 /** Focused contracts for both legacy giant fluid-storage machines. */
 public final class GiantTankGameTests {
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
     private static final TagKey<Block> PICKAXE =
             TagKey.create(Registries.BLOCK, Ids.of("minecraft", "mineable/pickaxe"));
 
@@ -47,9 +48,7 @@ public final class GiantTankGameTests {
         helper.assertTrue(big.getConPos().length == 2, "Big Ass Tank must expose two end ports");
         assertPort(helper, big.getConPos()[0], new BlockPos(8, 1, 1), ForgeDirection.NORTH);
         assertPort(helper, big.getConPos()[1], new BlockPos(8, 1, 15), ForgeDirection.SOUTH);
-        helper.assertTrue(helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(4, 1, 8)))
-                        .getValue(BlockDummyable.META) == 4,
-                "Big Ass Tank's west base cell was not formed");
+        FoldedTestSupport.assertCell(helper, new BlockPos(8, 1, 8), new BlockPos(4, 1, 8));
         BlockPos bigPortCell = helper.absolutePos(new BlockPos(8, 1, 2));
         helper.assertTrue(bigBlock.canConnect(Fluids.WATER, helper.getLevel(), bigPortCell.getX(), bigPortCell.getY(),
                         bigPortCell.getZ(), ForgeDirection.NORTH),
@@ -137,15 +136,18 @@ public final class GiantTankGameTests {
         level.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.WATER);
-        TileEntityFluidDuctNT.serverTick(level, ductPos, duct.getBlockState(), duct);
-        UniNodespace.updateNodespace(level.getServer());
 
-        FluidNode networkNode = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.WATER.getNetworkProvider());
-        helper.assertTrue(networkNode != null && networkNode.hasValidNet(),
-                "Tilted-output test could not create the external fluid network");
+        LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
+        NodeNetwork<DuctData> net = graph.networkAt(ductPos.asLong());
+        helper.assertTrue(net != null, "Tilted-output test could not create the external fluid network");
         TileEntityMachineGiantTank.serverTick(level, tank.getBlockPos(), tank.getBlockState(), tank);
-        helper.assertFalse(networkNode.net.isProvider(tank),
-                "A tilted giant tank must not advertise itself as an external fluid provider");
+        FluidNetwork.distribute(level, graph, net);
+
+        helper.assertTrue(tank.getFluidAvailable(Fluids.WATER, tank.tankNew.getPressure()) == 0,
+                "A tilted giant tank must offer a network nothing; the net finds it either way now, so the "
+                        + "tilt has to be in what it supplies");
+        helper.assertTrue(tank.tankNew.getFill() == 1_000,
+                "A tilted giant tank lost " + (1_000 - tank.tankNew.getFill()) + "mB to a network");
         helper.succeed();
     }
 
@@ -157,24 +159,46 @@ public final class GiantTankGameTests {
         helper.assertTrue(bigBlock.defaultBlockState().is(PICKAXE) && batBlock.defaultBlockState().is(PICKAXE),
                 "Both giant tanks must be in the mineable/pickaxe tag");
 
-        TileEntityMachineBigAssTank big = placeBigAss(helper, new BlockPos(8, 1, 8));
+        // One core, reused four times. A Big Ass Tank reaches four blocks out and five up, and the
+        // four placements used to sit at x = 8, 24, 40 and 56 — three of them past the 24-wide plot,
+        // in whatever the runner packed alongside. Clearing between placements keeps it all at home.
+        BlockPos core = new BlockPos(12, 1, 12);
+
+        TileEntityMachineBigAssTank big = placeBigAss(helper, core);
         big.setTankType(Fluids.WATER);
         big.tankNew.withPressure(2);
         big.tankNew.setFill(12_345);
         big.mode = 1;
         ItemStack bigDrop = bigBlock.getDrops(big.getBlockState(), lootParams(level, big.getBlockPos())).get(0);
         assertDrop(helper, bigDrop, bigBlock, 12_345, 2, 1);
-        placeAndAssertBig(helper, level, bigBlock, bigDrop, helper.absolutePos(new BlockPos(24, 1, 2)));
+        clearTanks(helper, bigBlock, batBlock, helper.absolutePos(core));
+        placeAndAssertBig(helper, level, bigBlock, bigDrop, helper.absolutePos(core.north(6)));
+        clearTanks(helper, bigBlock, batBlock, helper.absolutePos(core));
 
-        TileEntityMachineBAT9000 bat = placeBat(helper, new BlockPos(40, 1, 8));
+        TileEntityMachineBAT9000 bat = placeBat(helper, core);
         bat.setTankType(Fluids.WATER);
         bat.tankNew.withPressure(3);
         bat.tankNew.setFill(6_789);
         bat.mode = 2;
         ItemStack batDrop = batBlock.getDrops(bat.getBlockState(), lootParams(level, bat.getBlockPos())).get(0);
         assertDrop(helper, batDrop, batBlock, 6_789, 3, 2);
-        placeAndAssertBat(helper, level, batBlock, batDrop, helper.absolutePos(new BlockPos(56, 1, 2)));
+        clearTanks(helper, bigBlock, batBlock, helper.absolutePos(core));
+        placeAndAssertBat(helper, level, batBlock, batDrop, helper.absolutePos(core.north(2)));
         helper.succeed();
+    }
+
+    /** Removes both tanks' blocks around a core, so the next placement sees an empty plot. */
+    private static void clearTanks(GameTestHelper helper, MachineBigAssTank bigBlock,
+                                   MachineBigAssTank9000 batBlock, BlockPos core) {
+        for (int x = -6; x <= 6; x++) {
+            for (int y = -1; y <= 7; y++) {
+                for (int z = -8; z <= 8; z++) {
+                    BlockPos pos = core.offset(x, y, z);
+                    Block block = helper.getLevel().getBlockState(pos).getBlock();
+                    if (block == bigBlock || block == batBlock) helper.getLevel().removeBlock(pos, false);
+                }
+            }
+        }
     }
 
     private static LootParams.Builder lootParams(ServerLevel level, BlockPos origin) {
@@ -223,19 +247,17 @@ public final class GiantTankGameTests {
 
     private static TileEntityMachineBigAssTank placeBigAss(GameTestHelper helper, BlockPos relative) {
         MachineBigAssTank block = ModMachineBlocks.machine_bigasstank.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineBigAssTank tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineBigAssTank.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
         return tank;
     }
 
     private static TileEntityMachineBAT9000 placeBat(GameTestHelper helper, BlockPos relative) {
         MachineBigAssTank9000 block = ModMachineBlocks.machine_bat9000.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        FoldedTestSupport.assemble(helper, block, relative);
         TileEntityMachineBAT9000 tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineBAT9000.class);
-        block.formStructure(helper.getLevel(), helper.absolutePos(relative), ForgeDirection.NORTH);
         return tank;
     }
 

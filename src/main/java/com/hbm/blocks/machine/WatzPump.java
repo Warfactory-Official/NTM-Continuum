@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.tileentity.machine.TileEntityWatzPump;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * segment's core, plus a redstone signal two blocks above that, is what switches the reactor on — the
  * pump has no logic of its own; the reactor looks it up.
  */
-public class WatzPump extends BlockDummyable {
+public class WatzPump extends BlockMultiblockMachine {
 
     public WatzPump(Properties properties) {
         super(properties);

@@ -1,0 +1,64 @@
+#!/bin/sh
+# Launches the dev client for one Stonecutter node, building Golem Core for that node first.
+#
+# Core cannot be built inside the same invocation that launches the client. On the obfuscated Fabric
+# nodes Loom resolves and remaps Core's jar during configuration, before any task could rebuild it —
+# see checkGolemJarFreshness in build.fabric.gradle.kts, which exists to stop a run that would
+# silently compile against the previous jar. Two invocations is the only order that works, so this
+# does both rather than leaving it to be remembered.
+#
+#   ./client                         the active node
+#   ./client 1.21.1-fabric           some other node
+#   ./client --info                  the active node, extra Gradle flags
+#   HBM_QUICKPLAY="New World" ./client    straight into a save
+set -e
+
+here=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+core=$here/../Golem-Core
+
+case "$1" in
+    -*|'') node='' ;;
+    *) node=$1; shift ;;
+esac
+
+if [ -z "$node" ]; then
+    node=$(sed -n 's/^stonecutter active "\([^"]*\)".*/\1/p' "$here/stonecutter.gradle.kts")
+fi
+
+if [ -z "$node" ]; then
+    echo "client: no node given and none active in stonecutter.gradle.kts." >&2
+    echo "        try: ./client 26.1-neoforge" >&2
+    exit 1
+fi
+
+if [ ! -d "$here/versions/$node" ]; then
+    echo "client: no such node '$node'. Available:" >&2
+    ls "$here/versions" | sed 's/^/          /' >&2
+    exit 1
+fi
+
+# Gradle itself needs Java 25 to load Loom — on an older one every node dies in seconds on a
+# Stonecutter plugin-resolution error that names nothing useful. Each node's own toolchain still runs
+# the game, so this only picks what Gradle starts on. An adequate JAVA_HOME is left alone.
+java_major() {
+    [ -x "$1/bin/java" ] || return 1
+    "$1/bin/java" -version 2>&1 | sed -n 's/.*version "\([0-9]*\).*/\1/p' | head -1
+}
+
+if ! [ "$(java_major "$JAVA_HOME" 2>/dev/null || echo 0)" -ge 25 ] 2>/dev/null; then
+    JAVA_HOME=${GOLEM_JAVA_HOME:-/usr/lib/jvm/java-25-openjdk}
+    if ! [ "$(java_major "$JAVA_HOME" 2>/dev/null || echo 0)" -ge 25 ] 2>/dev/null; then
+        echo "client: no JDK 25 or newer at $JAVA_HOME. Set GOLEM_JAVA_HOME to one." >&2
+        exit 1
+    fi
+fi
+export JAVA_HOME
+
+# The wrappers are checked in without the executable bit, hence `sh gradlew`.
+echo "==> Golem Core  :$node:build"
+(cd "$core" && sh gradlew ":$node:build" -x test)
+
+echo "==> NTM Continuum  :$node:runClient"
+# Gradle takes its project directory from the working directory, not from the wrapper's location.
+cd "$here"
+exec sh ./gradlew ":$node:runClient" "$@"

@@ -25,6 +25,7 @@ public final class HbmParticleHandlers {
     private HbmParticleHandlers() {}
 
     public static void register() {
+        MukeParticles.register();
         for (var entry : ParticleCreators.particleCreators.entrySet()) {
             HbmEffectNT effect = byCreatorKey(entry.getKey());
             if (effect == null) continue;
@@ -39,12 +40,25 @@ public final class HbmParticleHandlers {
                 Tags.getFloatOr(data, "scale", 20F)));
         HbmEffectNT.RBMKMushSmall.setHandler((level, x, y, z, data) -> spawnRBMKMush(level, x, y, z,
                 Tags.getFloatOr(data, "scale", 5F)));
+        HbmEffectNT.Muke.setHandler(MukeParticles::spawnMuke);
+        HbmEffectNT.TinyTot.setHandler(MukeParticles::spawnTinyTot);
+        HbmEffectNT.Skeleton.setHandler((level, x, y, z, data) -> {
+            if (level instanceof ClientLevel client) DisintegrationParticles.skeleton(client,
+                    client.getRandom(), x, y, z, Tags.getIntOr(data, "entityID", -1),
+                    Tags.getFloatOr(data, "brightness", 1F), Tags.getBooleanOr(data, "gib", false));
+        });
+        HbmEffectNT.Giblets.setHandler((level, x, y, z, data) -> {
+            if (level instanceof ClientLevel client) DisintegrationParticles.giblets(client,
+                    client.getRandom(), x, y, z, Tags.getIntOr(data, "ent", -1),
+                    Tags.getIntOr(data, "gibType", 0));
+        });
         HbmEffectNT.MissileContrail.setHandler(HbmParticleHandlers::spawnContrail);
         HbmEffectNT.SawmillDamage.setHandler(HbmParticleHandlers::spawnSawmillDamage);
         HbmEffectNT.Jetpack.setHandler((level, x, y, z, data) -> spawnJetpack(level, data,
                 Tags.getIntOr(data, "mode", 0) == 1 ? 3 : 0));
         HbmEffectNT.Jetpack_BJ.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 1));
         HbmEffectNT.Jetpack_DNS.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 2));
+        HbmEffectNT.VanillaExt_BlockDust.setHandler(HbmParticleHandlers::spawnVanillaExtBlockDust);
     }
 
     /**
@@ -153,6 +167,16 @@ public final class HbmParticleHandlers {
             level.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, state), location.x,
                     location.y + 0.1D, location.z, velocity.x, 0.1D, velocity.z);
         }
+    }
+
+    private static void spawnVanillaExtBlockDust(net.minecraft.world.level.Level level, double x, double y,
+            double z, CompoundTag data) {
+        if (!(level instanceof ClientLevel clientLevel)) return;
+        var block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.byId(Tags.getIntOr(data, "block", -1));
+        if (block == Blocks.AIR) return;
+        clientLevel.addParticle(new BlockParticleOption(ParticleTypes.BLOCK, block.defaultBlockState()), x, y, z,
+                Tags.getDoubleOr(data, "mX", 0D), Tags.getDoubleOr(data, "mY", 0D),
+                Tags.getDoubleOr(data, "mZ", 0D));
     }
 
     /**

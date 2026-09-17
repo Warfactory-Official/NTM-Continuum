@@ -21,14 +21,14 @@ public final class RBMKColumnItemModelRenderer implements NoDataSpecialModelRend
     private RBMKColumnItemModelRenderer(RBMKColumnItemModel model) { this.model = model; }
     @Override public void submit(PoseStack pose, SubmitNodeCollector collector, int light, int overlay, boolean foil, int outline) { model.submit(pose, new VanillaSubmitSink(collector), light, overlay); }
     @Override public void getExtents(Consumer<Vector3fc> output) { model.extents(output); }
-    public record Unbaked(Identifier side, Identifier top, Identifier inner, float scale, float yaw, float lift) implements NoDataSpecialModelRenderer.Unbaked {
+    public record Unbaked(Identifier side, Identifier top, Identifier inner, Identifier fuel, float scale, float yaw, float lift) implements NoDataSpecialModelRenderer.Unbaked {
         public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                 Identifier.CODEC.fieldOf("side").forGetter(Unbaked::side), Identifier.CODEC.fieldOf("top").forGetter(Unbaked::top),
-                Identifier.CODEC.fieldOf("inner").forGetter(Unbaked::inner), Codec.FLOAT.optionalFieldOf("scale", .35F).forGetter(Unbaked::scale),
+                Identifier.CODEC.fieldOf("inner").forGetter(Unbaked::inner), Identifier.CODEC.fieldOf("fuel").forGetter(Unbaked::fuel), Codec.FLOAT.optionalFieldOf("scale", .35F).forGetter(Unbaked::scale),
                 Codec.FLOAT.optionalFieldOf("yaw", 0F).forGetter(Unbaked::yaw), Codec.FLOAT.optionalFieldOf("lift", -.675F).forGetter(Unbaked::lift)
         ).apply(i, Unbaked::new));
         @Override public MapCodec<? extends NoDataSpecialModelRenderer.Unbaked> type() { return MAP_CODEC; }
-        @Override public SpecialModelRenderer<Void> bake(SpecialModelRenderer.BakingContext context) { return new RBMKColumnItemModelRenderer(new RBMKColumnItemModel(side, top, inner, scale, yaw, lift)); }
+        @Override public SpecialModelRenderer<Void> bake(SpecialModelRenderer.BakingContext context) { return new RBMKColumnItemModelRenderer(new RBMKColumnItemModel(side, top, inner, fuel, scale, yaw, lift)); }
     }
 }
 //?}

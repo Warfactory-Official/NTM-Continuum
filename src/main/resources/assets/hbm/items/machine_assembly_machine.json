@@ -1,17 +1,17 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "hbm:item/machine_obj_base",
-    "model": {
-      "type": "hbm:machine_obj",
-      "obj": "hbm:models/machines/assembly_machine.obj",
-      "texture": "hbm:textures/models/machines/assembly_machine.png",
-      "scale": 0.35,
-      "yaw": 180,
-      "ty": 0.0,
-      "exclude": [
-        "Ring2"
-      ]
-    }
-  }
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/assembly_machine.obj",
+    "texture": "hbm:textures/models/machines/assembly_machine.png",
+    "scale": 0.75,
+    "yaw": 90.0,
+    "exclude": ["Ring2"],
+    "rawLegacyTransform": true,
+    "guiTranslate": [0.0, -2.75, 0.0],
+    "guiScale": 4.5,
+    "itemTranslate": [0.0, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
 }

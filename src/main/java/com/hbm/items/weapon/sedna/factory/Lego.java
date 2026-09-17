@@ -10,6 +10,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.projectile.EntityBulletBaseMK4CL;
+import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.GunAnimation;
 import com.hbm.items.weapon.sedna.GunConfig;
@@ -18,6 +20,10 @@ import com.hbm.items.weapon.sedna.ItemGunBaseNT.GunState;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT.LambdaContext;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.IMagazine;
+import com.hbm.items.weapon.sedna.ItemGunBaseNT.SmokeNode;
+import com.hbm.util.GameTime;
+import java.util.List;
+import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import net.minecraft.sounds.SoundSource;
@@ -25,16 +31,17 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.Vec3;
 
 /**
  * Standardised building blocks a {@link GunConfig} is assembled from — upstream's "LEGO" bricks.
  *
- * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.factory.Lego}. This slice carries the
- * standard fire path only; upstream's smoke handling, secondary-fire mode switching, lock-on variants,
- * explosive impact helpers and the debug animation table are not ported.
+ * <p>Ported from 1.12.2 {@code com.hbm.items.weapon.sedna.factory.Lego}. The projectile and explosion
+ * seams retain the target's current entity contracts, while smoke nodes and fire ordering follow
+ * ntm-next exactly.
  */
 public class Lego {
+
+    public static final Random ANIM_RAND = new Random();
 
     /** If IDLE and a reload is possible, begin one; otherwise play the "nothing to load" inspect. */
     public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_RELOAD = (stack, ctx) -> {
@@ -67,6 +74,18 @@ public class Lego {
     /** Pull the trigger on receiver 0. */
     public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_CLICK_PRIMARY =
             (stack, ctx) -> clickReceiver(stack, ctx, 0);
+
+    /** The second receiver trigger used by underbarrels and dual weapons. */
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_CLICK_SECONDARY =
+            (stack, ctx) -> {
+                if (ItemGunBaseNT.getState(stack, ctx.configIndex) != GunState.IDLE) return;
+                int mode = ItemGunBaseNT.getMode(stack, 0);
+                ItemGunBaseNT.setMode(stack, ctx.configIndex, 1 - mode);
+                ctx.entity.level().playSound(null, ctx.entity.getX(), ctx.entity.getY(), ctx.entity.getZ(),
+                        mode == 0 ? com.hbm.sound.ModGunSounds.SWITCH_MODE_1.get()
+                                : com.hbm.sound.ModGunSounds.SWITCH_MODE_2.get(),
+                        SoundSource.PLAYERS, 1F, 1F);
+            };
 
     /**
      * One trigger pull: fire if able, dry-fire if not, and cancel a reload in progress.
@@ -119,12 +138,30 @@ public class Lego {
     public static BiFunction<ItemStack, LambdaContext, Boolean> LAMBDA_STANDARD_CAN_FIRE =
             (stack, ctx) -> ctx.config.getReceivers(stack)[0].getMagazine(stack).getAmount(stack, ctx.inventory) > 0;
 
-    /** Bypasses the magazine entirely — the debug gun's "always able to fire". */
+    public static BiFunction<ItemStack, LambdaContext, Boolean> LAMBDA_SECOND_CAN_FIRE =
+            (stack, ctx) -> ctx.config.getReceivers(stack)[1].getMagazine(stack).getAmount(stack, ctx.inventory) > 0;
+
+    public static BiFunction<ItemStack, LambdaContext, Boolean> LAMBDA_LOCKON_CAN_FIRE =
+            (stack, ctx) -> ItemGunBaseNT.getIsLockedOn(stack)
+                    && ctx.config.getReceivers(stack)[0].getMagazine(stack).getAmount(stack, ctx.inventory) > 0;
+
+    /** Debug weapons bypass magazine checks, matching the source factory's test path. */
     public static BiFunction<ItemStack, LambdaContext, Boolean> LAMBDA_DEBUG_CAN_FIRE = (stack, ctx) -> true;
+
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_SMOKE = (stack, ctx) ->
+            handleStandardSmoke(ctx.entity, stack, 2000, 0.025D, 1.15D, ctx.hand, ctx.configIndex);
 
     /** Spawns bullets for the loaded round. */
     public static BiConsumer<ItemStack, LambdaContext> LAMBDA_STANDARD_FIRE =
             (stack, ctx) -> doStandardFire(stack, ctx, GunAnimation.CYCLE, 0, true);
+
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_SECOND_FIRE =
+            (stack, ctx) -> doStandardFire(stack, ctx, GunAnimation.CYCLE, 1, true);
+
+    public static BiConsumer<ItemStack, LambdaContext> LAMBDA_LOCKON_FIRE = (stack, ctx) -> {
+        doStandardFire(stack, ctx, GunAnimation.CYCLE, 0, true);
+        ItemGunBaseNT.setIsLockedOn(stack, false);
+    };
 
     /** As {@link #LAMBDA_STANDARD_FIRE}, but the shot causes no wear. */
     public static BiConsumer<ItemStack, LambdaContext> LAMBDA_NOWEAR_FIRE =
@@ -152,9 +189,13 @@ public class Lego {
         double heightOffset = offset.y;
         double sideOffset = offset.z;
 
-        int projectiles = config.projectilesMin;
-        if (config.projectilesMax > config.projectilesMin) {
-            projectiles += entity.getRandom().nextInt(config.projectilesMax - config.projectilesMin + 1);
+        // Split is a receiver modifier (shotgun/choke/laser upgrades), not merely an ammo property.
+        float split = primary.getSplitProjectiles(stack);
+        int projectileMin = (int) (config.projectilesMin * split);
+        int projectileMax = (int) (config.projectilesMax * split);
+        int projectiles = projectileMin;
+        if (projectileMax > projectileMin) {
+            projectiles += entity.getRandom().nextInt(projectileMax - projectileMin + 1);
         }
 
         Level level = entity.level();
@@ -180,6 +221,15 @@ public class Lego {
                 }
 
                 level.addFreshEntity(bullet);
+            } else if (config.pType == BulletConfig.ProjectileType.BULLET_CHUNKLOADING) {
+                EntityBulletBaseMK4CL bullet = new EntityBulletBaseMK4CL(entity, config, damage, spread,
+                        sideOffset, heightOffset, forwardOffset);
+                level.addFreshEntity(bullet);
+            } else if (config.pType == BulletConfig.ProjectileType.BEAM) {
+                EntityBulletBeamBase beam = new EntityBulletBeamBase(entity, config, damage, spread,
+                        sideOffset, heightOffset, forwardOffset);
+                beam.setImpactCallback(config.onImpactBeam);
+                level.addFreshEntity(beam);
             }
         }
 
@@ -188,6 +238,39 @@ public class Lego {
             ItemGunBaseNT.setWear(stack, index,
                     Math.min(ItemGunBaseNT.getWear(stack, index) + config.wear, ctx.config.getDurability(stack)));
         }
+    }
+
+    /**
+     * Evolves the attached smoke ribbon exactly once per client tick while the source shot timestamp is live.
+     * The renderer owns drawing these nodes; this method owns their lifetime and motion.
+     */
+    public static void handleStandardSmoke(LivingEntity entity, ItemStack stack, int smokeDuration,
+            double alphaDecay, double widthGrowth, net.minecraft.world.InteractionHand hand, int index) {
+        ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();
+        long lastShot = gun.lastShotByHand[hand.ordinal()][index];
+        List<SmokeNode> smokeNodes = gun.getConfig(stack, index).getSmokeNodes(hand);
+        long now = GameTime.millis(entity.level());
+        boolean smoking = lastShot + smokeDuration > now;
+        if (!smoking && !smokeNodes.isEmpty()) smokeNodes.clear();
+        if (!smoking) return;
+
+        Vec3 previous = new Vec3(-entity.getDeltaMovement().x, -entity.getDeltaMovement().y,
+                -entity.getDeltaMovement().z).yRot((float) (entity.getYRot() * Math.PI / 180D));
+        double accel = 15D;
+        double side = (entity.getYRot() - entity.yHeadRotO) * 0.1D;
+        double waggle = 0.025D;
+        for (SmokeNode node : smokeNodes) {
+            node.forward += -previous.z * accel + entity.getRandom().nextGaussian() * waggle;
+            node.lift += previous.y + 1.5D;
+            node.side += previous.x * accel + entity.getRandom().nextGaussian() * waggle + side;
+            if (node.alpha > 0) node.alpha -= alphaDecay;
+            node.width *= widthGrowth;
+        }
+
+        double alpha = (now - lastShot) / (double) smokeDuration;
+        alpha = (1 - alpha) * 0.5D;
+        if (ItemGunBaseNT.getState(stack, index) == GunState.RELOADING || smokeNodes.isEmpty()) alpha = 0;
+        smokeNodes.add(new SmokeNode(alpha));
     }
 
     /** Extra spread from wear: nothing until half-worn, then ramping to full at the end of its life. */

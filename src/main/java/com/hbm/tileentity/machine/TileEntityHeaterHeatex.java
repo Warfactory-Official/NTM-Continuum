@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
 import com.hbm.inventory.fluid.FluidType;
@@ -12,9 +11,11 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -61,7 +62,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterHeatex heater) {
         heater.updateTypeFromFluidId();
         heater.setupTanks();
-        heater.updateConnections(level);
 
         // The old machine decays its stored TU before adding the current cooling operation's heat.
         heater.heatEnergy *= 0.999;
@@ -100,11 +100,6 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         tanks[1].setTankType(Fluids.NONE);
     }
 
-    private void updateConnections(Level level) {
-        for (DirPos connection : getConPos()) {
-            trySubscribe(tanks[0].getTankType(), level, connection);
-        }
-    }
 
     /** Performs the exact old min(input, output, throttle) operation calculation. */
     protected void tryConvert(Level level) {
@@ -112,7 +107,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         if (trait == null || trait.getEfficiency(FT_Coolable.CoolingType.HEATEXCHANGER) <= 0D) return;
 
         if (tickDelay < 1) tickDelay = 1;
-        if (level.getGameTime() % tickDelay != 0) return;
+        if (!TickPhase.every(level, worldPosition, tickDelay)) return;
 
         int inputOps = tanks[0].getFill() / trait.amountReq;
         int outputOps = (tanks[1].getMaxFill() - tanks[1].getFill()) / trait.amountProduced;
@@ -127,9 +122,8 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
 
     /** The four old horizontal ports: two facing forward and two facing backward. */
     public DirPos[] getConPos() {
-        int meta = getBlockState().hasProperty(BlockDummyable.META)
-                ? getBlockState().getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        ForgeDirection facing = ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        int meta = MachineCore.facingOrdinal(getBlockState(), 2);
+        ForgeDirection facing = ForgeDirection.getOrientation(meta);
         ForgeDirection lateral = facing.getRotation(ForgeDirection.UP);
         BlockPos pos = getBlockPos();
 
@@ -157,8 +151,7 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
 
     @Override
     public boolean canConnect(FluidType type, ForgeDirection dir) {
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META)
-                - BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         return dir == facing || dir == facing.getOpposite();
     }
 

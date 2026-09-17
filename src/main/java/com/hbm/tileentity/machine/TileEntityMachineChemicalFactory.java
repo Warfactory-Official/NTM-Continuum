@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.tileentity.MachineCore;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -19,6 +20,7 @@ import com.hbm.lib.Library;
 import com.hbm.modules.machine.ModuleMachineChemplant;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -131,18 +133,12 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
         for (DirPos port : te.getConPos()) {
-            te.trySubscribe(level, port);
-            for (FluidTankNTM tank : te.inputTanks) {
-                if (tank.getTankType() != Fluids.NONE) te.trySubscribe(tank.getTankType(), level, port);
-            }
             for (FluidTankNTM tank : te.outputTanks) {
                 if (tank.getFill() > 0) te.tryProvide(tank, level, port);
             }
         }
 
         for (DirPos port : te.getCoolPos()) {
-            te.coolantDelegate.trySubscribe(level, port);
-            te.coolantDelegate.trySubscribe(te.water.getTankType(), level, port);
             te.coolantDelegate.tryProvide(te.lps, level, port);
         }
 
@@ -201,7 +197,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
         te.prevAnim = te.anim;
         if (te.isProcessing()) te.anim++;
-        if (level.getGameTime() % 20L == 0L) te.frame = !level.getBlockState(pos.above(3)).isAir();
+        if (TickPhase.every(level, pos, 20L)) te.frame = !level.getBlockState(pos.above(3)).isAir();
         ChemicalFactorySoundHandler.tickLoop(te);
     }
 
@@ -298,8 +294,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     }
 
     private ForgeDirection facing() {
-        int meta = getBlockState().getValue(com.hbm.blocks.BlockDummyable.META);
-        return ForgeDirection.getOrientation(meta - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override
@@ -366,6 +361,12 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
             chemplantModule[index].setRecipe(Tags.getStringOr(data, "selection", "null"), false);
             markChanged();
         }
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerMachineChemicalFactory menu
+                && menu.getFactory() == this && menu.stillValid(player);
     }
 
     @Override

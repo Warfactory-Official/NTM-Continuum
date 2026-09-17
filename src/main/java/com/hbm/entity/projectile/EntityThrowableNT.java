@@ -103,6 +103,42 @@ public abstract class EntityThrowableNT extends CompatEntity {
         return 1.0D;
     }
 
+    protected float throwAngle() {
+        return 0.0F;
+    }
+
+    /**
+     * 1.7 EntityThrowableNT(World, EntityLivingBase): eye-height spawn, 0.16 side offset off the yaw
+     * (ntm-next's spelling, used by every thrown entity copied from it).
+     */
+    public void initThrower(LivingEntity thrower) {
+        setThrower(thrower);
+        snapTo(thrower.getX(), thrower.getY() + thrower.getEyeHeight(), thrower.getZ(), thrower.getYRot(),
+                thrower.getXRot());
+        double px = getX() - Math.cos(getYRot() / 180.0F * Math.PI) * 0.16F;
+        double py = getY() - 0.1D;
+        double pz = getZ() - Math.sin(getYRot() / 180.0F * Math.PI) * 0.16F;
+        setPos(px, py, pz);
+        float velocity = 0.4F;
+        double motionX = -Math.sin(getYRot() / 180.0F * Math.PI) * Math.cos(getXRot() / 180.0F * Math.PI) * velocity;
+        double motionZ = Math.cos(getYRot() / 180.0F * Math.PI) * Math.cos(getXRot() / 180.0F * Math.PI) * velocity;
+        double motionY = -Math.sin((getXRot() + this.throwAngle()) / 180.0F * Math.PI) * velocity;
+        this.setThrowableHeading(motionX, motionY, motionZ, this.throwForce(), 1.0F);
+    }
+
+    public @Nullable LivingEntity getThrower() {
+        return this.thrower;
+    }
+
+    public void setThrower(@Nullable LivingEntity thrower) {
+        this.thrower = thrower;
+    }
+
+    /** ntm-next's owner spelling of the same field. */
+    public net.minecraft.world.entity.@Nullable Entity getOwner() {
+        return this.thrower;
+    }
+
     /**
      * Aims this projectile, with a <em>gaussian</em> per-axis spread scaled by {@link #headingForceMult}
      * rather than vanilla {@code shoot}'s triangular one — every upstream velocity and inaccuracy figure

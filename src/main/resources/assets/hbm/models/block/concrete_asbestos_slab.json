@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/slab",
-  "textures": {
-    "bottom": "hbm:blocks/concrete_asbestos",
-    "top": "hbm:blocks/concrete_asbestos",
-    "side": "hbm:blocks/concrete_asbestos"
-  }
-}

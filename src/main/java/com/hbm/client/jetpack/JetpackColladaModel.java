@@ -7,11 +7,10 @@ import com.google.gson.JsonParser;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
-import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -21,8 +20,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** Runtime for the generated jetpack Collada scene and its exact local transform tracks. */
 public final class JetpackColladaModel {
@@ -31,21 +32,69 @@ public final class JetpackColladaModel {
     public static final Identifier ANIMATION = Ids.of("hbm", "models/anim/jetpack_animation.json");
     public static final Identifier TEXTURE = Ids.of("hbm", "textures/armor/jetpack_anim.png");
 
+    private static final Surface SURFACE = Surface.cutoutCull(TEXTURE.toString());
+
     private final WavefrontObj model;
-    private final RenderType renderType;
-    private final List<Node> roots;
     private final Map<String, Transform[]> animated;
     private final int length;
     private final int frameCount;
 
+    private final Gem.Model<GliderPose> gem;
+    private final Map<Gem.Part<GliderPose>, float[][]> boxes = new IdentityHashMap<>();
+    private final GliderPose pose = new GliderPose();
+
+    /** The playhead: a pair of frames and how far between them, resolved once so every node agrees. */
+    public static final class GliderPose {
+        int first;
+        int next;
+        float interpolation;
+    }
+
     private JetpackColladaModel(WavefrontObj model, List<Node> roots, Map<String, Transform[]> animated,
             int length, int frameCount) {
         this.model = model;
-        this.renderType = CompatRenderTypes.entityCutoutCull(TEXTURE);
-        this.roots = roots;
         this.animated = animated;
         this.length = length;
         this.frameCount = frameCount;
+        Gem.Model<GliderPose> declaration = Gem.model();
+        for (Node node : roots) declare(node, null, declaration);
+        this.gem = declaration.seal();
+    }
+
+    /**
+     * Turns one scene node into a part; a node with no geometry becomes a joint.
+     *
+     * <p>A node's track is resolved here rather than per frame, and an animated one is given the scratch
+     * its blend writes into: this channel runs once per node on every frame the glider is on screen, and
+     * a blend that allocates its own vectors, quaternion and matrix is a hundred objects a frame.
+     */
+    private void declare(Node node, Gem.Part<GliderPose> parent, Gem.Model<GliderPose> declaration) {
+        Gem.Part<GliderPose> part;
+        if (node.geometry == null) {
+            part = parent == null ? declaration.joint() : parent.joint();
+        } else {
+            part = parent == null
+                    ? declaration.part(model.part(node.name), SURFACE)
+                    : parent.child(model.part(node.name), SURFACE);
+            boxes.put(part, model.boundsIncluding(Set.of(node.name)));
+        }
+        Transform[] track = animated.get(node.name);
+        if (track == null) {
+            part.pose(state -> node.base);
+        } else {
+            Blend blend = new Blend();
+            part.pose(state -> track[state.first].interpolate(track[state.next], state.interpolation, blend));
+        }
+        for (Node child : node.children) declare(child, part, declaration);
+    }
+
+    private GliderPose seek(long elapsedMillis, boolean reverse) {
+        int elapsed = (int) Math.max(0L, Math.min(length, elapsedMillis));
+        float framePosition = (reverse ? length - elapsed : elapsed) / (float) length * (frameCount - 1);
+        pose.first = Math.max(0, Math.min(frameCount - 1, (int) framePosition));
+        pose.next = Math.min(frameCount - 1, pose.first + 1);
+        pose.interpolation = framePosition - pose.first;
+        return pose;
     }
 
     public static JetpackColladaModel load() {
@@ -73,45 +122,33 @@ public final class JetpackColladaModel {
     }
 
     /** Renders the 1,000 ms animation at the supplied wall-clock position. */
-    public void submit(PoseStack pose, SubmitSink sink, int light, long elapsedMillis, boolean reverse) {
-        int elapsed = (int) Math.max(0L, Math.min(length, elapsedMillis));
-        float framePosition = (reverse ? length - elapsed : elapsed) / (float) length * (frameCount - 1);
-        int first = Math.max(0, Math.min(frameCount - 1, (int) framePosition));
-        int next = Math.min(frameCount - 1, first + 1);
-        float interpolation = framePosition - first;
-        visitNodes(roots, pose, first, next, interpolation, (part, transformed) ->
-                sink.submitCustomGeometry(transformed, renderType,
-                        (drawPose, buffer) -> model.renderPart(part, drawPose, buffer, light, OverlayTexture.NO_OVERLAY)));
+    public void submit(PoseStack poseStack, SubmitSink sink, int light, long elapsedMillis, boolean reverse) {
+        Gem.replay(gem, seek(elapsedMillis, reverse), poseStack, sink, light);
     }
 
     /** Bounds of the actual open pose, not the untransformed node-local OBJ or an invented cube. */
     public Vector3f[] openBounds() {
+        GliderPose open = seek(length, false);
         Vector3f min = new Vector3f(Float.POSITIVE_INFINITY);
         Vector3f max = new Vector3f(Float.NEGATIVE_INFINITY);
-        visitNodes(roots, new PoseStack(), frameCount - 1, frameCount - 1, 0F, (part, transformed) -> {
-            float[][] bounds = model.boundsIncluding(java.util.Set.of(part));
-            if (bounds == null) return;
-            for (int i = 0; i < 8; i++) {
-                Vector3f point = new Vector3f(bounds[i & 1][0], bounds[(i >> 1) & 1][1],
-                        bounds[(i >> 2) & 1][2]).mulPosition(transformed.last().pose());
-                min.min(point);
-                max.max(point);
-            }
-        });
+        for (Gem.Part<GliderPose> root : gem.roots()) corners(root, new Matrix4f(), open, min, max);
         return new Vector3f[] {min, max};
     }
 
-    private void visitNodes(List<Node> nodes, PoseStack pose,
-            int first, int next, float interpolation, java.util.function.BiConsumer<String, PoseStack> visitor) {
-        for (Node node : nodes) {
-            pose.pushPose();
-            Transform[] frames = animated.get(node.name);
-            if (frames == null) dev.golem.core.render.Poses.mulPose(pose, node.base);
-            else frames[first].interpolate(frames[next], interpolation).apply(pose);
-            if (node.geometry != null) visitor.accept(node.name, pose);
-            visitNodes(node.children, pose, first, next, interpolation, visitor);
-            pose.popPose();
+    private void corners(Gem.Part<GliderPose> part, Matrix4f parent, GliderPose state,
+            Vector3f min, Vector3f max) {
+        Matrix4f here = new Matrix4f(parent);
+        part.applyTo(here, state);
+        float[][] bounds = boxes.get(part);
+        if (bounds != null) {
+            for (int i = 0; i < 8; i++) {
+                Vector3f point = new Vector3f(bounds[i & 1][0], bounds[(i >> 1) & 1][1],
+                        bounds[(i >> 2) & 1][2]).mulPosition(here);
+                min.min(point);
+                max.max(point);
+            }
         }
+        for (Gem.Part<GliderPose> child : part.children()) corners(child, here, state, min, max);
     }
 
     private static List<Node> nodes(JsonArray values) {
@@ -176,24 +213,18 @@ public final class JetpackColladaModel {
                     + values[offset + 2] * values[offset + 2]);
         }
 
-        private Transform(Vector3f translation, Vector3f scale, Quaternionf rotation) {
-            this.translation = translation;
-            this.scale = scale;
-            this.rotation = rotation;
-        }
-
-        private Transform interpolate(Transform other, float amount) {
-            Vector3f position = new Vector3f(translation).lerp(other.translation, amount);
-            Vector3f size = new Vector3f(scale).lerp(other.scale, amount);
-            Quaternionf target = new Quaternionf(other.rotation);
+        private Matrix4f interpolate(Transform other, float amount, Blend into) {
+            translation.lerp(other.translation, amount, into.translation);
+            scale.lerp(other.scale, amount, into.scale);
+            Quaternionf target = into.target.set(other.rotation);
             double dot = rotation.dot(target);
             if (dot < 0D) {
                 target.set(-target.x, -target.y, -target.z, -target.w);
                 dot = -dot;
             }
-            Quaternionf quat;
+            Quaternionf quat = into.rotation;
             if (dot > 0.9999999D) {
-                quat = new Quaternionf(rotation.x + amount * (target.x - rotation.x),
+                quat.set(rotation.x + amount * (target.x - rotation.x),
                         rotation.y + amount * (target.y - rotation.y),
                         rotation.z + amount * (target.z - rotation.z),
                         rotation.w + amount * (target.w - rotation.w)).normalize();
@@ -201,23 +232,36 @@ public final class JetpackColladaModel {
                 double theta0 = Math.acos(dot), theta = theta0 * amount;
                 float a = (float) (Math.cos(theta) - dot * Math.sin(theta) / Math.sin(theta0));
                 float b = (float) (Math.sin(theta) / Math.sin(theta0));
-                quat = new Quaternionf(a * rotation.x + b * target.x, a * rotation.y + b * target.y,
+                quat.set(a * rotation.x + b * target.x, a * rotation.y + b * target.y,
                         a * rotation.z + b * target.z, a * rotation.w + b * target.w);
             }
-            return new Transform(position, size, quat);
+            return matrix(into.matrix, quat, into.scale, into.translation);
         }
 
-        private void apply(PoseStack pose) {
-            // The old reflected tracks can yield non-unit quaternions. JOML's unit-quaternion
-            // fast path collapses those wings; preserve quatToGlMatrix's 1-2*y*y-2*z*z form
-            // and Transform.scale's row scaling rather than silently normalizing the track.
+        /**
+         * The old reflected tracks can yield non-unit quaternions. JOML's unit-quaternion fast path
+         * collapses those wings; this preserves {@code quatToGlMatrix}'s {@code 1-2*y*y-2*z*z} form and
+         * {@code Transform.scale}'s row scaling rather than silently normalizing the track.
+         */
+        private static Matrix4f matrix(Matrix4f out, Quaternionf rotation, Vector3f scale,
+                Vector3f translation) {
             float x = rotation.x, y = rotation.y, z = rotation.z, w = rotation.w;
             float sx = scale.x, sy = scale.y, sz = scale.z;
-            dev.golem.core.render.Poses.mulPose(pose, new Matrix4f(
+            return out.set(
                     (1F - 2F*y*y - 2F*z*z)*sx, (2F*x*y + 2F*z*w)*sy, (2F*x*z - 2F*y*w)*sz, 0F,
                     (2F*x*y - 2F*z*w)*sx, (1F - 2F*x*x - 2F*z*z)*sy, (2F*y*z + 2F*x*w)*sz, 0F,
                     (2F*x*z + 2F*y*w)*sx, (2F*y*z - 2F*x*w)*sy, (1F - 2F*x*x - 2F*y*y)*sz, 0F,
-                    translation.x, translation.y, translation.z, 1F));
+                    translation.x, translation.y, translation.z, 1F);
         }
+    }
+
+    /** One animated node's blend scratch. The walk consumes each matrix before moving on, so reusing
+     * it costs nothing and keeps a frame's transform work off the heap. */
+    private static final class Blend {
+        private final Vector3f translation = new Vector3f();
+        private final Vector3f scale = new Vector3f();
+        private final Quaternionf rotation = new Quaternionf();
+        private final Quaternionf target = new Quaternionf();
+        private final Matrix4f matrix = new Matrix4f();
     }
 }

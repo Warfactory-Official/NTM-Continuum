@@ -1,7 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -22,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  * is {@link TileEntityMachineFluidTank}. Implements {@link IFluidConnectorBlockMK2} so fluid ducts
  * connect to any face of the footprint without a BlockEntity at each cell.
  */
-public class MachineFluidTank extends BlockDummyable implements IFluidConnectorBlockMK2 {
+public class MachineFluidTank extends BlockMultiblockMachine implements IFluidConnectorBlockMK2 {
 
     public MachineFluidTank(Properties properties) {
         super(properties);
@@ -40,7 +41,7 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
      */
     @Override
     public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        BlockPos core = findCore(world, new BlockPos(x, y, z));
+        BlockPos core = MultiblockSurface.coreOfAny(world, new BlockPos(x, y, z));
         return core != null && isPort(core, x, y, z, dir);
     }
 
@@ -72,16 +73,6 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
         return 1;
     }
 
-    @Override
-    protected void fillSpace(Level world, int x, int y, int z, ForgeDirection dir, int o) {
-        super.fillSpace(world, x, y, z, dir, o);
-
-        this.makeExtra(world, x - dir.offsetX + 1, y, z - dir.offsetZ + 1);
-        this.makeExtra(world, x - dir.offsetX + 1, y, z - dir.offsetZ - 1);
-        this.makeExtra(world, x - dir.offsetX - 1, y, z - dir.offsetZ + 1);
-        this.makeExtra(world, x - dir.offsetX - 1, y, z - dir.offsetZ - 1);
-    }
-
     // --- comparator output from the tank fill (works from any cell via findCore) ---
 
     @Override
@@ -91,24 +82,34 @@ public class MachineFluidTank extends BlockDummyable implements IFluidConnectorB
 
     @Override
     protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
-        return findCoreTE(level, pos) instanceof TileEntityMachineFluidTank tank
+        return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineFluidTank tank
                 ? tank.tank.getRedstoneComparatorPower() : 0;
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Both sides: the side-ladder must be registered on the client too (onClimbable is checked there
-        // for the local player). The server tick also runs the network/identifier logic.
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.FLUID_TANK.get(), TileEntityMachineFluidTank::clientTick)
-                : createTickerHelper(type, ModBlockEntities.FLUID_TANK.get(), TileEntityMachineFluidTank::serverTick);
+    public int coreMask() {
+        return MASK_NONE;
     }
 
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
+    /**
+     * Four ports two out along the tank's long axis and one to each side. ntm-next puts them at the
+     * corners instead; this machine's own getConPos is what Continuum answers to, and it says otherwise.
+     */
+    @Override
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+
+        visitor.cell(core.offset(2, 0, -1), MASK_EAST);
+        visitor.cell(core.offset(2, 0, 1), MASK_EAST);
+        visitor.cell(core.offset(-2, 0, -1), MASK_WEST);
+        visitor.cell(core.offset(-2, 0, 1), MASK_WEST);
+    }
+
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        visitor.passiveCell(core.offset(2, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(2, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-2, 0, -1), MASK_ALL, PASSIVE_FLUID_IN);
+        visitor.passiveCell(core.offset(-2, 0, 1), MASK_ALL, PASSIVE_FLUID_IN);
     }
 }

@@ -604,7 +604,10 @@ public final class TurretGameTests {
     }
 
     public static void jeremy(GameTestHelper helper) {
-        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_jeremy.get());
+        // The Jeremy refuses anything inside its 16-block grace, so the zombie has to be far out —
+        // but not outside the 24-wide plot, which is where it used to sit (x = 24) and where a
+        // neighbouring test could clear it before this one ever looked.
+        BlockPos core = place(helper, new BlockPos(1, 1, 2), ModTurretBlocks.turret_jeremy.get());
         TileEntityTurretJeremy jeremy = (TileEntityTurretJeremy) helper.getLevel().getBlockEntity(core);
 
         jeremy.setItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST,
@@ -614,7 +617,7 @@ public final class TurretGameTests {
         helper.assertTrue(jeremy.getAmmoTypesForDisplay().size() == 5,
                 "All five 240 mm loads must show in the ammo panel");
 
-        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(24, 2, 2));
+        var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(22, 2, 2));
         zombie.setNoGravity(true);
         zombie.setNoAi(true);
         int rounds = jeremy.getItem(TileEntityTurretBaseNT.SLOT_AMMO_FIRST).getCount();

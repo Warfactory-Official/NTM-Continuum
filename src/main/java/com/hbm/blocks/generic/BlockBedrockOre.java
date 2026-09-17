@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.tileentity.BedrockOreBlockEntity;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.FluidStack;
 import net.minecraft.core.BlockPos;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Infinite, unbreakable bedrock ore. Extraction is performed through its block entity, not block drops. */
-public class BlockBedrockOre extends dev.golem.core.world.CompatBlock implements EntityBlock, ILookOverlay {
+public class BlockBedrockOre extends dev.golem.core.world.CompatBlock implements TickingBlock, ILookOverlay {
 
     public BlockBedrockOre(Properties properties) {
         super(properties);

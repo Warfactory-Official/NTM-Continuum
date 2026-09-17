@@ -112,8 +112,6 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     // --- server: power + processing ---
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAssemblyMachine te) {
-        for (DirPos dp : te.getConPos()) te.trySubscribe(level, dp);
-
         // Upgrades (1.12.2 formulas): SPEED +1/3 progress & +100% power each, OVERDRIVE +1 progress &
         // +333% power each, POWER -25% power each; levels clamped by getValidUpgrades via the manager.
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
@@ -219,6 +217,12 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
     public String[] getFunctionInfo() {
         return new String[]{PREFIX_VALUE + "progress", PREFIX_VALUE + "recipe", PREFIX_VALUE + "active",
                 PREFIX_FUNCTION + "setrecipe" + NAME_SEPARATOR + "name"};
+    }
+
+    @Override
+    public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof ContainerMachineAssemblyMachine menu
+                && menu.getAssembler() == this && menu.stillValid(player);
     }
 
     @Override

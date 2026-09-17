@@ -1,6 +1,5 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.HeaterElectric;
 import com.hbm.blocks.machine.HeaterFirebox;
 import com.hbm.blocks.machine.HeaterOilburner;
@@ -17,6 +16,7 @@ import com.hbm.tileentity.machine.TileEntityHeaterOilburner;
 import com.hbm.tileentity.machine.TileEntityHeaterOven;
 import com.hbm.tileentity.machine.TileEntityMachineWoodBurner;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -26,26 +26,23 @@ public final class CombustionHeatGameTests {
 
     private CombustionHeatGameTests() {}
 
-    private static final int FACING_NORTH = BlockDummyable.offset + 2;
 
     public static void woodBurnerLayoutAndFuel(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         MachineWoodBurner block = ModMachineBlocks.machine_wood_burner.get();
         BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
 
         TileEntityMachineWoodBurner burner = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityMachineWoodBurner.class);
         helper.assertTrue(burner != null, "Wood burner core BlockEntity was not created");
-        helper.assertTrue(helper.getLevel().getBlockState(core.south()).getValue(BlockDummyable.META) >= 6,
-                "Wood burner south port was not marked extra");
-        helper.assertTrue(helper.getLevel().getBlockState(core.east().south()).getValue(BlockDummyable.META) >= 6,
-                "Wood burner diagonal port was not marked extra");
+        FoldedTestSupport.assertPort(helper, relative, relative.south());
+        FoldedTestSupport.assertPort(helper, relative, relative.east().south());
 
         DirPos[] ports = burner.getConPos();
         helper.assertTrue(ports.length == 2, "Wood burner must expose two ports");
-        helper.assertTrue(ports[0].getPos().equals(core.south(2)) && ports[0].getDir() == ForgeDirection.WEST,
+        helper.assertTrue(ports[0].getPos().equals(core.south(2)) && ports[0].getDir() == ForgeDirection.SOUTH,
                 "Wood burner first port does not match the legacy layout");
         helper.assertTrue(ports[1].getPos().equals(core.east().south(2)) && ports[1].getDir() == ForgeDirection.SOUTH,
                 "Wood burner second port does not match the legacy layout");
@@ -64,7 +61,7 @@ public final class CombustionHeatGameTests {
     public static void fireboxFuelAndHeat(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         HeaterFirebox block = ModMachineBlocks.heater_firebox.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(relative, block.defaultBlockState());
         TileEntityHeaterFirebox firebox = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterFirebox.class);
         helper.assertTrue(firebox != null, "Firebox core BlockEntity was not created");
@@ -84,10 +81,8 @@ public final class CombustionHeatGameTests {
     public static void heaterOvenPullsHeat(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 2, 3);
         BlockPos ovenPos = helper.absolutePos(relative);
-        helper.setBlock(relative, ModMachineBlocks.heater_oven.get().defaultBlockState()
-                .setValue(BlockDummyable.META, FACING_NORTH));
-        helper.setBlock(relative.below(), ModMachineBlocks.heater_firebox.get().defaultBlockState()
-                .setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(relative, ModMachineBlocks.heater_oven.get().defaultBlockState());
+        helper.setBlock(relative.below(), ModMachineBlocks.heater_firebox.get().defaultBlockState());
 
         TileEntityHeaterOven oven = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterOven.class);
@@ -105,7 +100,7 @@ public final class CombustionHeatGameTests {
     public static void oilburnerFuelAndSetting(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         HeaterOilburner block = ModMachineBlocks.heater_oilburner.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(relative, block.defaultBlockState());
         TileEntityHeaterOilburner burner = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterOilburner.class);
         helper.assertTrue(burner != null, "Oil burner core BlockEntity was not created");
@@ -127,7 +122,7 @@ public final class CombustionHeatGameTests {
     public static void electricHeaterConversion(GameTestHelper helper) {
         BlockPos relative = new BlockPos(3, 1, 3);
         HeaterElectric block = ModMachineBlocks.heater_electric.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
+        helper.setBlock(relative, block.defaultBlockState());
         TileEntityHeaterElectric heater = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeaterElectric.class);
         helper.assertTrue(heater != null, "Electric heater core BlockEntity was not created");
@@ -145,15 +140,15 @@ public final class CombustionHeatGameTests {
         BlockPos relative = new BlockPos(3, 1, 3);
         MachineHeatBoilerIndustrial block = ModMachineBlocks.machine_industrial_boiler.get();
         BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, FACING_NORTH));
-        block.formStructure(helper.getLevel(), core, ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
         TileEntityHeatBoilerIndustrial boiler = dev.golem.core.gametest.GameTestHelpers.blockEntity(
                 helper, relative, TileEntityHeatBoilerIndustrial.class);
         helper.assertTrue(boiler != null, "Industrial boiler core BlockEntity was not created");
 
-        for (BlockPos port : new BlockPos[]{core.east(), core.west(), core.north(), core.south(), core.above(4)}) {
-            helper.assertTrue(helper.getLevel().getBlockState(port).getValue(BlockDummyable.META) >= 6,
-                    "Industrial boiler port cell was not marked extra at " + port);
+        for (BlockPos port : new BlockPos[]{relative.east(), relative.west(), relative.north(),
+                relative.south(), relative.above(4)}) {
+            FoldedTestSupport.assertPort(helper, relative, port);
         }
 
         boiler.tanks[0].setTankType(Fluids.WATER);

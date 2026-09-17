@@ -1,17 +1,9 @@
 package com.hbm.items.weapon.sedna.factory;
 
-import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.BulletConfigs;
 
-/**
- * The .50 BMG family. Only the rounds exist here: the calibre's guns (the M2 and the AMAT) are not
- * ported, but the Chekhov turret feeds from the same belt, so the configs are needed on their own.
- *
- * <p>Two of upstream's nine loads are absent: {@code bmg50_black} and {@code bmg50_equestrian} are
- * {@code ammo_secret} loads whose impact hangs off entities that are not ported. Their items are
- * still registered, so nothing goes missing from the ammo list.
- */
+/** The .50 BMG family from original-hbm's XFactory50. */
 public final class XFactory50 {
 
     public static BulletConfig bmg50_sp;
@@ -21,25 +13,29 @@ public final class XFactory50 {
     public static BulletConfig bmg50_du;
     public static BulletConfig bmg50_he;
     public static BulletConfig bmg50_sm;
+    public static BulletConfig bmg50_black;
+    public static BulletConfig bmg50_equestrian;
 
     private XFactory50() {}
 
     public static void init() {
-        bmg50_sp = BulletConfigs.register("bmg50_sp", new BulletConfig().setItem(ModAmmoItems.bmg50_sp));
+        if (bmg50_sp != null) return;
+        bmg50_sp = BulletConfigs.register("bmg50_sp", new BulletConfig()
+                .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_sp")));
         bmg50_fmj = BulletConfigs.register("bmg50_fmj", new BulletConfig()
-                .setItem(ModAmmoItems.bmg50_fmj).setDamage(0.8F)
+                .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_fmj")).setDamage(0.8F)
                 .setThresholdNegation(7F).setArmorPiercing(0.1F));
         bmg50_jhp = BulletConfigs.register("bmg50_jhp", new BulletConfig()
-                .setItem(ModAmmoItems.bmg50_jhp).setDamage(1.5F)
+                .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_jhp")).setDamage(1.5F)
                 .setHeadshot(1.5F).setArmorPiercing(-0.25F));
         bmg50_ap = BulletConfigs.register("bmg50_ap", new BulletConfig()
-                .setItem(ModAmmoItems.bmg50_ap).setDoesPenetrate(true).setDamageFalloffByPen(false)
+                .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_ap")).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setDamage(1.25F).setThresholdNegation(17.5F).setArmorPiercing(0.15F));
         bmg50_du = BulletConfigs.register("bmg50_du", new BulletConfig()
-                .setItem(ModAmmoItems.bmg50_du).setDoesPenetrate(true).setDamageFalloffByPen(false)
+                .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_du")).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setDamage(1.5F).setThresholdNegation(21F).setArmorPiercing(0.25F));
         bmg50_he = BulletConfigs.register("bmg50_he", new BulletConfig()
-                .setItem(ModAmmoItems.bmg50_he).setWear(3F).setDamage(1.75F)
+                .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_he")).setWear(3F).setDamage(1.75F)
                 .setOnImpact((bullet, mop) -> {
                     if (mop instanceof net.minecraft.world.phys.EntityHitResult hit && bullet.tickCount < 3
                             && hit.getEntity() == bullet.getThrower()) {
@@ -49,8 +45,18 @@ public final class XFactory50 {
                     bullet.discard();
                 }));
         bmg50_sm = BulletConfigs.register("bmg50_sm", new BulletConfig()
-                .setItem(ModAmmoItems.bmg50_sm).setWear(10F).setDoesPenetrate(true).setDamageFalloffByPen(false)
+                .setItem(BallisticGunCatalog.ammo("ammo_standard_bmg50_sm")).setWear(10F).setDoesPenetrate(true).setDamageFalloffByPen(false)
                 .setDamage(2.5F).setThresholdNegation(30F).setArmorPiercing(0.35F));
+
+        bmg50_black = BulletConfigs.register("bmg50_black", new BulletConfig()
+                .setItem(BallisticGunCatalog.ammo("ammo_secret_bmg50_black"))
+                .setWear(5F).setDoesPenetrate(true).setDamageFalloffByPen(false)
+                .setSpectral(true).setDamage(1.5F).setHeadshot(3F)
+                .setThresholdNegation(30F).setArmorPiercing(0.35F));
+        // The original spawns EntityBuilding here. That entity is outside this shared gun slice.
+        bmg50_equestrian = BulletConfigs.register("bmg50_equestrian", new BulletConfig()
+                .setItem(BallisticGunCatalog.ammo("ammo_secret_bmg50_equestrian"))
+                .setDamage(0F));
     }
 
     public static BulletConfig[] all() {

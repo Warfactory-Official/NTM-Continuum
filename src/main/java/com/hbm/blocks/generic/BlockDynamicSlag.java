@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
+import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.Mats.MaterialStack;
@@ -32,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  * moves), merges into same-material slag below, and spreads sideways once ≥ 1/5 full. Rendered by a
  * BER as a tinted box at {@code amount / maxAmount} height; drops its content as scraps.
  */
-public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implements EntityBlock {
+public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implements TickingBlock {
 
     public BlockDynamicSlag(Properties properties) {
         super(properties);

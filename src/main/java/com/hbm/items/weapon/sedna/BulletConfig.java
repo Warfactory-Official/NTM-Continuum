@@ -1,7 +1,11 @@
 package com.hbm.items.weapon.sedna;
 
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
+import com.hbm.entity.projectile.EntityBulletBeamBase;
+import com.hbm.items.ItemEnums;
+import com.hbm.items.ModCasingItems;
 import com.hbm.lib.ModDamageSources.DamageClass;
+import com.hbm.particle.SpentCasing;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import net.minecraft.resources.Identifier;
@@ -28,9 +32,9 @@ import net.minecraft.world.phys.HitResult;
  *       {@link net.minecraft.world.item.Item}.
  * </ul>
  *
- * <p>Not yet ported (this slice ships the standard bullet path only): {@code casing}/{@code casingItem}
- * and the casing-bag hook, {@code renderer}/{@code rendererBeam} tracer styles, the {@code BEAM} and
- * {@code BULLET_CHUNKLOADING} projectile types, and {@code blackPowder} particles.
+ * <p>Casing items and casing-bag accumulation are supported through the shared item path. Per-ammo
+ * tracer renderers remain client-owned; projectile types are dispatched by {@code Lego} when their
+ * corresponding entity is registered.
  */
 public class BulletConfig {
 
@@ -54,6 +58,14 @@ public class BulletConfig {
      * game finishes loading.
      */
     public java.util.function.Supplier<net.minecraft.world.item.Item> ammo;
+    /** Spent casing item and the number of shots represented by one casing drop. */
+    public ItemStack casingItem;
+    private java.util.function.Supplier<ItemStack> casingSupplier;
+    public int casingAmount;
+    /** Original-hbm's shell casing renderer data; retained even while its world entity is deferred. */
+    public CasingProfile casingProfile;
+    /** The source casing definition selected by this ammunition config. */
+    public SpentCasing casing;
 
     /** How much ammo is added to a magazine per consumed item. */
     public int ammoReloadCount = 1;
@@ -79,6 +91,7 @@ public class BulletConfig {
     public boolean damageFalloffByPen = true;
     public Consumer<Entity> onUpdate;
     public BiConsumer<EntityBulletBaseMK4, HitResult> onImpact;
+    public BiConsumer<EntityBulletBeamBase, HitResult> onImpactBeam;
     public BiConsumer<EntityBulletBaseMK4, HitResult> onRicochet = LAMBDA_STANDARD_RICOCHET;
     public BiConsumer<EntityBulletBaseMK4, HitResult> onEntityHit = LAMBDA_STANDARD_ENTITY_HIT;
     public float gravity = 0;
@@ -94,6 +107,23 @@ public class BulletConfig {
     /* SETTERS — one per field, chained in the XFactory declarations. */
 
     public BulletConfig setItem(java.util.function.Supplier<net.minecraft.world.item.Item> ammo) { this.ammo = ammo; return this; }
+    public BulletConfig setBeam() { this.pType = ProjectileType.BEAM; return this; }
+    public BulletConfig setChunkloading() { this.pType = ProjectileType.BULLET_CHUNKLOADING; return this; }
+    public BulletConfig setCasing(ItemStack item, int amount) { this.casingItem = item; this.casingSupplier = null; this.casingAmount = amount; return this; }
+    public BulletConfig setCasing(java.util.function.Supplier<ItemStack> item, int amount) { this.casingItem = null; this.casingSupplier = item; this.casingAmount = amount; return this; }
+    public BulletConfig setCasing(ItemEnums.EnumCasingType item, int amount) {
+        return setCasing(() -> ModCasingItems.casing(item, 1), amount);
+    }
+    public BulletConfig setCasing(CasingProfile profile) { this.casingProfile = profile; return this; }
+    public BulletConfig setCasing(SpentCasing casing) {
+        this.casing = casing;
+        int[] colors = casing.getColors();
+        this.casingProfile = new CasingProfile(casing.getName(), casing.getType().name(), casing.getScaleX(),
+                casing.getBounceYaw(), casing.getBouncePitch(), colors == null || colors.length == 0 ? 0 : colors[0],
+                casing.getSmokeChance(), casing.getSmokeLift(), casing.getSmokeDuration(), casing.getSmokeNodeLife());
+        return this;
+    }
+    public ItemStack casingStack() { return casingSupplier == null ? casingItem : casingSupplier.get(); }
     public BulletConfig setReloadCount(int count) { this.ammoReloadCount = count; return this; }
     public BulletConfig setVel(float velocity) { this.velocity = velocity; return this; }
     public BulletConfig setSpread(float spread) { this.spread = spread; return this; }
@@ -120,6 +150,7 @@ public class BulletConfig {
     public BulletConfig setOnUpdate(Consumer<Entity> lambda) { this.onUpdate = lambda; return this; }
     public BulletConfig setOnRicochet(BiConsumer<EntityBulletBaseMK4, HitResult> lambda) { this.onRicochet = lambda; return this; }
     public BulletConfig setOnImpact(BiConsumer<EntityBulletBaseMK4, HitResult> lambda) { this.onImpact = lambda; return this; }
+    public BulletConfig setOnBeamImpact(BiConsumer<EntityBulletBeamBase, HitResult> lambda) { this.onImpactBeam = lambda; return this; }
     public BulletConfig setOnEntityHit(BiConsumer<EntityBulletBaseMK4, HitResult> lambda) { this.onEntityHit = lambda; return this; }
 
     /** The item one round is loaded from, or null before item registration has run. */
@@ -146,4 +177,8 @@ public class BulletConfig {
         BULLET_CHUNKLOADING,
         BEAM
     }
+
+    /** The immutable subset of original {@code SpentCasing} configuration used by the 240 mm shells. */
+    public record CasingProfile(String id, String type, float scale, float bounceYaw, float bouncePitch,
+            int color, float smokeChance, double smokeLift, int smokeDuration, int smokeNodeLife) {}
 }

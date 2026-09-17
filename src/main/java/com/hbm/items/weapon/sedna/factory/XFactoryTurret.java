@@ -30,6 +30,8 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class XFactoryTurret {
 
+    private static final int CASING_BRASS = 0xEBC35E;
+
     public static BulletConfig dgk_normal;
 
     public static BulletConfig shell_normal;
@@ -62,6 +64,11 @@ public final class XFactoryTurret {
 
     private XFactoryTurret() {}
 
+    private static BulletConfig.CasingProfile casing(String id) {
+        return new BulletConfig.CasingProfile(id, "BOTTLENECK", 7.5F, 0.02F, 0.05F,
+                CASING_BRASS, 1F, 0.5D, 60, 20);
+    }
+
     /** Fallout across a five-by-five block of chunks, thinning with the taxicab distance from ground zero. */
     private static void incrementRad(Level world, double x, double y, double z, float mult) {
         if (!(world instanceof ServerLevel server)) return;
@@ -86,13 +93,13 @@ public final class XFactoryTurret {
         dgk_normal = BulletConfigs.register("dgk_normal", new BulletConfig().setItem(() -> ModItems.ammo_dgk.get()));
 
         shell_normal = BulletConfigs.register("shell_normal", new BulletConfig()
-                .setItem(ModAmmoItems.shell_normal).setDamage(1F)
+                .setItem(ModAmmoItems.shell_normal).setDamage(1F).setCasing(casing("240standard"))
                 .setOnImpact((bullet, mop) -> {
                     Lego.standardExplode(bullet, mop, 10F);
                     bullet.discard();
                 }));
         shell_explosive = BulletConfigs.register("shell_explosive", new BulletConfig()
-                .setItem(ModAmmoItems.shell_explosive).setDamage(1.5F)
+                .setItem(ModAmmoItems.shell_explosive).setDamage(1.5F).setCasing(casing("240ext"))
                 .setOnImpact((bullet, mop) -> {
                     Vec3 hit = mop.getLocation();
                     ExplosionVNT vnt = new ExplosionVNT(bullet.level(), hit.x, hit.y, hit.z, 10F);
@@ -105,11 +112,13 @@ public final class XFactoryTurret {
                     bullet.discard();
                 }));
         shell_ap = BulletConfigs.register("shell_ap", new BulletConfig()
-                .setItem(ModAmmoItems.shell_ap).setDamage(2F).setDoesPenetrate(true));
+                .setItem(ModAmmoItems.shell_ap).setDamage(2F).setDoesPenetrate(true)
+                .setCasing(casing("240w")));
         shell_du = BulletConfigs.register("shell_du", new BulletConfig()
                 .setItem(ModAmmoItems.shell_du).setDamage(2.5F).setDoesPenetrate(true)
-                .setDamageFalloffByPen(false));
+                .setDamageFalloffByPen(false).setCasing(casing("240u")));
         shell_w9 = BulletConfigs.register("shell_w9", new BulletConfig()
-                .setItem(ModAmmoItems.shell_w9).setDamage(2.5F).setOnImpact(LAMBDA_NUKE_STANDARD));
+                .setItem(ModAmmoItems.shell_w9).setDamage(2.5F).setCasing(casing("240n"))
+                .setOnImpact(LAMBDA_NUKE_STANDARD));
     }
 }

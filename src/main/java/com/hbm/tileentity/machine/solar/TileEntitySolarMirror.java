@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine.solar;
 
 import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -23,7 +24,7 @@ public class TileEntitySolarMirror extends TileEntityLoadedBase {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntitySolarMirror te) {
-        if (level.getGameTime() % 20L == 0L) te.networkPackNT();
+        if (TickPhase.every(level, pos, 20L)) te.networkPackNT();
 
         if (te.tY < pos.getY()) {
             te.isOn = false;

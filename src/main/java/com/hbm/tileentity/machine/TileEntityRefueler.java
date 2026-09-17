@@ -55,7 +55,6 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRefueler te) {
         ForgeDirection dir = te.portDir();
-        te.trySubscribe(te.tank.getTankType(), level, pos.getX() + dir.offsetX, pos.getY(), pos.getZ() + dir.offsetZ, dir);
 
         te.isOperating = false;
 
@@ -130,9 +129,13 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
 
     private boolean fillFillable(ItemStack stack) {
         if (stack.getItem() instanceof IFillableItem fillable && fillable.acceptsFluid(tank.getTankType(), stack)) {
-            int prevFill = tank.getFill();
-            tank.setFill(fillable.tryFill(tank.getTankType(), tank.getFill(), stack));
-            return tank.getFill() < prevFill;
+            int offered = tank.getFill();
+            int remainder = fillable.tryFill(tank.getTankType(), offered, stack);
+            int moved = offered - remainder;
+            if (moved <= 0) return false;
+            // The fill API returns the amount left in the source tank; drill magazines accept at most 50mB.
+            tank.setFill(remainder);
+            return true;
         }
         return false;
     }

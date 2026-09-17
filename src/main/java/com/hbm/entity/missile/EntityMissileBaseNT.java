@@ -61,10 +61,11 @@ import org.jspecify.annotations.Nullable;
  * interpolation draws the path — no second copy of the physics, and no rotation hack.
  *
  * <p><b>Pitch does not live in {@code xRot}.</b> Upstream's convention is 0° pointing straight up, −90°
- * horizontal and −180° straight down, and modern {@code Entity.setXRot} clamps to [−90, 90] — so a
- * missile stored in the vanilla field flattens out at horizontal and never noses over. {@link #PITCH}
- * carries the real value instead, and the renderer and the contrail read it through
- * {@link #getMissilePitch}.
+ * horizontal and −180° straight down, and from 26.1 {@code Entity.setXRot} clamps to [−90, 90] — so a
+ * missile stored in the vanilla field flattens out at horizontal and never noses over there. Below
+ * 26.1 the field is unclamped and would hold it, but the value is carried the same way on every
+ * target rather than by two different mechanisms: {@link #PITCH} holds it, and the renderer and the
+ * contrail read it through {@link #getMissilePitch}.
  *
  * <p><b>Deferred vs 1.12.2:</b> the radar interfaces, which arrive with the radar itself.
  */
@@ -239,7 +240,7 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
             float pitch = (float) (Math.atan2(now.y, horizontal) * 180.0D / Math.PI) - 90;
             this.entityData.set(PITCH, pitch);
             // Kept in step for anything that reads vanilla rotation, but it is not the value that is
-            // rendered: setXRot clamps this to −90 on the way down.
+            // rendered: from 26.1 setXRot clamps this to −90 on the way down.
             this.setXRot(pitch);
         }
     }

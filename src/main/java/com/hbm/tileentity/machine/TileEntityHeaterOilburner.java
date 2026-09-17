@@ -61,9 +61,6 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
         te.loadTank();
         te.setTypeFromFluidId();
 
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(te.tank.getTankType(), level, dp);
-        }
 
         boolean shouldCool = true;
 

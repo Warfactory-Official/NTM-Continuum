@@ -3,11 +3,19 @@ package com.hbm.client.render;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.ModRBMKEntities;
 import com.hbm.entity.missile.ModMissileEntities;
+import dev.golem.core.render.CompatEntityRenderState;
+import dev.golem.core.render.gem.GemEntityRenderer;
+import java.util.function.Function;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.client.renderer.entity.FallingBlockRenderer;
+import net.minecraft.client.renderer.entity.NoopRenderer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import com.hbm.client.render.projectile.BeamProjectileRenderer;
+import com.hbm.client.render.projectile.BulletProjectileRenderer;
+import com.hbm.client.render.projectile.ChemicalProjectileRenderer;
+import com.hbm.client.render.projectile.CoinProjectileRenderer;
+import com.hbm.client.render.projectile.RenderBeamBomb;
 
 /**
  * Cross-loader registration of HBM's entity renderers. Common defines the wiring; each loader passes a
@@ -33,24 +41,25 @@ public final class HbmEntityRenderers {
         sink.register(ModEntities.FALLOUT_RAIN.get(), NoopRenderer::new);
         sink.register(ModEntities.FIRE_LINGERING.get(), NoopRenderer::new);
         sink.register(ModEntities.MIST.get(), NoopRenderer::new);
-        sink.register(ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
-        sink.register(ModEntities.SOYUZ.get(), SoyuzRenderer::new);
-        sink.register(ModEntities.CLOUD_FLEIJA_RAINBOW.get(), NoopRenderer::new);
-        sink.register(ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
-        sink.register(ModEntities.SAWBLADE.get(), SawbladeRenderer::new);
-        // Bullets are invisible for now: upstream draws them through ~30 per-ammo tracer styles in
-        // LegoClient, which is a follow-up. A renderer must still be registered or the client throws
-        // the moment one spawns.
-        sink.register(ModEntities.BULLET_MK4.get(), NoopRenderer::new);
-        sink.register(ModEntities.BLACK_HOLE.get(), BlackHoleRenderer::new);
-        sink.register(ModEntities.VORTEX.get(), BlackHoleRenderer::new);
-        sink.register(ModEntities.RAGING_VORTEX.get(), BlackHoleRenderer::new);
+        regGem(sink, ModEntities.NUKE_TOREX.get(), TorexRenderer::new);
+        regGem(sink, ModEntities.ZIRNOX_DEBRIS.get(), ZirnoxDebrisRenderer::new);
+        regGem(sink, ModEntities.SAWBLADE.get(), SawbladeRenderer::new);
+        // The per-ammo LegoClient styles are resolved by the client-owned ID registry.
+        regGem(sink, ModEntities.BULLET_MK4.get(), BulletProjectileRenderer::new);
+        regGem(sink, ModEntities.BULLET_MK4_CL.get(), BulletProjectileRenderer::new);
+        regGem(sink, ModEntities.CHEMICAL.get(), ChemicalProjectileRenderer::new);
+        sink.register(ModEntities.BEAM_BOMB.get(), RenderBeamBomb::new);
+        regGem(sink, ModEntities.BEAM_MK4.get(), BeamProjectileRenderer::new);
+        regGem(sink, com.hbm.entity.NtmToolEntityCatalog.COIN.get(), CoinProjectileRenderer::new);
+        regGem(sink, ModEntities.BLACK_HOLE.get(), BlackHoleRenderer::new);
+        regGem(sink, ModEntities.VORTEX.get(), BlackHoleRenderer::new);
+        regGem(sink, ModEntities.RAGING_VORTEX.get(), BlackHoleRenderer::new);
         sink.register(ModEntities.RUBBLE.get(), HbmEntityRenderers::rubbleRenderer);
-        sink.register(ModEntities.SHRAPNEL.get(), NoopRenderer::new);
-        sink.register(ModEntities.HIMARS_ROCKET.get(), RenderArtilleryRocket::new);
-        sink.register(ModEntities.ARTILLERY_SHELL.get(), RenderArtilleryShell::new);
-        sink.register(ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
-        sink.register(ModRBMKEntities.SPEAR.get(), RenderSpear::new);
+        // SHRAPNEL: bound with the ntm-next port's RenderShrapnel below.
+        regGem(sink, ModEntities.HIMARS_ROCKET.get(), RenderArtilleryRocket::new);
+        regGem(sink, ModEntities.ARTILLERY_SHELL.get(), RenderArtilleryShell::new);
+        regGem(sink, ModRBMKEntities.RBMK_DEBRIS.get(), RBMKDebrisRenderer::new);
+        regGem(sink, ModRBMKEntities.SPEAR.get(), RenderSpear::new);
 
         // Tier 0: both bodies use the old missileTaint OBJ, at the old 2x entity scale.
         missile(sink, ModMissileEntities.MISSILE_MICRO.get(), "missile_taint.obj", "missile_micro.png", 2.0F);
@@ -77,10 +86,59 @@ public final class HbmEntityRenderers {
         missile(sink, ModMissileEntities.MISSILE_N2.get(), "missile_atlas.obj", "missile_n2.png", 1.5F);
         missile(sink, ModMissileEntities.MISSILE_STEALTH.get(), "missile_stealth.obj", "missile_stealth.png", 2.0F);
         missile(sink, ModMissileEntities.MISSILE_ANTI_BALLISTIC.get(), "missile_abm.obj", "missile_abm.png", 1.0F);
+
+        com.hbm.client.render.entity.NtmEntityRenderers.registerAll(sink);
+    }
+
+    /**
+     * Every {@code hbm:} entity type must have a renderer bound: on 26.1 the dispatcher dereferences a missing
+     * one and takes the render thread down the frame the entity enters view, and below it the entity is silently
+     * invisible. Loaders call this after {@link #registerAll} with the set of types they saw registered. Missing
+     * types fail loudly in a development run and are logged otherwise.
+     */
+    public static void verifyCoverage(java.util.Set<EntityType<?>> bound) {
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        for (EntityType<?> type : net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE) {
+            String id = EntityType.getKey(type).toString();
+            if (id.startsWith(com.hbm.Constants.MOD_ID + ":") && !bound.contains(type)) missing.add(id);
+        }
+        if (missing.isEmpty()) {
+            com.hbm.Constants.LOG.info("Entity renderers: every hbm entity type has a renderer ({} bound)", bound.size());
+            return;
+        }
+        String message = missing.size() + " hbm entity types have no renderer: " + String.join(", ", missing);
+        if (dev.golem.core.platform.Platform.isDevelopment()) throw new IllegalStateException(message);
+        com.hbm.Constants.LOG.error(message);
+    }
+
+    /** A sink that records what it binds, for {@link #verifyCoverage}. */
+    public static Sink recording(Sink downstream, java.util.Set<EntityType<?>> bound) {
+        return new Sink() {
+            @Override
+            public <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider) {
+                bound.add(type);
+                downstream.register(type, provider);
+            }
+        };
     }
 
     private static <T extends Entity & com.hbm.entity.missile.IMissilePitch> void missile(Sink sink, EntityType<T> type, String model, String texture, float scale) {
-        sink.register(type, context -> new MissileRenderer<>(context, model, texture, scale));
+        regGem(sink, type, context -> new MissileRenderer<>(context, model, texture, scale));
+    }
+
+    /**
+     * Registers a renderer that declares its model, and builds that declaration at creation.
+     *
+     * <p>A part naming a mesh group the model does not have throws, and this is the moment where that
+     * is a startup failure naming the renderer rather than an entity that quietly draws nothing.
+     */
+    public static <T extends Entity, S extends CompatEntityRenderState, R extends GemEntityRenderer<T, S>>
+            void regGem(Sink sink, EntityType<? extends T> type, Function<EntityRendererProvider.Context, R> provider) {
+        sink.register(type, context -> {
+            R renderer = provider.apply(context);
+            renderer.gem();
+            return renderer;
+        });
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

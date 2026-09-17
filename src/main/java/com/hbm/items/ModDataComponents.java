@@ -29,6 +29,15 @@ public final class ModDataComponents {
     public static final GolemComponent<Float> HAZARD_RADIATION = GolemComponent.floatValue(Constants.MOD_ID, "hazard_radiation");
     public static final GolemComponent<Integer> ZIRNOX_LIFE = GolemComponent.integer(Constants.MOD_ID, "zirnox_life");
     public static final GolemComponent<RBMKFuelData> RBMK_FUEL = GolemComponent.of(Constants.MOD_ID, "rbmk_fuel", RBMKFuelData.CODEC);
+    /** The universal grenade's four 1.7 NBT selectors (shell, filling, fuze, extra). */
+    public static final GolemComponent<com.hbm.items.weapon.grenade.GrenadeData> GRENADE =
+            GolemComponent.of(Constants.MOD_ID, "grenade", com.hbm.items.weapon.grenade.GrenadeData.CODEC);
+    /** 1.7 ItemModMinecart "base" - the chassis a cart item was crafted on. */
+    public static final GolemComponent<com.hbm.items.tool.ItemModMinecart.EnumCartBase> CART_BASE =
+            GolemComponent.of(Constants.MOD_ID, "cart_base", com.hbm.items.tool.ItemModMinecart.EnumCartBase.CODEC);
+    /** 1.7 satellite chip "freq" NBT (ISatChip); ntm-next keeps it in its persistent-data compound. */
+    public static final GolemComponent<net.minecraft.nbt.CompoundTag> PERSISTENT_DATA =
+            GolemComponent.compound(Constants.MOD_ID, "persistent_data");
     public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
     public static final GolemComponent<Double> PILE_ROD_DEPLETION =
             GolemComponent.of(Constants.MOD_ID, "pile_rod_depletion", Codec.DOUBLE);
@@ -126,6 +135,15 @@ public final class ModDataComponents {
     /** A gun's durable state: wear, fire mode, and its magazines' contents. */
     public static final GolemComponent<net.minecraft.nbt.CompoundTag> GUN_DATA =
             GolemComponent.compound(Constants.MOD_ID, "gun_data");
+    /** Fixed eight-slot contents carried by the reusable ammo bag. */
+    public static final GolemComponent<dev.golem.core.data.ItemContents> AMMO_BAG =
+            GolemComponent.of(Constants.MOD_ID, "ammo_bag", dev.golem.core.data.ItemContents.CODEC);
+    /** Fixed fifteen-slot contents carried by the spent-casing bag. */
+    public static final GolemComponent<dev.golem.core.data.ItemContents> CASING_BAG =
+            GolemComponent.of(Constants.MOD_ID, "casing_bag", dev.golem.core.data.ItemContents.CODEC);
+    /** Fractional casing progress, retained between shots until a whole casing is produced. */
+    public static final GolemComponent<net.minecraft.nbt.CompoundTag> CASING_PROGRESS =
+            GolemComponent.compound(Constants.MOD_ID, "casing_progress");
 
     public static int fluidId(ItemStack stack) { return FLUID_ID.getOr(stack, 0); }
     public static void fluidId(ItemStack stack, int value) { FLUID_ID.set(stack, value); }

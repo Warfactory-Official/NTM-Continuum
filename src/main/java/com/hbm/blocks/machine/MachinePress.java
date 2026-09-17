@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
 import net.minecraft.core.BlockPos;
@@ -18,9 +19,9 @@ import org.jspecify.annotations.Nullable;
  * Burner Press: a 1×1×3 dummyable column (core at the bottom, two dummies stacked above), identical
  * footprint to the {@link MachineEPress electric press}. Unlike the electric press it runs on
  * <b>furnace fuel</b> (no power connection), so it needs no {@code IEnergyConnectorBlock}. Right-click
- * any part opens the menu via {@link BlockDummyable#useWithoutItem}.
+ * any part opens the menu via the core's menu.
  */
-public class MachinePress extends BlockDummyable implements WorldlyContainerHolder {
+public class MachinePress extends BlockMultiblockMachine implements WorldlyContainerHolder {
 
     public MachinePress(Properties properties) {
         super(properties);
@@ -30,28 +31,13 @@ public class MachinePress extends BlockDummyable implements WorldlyContainerHold
     @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityMachinePress te ? te : null;
     }
 
     @Override
     protected BlockEntity createCoreBlockEntity(BlockPos pos, BlockState state) {
         return new TileEntityMachinePress(pos, state);
-    }
-
-    @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        // Server only: fuel burn + pressing. The renderer reads the synced progress for the head position.
-        return level.isClientSide() ? null
-                : createTickerHelper(type, ModBlockEntities.MACHINE_PRESS.get(), TileEntityMachinePress::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     @Override

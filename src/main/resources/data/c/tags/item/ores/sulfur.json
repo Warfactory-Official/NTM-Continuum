@@ -1,8 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "hbm:ore_nether_sulfur",
-    "hbm:ore_sulfur",
-    "hbm:stone_resource_sulfur"
-  ]
-}

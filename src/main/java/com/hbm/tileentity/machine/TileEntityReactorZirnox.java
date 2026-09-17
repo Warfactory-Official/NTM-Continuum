@@ -1,10 +1,10 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
@@ -20,6 +20,7 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ZirnoxFuel;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.sound.ModSounds;
@@ -138,8 +139,6 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             }
         }
         for (DirPos port : te.getConPos()) {
-            te.trySubscribe(te.water.getTankType(), level, port);
-            te.trySubscribe(te.carbonDioxide.getTankType(), level, port);
             te.tryProvide(te.steam, level, port);
         }
         if (te.heat > MAX_HEAT || te.pressure > MAX_PRESSURE) {
@@ -209,10 +208,8 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             inventory.setStackInSlot(slot, net.minecraft.world.item.ItemStack.EMPTY);
         }
 
-        int meta = state.getValue(com.hbm.blocks.BlockDummyable.META);
         // Remove the upper live shell and core before forming the two-block-tall wreck.
-        BlockDummyable.safeRem = true;
-        try {
+        BlockMultiblockCore.withoutTeardown(() -> {
             for (int dx = -2; dx <= 2; dx++) {
                 for (int dy = 2; dy <= 5; dy++) {
                     for (int dz = -2; dz <= 2; dz++) {
@@ -224,16 +221,15 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
                 }
             }
             level.removeBlock(pos, false);
-        } finally {
-            BlockDummyable.safeRem = false;
-        }
+        });
 
         level.playSound(null, pos.getX() + 0.5D, pos.getY() + 2.0D, pos.getZ() + 0.5D,
                 ModSounds.RBMK_EXPLOSION.get(), SoundSource.BLOCKS, 10.0F, 1.0F);
         level.explode(null, pos.getX() + 0.5D, pos.getY() + 3.0D, pos.getZ() + 0.5D, 12.0F,
                 Level.ExplosionInteraction.BLOCK);
 
-        ModMachineBlocks.zirnox_destroyed.get().formWreck(level, pos, meta);
+        ModMachineBlocks.zirnox_destroyed.get().formWreck(level, pos,
+                MachineCore.facing(state).toDirection());
         spawnDebris(level, pos, DebrisType.EXCHANGER, 2);
         spawnDebris(level, pos, DebrisType.CONCRETE, 20);
         spawnDebris(level, pos, DebrisType.BLANK, 20);
@@ -276,8 +272,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     }
 
     public List<DirPos> getConPos() {
-        ForgeDirection facing = ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                - com.hbm.blocks.BlockDummyable.offset);
+        ForgeDirection facing = MachineCore.facing(getBlockState());
         ForgeDirection rot = facing.getRotation(ForgeDirection.UP);
         return List.of(
                 new DirPos(worldPosition.offset(rot.offsetX * 3, 1, rot.offsetZ * 3), rot),

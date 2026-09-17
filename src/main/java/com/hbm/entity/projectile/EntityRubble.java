@@ -33,6 +33,20 @@ public final class EntityRubble extends CompatFallingEntity {
         super(type, level);
     }
 
+    /** ntm-next convenience: rubble at a position, before {@link #shoot}. */
+    public EntityRubble(Level level, double x, double y, double z) {
+        this(ModEntities.RUBBLE.get(), level);
+        setPos(x, y, z);
+    }
+
+    /** Vanilla {@code Projectile.shoot} semantics (direction, velocity, inaccuracy) for a falling-block rubble. */
+    public void shoot(double dx, double dy, double dz, float velocity, float inaccuracy) {
+        Vec3 dir = new Vec3(dx, dy, dz).normalize()
+                .add(random.triangle(0.0D, 0.0172275D * inaccuracy), random.triangle(0.0D, 0.0172275D * inaccuracy),
+                        random.triangle(0.0D, 0.0172275D * inaccuracy)).scale(velocity);
+        setDeltaMovement(dir);
+    }
+
     public BlockState getBlockState() {
         return Block.stateById(entityData.get(BLOCK_STATE));
     }

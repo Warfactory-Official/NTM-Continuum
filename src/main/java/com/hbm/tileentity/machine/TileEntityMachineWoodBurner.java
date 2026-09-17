@@ -3,7 +3,6 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.inventory.container.ContainerMachineWoodBurner;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -16,6 +15,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.modules.ModuleBurnTime;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -71,9 +71,6 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
 
         for (DirPos connection : te.getConPos()) {
             if (te.power > 0) te.tryProvide(level, connection.getPos(), connection.getDir());
-            if (level.getGameTime() % 20 == 0) {
-                te.trySubscribe(te.tank.getTankType(), level, connection);
-            }
         }
 
         if (!te.liquidBurn) {
@@ -128,15 +125,13 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
-                new DirPos(x - dir.offsetX * 2, y, z - dir.offsetZ * 2, rot.getOpposite()),
+                new DirPos(x - dir.offsetX * 2, y, z - dir.offsetZ * 2, dir.getOpposite()),
                 new DirPos(x - dir.offsetX * 2 + rot.offsetX, y, z - dir.offsetZ * 2 + rot.offsetZ, dir.getOpposite())
         };
     }
 
     private ForgeDirection facing(BlockState state) {
-        int meta = state.hasProperty(BlockDummyable.META)
-                ? state.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        return ForgeDirection.getOrientation(meta - BlockDummyable.offset);
+        return MachineCore.facing(state);
     }
 
     private void setTypeFromFluidId() {

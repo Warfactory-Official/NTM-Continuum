@@ -6,6 +6,13 @@ package com.hbm.config;
  */
 public final class GeneralConfig {
 
+    /** 1.12.2 {@code 1.14_enableBomberShortMode}: bombers spawn closer to the target for small render distances. */
+    public static boolean enableBomberShortMode = false;
+    /** 1.12.2 {@code 1.18_enableExtendedLogging}: logs detonator use, nuclear explosions, launches, grenades. */
+    public static boolean enableExtendedLogging = false;
+    /** 1.12.2 {@code taintTrails} (ServerConfig in ntm-next): tainted creepers leave taint behind them. */
+    public static boolean taintTrails = false;
+
     private GeneralConfig() {}
 
     /** GENERAL SWITCH: enables the radiation system. */
@@ -28,6 +35,22 @@ public final class GeneralConfig {
 
     /** The legacy central 528-mode toggle; precision-assembler recipes remain disabled by default. */
     public static boolean enable528 = false;
+
+    /**
+     * The HE side of the HE:FE exchange ratio. With {@link #energyRatioFe} it says {@code energyRatioHe}
+     * HE is worth exactly {@code energyRatioFe} FE, in both directions. The default is 1.7's own
+     * HE&rarr;RF converter rate: {@code TileEntityConverterHeRf.heInput} is 5 against an RF output of 1.
+     */
+    public static int energyRatioHe = 5;
+
+    /** The FE side of the ratio. See {@link #energyRatioHe}. */
+    public static int energyRatioFe = 1;
+
+    /**
+     * The fraction of a power net's supply that foreign (FE) machines may take at normal priority,
+     * ahead of the leftover surplus they receive anyway. Zero keeps NTM machines strictly first.
+     */
+    public static double foreignExportReserve = 0D;
 
     /** One-in-N random ticks before radon dissipates; dense radon deposits fallout when it expires. */
     public static int radonDecayChance = 20;

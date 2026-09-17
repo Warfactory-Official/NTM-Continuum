@@ -1,8 +1,8 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineArcWelder;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
@@ -102,7 +102,8 @@ public final class ArcWelderGameTests {
         TileEntityMachineArcWelder welder = place(helper, new BlockPos(10, 1, 10));
         MachineArcWelder block = ModMachineBlocks.machine_arc_welder.get();
         BlockPos core = welder.getBlockPos();
-        helper.assertTrue(block.findCore(helper.getLevel(), core).equals(core), "Arc Welder core did not resolve");
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), core)),
+                "Arc Welder core did not resolve");
         helper.assertTrue(welder.getConPos().length == 10, "Arc Welder must expose ten legacy ports");
         for (DirPos connection : welder.getConPos()) {
             BlockPos cell = connection.getPos().offset(-connection.getDir().offsetX,
@@ -111,7 +112,7 @@ public final class ArcWelderGameTests {
                     "Arc Welder power port does not connect");
             helper.assertTrue(block.canConnect(Fluids.OXYGEN, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(),
                             connection.getDir()), "Arc Welder fluid port does not connect");
-            helper.assertTrue(block.findCore(helper.getLevel(), cell).equals(core),
+            helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                     "Arc Welder port cell does not resolve to the core");
         }
 
@@ -171,8 +172,8 @@ public final class ArcWelderGameTests {
     private static TileEntityMachineArcWelder place(GameTestHelper helper, BlockPos relative) {
         BlockPos absolute = helper.absolutePos(relative);
         MachineArcWelder block = ModMachineBlocks.machine_arc_welder.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), absolute, ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
         return GameTestHelpers.blockEntity(helper, relative, TileEntityMachineArcWelder.class);
     }
 }

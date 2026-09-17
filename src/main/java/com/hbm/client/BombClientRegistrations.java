@@ -28,6 +28,6 @@ public final class BombClientRegistrations {
     }
 
     public static void registerEntityRenderers(HbmEntityRenderers.Sink sink) {
-        sink.register(ModExplosiveEntities.PRIMED_EXPLOSIVE.get(), PrimedExplosiveRenderer::new);
+        HbmEntityRenderers.regGem(sink, ModExplosiveEntities.PRIMED_EXPLOSIVE.get(), PrimedExplosiveRenderer::new);
     }
 }

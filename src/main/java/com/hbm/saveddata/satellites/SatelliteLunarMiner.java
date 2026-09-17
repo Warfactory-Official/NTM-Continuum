@@ -1,17 +1,25 @@
 package com.hbm.saveddata.satellites;
 
-import com.hbm.items.machine.ItemSatellite;
-import com.hbm.items.machine.ItemSatellite.EnumSatType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.Level;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-/** The same miner pointed at the moon, which changes only what it brings back. */
 public class SatelliteLunarMiner extends SatelliteMiner {
 
-    @Override public String getType() { return "LUNAR_MINER"; }
+    public static final MapCodec<SatelliteLunarMiner> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            Codec.LONG.optionalFieldOf("lastOp", 0L).forGetter(sat -> sat.lastOp)
+    ).apply(i, SatelliteLunarMiner::new));
+
+    public SatelliteLunarMiner() {
+        this(0L);
+    }
+
+    private SatelliteLunarMiner(long lastOp) {
+        super(lastOp);
+    }
 
     @Override
-    public Component[] getInfo(Level level) {
-        return new Component[]{Component.translatable(ItemSatellite.nameKey(EnumSatType.MINER_LUNAR))};
+    public SatelliteType type() {
+        return SatelliteType.LUNAR_MINER;
     }
 }

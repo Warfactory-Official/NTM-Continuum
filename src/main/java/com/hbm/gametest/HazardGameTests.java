@@ -64,26 +64,28 @@ public final class HazardGameTests {
         helper.assertTrue(oldRate == 2, "dropped-item hazard cadence default must remain 2 ticks");
 
         ItemEntity item = new ItemEntity(level, 0.5D, 2D, 0.5D, new ItemStack(Items.STICK));
-        runAtEvenTime(helper, () -> {
+        recording.item = item;
+        runWhenDue(helper, item, RadiationConfig.itemHazardDropTickRate, 4, () -> {
             item.tick();
             helper.assertTrue(recording.updates == 1 && recording.level == 6D,
-                    "dropped hazard must run at the world-time boundary with modifiers applied");
+                    "dropped hazard must run on its own cadence tick with modifiers applied");
 
-            helper.runAfterDelay(1, () -> {
-                item.tick();
-                helper.assertTrue(recording.updates == 1,
-                        "dropped hazard must not run on the off-cadence tick");
-                helper.runAfterDelay(1, () -> {
-                    try {
+            helper.runAfterDelay(1, () -> runOffCadence(helper, item, RadiationConfig.itemHazardDropTickRate,
+                    4, () -> {
                         item.tick();
-                        helper.assertTrue(recording.updates == 2,
-                                "dropped hazard must run again on the next cadence boundary");
-                        helper.succeed();
-                    } finally {
-                        restoreItemHazard(oldData, oldRate);
-                    }
-                });
-            });
+                        helper.assertTrue(recording.updates == 1,
+                                "dropped hazard must not run on the off-cadence tick");
+                        runWhenDue(helper, item, RadiationConfig.itemHazardDropTickRate, 4, () -> {
+                            try {
+                                item.tick();
+                                helper.assertTrue(recording.updates == 2,
+                                        "dropped hazard must run again on the next cadence boundary");
+                                helper.succeed();
+                            } finally {
+                                restoreItemHazard(oldData, oldRate);
+                            }
+                        });
+                    }));
         });
     }
 
@@ -177,9 +179,31 @@ public final class HazardGameTests {
         return item;
     }
 
-    private static void runAtEvenTime(GameTestHelper helper, Runnable action) {
-        if ((helper.getLevel().getGameTime() & 1L) == 0L) action.run();
-        else helper.runAfterDelay(1, action);
+    /** Waits for the world-time cadence used by the legacy dropped-item hook. */
+    private static void runWhenDue(GameTestHelper helper, ItemEntity item, int rate, int triesLeft,
+                                   Runnable action) {
+        if (Math.floorMod(item.level().getGameTime(), rate) == 0) {
+            action.run();
+            return;
+        }
+        if (triesLeft <= 0) {
+            helper.fail("a dropped item never came due within one full cadence of " + rate + " ticks");
+            return;
+        }
+        helper.runAfterDelay(1, () -> runWhenDue(helper, item, rate, triesLeft - 1, action));
+    }
+
+    private static void runOffCadence(GameTestHelper helper, ItemEntity item, int rate, int triesLeft,
+                                      Runnable action) {
+        if (Math.floorMod(item.level().getGameTime(), rate) != 0) {
+            action.run();
+            return;
+        }
+        if (triesLeft <= 0) {
+            helper.fail("a dropped item never reached an off-cadence tick within " + rate + " ticks");
+            return;
+        }
+        helper.runAfterDelay(1, () -> runOffCadence(helper, item, rate, triesLeft - 1, action));
     }
 
     private static void restoreItemHazard(HazardData oldData, int oldRate) {
@@ -190,6 +214,7 @@ public final class HazardGameTests {
     }
 
     private static final class RecordingHazard implements IHazardType {
+        private ItemEntity item;
         private int updates;
         private double level;
 
@@ -198,6 +223,7 @@ public final class HazardGameTests {
 
         @Override
         public void updateEntity(ItemEntity item, double level) {
+            if (this.item != item) return;
             updates++;
             this.level = level;
         }

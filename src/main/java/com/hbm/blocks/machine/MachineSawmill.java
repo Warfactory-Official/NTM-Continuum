@@ -1,15 +1,16 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntitySawmill;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -37,7 +38,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.List;
 
 /** The 3x3 sawmill multiblock and its core interaction rules. */
-public class MachineSawmill extends BlockDummyable implements WorldlyContainerHolder, ILookOverlay {
+public class MachineSawmill extends BlockMultiblockMachine implements WorldlyContainerHolder, ILookOverlay {
 
     public MachineSawmill(Properties properties) {
         super(properties);
@@ -62,19 +63,9 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
     }
 
     @Override
-    protected void fillSpace(Level level, int x, int y, int z, ForgeDirection dir, int offset) {
-        super.fillSpace(level, x, y, z, dir, offset);
-        BlockPos core = new BlockPos(x + dir.offsetX * offset, y, z + dir.offsetZ * offset);
-        makeExtra(level, core.getX() + 1, core.getY(), core.getZ());
-        makeExtra(level, core.getX() - 1, core.getY(), core.getZ());
-        makeExtra(level, core.getX(), core.getY(), core.getZ() + 1);
-        makeExtra(level, core.getX(), core.getY(), core.getZ() - 1);
-    }
-
-    @Override
     @Nullable
     public WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntitySawmill sawmill ? sawmill : null;
     }
 
@@ -85,7 +76,7 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
             return InteractionResult.SUCCESS;
         }
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntitySawmill sawmill)) {
             return super.onUseItem(state, level, pos, player, hand, stack, hit);
         }
@@ -119,7 +110,7 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                    BlockHitResult hit) {
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntitySawmill sawmill
                 && takeOutputs(level, pos, player, sawmill)) {
             return InteractionResult.SUCCESS;
@@ -132,7 +123,7 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (level.isClientSide() || ModDataComponents.ITEM_VARIANT.getOr(stack, 0) != 1) return;
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntitySawmill sawmill) {
             sawmill.hasBlade = false;
             sawmill.setChanged();
@@ -143,7 +134,7 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
     public List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         ItemStack stack = new ItemStack(this);
         BlockPos pos = BlockPos.containing(params.getParameter(LootContextParams.ORIGIN));
-        BlockPos core = findCore(params.getLevel(), pos);
+        BlockPos core = MultiblockSurface.coreOfAny(params.getLevel(), pos);
         if (core != null && params.getLevel().getBlockEntity(core) instanceof TileEntitySawmill sawmill
                 && !sawmill.hasBlade) {
             ModDataComponents.ITEM_VARIANT.set(stack, 1);
@@ -161,7 +152,7 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
 
     private ItemStack cloneWithBladeState(BlockGetter level, BlockPos pos) {
         ItemStack stack = new ItemStack(this);
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntitySawmill sawmill
                 && !sawmill.hasBlade) {
             ModDataComponents.ITEM_VARIANT.set(stack, 1);
@@ -192,7 +183,7 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
 
     @Override
     public ILookOverlay.Data getLookOverlay(Level level, BlockPos pos, Player player) {
-        if (!(findCoreTE(level, pos) instanceof TileEntitySawmill sawmill)) return null;
+        if (!(MultiblockSurface.coreEntity(level, pos) instanceof TileEntitySawmill sawmill)) return null;
 
         List<String> text = new java.util.ArrayList<>();
         text.add(sawmill.heat + "TU/t");
@@ -229,27 +220,20 @@ public class MachineSawmill extends BlockDummyable implements WorldlyContainerHo
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                    BlockEntityType<T> type) {
-        return level.isClientSide()
-                ? createTickerHelper(type, ModBlockEntities.MACHINE_SAWMILL.get(), TileEntitySawmill::clientTick)
-                : createTickerHelper(type, ModBlockEntities.MACHINE_SAWMILL.get(), TileEntitySawmill::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    @Override
     protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && state.getValue(META) >= offset + 2
+        if (!level.isClientSide() && !state.getValue(CELL)
                 && level.getBlockEntity(pos) instanceof TileEntitySawmill sawmill) {
             Containers.dropContents(level, pos, sawmill);
         }
         super.onBlockRemoved(state, level, pos, movedByPiston);
+    }
+
+    /** No power or fluid surface at all in 1.7; the four waist cells take items and nothing else. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        visitor.passiveCell(core.offset(1, 0, 0), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.offset(-1, 0, 0), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.offset(0, 0, 1), MASK_ALL, PASSIVE_ITEMS);
+        visitor.passiveCell(core.offset(0, 0, -1), MASK_ALL, PASSIVE_ITEMS);
     }
 }

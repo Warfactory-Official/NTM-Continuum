@@ -79,9 +79,6 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
 
         te.setTypeFromFluidId();
         te.loadTank();
-        for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            te.trySubscribe(te.tank.getTankType(), level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
-        }
 
         te.powerCap = te.tank.getTankType() == Fluids.NITAN ? maxPower * 10 : maxPower;
 

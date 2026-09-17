@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.Watz;
@@ -134,7 +134,6 @@ public class TileEntityWatz extends TileEntityMachineBase
 
         List<TileEntityWatz> segments = new ArrayList<>();
         segments.add(te);
-        te.subscribeToTop(level);
 
         // Accumulate the column downward. Upstream scans to y=0; a 26.1 world can start lower.
         for (int y = pos.getY() - SEGMENT_HEIGHT; y >= level.getMinY(); y -= SEGMENT_HEIGHT) {
@@ -313,9 +312,6 @@ public class TileEntityWatz extends TileEntityMachineBase
 
     // --- fluid I/O: coolant enters at the top of the column, hot coolant and mud leave at the bottom ---
 
-    private void subscribeToTop(Level level) {
-        for (DirPos port : topPorts()) trySubscribe(tanks[0].getTankType(), level, port);
-    }
 
     private void sendOutBottom(Level level) {
         for (DirPos port : bottomPorts()) {
@@ -379,8 +375,7 @@ public class TileEntityWatz extends TileEntityMachineBase
     private void disassemble(Level level, BlockPos pos) {
         // The reactor is being destroyed, not mined: no component drop.
         Watz.drop = false;
-        BlockDummyable.safeRem = true;
-        try {
+        BlockMultiblockCore.withoutTeardown(() -> {
             Block mud = com.hbm.blocks.ModHazardBlocks.mud_block.get();
             for (int i = 0; i < 3; i++) level.setBlock(pos.above(i), mud.defaultBlockState(), 3);
 
@@ -405,10 +400,8 @@ public class TileEntityWatz extends TileEntityMachineBase
             setBrokenColumn(level, pos, 1, casing, 2, -2);
             setBrokenColumn(level, pos, 1, casing, -2, 2);
             setBrokenColumn(level, pos, 1, casing, -2, -2);
-        } finally {
-            BlockDummyable.safeRem = false;
-            Watz.drop = true;
-        }
+        });
+        Watz.drop = true;
     }
 
     /** A three-tall column that survives to a random height and is mud above that. */
@@ -443,7 +436,10 @@ public class TileEntityWatz extends TileEntityMachineBase
 
     // --- GUI control ---
 
-    @Override public boolean hasPermission(Player player) { return stillValid(player); }
+    @Override public boolean hasPermission(Player player) {
+        return player.containerMenu instanceof com.hbm.inventory.container.ContainerWatz menu
+                && menu.getWatz() == this && menu.stillValid(player);
+    }
 
     @Override
     public void receiveControl(CompoundTag data) {

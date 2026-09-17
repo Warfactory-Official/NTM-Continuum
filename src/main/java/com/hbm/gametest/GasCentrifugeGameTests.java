@@ -1,10 +1,9 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.MachineGasCent;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.MachineUF6Tank;
-import com.hbm.api.fluidmk2.FluidNode;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.inventory.container.ContainerMachineGasCent;
 import com.hbm.inventory.fluid.FluidStack;
@@ -22,11 +21,11 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineGasCent;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.UniNodespace;
 import com.hbm.lib.DirPos;
 import com.hbm.inventory.gui.GasCentTooltips;
 import net.minecraft.core.BlockPos;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -63,12 +62,12 @@ public final class GasCentrifugeGameTests {
         MachineGasCent block = ModMachineBlocks.machine_gascent.get();
         BlockPos relative = new BlockPos(2, 1, 2);
         BlockPos core = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
-        block.formStructure(helper.getLevel(), core, com.hbm.lib.ForgeDirection.NORTH);
+        helper.setBlock(relative, block.defaultBlockState());
+        block.fillSpace(helper.getLevel(), core, Direction.NORTH);
 
         helper.assertTrue(helper.getLevel().getBlockEntity(core) instanceof TileEntityMachineGasCent,
                 "gas centrifuge core block entity was not created");
-        helper.assertTrue(block.findCore(helper.getLevel(), core.above()).equals(core),
+        helper.assertTrue(core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), core.above())),
                 "gas centrifuge tower dummy did not resolve to the core");
         helper.assertTrue(block.canConnect(helper.getLevel(), core, com.hbm.lib.ForgeDirection.EAST),
                 "gas centrifuge east power port did not connect");
@@ -128,8 +127,8 @@ public final class GasCentrifugeGameTests {
         BlockPos gasRelative = new BlockPos(3, 1, 3);
         BlockPos gasPos = helper.absolutePos(gasRelative);
         MachineGasCent gasBlock = ModMachineBlocks.machine_gascent.get();
-        helper.setBlock(gasRelative, gasBlock.defaultBlockState().setValue(BlockDummyable.META, 12));
-        gasBlock.formStructure(level, gasPos, com.hbm.lib.ForgeDirection.NORTH);
+        helper.setBlock(gasRelative, gasBlock.defaultBlockState());
+        gasBlock.fillSpace(level, gasPos, Direction.NORTH);
         TileEntityMachineGasCent gasCent = (TileEntityMachineGasCent) level.getBlockEntity(gasPos);
 
         BlockPos ductPos = gasPos.west();
@@ -140,7 +139,7 @@ public final class GasCentrifugeGameTests {
 
         BlockPos sourcePos = gasPos.west(2);
         MachineUF6Tank sourceBlock = ModMachineBlocks.machine_uf6_tank.get();
-        level.setBlock(sourcePos, sourceBlock.defaultBlockState().setValue(BlockDummyable.META, 12), 3);
+        level.setBlock(sourcePos, sourceBlock.defaultBlockState(), 3);
         TileEntityMachineUF6Tank source = (TileEntityMachineUF6Tank) level.getBlockEntity(sourcePos);
         source.tank.setFill(1_000);
 
@@ -216,7 +215,7 @@ public final class GasCentrifugeGameTests {
     private static TileEntityMachineGasCent place(GameTestHelper helper, BlockPos relative) {
         BlockPos pos = helper.absolutePos(relative);
         MachineGasCent block = ModMachineBlocks.machine_gascent.get();
-        helper.setBlock(relative, block.defaultBlockState().setValue(BlockDummyable.META, 12));
+        helper.setBlock(relative, block.defaultBlockState());
         return (TileEntityMachineGasCent) helper.getLevel().getBlockEntity(pos);
     }
 
@@ -244,24 +243,16 @@ public final class GasCentrifugeGameTests {
     private static void awaitUf6Network(GameTestHelper helper, net.minecraft.server.level.ServerLevel level,
                                         BlockPos ductPos, TileEntityMachineGasCent gasCent,
                                         TileEntityMachineUF6Tank source) {
-        FluidNode node = (FluidNode) UniNodespace.getNode(level, ductPos, Fluids.UF6.getNetworkProvider());
-        boolean subscribed = node != null && node.net != null && node.net.isSubscribed(gasCent);
-        boolean provided = subscribed && node.net.isProvider(source);
         boolean transferred = source.tank.getFill() < 1_000
                 && gasCent.tank.getFill() + gasCent.inputTank.getFill() > 0;
 
-        if (!provided || !transferred) {
+        if (!transferred) {
             helper.runAfterDelay(1, () -> awaitUf6Network(helper, level, ductPos, gasCent, source));
             return;
         }
 
-        helper.assertTrue(subscribed,
-                "gas centrifuge must subscribe its UF6 receiver to the typed duct network");
-        helper.assertTrue(provided, "UF6 tank must provide through the typed duct network");
-        helper.assertTrue(source.tank.getFill() < 1_000
-                        && gasCent.tank.getFill() + gasCent.inputTank.getFill() > 0
-                        && source.tank.getFill() + gasCent.tank.getFill() + gasCent.inputTank.getFill() == 1_000,
-                "UF6 must transfer through the real duct into the centrifuge: source="
+        helper.assertTrue(source.tank.getFill() + gasCent.tank.getFill() + gasCent.inputTank.getFill() == 1_000,
+                "UF6 must transfer through the real duct into the centrifuge without loss: source="
                         + source.tank.getFill() + ", gas=" + gasCent.tank.getFill()
                         + ", input=" + gasCent.inputTank.getFill());
         helper.succeed();

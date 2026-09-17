@@ -16,4 +16,7 @@ public final class ClientConfig {
 
     /** The first-person camera kick after firing a gun (old {@code GUN_VISUAL_RECOIL}). */
     public static boolean GUN_VISUAL_RECOIL = true;
+
+    /** Selects the hand-authored gun animation/casing branch, matching upstream's client setting. */
+    public static boolean GUN_ANIMS_LEGACY = false;
 }

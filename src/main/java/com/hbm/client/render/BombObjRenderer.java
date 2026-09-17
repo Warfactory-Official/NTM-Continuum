@@ -1,15 +1,10 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
 import com.hbm.blocks.bomb.NukeMan;
 import com.hbm.client.model.WavefrontObj;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -22,10 +17,10 @@ import org.jspecify.annotations.Nullable;
  * {@link MachineObjRenderer} but keyed on the bomb block's {@link NukeMan#FACING} property (2–5) with
  * the Fat Man's own yaw map (the old {@code yawMap}: 2→270°, 3→90°, 4→0°, 5→180°).
  */
-public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, MachineRenderState> {
+public class BombObjRenderer<T extends BlockEntity> extends GemBER<T, MachineRenderState> {
 
     private final WavefrontObj model;
-    private final RenderType renderType;
+    private final Surface surface;
     private final float scale;
     private final IntegerProperty facingProperty;
     private final float preTranslateX;
@@ -52,7 +47,7 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
         this.model = WavefrontObj.load(obj);
         // Reversed faces need culling: otherwise both coplanar normals compete in the depth buffer.
         // Fat Man is the one legacy spec that did not request reversed faces at all.
-        this.renderType = CompatRenderTypes.entityCutoutCull(texture);
+        this.surface = Surface.cutoutCull(texture.toString());
         this.doubleSided = doubleSided;
         this.scale = scale;
         this.facingProperty = facingProperty;
@@ -64,23 +59,20 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
     }
 
     @Override
+    protected void setup(Gem.Model<MachineRenderState> declaration) {
+        Gem.Part<MachineRenderState> bomb = declaration.offScreen().viewDistance(256)
+                .part(model.all(doubleSided), surface)
+                .translate(0.5F, 0.0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+        if (preTranslateX != 0F || preTranslateY != 0F || preTranslateZ != 0F) {
+            bomb.translate(preTranslateX, preTranslateY, preTranslateZ);
+        }
+        if (scale != 1.0F) bomb.scale(scale);
+    }
+
+    @Override
     public MachineRenderState createRenderState() {
         return new MachineRenderState();
-    }
-
-    @Override
-    public boolean shouldRenderOffScreen() {
-        return true;
-    }
-
-    @Override
-    public boolean shouldRender(T blockEntity, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
     }
 
     @Override
@@ -90,17 +82,4 @@ public class BombObjRenderer<T extends BlockEntity> implements CompatBER<T, Mach
         state.yaw = facing >= 2 && facing <= 5 ? yawsByFacing[facing - 2] : yawsByFacing[0];
     }
 
-    @Override
-    public void submit(MachineRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0.0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        if (preTranslateX != 0F || preTranslateY != 0F || preTranslateZ != 0F) {
-            poseStack.translate(preTranslateX, preTranslateY, preTranslateZ);
-        }
-        if (scale != 1.0F) poseStack.scale(scale, scale, scale);
-        collector.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderAll(pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY, doubleSided));
-        poseStack.popPose();
-    }
 }

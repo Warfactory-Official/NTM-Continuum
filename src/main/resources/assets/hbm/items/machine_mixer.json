@@ -1,16 +1,18 @@
 {
   "model": {
-    "type": "minecraft:special",
-    "base": "hbm:item/machine_obj_base",
-    "model": {
-      "type": "hbm:machine_obj",
-      "obj": "hbm:models/machines/mixer.obj",
-      "texture": "hbm:textures/models/machines/mixer.png",
-      "noCull": true,
-      "scale": 0.35,
-      "yaw": 180,
-      "ty": 0.0,
-      "exclude": ["Fluid"]
-    }
-  }
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/mixer.obj",
+    "texture": "hbm:textures/models/machines/mixer.png",
+    "noCull": true,
+    "scale": 1.0,
+    "yaw": 180.0,
+    "exclude": ["Fluid"],
+    "rawLegacyTransform": true,
+    "guiTranslate": [0.0, -5.0, 0.0],
+    "guiScale": 5.0,
+    "itemTranslate": [0.0, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
 }

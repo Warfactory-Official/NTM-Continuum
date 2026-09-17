@@ -12,7 +12,7 @@ public final class IntakeFanRenderers {
     public static void register(HbmBlockEntityRenderers.Sink sink,
                                 BlockEntityType<TileEntityMachineIntake> intake,
                                 BlockEntityType<MachineFan.TileEntityFan> fan) {
-        sink.register(intake, context -> new IntakeRenderer());
-        sink.register(fan, context -> new FanRenderer());
+        HbmBlockEntityRenderers.regGem(sink, intake, IntakeRenderer::new);
+        HbmBlockEntityRenderers.regGem(sink, fan, FanRenderer::new);
     }
 }

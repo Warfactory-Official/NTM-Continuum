@@ -1,9 +1,11 @@
 package com.hbm.handler.radiation;
 
+import dev.golem.core.world.ChunkSidecar;
 import dev.golem.core.world.Compat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.hbm.config.RadiationConfig;
@@ -21,20 +23,32 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 
 /**
  * The chunk radiation engine — a faithful port of the <i>behaviour</i> of 1.12.2's {@code RadiationSystemNT}
- * (the pocket model), adapted to 26.1 and run <b>synchronously</b> on the server thread. Radiation is a
- * per-block density (RAD/s) stored per <b>pocket</b>: a maximal flood-filled region of non-{@link
- * IRadResistantBlock} blocks within a 16³ section. Rad-resistant blocks are walls, so a sealed lead room
- * holds its radiation separately from the rest of its section. Radiation diffuses between pockets across
- * section faces (mass-conserving exchange toward equilibrium, weighted by open contact area) and decays
- * exponentially (t½ = {@link RadiationConfig#radHalfLifeSeconds}).
+ * (the pocket model). Radiation is a per-block density (RAD/s) stored per <b>pocket</b>: a maximal
+ * flood-filled region of non-{@link IRadResistantBlock} blocks within a 16³ section. Rad-resistant blocks
+ * are walls, so a sealed lead room holds its radiation separately from the rest of its section. Radiation
+ * diffuses between pockets across section faces (mass-conserving exchange toward equilibrium, weighted by
+ * open contact area) and decays exponentially (t½ = {@link RadiationConfig#radHalfLifeSeconds}).
  *
- * <p><b>Deviation from the fork:</b> the fork runs the diffusion sweeps on a {@code ForkJoinPool} with
- * lock-free parity-bucketed sections + a bespoke binary chunk payload + {@code sun.misc.Unsafe}. Here the
- * same algorithm runs single-threaded (radiation is sparse; the server thread is cheap for it) with
- * {@code fastutil} maps and vanilla {@code SavedData} persistence ({@link RadiationSavedData}). The
- * observable gameplay — spread through air, sealing by resistant blocks, the exact decay/diffusivity
- * constants — matches. The async parallelism is a performance optimisation that can return later behind
- * this same public API.
+ * <p>A step is in two halves and the split is the safety property, not an optimisation. {@link
+ * WorldRadiationData#prepare()} builds every section the sweep will touch <b>on the server thread</b>,
+ * because building reads block state; the sweep that follows runs on {@link #RAD_POOL} and touches
+ * nothing but plain numeric arrays. The fork flood-fills off-thread and this deliberately does not.
+ *
+ * <p>The sweeps are parity-bucketed exactly as the fork's are — in a pass only chunks of one coordinate
+ * parity exchange with their {@code +axis} neighbour, so every chunk is written by at most one pair and
+ * the pairs need no locking. The server thread joins before returning, so no other tick logic races the
+ * density arrays.
+ *
+ * <p>Radiation is stored per chunk, in region files of its own beside the dimension's {@code region},
+ * {@code entities} and {@code poi} ({@link ChunkSidecar}, carrying a {@link RadiationPayload}). It is
+ * read when a chunk arrives and written when it leaves or the level saves, so a save costs what the
+ * radiation costs rather than what the world does.
+ *
+ * <p><b>Deviations from the fork.</b> The payload is a sidecar rather than extra fields on the chunk's
+ * own NBT — the same per-chunk granularity without a mixin on three different chunk serializers — and
+ * there is no {@code sun.misc.Unsafe} and no SIMD: the sweep is plain Java over {@code double[]}. The
+ * observable gameplay — spread through air, sealing by resistant blocks, the exact decay and diffusivity
+ * constants — matches.
  */
 public final class RadiationSystemNT {
 
@@ -51,6 +65,12 @@ public final class RadiationSystemNT {
     }
 
     private static final Map<ServerLevel, WorldRadiationData> worldMap = new ConcurrentHashMap<>(4);
+
+    /** The sidecar's folder, one per dimension, alongside vanilla's own chunk stores. */
+    private static final String SIDECAR_NAME = "hbm_radiation";
+
+    /** The fingerprint of a chunk the sidecar holds nothing for. */
+    static final long NOTHING_STORED = 0L;
 
     /**
      * The diffusion pool, mirroring the fork's {@code RAD_POOL = ForkJoinPool.commonPool()}. Each tick the
@@ -133,15 +153,27 @@ public final class RadiationSystemNT {
         for (WorldRadiationData data : worlds) data.prepare();
 
         // 2) parallel phase (joined): the density-exchange sweeps + decay — pure array math, no MC access.
-        for (WorldRadiationData data : worlds) data.runParallelSimulation(workEpoch);
+        for (WorldRadiationData data : worlds) {
+            if (!data.runParallelSimulation(workEpoch)) {
+                // The failed step was rolled back. Leave the world live and retry on the next gate;
+                // reporting failure here is important because a joined worker failure is not success.
+                com.hbm.Constants.LOG.error("[HBM] radiation step {} failed; retrying", workEpoch);
+            }
+        }
     }
 
     /** Submits a parallel task to {@link #RAD_POOL} and blocks the (server) thread until it completes. */
     static void submitJoin(Runnable task) {
         try {
             RAD_POOL.submit(task).get();
-        } catch (Exception e) {
-            com.hbm.Constants.LOG.error("[HBM] radiation sweep failed", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("radiation worker interrupted", e);
+        } catch (java.util.concurrent.ExecutionException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof Error error) throw error;
+            if (cause instanceof RuntimeException runtime) throw runtime;
+            throw new RuntimeException("radiation worker failed", cause);
         }
     }
 
@@ -154,14 +186,32 @@ public final class RadiationSystemNT {
         if (data != null) data.onChunkUnloaded(chunk.getPos());
     }
 
-    /** Snapshots all loaded chunks into the SavedData before the level serialises (mixin on save). */
-    public static void flushForSave(ServerLevel level) {
+    /**
+     * Writes every loaded chunk whose radiation changed, before the level serialises (mixin on save).
+     * {@code flush} waits for the disk, exactly as vanilla's own chunk save does with the same flag.
+     */
+    public static void flushForSave(ServerLevel level, boolean flush) {
         WorldRadiationData data = worldMap.get(level);
-        if (data != null) data.flushForSave();
+        if (data != null) data.flushForSave(flush);
     }
 
+    /**
+     * The level is going away: persist what is loaded, then release the region files. What is on disk
+     * stays there — this ends a session, not the world's radiation.
+     */
+    public static void closeWorld(ServerLevel level) {
+        WorldRadiationData data = worldMap.remove(level);
+        if (data != null) data.close();
+    }
+
+    /**
+     * Erases the level's radiation, live and stored. Split from {@link #closeWorld} because the two were
+     * one method: while the store was a blob that only held unloaded chunks, dropping the live map was
+     * indistinguishable from erasing radiation. It is not, once a chunk can read its own back.
+     */
     public static void clearWorld(ServerLevel level) {
-        worldMap.remove(level);
+        WorldRadiationData data = worldMap.get(level);
+        if (data != null) data.clearRadiation();
     }
 
     private static WorldRadiationData get(ServerLevel level) {
@@ -175,9 +225,14 @@ public final class RadiationSystemNT {
 
         final ServerLevel level;
         final int minSectionY;
-        final RadiationSavedData saved;
+        final ChunkSidecar sidecar;
         /** Live per-chunk data, loaded chunks only. */
         final Long2ObjectMap<ChunkRad> chunks = new Long2ObjectOpenHashMap<>();
+        /**
+         * Sidecar reads started when a chunk arrived and not yet taken. Deferring the take to first use
+         * gives the read a tick of other work to hide behind instead of stalling the chunk-load callback.
+         */
+        private final Long2ObjectMap<CompletableFuture<byte[]>> pendingReads = new Long2ObjectOpenHashMap<>();
 
         /**
          * High-radiation pockets queued for world block decay ({@code {cx, sy, cz, pocketIndex}}).
@@ -192,7 +247,19 @@ public final class RadiationSystemNT {
         WorldRadiationData(ServerLevel level) {
             this.level = level;
             this.minSectionY = level.getMinSectionY();
-            this.saved = RadiationSavedData.get(level);
+            this.sidecar = ChunkSidecar.open(level, SIDECAR_NAME);
+            migrateSavedData();
+        }
+
+        /**
+         * Moves a pre-sidecar world's parked radiation into the per-chunk store, once. The blob only ever
+         * held unloaded chunks, so every row in it is a chunk the sidecar does not have.
+         */
+        private void migrateSavedData() {
+            RadiationSavedData.get(level).drainTo((cx, cz, densities) -> {
+                byte[] payload = RadiationPayload.encode(densities);
+                if (payload != null) sidecar.write(new ChunkPos(cx, cz), payload);
+            });
         }
 
         void queueDestruction(int cx, int sy, int cz, int pocketIndex) {
@@ -215,7 +282,45 @@ public final class RadiationSystemNT {
                 cr = new ChunkRad(this, cx, cz);
                 chunks.put(key, cr);
             }
+            if (cr != null && !pendingReads.isEmpty()) settle(key, cr);
             return cr;
+        }
+
+        /**
+         * Takes the read started when this chunk arrived, if it has one outstanding.
+         *
+         * <p>This is the only place that waits for the disk, and it is reached only when something asks
+         * this chunk about its radiation — which is the moment the answer is actually needed. An
+         * outstanding read is therefore also a proof: every route to a chunk's radiation comes through
+         * {@link #chunkAt}, so a chunk whose read is still outstanding is a chunk nothing has touched
+         * since it arrived, and what the sidecar holds for it is still what it should hold.
+         */
+        private void settle(long key, ChunkRad cr) {
+            CompletableFuture<byte[]> pending = pendingReads.remove(key);
+            if (pending == null) return;
+            byte[] payload = pending.join();
+            if (payload == null) return;
+            double[][] densities = RadiationPayload.decode(payload);
+            if (densities == null) {
+                com.hbm.Constants.LOG.warn("[HBM] discarding unreadable stored radiation for chunk [{}, {}]",
+                        cr.cx, cr.cz);
+                return;
+            }
+            cr.applyPending(densities);
+            cr.storedFingerprint = RadiationPayload.fingerprint(payload);
+        }
+
+        /**
+         * Writes a chunk's radiation, or clears its entry — and does neither where the sidecar already
+         * holds exactly this. A save then costs what the radiation that <i>moved</i> costs, rather than
+         * what all the radiation costs, and a chunk that has none is never written at all.
+         */
+        private void persist(ChunkPos pos, ChunkRad cr) {
+            byte[] payload = RadiationPayload.encode(cr.snapshot());
+            long fingerprint = payload == null ? NOTHING_STORED : RadiationPayload.fingerprint(payload);
+            if (fingerprint == cr.storedFingerprint) return;
+            sidecar.write(pos, payload);
+            cr.storedFingerprint = fingerprint;
         }
 
         double getDensity(BlockPos pos) {
@@ -248,25 +353,42 @@ public final class RadiationSystemNT {
         }
 
         void onChunkLoaded(ChunkPos pos) {
-            ChunkRad cr = chunkAt(Compat.chunkX(pos), Compat.chunkZ(pos), true);
-            double[][] pending = saved.take(ChunkPos.pack(Compat.chunkX(pos), Compat.chunkZ(pos)));
-            if (pending != null) cr.applyPending(pending);
+            int cx = Compat.chunkX(pos), cz = Compat.chunkZ(pos);
+            ChunkRad cr = chunkAt(cx, cz, true);
+            if (cr.hasRadiation()) return;
+            pendingReads.put(ChunkPos.pack(cx, cz), sidecar.read(pos));
         }
 
         void onChunkUnloaded(ChunkPos pos) {
             long key = ChunkPos.pack(Compat.chunkX(pos), Compat.chunkZ(pos));
             ChunkRad cr = chunks.remove(key);
-            if (cr != null) {
-                double[][] snap = cr.snapshot();
-                if (snap != null) saved.put(key, snap); else saved.remove(key);
-            }
+            if (pendingReads.remove(key) != null) return;
+            if (cr != null) persist(pos, cr);
         }
 
-        void flushForSave() {
+        void flushForSave(boolean flush) {
             for (Long2ObjectMap.Entry<ChunkRad> e : chunks.long2ObjectEntrySet()) {
-                double[][] snap = e.getValue().snapshot();
-                if (snap != null) saved.put(e.getLongKey(), snap); else saved.remove(e.getLongKey());
+                if (pendingReads.containsKey(e.getLongKey())) continue;
+                ChunkRad cr = e.getValue();
+                persist(new ChunkPos(cr.cx, cr.cz), cr);
             }
+            if (flush) sidecar.flush();
+        }
+
+        void close() {
+            flushForSave(false);
+            sidecar.close();
+        }
+
+        /** Drops the live radiation, and the stored radiation of every chunk this level has loaded. */
+        void clearRadiation() {
+            for (ChunkRad cr : chunks.values()) {
+                if (cr.storedFingerprint != NOTHING_STORED) sidecar.write(new ChunkPos(cr.cx, cr.cz), null);
+            }
+            chunks.clear();
+            pendingReads.clear();
+            destructionQueue.clear();
+            destructionQueueSize.set(0);
         }
 
         LevelChunkSection section(int cx, int sy, int cz) {
@@ -320,28 +442,62 @@ public final class RadiationSystemNT {
          * axis) and {@code yPar = epoch&4} (the Y sweep's starting parity) — then the decay pass
          * ({@code postSweepDecayAndEffects}).
          */
-        void runParallelSimulation(long epoch) {
+        boolean runParallelSimulation(long epoch) {
             List<ChunkRad> all = snapshot;
-            if (all.isEmpty()) return;
+            if (all.isEmpty()) return true;
 
-            int s = (int) epoch;
-            boolean fx = (s & 1) != 0, fz = (s & 2) != 0;
-            int yPar = (s & 4) != 0 ? 1 : 0;
-            int perm = s % 6;
-            if (perm < 0) perm += 6;
-
-            switch (perm) {
-                case 0 -> { sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); }
-                case 1 -> { sweepAxis(all, Axis.X, fx); sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); }
-                case 2 -> { sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); }
-                case 3 -> { sweepY(all, yPar); sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); }
-                case 4 -> { sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); sweepY(all, yPar); }
-                default -> { sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); sweepAxis(all, Axis.X, fx); }
+            // A worker can fail after earlier disjoint passes have already changed densities. Keep the
+            // whole simulation step transactional so the next gate retries the old state, not a partial
+            // step with a misleadingly successful result.
+            List<double[][]> before = new ArrayList<>(all.size());
+            for (ChunkRad cr : all) {
+                double[][] sections = new double[cr.sections.length][];
+                for (int i = 0; i < cr.sections.length; i++) {
+                    SectionRad sr = cr.sections[i];
+                    if (sr != null && sr.density != null) sections[i] = sr.density.clone();
+                }
+                before.add(sections);
             }
+            List<int[]> queuedBefore = new ArrayList<>(destructionQueue);
 
-            // decay (per-chunk disjoint) — postSweepDecayAndEffects.
-            double retention = retentionDt();
-            submitJoin(() -> all.parallelStream().forEach(cr -> cr.decay(retention)));
+            try {
+                int s = (int) epoch;
+                boolean fx = (s & 1) != 0, fz = (s & 2) != 0;
+                int yPar = (s & 4) != 0 ? 1 : 0;
+                int perm = s % 6;
+                if (perm < 0) perm += 6;
+
+                switch (perm) {
+                    case 0 -> { sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); }
+                    case 1 -> { sweepAxis(all, Axis.X, fx); sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); }
+                    case 2 -> { sweepY(all, yPar); sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); }
+                    case 3 -> { sweepY(all, yPar); sweepAxis(all, Axis.X, fx); sweepAxis(all, Axis.Z, fz); }
+                    case 4 -> { sweepAxis(all, Axis.Z, fz); sweepAxis(all, Axis.X, fx); sweepY(all, yPar); }
+                    default -> { sweepAxis(all, Axis.Z, fz); sweepY(all, yPar); sweepAxis(all, Axis.X, fx); }
+                }
+
+                // decay (per-chunk disjoint) — postSweepDecayAndEffects.
+                double retention = retentionDt();
+                submitJoin(() -> all.parallelStream().forEach(cr -> cr.decay(retention)));
+                return true;
+            } catch (RuntimeException | Error failure) {
+                for (int c = 0; c < all.size(); c++) {
+                    ChunkRad cr = all.get(c);
+                    double[][] sections = before.get(c);
+                    for (int i = 0; i < cr.sections.length; i++) {
+                        SectionRad sr = cr.sections[i];
+                        if (sr != null && sections[i] != null) {
+                            sr.density = sections[i];
+                            sr.recomputeMax();
+                        }
+                    }
+                }
+                destructionQueue.clear();
+                destructionQueue.addAll(queuedBefore);
+                destructionQueueSize.set(queuedBefore.size());
+                com.hbm.Constants.LOG.error("[HBM] radiation worker failed; rolled back simulation step", failure);
+                return false;
+            }
         }
 
         /**
@@ -382,6 +538,8 @@ public final class RadiationSystemNT {
         final WorldRadiationData world;
         final int cx, cz;
         final SectionRad[] sections;
+        /** {@link RadiationPayload#fingerprint} of what the sidecar holds for this chunk, if anything. */
+        long storedFingerprint = NOTHING_STORED;
 
         ChunkRad(WorldRadiationData world, int cx, int cz) {
             this.world = world;

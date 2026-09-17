@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
+import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,7 +35,7 @@ import org.jspecify.annotations.Nullable;
 
 /** Fuel-fired DiFurnace block, with the old active variant represented by {@link #LIT}. */
 public class MachineDiFurnace extends dev.golem.core.world.CompatBlock
-        implements EntityBlock, WorldlyContainerHolder {
+        implements TickingBlock, WorldlyContainerHolder {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty LIT = BlockStateProperties.LIT;
@@ -72,19 +73,6 @@ public class MachineDiFurnace extends dev.golem.core.world.CompatBlock
 
     public int comparatorOutput(BlockState state, Level level, BlockPos pos) {
         return onAnalogOutputSignal(state, level, pos);
-    }
-
-    @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
-                                                                               BlockEntityType<T> type) {
-        return level.isClientSide() ? null
-                : createTickerHelper(type, DiFurnaceContent.DI_FURNACE.get(), TileEntityDiFurnace::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
     }
 
     /** The old onBlockAdded facing correction, retained for existing builds placed against solid blocks. */

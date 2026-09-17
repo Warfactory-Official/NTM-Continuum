@@ -2,14 +2,13 @@ package com.hbm.blocks.bomb;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.BlockDummyable;
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.interfaces.IBomb;
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.bomb.TileEntityLaunchPad;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockGetter;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -35,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * answer through {@link IEnergyConnectorBlock}/{@link IFluidConnectorBlockMK2}. Without them the pad
  * looks like a plain block to a cable and nothing connects.
  */
-public class LaunchPad extends BlockDummyable implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
+public class LaunchPad extends BlockMultiblockMachine implements IBomb, IEnergyConnectorBlock, IFluidConnectorBlockMK2 {
 
     public LaunchPad(Properties properties) {
         super(properties);
@@ -47,39 +46,10 @@ public class LaunchPad extends BlockDummyable implements IBomb, IEnergyConnector
     }
 
     @Override
-    @Nullable
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (level.isClientSide()) return null;
-        return createTickerHelper(type, ModBlockEntities.LAUNCH_PAD.get(), TileEntityLaunchPad::serverTick);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    private static <E extends BlockEntity, A extends BlockEntity> BlockEntityTicker<A> createTickerHelper(
-            BlockEntityType<A> actual, BlockEntityType<E> expected, BlockEntityTicker<? super E> ticker) {
-        return expected == actual ? (BlockEntityTicker<A>) ticker : null;
-    }
-
-    /** Cables connect only at the pad's true power ports (the core's {@code getConPos} positions). */
-    @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return findCoreTE(world, pos) instanceof TileEntityLaunchPad pad
-                && IEnergyConnectorBlock.isPort(pad.getConPos(), pos, dir);
-    }
-
-    /** Fuel and oxidiser ducts use the same eight ports — the geometry is fluid-agnostic. */
-    @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        BlockPos pos = new BlockPos(x, y, z);
-        return findCoreTE(world, pos) instanceof TileEntityLaunchPad pad
-                && IEnergyConnectorBlock.isPort(pad.getConPos(), pos, dir);
-    }
-
-    @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
         if (level.isClientSide()) return BombReturnCode.UNDEFINED;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityLaunchPad pad) {
             pad.detonator = detonator instanceof net.minecraft.world.entity.LivingEntity living ? living : null;
             return pad.launchFromDesignator();
@@ -93,7 +63,7 @@ public class LaunchPad extends BlockDummyable implements IBomb, IEnergyConnector
         super.onNeighborChanged(state, level, pos, neighborBlock, movedByPiston);
         if (level.isClientSide()) return;
 
-        BlockPos core = findCore(level, pos);
+        BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core != null && level.getBlockEntity(core) instanceof TileEntityLaunchPad pad) {
             pad.updateRedstonePower(level, pos);
         }
@@ -109,21 +79,25 @@ public class LaunchPad extends BlockDummyable implements IBomb, IEnergyConnector
         return 1;
     }
 
-    /**
-     * Flags the four corner cells as "extra" after the 3x3 shell is built.
-     *
-     * <p>Overrides {@code formStructure}, not {@code fillSpace}: {@code fillSpace} is only the placement
-     * path, so flagging there leaves a pad built by any other route (struct assembly, the layout
-     * GameTests) with unflagged corners. This is the hook both entry points share.
-     */
+    /** The four corner cells, each open on the two faces its corner turns outward. */
     @Override
-    public void formStructure(Level world, BlockPos core, ForgeDirection dir) {
-        super.formStructure(world, core, dir);
+    protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
+        super.visitCells(core, facing, visitor);
+        for (int dx = -1; dx <= 1; dx += 2) {
+            for (int dz = -1; dz <= 1; dz += 2) {
+                visitor.cell(core.offset(dx, 0, dz), outwardMask(dx, dz, 1));
+            }
+        }
+    }
 
-        int x = core.getX(), y = core.getY(), z = core.getZ();
-        this.makeExtra(world, x + 1, y, z + 1);
-        this.makeExtra(world, x + 1, y, z - 1);
-        this.makeExtra(world, x - 1, y, z + 1);
-        this.makeExtra(world, x - 1, y, z - 1);
+    /** 1.7 stamps a full proxy on each corner: power, fluid and the core's inventory. */
+    @Override
+    protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
+        int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN | PASSIVE_ITEMS;
+        for (int dx = -1; dx <= 1; dx += 2) {
+            for (int dz = -1; dz <= 1; dz += 2) {
+                visitor.passiveCell(core.offset(dx, 0, dz), MASK_ALL, domains);
+            }
+        }
     }
 }

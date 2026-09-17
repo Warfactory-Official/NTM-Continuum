@@ -8,26 +8,50 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
-public final class RBMKGaugeRenderer implements CompatBER<BlockEntityRBMKGauge, RBMKGaugeRenderer.State> {
+public final class RBMKGaugeRenderer extends GemBER<BlockEntityRBMKGauge, RBMKGaugeRenderer.State> {
     private static final WavefrontObj MODEL = WavefrontObj.load(Ids.of(Constants.MOD_ID, "models/rbmk/gauge.obj"));
     private static final Identifier TEXTURE = Ids.of(Constants.MOD_ID, "textures/models/machines/rbmk_gauge.png");
     private final Font font;
 
-    public RBMKGaugeRenderer(net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider.Context context) {
+    public RBMKGaugeRenderer() {
         font = net.minecraft.client.Minecraft.getInstance().font;
     }
+    @Override protected void setup(Gem.Model<State> declaration) {
+        Surface face = Surface.solid(TEXTURE.toString());
+        Surface needle = Surface.solid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png").toString());
+        Gem.Part<State> panel = declaration.offScreen()
+                .joint()
+                .translate(.5F, 0F, .5F)
+                .angle(Gem.Axes.Y, state -> state.yaw);
+
+        for (int i = 0; i < 4; i++) {
+            final int unit = i;
+            Gem.Part<State> gauge = panel.joint()
+                    .visibleIf(state -> state.active[unit])
+                    .translate(.25F, (i / 2) * -.5F + .25F, (i % 2) * -.5F + .25F);
+            gauge.child(MODEL.part("Gauge"), face);
+            gauge.child(MODEL.part("Needle"), needle)
+                    .light(state -> 0xF000F0)
+                    .tint(state -> state.color[unit])
+                    .translate(0F, .4375F, -.125F)
+                    .angle(Gem.Axes.X, state -> 85F - state.angle[unit])
+                    .translate(0F, -.4375F, .125F);
+        }
+    }
+
     @Override public State createRenderState() { return new State(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
 
     @Override public void extract(BlockEntityRBMKGauge be, State state, float partial, Vec3 camera) {
         state.yaw = yaw(be.getBlockState().getValue(RBMKMiniPanelBase.FACING));
@@ -47,7 +71,8 @@ public final class RBMKGaugeRenderer implements CompatBER<BlockEntityRBMKGauge, 
         }
     }
 
-    @Override public void submit(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
+    /** The scale ends and the unit label are glyph quads the font atlas builds per frame. */
+    @Override protected void submitUndeclared(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         pose.pushPose();
         pose.translate(.5D, 0D, .5D);
         pose.mulPose(Axis.YP.rotationDegrees(state.yaw));
@@ -55,16 +80,6 @@ public final class RBMKGaugeRenderer implements CompatBER<BlockEntityRBMKGauge, 
             if (!state.active[i]) continue;
             pose.pushPose();
             pose.translate(.25D, (i / 2) * -.5D + .25D, (i % 2) * -.5D + .25D);
-            sink.submitCustomGeometry(pose, CompatRenderTypes.entitySolid(TEXTURE),
-                    (last, buffer) -> MODEL.renderPart("Gauge", last, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-            pose.pushPose();
-            pose.translate(0D, .4375D, -.125D);
-            pose.mulPose(Axis.XN.rotationDegrees(state.angle[i] - 85F));
-            pose.translate(0D, -.4375D, .125D);
-            int color = state.color[i];
-            sink.submitCustomGeometry(pose, CompatRenderTypes.entitySolid(Ids.of(Constants.MOD_ID, "textures/models/misc/white.png")),
-                    (last, buffer) -> MODEL.renderPart("Needle", last, buffer, 0xF000F0, OverlayTexture.NO_OVERLAY, color));
-            pose.popPose();
             for (int bound = 0; bound < 2; bound++) {
                 pose.pushPose();
                 pose.translate(0D, .4375D, -.125D);

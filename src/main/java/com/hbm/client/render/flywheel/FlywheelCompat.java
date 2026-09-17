@@ -1,14 +1,19 @@
 package com.hbm.client.render.flywheel;
 
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
+import com.hbm.client.render.TorexCloudletRenderData;
+import com.hbm.entity.ModEntities;
+import com.hbm.entity.effect.EntityNukeTorex;
+import dev.golem.core.render.Billboards;
 import dev.golem.core.render.Instancing;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
+import org.joml.Quaternionfc;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -23,9 +28,9 @@ import java.util.WeakHashMap;
  *       every such reference lives in {@link FlywheelVisuals}, a file that does not exist on a node
  *       without the engine and which this class names only from inside a {@code //? if flywheel}
  *       branch. That way the JVM never tries to resolve those classes when the engine is absent.</li>
- *   <li><b>The vendored engine</b>, {@code dev.golem.core.flywheel}, on 26.1 NeoForge. Engine Room has
- *       a 26.1 source branch but no published artifact used by this build, so Golem Core carries that
- *       port instead. It ships inside
+ *   <li><b>The vendored engine</b>, {@code dev.golem.core.flywheel}, on both 26.1 nodes. Engine Room
+ *       has a 26.1 source branch but no published artifact used by this build, so Golem Core carries
+ *       that port instead. It ships inside
  *       a hard dependency and its entry point is present on every node with inert bodies, so it can be
  *       named unguarded — the discipline above exists for absent classes, and this one is never
  *       absent.</li>
@@ -103,27 +108,40 @@ public final class FlywheelCompat {
         if (!Instancing.isAvailable()) {
             throw new UnsupportedOperationException(
                     "Flywheel publishes no build for this Minecraft version and Golem Core vendors one "
-                            + "only on 26.1 NeoForge, so there are no visuals to register. Guard the "
+                            + "only from 26.1, so there are no visuals to register. Guard the "
                             + "call site on FlywheelCompat.isSupportedOnThisVersion() and let the block "
                             + "entity draw through its vanilla CompatBER.");
         }
+        Billboards.register(ModEntities.NUKE_TOREX.get(), List.of(
+                        new Billboards.Layer("hbm:textures/particle/particle_base.png",
+                                Billboards.Mode.DEPTH_WRITING_TRANSLUCENT),
+                        new Billboards.Layer("hbm:textures/particle/flare.png",
+                                Billboards.Mode.SOURCE_ALPHA_ADDITIVE)),
+                TorexCloudletRenderData::writeInstanced);
+        //?}
+    }
+
+    /** Whether Core atomically owns one Torex's cloudlet and flare billboards for this frame. */
+    public static boolean isTorexBillboardsActive(EntityNukeTorex torex) {
+        //? if flywheel {
+        /*return false;
+        *///?} else {
+        return Billboards.owns(torex);
         //?}
     }
 
     /**
      * The block that owns the visual for a mined position, for the crumbling overlay.
      *
-     * <p>Both of this mod's multiblock systems put the block entity somewhere other than where the
-     * player is usually swinging: a {@link BlockDummyable} keeps it at a core offset from its dummies,
-     * and a folded multiblock's cells carry no block entity at all. Without this the destroy-stage
-     * overlay silently fails to draw on every multiblock in the game.
+     * <p>A folded multiblock puts the block entity somewhere other than where the player is usually
+     * swinging -- its cells carry none at all -- so without this the destroy-stage overlay silently
+     * fails to draw on every multiblock in the game.
      *
      * <p>Deliberately not {@link MultiblockSurface#coreOfAny}: that falls through to a cell lookup for
      * any state at all, and the client half of that lookup is a 33-cubed scan around the position. This
      * runs per mined block per frame, so it has to reject a plain block on a state test alone.
      */
     public static @Nullable BlockPos crumblingCore(Level level, BlockPos mined, BlockState state) {
-        if (state.getBlock() instanceof BlockDummyable dummy) return dummy.findCore(level, mined);
         if (MultiblockSurface.isFoldedCell(state)) return cachedFoldedCore(level, mined);
         return null;
     }

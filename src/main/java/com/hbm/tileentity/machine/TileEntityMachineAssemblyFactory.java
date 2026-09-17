@@ -19,7 +19,9 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.modules.machine.AssemblyFactoryModule;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.ChatFormatting;
@@ -172,17 +174,11 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
         factory.upgradeManager.checkSlots(factory.inventory, 1, 3);
 
         for (DirPos connection : factory.getConPos()) {
-            factory.trySubscribe(level, connection);
-            for (FluidTankNTM tank : factory.inputTanks) {
-                if (tank.getTankType() != Fluids.NONE) factory.trySubscribe(tank.getTankType(), level, connection);
-            }
             for (FluidTankNTM tank : factory.outputTanks) {
                 if (tank.getFill() > 0) factory.tryProvide(tank, level, connection);
             }
         }
         for (DirPos connection : factory.getCoolPos()) {
-            factory.coolantDelegate.trySubscribe(level, connection);
-            factory.coolantDelegate.trySubscribe(factory.water.getTankType(), level, connection);
             factory.coolantDelegate.tryProvide(factory.lps, level, connection);
         }
 
@@ -213,7 +209,7 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
         AssemblyFactorySoundHandler.tickLoop(factory);
         boolean working = factory.isProcessing();
         for (AssemfacArm animation : factory.animations) animation.update(working);
-        if (level.getGameTime() % 20L == 0L) factory.frame = !level.getBlockState(pos.above(3)).isAir();
+        if (TickPhase.every(level, pos, 20L)) factory.frame = !level.getBlockState(pos.above(3)).isAir();
     }
 
     public boolean isProcessing() {
@@ -284,8 +280,7 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
     }
 
     private ForgeDirection facing() {
-        return ForgeDirection.getOrientation(getBlockState().getValue(com.hbm.blocks.BlockDummyable.META)
-                - com.hbm.blocks.BlockDummyable.offset);
+        return MachineCore.facing(getBlockState());
     }
 
     @Override protected int[] getUpgradeSlotRange() { return new int[]{1, 3}; }

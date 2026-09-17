@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.hbm.sound.ModSounds;
 import com.hbm.util.ContaminationUtil;
+import com.hbm.util.TickPhase;
 import dev.golem.core.world.CompatItem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
@@ -40,7 +41,7 @@ public class ItemGeigerCounter extends CompatItem {
     public static void playGeiger(ServerLevel level, Player player) {
         double x = ContaminationUtil.getActualPlayerRads(player);
 
-        if (level.getGameTime() % 5 == 0) {
+        if (TickPhase.every(player, 5)) {
             if (x > 1e-5) {
                 List<Integer> list = new ArrayList<>();
                 if (x < 1) list.add(0);

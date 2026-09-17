@@ -1,88 +1,63 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.TileEntityMachineCombustionEngine;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import dev.golem.core.render.CameraInfo;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.SubmitSink;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /** Animated legacy combustion-engine renderer with the exact model offset, hatch pivot and canister tint. */
 public final class CombustionEngineRenderer
-        implements CompatBER<TileEntityMachineCombustionEngine, CombustionEngineRenderState> {
+        extends GemBER<TileEntityMachineCombustionEngine, CombustionEngineRenderState> {
 
-    private final WavefrontObj model;
-    private final RenderType renderType;
+    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID,
+            "models/machines/combustion_engine.obj"));
+    private final Surface surface = Surface.cutout(
+            Constants.MOD_ID + ":textures/models/machines/combustion_engine.png");
 
-    public CombustionEngineRenderer() {
-        model = WavefrontObj.load(dev.golem.core.Ids.of(Constants.MOD_ID,
-                "models/machines/combustion_engine.obj"));
-        renderType = CompatRenderTypes.entityCutout(dev.golem.core.Ids.of(Constants.MOD_ID,
-                "textures/models/machines/combustion_engine.png"));
+    /**
+     * The canister is tinted by the fuel it holds, and white where the fuel has no legacy tint — which
+     * is the same {@code 0xFFFFFFFF} the untinted path means, so it is one part either way.
+     */
+    @Override
+    protected void setup(Gem.Model<CombustionEngineRenderState> declaration) {
+        Gem.Part<CombustionEngineRenderState> machine = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(-0.5F, 0F, 3F);
+
+        machine.child(model.part("Engine"), surface);
+        machine.child(model.part("Canister"), surface)
+                .tint(state -> state.canisterColor);
+        machine.child(model.part("Hatch"), surface)
+                .spin(Gem.Axes.Y, 1F, 0F, -2.6875F, state -> -state.doorAngle);
     }
 
-    @Override public CombustionEngineRenderState createRenderState() { return new CombustionEngineRenderState(); }
-    @Override public boolean shouldRenderOffScreen() { return true; }
-    @Override public boolean shouldRender(TileEntityMachineCombustionEngine be, Vec3 cameraPosition) { return true; }
-    @Override public int getViewDistance() { return 256; }
+    @Override
+    public CombustionEngineRenderState createRenderState() {
+        return new CombustionEngineRenderState();
+    }
 
     @Override
     public void extract(TileEntityMachineCombustionEngine be, CombustionEngineRenderState state,
                         float partialTicks, Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META)
-                ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 2;
-        state.yaw = 90F + switch (meta - BlockDummyable.offset) {
-            case 4 -> 90F;   // WEST
-            case 3 -> 180F;  // SOUTH
-            case 5 -> 270F;  // EAST
-            default -> 0F;   // NORTH
+        int meta = MachineCore.facingOrdinal(bs, 2);
+        state.yaw = 90F + switch (meta) {
+            case 4 -> 90F;
+            case 3 -> 180F;
+            case 5 -> 270F;
+            default -> 0F;
         };
         state.doorAngle = be.prevDoorAngle + (be.doorAngle - be.prevDoorAngle) * partialTicks;
 
         Integer canister = canisterColor(be.tank.getTankType().getName());
-        state.canisterTint = canister != null;
         state.canisterColor = canister == null ? 0xFFFFFFFF : legacyCanisterTint(canister);
-    }
-
-    @Override
-    public void submit(CombustionEngineRenderState state, PoseStack poseStack, SubmitSink sink, CameraInfo camera) {
-        int light = state.lightCoords;
-        poseStack.pushPose();
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.translate(-0.5F, 0F, 3F);
-
-        part(sink, poseStack, "Engine", light);
-        if (state.canisterTint) {
-            sink.submitCustomGeometry(poseStack, renderType,
-                    (pose, buffer) -> model.renderPart("Canister", pose, buffer, light,
-                            OverlayTexture.NO_OVERLAY, state.canisterColor));
-        } else {
-            part(sink, poseStack, "Canister", light);
-        }
-
-        poseStack.pushPose();
-        poseStack.translate(1F, 0F, -2.6875F);
-        poseStack.mulPose(Axis.YN.rotationDegrees(state.doorAngle));
-        poseStack.translate(-1F, 0F, 2.6875F);
-        part(sink, poseStack, "Hatch", light);
-        poseStack.popPose();
-
-        poseStack.popPose();
-    }
-
-    private void part(SubmitSink sink, PoseStack poseStack, String name, int light) {
-        sink.submitCustomGeometry(poseStack, renderType,
-                (pose, buffer) -> model.renderPart(name, pose, buffer, light, OverlayTexture.NO_OVERLAY));
     }
 
     /** The legacy renderer tints with CD_Canister.color, not FluidType.color. */

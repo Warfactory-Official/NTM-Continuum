@@ -2,13 +2,13 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineSolderingStation;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
+import com.hbm.tileentity.MachineCore;
 import net.minecraft.ChatFormatting;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -36,7 +36,7 @@ import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 
 /**
- * Soldering station — a {@link BlockDummyable} multiblock that solders the higher-tier circuits from lower
+ * Soldering station — a multiblock that solders the higher-tier circuits from lower
  * circuits + lead fine-wire (+ a fluid at higher tiers). Auto-matches its recipe from the six grouped input
  * slots (3 toppings / 2 pcb / 1 solder), so no selector/blueprint is needed. Power + one receiving fluid
  * tank (typed by a {@code fluid_identifier} in slot 8).
@@ -90,10 +90,6 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
             te.tank.setTankType(te.recipe.fluid.type);
         }
 
-        for (DirPos dp : te.getConPos()) {
-            te.trySubscribe(level, dp);
-            if (te.tank.getTankType() != Fluids.NONE) te.trySubscribe(te.tank.getTankType(), level, dp);
-        }
 
         // Upgrades (1.12.2 red/blue/black formulas): SPEED (red) -duration/6 & +100% power per level;
         // POWER (blue) +duration/3 & -power/6 per level; OVERDRIVE (black) ×2 power & +1 progress/tick.
@@ -178,7 +174,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
 
     /** The 8 network-connection positions around the footprint, facing-dependent (ported verbatim). */
     public DirPos[] getConPos() {
-        ForgeDirection dir = ForgeDirection.getOrientation(getBlockState().getValue(BlockDummyable.META) - BlockDummyable.offset);
+        ForgeDirection dir = MachineCore.facing(getBlockState());
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{

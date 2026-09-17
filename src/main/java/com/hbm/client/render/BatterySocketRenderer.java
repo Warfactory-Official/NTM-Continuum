@@ -1,40 +1,55 @@
 package com.hbm.client.render;
 
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.CompatBER;
-import dev.golem.core.render.SubmitSink;
-import dev.golem.core.render.CameraInfo;
-import com.hbm.blocks.BlockDummyable;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.machine.ItemBatteryPack;
+import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.renderer.rendertype.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.GemBER;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Draws the battery socket from {@code battery_socket.obj}: the {@code Socket} cradle (always), plus the
- * inserted battery's {@code Battery} or {@code Capacitor} part textured with that variant's skin. Ported
- * from the 1.12.2 {@code RenderBatterySocket} (the SC/creative-battery special renders are dropped with
- * those items). The carried stack is read from the BlockEntity's synced {@code syncStack}.
+ * The battery socket: the {@code Socket} cradle, and the {@code Battery} or {@code Capacitor} body of
+ * whatever pack is plugged into it, wearing that pack's own texture.
  */
-public class BatterySocketRenderer implements CompatBER<TileEntityBatterySocket, BatterySocketRenderState> {
+public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, BatterySocketRenderState> {
 
-    private static final Identifier OBJ = dev.golem.core.Ids.of("hbm", "models/battery_socket.obj");
-    private static final Identifier SOCKET_TEX = dev.golem.core.Ids.of("hbm", "textures/models/machines/battery_socket.png");
+    private static final Surface EMPTY = Surface.cutout("hbm:textures/models/machines/battery_socket.png");
 
-    private final WavefrontObj model = WavefrontObj.load(OBJ);
-    private final RenderType socketType = CompatRenderTypes.entityCutout(SOCKET_TEX);
-    private final Map<Identifier, RenderType> bodyTypes = new HashMap<>();
+    private final WavefrontObj model = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/battery_socket.obj"));
+    private final Map<Identifier, Surface> skins = new HashMap<>();
+
+    /** Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset. */
+    @Override
+    protected void setup(Gem.Model<BatterySocketRenderState> declaration) {
+        Gem.Part<BatterySocketRenderState> socket = declaration.offScreen().viewDistance(256)
+                .joint()
+                .translate(0.5F, 0F, 0.5F)
+                .angle(Gem.Axes.Y, state -> state.yaw)
+                .translate(-0.5F, 0F, 0.5F);
+
+        socket.child(model.part("Socket"), EMPTY);
+        pack(socket, "Battery");
+        pack(socket, "Capacitor");
+    }
+
+    private void pack(Gem.Part<BatterySocketRenderState> socket, String part) {
+        socket.child(model.part(part), EMPTY)
+                .visibleIf(state -> part.equals(state.batteryPart))
+                .skin(this::skinOf);
+    }
+
+    private Surface skinOf(BatterySocketRenderState state) {
+        Identifier texture = state.batteryTexture;
+        return texture == null ? EMPTY : skins.computeIfAbsent(texture, id -> Surface.cutout(id.toString()));
+    }
 
     @Override
     public BatterySocketRenderState createRenderState() {
@@ -42,30 +57,15 @@ public class BatterySocketRenderer implements CompatBER<TileEntityBatterySocket,
     }
 
     @Override
-    public boolean shouldRenderOffScreen() {
-        return true; // the socket spans the 2×2 footprint past the 1-block core
-    }
-
-    @Override
-    public boolean shouldRender(TileEntityBatterySocket be, Vec3 cameraPosition) {
-        return true;
-    }
-
-    @Override
-    public int getViewDistance() {
-        return 256;
-    }
-
-    @Override
     public void extract(TileEntityBatterySocket be, BatterySocketRenderState state, float partialTicks,
-                                   Vec3 cameraPosition) {
+                        Vec3 cameraPosition) {
         BlockState bs = be.getBlockState();
-        int meta = bs.hasProperty(BlockDummyable.META) ? bs.getValue(BlockDummyable.META) : BlockDummyable.offset + 5;
-        state.yaw = switch (meta - BlockDummyable.offset) {
-            case 2 -> 90F;   // NORTH
-            case 4 -> 180F;  // WEST
-            case 3 -> 270F;  // SOUTH
-            default -> 0F;   // EAST (5)
+        int meta = MachineCore.facingOrdinal(bs, 5);
+        state.yaw = switch (meta) {
+            case 2 -> 90F;
+            case 4 -> 180F;
+            case 3 -> 270F;
+            default -> 0F;
         };
 
         ItemStack stack = be.syncStack;
@@ -76,25 +76,5 @@ public class BatterySocketRenderer implements CompatBER<TileEntityBatterySocket,
             state.batteryPart = null;
             state.batteryTexture = null;
         }
-    }
-
-    @Override
-    public void submit(BatterySocketRenderState state, PoseStack poseStack, SubmitSink collector, CameraInfo camera) {
-        poseStack.pushPose();
-        // Match the 1.12.2 RenderBatterySocket placement: centre, facing-rotate, then its model offset.
-        poseStack.translate(0.5F, 0F, 0.5F);
-        poseStack.mulPose(Axis.YP.rotationDegrees(state.yaw));
-        poseStack.translate(-0.5F, 0F, 0.5F);
-
-        collector.submitCustomGeometry(poseStack, socketType,
-                (pose, buffer) -> model.renderPart("Socket", pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-
-        if (state.batteryPart != null && state.batteryTexture != null) {
-            RenderType bodyType = bodyTypes.computeIfAbsent(state.batteryTexture, CompatRenderTypes::entityCutout);
-            String part = state.batteryPart;
-            collector.submitCustomGeometry(poseStack, bodyType,
-                    (pose, buffer) -> model.renderPart(part, pose, buffer, state.lightCoords, OverlayTexture.NO_OVERLAY));
-        }
-        poseStack.popPose();
     }
 }
