@@ -12,6 +12,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /** Component-backed, filterable helmet. Right-click with a filter in the other hand to install it; sneak to remove it. */
 public class ItemGasMask extends CompatArmorItem implements IGasMask {
@@ -87,6 +89,8 @@ public class ItemGasMask extends CompatArmorItem implements IGasMask {
         installFilter(mask, offered);
         if (!player.isCreative()) offered.shrink(1);
         if (!previous.isEmpty() && !player.getInventory().add(previous)) player.drop(previous, false);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.GASMASK_SCREW.get(),
+                SoundSource.PLAYERS, 1.0F, 1.0F);
         return InteractionResult.SUCCESS;
     }
 }

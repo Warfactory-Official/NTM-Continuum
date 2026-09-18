@@ -30,6 +30,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * Refinery — 1:1 port of the 1.12.2 {@code TileEntityMachineRefinery}: a 3×3×9 tower that fractionates
@@ -52,6 +56,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     public long power = 0;
     public int sulfur = 0;
     public boolean isOn;
+    private AudioWrapper audio;
+    private int audioTime;
     public FluidTankNTM[] tanks;
 
     private static final int[] IO_SLOTS = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
@@ -69,6 +75,13 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     @Override
     public String getDefaultName() {
         return "container.machineRefinery";
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRefinery te) {
+        if (te.isOn) te.audioTime = 20;
+        if (te.audioTime > 0) te.audioTime--;
+        te.audio = MachineAudio.tick(te.audio, te.audioTime > 0, ModSounds.BOILER.get(),
+                SoundSource.BLOCKS, pos, te.getVolume(0.25F), 15F, 1.0F, 20);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRefinery te) {

@@ -41,6 +41,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.ModSounds;
 
 /** The old autosaw machine logic, with modern block tags and API boundaries made explicit. */
 public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
@@ -157,6 +160,9 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
         saw.networkPackNT();
     }
 
+    private AudioWrapper audio;
+    private float audioPitch;
+
     public static void clientTick(Level level, BlockPos pos, BlockState state,
                                    TileEntityMachineAutosaw saw) {
         saw.lastSpin = saw.spin;
@@ -173,6 +179,10 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
             saw.spin -= 360F;
             saw.lastSpin -= 360F;
         }
+
+        if (saw.audioPitch == 0F) saw.audioPitch = 1.0F + level.getRandom().nextFloat() * 0.1F;
+        saw.audio = MachineAudio.tick(saw.audio, saw.isOn && !saw.isSuspended, ModSounds.ENGINE.get(),
+                SoundSource.BLOCKS, pos, saw.getVolume(1F), 10F, saw.audioPitch, 10);
 
         saw.prevRotationYaw = saw.rotationYaw;
         saw.prevRotationPitch = saw.rotationPitch;

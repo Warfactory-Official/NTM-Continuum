@@ -327,7 +327,14 @@ public class EntityEffectHandler {
         } else if (total > 0.25D) {
             Effects.add(entity, MobEffects.SLOWNESS, 100, 0);
         }
-        // Cough sound + particles deferred.
+
+        // Coughing-blood and coughing-coal particle bursts stay deferred with the particle system.
+        Level level = entity.level();
+        int freq = Math.max((int) (1000 - 950 * total), 20);
+        if (level instanceof ServerLevel && level.getGameTime() % freq == entity.getId() % freq) {
+            level.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ModSounds.COUGH.get(),
+                    SoundSource.PLAYERS, 1.0F, 1.0F);
+        }
     }
 
     private static void syncToPlayer(ServerPlayer player) {

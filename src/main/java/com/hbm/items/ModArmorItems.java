@@ -383,14 +383,20 @@ public final class ModArmorItems {
 
         ArmorFSBPowered rpa = rpa_helmet.get();
         rpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
-                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D);
+                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D)
+                .setStep(ModSounds.STEP_POWERED)
+                .setJump(ModSounds.STEP_POWERED)
+                .setFall(ModSounds.STEP_POWERED);
         rpa_plate.get().cloneStats(rpa);
         rpa_legs.get().cloneStats(rpa);
         rpa_boots.get().cloneStats(rpa);
 
         ArmorFSBPowered ncrpa = ncrpa_helmet.get();
         ncrpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
-                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D);
+                .setHasGeigerSound(true).setHasHardLanding(true).setRadResist(2D)
+                .setStep(ModSounds.STEP_POWERED)
+                .setJump(ModSounds.STEP_POWERED)
+                .setFall(ModSounds.STEP_POWERED);
         ncrpa_plate.get().cloneStats(ncrpa);
         ncrpa_legs.get().cloneStats(ncrpa);
         ncrpa_boots.get().cloneStats(ncrpa);

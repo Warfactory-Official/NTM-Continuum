@@ -148,8 +148,9 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
     private void applyExhaust(Level level, int amountToBurn) {
         ForgeDirection dir = getFacing().getRotation(ForgeDirection.UP);
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
-        if (afterburner > 0) {
-            level.playSound(null, worldPosition, com.hbm.sound.ModSounds.TURBOFAN_OPERATE.get(), SoundSource.BLOCKS, 0F, 1F);
+        if (afterburner > 90 && level.getRandom().nextInt(30) == 0) {
+            level.playSound(null, worldPosition.above(), com.hbm.sound.ModSounds.TURBOFAN_DAMAGE.get(),
+                    SoundSource.BLOCKS, 3.0F, 0.95F + level.getRandom().nextFloat() * 0.2F);
         }
         affectBox(level, exhaustBox(dir, rot, -3.5D, -19.5D, 1.5D), entity -> {
             if (afterburner > 0) {

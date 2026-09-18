@@ -204,6 +204,121 @@ public final class ModSounds {
     // --- ntm-next entity port (gen_entity_sounds.py) ---
     public static final RegistryObject<SoundEvent> CRATE_BREAK = register("crate_break");
 
+    public static final RegistryObject<SoundEvent> ALARM_AIR_RAID = register("alarm.air_raid");
+    public static final RegistryObject<SoundEvent> ALARM_AMS_SIREN = register("alarm.ams_siren");
+    public static final RegistryObject<SoundEvent> ALARM_APC_LOOP = register("alarm.apc_loop");
+    public static final RegistryObject<SoundEvent> ALARM_APC_PASS = register("alarm.apc_pass");
+    public static final RegistryObject<SoundEvent> ALARM_AUTOPILOT = register("alarm.autopilot");
+    public static final RegistryObject<SoundEvent> ALARM_BANK = register("alarm.bank_alarm");
+    public static final RegistryObject<SoundEvent> ALARM_BEEP_SIREN = register("alarm.beep_siren");
+    public static final RegistryObject<SoundEvent> ALARM_BLAST_DOOR = register("alarm.blast_door_alarm");
+    public static final RegistryObject<SoundEvent> ALARM_CLASSIC = register("alarm.classic");
+    public static final RegistryObject<SoundEvent> ALARM_CONTAINER = register("alarm.container_alarm");
+    public static final RegistryObject<SoundEvent> ALARM_EAS = register("alarm.eas_alarm");
+    public static final RegistryObject<SoundEvent> ALARM_FO_KLAXON_A = register("alarm.fo_klaxon_a");
+    public static final RegistryObject<SoundEvent> ALARM_FO_KLAXON_B = register("alarm.fo_klaxon_b");
+    public static final RegistryObject<SoundEvent> ALARM_KLAXON = register("alarm.klaxon");
+    public static final RegistryObject<SoundEvent> ALARM_NOSTROMO_SIREN = register("alarm.nostromo_siren");
+    public static final RegistryObject<SoundEvent> ALARM_RAZORTRAIN_HORN = register("alarm.razortrain_horn");
+    public static final RegistryObject<SoundEvent> ALARM_REGULAR_SIREN = register("alarm.regular_siren");
+    public static final RegistryObject<SoundEvent> ALARM_SINGER = register("alarm.singer");
+    public static final RegistryObject<SoundEvent> ALARM_STRIDER_SIREN = register("alarm.strider_siren");
+    public static final RegistryObject<SoundEvent> ALARM_SWEEP_SIREN = register("alarm.sweep_siren");
+    public static final RegistryObject<SoundEvent> ALARM_TRAIN_HORN = register("alarm.train_horn");
+
+    public static final RegistryObject<SoundEvent> ASSEMBLER_OPERATE = register("block.assembler_operate");
+    public static final RegistryObject<SoundEvent> BOBBLE = register("block.bobble");
+    public static final RegistryObject<SoundEvent> BOILER = register("block.boiler");
+    public static final RegistryObject<SoundEvent> BOILER_GROAN = register("block.boiler_groan");
+    public static final RegistryObject<SoundEvent> BROADCAST_1 = register("block.broadcast1");
+    public static final RegistryObject<SoundEvent> BROADCAST_2 = register("block.broadcast2");
+    public static final RegistryObject<SoundEvent> BROADCAST_3 = register("block.broadcast3");
+    public static final RegistryObject<SoundEvent> CHEMPLANT_OPERATE = register("block.chemplant_operate");
+    public static final RegistryObject<SoundEvent> CLOSE_C = register("block.close_c");
+    public static final RegistryObject<SoundEvent> CLOSE_DOOR = register("block.close_door");
+    public static final RegistryObject<SoundEvent> CRATE_OPEN = register("crate_open");
+    public static final RegistryObject<SoundEvent> TURBOFAN_DAMAGE = register("block.damage");
+    public static final RegistryObject<SoundEvent> DIESEL_OPERATE = register("block.diesel_operate");
+    public static final RegistryObject<SoundEvent> ENGINE = register("block.engine");
+    public static final RegistryObject<SoundEvent> FLESH = register("block.flesh");
+    public static final RegistryObject<SoundEvent> FUSION_REACTOR_RUNNING = register("block.fusion_reactor_running");
+    public static final RegistryObject<SoundEvent> HEPHAESTUS_RUNNING = register("block.hephaestus_running");
+    public static final RegistryObject<SoundEvent> HORN_FAR_DUAL = register("block.horn_far_dual");
+    public static final RegistryObject<SoundEvent> HORN_FAR_SINGLE = register("block.horn_far_single");
+    public static final RegistryObject<SoundEvent> HORN_NEAR_DUAL = register("block.horn_near_dual");
+    public static final RegistryObject<SoundEvent> HORN_NEAR_SINGLE = register("block.horn_near_single");
+    public static final RegistryObject<SoundEvent> HUNDUNS_MAGNIFICENT_HOWL = register("block.hunduns_magnificent_howl");
+    public static final RegistryObject<SoundEvent> LEVER_LARGE = register("block.lever_large");
+    public static final RegistryObject<SoundEvent> LEVER_START = register("block.lever_start");
+    public static final RegistryObject<SoundEvent> LEVER_STOP = register("block.lever_stop");
+    public static final RegistryObject<SoundEvent> LOCK_HANG = register("block.lock_hang");
+    public static final RegistryObject<SoundEvent> LOCK_OPEN = register("block.lock_open");
+    public static final RegistryObject<SoundEvent> METAL_IMPACT = register("block.metal_impact");
+    public static final RegistryObject<SoundEvent> MINER_OPERATE = register("block.miner_operate");
+    public static final RegistryObject<SoundEvent> MISSILE_ASSEMBLY = register("block.missile_assembly");
+    public static final RegistryObject<SoundEvent> MISSILE_ASSEMBLY_2 = register("block.missile_assembly2");
+    public static final RegistryObject<SoundEvent> OPEN_C = register("block.open_c");
+    public static final RegistryObject<SoundEvent> OPEN_DOOR = register("block.open_door");
+    public static final RegistryObject<SoundEvent> PIPE_PLACED = register("block.pipe_placed");
+    public static final RegistryObject<SoundEvent> PLATEMETAL_PLACE = register("block.platemetal_place");
+    public static final RegistryObject<SoundEvent> REACTOR_STOP = register("block.reactor_stop");
+    public static final RegistryObject<SoundEvent> SONAR_PING = register("block.sonar_ping");
+    public static final RegistryObject<SoundEvent> SPARK = register("block.spark");
+    public static final RegistryObject<SoundEvent> VAULT_SCRAPE = register("block.vault_scrape");
+    public static final RegistryObject<SoundEvent> VAULT_SCRAPE_NEW = register("block.vault_scrape_new");
+    public static final RegistryObject<SoundEvent> VAULT_THUD = register("block.vault_thud");
+    public static final RegistryObject<SoundEvent> VAULT_THUD_NEW = register("block.vault_thud_new");
+
+    public static final RegistryObject<SoundEvent> DOOR_TRANSITION_SEAL_OPEN = register("door.transition_seal_open");
+    public static final RegistryObject<SoundEvent> DOOR_ALARM_6 = register("door.alarm6");
+    public static final RegistryObject<SoundEvent> DOOR_GARAGE_MOVE = register("door.garage_move");
+    public static final RegistryObject<SoundEvent> DOOR_GARAGE_STOP = register("door.garage_stop");
+    public static final RegistryObject<SoundEvent> DOOR_LEVER = register("door.lever");
+    public static final RegistryObject<SoundEvent> DOOR_QE_SLIDING_OPENED = register("door.qe_sliding_opened");
+    public static final RegistryObject<SoundEvent> DOOR_QE_SLIDING_OPENING = register("door.qe_sliding_opening");
+    public static final RegistryObject<SoundEvent> DOOR_QE_SLIDING_SHUT = register("door.qe_sliding_shut");
+    public static final RegistryObject<SoundEvent> DOOR_SLIDING_OPENED = register("door.sliding_door_opened");
+    public static final RegistryObject<SoundEvent> DOOR_SLIDING_OPENING = register("door.sliding_door_opening");
+    public static final RegistryObject<SoundEvent> DOOR_SLIDING_SHUT = register("door.sliding_door_shut");
+    public static final RegistryObject<SoundEvent> DOOR_SLIDING_SEAL_OPEN = register("door.sliding_seal_open");
+    public static final RegistryObject<SoundEvent> DOOR_SLIDING_SEAL_STOP = register("door.sliding_seal_stop");
+    public static final RegistryObject<SoundEvent> DOOR_WGH_START = register("door.wgh_start");
+    public static final RegistryObject<SoundEvent> DOOR_WGH_STOP = register("door.wgh_stop");
+    public static final RegistryObject<SoundEvent> DOOR_WGH_BIG_START = register("door.wgh_big_start");
+    public static final RegistryObject<SoundEvent> DOOR_WGH_BIG_STOP = register("door.wgh_big_stop");
+
+    public static final RegistryObject<SoundEvent> CHOPPER_MINE_LOOP = register("entity.chopper_mine_loop");
+    public static final RegistryObject<SoundEvent> ROCKET_TAKEOFF = register("entity.rocket_takeoff");
+    public static final RegistryObject<SoundEvent> SIEGE_DEATH = register("entity.siege_death");
+    public static final RegistryObject<SoundEvent> SIEGE_HURT = register("entity.siege_hurt");
+    public static final RegistryObject<SoundEvent> SIEGE_IDLE = register("entity.siege_idle");
+    public static final RegistryObject<SoundEvent> SLICER = register("entity.slicer");
+
+    public static final RegistryObject<SoundEvent> BATTERY = register("item.battery");
+    public static final RegistryObject<SoundEvent> GASMASK_SCREW = register("item.gasmask_screw");
+    public static final RegistryObject<SoundEvent> PIN_BREAK = register("item.pin_break");
+    public static final RegistryObject<SoundEvent> PIN_UNLOCK = register("item.pin_unlock");
+    public static final RegistryObject<SoundEvent> REPAIR = register("item.repair");
+    public static final RegistryObject<SoundEvent> SPRAY = register("item.spray");
+
+    public static final RegistryObject<SoundEvent> NULL_CHOPPER = register("misc.null_chopper");
+    public static final RegistryObject<SoundEvent> NULL_CRASHING = register("misc.null_crashing");
+
+    public static final RegistryObject<SoundEvent> RECORD_LAMBDA_CORE = register("music.record_lambda_core");
+    public static final RegistryObject<SoundEvent> RECORD_SECTOR_SWEEP = register("music.record_sector_sweep");
+    public static final RegistryObject<SoundEvent> RECORD_VORTAL_COMBAT = register("music.record_vortal_combat");
+    public static final RegistryObject<SoundEvent> MUSIC_TRANSMISSION = register("music.transmission");
+
+    public static final RegistryObject<SoundEvent> COUGH = register("player.cough");
+
+    public static final RegistryObject<SoundEvent> POTATO_RANDOM = register("potatos.random");
+
+    public static final RegistryObject<SoundEvent> STEP_IRON = register("step.iron");
+    public static final RegistryObject<SoundEvent> STEP_PLATEMETAL = register("step.platemetal");
+    public static final RegistryObject<SoundEvent> STEP_POWERED = register("step.powered");
+
+    public static final RegistryObject<SoundEvent> HKS_SHOOT = register("weapon.hks_shoot");
+
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
                 dev.golem.core.Ids.of(Constants.MOD_ID, name)));

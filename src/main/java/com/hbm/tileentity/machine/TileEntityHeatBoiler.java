@@ -20,6 +20,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import net.minecraft.sounds.SoundSource;
+import com.hbm.sound.ModSounds;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.AudioWrapper;
 
 /**
  * Heat Boiler — 1:1 port of the 1.12.2 {@code TileEntityHeatBoiler} ({@code heat_boiler}): the
@@ -45,6 +49,8 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
     public int heat;
     public boolean isOn;
     public boolean hasExploded = false;
+    private AudioWrapper audio;
+    private int audioTime;
 
     public TileEntityHeatBoiler(BlockPos pos, BlockState state) {
         super(ModBlockEntities.HEAT_BOILER.get(), pos, state);
@@ -70,6 +76,12 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
         te.networkPackNT();
     }
 
+    public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoiler te) {
+        if (te.isOn) te.audioTime = 20;
+        if (te.audioTime > 0) te.audioTime--;
+        te.audio = MachineAudio.tick(te.audio, te.audioTime > 0 && !te.hasExploded, ModSounds.BOILER.get(),
+                SoundSource.BLOCKS, pos, te.getVolume(0.125F), 10F, 1.0F, 20);
+    }
 
     public DirPos[] getConPos() {
         int meta = MachineCore.facingOrdinal(getBlockState(), 2);
@@ -107,6 +119,11 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
         this.tanks[0].setFill(this.tanks[0].getFill() - step.amountReq() * ops);
         this.tanks[1].setFill(this.tanks[1].getFill() + step.amountProduced() * ops);
         this.heat -= heatReq * ops;
+
+        if (ops > 0 && this.level.getRandom().nextInt(400) == 0) {
+            this.level.playSound(null, this.worldPosition.above(2), ModSounds.BOILER_GROAN.get(),
+                    SoundSource.BLOCKS, 0.5F, 1.0F);
+        }
 
         if (ops > 0) {
             this.isOn = true;

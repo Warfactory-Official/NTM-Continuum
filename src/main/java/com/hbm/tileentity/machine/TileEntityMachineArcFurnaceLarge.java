@@ -41,6 +41,10 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /** Large Arc Furnace core: the old 20-cell grid, five-cell queue, three electrodes and liquid store. */
 public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
@@ -64,6 +68,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     public int delay;
     public int upgrade;
     public float lid;
+    private AudioWrapper audioLid;
     public float prevLid;
     public int approachNum;
     public float syncLid;
@@ -196,6 +201,15 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
                         pos.getZ() + 0.5D + level.getRandom().nextGaussian() * 0.5D, data);
             }
         }
+        furnace.audioLid = MachineAudio.tick(furnace.audioLid, furnace.lid != furnace.prevLid,
+                ModSounds.DOOR_WGH_START.get(), SoundSource.BLOCKS, pos, furnace.getVolume(0.75F), 15F, 1.0F, 5);
+
+        if ((furnace.lid == 1F || furnace.lid == 0F) && furnace.lid != furnace.prevLid
+                && !(furnace.prevLid == 0F && furnace.lid == 1F)) {
+            level.playLocalSound(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                    ModSounds.DOOR_WGH_STOP.get(), SoundSource.BLOCKS, furnace.getVolume(1F), 1F, false);
+        }
+
         com.hbm.foundry.ArcFurnaceSoundHandler.tickLoop(furnace);
     }
 

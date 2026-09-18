@@ -55,6 +55,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * The shared turret brain — target acquisition, line of sight, aiming and the ammo/chip inventory.
@@ -770,6 +772,19 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         output.putBoolean("isBlacklistFilter", isBlacklistMobFilter);
         output.store("mobFilter", MOB_FILTER_CODEC, mobFilter);
         output.putInt("stattrak", stattrak);
+    }
+
+    public void openInventory() {
+        playLidSound(ModSounds.OPEN_C.get());
+    }
+
+    public void closeInventory() {
+        playLidSound(ModSounds.CLOSE_C.get());
+    }
+
+    private void playLidSound(net.minecraft.sounds.SoundEvent sound) {
+        if (level == null || level.isClientSide()) return;
+        level.playSound(null, worldPosition, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     @Override

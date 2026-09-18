@@ -22,6 +22,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import com.hbm.sound.ModSounds;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvent;
 
 /** The 15 by 15 RBMK scanner, monitor bank, setpoint, and AZ-5 controls. */
 public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole> {
@@ -164,10 +168,14 @@ public final class ScreenRBMKConsole extends RBMKContainerScreen<MenuRBMKConsole
         if (console != null && region(61, 70, 10, 10, x, y)) { select(console, column -> column.type == RBMKColumnType.CONTROL); return true; }
         if (console != null && region(70, 82, 12, 12, x, y)) { send("compressor", selected(console, RBMKColumnType.BOILER, false)); return true; }
         if (console != null) for (int i = 0; i < 5; i++) if (region(6 + i * 11, 70, 10, 10, x, y)) { if (event.button() == 0) { int color = i; select(console, column -> column.type == RBMKColumnType.CONTROL && ((RBMKColumn.ControlColumn) column).color == color); } else if (event.button() == 1) { CompoundTag data = action("color"); data.putInt("color", i); data.putIntArray("cols", selected(console, RBMKColumnType.CONTROL, false)); send(data); } return true; }
-        if (region(30, 138, 28, 28, x, y)) { if (az5Lid) az5Lid = false; else if (console != null && lastPress + 3000 < System.currentTimeMillis()) { lastPress = System.currentTimeMillis(); send("level", selected(console, RBMKColumnType.CONTROL, true), 0); } return true; }
+        if (region(30, 138, 28, 28, x, y)) { if (az5Lid) { az5Lid = false; playUi(ModSounds.RBMK_AZ5_COVER.get(), 0.5F); } else if (console != null && lastPress + 3000 < System.currentTimeMillis()) { playUi(ModSounds.RBMK_SHUTDOWN.get(), 1F); lastPress = System.currentTimeMillis(); send("level", selected(console, RBMKColumnType.CONTROL, true), 0); } return true; }
         if (region(48, 82, 12, 12, x, y)) { try { int percent = (int) Mth.clamp(Double.parseDouble(field.getValue()), 0, 100); field.setValue(String.valueOf(percent)); send("level", selectedIndices(), percent * .01D); } catch (NumberFormatException ignored) { } return true; }
         if (console != null) for (int j = 0; j < 3; j++) for (int k = 0; k < 2; k++) { int slot = j * 2 + k; if (region(6 + 40 * k, 8 + 21 * j, 18, 18, x, y)) { CompoundTag data = action("toggle"); data.putInt("slot", slot); send(data); return true; } if (region(24 + 40 * k, 8 + 21 * j, 18, 18, x, y)) { CompoundTag data = action("assign"); data.putInt("slot", slot); data.putIntArray("cols", selectedIndices()); send(data); return true; } }
         return false;
+    }
+
+    private static void playUi(SoundEvent sound, float pitch) {
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(sound, pitch, 1.0F));
     }
 
     private void select(BlockEntityRBMKConsole console, java.util.function.Predicate<RBMKColumn> predicate) { for (int i = 0; i < selection.length; i++) selection[i] = console.columns[i] != null && predicate.test(console.columns[i]); }

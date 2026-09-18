@@ -41,6 +41,8 @@ public class ContainerCrate extends AbstractContainerMenu {
         this(containerId, playerInventory, crate, ContainerLevelAccess.create(crate.getLevel(), crate.getBlockPos()));
     }
 
+    private final @Nullable TileEntityCrate crate;
+
     private ContainerCrate(int containerId, Inventory playerInventory, @Nullable TileEntityCrate crate, ContainerLevelAccess access) {
         super(ModMenus.CRATE.get(), containerId);
         this.type = crate != null ? crate.crateType : CrateType.IRON;
@@ -67,6 +69,15 @@ public class ContainerCrate extends AbstractContainerMenu {
         for (int col = 0; col < 9; col++) {
             this.addSlot(new Slot(playerInventory, col, type.playerInventoryX + col * 18, type.hotbarY));
         }
+
+        this.crate = crate;
+        if (crate != null) crate.openInventory();
+    }
+
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        if (crate != null) crate.closeInventory();
     }
 
     private static @Nullable TileEntityCrate resolve(Inventory playerInventory, BlockPos pos) {

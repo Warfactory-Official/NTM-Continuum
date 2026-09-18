@@ -629,7 +629,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineDiesel>> MACHINE_DIESEL =
             BLOCK_ENTITIES.register("machine_diesel",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityMachineDiesel::new, com.hbm.tileentity.machine.TileEntityMachineDiesel::serverTick, ModMachineBlocks.machine_diesel.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityMachineDiesel::new, com.hbm.tileentity.machine.TileEntityMachineDiesel::clientTick, com.hbm.tileentity.machine.TileEntityMachineDiesel::serverTick, ModMachineBlocks.machine_diesel.get()));
 
     // --- advanced oil wave ---
 
@@ -639,7 +639,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill>> MACHINE_VACUUM_DISTILL =
             BLOCK_ENTITIES.register("machine_vacuum_distill",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::new, com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::serverTick, ModMachineBlocks.machine_vacuum_distill.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::new, com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::clientTick, com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::serverTick, ModMachineBlocks.machine_vacuum_distill.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer>> MACHINE_CATALYTIC_REFORMER =
             BLOCK_ENTITIES.register("machine_catalytic_reformer",
@@ -699,15 +699,15 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineRefinery>> MACHINE_REFINERY =
             BLOCK_ENTITIES.register("machine_refinery",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::new, com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::serverTick, ModMachineBlocks.machine_refinery.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::new, com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::clientTick, com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::serverTick, ModMachineBlocks.machine_refinery.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeatBoiler>> HEAT_BOILER =
             BLOCK_ENTITIES.register("heat_boiler",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityHeatBoiler::new, com.hbm.tileentity.machine.TileEntityHeatBoiler::serverTick, ModMachineBlocks.machine_boiler.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityHeatBoiler::new, com.hbm.tileentity.machine.TileEntityHeatBoiler::clientTick, com.hbm.tileentity.machine.TileEntityHeatBoiler::serverTick, ModMachineBlocks.machine_boiler.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial>> MACHINE_INDUSTRIAL_BOILER =
             BLOCK_ENTITIES.register("machine_industrial_boiler",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::new, com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::serverTick, ModMachineBlocks.machine_industrial_boiler.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::new, com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::clientTick, com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::serverTick, ModMachineBlocks.machine_industrial_boiler.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeaterOilburner>> HEATER_OILBURNER =
             BLOCK_ENTITIES.register("heater_oilburner",

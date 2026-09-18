@@ -56,6 +56,14 @@ public class ContainerTurretBase extends AbstractContainerMenu {
         addSlot(new Slot(turretInventory, TileEntityTurretBaseNT.SLOT_BATTERY, 152, 99));
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
+
+        if (turret != null) turret.openInventory();
+    }
+
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        if (turret != null) turret.closeInventory();
     }
 
     private static @Nullable TileEntityTurretBaseNT resolve(Inventory playerInventory, BlockPos pos) {

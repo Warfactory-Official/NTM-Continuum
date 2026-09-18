@@ -18,6 +18,10 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.sounds.SoundSource;
+import com.hbm.sound.ModSounds;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.AudioWrapper;
 
 /** Industrial boiler, ported from {@code TileEntityHeatBoilerIndustrial}. */
 public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
@@ -30,6 +34,8 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
     };
     public int heat;
     public boolean isOn;
+    private AudioWrapper audio;
+    private int audioTime;
 
     public TileEntityHeatBoilerIndustrial(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_INDUSTRIAL_BOILER.get(), pos, state);
@@ -45,6 +51,14 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
             for (DirPos connection : te.getConPos()) te.tryProvide(te.tanks[1], level, connection);
         }
         te.networkPackNT();
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state,
+                                  TileEntityHeatBoilerIndustrial te) {
+        if (te.isOn) te.audioTime = 20;
+        if (te.audioTime > 0) te.audioTime--;
+        te.audio = MachineAudio.tick(te.audio, te.audioTime > 0, ModSounds.BOILER.get(),
+                SoundSource.BLOCKS, pos, te.getVolume(0.125F), 10F, 1.0F, 20);
     }
 
     private void setupTanks() {
@@ -68,6 +82,12 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         tanks[0].setFill(tanks[0].getFill() - step.amountReq() * ops);
         tanks[1].setFill(tanks[1].getFill() + step.amountProduced() * ops);
         heat -= step.heatReq() * ops;
+
+        if (ops > 0 && level.getRandom().nextInt(400) == 0) {
+            level.playSound(null, worldPosition.above(2), ModSounds.BOILER_GROAN.get(),
+                    SoundSource.BLOCKS, 0.5F, 1.0F);
+        }
+
         isOn = ops > 0;
     }
 
