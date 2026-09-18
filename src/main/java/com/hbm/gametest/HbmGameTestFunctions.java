@@ -1046,6 +1046,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("crate_carried_round_trip", 40, () -> CompatibilityBoundaryGameTests::crateCarriedRoundTrip);
     public static final GameTests.Function ENUM_MULTI_TAB_VARIANTS =
             TESTS.function("enum_multi_tab_variants", 20, () -> HbmGameTestFunctions::enumMultiTabVariants);
+    public static final GameTests.Function DEJSON_VARIANT_MODELS =
+            TESTS.function("dejson_variant_models", 40, () -> DejsonGameTests::variantModelsPerConstant);
 
     public static void init() {}
 

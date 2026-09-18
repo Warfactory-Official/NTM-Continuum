@@ -32,7 +32,7 @@ public final class ModItemModels {
     private static final String NS = "hbm";
 
     /** How many items are the plain one-sprite case; quoted in this class's own javadoc. */
-    static final int SPRITES = 1372;
+    static final int SPRITES = 1371;
 
     /**
      * The shape art each material-shape sprite is computed from, and the materials it is computed for.
@@ -112,6 +112,7 @@ public final class ModItemModels {
         declared = true;
 
         sprites();
+        variants();
         remappedShapeSprites();
         renamedSprites();
         layeredSprites();
@@ -171,6 +172,30 @@ public final class ModItemModels {
                 .register();
     }
 
+    /**
+     * The families that pick their model from {@code hbm:item_variant}, one sprite per enum constant.
+     *
+     * <p>Order is the declaration: case <i>n</i> is constant <i>n</i>, so these lists are the enum's
+     * own order and nothing else. The six other component-selected families stay written, because
+     * their cases are not all sprites.
+     *
+     * <p>{@code ammo_arty} is here because it was not anywhere: it shipped as a single sprite, so all
+     * twelve shells drew the plain one.
+     */
+    private static void variants() {
+        selectedSprites("ammo_arty", "", "_classic", "_he", "_mini_nuke", "_nuke", "_phosphorus",
+                "_mini_nuke_multi", "_phosphorus_multi", "_cargo", "_chlorine", "_phosgene",
+                "_mustard_gas");
+    }
+
+    private static void selectedSprites(String item, String... suffixes) {
+        Models.Group models = Models.group();
+        for (String suffix : suffixes) {
+            models = models.and(suffix, Models.generated(NS + ":items/" + item + suffix));
+        }
+        Dejson.item(NS, item).models(models).selects(NS + ":item_variant").register();
+    }
+
     /** Items that show a model another item already declares. */
     private static void shared() {
         for (String waste : ZIRNOX_WASTE) {
@@ -184,7 +209,7 @@ public final class ModItemModels {
     };
 
     private static final String[] SPRITE_ITEMS_0 = {
-            "ammo_arty", "ammo_debug", "ammo_dgk", "ammo_fireext", "ammo_fireext_foam",
+            "ammo_debug", "ammo_dgk", "ammo_fireext", "ammo_fireext_foam",
             "ammo_fireext_sand", "ammo_secret_m44_equestrian", "ammo_shell", "ammo_shell_apfsds_du",
             "ammo_shell_apfsds_t", "ammo_shell_explosive", "ammo_shell_w9", "ammo_standard_bmg50_ap",
             "ammo_standard_bmg50_du", "ammo_standard_bmg50_fmj", "ammo_standard_bmg50_he",

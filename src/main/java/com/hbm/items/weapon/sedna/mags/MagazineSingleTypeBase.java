@@ -46,13 +46,21 @@ public abstract class MagazineSingleTypeBase implements IMagazine<BulletConfig> 
         return this;
     }
 
+    /**
+     * The round currently chambered, or the first this magazine accepts when nothing is.
+     *
+     * <p>Upstream stores an index into the global config list and a stack that has never been loaded
+     * carries zero, which is a real config — one this magazine almost never accepts, so the answer is
+     * its first accepted round. Here the stored type is a registry id and an unloaded stack carries no
+     * id at all, which is the same state and has to give the same answer: without the fallback a gun
+     * that has not been reloaded yet reports no ammo type, and the HUD next to its round counter is
+     * empty until the first magazine goes in.
+     */
     @Override
     public BulletConfig getType(ItemStack stack, Container inventory) {
         BulletConfig cfg = BulletConfigs.get(getMagType(stack, index));
-        if (cfg == null) return null;
-        // A round this magazine does not accept can only come from edited or stale data; fall back
-        // rather than letting the gun fire something it was never meant to chamber.
-        return acceptedBullets.contains(cfg) ? cfg : acceptedBullets.get(0);
+        if (cfg != null && acceptedBullets.contains(cfg)) return cfg;
+        return acceptedBullets.isEmpty() ? null : acceptedBullets.get(0);
     }
 
     @Override

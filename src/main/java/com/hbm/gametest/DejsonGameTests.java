@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Holds each code-declared block model against the reality a unit test cannot reach: the registry,
@@ -394,6 +395,73 @@ public final class DejsonGameTests {
             }
         }
         return true;
+    }
+
+    /**
+     * Every enum-backed family that says its constants look different really has a model for each.
+     *
+     * <p>{@code multiTexture} is a claim about art and nothing held anyone to it: {@code ammo_arty}
+     * shipped one sprite for twelve shells and drew the plain one twelve times, through a green build
+     * and a green suite. The definition is read off the classpath rather than off a declaration
+     * because that is the file the client resolves, whichever of the two put it there.
+     */
+    public static void variantModelsPerConstant(GameTestHelper helper) {
+        List<String> problems = new ArrayList<>();
+        int families = 0;
+
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof com.hbm.items.ItemEnumMulti family) || !family.multiTexture) continue;
+            String id = BuiltInRegistries.ITEM.getKey(item).toString();
+            JsonObject definition = read(assetPath(id, "items"));
+            if (definition == null) {
+                problems.add(id + " has no item definition on the classpath");
+                continue;
+            }
+            families++;
+            int constants = family.theEnum.getEnumConstants().length;
+            List<String> drawn = new ArrayList<>();
+            for (int variant = 0; variant < constants; variant++) {
+                String model = selectedModel(definition, variant);
+                if (model == null) {
+                    problems.add(id + " does not select a model for variant " + variant
+                            + " of " + constants);
+                    break;
+                }
+                drawn.add(model);
+            }
+            if (drawn.size() == constants && Set.copyOf(drawn).size() < constants) {
+                problems.add(id + " draws its " + constants + " variants with only "
+                        + Set.copyOf(drawn).size() + " model(s)");
+            }
+        }
+
+        helper.assertTrue(problems.isEmpty(), join(problems));
+        helper.assertTrue(families > 0, "no multi-texture enum family was found in the registry");
+        Constants.LOG.info("[DEJSON] variant models: {} enum families draw one model per constant",
+                families);
+        helper.succeed();
+    }
+
+    /** The model an {@code hbm:item_variant} definition resolves a variant to, or null if it has none. */
+    private static String selectedModel(JsonObject definition, int variant) {
+        JsonObject model = definition.getAsJsonObject("model");
+        if (model == null || !model.has("type")
+                || !"minecraft:select".equals(model.get("type").getAsString())
+                || !model.has("property")
+                || !"hbm:item_variant".equals(model.get("property").getAsString())) {
+            return null;
+        }
+        JsonArray cases = model.getAsJsonArray("cases");
+        if (cases != null) {
+            for (JsonElement element : cases) {
+                JsonObject entry = element.getAsJsonObject();
+                if (entry.has("when") && entry.get("when").getAsString().equals(String.valueOf(variant))) {
+                    return entry.get("model").toString();
+                }
+            }
+        }
+        JsonElement fallback = model.get("fallback");
+        return fallback == null ? null : fallback.toString();
     }
 
     private static String assetPath(String id, String folder) {
