@@ -560,6 +560,11 @@ public final class ModItemModels {
         Dejson.item(NS, "circuit_quantum").models(Models.generated("hbm:items/circuit.quantum")).register();
         Dejson.item(NS, "circuit_silicon").models(Models.generated("hbm:items/circuit.silicon")).register();
         Dejson.item(NS, "circuit_vacuum_tube").models(Models.generated("hbm:items/circuit.vacuum_tube")).register();
+        // The core is the one dark fusion block with no model of its own: it is RenderShape.INVISIBLE, as
+        // 1.7's getRenderType() == -1, and 1.7 has no item renderer for it either, so the icon is the flat
+        // sprite that render type falls back to. Its art is a drawn orb, not a tileable face — the four
+        // aimed components next to it do have OBJ icons, declared as machine models.
+        Dejson.item(NS, "dfc_core").models(Models.generated("hbm:blocks/dfc_core")).register();
         Dejson.item(NS, "disperser_canister_empty").models(Models.generated("hbm:items/disperser_canister")).register();
         Dejson.item(NS, "falloutitem").models(Models.generated("hbm:items/fallout")).register();
         Dejson.item(NS, "fuel_additive_antiknock").models(Models.generated("hbm:items/fuel_additive.antiknock")).register();

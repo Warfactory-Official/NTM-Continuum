@@ -3349,5 +3349,61 @@
         "stream": false
       }
     ]
+  },
+  "entity.ufoblast": {
+    "category": "hostile",
+    "sounds": [
+      {
+        "name": "hbm:entity/ufoblast",
+        "stream": false
+      }
+    ]
+  },
+  "block.squeakytoy": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/squeakytoy",
+        "stream": false
+      }
+    ]
+  },
+  "player.gulp": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:player/gulp1",
+        "stream": false
+      },
+      {
+        "name": "hbm:player/gulp2",
+        "stream": false
+      },
+      {
+        "name": "hbm:player/gulp3",
+        "stream": false
+      },
+      {
+        "name": "hbm:player/gulp4",
+        "stream": false
+      }
+    ]
+  },
+  "player.groan": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:player/groan1",
+        "stream": false
+      },
+      {
+        "name": "hbm:player/groan2",
+        "stream": false
+      },
+      {
+        "name": "hbm:player/groan3",
+        "stream": false
+      }
+    ]
   }
 }

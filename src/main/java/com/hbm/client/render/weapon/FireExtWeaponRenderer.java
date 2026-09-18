@@ -20,6 +20,28 @@ public final class FireExtWeaponRenderer extends WeaponRenderer {
         return model;
     }
     @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
+
+    /**
+     * Upstream's extinguisher is the one Sedna gun that is not an {@code ItemRenderWeaponBase}: it is a
+     * plain {@code IItemRenderer}, so 1.7 handed it the matrix the engine had already put the held item
+     * in, and the chain in {@link #setupFirstPerson} is written against <em>that</em> frame. Every other
+     * weapon here discards it and rebuilds the pose from the camera; doing so for this one lands the
+     * chain's half-block translate and 0.35 scale in camera space, which puts a three-block canister
+     * around the near plane and draws nothing. So the hand pose the item model supplies is kept, and
+     * only the turn lag and walk sway every Sedna weapon adds are skipped — 1.7 gave it neither.
+     */
+    @Override
+    public void submitFirstPerson(ItemStack stack, PoseStack pose, dev.golem.core.render.SubmitSink collector,
+            int light, int overlay, boolean otherArm) {
+        interp = dev.golem.core.client.Frames.partialTick();
+        pose.pushPose();
+        setupFirstPerson(stack, pose);
+        renderFirstPerson(stack, pose, collector, light, overlay,
+                otherArm ? net.minecraft.world.InteractionHand.OFF_HAND
+                        : net.minecraft.world.InteractionHand.MAIN_HAND);
+        pose.popPose();
+    }
+
     @Override public void setupFirstPerson(ItemStack stack, PoseStack pose) {
         pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(25F));
         pose.translate(0.5F, -0.5F, -0.5F);

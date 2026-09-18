@@ -3,6 +3,7 @@ package com.hbm.client.render.weapon;
 import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
@@ -28,10 +29,14 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
         }
     }
 
+    private static final Identifier SILENCER_MODEL = Ids.of("hbm", "models/weapons/uzi.obj");
+    private static final Surface SILENCER = Surface.cutout("hbm:textures/models/weapons/uzi.png");
+
     private final Variant variant;
     private final Identifier modelId;
     private final Surface body;
     private WavefrontObj model;
+    private WavefrontObj silencerModel;
 
     public Sedna22lrWeaponRenderer(Variant variant) {
         this.variant = variant;
@@ -42,6 +47,20 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
     private WavefrontObj model() {
         if (model == null) model = WavefrontObj.load(modelId);
         return model;
+    }
+
+    /** The Star F wears the uzi's silencer, mesh and skin both. */
+    private WavefrontObj silencerModel() {
+        if (silencerModel == null) silencerModel = WavefrontObj.load(SILENCER_MODEL);
+        return silencerModel;
+    }
+
+    private static boolean silenced(WeaponPose state, int rail) {
+        return XWeaponModManager.hasUpgrade(state.stack, rail, XWeaponModManager.ID_SILENCER);
+    }
+
+    private static boolean anySilenced(WeaponPose state) {
+        return silenced(state, 0) || silenced(state, 1);
     }
 
     @Override
@@ -87,10 +106,15 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
             case AM180 -> {
                 am180(declaration);
                 rest(declaration, "Gun", "Trigger", "Bolt", "Mag", "MagPlate");
+                declaration.part(model().part("Silencer"), body)
+                        .visibleIf(state -> !state.animated && silenced(state, 0));
             }
             case STAR_F -> {
                 starF(held(declaration), 0, 1);
                 rest(declaration, "Gun", "Slide", "Mag", "Hammer");
+                declaration.part(silencerModel().part("Silencer"), SILENCER)
+                        .visibleIf(state -> !state.animated && silenced(state, 0))
+                        .translate(0F, 2.375F, -0.25F);
             }
             case STAR_F_AKIMBO -> {
                 float offset = 0.8F;
@@ -122,13 +146,15 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
                 .scale(0.1875F)
                 .spin(Gem.Axes.X, 0F, -2F, -6F, state -> (float) state.bus("EQUIP", 0)[0])
                 .angle(Gem.Axes.Z, state -> (float) state.bus("TURN", 0)[2])
-                .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL", 0)[2]);
+                .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL", 0)[2])
+                .bus(state -> state.bus("Gun", 0));
 
         gun.child(obj.part("Gun"), body);
+        gun.child(obj.part("Silencer"), body).visibleIf(state -> silenced(state, 0));
         gun.child(obj.part("Trigger"), body).bus(state -> state.bus("Trigger", 0));
         gun.child(obj.part("Bolt"), body)
                 .slide(Gem.Axes.Z, state -> (float) state.bus("BOLT", 0)[2])
-                .bus(state -> state.bus("BOLT", 0));
+                .bus(state -> state.bus("Bolt", 0));
 
         Gem.Part<WeaponPose> drum = gun.joint()
                 .slide(Gem.Axes.X, state -> (float) state.bus("MAG", 0)[0])
@@ -181,21 +207,31 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.X, state -> (float) state.bus("BULLET", rail)[0])
                 .slide(Gem.Axes.Y, state -> (float) state.bus("BULLET", rail)[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("BULLET", rail)[2]);
+
+        gun.child(silencerModel().part("Silencer"), SILENCER)
+                .translate(0F, 2.375F, -0.25F)
+                .visibleIf(state -> silenced(state, rail));
     }
 
     /** The akimbo rest pose: the pair crossed, as the old inventory draw laid them out. */
     private void akimboRest(Gem.Model<WeaponPose> declaration) {
         String[] parts = {"Gun", "Slide", "Mag", "Hammer"};
 
-        declaration.part(model().parts(parts), body)
+        Gem.Part<WeaponPose> first = declaration.joint()
                 .visibleIf(state -> !state.animated)
                 .rotate(Gem.Axes.Z, 225F)
                 .rotate(Gem.Axes.Y, 90F)
                 .rotate(Gem.Axes.X, 25F)
                 .rotate(Gem.Axes.Y, 45F)
-                .translate(0.5F, 0F, 0F);
+                .translate(0.5F, 0F, 0F)
+                .stretch(state -> anySilenced(state) ? 0.625F : 1F)
+                .slide(Gem.Axes.Z, state -> anySilenced(state) ? -4F : 0F);
+        first.child(model().parts(parts), body);
+        first.child(silencerModel().part("Silencer"), SILENCER)
+                .translate(0F, 2.375F, -0.25F)
+                .visibleIf(state -> silenced(state, 1));
 
-        declaration.part(model().parts(parts), body)
+        Gem.Part<WeaponPose> second = declaration.joint()
                 .visibleIf(state -> !state.animated)
                 .translate(0F, 0F, 5F)
                 .rotate(Gem.Axes.Z, 225F)
@@ -203,7 +239,13 @@ public final class Sedna22lrWeaponRenderer extends WeaponRenderer {
                 .rotate(Gem.Axes.X, -90F)
                 .rotate(Gem.Axes.X, 25F)
                 .rotate(Gem.Axes.Y, -45F)
-                .translate(-0.5F, 0F, 0F);
+                .translate(-0.5F, 0F, 0F)
+                .stretch(state -> anySilenced(state) ? 0.625F : 1F)
+                .slide(Gem.Axes.Z, state -> anySilenced(state) ? -4F : 0F);
+        second.child(model().parts(parts), body);
+        second.child(silencerModel().part("Silencer"), SILENCER)
+                .translate(0F, 2.375F, -0.25F)
+                .visibleIf(state -> silenced(state, 0));
     }
 
     @Override

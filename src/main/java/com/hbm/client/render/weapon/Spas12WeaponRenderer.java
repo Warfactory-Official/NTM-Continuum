@@ -20,7 +20,7 @@ public final class Spas12WeaponRenderer extends WeaponRenderer {
     @Override protected float getTurnMagnitude(ItemStack s){return ItemGunBaseNT.getIsAiming(s)?2.5F:-.5F;}
     @Override public float viewFov(ItemStack s,float f,float p){return aimingFov(s,f,p,.33F);}
     @Override public void setupFirstPerson(ItemStack s,PoseStack p){p.translate(0,0,.875);float o=.8F;standardAimingTransform(s,p,-1.25F*o,-1.75F*o,-.5F*o,0,0,0);}
-    @Override protected void setup(Gem.Model<WeaponPose>d){WavefrontObj o=model();Gem.Part<WeaponPose>g=d.joint().visibleIf(s->s.animated).stretch(s->.5F).rotate(Gem.Axes.Y,180F).spin(Gem.Axes.X,0,0,0,s->(float)s.bus("EQUIP")[0]);g.child(o.part("MainBody"),BODY).bus(s->s.bus("MainBody"));g.child(o.part("PumpGrip"),BODY).bus(s->s.bus("PumpGrip"));Gem.Part<WeaponPose>shell=g.joint().bus(s->s.bus("Shell"));shell.child(o.part("Shell"),CASING);shell.child(o.part("ShellFore"),CASING);d.joint().visibleIf(s->!s.animated).rotate(Gem.Axes.Y,180F).child(o.parts("MainBody","PumpGrip"),BODY);}
+    @Override protected void setup(Gem.Model<WeaponPose>d){WavefrontObj o=model();Gem.Part<WeaponPose>g=d.joint().visibleIf(s->s.animated).stretch(s->.5F).rotate(Gem.Axes.Y,180F).spin(Gem.Axes.X,0,0,0,s->(float)s.bus("EQUIP")[0]);Gem.Part<WeaponPose>body=g.joint().bus(s->s.bus("MainBody"));body.child(o.part("MainBody"),BODY);body.child(o.part("PumpGrip"),BODY).bus(s->s.bus("PumpGrip"));Gem.Part<WeaponPose>shell=body.joint().bus(s->s.bus("Shell"));shell.child(o.part("Shell"),CASING);shell.child(o.part("ShellFore"),CASING);d.joint().visibleIf(s->!s.animated).rotate(Gem.Axes.Y,180F).child(o.parts("MainBody","PumpGrip"),BODY);}
 
     @Override
     protected void setupInv(PoseStack pose, ItemStack stack) {

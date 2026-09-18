@@ -21,7 +21,7 @@ public class WeaponModSawedOff extends WeaponModBase {
                         (BiFunction<ItemStack, GunAnimation, BusAnimation>) base;
                 BiFunction<ItemStack, GunAnimation, BusAnimation> replacement = (stack, type) -> {
                     BusAnimation animation = shortAnimation(type);
-                    return animation != null ? animation : original == null ? new BusAnimation() : original.apply(stack, type);
+                    return animation != null ? animation : original == null ? null : original.apply(stack, type);
                 };
                 return cast(replacement, base);
             }

@@ -183,10 +183,13 @@ public final class XFactoryFlamer {
         BulletConfig[] rounds = variant == 0 ? new BulletConfig[]{flame_diesel, flame_gas, flame_napalm, flame_balefire}
                 : variant == 1 ? new BulletConfig[]{flame_topaz_diesel, flame_topaz_gas, flame_topaz_napalm, flame_topaz_balefire}
                 : new BulletConfig[]{flame_daybreaker_diesel, flame_daybreaker_gas, flame_daybreaker_napalm, flame_daybreaker_balefire};
+        Receiver receiver = new Receiver(0).dmg(variant == 2 ? 25F : variant == 1 ? 1.5F : 1F).delay(1)
+                .auto(true).reload(90).jam(17)
+                .mag(new MagazineFullReload(0, variant == 1 ? 500 : variant == 2 ? 50 : 300)
+                        .addConfigs(rounds)).offset(0.75, -0.0625, -0.25D).setupStandardFire();
+        if (variant == 2) receiver.sound(com.hbm.sound.ModGunSounds.FIRE_BLACK_POWDER::get, 1F, 1F);
         return new GunConfig().dura(20_000).draw(10).inspect(17).crosshair(Crosshair.L_CIRCLE)
-                .rec(new Receiver(0).dmg(variant == 2 ? 25F : variant == 1 ? 1.5F : 1F).delay(1).auto(true)
-                        .reload(90).jam(17).mag(new MagazineFullReload(0, variant == 1 ? 500 : variant == 2 ? 50 : 300)
-                                .addConfigs(rounds)).offset(0.75, -0.0625, -0.25D).setupStandardFire())
+                .rec(receiver)
                 .setupStandardConfiguration();
     }
 

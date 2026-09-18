@@ -26,7 +26,7 @@ public final class WeapnModG3SawedOff extends WeaponModBase {
                     (BiFunction<ItemStack, GunAnimation, BusAnimation>) base;
             BiFunction<ItemStack, GunAnimation, BusAnimation> replacement = (stack, type) -> type == GunAnimation.EQUIP
                     ? ANIMS.apply(stack, type)
-                    : original == null ? new BusAnimation() : original.apply(stack, type);
+                    : original == null ? null : original.apply(stack, type);
             return cast(replacement, base);
         }
         return base;

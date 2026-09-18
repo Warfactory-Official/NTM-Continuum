@@ -3,6 +3,7 @@ package com.hbm.client.render.weapon;
 import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
@@ -30,6 +31,9 @@ public final class LasrifleWeaponRenderer extends WeaponRenderer {
     @Override public float viewFov(ItemStack stack, float fov, float partialTick) {
         return aimingFov(stack, fov, partialTick,
                 SpecialWeaponRenderers.hasUpgrade(stack, 218) ? 0.66F : 0.75F);
+    }
+    @Override protected boolean scopedIn(ItemStack stack) {
+        return !SpecialWeaponRenderers.hasUpgrade(stack, XWeaponModManager.ID_LAS_AUTO) && fullyAimed();
     }
     @Override public void setupFirstPerson(ItemStack stack, PoseStack pose) {
         pose.translate(0, 0, 0.875);

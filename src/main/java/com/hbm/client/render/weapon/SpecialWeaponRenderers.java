@@ -143,4 +143,19 @@ public final class SpecialWeaponRenderers {
     static boolean hasUpgrade(ItemStack stack, int config, int id) {
         return XWeaponModManager.hasUpgrade(stack, config, id);
     }
+
+    /**
+     * How many rounds a belt shows. Upstream prefers a {@code SHELLS} bus over the live magazine
+     * whenever the running animation declares one, so a reload can lay the belt down round by round
+     * rather than snapping to the count the server has already applied.
+     */
+    static int shellCount(WeaponPose state, int rail) {
+        com.hbm.client.anim.HbmAnimations.Animation running =
+                com.hbm.client.anim.HbmAnimations.getRelevantAnim(state.hand, rail);
+        if (running != null && running.animation.getBus("SHELLS") != null) {
+            return (int) state.bus("SHELLS", rail)[0];
+        }
+        return state.stack.getItem() instanceof ItemGunBaseNT gun
+                ? gun.getPrimaryMagazine(state.stack, rail).getAmount(state.stack, null) : 0;
+    }
 }

@@ -37,14 +37,19 @@ public final class G3WeaponRenderer extends WeaponRenderer {
     }
 
     @Override public float viewFov(ItemStack stack, float fov, float partialTick) {
-        return aimingFov(stack, fov, partialTick, 0.33F);
+        return aimingFov(stack, fov, partialTick, isScoped(stack) ? 0.66F : 0.33F);
+    }
+
+    @Override protected boolean scopedIn(ItemStack stack) {
+        return isScoped(stack) && fullyAimed();
     }
 
     @Override public void setupFirstPerson(ItemStack stack, PoseStack pose) {
         pose.translate(0, 0, 0.875);
         float offset = 0.8F;
+        boolean scoped = isScoped(stack);
         standardAimingTransform(stack, pose, -1.25F * offset, -offset, 2.75F * offset,
-                0, -3.5625 / 8D, 1.75);
+                0, scoped ? -5.53125 / 8D : -3.5625 / 8D, scoped ? 1.46875 : 1.75);
     }
 
     /**
@@ -64,7 +69,9 @@ public final class G3WeaponRenderer extends WeaponRenderer {
 
         for (String part : G3StaticLayout.PARTS) {
             if (part.equals("Magazine") || part.equals("Guide_And_Bolt") || part.equals("Handle")) continue;
-            gun.child(obj.part(part), body);
+            Gem.Part<WeaponPose> piece = gun.child(obj.part(part), body);
+            if (part.equals("Stock")) piece.visibleIf(state -> hasStock(state.stack));
+            if (part.equals("Flash_Hider")) piece.visibleIf(state -> !hasSilencer(state.stack));
         }
 
         Gem.Part<WeaponPose> magazine = gun.joint()
@@ -101,6 +108,10 @@ public final class G3WeaponRenderer extends WeaponRenderer {
                 .spin(Gem.Axes.X, 0F, -0.875F, -3.5F, state -> state.animated
                         ? -30F * (1 - ItemGunBaseNT.getMode(state.stack, 0))
                         : -30F);
+
+        Surface attachments = Surface.cutout("hbm:textures/models/weapons/g3_attachments.png");
+        gun.child(obj.part("Silencer"), attachments).visibleIf(state -> hasSilencer(state.stack));
+        gun.child(obj.part("Scope"), attachments).visibleIf(state -> isScoped(state.stack));
     }
 
     @Override
@@ -129,6 +140,11 @@ public final class G3WeaponRenderer extends WeaponRenderer {
 
     static boolean hasStock(ItemStack stack) {
         return !XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_NO_STOCK);
+    }
+
+    static boolean isScoped(ItemStack stack) {
+        return SpecialWeaponRenderers.itemPath(stack).equals("gun_g3_zebra")
+                || XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE);
     }
 
     static boolean hasSilencer(ItemStack stack) {

@@ -110,6 +110,22 @@ public abstract class WeaponRenderer {
         }
     }
 
+    /**
+     * Whether the weapon is being sighted through its scope right now.
+     *
+     * <p>Upstream returns from {@code renderFirstPerson} before drawing anything when this holds, so
+     * the scope overlay {@code GunScopeOverlay} paints is not obstructed by the weapon it belongs to.
+     * The muzzle flash and smoke go with it, which is why the test sits here and not on a declaration.
+     */
+    protected boolean scopedIn(ItemStack stack) {
+        return false;
+    }
+
+    /** The aim transition has finished, in the previous tick as well as this one. */
+    protected static boolean fullyAimed() {
+        return ItemGunBaseNT.prevAimingProgress == 1F && ItemGunBaseNT.aimingProgress == 1F;
+    }
+
     /** The upstream FOV adjustment for this renderer; most renderers deliberately leave it unchanged. */
     public float viewFov(ItemStack stack, float fov, float partialTick) {
         return fov;
@@ -145,6 +161,7 @@ public abstract class WeaponRenderer {
 
     public final void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
             int light, int overlay, InteractionHand hand) {
+        if (scopedIn(stack)) return;
         replay(stack, true, pose, collector, light, overlay,
                 hand == InteractionHand.OFF_HAND ? ItemDisplayContext.FIRST_PERSON_LEFT_HAND
                         : ItemDisplayContext.FIRST_PERSON_RIGHT_HAND,

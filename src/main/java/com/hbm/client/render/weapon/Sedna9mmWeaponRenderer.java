@@ -3,6 +3,7 @@ package com.hbm.client.render.weapon;
 import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
 import dev.golem.core.render.gem.Gem;
@@ -28,6 +29,8 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
         }
     }
 
+    private static final Surface SATURNITE = Surface.cutout("hbm:textures/models/weapons/uzi_saturnite.png");
+
     private final Variant variant;
     private final Identifier modelId;
     private final Surface body;
@@ -42,6 +45,16 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
     private WavefrontObj model() {
         if (model == null) model = WavefrontObj.load(modelId);
         return model;
+    }
+
+    private static boolean silenced(WeaponPose state, int rail) {
+        return XWeaponModManager.hasUpgrade(state.stack, rail, XWeaponModManager.ID_SILENCER);
+    }
+
+    /** Upstream binds one texture for the whole uzi, so the skin moves per part rather than per mesh. */
+    private Gem.SurfaceOf<WeaponPose> skin(int rail) {
+        return state -> XWeaponModManager.hasUpgrade(state.stack, rail, XWeaponModManager.ID_UZI_SATURN)
+                ? SATURNITE : body;
     }
 
     @Override
@@ -107,7 +120,11 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
             }
             case UZI -> {
                 uzi(held(declaration), 0, 1, "Gun");
-                rest(declaration, "Gun", "StockBack", "StockFront", "Slide", "Magazine");
+                Gem.Part<WeaponPose> still = declaration.joint().visibleIf(state -> !state.animated);
+                still.child(model().parts("Gun", "StockBack", "StockFront", "Slide", "Magazine"), body)
+                        .skin(skin(0));
+                still.child(model().part("Silencer"), body).skin(skin(0))
+                        .visibleIf(state -> silenced(state, 0));
             }
             case UZI_AKIMBO -> {
                 float offset = 0.8F;
@@ -209,27 +226,30 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                 .spin(Gem.Axes.X, 0F, 0F, -6F, state -> (float) state.bus("LIFT", rail)[0])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("RECOIL", rail)[2]);
 
-        gun.child(obj.part(gunPart), body);
+        gun.child(obj.part(gunPart), body).skin(skin(rail));
+        gun.child(obj.part("Silencer"), body).skin(skin(rail))
+                .visibleIf(state -> silenced(state, rail));
 
         Gem.Part<WeaponPose> stock = gun.joint()
                 .translate(0F, 0.3125F, -5.75F)
                 .angle(Gem.Axes.X, state -> (float) (180 - state.bus("STOCKFRONT", rail)[0]))
                 .translate(0F, -0.3125F, 5.75F);
-        stock.child(obj.part("StockFront"), body);
+        stock.child(obj.part("StockFront"), body).skin(skin(rail));
 
         stock.joint()
                 .translate(0F, -0.3125F, -3F)
                 .angle(Gem.Axes.X, state -> (float) (-200 - state.bus("STOCKBACK", rail)[0]))
                 .translate(0F, 0.3125F, 3F)
-                .child(obj.part("StockBack"), body);
+                .child(obj.part("StockBack"), body).skin(skin(rail));
 
-        gun.child(obj.part("Slide"), body).slide(Gem.Axes.Z, state -> (float) state.bus("SLIDE", rail)[2]);
+        gun.child(obj.part("Slide"), body).skin(skin(rail))
+                .slide(Gem.Axes.Z, state -> (float) state.bus("SLIDE", rail)[2]);
 
         Gem.Part<WeaponPose> magazine = gun.joint()
                 .slide(Gem.Axes.X, state -> (float) state.bus("MAG", rail)[0])
                 .slide(Gem.Axes.Y, state -> (float) state.bus("MAG", rail)[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("MAG", rail)[2]);
-        magazine.child(obj.part("Magazine"), body);
+        magazine.child(obj.part("Magazine"), body).skin(skin(rail));
         magazine.child(obj.part("Bullet"), body).visibleIf(state -> state.bus("BULLET", rail)[0] == 1);
     }
 
@@ -245,8 +265,10 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                 .rotate(Gem.Axes.X, 25F)
                 .rotate(Gem.Axes.Y, 45F)
                 .translate(0F, 1F, 0F);
-        left.child(obj.part("Gun"), body);
-        left.child(obj.parts(parts), body);
+        left.child(obj.part("Gun"), body).skin(skin(1));
+        left.child(obj.parts(parts), body).skin(skin(1));
+        left.child(obj.part("Silencer"), body).skin(skin(1))
+                .visibleIf(state -> silenced(state, 1));
 
         Gem.Part<WeaponPose> right = declaration.joint()
                 .visibleIf(state -> !state.animated)
@@ -257,8 +279,10 @@ public final class Sedna9mmWeaponRenderer extends WeaponRenderer {
                 .rotate(Gem.Axes.X, 25F)
                 .rotate(Gem.Axes.Y, -45F)
                 .translate(0F, 1F, 0F);
-        right.child(obj.part("GunMirror"), body);
-        right.child(obj.parts(parts), body);
+        right.child(obj.part("GunMirror"), body).skin(skin(0));
+        right.child(obj.parts(parts), body).skin(skin(0));
+        right.child(obj.part("Silencer"), body).skin(skin(0))
+                .visibleIf(state -> silenced(state, 0));
     }
 
     @Override

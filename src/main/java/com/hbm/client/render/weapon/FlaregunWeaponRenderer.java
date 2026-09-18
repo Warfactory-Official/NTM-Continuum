@@ -51,7 +51,8 @@ public final class FlaregunWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.Y, s -> (float) s.bus("RECOIL")[1])
                 .slide(Gem.Axes.Z, s -> (float) s.bus("RECOIL")[2])
                 .angle(Gem.Axes.X, s -> (float) (s.bus("RECOIL")[2] * 10))
-                .angle(Gem.Axes.X, s -> (float) s.bus("FLIP")[0]);
+                .angle(Gem.Axes.X, s -> (float) s.bus("FLIP")[0])
+                .spin(Gem.Axes.X, 0F, 0F, -8F, s -> (float) -s.bus("EQUIP")[0]);
         held.child(obj.part("Gun"), BODY);
         held.child(obj.part("Hammer"), BODY)
                 .spin(Gem.Axes.X, 0F, 1.8125F, -4F, s -> (float) (s.bus("HAMMER")[0] - 15));

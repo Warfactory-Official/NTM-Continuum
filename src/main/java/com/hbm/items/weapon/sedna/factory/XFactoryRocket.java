@@ -245,6 +245,7 @@ public final class XFactoryRocket {
                 : family == 1 ? rocket_qd : family == 2 ? rocket_ml : rocket_ncrpa;
         return new GunConfig().dura(300).draw(7).inspect(40).crosshair(Crosshair.L_CIRCUMFLEX)
                 .rec(new Receiver(0).dmg(damage).delay(delay).reload(reload).jam(jam)
+                        .sound(com.hbm.sound.ModGunSounds.FIRE_ROCKET::get, 1F, 1F)
                         .mag(new MagazineSingleReload(0, capacity).addConfigs(roundsForGun))
                         .offset(1, -0.0625 * 1.5, -0.1875D).setupStandardFire())
                 .setupStandardConfiguration();

@@ -811,6 +811,9 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function GUN_OBTAINMENT_CATALOGUE_REGISTRATION =
             TESTS.function("gun_obtainment_catalogue_registration", 40,
                     () -> GunObtainmentDataAuditGameTests::catalogueRegistration);
+    public static final GameTests.Function GUN_FIRE_SOUNDS =
+            TESTS.function("gun_fire_sounds", 40,
+                    () -> GunObtainmentDataAuditGameTests::gunFireSounds);
     public static final GameTests.Function GUN_OBTAINMENT_ANVIL_AMMO_GATEWAY =
             TESTS.function("gun_obtainment_anvil_ammo_gateway", 40,
                     () -> GunObtainmentDataAuditGameTests::anvilAmmoGateway);

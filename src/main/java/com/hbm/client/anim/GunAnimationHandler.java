@@ -64,10 +64,12 @@ public final class GunAnimationHandler {
             }
         }
 
-        BusAnimation animation = GunAnimations.get(stack, cue, index);
-        if (animation == null && config.getAnimation(stack) != null) {
-            animation = config.getAnimation(stack).apply(stack, cue);
-        }
+        // The config's function is the one a weapon mod substitutes, so it is asked first; a mod that
+        // has no opinion on this cue answers null and the gun's own table supplies the animation.
+        java.util.function.BiFunction<ItemStack, GunAnimation, BusAnimation> configured =
+                config.getAnimation(stack);
+        BusAnimation animation = configured == null ? null : configured.apply(stack, cue);
+        if (animation == null) animation = GunAnimations.get(stack, cue, index);
         if (animation != null) HbmAnimations.start(stack.getItem(), animation, hand, index);
     }
 }

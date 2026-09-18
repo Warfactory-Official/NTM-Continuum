@@ -54,11 +54,13 @@ public final class FlamerWeaponRenderer extends WeaponRenderer {
                 .translate(0, 1, 0)
                 .angle(Gem.Axes.Z, state -> (float) state.bus("ROTATE")[2])
                 .translate(0, -1, 0);
-        root.child(obj.part("Gun"), body);
-        root.child(obj.part("HeatShield"), body)
+        Gem.Part<WeaponPose> frame = root.joint().bus(state -> state.bus("Gun"));
+        frame.child(obj.part("Gun"), body);
+        frame.child(obj.part("HeatShield"), body)
                 .visibleIf(state -> SpecialWeaponRenderers.hasPath(state, "gun_flamer_daybreaker"));
-        root.child(obj.part("Tank"), body);
+        root.child(obj.part("Tank"), body).bus(state -> state.bus("Tank"));
         root.child(obj.part("Gauge"), body)
+                .bus(state -> state.bus("Gauge"))
                 .translate(1.25F, 1.25F, 0)
                 .angle(Gem.Axes.Z, state -> -135F + 270F * SpecialWeaponRenderers.amount(state)
                         / Math.max(1F, state.stack.getItem() instanceof ItemGunBaseNT gun

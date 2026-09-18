@@ -38,11 +38,15 @@ public final class StingerWeaponRenderer extends WeaponRenderer {
         standardAimingTransform(stack, pose, -3.75F * offset, -9F * offset, -3.5F * offset,
                 -2.625F * offset, -6.5, -8.5F);
     }
+    @Override protected boolean scopedIn(ItemStack stack) {
+        return fullyAimed();
+    }
+
     @Override protected void setup(Gem.Model<WeaponPose> declaration) {
         WavefrontObj obj = model();
         declaration.part(obj.all(), BODY).visibleIf(state -> !state.animated);
         Gem.Part<WeaponPose> root = declaration.joint()
-                .visibleIf(state -> state.animated && !SpecialWeaponRenderers.fullyAimed(state))
+                .visibleIf(state -> state.animated)
                 .scale(1.5F)
                 .translate(0, -1, -1)
                 .angle(Gem.Axes.X, state -> (float) state.bus("EQUIP")[0])

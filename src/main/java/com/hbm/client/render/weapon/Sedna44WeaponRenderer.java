@@ -112,10 +112,9 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
             }
             case HEAVY_REVOLVER, LILMAC, PROTEGE -> {
                 heavyRevolver(declaration);
-                rest(declaration, "Gun", "Pivot", "Cylinder", "Bullets", "Hammer");
-                if (variant.scoped) {
-                    declaration.part(model().part("Scope"), SCOPE).visibleIf(state -> !state.animated);
-                }
+                rest(declaration, "Gun", "Pivot", "Cylinder", "Bullets", "Casings", "Hammer");
+                declaration.part(model().part("Scope"), SCOPE)
+                        .visibleIf(state -> !state.animated && isScoped(state.stack));
             }
             case HANGMAN -> {
                 hangman(declaration);
@@ -186,17 +185,19 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
         Gem.Part<WeaponPose> cylinder = pivot.child(obj.part("Cylinder"), body)
                 .spin(Gem.Axes.X, 0F, 1.75F, 0F, state -> (float) (state.bus("DRUM")[2] * -60));
 
-        cylinder.child(obj.part("Bullets"), body)
-                .visibleIf(state -> state.bus("RELOAD_BULLETS_CON")[0] != 1)
+        Gem.Part<WeaponPose> loaded = cylinder.joint()
                 .slide(Gem.Axes.X, state -> (float) state.bus("RELOAD_BULLETS")[0])
                 .slide(Gem.Axes.Y, state -> (float) state.bus("RELOAD_BULLETS")[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("RELOAD_BULLETS")[2]);
+        loaded.child(obj.part("Bullets"), body)
+                .visibleIf(state -> state.bus("RELOAD_BULLETS_CON")[0] != 1);
+        loaded.child(obj.part("Casings"), body);
 
         gun.child(obj.part("Hammer"), body)
                 .spin(Gem.Axes.Z, 4F, 1.25F, 0F,
                         state -> (float) (-30 + 30 * state.bus("HAMMER")[2]));
 
-        if (variant.scoped) gun.child(obj.part("Scope"), SCOPE);
+        gun.child(obj.part("Scope"), SCOPE).visibleIf(state -> isScoped(state.stack));
     }
 
     private void hangman(Gem.Model<WeaponPose> declaration) {
@@ -281,6 +282,11 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
             return;
         }
         super.setupEntity(pose, stack);
+    }
+
+    @Override
+    protected boolean scopedIn(ItemStack stack) {
+        return isScoped(stack) && fullyAimed();
     }
 
     private boolean isScoped(ItemStack stack) {

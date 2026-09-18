@@ -188,6 +188,16 @@ public final class HbmBlockEntityRenderers {
         regGem(sink, ModBlockEntities.PILE_LOADER.get(), PileDeviceRenderers.Loader::new);
         regGem(sink, ModBlockEntities.PILE_VENT.get(), PileDeviceRenderers.Vent::new);
 
+        // 1.7 draws both of these from an OBJ and leaves the block itself with no model: the geiger on a
+        // TESR, the supply crate on a chunk-mesh handler that a modern port has no equivalent of. Both
+        // meshes are authored about the origin, which BlockObjRenderer's centring translate answers.
+        regGem(sink, ModBlockEntities.GEIGER.get(),
+                () -> new com.hbm.client.render.BlockObjRenderer<com.hbm.tileentity.machine.TileEntityGeiger>(
+                        "blocks/geiger_counter.obj", "textures/blocks/geiger.png", true));
+        regGem(sink, ModBlockEntities.CRATE_SUPPLY.get(),
+                () -> new com.hbm.client.render.BlockObjRenderer<com.hbm.tileentity.machine.storage.TileEntityCrateSupply>(
+                        "blocks/conservecrate.obj", "textures/block/crate_can.png"));
+
         regGem(sink, ModBlockEntities.DFC_EMITTER.get(), CoreComponentRenderers.Emitter::new);
         regGem(sink, ModBlockEntities.DFC_RECEIVER.get(), CoreComponentRenderers.Receiver::new);
         regGem(sink, ModBlockEntities.DFC_INJECTOR.get(), CoreComponentRenderers.Injector::new);

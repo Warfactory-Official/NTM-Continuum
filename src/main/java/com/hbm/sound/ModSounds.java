@@ -189,6 +189,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> TRAIN_IMPACT = register("weapon.train_impact");
     public static final RegistryObject<SoundEvent> UFO_BEAM = register("entity.ufo_beam");
     public static final RegistryObject<SoundEvent> UFO_BLAST = register("ufo_blast");
+    public static final RegistryObject<SoundEvent> SQUEAKY_TOY = register("block.squeakytoy");
 
     // --- ntm-next entity port (gen_entity_sounds.py) ---
     public static final RegistryObject<SoundEvent> GRENADE_NUKA = register("weapon.reload.grenade_nuka");
