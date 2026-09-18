@@ -19,7 +19,6 @@ public final class ChargeThrowerWeaponRenderer extends WeaponRenderer {
         if (model == null) model = SpecialWeaponRenderers.model("charge_thrower");
         return model;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 0F : -0.5F;
     }

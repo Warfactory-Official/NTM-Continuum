@@ -78,8 +78,9 @@ public class ExplosionSmallCreator implements IParticleCreator {
         }
     }
 
-    private static final class PositionalSound extends AbstractSoundInstance {
-        private PositionalSound(net.minecraft.sounds.SoundEvent sound, double x, double y, double z) {
+    /** Shared with {@link ExplosionLargeCreator}: a fixed point in the world, played on arrival. */
+    static final class PositionalSound extends AbstractSoundInstance {
+        PositionalSound(net.minecraft.sounds.SoundEvent sound, double x, double y, double z) {
             super(sound, SoundSource.PLAYERS, SoundInstance.createUnseededRandom());
             this.x = x;
             this.y = y;

@@ -749,6 +749,29 @@ fun Project.registerMachineObjTransformChecks() {
                 }
             }
 
+            // Every legacy OBJ body states its own scale. One that leaves the field out takes the
+            // codec's 0.28 default, which is the block-framed convention and not a 1.7 renderInventory
+            // number at all, so the icon draws at roughly a third of its size behind a green build.
+            var scaled = 0
+            val pending = ArrayDeque<Pair<String, Any?>>()
+            directory.listFiles()?.filter { it.name.endsWith(".json") }?.sortedBy { it.name }
+                ?.forEach { pending.add(it.name to JsonSlurper().parse(it)) }
+            while (pending.isNotEmpty()) {
+                val (name, node) = pending.removeFirst()
+                when (node) {
+                    is Map<*, *> -> {
+                        if (node["type"] == "hbm:machine_obj") {
+                            check(node.containsKey("scale")) {
+                                "$name declares an hbm:machine_obj model with no scale"
+                            }
+                            scaled++
+                        }
+                        node.values.forEach { pending.add(name to it) }
+                    }
+                    is List<*> -> node.forEach { pending.add(name to it) }
+                }
+            }
+
             // These three are declared in ModBlockModels.RENDERED_2 rather than written, so the
             // generated copy is the one to check and the authored path is only a fallback for a
             // blockstate somebody has taken back into a file.
@@ -774,7 +797,7 @@ fun Project.registerMachineObjTransformChecks() {
                     }
                 }
             }
-            logger.lifecycle("machineObjTransforms: validated ${MACHINE_OBJ_TRANSFORM_EXPECTATIONS.size} definitions and ${RTG_BLOCKSTATE_IDS.size} RTG blockstates")
+            logger.lifecycle("machineObjTransforms: validated ${MACHINE_OBJ_TRANSFORM_EXPECTATIONS.size} definitions, $scaled declared scales and ${RTG_BLOCKSTATE_IDS.size} RTG blockstates")
         }
     }
     tasks.named("check") { dependsOn(validation) }

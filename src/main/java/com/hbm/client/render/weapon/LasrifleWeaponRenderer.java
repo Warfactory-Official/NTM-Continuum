@@ -24,7 +24,6 @@ public final class LasrifleWeaponRenderer extends WeaponRenderer {
         if (mods == null) mods = SpecialWeaponRenderers.model("lasrifle_mods");
         return mods;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }

@@ -380,6 +380,7 @@ public final class HbmClientRegistrations {
         com.hbm.client.render.projectile.TracerRegistry.init();
         com.hbm.client.particle.CasingParticles.init();
         com.hbm.client.particle.DisintegrationParticles.init();
+        com.hbm.client.particle.DebrisParticles.init();
         GunEffectState.setCasingHandler(event -> com.hbm.client.particle.CasingParticles.spawn(event));
         GunEffectState.setGunCasingHandler(payload -> com.hbm.client.particle.CasingParticles.spawn(
                 new com.hbm.particle.helper.CasingCreator.Event(payload.x(), payload.y(), payload.z(), payload.mX(),

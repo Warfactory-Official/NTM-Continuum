@@ -91,6 +91,9 @@ public final class ModSounds {
     /** Near/far report used by the old controller's small VNT explosion effect. */
     public static final RegistryObject<SoundEvent> EXPLOSION_SMALL_NEAR = register("weapon.explosion_small_near");
     public static final RegistryObject<SoundEvent> EXPLOSION_SMALL_FAR = register("weapon.explosion_small_far");
+    /** Near/far report of a large blast, arriving at the speed of sound. */
+    public static final RegistryObject<SoundEvent> EXPLOSION_LARGE_NEAR = register("weapon.explosion_large_near");
+    public static final RegistryObject<SoundEvent> EXPLOSION_LARGE_FAR = register("weapon.explosion_large_far");
     /** A missile leaving the pad. Old id {@code hbm:weapon.missileTakeoff}. */
     public static final RegistryObject<SoundEvent> MISSILE_TAKEOFF = register("weapon.missile_takeoff");
     /** The incoming-shell whistle. Played at the target, not at the shell. */

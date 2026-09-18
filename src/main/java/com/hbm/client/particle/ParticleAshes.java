@@ -2,6 +2,7 @@ package com.hbm.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.Mth;
 
 /**
  * A flake of ash: dark, near-weightless, tumbling as it falls and lying flat once it lands, where it
@@ -58,7 +59,9 @@ public class ParticleAshes extends ParticleRotating {
         this.move(this.xd, this.yd, this.zd);
 
         // On the tick it lands, snap to a random facing so a drift of ash does not settle in lockstep.
-        if (!wasOnGround && this.onGround) this.roll = this.oRoll = this.random.nextFloat() * 360F;
+        // Upstream's whole turn is 360; roll is radians.
+        if (!wasOnGround && this.onGround)
+            this.roll = this.oRoll = this.random.nextFloat() * 360F * Mth.DEG_TO_RAD;
 
         if (System.identityHashCode(this) % 5 == 0 && this.onGround && this.random.nextInt(15) == 0) {
             this.level.addParticle(ParticleTypes.SMOKE, this.x, this.y + 0.125, this.z, 0, 0.05, 0);

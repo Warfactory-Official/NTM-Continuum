@@ -42,13 +42,10 @@ public class GunItemModel implements ItemModel {
     private final WeaponRenderer renderer;
     private final ModelRenderProperties properties;
     private final Body body = new Body();
-    /** Memoised: the OBJ is only loadable once resources are up, and the bounds never change after. */
-    private final java.util.function.Supplier<Vector3fc[]> extents;
 
     private GunItemModel(WeaponRenderer renderer, ModelRenderProperties properties) {
         this.renderer = renderer;
         this.properties = properties;
-        this.extents = com.google.common.base.Suppliers.memoize(renderer::extents);
     }
 
     @Override
@@ -74,8 +71,8 @@ public class GunItemModel implements ItemModel {
         }
 
         // Without extents the layer reports an empty bounding box and the GUI icon never appears — and
-        // the box has to be the one the static pose actually puts the mesh in, because that pose scales.
-        layer.setExtents(() -> renderer.staticExtents(extents.get(), item, displayContext));
+        // the box has to be the one the static pose actually puts the declared body in, not the mesh's.
+        layer.setExtents(() -> renderer.staticExtents(item, displayContext));
         layer.setupSpecialModel(body, new Argument(item, renderer, firstPerson, otherArm, displayContext, owner));
         // A held gun animates every frame, and a few icons spin in the slot; either way the render
         // state must not be cached.

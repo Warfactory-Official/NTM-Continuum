@@ -15,10 +15,10 @@ import net.minecraft.util.Mth;
  * cloud is stable in the world rather than boiling, and the offsets must be recomputed at render time
  * rather than stored. {@code CompatParticle.emitQuads} is the seam that allows it.
  *
- * <p><b>The {@code scale} parameter does nothing</b>, which is upstream's behaviour rather than an
- * omission: {@code setScale} writes {@code particleScale} and {@code renderParticle} never reads it,
- * so {@code EntityMissileTier1.getContrailScale}'s 0.5 has no effect there either. Carried because
- * the value travels in the effect's tag.
+ * <p><b>The {@code scale} scales the whole cloud, not one quad.</b> Upstream multiplies three separate
+ * things by it — how far the ten quads scatter, how big each one is, and a fixed quarter-block offset
+ * on X and Z — so a scale of five is a fireball rather than five contrail puffs. That offset biases the
+ * cloud off the spawn point the same way the {@code -1} on each Gaussian does.
  */
 public class ParticleRocketFlame extends CompatParticle {
 
@@ -30,6 +30,7 @@ public class ParticleRocketFlame extends CompatParticle {
         super(level, x, y, z, Particles.sprite(ParticleRotating.PARTICLE_BASE));
         this.lifetime = 300 + this.random.nextInt(50);
         this.seed = this.random.nextInt();
+        this.setQuadSize(1F);
         this.setLayer(ParticleLayer.EMISSIVE);
         this.hasPhysics = false;
     }
@@ -46,7 +47,6 @@ public class ParticleRocketFlame extends CompatParticle {
         return this;
     }
 
-    /** Kept for the effect's {@code scale} tag. See the class note: upstream never renders with it. */
     public ParticleRocketFlame setScale(float scale) {
         this.setQuadSize(scale);
         return this;
@@ -73,11 +73,13 @@ public class ParticleRocketFlame extends CompatParticle {
     protected void emitQuads(QuadSink sink, float partialTick) {
         Random urandom = new Random(this.seed);
 
+        float scale = this.quadSize();
         float aged = (float) this.age / (float) this.lifetime;
         // The heat fades over the first quarter of the puff's life, not over all of it.
         float dark = 1F - Math.min((float) this.age / ((float) this.lifetime * 0.25F), 1F);
         float alpha = Mth.clamp((float) Math.pow(1F - Math.min(aged, 1F), 0.5), 0F, 1F) * 0.75F;
-        float spread = (float) Math.pow(aged * 4F, 1.5) + 1F;
+        float spread = ((float) Math.pow(aged * 4F, 1.5) + 1F) * scale;
+        float sideOffset = 0.25F * scale;
 
         this.setAlpha(alpha);
 
@@ -87,12 +89,12 @@ public class ParticleRocketFlame extends CompatParticle {
                     Mth.clamp(0.6F * dark + add, 0F, 1F),
                     Mth.clamp(add, 0F, 1F));
 
-            float size = urandom.nextFloat() * 0.5F + 0.1F + aged * 2F;
+            float size = (urandom.nextFloat() * 0.5F + 0.1F + aged * 2F) * scale;
             // The -1 offset on each Gaussian is upstream's; it biases the cloud rather than centring
             // it, which is what gives the trail its lopsided, wind-blown look.
-            float dx = (float) ((urandom.nextGaussian() - 1D) * 0.2F * spread);
+            float dx = sideOffset + (float) ((urandom.nextGaussian() - 1D) * 0.2F * spread);
             float dy = (float) ((urandom.nextGaussian() - 1D) * 0.5F * spread);
-            float dz = (float) ((urandom.nextGaussian() - 1D) * 0.2F * spread);
+            float dz = sideOffset + (float) ((urandom.nextGaussian() - 1D) * 0.2F * spread);
             sink.quad(dx, dy, dz, size);
         }
     }

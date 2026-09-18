@@ -19,7 +19,6 @@ public final class FireExtWeaponRenderer extends WeaponRenderer {
         if (model == null) model = WavefrontObj.load(Ids.of("hbm", "models/weapons/fireext.obj"));
         return model;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
 
     /**
      * Upstream's extinguisher is the one Sedna gun that is not an {@code ItemRenderWeaponBase}: it is a

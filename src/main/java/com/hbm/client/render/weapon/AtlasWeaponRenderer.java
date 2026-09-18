@@ -36,20 +36,6 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
     }
 
     @Override
-    public org.joml.Vector3fc[] extents() {
-        WavefrontObj obj = model();
-        float[] mn = obj.boundsMin();
-        float[] mx = obj.boundsMax();
-        org.joml.Vector3fc[] corners = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int xi = 0; xi < 2; xi++) for (int yi = 0; yi < 2; yi++) for (int zi = 0; zi < 2; zi++) {
-            corners[i++] = new org.joml.Vector3f(xi == 0 ? mn[0] : mx[0],
-                    yi == 0 ? mn[1] : mx[1], zi == 0 ? mn[2] : mx[2]);
-        }
-        return corners;
-    }
-
-    @Override
     protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }

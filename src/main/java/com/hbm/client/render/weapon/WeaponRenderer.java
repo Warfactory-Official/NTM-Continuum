@@ -266,16 +266,26 @@ public abstract class WeaponRenderer {
     /** Recorded because {@code renderStatic} is not handed it and Dani's rest pose depends on it. */
     private ItemDisplayContext staticContext = ItemDisplayContext.NONE;
 
+    /** Separate from the drawing pose: framing runs from {@code update}, which a draw may be mid-way through. */
+    private final WeaponPose framePose = new WeaponPose();
+
     /**
-     * The box the icon is framed on in one context: the model's own corners carried through the same
-     * chain the draw uses.
+     * The box the icon is framed on in one context: what the model draws at rest, carried through the
+     * same chain the draw uses.
      *
-     * <p>{@link #extents} is the mesh, in mesh space. The static pose now scales it — by anything from
-     * 0.375 to 7.5 — so reporting the mesh box unchanged would size the picture-in-picture rectangle for
-     * a weapon nobody draws. Nothing on this path reads a clock, and the result is the union box, so the
+     * <p>Both halves have to be the declaration's and not the mesh's. The static pose scales the body
+     * by anything from 0.375 to 7.5, so an unposed box sizes the picture-in-picture rectangle for a
+     * weapon nobody draws; and the rest pose turns the body — every gun here opens with a half turn
+     * about Y — so a box taken from the OBJ's own bounds sits mirrored about the pivot. On the SPAS,
+     * whose mesh runs ten units back from its origin, that put the rectangle most of a slot away from
+     * the drawing. Nothing on this path reads a clock, and the result is the union box, so the
      * rectangle 26.1 floors to whole pixels is fixed for a given stack and context.
      */
-    public final Vector3fc[] staticExtents(Vector3fc[] mesh, ItemStack stack, ItemDisplayContext context) {
+    public final Vector3fc[] staticExtents(ItemStack stack, ItemDisplayContext context) {
+        framePose.begin(stack, false, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                context, null, InteractionHand.MAIN_HAND);
+        java.util.List<Vector3fc> mesh = new java.util.ArrayList<>();
+        dev.golem.core.render.gem.Gem.extents(gem(), framePose, new Matrix4f(), mesh::add);
         int phases = animated(context) ? SPIN_SAMPLES : 1;
         float[] min = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
         float[] max = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
@@ -300,7 +310,4 @@ public abstract class WeaponRenderer {
         }
         return corners;
     }
-
-    /** 26.1 sizes a GUI item from these; no extents means an empty box and no icon at all. */
-    public abstract Vector3fc[] extents();
 }

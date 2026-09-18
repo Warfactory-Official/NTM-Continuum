@@ -125,7 +125,13 @@ public final class HbmJeiPluginCommon {
     private static ArcFurnaceRecipeHandler arcFurnaceFluid;
     private static DiFurnaceRecipeHandler diFurnace;
 
-    /** Keep component-backed fluid containers, droplets, scraps, blueprints, and waste variants distinct. */
+    /**
+     * Keep component-backed fluid containers, droplets, scraps, blueprints, and waste variants distinct.
+     *
+     * <p>The enum-backed families are swept from the registry rather than listed: every one of them
+     * selects its variant with the same component, and a family JEI is not told about collapses to a
+     * single ingredient, which is how the HIMARS pods and the artillery shells went missing.
+     */
     public static void registerItemSubtypes(ISubtypeRegistration reg) {
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, com.hbm.items.ModMachineItems.blueprints.get(),
                 ModDataComponents.BLUEPRINT_POOL);
@@ -164,6 +170,11 @@ public final class HbmJeiPluginCommon {
                 ModDataComponents.ITEM_VARIANT);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
                 com.hbm.blocks.ModSteelBlocks.steel_scaffold.get().asItem(), ModDataComponents.ITEM_VARIANT);
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (item instanceof com.hbm.items.ItemEnumMulti) {
+                dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, item, ModDataComponents.ITEM_VARIANT);
+            }
+        }
     }
 
     /** Add a droplet icon for every registered fluid to JEI's ingredient list / search — the fluid‑icon item

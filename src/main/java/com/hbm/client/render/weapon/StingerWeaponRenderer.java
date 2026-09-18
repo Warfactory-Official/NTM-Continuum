@@ -23,9 +23,6 @@ public final class StingerWeaponRenderer extends WeaponRenderer {
         if (rocketModel == null) rocketModel = SpecialWeaponRenderers.model("panzerschreck");
         return rocketModel;
     }
-    @Override public org.joml.Vector3fc[] extents() {
-        return SpecialWeaponRenderers.extents(model());
-    }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }

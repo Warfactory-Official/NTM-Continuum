@@ -17,7 +17,6 @@ public final class TauWeaponRenderer extends WeaponRenderer {
         if (model == null) model = SpecialWeaponRenderers.model("tau");
         return model;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.5F;
     }

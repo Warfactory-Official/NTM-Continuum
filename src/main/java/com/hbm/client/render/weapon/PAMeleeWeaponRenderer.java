@@ -27,7 +27,6 @@ public final class PAMeleeWeaponRenderer extends WeaponRenderer {
         if (rpa == null) rpa = WavefrontObj.load(Ids.of("hbm", "models/armor/remnant.obj"));
         return rpa;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(ncr()); }
     @Override protected float getSwayMagnitude(ItemStack stack) { return 2F; }
     @Override protected float getSwayPeriod(ItemStack stack) { return 0.5F; }
     @Override public void setupFirstPerson(ItemStack stack, PoseStack pose) {

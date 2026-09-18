@@ -5,9 +5,9 @@ import net.minecraft.world.level.Level;
 /**
  * Server-side effect broadcasts for explosion presets.
  *
- * <p>1.12.2's standard and large presets are their own particle families. This port has neither, so
- * both are approximated with the small-blast fireball cluster at the counts and scales that read
- * closest — the same effect, sized up, rather than a new one invented for the occasion.
+ * <p>The three sizes are upstream's, parameter for parameter. Each is one call to
+ * {@link ParticleEffects#explosionLarge}, which is a plume plus a spread of real ground thrown into
+ * the air; the numbers are what separates a satchel charge from an ATACMS.
  */
 public final class ExplosionCreator {
 
@@ -26,15 +26,17 @@ public final class ExplosionCreator {
         ParticleEffects.rbmkMush(level, x, y, z, scale);
     }
 
-    public static void composeEffectStandard(Level level, double x, double y, double z) {
-        ParticleEffects.explosionSmall(level, x, y, z, 15, 4F, 1F);
-    }
-
+    /** Downscaled, for small bombs. */
     public static void composeEffectSmall(Level level, double x, double y, double z) {
-        ParticleEffects.explosionSmall(level, x, y, z, 10, 2.5F, 1F);
+        ParticleEffects.explosionLarge(level, x, y, z, 10, 2F, 0.5F, 25F, 5, 8, 20, 0.75F, 1F, -2F, 150F);
     }
 
+    public static void composeEffectStandard(Level level, double x, double y, double z) {
+        ParticleEffects.explosionLarge(level, x, y, z, 15, 5F, 1F, 45F, 10, 16, 50, 1F, 3F, -2F, 200F);
+    }
+
+    /** Upscaled. */
     public static void composeEffectLarge(Level level, double x, double y, double z) {
-        ParticleEffects.explosionSmall(level, x, y, z, 25, 8F, 1F);
+        ParticleEffects.explosionLarge(level, x, y, z, 30, 6.5F, 2F, 65F, 25, 16, 50, 1.25F, 3F, -2F, 350F);
     }
 }

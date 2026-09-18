@@ -1044,6 +1044,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("compatibility_facade_contracts", 20, () -> CompatibilityBoundaryGameTests::facadeContracts);
     public static final GameTests.Function CRATE_CARRIED_ROUND_TRIP =
             TESTS.function("crate_carried_round_trip", 40, () -> CompatibilityBoundaryGameTests::crateCarriedRoundTrip);
+    public static final GameTests.Function ENUM_MULTI_TAB_VARIANTS =
+            TESTS.function("enum_multi_tab_variants", 20, () -> HbmGameTestFunctions::enumMultiTabVariants);
 
     public static void init() {}
 
@@ -1530,6 +1532,32 @@ public final class HbmGameTestFunctions {
      * cannot be named from here (loading it on a dedicated server pulls in {@code GuiGraphics}), so what
      * is pinned is the shape both sides build.
      */
+    private static void enumMultiTabVariants(GameTestHelper helper) {
+        java.util.List<net.minecraft.world.item.ItemStack> shown = new java.util.ArrayList<>();
+        for (var entry : com.hbm.creativetabs.ModTabs.CONTENTS.entrySet()) {
+            for (var item : entry.getValue()) {
+                if (com.hbm.creativetabs.ModTabs.shouldDisplay(entry.getKey(), item.get())) {
+                    shown.add(new net.minecraft.world.item.ItemStack(item.get()));
+                }
+            }
+        }
+        com.hbm.creativetabs.ModTabs.STACK_CONTENTS.values()
+                .forEach(list -> list.forEach(supplier -> shown.addAll(supplier.get())));
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (!(item instanceof com.hbm.items.ItemEnumMulti family)) continue;
+            boolean anywhere = shown.stream().anyMatch(stack -> stack.is(item));
+            if (!anywhere) continue;
+            for (Enum<?> variant : family.theEnum.getEnumConstants()) {
+                net.minecraft.world.item.ItemStack wanted = family.of(variant);
+                helper.assertTrue(
+                        shown.stream().anyMatch(stack -> dev.golem.core.world.ItemStacks.sameItemAndData(stack, wanted)),
+                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item) + " is in a creative tab "
+                                + "but its " + variant.name().toLowerCase(java.util.Locale.US) + " variant is not");
+            }
+        }
+        helper.succeed();
+    }
+
     private static void fluidDropletSprites(GameTestHelper helper) {
         java.util.Map<String, String> bySprite = new java.util.HashMap<>();
         for (com.hbm.inventory.fluid.FluidType fluid : com.hbm.inventory.fluid.Fluids.getAll()) {

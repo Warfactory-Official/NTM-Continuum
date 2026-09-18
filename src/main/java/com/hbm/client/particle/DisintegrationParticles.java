@@ -3,7 +3,6 @@ package com.hbm.client.particle;
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
 import dev.golem.core.Ids;
 import dev.golem.core.client.Frames;
 import dev.golem.core.render.CameraInfo;
@@ -33,6 +32,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import dev.golem.core.render.Billboards;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Surface;
 import org.joml.Vector3f;
 
 /** Client lifetime and Core submission path for original-hbm's skeleton and giblet effects. */
@@ -45,11 +47,22 @@ public final class DisintegrationParticles {
     private static final Identifier MEAT = Ids.of(Constants.MOD_ID, "textures/particle/meat.png");
     private static final Identifier SLIME = Ids.of(Constants.MOD_ID, "textures/particle/slime.png");
     private static final Identifier METAL = Ids.of(Constants.MOD_ID, "textures/particle/metal.png");
+    private static final Surface SKELETON_SKIN = Surface.translucent(SKELETON_TEXTURE.toString());
+    private static final Surface SKELETON_SKIN_EXT = Surface.translucent(SKELETON_TEXTURE_EXT.toString());
+    private static final Surface SKELETON_SKIN_BLOOD = Surface.translucent(SKELETON_BLOOD.toString());
+    private static final Surface SKELETON_SKIN_BLOOD_EXT = Surface.translucent(SKELETON_BLOOD_EXT.toString());
     private static WavefrontObj model;
+    private static Gem.Model<SkeletonPiece> declaration;
     private static final List<SkeletonPiece> SKELETONS = new ArrayList<>();
     private static final List<Giblet> GIBLETS = new ArrayList<>();
     private static final Map<Integer, Vanish> VANISHED = new HashMap<>();
+    private static final Pool POOL = new Pool();
     private static boolean initialized;
+
+    /** Every live giblet as one pool; the skeleton pieces are meshes and stay on the vanilla pass. */
+    static final class Pool {
+        private Pool() {}
+    }
 
     private DisintegrationParticles() {}
 
@@ -58,9 +71,20 @@ public final class DisintegrationParticles {
         initialized = true;
         WorldEffects.init();
         dev.golem.core.client.ClientTicks.onEndTick(DisintegrationParticles::tick);
+        Billboards.registerPool(Pool.class, List.of(
+                        new Billboards.Layer(MEAT.toString(), Billboards.Mode.DEPTH_WRITING_TRANSLUCENT,
+                                Billboards.Uv.ROTATED_180),
+                        new Billboards.Layer(SLIME.toString(), Billboards.Mode.DEPTH_WRITING_TRANSLUCENT,
+                                Billboards.Uv.ROTATED_180),
+                        new Billboards.Layer(METAL.toString(), Billboards.Mode.DEPTH_WRITING_TRANSLUCENT,
+                                Billboards.Uv.ROTATED_180)),
+                (pool, frame, layers) -> {
+                    for (Giblet giblet : List.copyOf(GIBLETS)) giblet.write(layers, frame.partialTick());
+                },
+                pool -> GIBLETS.isEmpty());
         WorldEffects.onBegin(camera -> submit(camera));
         dev.golem.core.client.ClientResourceReloads.register(Constants.MOD_ID,
-                "disintegration_particles", () -> { clear(); model = null; });
+                "disintegration_particles", () -> { clear(); model = null; declaration = null; });
     }
 
     public static void skeleton(ClientLevel level, RandomSource rand, double x, double y, double z,
@@ -89,6 +113,7 @@ public final class DisintegrationParticles {
             GIBLETS.add(new Giblet(x, y, z, rand.nextGaussian() * 0.25D * mult, rand.nextDouble() * mult,
                     rand.nextGaussian() * 0.25D * mult, gibType, rand));
         }
+        Billboards.add(level, POOL);
     }
 
     /** Hides the source entity for the same two-second client presentation window as ClientProxy. */
@@ -123,14 +148,47 @@ public final class DisintegrationParticles {
         if (SKELETONS.isEmpty() && GIBLETS.isEmpty()) return;
         float partial = Frames.partialTick();
         for (SkeletonPiece piece : List.copyOf(SKELETONS)) piece.submit(camera, partial);
+        if (GIBLETS.isEmpty() || Billboards.owns(POOL)) return;
         Vector3f right = camera.orientation.transform(new Vector3f(1F, 0F, 0F));
         Vector3f up = camera.orientation.transform(new Vector3f(0F, 1F, 0F));
-        for (Giblet giblet : List.copyOf(GIBLETS)) giblet.submit(camera, partial, right, up);
+        Identifier[] textures = {MEAT, SLIME, METAL};
+        for (int layer = 0; layer < textures.length; layer++) {
+            final int type = layer;
+            WorldEffects.submit(new PoseStack(), CompatRenderTypes.entityTranslucent(textures[layer]), 0,
+                    (pose, buffer) -> {
+                        Billboards.RowWriter writer = quads(pose, buffer, camera, right, up);
+                        for (Giblet giblet : List.copyOf(GIBLETS)) {
+                            if (giblet.type == type) giblet.write(index -> writer, partial);
+                        }
+                    });
+        }
+    }
+
+    private static Billboards.RowWriter quads(PoseStack.Pose pose,
+            com.mojang.blaze3d.vertex.VertexConsumer buffer, CameraInfo camera,
+            Vector3f right, Vector3f up) {
+        return (x, y, z, halfSize, red, green, blue, alpha, packedLight) -> {
+            float cx = (float) (x - camera.pos.x);
+            float cy = (float) (y - camera.pos.y);
+            float cz = (float) (z - camera.pos.z);
+            float rx = right.x * halfSize, ry = right.y * halfSize, rz = right.z * halfSize;
+            float ux = up.x * halfSize, uy = up.y * halfSize, uz = up.z * halfSize;
+            Vertexes.vertex(buffer, pose, cx - rx - ux, cy - ry - uy, cz - rz - uz, red, green, blue, alpha,
+                    0F, 0F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
+            Vertexes.vertex(buffer, pose, cx - rx + ux, cy - ry + uy, cz - rz + uz, red, green, blue, alpha,
+                    0F, 1F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
+            Vertexes.vertex(buffer, pose, cx + rx + ux, cy + ry + uy, cz + rz + uz, red, green, blue, alpha,
+                    1F, 1F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
+            Vertexes.vertex(buffer, pose, cx + rx - ux, cy + ry - uy, cz + rz - uz, red, green, blue, alpha,
+                    1F, 0F, OverlayTexture.NO_OVERLAY, packedLight, 0F, 1F, 0F);
+        };
     }
 
     private static void clear() {
         SKELETONS.clear();
         GIBLETS.clear();
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) Billboards.remove(level, POOL);
         for (Vanish vanish : VANISHED.values()) vanish.entity.setInvisible(vanish.wasInvisible);
         VANISHED.clear();
     }
@@ -254,23 +312,52 @@ public final class DisintegrationParticles {
             PoseStack pose = new PoseStack();
             pose.translate(Mth.lerp(partial, xo, x) - camera.pos.x, Mth.lerp(partial, yo, y) - camera.pos.y,
                     Mth.lerp(partial, zo, z) - camera.pos.z);
-            pose.mulPose(Axis.YP.rotationDegrees(Mth.lerp(partial, oYaw, yaw)));
-            pose.mulPose(Axis.XP.rotationDegrees(Mth.lerp(partial, oPitch, pitch)));
-            pose.mulPose(Axis.YP.rotationDegrees(-90F));
             int light = dev.golem.core.render.Renderers.lightAt(Minecraft.getInstance().level,
                     BlockPos.containing(x, y, z));
+            Gem.replay(declaration(), this, pose, WorldEffects.sink(0), light);
+        }
+
+        private String partName() {
+            return part == Part.VILLAGER_SKULL ? "SkullVillager"
+                    : part.name().charAt(0) + part.name().substring(1).toLowerCase();
+        }
+
+        private Surface skin() {
+            if (texture == SKELETON_BLOOD_EXT) return SKELETON_SKIN_BLOOD_EXT;
+            if (texture == SKELETON_BLOOD) return SKELETON_SKIN_BLOOD;
+            if (texture == SKELETON_TEXTURE_EXT) return SKELETON_SKIN_EXT;
+            return SKELETON_SKIN;
+        }
+
+        private int tint(float partial) {
             float alpha = lifetime - (age + partial) < 40F
                     ? Math.max(0F, (lifetime - (age + partial)) / 40F) : 1F;
-            int color = dev.golem.core.client.Colors.colorFromFloat(alpha, brightness, brightness, brightness);
-            WorldEffects.submit(pose, CompatRenderTypes.entityTranslucent(texture), 0,
-                    (drawPose, buffer) -> model().renderPart(part == Part.VILLAGER_SKULL ? "SkullVillager" : part.name().charAt(0) + part.name().substring(1).toLowerCase(),
-                            drawPose, buffer, light, OverlayTexture.NO_OVERLAY, color));
+            return dev.golem.core.client.Colors.colorFromFloat(alpha, brightness, brightness, brightness);
         }
 
         private static WavefrontObj model() {
             if (model == null) model = WavefrontObj.load(SKELETON_MODEL);
             return model;
         }
+    }
+
+    /**
+     * One bone, stated once: which bone and which of the four hides it wears are read off the piece
+     * rather than spelt as a part per combination.
+     */
+    private static Gem.Model<SkeletonPiece> declaration() {
+        if (declaration != null) return declaration;
+        Gem.Model<SkeletonPiece> model = Gem.model();
+        model.joint()
+                .angle(Gem.Axes.Y, piece -> Mth.lerp(Frames.partialTick(), piece.oYaw, piece.yaw))
+                .angle(Gem.Axes.X, piece -> Mth.lerp(Frames.partialTick(), piece.oPitch, piece.pitch))
+                .rotate(Gem.Axes.Y, -90F)
+                .child(SkeletonPiece.model().part("Skull"), SKELETON_SKIN)
+                .mesh(piece -> SkeletonPiece.model().part(piece.partName()))
+                .skin(SkeletonPiece::skin)
+                .tint(piece -> piece.tint(Frames.partialTick()));
+        declaration = model.seal();
+        return declaration;
     }
 
     private static final class Giblet {
@@ -302,23 +389,11 @@ public final class DisintegrationParticles {
             }
         }
         boolean expired() { return age >= lifetime; }
-        void submit(CameraInfo camera, float partial, Vector3f right, Vector3f up) {
-            Identifier texture = type == 2 ? METAL : type == 1 ? SLIME : MEAT;
-            float cx = (float) (Mth.lerp(partial, xo, x) - camera.pos.x);
-            float cy = (float) (Mth.lerp(partial, yo, y) - camera.pos.y);
-            float cz = (float) (Mth.lerp(partial, zo, z) - camera.pos.z);
+        void write(Billboards.LayerWriter layers, float partial) {
             int light = dev.golem.core.render.Renderers.lightAt(Minecraft.getInstance().level,
                     BlockPos.containing(x, y, z));
-            WorldEffects.submit(new PoseStack(), CompatRenderTypes.entityTranslucent(texture), 0,
-                    (pose, buffer) -> {
-                        float size = 0.1F;
-                        float rx = right.x * size, ry = right.y * size, rz = right.z * size;
-                        float ux = up.x * size, uy = up.y * size, uz = up.z * size;
-                        Vertexes.vertex(buffer, pose, cx - rx - ux, cy - ry - uy, cz - rz - uz, 1F, 1F, 1F, 1F, 0F, 0F, OverlayTexture.NO_OVERLAY, light, 0F, 1F, 0F);
-                        Vertexes.vertex(buffer, pose, cx - rx + ux, cy - ry + uy, cz - rz + uz, 1F, 1F, 1F, 1F, 0F, 1F, OverlayTexture.NO_OVERLAY, light, 0F, 1F, 0F);
-                        Vertexes.vertex(buffer, pose, cx + rx + ux, cy + ry + uy, cz + rz + uz, 1F, 1F, 1F, 1F, 1F, 1F, OverlayTexture.NO_OVERLAY, light, 0F, 1F, 0F);
-                        Vertexes.vertex(buffer, pose, cx + rx - ux, cy + ry - uy, cz + rz - uz, 1F, 1F, 1F, 1F, 1F, 0F, OverlayTexture.NO_OVERLAY, light, 0F, 1F, 0F);
-                    });
+            layers.layer(type).row(Mth.lerp(partial, xo, x), Mth.lerp(partial, yo, y),
+                    Mth.lerp(partial, zo, z), 0.1F, 1F, 1F, 1F, 1F, light);
         }
     }
 }

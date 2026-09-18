@@ -52,20 +52,6 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
     }
 
     @Override
-    public org.joml.Vector3fc[] extents() {
-        WavefrontObj obj = model();
-        float[] min = obj.boundsMin();
-        float[] max = obj.boundsMax();
-        org.joml.Vector3fc[] corners = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
-            corners[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0],
-                    y == 0 ? min[1] : max[1], z == 0 ? min[2] : max[2]);
-        }
-        return corners;
-    }
-
-    @Override
     protected float getTurnMagnitude(ItemStack stack) {
         if (variant == Variant.HENRY || variant == Variant.HENRY_LINCOLN || variant == Variant.HANGMAN) {
             return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.5F;

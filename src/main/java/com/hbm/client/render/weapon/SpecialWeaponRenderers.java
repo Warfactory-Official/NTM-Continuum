@@ -91,18 +91,6 @@ public final class SpecialWeaponRenderers {
         return Surface.cutoutNoCull("hbm:textures/models/weapons/" + path + ".png");
     }
 
-    static org.joml.Vector3fc[] extents(WavefrontObj obj) {
-        float[] min = obj.boundsMin();
-        float[] max = obj.boundsMax();
-        org.joml.Vector3fc[] out = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
-            out[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0], y == 0 ? min[1] : max[1],
-                    z == 0 ? min[2] : max[2]);
-        }
-        return out;
-    }
-
     static int amount(WeaponPose state) {
         if (!(state.stack.getItem() instanceof ItemGunBaseNT gun)) return 0;
         if (!gun.isValidConfigIndex(0) || gun.getPrimaryMagazine(state.stack, 0) == null) return 0;

@@ -20,18 +20,6 @@ public final class G3WeaponRenderer extends WeaponRenderer {
         return model;
     }
 
-    @Override public org.joml.Vector3fc[] extents() {
-        WavefrontObj obj = model();
-        float[] min = obj.boundsMin(), max = obj.boundsMax();
-        org.joml.Vector3fc[] out = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
-            out[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0], y == 0 ? min[1] : max[1],
-                    z == 0 ? min[2] : max[2]);
-        }
-        return out;
-    }
-
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }

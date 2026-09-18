@@ -17,7 +17,6 @@ public final class DoubleBarrelWeaponRenderer extends WeaponRenderer {
     private WavefrontObj model;
     public DoubleBarrelWeaponRenderer(String texture){body=Surface.cutout("hbm:textures/models/weapons/"+texture+".png");}
     private WavefrontObj model(){if(model==null)model=WavefrontObj.load(MODEL_ID);return model;}
-    @Override public org.joml.Vector3fc[] extents(){float[]a=model().boundsMin(),b=model().boundsMax();org.joml.Vector3fc[]o=new org.joml.Vector3fc[8];int i=0;for(int x=0;x<2;x++)for(int y=0;y<2;y++)for(int z=0;z<2;z++)o[i++]=new org.joml.Vector3f(x==0?a[0]:b[0],y==0?a[1]:b[1],z==0?a[2]:b[2]);return o;}
     @Override protected float getTurnMagnitude(ItemStack s){return ItemGunBaseNT.getIsAiming(s)?2.5F:-.5F;}
     @Override public float viewFov(ItemStack s,float f,float p){return aimingFov(s,f,p,.33F);}
     @Override public void setupFirstPerson(ItemStack s,PoseStack p){p.translate(0,0,.875);float o=.8F;standardAimingTransform(s,p,-1.25F*o,-1F*o,2F*o,0,-2/8D,1);}

@@ -397,6 +397,7 @@ public final class WavefrontObj {
         private float @Nullable [] vertices;
         private int @Nullable [] indices;
         private int vertexCount;
+        private float @Nullable [][] bounds;
 
         private ObjGeometry(@Nullable Set<String> include, Set<String> exclude, boolean doubleSided) {
             this(include, exclude, doubleSided, null);
@@ -447,6 +448,12 @@ public final class WavefrontObj {
         @Override
         public String name() {
             return name;
+        }
+
+        @Override
+        public float @Nullable [][] bounds() {
+            if (bounds == null) bounds = Geometry.super.bounds();
+            return bounds;
         }
 
         private void build() {
