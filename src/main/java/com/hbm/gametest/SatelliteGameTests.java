@@ -81,7 +81,13 @@ public final class SatelliteGameTests {
 
         Satellite.orbit(helper.getLevel(), SatelliteType.RAY_SCAN, FREQ, 40, 700, 60);
         tick(helper, link);
-        helper.assertTrue(link.connected, "A taken frequency under open sky is a connection");
+        helper.assertTrue(link.connected, "A taken frequency under open sky is a connection (taken="
+                + data.isFreqTaken(FREQ) + " same-data=" + (data == SatelliteSavedData.get(helper.getLevel()))
+                + " height=" + helper.getLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                        helper.absolutePos(LINK).getX(), helper.absolutePos(LINK).getZ())
+                + " y=" + helper.absolutePos(LINK).getY() + " topBlock=" + helper.getLevel().getBlockState(new BlockPos(
+                        helper.absolutePos(LINK).getX(), helper.getLevel().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,
+                        helper.absolutePos(LINK).getX(), helper.absolutePos(LINK).getZ()) - 1, helper.absolutePos(LINK).getZ())) + ")");
         helper.assertTrue("TRUE".equals(link.provideRORValue("VAL:connected")),
                 "VAL:connected should report the connection");
         helper.assertTrue("NB_RAY_SCANNER".equals(link.provideRORValue("VAL:type")),
@@ -191,10 +197,6 @@ public final class SatelliteGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = SatelliteGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(SatelliteGameTests.class, path);
     }
 }

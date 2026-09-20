@@ -154,10 +154,6 @@ public final class ChungusGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = ChungusGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(ChungusGameTests.class, path);
     }
 }

@@ -97,7 +97,7 @@ public final class WeaponTableGameTests {
 
     /** Regression: a gun that entered by shift-click after another gun left must not crash or leak mods. */
     private static void secondGunAfterShiftClick(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
         Item bayonetItem = bayonet.getItem();
         player.getInventory().setItem(0, new ItemStack(ModGunItems.gun_carbine.get()));
@@ -128,7 +128,7 @@ public final class WeaponTableGameTests {
 
     /** Regression: a modifier installed on configuration 1 must survive the gun leaving the table. */
     private static void config1QuickMoveKeepsMod(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         player.getInventory().setItem(0, new ItemStack(ModGunItems.gun_light_revolver_dani.get()));
         player.getInventory().setItem(1, ModWeaponModItems.weapon_mod_test.get()
                 .of(com.hbm.items.weapon.sedna.factory.GunFactory.EnumModTest.FIRERATE));
@@ -169,7 +169,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void failedTransferPreservesGun(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             player.getInventory().setItem(i, new ItemStack(Items.COBBLESTONE, 64));
         }
@@ -190,7 +190,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void ordinaryPickupCarriesMods(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
@@ -209,7 +209,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void quickMoveCarriesMods(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
@@ -241,7 +241,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void modifierQuickMoveConservesItems(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
@@ -260,7 +260,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void shiftClickConservesItems(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
@@ -280,7 +280,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void hotbarSwapConservesItems(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
@@ -307,7 +307,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void playerInventoryClickConservesItems(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
         Item bayonetItem = bayonet.getItem();
@@ -337,7 +337,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void onTakeUsesRemovalSnapshot(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack outgoing = new ItemStack(ModGunItems.gun_carbine.get());
         menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(outgoing);
@@ -355,7 +355,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void closeDropsOneGunAndModifier(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
         ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
@@ -439,6 +439,7 @@ public final class WeaponTableGameTests {
         helper.getLevel().setBlock(bedrock, Blocks.BEDROCK.defaultBlockState(), 3);
         player.setPos(bedrock.getX() + 0.5D, bedrock.getY() - 1D, bedrock.getZ() - 3D);
         player.setYRot(0F);
+        player.setYHeadRot(0F);
         player.setXRot(0F);
         readyDrill(player, drillItem, drill, InteractionHand.MAIN_HAND);
         fireDrillKey(player);
@@ -468,7 +469,10 @@ public final class WeaponTableGameTests {
                 "electric drill fire must consume the source 1,000HE cost");
 
         player.setPos(bedrock.getX() + 0.5D, bedrock.getY() + 1D, bedrock.getZ() - 0.5D);
-        player.setYRot(180F);
+        // The wall and the stand sit down +z, and a living entity looks along its head yaw, not its body
+        // yaw: a joined server player keeps whatever head yaw the join gave it unless it is set here.
+        player.setYRot(0F);
+        player.setYHeadRot(0F);
         BlockPos wall = helper.absolutePos(new BlockPos(2, 3, 4));
         helper.getLevel().setBlock(wall, Blocks.STONE.defaultBlockState(), 3);
         ArmorStand target = new ArmorStand(helper.getLevel(), wall.getX() + 0.5D, wall.getY() - 1D,
@@ -477,7 +481,10 @@ public final class WeaponTableGameTests {
         helper.getLevel().addFreshEntity(target);
         HitResult ray = EntityDamageUtil.getMouseOver(player, 5D);
         helper.assertTrue(ray instanceof EntityHitResult && ((EntityHitResult) ray).getEntity() == target,
-                "the drill ray must retain source full-reach entity selection past the block trace");
+                "the drill ray must retain source full-reach entity selection past the block trace; ray " + ray
+                        + " from " + player.getEyePosition() + " look " + player.getViewVector(1F) + " yaw "
+                        + player.getYRot() + " head " + player.getYHeadRot() + " target " + target.getBoundingBox()
+                        + " alive " + target.isAlive() + " pickable " + target.isPickable());
         }
         helper.succeed();
     }
@@ -493,6 +500,7 @@ public final class WeaponTableGameTests {
         player.setItemInHand(InteractionHand.OFF_HAND, drill);
         player.setPos(block.getX() + 0.5D, block.getY() - 1D, block.getZ() - 3D);
         player.setYRot(0F);
+        player.setYHeadRot(0F);
         player.setXRot(0F);
         ((MagazineLiquidEngine) (Object) drillItem.getConfig(drill, 0).getReceivers(drill)[0].getMagazine(drill)).setAmount(drill, 100);
         readyDrill(player, drillItem, drill, InteractionHand.OFF_HAND);
@@ -521,6 +529,7 @@ public final class WeaponTableGameTests {
             player.setItemInHand(InteractionHand.OFF_HAND, drill);
             player.setPos(block.getX() + 0.5D, block.getY() - 1D, block.getZ() - 3D);
             player.setYRot(0F);
+            player.setYHeadRot(0F);
             player.setXRot(0F);
             ((MagazineLiquidEngine) (Object) drillItem.getConfig(drill, 0).getReceivers(drill)[0].getMagazine(drill))
                     .setAmount(drill, 100);
@@ -558,6 +567,7 @@ public final class WeaponTableGameTests {
         BlockPos origin = helper.absolutePos(new BlockPos(2, 1, 2));
         player.setPos(origin.getX() + 0.5D, origin.getY() + 1D, origin.getZ() + 0.5D);
         player.setYRot(0F);
+        player.setYHeadRot(0F);
         player.setXRot(0F);
         ArmorStand target = new ArmorStand(helper.getLevel(), origin.getX() + 0.5D, origin.getY() + 1.5D,
                 origin.getZ() + 3D);
@@ -591,7 +601,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void drillFortuneInstallUninstall(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack drill = new ItemStack(ModGunItems.gun_drill.get());
         ItemStack magnet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.MAGNET);
@@ -614,7 +624,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void configSyncContract(GameTestHelper helper) {
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
         ItemStack stack = new ItemStack(ModGunItems.gun_light_revolver_dani.get());
         ItemGunBaseNT gun = (ItemGunBaseNT) stack.getItem();

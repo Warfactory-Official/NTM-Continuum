@@ -193,6 +193,6 @@ public final class MassStorageGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        return MassStorageGameTests.class.getClassLoader().getResource(path) != null;
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(MassStorageGameTests.class, path);
     }
 }

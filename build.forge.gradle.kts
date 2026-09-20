@@ -50,6 +50,14 @@ legacyForge {
             server()
             gameDirectory = file("runs/server")
         }
+        // Headless GameTest runner: `gradlew :1.20.1-forge:runGameTestServer` executes every hbm:* test
+        // through Golem's @GameTestGenerator (the pre-1.21.4 framework discovers tests by reflection).
+        register("gameTestServer") {
+            type = "gameTestServer"
+            gameDirectory = file("runs/gametest")
+            // -Pgametest.filter=<regex> runs only the matching test ids (see Golem's GameTests.addLegacy).
+            jvmArgument("-Dgolem.gametest.filter=${providers.gradleProperty("gametest.filter").orElse("").get()}")
+        }
     }
     mods {
         register(modId) { sourceSet(sourceSets["main"]) }
@@ -57,6 +65,26 @@ legacyForge {
 }
 
 sourceSets["main"].resources.srcDir("src/generated/resources")
+
+// The legacy GameTest server writes fresh level data but reuses whatever region files the previous run
+// left in runs/gametest/world, so craters, fills and ash from earlier runs sit under the new plots and
+// tests fail on ground they never touched. Start every run from an empty world, as 26.1's runner does.
+tasks.matching { it.name == "runGameTestServer" }.configureEach {
+    doFirst {
+        delete(layout.projectDirectory.dir("runs/gametest/world"))
+        // Forge's GameTestMain is the dedicated-server main with a test hook, so the world comes from
+        // server.properties rather than from vanilla's FLAT preset: without this line the plots sit 125
+        // blocks under normal terrain (a sat link found grass at y=65 in its sky column, and the crater
+        // benchmark carved 24,000 blocks of hillside).
+        val properties = layout.projectDirectory.file("runs/gametest/server.properties").asFile
+        properties.parentFile.mkdirs()
+        val lines = if (properties.exists()) properties.readLines().filterNot {
+            it.startsWith("level-type=") || it.startsWith("level-seed=") || it.startsWith("max-tick-time=")
+        } else emptyList()
+        properties.writeText((lines + listOf("level-type=minecraft:flat", "level-seed=0", "max-tick-time=-1"))
+            .joinToString(System.lineSeparator()) + System.lineSeparator())
+    }
+}
 
 // A one-off smoke launch must not leave Quick Play in ModDev's cached argument file.
 tasks.matching { it.name == "prepareClientRun" }.configureEach {

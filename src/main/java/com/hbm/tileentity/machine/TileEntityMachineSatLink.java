@@ -72,7 +72,10 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
      * itself. The comparison is made against the top of the mast instead, which asks the same question.
      */
     private static boolean seesSky(ServerLevel level, BlockPos pos) {
-        return level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) <= pos.getY() + MAST_HEIGHT;
+        // getHeight is one above the highest motion-blocking block; whether the mast's own top cell counts
+        // differs by era (1.20.1's blocksMotion sees the folded cell), so "nothing above the mast" is
+        // stated as the cell after it.
+        return level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ()) <= pos.getY() + MAST_HEIGHT + 1;
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSatLink link) {

@@ -142,8 +142,13 @@ public final class ArmorWaveGameTests {
         helper.assertTrue(ArmorModHandler.pryMod(armor, ArmorModHandler.kevlar).getItem() == insert.getItem(),
                 "module slot did not write armor storage");
 
+        // Count only what closing dropped: a 4-block sphere reaches a neighbouring plot's drops when the
+        // legacy framework packs batches tighter than 26.1 does.
+        java.util.Set<Integer> before = new java.util.HashSet<>();
+        for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(4D))) before.add(e.getId());
         menu.removed(player);
-        int drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(4D)).size();
+        int drops = (int) helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(4D)).stream()
+                .filter(e -> !before.contains(e.getId())).count();
         helper.assertTrue(drops == 2, "closing the table dropped " + drops + " stacks, expected armor + module");
         helper.succeed();
     }

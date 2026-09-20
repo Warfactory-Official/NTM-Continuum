@@ -29,9 +29,16 @@ public final class PrecAssRecipes extends GenericRecipes {
 
     private PrecAssRecipes() {}
 
+    /** The 528 switch the list was last built with; a change rebuilds it (a 1.20.1 server builds the creative tabs, and so this list, before any world exists). */
+    private Boolean builtWith528;
+
     @Override
     public synchronized void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
+        if (!recipeOrderedList.isEmpty() && builtWith528 != null && builtWith528 == GeneralConfig.enable528) return;
+        recipeOrderedList.clear();
+        recipeNameMap.clear();
+        blueprintPools.values().forEach(pool -> pool.removeIf(name -> name.startsWith("precass.")));
+        builtWith528 = GeneralConfig.enable528;
 
         // The central 528 switch is false by default in old-hbm. Keep these recipes behind the same
         // content switch instead of silently exposing a second circuit progression.

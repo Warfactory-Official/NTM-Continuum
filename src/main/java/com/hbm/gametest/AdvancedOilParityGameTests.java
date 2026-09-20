@@ -99,7 +99,7 @@ public final class AdvancedOilParityGameTests {
                 helper, relative, TileEntityRefueler.class);
         helper.assertTrue(refueler != null, "Refueler BlockEntity was not created");
 
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ItemStack drill = new ItemStack(ModGunItems.gun_drill.get());
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, drill);
         player.setPos(helper.absolutePos(relative).getX() + 0.5D, helper.absolutePos(relative).getY(),
@@ -124,7 +124,7 @@ public final class AdvancedOilParityGameTests {
         TileEntityMachineOilWell well = GameTestHelpers.blockEntity(helper, relative, TileEntityMachineOilWell.class);
         helper.assertTrue(well != null, "Oil well BlockEntity was not created");
 
-        var player = helper.makeMockServerPlayerInLevel();
+        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
         ContainerMachineOilWell menu = new ContainerMachineOilWell(0, player.getInventory(), well);
         ItemStack bucket = new ItemStack(Items.BUCKET);
         helper.assertTrue(menu.getSlot(1).mayPlace(bucket) && !menu.getSlot(2).mayPlace(bucket)

@@ -45,10 +45,14 @@ public final class NukePerfGameTests {
      * benchmark had happened to bury or excavate the ground under it that run. This is the same
      * plot-collision failure mode as §19l, at 2000 blocks' remove.
      *
-     * <p>The quadrants are 4000 blocks apart and the widest work area here is ~300 blocks, so they
-     * cannot overlap however the plots are laid out.
+     * <p>The quadrants are 40,000 blocks apart and the widest work area here is ~300 blocks, so they
+     * cannot overlap however the plots are laid out. The distance is what it is because of the pre-26.1
+     * framework: it lays the whole suite out in rows of eight, and with the padded templates that grid
+     * runs thousands of blocks in +x and +z, so an offset of 2,000 put these work areas on top of later
+     * rows' plots (a sat link found the crater's dirt in its sky column). Chunk generation cost does not
+     * depend on the distance.
      */
-    private static final int OFFSET = 2000;
+    private static final int OFFSET = 20_000;
     /** Work-area offsets, one quadrant per test. See {@link #OFFSET}. */
     private static final int BENCH_X = OFFSET, BENCH_Z = OFFSET;
     private static final int THROUGHPUT_X = OFFSET, THROUGHPUT_Z = -OFFSET;
@@ -108,6 +112,11 @@ public final class NukePerfGameTests {
         Constants.LOG.info("[NUKE-BENCH] filled {} stone blocks in {} ms", filled, System.currentTimeMillis() - fillStart);
         int filledBlocks = filled;
 
+        // The blast is an entity: it ticks only in an entity-ticking chunk, and the fill above loaded this
+        // work area at load level only. In game the bomb sits in a player's ticking chunks; here the same
+        // hold the fallout benchmark takes stands in for the player.
+        com.hbm.world.chunk.ChunkLoadingManager.requestTicket(level, "crater_benchmark")
+                .force(origin.getX() >> 4, origin.getZ() >> 4);
         EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
                 level, RADIUS, origin.getX(), y, origin.getZ());
         level.addFreshEntity(blast);
@@ -450,6 +459,8 @@ public final class NukePerfGameTests {
                 () -> sky(level, inside) == 0 && sky(level, outside) == 0,
                 "the slab never went dark inside",
                 () -> {
+                    com.hbm.world.chunk.ChunkLoadingManager.requestTicket(level, "crater_lighting")
+                            .force(centre.getX() >> 4, centre.getZ() >> 4);
                     EntityNukeExplosionMK5 blast = EntityNukeExplosionMK5.statFacNoRad(
                             level, radius, centre.getX(), centre.getY(), centre.getZ());
                     level.addFreshEntity(blast);

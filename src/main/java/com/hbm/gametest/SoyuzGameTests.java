@@ -166,10 +166,6 @@ public final class SoyuzGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = SoyuzGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(SoyuzGameTests.class, path);
     }
 }

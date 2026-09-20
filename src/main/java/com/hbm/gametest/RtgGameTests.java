@@ -281,11 +281,7 @@ public final class RtgGameTests {
     private static boolean close(double a, double b) { return Math.abs(a - b) < 0.000001D; }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = RtgGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (IOException exception) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(RtgGameTests.class, path);
     }
 
     private static String resourceText(String path) {

@@ -19,6 +19,9 @@
         ],
         "jei_mod_plugin": [
             "com.hbm.handler.jei.HbmJeiPluginFabric"
+        ],
+        "fabric-gametest": [
+            "com.hbm.platform.fabric.FabricGameTests"
         ]
     },
     "mixins": [

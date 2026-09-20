@@ -226,8 +226,10 @@ public final class PowerNetworkGameTests {
      * compiled in, so linking it at all is most of what there is to check until we expose our own.
      */
     private static void foreignLookup(GameTestHelper helper) {
-        helper.assertTrue(EnergyCompat.supported(),
-                "The gametest runner is a forge-like node, so foreign energy must be supported");
+        boolean forgeLike = dev.golem.core.GolemCore.loader() != dev.golem.core.GolemCore.Loader.FABRIC;
+        helper.assertTrue(EnergyCompat.supported() == forgeLike,
+                "Foreign energy is a forge-like feature; loader " + dev.golem.core.GolemCore.loader()
+                        + " reports supported=" + EnergyCompat.supported());
         BlockPos empty = helper.absolutePos(new BlockPos(2, 1, 2));
         helper.getLevel().removeBlock(empty, false);
         helper.assertTrue(EnergyCompat.find(helper.getLevel(), empty, Direction.NORTH) == null,

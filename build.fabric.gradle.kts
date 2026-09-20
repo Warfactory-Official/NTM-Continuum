@@ -239,7 +239,24 @@ loom {
             ideConfigGenerated(true)
             runDir = "runs/server"
         }
+        // Headless GameTest runner: `gradlew :<node>-fabric:runGametest` executes every hbm:* test through
+        // Fabric API's runner and the fabric-gametest entrypoint (see FabricGameTests).
+        register("gametest") {
+            server()
+            configName = "Fabric GameTest ($mcVersion)"
+            ideConfigGenerated(false)
+            runDir = "runs/gametest"
+            vmArg("-Dfabric-api.gametest")
+            vmArg("-Dfabric-api.gametest.report-file=${project.file("runs/gametest/report.xml").absolutePath}")
+            // -Pgametest.filter=<regex> runs only the matching test ids (see Golem's GameTests.addLegacy).
+            vmArg("-Dgolem.gametest.filter=${providers.gradleProperty("gametest.filter").orElse("").get()}")
+        }
     }
+}
+
+// See the Forge buildscript: the legacy GameTest server reuses old region files, so the world is wiped.
+tasks.matching { it.name == "runGametest" }.configureEach {
+    doFirst { delete(layout.projectDirectory.dir("runs/gametest/world")) }
 }
 
 tasks.processResources {

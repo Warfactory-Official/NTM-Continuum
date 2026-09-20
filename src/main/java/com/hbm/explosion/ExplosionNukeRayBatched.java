@@ -276,6 +276,11 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
      * {@code getChunkNow} harvests completed chunks on later server ticks. The old synchronous
      * {@code world.getChunk} path cost 44 seconds for a radius-500 blast and produced one enormous tick.
      */
+    /** Ticks with claimed chunks pending and none arriving before the server thread loads them itself. */
+    private static final int STALL_TICKS = 40;
+    private static final int STALL_LOADS_PER_TICK = 8;
+    private int awaitingStallTicks;
+
     private boolean resolveMissesTick(int processTimeMs) {
         if (!(world instanceof ServerLevel server)) return true;
 
@@ -284,9 +289,20 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         // First harvest requests that completed since the previous tick.
         var awaiting = awaitingChunks.iterator();
         int harvested = 0;
+        // Safety valve: a loading-only claim that has produced nothing for STALL_TICKS is loaded on the
+        // server thread instead, a few per tick. 26.1 never gets here (claims resolve within a tick or
+        // two); the 1.20.1 GameTest server left 200+ claims unanswered for minutes.
+        boolean stalled = awaitingStallTicks >= STALL_TICKS;
+        int forced = 0;
         while (awaiting.hasNext()) {
             long key = awaiting.nextLong();
             LevelChunk chunk = server.getChunkSource().getChunkNow(ChunkPos.getX(key), ChunkPos.getZ(key));
+            if (chunk == null && stalled && forced < STALL_LOADS_PER_TICK) {
+                chunk = Chunks.loadNow(server, ChunkPos.getX(key), ChunkPos.getZ(key));
+                forced++;
+                if (forced == 1) Constants.LOG.warn("[NUKE] {} claimed chunks unanswered for {} ticks; loading synchronously",
+                        awaitingChunks.size(), awaitingStallTicks);
+            }
             if (chunk == null) continue;
             cacheChunk(key, chunk);
             awaiting.remove();
@@ -332,8 +348,10 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
                 chunkWaitWallMs += System.currentTimeMillis() - chunkWaitStartedAt;
                 chunkWaitStartedAt = 0;
             }
+            awaitingStallTicks = 0;
             return true;
         }
+        awaitingStallTicks = harvested > 0 ? 0 : awaitingStallTicks + 1;
         if (chunkWaitStartedAt == 0) chunkWaitStartedAt = System.currentTimeMillis();
         chunkWaitTicks++;
         return false;
@@ -788,6 +806,11 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         return installAttenuationTable(bits);
     }
 
+    /*
+     * StrictMath, not Math: Math.pow is a JIT intrinsic whose last ulp differs between JDKs (17 on the
+     * 1.20.1 nodes, 25 on 26.1), and a ray dies on a threshold, so ulps moved the r=64 benchmark's
+     * destroyed count by 7% between nodes. fdlibm is bit-identical everywhere.
+     */
     private synchronized AttenuationTable installAttenuationTable(int resistanceBits) {
         for (AttenuationTable table : attenuationTables) {
             if (table.resistanceBits() == resistanceBits) return table;
@@ -804,7 +827,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
     private static float[] buildAttenuationTable(float resistance, int radius) {
         float[] values = new float[radius + 1];
         for (int r = 1; r <= radius; r++) {
-            values[r] = (float) (Math.pow(resistance + 1,
+            values[r] = (float) (StrictMath.pow(resistance + 1,
                     3 * ((float) r) / ((float) radius)) - 1);
         }
         if (radius > 0) values[0] = values[1];
@@ -819,7 +842,7 @@ public class ExplosionNukeRayBatched implements IExplosionRay {
         for (float resistance : resistances) {
             float[] table = buildAttenuationTable(resistance, radius);
             for (int r : samples) {
-                float direct = (float) (Math.pow(resistance + 1,
+                float direct = (float) (StrictMath.pow(resistance + 1,
                         3 * ((float) r) / ((float) radius)) - 1);
                 if (Float.floatToRawIntBits(table[r]) != Float.floatToRawIntBits(direct)) return false;
             }

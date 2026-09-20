@@ -526,11 +526,7 @@ public final class AlbionGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = AlbionGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(AlbionGameTests.class, path);
     }
 
     /** Every accelerator component the beam walks through has to be reachable as an {@link IParticleUser}. */

@@ -160,16 +160,25 @@ public final class MissileGameTests {
         ServerLevel level = helper.getLevel();
         // Well clear of the test plots and well above the ground: a missile spawned on the floor
         // impacts on its first step and never gets an arc at all.
-        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(2000, 120, 2000);
+        // Negative and far: the pre-26.1 framework's grid grows in +x/+z for thousands of blocks.
+        BlockPos origin = helper.absolutePos(BlockPos.ZERO).offset(-20_000, 120, -20_000);
 
+        // Hold the flight corridor as ticking chunks: a chunk that is merely loaded unloads its entities
+        // on the next tick below 26.1, and an unloaded missile reads as removed after two steps.
+        int minChunkX = (origin.getX() - 16) >> 4, maxChunkX = (origin.getX() + 96) >> 4;
+        int minChunkZ = (origin.getZ() - 16) >> 4, maxChunkZ = (origin.getZ() + 16) >> 4;
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) level.setChunkForced(cx, cz, true);
+        }
         EntityMissileTier1.EntityMissileGeneric missile = new EntityMissileTier1.EntityMissileGeneric(
                 level, origin.getX(), origin.getY(), origin.getZ(), origin.getX() + 60, origin.getZ());
         level.addFreshEntity(missile);
 
         float steepest = 0F;
+        int ticks = 0;
         // Long enough for the arc to pass its apex and dive; the missile is removed on impact, and a
         // missile that hit something never got to nose over, so that is a failure too.
-        for (int i = 0; i < 400 && !missile.isRemoved(); i++) {
+        for (int i = 0; i < 400 && !missile.isRemoved(); i++, ticks++) {
             // The level's entity tick does this before calling tick(), and the missile's speed ramp
             // reads it — drive the entity by hand without it and velocity stays 0 forever, so the
             // missile hangs at its launch attitude and this test measures nothing.
@@ -178,8 +187,13 @@ public final class MissileGameTests {
             steepest = Math.min(steepest, missile.getEntityData().get(EntityMissileBaseNT.PITCH));
         }
 
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) level.setChunkForced(cx, cz, false);
+        }
         helper.assertTrue(steepest < -90F,
-                "missile pitch never passed horizontal on the way down (steepest was " + steepest + ")");
+                "missile pitch never passed horizontal on the way down (steepest was " + steepest + " after " + ticks
+                        + " ticks, removed=" + missile.isRemoved() + " at " + missile.position() + " motion "
+                        + missile.getDeltaMovement() + " chunkLoaded=" + level.hasChunkAt(missile.blockPosition()) + ")");
         // PITCH exists because the vanilla field cannot hold this value — but that is only true where
         // setXRot clamps, which is 26.1 and up. Below it xRot legitimately carries the same number,
         // and asserting the clamp there would be asserting something vanilla never promised.

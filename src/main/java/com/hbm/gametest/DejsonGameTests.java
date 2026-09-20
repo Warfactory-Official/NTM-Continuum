@@ -212,9 +212,11 @@ public final class DejsonGameTests {
 
         for (Dejson.ItemDeclaration declaration : Dejson.itemDeclarations()) {
             JsonObject shippedModel = read(assetPath(declaration.itemId(), "models"));
-            if (shippedModel != null) {
+            JsonObject generated = declaration.models().get(declaration.itemId());
+            // A shares() declaration emits no model of its own; below 1.21.4 legacy-assets derives a bare
+            // parent pointer at that path, which is not this declaration's to compare.
+            if (shippedModel != null && generated != null) {
                 models++;
-                JsonObject generated = declaration.models().get(declaration.itemId());
                 if (!contains(normalise(shippedModel), normalise(generated))) {
                     problems.add(declaration.itemId() + " is on the classpath saying something "
                             + "other than what it was declared to say");
@@ -265,10 +267,13 @@ public final class DejsonGameTests {
 
         for (Map.Entry<String, JsonObject> declared : Data.files().entrySet()) {
             String path = declared.getKey();
-            JsonObject shipped = read("/" + path);
-            if (shipped == null) {
-                shipped = read("/" + legacy(path));
+            // Every copy on the classpath: a shared tag such as c:glass_panes is also packed by Fabric API,
+            // and whichever copy the loader answers first is not necessarily this mod's.
+            List<JsonObject> copies = readAll("/" + path);
+            if (copies.isEmpty()) {
+                copies = readAll("/" + legacy(path));
             }
+            JsonObject shipped = copies.isEmpty() ? null : copies.get(0);
             String tree = loaderTree(path);
             if (tree != null) {
                 int[] counts = loaderTrees.computeIfAbsent(tree, key -> new int[2]);
@@ -287,7 +292,18 @@ public final class DejsonGameTests {
             } else {
                 others++;
             }
-            if (!unwrapped(shipped).equals(unwrapped(declared.getValue()))) {
+            //? if <1.21.2 {
+            /*// legacy-recipes.gradle.kts rewrites every recipe's ingredient shape for this era, so a packed
+            // recipe is expected to differ from its declaration; that it was packed at all is the check.
+            if (path.contains("/recipe/")) continue;
+            *///?}
+            //? if <1.20.5 {
+            /*// The same script converts component-era loot tables (crate drops, match_tool predicates) to
+            // the NBT shape below 1.20.5, so their packed content is expected to differ too.
+            if (path.contains("/loot_table/")) continue;
+            *///?}
+            JsonElement expected = unwrapped(declared.getValue());
+            if (copies.stream().noneMatch(copy -> unwrapped(copy).equals(expected))) {
                 problems.add(path + " is on the classpath saying something other than "
                         + "what it was declared to say");
             }
@@ -360,6 +376,9 @@ public final class DejsonGameTests {
     /** The pre-1.21 spelling of a data path: the registry directories were plural. */
     private static String legacy(String path) {
         return path.replace("/loot_table/", "/loot_tables/")
+                .replace("/recipe/", "/recipes/")
+                .replace("/advancement/", "/advancements/")
+                .replace("/structure/", "/structures/")
                 .replace("/tags/item/", "/tags/items/")
                 .replace("/tags/block/", "/tags/blocks/")
                 .replace("/tags/fluid/", "/tags/fluids/");
@@ -480,6 +499,26 @@ public final class DejsonGameTests {
             copy.addProperty("parent", "minecraft:" + parent.getAsString());
         }
         return copy;
+    }
+
+    private static List<JsonObject> readAll(String path) {
+        List<JsonObject> copies = new ArrayList<>();
+        try {
+            var urls = DejsonGameTests.class.getClassLoader().getResources(path.substring(1));
+            while (urls.hasMoreElements()) {
+                try (InputStream stream = urls.nextElement().openStream()) {
+                    copies.add(JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8))
+                            .getAsJsonObject());
+                }
+            }
+        } catch (java.io.IOException failure) {
+            throw new IllegalStateException("could not read " + path, failure);
+        }
+        if (copies.isEmpty()) {
+            JsonObject single = read(path);
+            if (single != null) copies.add(single);
+        }
+        return copies;
     }
 
     private static JsonObject read(String path) {

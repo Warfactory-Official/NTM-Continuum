@@ -697,6 +697,10 @@ public final class TurretGameTests {
         var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(14, 2, 2));
         zombie.setNoGravity(true);
         zombie.setNoAi(true);
+        // The zombie only has to be there to be sprayed at. Neighbouring turret plots stay armed for the
+        // rest of the batch and the sun sets it alight, and once it is dead the Fritz drops the lock
+        // before it has burned any fuel, so the target is made invulnerable.
+        zombie.setInvulnerable(true);
 
         fritz.tank.setFill(fritz.tank.getMaxFill());
         int fuel = fritz.tank.getFill();
@@ -704,8 +708,17 @@ public final class TurretGameTests {
 
         // Run on real ticks: the turret's own ticker keeps it powered through the block's ticker, and a
         // synchronous loop never advances the level, which several of the turret's timers key off.
+        // The spray kills a zombie in roughly fifty ticks (faster still when the sun already has it burning),
+        // and a dead target is dropped at once, so the lock is sampled along the way rather than at the end.
+        boolean[] locked = {false};
+        for (int t = 5; t <= 55; t += 5) {
+            helper.runAfterDelay(t, () -> locked[0] |= fritz.target != null);
+        }
         helper.runAfterDelay(60, () -> {
-            helper.assertTrue(fritz.target != null, "The Fritz never acquired a target");
+            helper.assertTrue(locked[0], "The Fritz never acquired a target; on " + fritz.isOn()
+                    + ", power " + fritz.getPower() + "/" + fritz.getConsumption() + ", search " + fritz.searchTimer
+                    + ", zombie alive " + zombie.isAlive() + " at " + zombie.position() + ", LOS "
+                    + fritz.entityInLOS(zombie) + ", acceptable " + fritz.entityAcceptableTarget(zombie));
             helper.assertTrue(fritz.tank.getFill() < fuel,
                     "Spraying must burn fuel, not ammunition; tank holds " + fritz.tank.getFill());
             helper.succeed();
@@ -897,17 +910,35 @@ public final class TurretGameTests {
         helper.assertTrue(himars.queuedTargets() == 1,
                 "An accepted mission must be queued; got " + himars.queuedTargets());
 
-        helper.runAfterDelay(300, () -> {
-            var rockets = helper.getLevel().getEntitiesOfClass(
-                    com.hbm.entity.projectile.EntityArtilleryRocket.class,
-                    new net.minecraft.world.phys.AABB(core).inflate(128D));
+        // The rocket climbs out of the plot on its way to the mission and is gone once it lands, so on the
+        // legacy framework, which forces only the plot's own chunks, the flight corridor is held loaded and
+        // the rocket is caught on the way rather than looked for after the fact.
+        var level = helper.getLevel();
+        int minChunkX = (core.getX() - 32) >> 4, maxChunkX = (core.getX() + 32) >> 4;
+        int minChunkZ = (core.getZ() - 16) >> 4, maxChunkZ = (core.getZ() + 96) >> 4;
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) level.setChunkForced(cx, cz, true);
+        }
+        com.hbm.entity.projectile.EntityArtilleryRocket[] seen = {null};
+        for (int t = 5; t <= 295; t += 5) {
+            helper.runAfterDelay(t, () -> {
+                if (seen[0] != null) return;
+                var rockets = level.getEntitiesOfClass(com.hbm.entity.projectile.EntityArtilleryRocket.class,
+                        new net.minecraft.world.phys.AABB(core).inflate(160D));
+                if (!rockets.isEmpty()) seen[0] = rockets.get(0);
+            });
+        }
 
-            helper.assertTrue(!rockets.isEmpty(),
+        helper.runAfterDelay(300, () -> {
+            for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+                for (int cz = minChunkZ; cz <= maxChunkZ; cz++) level.setChunkForced(cx, cz, false);
+            }
+            helper.assertTrue(seen[0] != null,
                     "The gun never fired; pitch " + himars.rotationPitch + ", ammo " + himars.ammo
                             + ", queued " + himars.queuedTargets());
             helper.assertTrue(himars.ammo < 6, "Firing must spend a rocket; ammo " + himars.ammo);
 
-            var rocket = rockets.get(0);
+            var rocket = seen[0];
             helper.assertTrue(rocket.getTypeIndex()
                             == com.hbm.items.weapon.ItemAmmoHIMARS.HIMARSRocketType.SMALL.ordinal(),
                     "The rocket must carry the loaded warhead; got " + rocket.getTypeIndex());
@@ -1194,10 +1225,6 @@ public final class TurretGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = TurretGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(TurretGameTests.class, path);
     }
 }

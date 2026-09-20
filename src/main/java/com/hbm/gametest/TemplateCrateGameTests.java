@@ -56,7 +56,7 @@ public final class TemplateCrateGameTests {
                 "data/hbm/loot_table/blocks/crate_template.json"
         };
         for (String asset : assets) {
-            helper.assertTrue(TemplateCrateGameTests.class.getClassLoader().getResource(asset) != null,
+            helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.resourceExists(TemplateCrateGameTests.class, asset),
                     "template-crate asset is missing: " + asset);
         }
         helper.succeed();

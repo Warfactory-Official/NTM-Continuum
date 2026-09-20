@@ -40,6 +40,8 @@ public class FabricInit implements ModInitializer {
         CommonClass.init();
 
         // Fabric has no deferred registration phase; register everything now via vanilla Registry.register.
+        // GameTest suites first: one of them owns a test-only block, whose register must exist to be flushed.
+        FabricGameTests.initAll();
         DeferredRegister.flushAllToVanilla();
         // Living entity attribute sets (ModNtmEntities and the self-registering mobs); Forge-like loaders
         // deliver these through EntityAttributeCreationEvent, Fabric writes them once the types exist.

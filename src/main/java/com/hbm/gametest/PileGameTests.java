@@ -317,10 +317,6 @@ public final class PileGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = PileGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(PileGameTests.class, path);
     }
 }

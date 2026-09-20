@@ -259,10 +259,6 @@ public final class DFCGameTests {
     }
 
     private static boolean resourceExists(String path) {
-        try (InputStream stream = DFCGameTests.class.getClassLoader().getResourceAsStream(path)) {
-            return stream != null;
-        } catch (Exception e) {
-            return false;
-        }
+        return dev.golem.core.gametest.GameTestHelpers.resourceExists(DFCGameTests.class, path);
     }
 }

@@ -40,8 +40,9 @@ public final class CompatibilityBoundaryGameTests {
         channel.type = Mats.MAT_IRON;
         channel.amount = MaterialShapes.INGOT.quantity * 2;
 
+        java.util.Set<Integer> before = itemIds(helper, pos);
         helper.getLevel().destroyBlock(pos, false);
-        Mats.MaterialStack dropped = onlyScrap(helper, pos);
+        Mats.MaterialStack dropped = onlyScrap(helper, pos, before);
         helper.assertTrue(dropped != null && dropped.material == Mats.MAT_IRON
                         && dropped.amount == MaterialShapes.INGOT.quantity * 2,
                 "breaking a molten foundry channel did not preserve its exact material");
@@ -59,9 +60,10 @@ public final class CompatibilityBoundaryGameTests {
         crucible.recipeStack.add(new Mats.MaterialStack(Mats.MAT_IRON, MaterialShapes.INGOT.quantity));
         crucible.wasteStack.add(new Mats.MaterialStack(Mats.MAT_COPPER, MaterialShapes.NUGGET.quantity * 3));
 
+        java.util.Set<Integer> before = itemIds(helper, pos);
         helper.getLevel().destroyBlock(pos, false);
-        List<Mats.MaterialStack> scraps = scraps(helper, pos);
-        List<ItemEntity> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2D));
+        List<Mats.MaterialStack> scraps = scraps(helper, pos, before);
+        List<ItemEntity> drops = newItems(helper, pos, before);
         helper.assertTrue(scraps.size() == 2
                         && scraps.stream().anyMatch(stack -> stack.material == Mats.MAT_IRON
                         && stack.amount == MaterialShapes.INGOT.quantity)
@@ -121,13 +123,26 @@ public final class CompatibilityBoundaryGameTests {
         helper.succeed();
     }
 
-    private static Mats.MaterialStack onlyScrap(GameTestHelper helper, BlockPos pos) {
-        List<Mats.MaterialStack> scraps = scraps(helper, pos);
+    /** Item entities near the block before it is broken, so only what breaking dropped is counted: the
+     *  legacy framework packs plots close enough for a 2-block sphere to reach a neighbour's drops. */
+    private static java.util.Set<Integer> itemIds(GameTestHelper helper, BlockPos pos) {
+        java.util.Set<Integer> ids = new java.util.HashSet<>();
+        for (ItemEntity e : helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2D))) ids.add(e.getId());
+        return ids;
+    }
+
+    private static List<ItemEntity> newItems(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2D)).stream()
+                .filter(e -> !before.contains(e.getId())).toList();
+    }
+
+    private static Mats.MaterialStack onlyScrap(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+        List<Mats.MaterialStack> scraps = scraps(helper, pos, before);
         return scraps.size() == 1 ? scraps.get(0) : null;
     }
 
-    private static List<Mats.MaterialStack> scraps(GameTestHelper helper, BlockPos pos) {
-        return helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(pos).inflate(2D)).stream()
+    private static List<Mats.MaterialStack> scraps(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+        return newItems(helper, pos, before).stream()
                 .map(ItemEntity::getItem)
                 .map(ItemScraps::getMats)
                 .filter(java.util.Objects::nonNull)
