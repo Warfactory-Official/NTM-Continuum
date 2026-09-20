@@ -14,5 +14,7 @@ public final class DecoClientRegistrations {
         HbmBlockEntityRenderers.regGem(sink, ModDecoBlockEntities.DECO_MODEL.get(), DecoModelRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModDecoBlockEntities.FLOODLIGHT.get(), FloodlightRenderer::new);
         HbmBlockEntityRenderers.regGem(sink, ModDecoBlockEntities.DEMON_LAMP.get(), DemonLampRenderer::new);
+        HbmBlockEntityRenderers.regGem(sink, ModDecoBlockEntities.LANTERN.get(),
+                com.hbm.client.render.LanternRenderer::new);
     }
 }

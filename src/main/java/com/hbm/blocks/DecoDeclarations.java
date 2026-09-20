@@ -101,6 +101,13 @@ public final class DecoDeclarations {
                         Variants.uniform("west", "false", "true"), Variants.uniform("east", "false", "true")))
                 .register();
         Drops.nothing(NS, "spotlight_beam");
+        // Lantern: a folded five-tall post drawn entirely by LanternRenderer, so the blockstate exists
+        // only because vanilla demands one. FACING x CELL is BlockMultiblockMachine's state space.
+        Dejson.block(NS, "lantern").rendered(DUMMY)
+                .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
+                        Variants.uniform("cell", "false", "true"))).register();
+        Drops.self(NS, "lantern");
+        Dejson.item(NS, "lantern").models(Models.generated("hbm:blocks/block_steel")).register();
         Dejson.block(NS, "lamp_demon").rendered(DUMMY)
                 .states(Variants.uniform("facing", "down", "up", "north", "south", "west", "east")).register();
         Drops.self(NS, "lamp_demon");

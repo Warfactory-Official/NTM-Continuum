@@ -42,5 +42,11 @@ public final class ModDecoBlockEntities {
             BLOCK_ENTITIES.register("lamp_demon", () -> BlockEntities.serverTicking(DemonLamp.TileEntityDemonLamp::new,
                     (level, pos, state, be) -> be.serverTick(), ModDecoContent.lamp_demon.get()));
 
+    /** 1.7 {@code TileEntityLantern}: server-ticking so the glyphid sweep runs; the core cell only. */
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.deco.TileEntityLantern>> LANTERN =
+            BLOCK_ENTITIES.register("lantern", () -> BlockEntities.serverTicking(
+                    com.hbm.tileentity.deco.TileEntityLantern::new,
+                    (level, pos, state, be) -> be.serverTick(), ModDecoContent.lantern.get()));
+
     public static void init() {}
 }
