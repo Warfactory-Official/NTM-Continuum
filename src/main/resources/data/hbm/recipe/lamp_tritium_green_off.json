@@ -1,0 +1,39 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "items": [
+        "minecraft:glass"
+      ]
+    },
+    "P": {
+      "items": [
+        "hbm:powder_fire"
+      ]
+    },
+    "T": {
+      "items": [
+        "hbm:fluid_tank"
+      ],
+      "components": {
+        "hbm:fluid_id": 9,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:fluid_tank"
+    },
+    "D": {
+      "items": [
+        "hbm:sulfur"
+      ]
+    }
+  },
+  "pattern": [
+    "GP",
+    "TD"
+  ],
+  "result": {
+    "id": "hbm:lamp_tritium_green_off",
+    "count": 1
+  }
+}

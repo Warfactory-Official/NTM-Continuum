@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "hbm:coil_copper",
+    "I": "#c:ingots/iron",
+    "P": "#c:ingots/any_plastic",
+    "T": "hbm:machine_transformer",
+    "W": "#minecraft:planks"
+  },
+  "pattern": [
+    "CCC",
+    "PIP",
+    "WTW"
+  ],
+  "result": {
+    "id": "hbm:tesla"
+  }
+}

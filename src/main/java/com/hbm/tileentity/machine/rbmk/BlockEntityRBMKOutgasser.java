@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.handler.neutron.NeutronStream;

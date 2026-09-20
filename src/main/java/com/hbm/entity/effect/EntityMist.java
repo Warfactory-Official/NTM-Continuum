@@ -1,5 +1,7 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.ModEntities;
 import com.hbm.handler.ArmorUtil;

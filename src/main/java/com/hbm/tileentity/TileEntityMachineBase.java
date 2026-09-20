@@ -1,5 +1,7 @@
 package com.hbm.tileentity;
 
+import dev.golem.core.data.Tags;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;

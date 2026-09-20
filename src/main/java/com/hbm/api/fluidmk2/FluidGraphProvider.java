@@ -23,9 +23,19 @@ public final class FluidGraphProvider implements IGraphProvider<DuctData> {
         return DuctData.NONE;
     }
 
+    /**
+     * Same fluid, or the exhaust's {@link DuctData#SMOKE_ANY} against any smoke: 1.7's exhaust sat in all
+     * three smoke nodespaces, so a smoke duct joined it just as it joins another smoke duct. Not
+     * transitive (a {@code SMOKE} duct and a {@code SMOKE_LEADED} duct joined through an exhaust are one
+     * net); {@link FluidNetwork} rounds such a net once per smoke and every endpoint still gates the fluid
+     * through its own {@code canConnect}. Every non-smoke pairing is exactly the equality it always was.
+     */
     @Override
     public boolean dataCompatible(DuctData a, DuctData b) {
-        return a.typeId() == b.typeId();
+        if (a.typeId() == b.typeId()) return true;
+        if (a.isSmokeAny()) return DuctData.isSmoke(b.type());
+        if (b.isSmokeAny()) return DuctData.isSmoke(a.type());
+        return false;
     }
 
     @Override

@@ -1,0 +1,28 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/blocks/battery.obj",
+    "texture": "hbm:textures/blocks/hev_battery.png",
+    "scale": 1.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [
+      0.0,
+      -0.625,
+      0.0
+    ],
+    "guiScale": 3.0,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
+}

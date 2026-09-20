@@ -61,10 +61,23 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     private long lastPowerForDelta = 0L;
     private int deltaTimer = 0;
 
+    /** This block's capacity: {@link #MAX_POWER} for {@code machine_battery}, the tier's own for the others. */
+    private final long maxPower;
+
     public TileEntityMachineBattery(BlockPos pos, BlockState state) {
+        this(ModBlockEntities.MACHINE_BATTERY.get(), pos, state, MAX_POWER);
+    }
+
+    /**
+     * The tiered batteries (potato / lithium / schrabidium / dineutronium) are this same machine with
+     * another capacity; 1.7 read it off the block ({@code MachineBattery.maxPower}), the port hands it in.
+     */
+    protected TileEntityMachineBattery(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
+                                       BlockPos pos, BlockState state, long maxPower) {
         // 4 slots like the original: 0/2 = charge (top), 1/3 = discharge (bottom). The charge/discharge
         // item logic arrives with the battery-item port; for now they are plain slots.
-        super(ModBlockEntities.MACHINE_BATTERY.get(), pos, state, 4);
+        super(type, pos, state, 4);
+        this.maxPower = maxPower;
     }
 
     @Override
@@ -150,7 +163,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
 
     @Override
     public long getMaxPower() {
-        return MAX_POWER;
+        return maxPower;
     }
 
     @Override
@@ -166,13 +179,13 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     @Override
     public long getReceiverSpeed() {
         int mode = getRelevantMode();
-        return (mode == MODE_INPUT || mode == MODE_BUFFER) ? MAX_POWER / 20L : 0L;
+        return (mode == MODE_INPUT || mode == MODE_BUFFER) ? getMaxPower() / 200L : 0L;
     }
 
     @Override
     public long getProviderSpeed() {
         int mode = getRelevantMode();
-        return (mode == MODE_OUTPUT || mode == MODE_BUFFER) ? MAX_POWER / 20L : 0L;
+        return (mode == MODE_OUTPUT || mode == MODE_BUFFER) ? getMaxPower() / 600L : 0L;
     }
 
     @Override
@@ -226,7 +239,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
 
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.hbm.machine_battery");
+        return getBlockState().getBlock().getName();
     }
 
     @Override

@@ -1,4 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
+
+import dev.golem.core.data.Tags;
  import com.hbm.api.energymk2.IEnergyReceiverMK2; import com.hbm.api.redstoneoverradio.IRORValueProvider; import com.hbm.interfaces.IControlReceiver; import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKType; import dev.golem.core.data.*; import net.minecraft.core.*; import net.minecraft.nbt.CompoundTag; import net.minecraft.network.RegistryFriendlyByteBuf; import net.minecraft.util.Mth; import net.minecraft.world.level.block.entity.BlockEntityType; import net.minecraft.world.level.block.state.BlockState;
 /** Control motion intentionally charges once per moving tick, not per distance travelled. */
  public abstract class BlockEntityRBMKControl extends BlockEntityRBMKBase implements IControlReceiver, IEnergyReceiverMK2, IRORValueProvider {

@@ -47,6 +47,25 @@ public final class FluidTankGameTests {
         helper.succeed();
     }
 
+    /** 1.7 FluidTank.loadTank: the infinite barrel is a valid input, fills the typed tank and is never consumed. */
+    public static void infiniteBarrelFillsInput(GameTestHelper helper) {
+        Fluids.init();
+        TileEntityMachineFluidTank tank = placeTank(helper);
+        tank.tank.setTankType(Fluids.GASOLINE);
+        ItemStack barrel = new ItemStack(com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get());
+        helper.assertTrue(tank.isItemValidForSlot(2, barrel), "the infinite barrel must be accepted by the input bay");
+        helper.assertTrue(tank.isItemValidForSlot(4, barrel), "the infinite barrel must be accepted by the output bay as a drain");
+        ItemStack water = new ItemStack(com.hbm.items.ModFluidNetItems.inf_water.get());
+        helper.assertTrue(!tank.isItemValidForSlot(2, water), "a typed infinite item must not enter a tank of another fluid");
+
+        tank.inventory.setStackInSlot(2, barrel);
+        TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
+        helper.assertTrue(tank.tank.getFill() == tank.tank.getMaxFill()
+                        && tank.inventory.getStackInSlot(2).getItem() == com.hbm.items.ModFluidNetItems.fluid_barrel_infinite.get(),
+                "the infinite barrel must fill the tank in one tick and stay in the slot");
+        helper.succeed();
+    }
+
     public static void menuSlotsAreOneWay(GameTestHelper helper) {
         Fluids.init();
         TileEntityMachineFluidTank tank = placeTank(helper);

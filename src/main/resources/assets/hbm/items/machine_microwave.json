@@ -1,0 +1,17 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/microwave.obj",
+    "texture": "hbm:textures/models/machines/microwave.png",
+    "scale": 3.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "exclude": ["plate_Cylinder"],
+    "guiTranslate": [0.0, -4.0, 4.0],
+    "guiScale": 5.0,
+    "itemTranslate": [-2.0, -2.0, 1.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
+}

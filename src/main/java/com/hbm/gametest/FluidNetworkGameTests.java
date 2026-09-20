@@ -6,6 +6,8 @@ import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.ModFluidNetBlocks;
+import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -39,9 +41,11 @@ public final class FluidNetworkGameTests {
             TESTS.function("fluid_net_split", 60, 8, () -> FluidNetworkGameTests::split);
     public static final GameTests.Function SEGREGATION =
             TESTS.function("fluid_net_type_segregation", 40, 8, () -> FluidNetworkGameTests::segregation);
+    public static final GameTests.Function EXHAUST =
+            TESTS.function("fluid_net_exhaust_all_smokes", 60, 8, () -> FluidNetworkGameTests::exhaust);
 
     private static final int Y = 5;
-    private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18;
+    private static final int JOIN_Z = 6, SPLIT_Z = 12, TYPE_Z = 18, EXHAUST_Z = 24;
 
     private FluidNetworkGameTests() {}
 
@@ -130,6 +134,48 @@ public final class FluidNetworkGameTests {
         helper.assertTrue(graph.networkAt(water.asLong()) == graph.networkAt(diesel.asLong()),
                 "retyping a duct to its neighbour's fluid must join the two runs");
         helper.succeed();
+    }
+
+    /**
+     * An exhaust run carries every smoke at once, as 1.7's {@code TileEntityPipeExhaust} did by sitting in
+     * all three smoke nodespaces: a leaded-smoke sender at one end of three exhaust ducts drains into a
+     * leaded-smoke receiver at the other, with nothing ever typing the ducts to {@code SMOKE_LEADED}. And
+     * a plain duct typed to any smoke is one network with the exhaust beside it.
+     */
+    private static void exhaust(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos source = helper.absolutePos(new BlockPos(1, Y, EXHAUST_Z));
+        BlockPos sink = source.east(4);
+        TileEntityBarrel from = barrel(helper, source, (short) 2);
+        TileEntityBarrel to = barrel(helper, sink, (short) 0);
+        from.tank.setFill(from.tank.getMaxFill());
+        for (int i = 1; i <= 3; i++) {
+            level.setBlock(source.east(i), ModFluidNetBlocks.fluid_duct_exhaust[0].get().defaultBlockState(), 3);
+        }
+
+        LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
+        helper.assertTrue(graph.networkAt(source.east(1).asLong()) != null
+                        && graph.networkAt(source.east(1).asLong()) == graph.networkAt(source.east(3).asLong()),
+                "three exhaust ducts in a line must be one network");
+
+        settle(level);
+        helper.assertTrue(to.tank.getFill() > 0,
+                "leaded smoke never crossed an exhaust run that was never typed to it");
+
+        BlockPos poison = source.east(2).north();
+        level.setBlock(poison, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+        ((TileEntityFluidDuctNT) level.getBlockEntity(poison)).setFluidType(Fluids.SMOKE_POISON);
+        helper.assertTrue(graph.networkAt(poison.asLong()) == graph.networkAt(source.east(2).asLong()),
+                "a duct typed to any smoke must join the exhaust run beside it");
+        helper.succeed();
+    }
+
+    private static TileEntityBarrel barrel(GameTestHelper helper, BlockPos absolute, short mode) {
+        helper.getLevel().setBlock(absolute, ModFluidNetBlocks.barrel_steel.get().defaultBlockState(), 3);
+        TileEntityBarrel barrel = (TileEntityBarrel) helper.getLevel().getBlockEntity(absolute);
+        barrel.tank.setTankType(Fluids.SMOKE_LEADED);
+        barrel.mode = mode;
+        return barrel;
     }
 
     /**

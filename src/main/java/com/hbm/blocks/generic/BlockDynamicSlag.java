@@ -1,5 +1,7 @@
 package com.hbm.blocks.generic;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.blocks.machine.ModMachineBlocks;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.material.MaterialShapes;

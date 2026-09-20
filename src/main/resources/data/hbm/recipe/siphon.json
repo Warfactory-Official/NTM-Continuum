@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:glass",
+    "R": "#c:ingots/any_rubber"
+  },
+  "pattern": [
+    " GR",
+    " GR",
+    " G "
+  ],
+  "result": {
+    "id": "hbm:siphon",
+    "count": 1
+  }
+}

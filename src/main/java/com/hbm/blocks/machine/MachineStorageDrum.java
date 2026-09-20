@@ -6,7 +6,6 @@ import com.hbm.tileentity.machine.TileEntityStorageDrum;
 import dev.golem.core.gui.Menus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -56,13 +55,6 @@ public class MachineStorageDrum extends dev.golem.core.world.CompatBlock impleme
         }
         return level.isClientSide() || !player.isShiftKeyDown()
                 ? InteractionResult.SUCCESS : InteractionResult.TRY_WITH_EMPTY_HAND;
-    }
-
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (level.getBlockEntity(pos) instanceof TileEntityStorageDrum drum) {
-            Containers.dropContents(level, pos, drum);
-        }
     }
 
 }

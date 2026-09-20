@@ -1,0 +1,36 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/blocks/crane_buffer.obj",
+    "texture": "hbm:textures/blocks/crane_partitioner_side.png",
+    "scale": 1.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [
+      0.0,
+      -2.0,
+      0.0
+    ],
+    "guiScale": 5.0,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ty": 0.0,
+    "partTextures": {
+      "Side": "hbm:textures/blocks/crane_partitioner_side.png",
+      "Back": "hbm:textures/blocks/crane_partitioner_back.png",
+      "Top_Top.001": "hbm:textures/blocks/crane_top.png",
+      "Inner": "hbm:textures/blocks/crane_splitter_inner.png",
+      "InnerSide": "hbm:textures/blocks/crane_splitter_inner_side.png",
+      "Belt": "hbm:textures/blocks/crane_splitter_belt_still.png"
+    }
+  },
+  "oversized_in_gui": true
+}

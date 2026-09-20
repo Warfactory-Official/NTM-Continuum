@@ -1,5 +1,7 @@
 package com.hbm.entity.grenade;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.items.ModEntityItems;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;

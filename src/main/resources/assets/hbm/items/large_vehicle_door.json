@@ -1,0 +1,29 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/pheodoors/vehicle_door.obj",
+    "texture": "hbm:textures/models/pheodoors/vehicle_door.png",
+    "noCull": true,
+    "scale": 0.5,
+    "yaw": 90.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [
+      0.0,
+      -4.0,
+      0.0
+    ],
+    "guiScale": 1.8,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
+}

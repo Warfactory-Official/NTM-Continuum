@@ -1,0 +1,93 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "hbm:blocks/crane_in",
+    "base": "hbm:blocks/crane_in",
+    "overlay": "hbm:blocks/crane_router_overlay"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#base",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#base",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#base",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#base",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#base",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#overlay",
+          "cullface": "down",
+          "tintindex": 0
+        },
+        "up": {
+          "texture": "#overlay",
+          "cullface": "up",
+          "tintindex": 1
+        },
+        "north": {
+          "texture": "#overlay",
+          "cullface": "north",
+          "tintindex": 2
+        },
+        "south": {
+          "texture": "#overlay",
+          "cullface": "south",
+          "tintindex": 3
+        },
+        "west": {
+          "texture": "#overlay",
+          "cullface": "west",
+          "tintindex": 4
+        },
+        "east": {
+          "texture": "#overlay",
+          "cullface": "east",
+          "tintindex": 5
+        }
+      }
+    }
+  ]
+}

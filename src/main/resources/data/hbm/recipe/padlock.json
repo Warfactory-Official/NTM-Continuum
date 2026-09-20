@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "#c:plates/steel",
+    "B": "#c:bolts/steel"
+  },
+  "pattern": [
+    " P ",
+    "PBP",
+    "PPP"
+  ],
+  "result": {
+    "id": "hbm:padlock"
+  }
+}

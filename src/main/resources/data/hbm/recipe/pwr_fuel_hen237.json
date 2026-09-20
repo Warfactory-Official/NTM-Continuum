@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": "#c:billets/neptunium",
+    "I": "hbm:plate_polymer"
+  },
+  "pattern": [
+    "F",
+    "I",
+    "F"
+  ],
+  "result": {
+    "id": "hbm:pwr_fuel_hen237",
+    "count": 1
+  }
+}

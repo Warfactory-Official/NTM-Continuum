@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "hbm:coil_copper",
+    "W": "#minecraft:planks",
+    "I": "hbm:plate_polymer",
+    "S": "#c:cobblestones"
+  },
+  "pattern": [
+    "CCW",
+    "IIW",
+    "  S"
+  ],
+  "result": {
+    "id": "hbm:red_pylon_medium_wood",
+    "count": 2
+  }
+}

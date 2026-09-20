@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerFusionBreeder;
 import com.hbm.inventory.fluid.FluidStack;

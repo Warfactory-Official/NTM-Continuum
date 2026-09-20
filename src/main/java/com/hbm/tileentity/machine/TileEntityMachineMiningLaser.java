@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import java.util.HashMap;
 import java.util.List;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;

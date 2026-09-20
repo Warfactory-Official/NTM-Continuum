@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rod_dual_co60"
+  ],
+  "result": {
+    "id": "hbm:billet_co60",
+    "count": 2
+  }
+}

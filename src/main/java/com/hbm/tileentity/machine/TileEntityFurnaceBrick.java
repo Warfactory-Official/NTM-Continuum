@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.inventory.container.ContainerFurnaceBrick;
 import com.hbm.items.ModItems;
 import com.hbm.tileentity.ModBlockEntities;

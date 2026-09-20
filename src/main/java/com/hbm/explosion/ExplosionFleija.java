@@ -1,5 +1,7 @@
 package com.hbm.explosion;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.tags.HbmBlockTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;

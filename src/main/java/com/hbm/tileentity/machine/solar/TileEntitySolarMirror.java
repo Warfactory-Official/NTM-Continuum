@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.solar;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;

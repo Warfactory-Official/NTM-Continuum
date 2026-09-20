@@ -11,6 +11,14 @@
     "hbm:block_polymer",
     "hbm:block_rubber",
     "hbm:block_tantalium",
-    "hbm:block_zirconium"
+    "hbm:block_zirconium",
+    "hbm:block_tcalloy",
+    "hbm:block_cdalloy",
+    "hbm:block_australium",
+    "hbm:block_lithium",
+    "hbm:block_waste",
+    "hbm:block_waste_painted",
+    "hbm:block_waste_vitrified",
+    "hbm:block_yellowcake"
   ]
 }

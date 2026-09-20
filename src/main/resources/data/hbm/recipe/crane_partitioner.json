@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "M": "hbm:circuit_chip",
+    "B": "hbm:conveyor_wand_regular",
+    "C": "hbm:crate_steel"
+  },
+  "pattern": [
+    " M ",
+    "BCB"
+  ],
+  "result": {
+    "id": "hbm:crane_partitioner"
+  }
+}

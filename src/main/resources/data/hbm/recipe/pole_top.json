@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": "#c:ingots/tungsten",
+    "B": "#c:ingots/beryllium",
+    "R": "#c:ingots/red_copper"
+  },
+  "pattern": [
+    "T T",
+    "TRT",
+    "BBB"
+  ],
+  "result": {
+    "id": "hbm:pole_top",
+    "count": 1
+  }
+}

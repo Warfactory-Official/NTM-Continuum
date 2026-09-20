@@ -521,7 +521,12 @@ public final class ModMachineBlocks {
             "sandbags", Block::new, p -> p.strength(5.0F, 30.0F));
 
     static {
-        tabItem("machine_battery", machine_battery);
+        // 1.7 MachineBattery.addInformation: capacity, charge/discharge speed and the item's persistent charge.
+        RegistryObject<BlockItem> batteryItem = ITEMS.registerItem("machine_battery",
+                p -> new com.hbm.items.block.EnergyNetBlockItem(machine_battery.get(), p, 0,
+                        stack -> machine_battery.get().persistentInfo(stack)),
+                p -> Compat.blockDescription(p));
+        ModTabs.addTo(HbmTab.MACHINES, batteryItem);
         tabItem("machine_radgen", machine_radgen);
         tabItem("machine_minirtg", machine_minirtg);
         tabItem("rtg_polonium", rtg_polonium);

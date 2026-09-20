@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModEntities;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.sound.ModSounds;

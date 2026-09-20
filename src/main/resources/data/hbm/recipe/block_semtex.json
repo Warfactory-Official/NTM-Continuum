@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {"I": "hbm:ingot_semtex"},
+  "pattern": ["III", "III", "III"],
+  "result": {"id": "hbm:block_semtex"}
+}

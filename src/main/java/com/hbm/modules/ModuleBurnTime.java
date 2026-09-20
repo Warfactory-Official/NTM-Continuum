@@ -46,6 +46,11 @@ public class ModuleBurnTime {
         return (int) (base * getMod(stack, modHeat));
     }
 
+    /** The heat multiplier a fuel class carries (1.7 {@code getMod(stack, getModHeat())}); 0 for an empty stack. */
+    public double getHeatMod(ItemStack stack) {
+        return getMod(stack, modHeat);
+    }
+
     private double getMod(ItemStack stack, double[] mod) {
         if (stack.isEmpty()) return 0;
 
@@ -82,4 +87,41 @@ public class ModuleBurnTime {
     public ModuleBurnTime setSolidHeatMod(double mod) { this.modHeat[modSolid] = mod; return this; }
     public ModuleBurnTime setRocketHeatMod(double mod) { this.modHeat[modRocket] = mod; return this; }
     public ModuleBurnTime setBalefireHeatMod(double mod) { this.modHeat[modBalefire] = mod; return this; }
+
+    // --- 1.7 GUI description (the burn-bonus tooltip over an empty fuel slot) ---
+
+    private static final String[] CLASS_NAMES = {"Logs", "Wood", "Coal", "Lignite", "Coke", "Solid Fuel", "Rocket Fuel", "Balefire"};
+
+    public java.util.List<String> getDesc() {
+        java.util.List<String> desc = new java.util.ArrayList<>();
+        desc.addAll(getTimeDesc());
+        desc.addAll(getHeatDesc());
+        return desc;
+    }
+
+    public java.util.List<String> getTimeDesc() {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        list.add("§6Burn time bonuses:");
+        for (int i = 0; i < CLASS_NAMES.length; i++) addIf(list, CLASS_NAMES[i], modTime[i]);
+        if (list.size() == 1) list.clear();
+        return list;
+    }
+
+    public java.util.List<String> getHeatDesc() {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        list.add("§cBurn heat bonuses:");
+        for (int i = 0; i < CLASS_NAMES.length; i++) addIf(list, CLASS_NAMES[i], modHeat[i]);
+        if (list.size() == 1) list.clear();
+        return list;
+    }
+
+    private static void addIf(java.util.List<String> list, String name, double mod) {
+        if (mod != 1.0D) list.add("§e- " + name + ": " + getPercent(mod));
+    }
+
+    private static String getPercent(double mod) {
+        mod -= 1D;
+        String num = ((int) (mod * 100)) + "%";
+        return mod < 0 ? "§c" + num : "§a+" + num;
+    }
 }

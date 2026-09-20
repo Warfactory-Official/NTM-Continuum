@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;

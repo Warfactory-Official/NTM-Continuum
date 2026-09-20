@@ -61,8 +61,11 @@ public final class FluidNetwork {
                 if (data == null || data.typeId() == Fluids.NONE.getID()) return LevelNodeGraph.Probe.ABSENT;
                 BlockPos neighbour = neighbourOf(cellPos, faceOrdinal);
                 if (!resident(level, neighbour)) return LevelNodeGraph.Probe.ABSENT;
-                return userAt(level, neighbour, faceOrdinal, data.type()) == null
-                        ? LevelNodeGraph.Probe.ABSENT : LevelNodeGraph.Probe.PRESENT;
+                // An exhaust cell carries every smoke, so its face is present for a machine taking any one of them.
+                for (FluidType type : data.types()) {
+                    if (userAt(level, neighbour, faceOrdinal, type) != null) return LevelNodeGraph.Probe.PRESENT;
+                }
+                return LevelNodeGraph.Probe.ABSENT;
             };
 
     private FluidNetwork() {}
@@ -88,17 +91,22 @@ public final class FluidNetwork {
         for (NodeNetwork<DuctData> net : graph.networks()) distribute(level, graph, net);
     }
 
+    /**
+     * A typed net is one round of its one fluid. A net holding an exhaust cell ({@link DuctData#SMOKE_ANY})
+     * is one round per smoke over the same faces, which is what 1.7 got from the exhaust sitting in three
+     * nodespaces at once: each smoke's providers and receivers are gathered and served on their own, and
+     * the net's tracker sums the three.
+     */
     public static void distribute(ServerLevel level, LevelNodeGraph<DuctData> graph, NodeNetwork<DuctData> net) {
-        FluidType type = typeOf(net);
-        if (type == null || type == Fluids.NONE) return;
-        round(level, graph, net, type);
+        FluidType[] types = typesOf(net);
+        if (types.length == 0) return;
+        net.tracker = 0L;
+        ReferenceOpenHashSet<GraphNode<DuctData>> faces = graph.drainProbes(net, level, FACE_PROBE);
+        for (FluidType type : types) round(level, graph, net, faces, type, types);
     }
 
     private static void round(ServerLevel level, LevelNodeGraph<DuctData> graph, NodeNetwork<DuctData> net,
-                              FluidType type) {
-        net.tracker = 0L;
-        ReferenceOpenHashSet<GraphNode<DuctData>> faces = graph.drainProbes(net, level, FACE_PROBE);
-
+                              ReferenceOpenHashSet<GraphNode<DuctData>> faces, FluidType type, FluidType[] carried) {
         Gather gather = gatherOf(net);
         gather.clear();
         for (GraphNode<DuctData> node : faces) {
@@ -110,10 +118,14 @@ public final class FluidNetwork {
                 if (!resident(level, at)) continue;
                 BlockEntity be = userAt(level, at, d, type);
                 if (be == null) {
-                    graph.markFaceStale(net, node, ef, d);
+                    // A face on a smoke net is present for ANY of its smokes: a chimney taking only SMOKE is
+                    // no reason to re-probe the face on the SMOKE_LEADED pass. Stale only when no carried fluid finds it.
+                    if (carried.length == 1 || userAtAny(level, at, d, carried) == null) graph.markFaceStale(net, node, ef, d);
                     continue;
                 }
-                gather.offer((IFluidUserMK2) be, type);
+                ForgeDirection side = d == EdgeFaces.SELF ? ForgeDirection.UNKNOWN
+                        : ForgeDirection.getOrientation(DIRS[d].getOpposite());
+                gather.offer((IFluidUserMK2) be, type, side);
             }
         }
 
@@ -169,11 +181,40 @@ public final class FluidNetwork {
         return face == null || user.canConnect(type, ForgeDirection.getOrientation(face));
     }
 
-    /** Every cell of a net carries the same fluid, so the first member answers for all of them. */
-    private static @Nullable FluidType typeOf(NodeNetwork<DuctData> net) {
-        for (GraphNode<DuctData> node : net.nodes) return node.data.type();
-        for (GraphSegment<DuctData> segment : net.segments) return segment.data.type();
+    private static @Nullable BlockEntity userAtAny(ServerLevel level, BlockPos pos, int faceOrdinal, FluidType[] types) {
+        for (FluidType type : types) {
+            BlockEntity be = userAt(level, pos, faceOrdinal, type);
+            if (be != null) return be;
+        }
         return null;
+    }
+
+    private static final FluidType[] NO_TYPES = new FluidType[0];
+
+    /**
+     * The fluids a net rounds: its one fluid, or the three smokes when any member is an exhaust cell.
+     * Every typed cell of a net carries the same fluid (that is what {@link FluidGraphProvider#dataCompatible}
+     * partitions on), but an exhaust cell is compatible with each smoke, so the whole membership has to be
+     * looked at once; the answer is cached on the net's {@code attachment}, which the graph nulls on every
+     * membership edit, so a surviving value is current by construction.
+     */
+    private static FluidType[] typesOf(NodeNetwork<DuctData> net) {
+        if (net.attachment instanceof FluidType[] cached) return cached;
+        FluidType[] types = NO_TYPES;
+        DuctData first = null;
+        for (GraphNode<DuctData> node : net.nodes) {
+            if (node.data.isSmokeAny()) { types = node.data.types(); break; }
+            if (first == null) first = node.data;
+        }
+        if (types == NO_TYPES) {
+            for (GraphSegment<DuctData> segment : net.segments) {
+                if (segment.data.isSmokeAny()) { types = segment.data.types(); break; }
+                if (first == null) first = segment.data;
+            }
+        }
+        if (types == NO_TYPES && first != null && first.typeId() != Fluids.NONE.getID()) types = first.types();
+        net.attachment = types;
+        return types;
     }
 
     @SuppressWarnings("unchecked")
@@ -200,6 +241,9 @@ public final class FluidNetwork {
         final long[] supply = new long[PRESSURES];
         final long[][] demand = new long[PRESSURES][PRIORITIES];
         final ReferenceOpenHashSet<IFluidUserMK2> seen = new ReferenceOpenHashSet<>();
+        /** Directional users are deduplicated per role, so a pump whose intake and outlet face the same net keeps both. */
+        final ReferenceOpenHashSet<IFluidUserMK2> seenProviding = new ReferenceOpenHashSet<>();
+        final ReferenceOpenHashSet<IFluidUserMK2> seenReceiving = new ReferenceOpenHashSet<>();
 
         Gather() {
             for (int p = 0; p < PRESSURES; p++) {
@@ -208,10 +252,16 @@ public final class FluidNetwork {
             }
         }
 
-        void offer(IFluidUserMK2 user, FluidType type) {
-            if (!user.isLoaded() || !seen.add(user)) return;
+        void offer(IFluidUserMK2 user, FluidType type, ForgeDirection side) {
+            if (!user.isLoaded()) return;
+            // A directional user (the flow-control pump) carries one role per face; see IFluidDirectionalMK2.
+            // 1.7's pump subscribed on its intake and provided on its outlet, so in a closed loop the same
+            // net saw it in both roles: each face may still add the one role it carries.
+            IFluidDirectionalMK2 directional = user instanceof IFluidDirectionalMK2 d ? d : null;
+            if (directional == null && !seen.add(user)) return;
 
-            if (user instanceof IFluidProviderMK2 provider) {
+            if (user instanceof IFluidProviderMK2 provider
+                    && (directional == null || (directional.providesOn(side) && seenProviding.add(user)))) {
                 int[] range = provider.getProvidingPressureRange(type);
                 for (int p = Math.max(0, range[0]); p <= Math.min(range[1], PRESSURES - 1); p++) {
                     long available = Math.min(provider.getFluidAvailable(type, p), provider.getProviderSpeed(type, p));
@@ -221,7 +271,8 @@ public final class FluidNetwork {
                 }
             }
 
-            if (user instanceof IFluidReceiverMK2 receiver) {
+            if (user instanceof IFluidReceiverMK2 receiver
+                    && (directional == null || (directional.receivesOn(side) && seenReceiving.add(user)))) {
                 int[] range = receiver.getReceivingPressureRange(type);
                 int tier = receiver.getFluidPriority().ordinal();
                 for (int p = Math.max(0, range[0]); p <= Math.min(range[1], PRESSURES - 1); p++) {
@@ -235,6 +286,8 @@ public final class FluidNetwork {
 
         void clear() {
             seen.clear();
+            seenProviding.clear();
+            seenReceiving.clear();
             for (int p = 0; p < PRESSURES; p++) {
                 providers[p].clear();
                 supply[p] = 0L;

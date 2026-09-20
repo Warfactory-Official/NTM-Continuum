@@ -56,6 +56,8 @@ public final class HbmJeiRecipeTypes {
             type("arc_furnace_fluid", ArcFurnaceRecipes.ArcFurnaceRecipe.class);
     public static final JeiRecipeType<com.hbm.inventory.recipes.ArcWelderRecipes.ArcWelderRecipe> ARC_WELDER =
             type("arc_welder", com.hbm.inventory.recipes.ArcWelderRecipes.ArcWelderRecipe.class);
+    public static final JeiRecipeType<com.hbm.inventory.recipes.RotaryFurnaceRecipes.RotaryFurnaceRecipe> ROTARY_FURNACE =
+            type("rotary_furnace", com.hbm.inventory.recipes.RotaryFurnaceRecipes.RotaryFurnaceRecipe.class);
     public static final JeiRecipeType<StorageDrumRecipeHandler.Entry> STORAGE_DRUM =
             type("storage_drum", StorageDrumRecipeHandler.Entry.class);
 

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "#c:glass_panes",
+    "T": "#c:wires/tungsten",
+    "I": "#c:ingots/iron"
+  },
+  "pattern": [
+    "G",
+    "T",
+    "I"
+  ],
+  "result": {
+    "id": "hbm:spotlight_incandescent",
+    "count": 8
+  }
+}

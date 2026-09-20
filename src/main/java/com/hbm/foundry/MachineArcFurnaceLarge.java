@@ -11,7 +11,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -84,20 +83,6 @@ public class MachineArcFurnaceLarge extends BlockMultiblockMachine implements IE
             dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, core);
         }
         return InteractionResult.SUCCESS;
-    }
-
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && !state.getValue(CELL)
-                && level.getBlockEntity(pos) instanceof TileEntityMachineArcFurnaceLarge furnace) {
-            for (com.hbm.inventory.material.Mats.MaterialStack liquid : furnace.liquids) {
-                ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
-                        liquid.copy());
-            }
-            furnace.liquids.clear();
-            Containers.dropContents(level, pos, furnace);
-        }
-        super.onBlockRemoved(state, level, pos, movedByPiston);
     }
 
     /** 1.7: the electrode gantry reaching out past getDimensions. */

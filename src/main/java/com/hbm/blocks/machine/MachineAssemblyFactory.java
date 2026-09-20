@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
-import net.minecraft.world.Containers;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -53,15 +52,6 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineAssemblyFactory factory)) return null;
         return core.equals(pos) ? factory : new AssemblyFactorySidedContainer(factory, pos);
-    }
-
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && !state.getValue(CELL)
-                && level.getBlockEntity(pos) instanceof TileEntityMachineAssemblyFactory factory) {
-            Containers.dropContents(level, pos, factory);
-        }
-        super.onBlockRemoved(state, level, pos, movedByPiston);
     }
 
     @Override

@@ -351,6 +351,9 @@ public final class MachineItemModel {
     private Gem.@Nullable Part<ItemPose> socket(ItemGem.Builder builder, String part) {
         Surface skin = partSurfaces.get(part);
         if (skin == null || userExclude.contains(part)) return null;
+        // The partTextures route always seeds a "Body" skin from the main texture; an OBJ without a
+        // Body part (the crane splitter/partitioner) must not fail to bake over that implicit entry.
+        if (!model.partNames().contains(part)) return null;
         return builder.part(model.part(part), skin, null);
     }
 

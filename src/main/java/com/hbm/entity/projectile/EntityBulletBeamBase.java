@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.projectile.EntityCoin;
 import com.hbm.items.weapon.sedna.BulletConfig;

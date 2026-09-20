@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.inventory.container.ContainerMachineRTG;

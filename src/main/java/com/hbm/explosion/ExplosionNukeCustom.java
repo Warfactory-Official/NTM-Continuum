@@ -70,7 +70,7 @@ public final class ExplosionNukeCustom {
             bf.setPos(x + 0.5, y + 0.5, z + 0.5);
             bf.destructionRange = (int) amat;
             level.addFreshEntity(bf);
-            EntityNukeTorex.statFacBale(level, x + 0.5, y + 5, z + 0.5, amat);
+            spawnCloud(level, EntityNukeTorex.statFacBale(level, x + 0.5, y + 5, z + 0.5, amat));
 
         /// HYDROGEN ///
         } else if(hydro > 0) {
@@ -81,7 +81,7 @@ public final class ExplosionNukeCustom {
 
             level.addFreshEntity(EntityNukeExplosionMK5.statFac(level, (int) hydro, x + 0.5, y + 0.5, z + 0.5)
                                                        .moreFallout((int) dirty));
-            EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, hydro);
+            spawnCloud(level, EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, hydro));
 
         /// NUCLEAR ///
         } else if(nuke > 0) {
@@ -92,7 +92,7 @@ public final class ExplosionNukeCustom {
             // 1.7 spawns the nuclear blast five blocks up where hydrogen spawns it at the bomb
             level.addFreshEntity(EntityNukeExplosionMK5.statFac(level, (int) nuke, x + 0.5, y + 5, z + 0.5)
                                                        .moreFallout((int) dirty));
-            EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, nuke);
+            spawnCloud(level, EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, nuke));
 
         /// NON-NUCLEAR ///
         } else if(tnt >= 75) {
@@ -100,11 +100,19 @@ public final class ExplosionNukeCustom {
             tnt = Math.min(tnt, MAX_TNT);
 
             level.addFreshEntity(EntityNukeExplosionMK5.statFacNoRad(level, (int) tnt, x + 0.5, y + 0.5, z + 0.5));
-            EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, tnt);
+            spawnCloud(level, EntityNukeTorex.statFac(level, x + 0.5, y + 5, z + 0.5, tnt));
 
         } else if(tnt > 0) {
 
             ExplosionLarge.explode(level, x + 0.5, y + 0.5, z + 0.5, tnt, true, true, true);
         }
+    }
+
+    /**
+     * 1.7's Torex factories spawned the cloud themselves; the port's build it and leave spawning to the
+     * caller, which this class had not been doing. 1.7's custom nuke did not consult enableNukeClouds.
+     */
+    private static void spawnCloud(Level level, EntityNukeTorex torex) {
+        if (level.addFreshEntity(torex)) torex.startChunkLoading();
     }
 }

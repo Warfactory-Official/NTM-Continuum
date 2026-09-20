@@ -109,6 +109,31 @@ public final class ForeignEnergyBridge {
     }
 
     /**
+     * HE a native pusher (a diode's output face, a capacitor's bus) may hand this net right now: the unmet
+     * native demand the last round published. Zero while the net's own round is running, which is the
+     * diode's recursion brake when its output is wired back into the net feeding it.
+     */
+    public long insertableHe() {
+        return distributing ? 0 : insertBudgetHe;
+    }
+
+    /**
+     * The HE counterpart of {@link #insertFe}: no conversion, no latch. What is accepted joins the injected
+     * pool and is offered as a provider on the next round; the budget shrinks by the same amount, so a
+     * pusher can never build up more than this net asked for.
+     *
+     * @return HE actually accepted.
+     */
+    public long insertHe(long he) {
+        if (he <= 0 || distributing) return 0;
+        long accepted = Math.min(he, insertBudgetHe);
+        if (accepted <= 0) return 0;
+        insertBudgetHe -= accepted;
+        injectedHe += accepted;
+        return accepted;
+    }
+
+    /**
      * @return FE actually given up; the matching HE is charged to this net's providers on its next round.
      */
     public long extractFe(long fe) {

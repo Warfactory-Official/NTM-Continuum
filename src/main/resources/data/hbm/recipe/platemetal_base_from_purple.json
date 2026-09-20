@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:platemetal_purple"
+  ],
+  "result": {
+    "id": "hbm:platemetal_base",
+    "count": 1
+  }
+}

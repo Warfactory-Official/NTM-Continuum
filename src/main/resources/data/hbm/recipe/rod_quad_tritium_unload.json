@@ -1,0 +1,34 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "R": {
+      "items": [
+        "hbm:rod_quad_tritium"
+      ]
+    },
+    "C": {
+      "items": [
+        "hbm:cell"
+      ],
+      "absent_components": [
+        "hbm:fluid_id",
+        "hbm:fluid_amount",
+        "hbm:item_variant"
+      ]
+    }
+  },
+  "pattern": [
+    "RCC",
+    "CC "
+  ],
+  "result": {
+    "id": "hbm:cell",
+    "count": 4,
+    "components": {
+      "hbm:fluid_id": 9,
+      "hbm:fluid_amount": 1000,
+      "hbm:item_variant": 9
+    }
+  }
+}

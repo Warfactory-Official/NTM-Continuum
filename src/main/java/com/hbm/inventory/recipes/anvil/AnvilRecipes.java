@@ -82,6 +82,7 @@ public final class AnvilRecipes {
         initialized = true;
         registerSmithing();
         registerConstruction();
+        registerConstructionSirens();
     }
 
     private static void registerSmithing() {
@@ -141,6 +142,14 @@ public final class AnvilRecipes {
                 new ComparableStack(ModItems.pipes_steel.get()), ModItems.pipes_steel.get()));
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_wire_dense.get()), MINGRADE.wireDense(), MaterialShapes.DENSEWIRE, 1));
         smithingRecipes.add(new AnvilSmithingMold(new ItemStack(com.hbm.items.machine.ModMoldItems.mold_wires_dense.get()), MINGRADE.wireDense().count(9), MaterialShapes.DENSEWIRE, 9));
+    }
+
+    /** 1.7 {@code registerConstructionSirens}: every siren track from a steel plate and a polymer plate, tier 2. */
+    private static void registerConstructionSirens() {
+        for (var track : com.hbm.items.ModPowerGenItems.tracks().values()) {
+            add(new AnvilConstructionRecipe(new AStack[]{STEEL.plate(), new ComparableStack(ModItems.plate_polymer.get())},
+                    new AnvilOutput(new ItemStack(track.get()))).setTier(2).setOverlay(OverlayType.CONSTRUCTION));
+        }
     }
 
     private static void registerConstruction() {
@@ -235,6 +244,22 @@ public final class AnvilRecipes {
                         CU.plate().count(8),
                         PB.pipe().count(2)
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_pump_steam.get()))).setTier(2));
+
+        // -------- energy network pylons (1.7 AnvilRecipes: large pylon and substation, tier 2) --------
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "concretes")), 2),
+                        new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 8),
+                        new ComparableStack(ModItems.plate_polymer.get(), 8),
+                        new ComparableStack(ModItems.coil_copper.get(), 4)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.ModEnergyNetBlocks.red_pylon_large.get()))).setTier(2));
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        new TagStack(TagKey.create(Registries.ITEM, Ids.of("c", "concretes")), 8),
+                        STEEL.ingot().count(8),
+                        new ComparableStack(ModItems.plate_polymer.get(), 12),
+                        new ComparableStack(ModItems.coil_copper.get(), 8)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.ModEnergyNetBlocks.substation.get(), 2))).setTier(2));
 
         add(new AnvilConstructionRecipe(
                 new AStack[] {
@@ -398,6 +423,23 @@ public final class AnvilRecipes {
                         cir(EnumCircuitType.BASIC, 1)
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.heater_electric.get()))).setTier(3));
 
+        // Production machines (group A): the rotary furnace and the thresher, from the original AnvilRecipes.
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        new ComparableStack(Blocks.STONE_BRICKS.asItem(), 8),
+                        new ComparableStack(ModItems.ingot_firebrick.get(), 16),
+                        IRON.ingot().count(4),
+                        CU.plate().count(8)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()))).setTier(2));
+
+        add(new AnvilConstructionRecipe(
+                new AStack[] {
+                        STEEL.plate().count(8),
+                        IRON.ingot().count(12),
+                        CU.ingot().count(2),
+                        cir(EnumCircuitType.VACUUM_TUBE, 1)
+                }, new AnvilOutput(new ItemStack(com.hbm.blocks.ModProductionBlocks.MACHINE_THRESHER.get()))).setTier(2));
+
         add(new AnvilConstructionRecipe(
                 new AStack[] {
                         RUBBER.ingot().count(4),
@@ -449,6 +491,11 @@ public final class AnvilRecipes {
             add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(com.hbm.items.machine.ModMoldItems.mold_base.get()), STEEL.ingot().count(4)},
                     new AnvilOutput(new ItemStack((Item) gunMold.get()))).setTier(2));
         }
+
+        // 1.7: the suspended demon core is a Fat Man core, four beryllium ingots and the screwdriver it rests on.
+        add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(com.hbm.items.ModBombItems.man_core.get()), BE.ingot().count(4),
+                new ComparableStack(com.hbm.items.ModToolItems.screwdriver.get())},
+                new AnvilOutput(new ItemStack(com.hbm.items.ModNuclearMiscItems.DEMON_CORE_OPEN.get()))).setTier(3));
 
         // Ammo stamps (the mold-based ammo recipes are deferred with mold_base).
         add(new AnvilConstructionRecipe(new AStack[]{new ComparableStack(ModStampItems.stamp_iron_flat.get()), GUNMETAL.ingot().count(2)}, new AnvilOutput(new ItemStack(ModStampItems.stamp_9.get()))).setTier(2));

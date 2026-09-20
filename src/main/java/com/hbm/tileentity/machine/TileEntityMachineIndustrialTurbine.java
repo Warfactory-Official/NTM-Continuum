@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -36,6 +38,8 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
 
     public final FluidTankNTM[] tanks;
     public long powerBuffer;
+    /** 1.7 TileEntityTurbineBase serialises tanks[0] BEFORE the cooling step, so the client sees the pre-consumption steam. */
+    private int syncedInputFill;
     public boolean operational;
     public float rotor;
     public float lastRotor;
@@ -57,6 +61,7 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
                                    TileEntityMachineIndustrialTurbine turbine) {
         turbine.powerBuffer = 0;
         turbine.operational = false;
+        turbine.syncedInputFill = turbine.tanks[0].getFill();
 
         FluidType input = turbine.tanks[0].getTankType();
         CoolingRecipes.CoolingRecipe recipe = CoolingRecipes.get(input);
@@ -225,7 +230,7 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
-        tanks[0].serialize(buf);
+        tanks[0].serialize(buf, syncedInputFill);
         tanks[1].serialize(buf);
         buf.writeLong(powerBuffer);
         buf.writeDouble(spin);

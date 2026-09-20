@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:ingots/iron",
+    "B": "#c:bolts/steel"
+  },
+  "pattern": [
+    "I",
+    "B",
+    "I"
+  ],
+  "result": {
+    "id": "hbm:padlock_rusty"
+  }
+}

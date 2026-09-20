@@ -1,0 +1,41 @@
+{
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "hbm:blocks/wood_barrier",
+    "all": "hbm:blocks/wood_barrier"
+  },
+  "elements": [
+    {
+      "from": [
+        7,
+        0,
+        14
+      ],
+      "to": [
+        9,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "texture": "#all"
+        },
+        "south": {
+          "texture": "#all"
+        },
+        "east": {
+          "texture": "#all"
+        },
+        "west": {
+          "texture": "#all"
+        },
+        "up": {
+          "texture": "#all"
+        },
+        "down": {
+          "texture": "#all"
+        }
+      }
+    }
+  ]
+}

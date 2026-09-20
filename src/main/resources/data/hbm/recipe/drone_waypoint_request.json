@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:blue_dye",
+    "T": "minecraft:redstone_torch",
+    "C": "hbm:circuit_basic"
+  },
+  "pattern": [
+    "G",
+    "T",
+    "C"
+  ],
+  "result": {
+    "id": "hbm:drone_waypoint_request",
+    "count": 4
+  }
+}

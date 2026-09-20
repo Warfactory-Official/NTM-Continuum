@@ -1,0 +1,33 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "R": {
+      "items": [
+        "hbm:rod_dual_tritium"
+      ]
+    },
+    "C": {
+      "items": [
+        "hbm:cell"
+      ],
+      "absent_components": [
+        "hbm:fluid_id",
+        "hbm:fluid_amount",
+        "hbm:item_variant"
+      ]
+    }
+  },
+  "pattern": [
+    "RCC"
+  ],
+  "result": {
+    "id": "hbm:cell",
+    "count": 2,
+    "components": {
+      "hbm:fluid_id": 9,
+      "hbm:fluid_amount": 1000,
+      "hbm:item_variant": 9
+    }
+  }
+}

@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.solar;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;

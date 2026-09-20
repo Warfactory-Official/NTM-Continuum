@@ -1,5 +1,7 @@
 package com.hbm.entity.mob.botprime;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.mob.ai.EntityAINearestAttackableTargetNT;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;

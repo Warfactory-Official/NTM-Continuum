@@ -5,7 +5,6 @@ import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityWasteDrum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -40,10 +39,4 @@ public class MachineWasteDrum extends dev.golem.core.world.CompatBlock implement
         return InteractionResult.SUCCESS;
     }
 
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (level.getBlockEntity(pos) instanceof TileEntityWasteDrum drum) {
-            Containers.dropContents(level, pos, drum);
-        }
-    }
 }

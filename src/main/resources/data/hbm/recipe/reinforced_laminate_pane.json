@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "L": "hbm:reinforced_laminate"
+  },
+  "pattern": [
+    "LLL",
+    "LLL"
+  ],
+  "result": {
+    "id": "hbm:reinforced_laminate_pane",
+    "count": 16
+  }
+}

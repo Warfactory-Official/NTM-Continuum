@@ -60,10 +60,12 @@ public class FabricInit implements ModInitializer {
                 com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(entity));
         dev.golem.core.platform.Lifecycle.onServerTick(server -> server.getAllLevels().forEach(level ->
                 level.getAllEntities().forEach(entity -> {
+                    com.hbm.handler.ExplosivesEntityHooks.tick(entity);
                     if (entity instanceof net.minecraft.world.entity.item.ItemEntity item) {
                         com.hbm.items.special.ItemSingularity.tickDropped(item);
                         com.hbm.items.special.ItemCell.tickDropped(item);
                         com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
+                        com.hbm.items.special.ItemDemonCore.tickDropped(item);
                     }
                 })));
 

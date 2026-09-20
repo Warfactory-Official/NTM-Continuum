@@ -1,5 +1,7 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.data.Tags;
+
 import dev.golem.core.data.CompatEntity;
 import java.util.ArrayList;
 import java.util.List;

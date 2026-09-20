@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:block_fiberglass"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:ingot_fiberglass",
+    "count": 9
+  }
+}

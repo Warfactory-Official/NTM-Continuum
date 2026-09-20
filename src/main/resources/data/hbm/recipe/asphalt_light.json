@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:asphalt",
+    "minecraft:glowstone_dust"
+  ],
+  "result": {
+    "id": "hbm:asphalt_light",
+    "count": 1
+  }
+}

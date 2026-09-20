@@ -1,5 +1,7 @@
 package com.hbm.tileentity.network;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
@@ -43,6 +45,11 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
         super(ModBlockEntities.FLUID_DUCT.get(), pos, state);
     }
 
+    /** For duct variants registered under their own block-entity type (see {@code com.hbm.fluidnet}). */
+    protected TileEntityFluidDuctNT(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state);
+    }
+
     public FluidType getFluidType() {
         return this.type;
     }
@@ -52,9 +59,17 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
         this.type = type;
         setChanged();
         if (level instanceof ServerLevel server) {
-            FluidGraph.get(server).replaceNodeData(getBlockPos().asLong(), DuctData.of(type));
+            FluidGraph.get(server).replaceNodeData(getBlockPos().asLong(), ductData());
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
         }
+    }
+
+    /**
+     * The datum this duct's graph cell carries: its one fluid. The exhaust duct answers
+     * {@link DuctData#SMOKE_ANY} instead, whatever smoke it is skinned as.
+     */
+    protected DuctData ductData() {
+        return DuctData.of(type);
     }
 
     @Override
@@ -63,8 +78,8 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
         if (!(level instanceof ServerLevel server)) return;
         LevelNodeGraph<DuctData> graph = FluidGraph.get(server);
         long key = getBlockPos().asLong();
-        if (graph.containsCell(key)) graph.replaceNodeData(key, DuctData.of(type));
-        else graph.addNode(key, DuctData.of(type), MachineCaps.FACE_MASK_ALL);
+        if (graph.containsCell(key)) graph.replaceNodeData(key, ductData());
+        else graph.addNode(key, ductData(), MachineCaps.FACE_MASK_ALL);
     }
 
     @Override

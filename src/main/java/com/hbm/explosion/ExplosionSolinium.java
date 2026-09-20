@@ -1,5 +1,7 @@
 package com.hbm.explosion;
 
+import dev.golem.core.data.Tags;
+
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import dev.golem.core.data.DataIn;

@@ -1,5 +1,7 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;

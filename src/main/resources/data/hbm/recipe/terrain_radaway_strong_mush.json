@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:radaway",
+    "hbm:mush"
+  ],
+  "result": {
+    "id": "hbm:radaway_strong",
+    "count": 1
+  }
+}

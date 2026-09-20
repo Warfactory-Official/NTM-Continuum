@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.storage;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.tileentity.MachineCore;
 import com.hbm.inventory.container.ContainerBatteryREDD;
 import com.hbm.lib.DirPos;

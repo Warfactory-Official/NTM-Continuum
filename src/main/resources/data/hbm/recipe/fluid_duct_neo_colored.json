@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "#c:plates/steel",
+    "A": "#c:plates/aluminium"
+  },
+  "pattern": [
+    "ASA",
+    "   ",
+    "ASA"
+  ],
+  "result": {
+    "id": "hbm:fluid_duct_neo_colored",
+    "count": 8
+  }
+}

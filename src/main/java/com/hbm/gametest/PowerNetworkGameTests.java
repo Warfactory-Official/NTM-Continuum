@@ -331,9 +331,12 @@ public final class PowerNetworkGameTests {
 
         long offered = view.extractable();
         helper.assertTrue(offered > 0L, "A cable fed by a full provider offered a foreign peer nothing");
-        helper.assertTrue(offered == EnergyConversion.feFromHe(SPEED),
-                "A cable offered " + offered + " FE where " + SPEED + " HE is worth "
-                        + EnergyConversion.feFromHe(SPEED));
+        // The surplus a round publishes is what the provider could hand over that round: its charge capped
+        // by its provider speed (1.7 battery: maxPower / 600), not its whole charge.
+        long surplus = Math.min(SPEED, source.getProviderSpeed());
+        helper.assertTrue(offered == EnergyConversion.feFromHe(surplus),
+                "A cable offered " + offered + " FE where a " + surplus + " HE surplus is worth "
+                        + EnergyConversion.feFromHe(surplus));
 
         long taken = view.extract(offered);
         helper.assertTrue(taken == offered, "A peer asked for " + offered + " FE and got " + taken);

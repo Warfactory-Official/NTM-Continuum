@@ -1,5 +1,7 @@
 package com.hbm.entity.logic;
 
+import dev.golem.core.data.Tags;
+
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.util.ChunkUtil;

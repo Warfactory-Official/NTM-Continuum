@@ -171,6 +171,8 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> ENTITY_PLANE_CRASH = register("entity.plane_crash");
     public static final RegistryObject<SoundEvent> ENTITY_PLANE_SHOT_DOWN = register("entity.plane_shot_down");
     public static final RegistryObject<SoundEvent> FSTBMB_PING = register("weapon.fstbmb_ping");
+    /** 1.7 {@code hbm:weapon.fstbmbStart}: the balefire bomb countdown start, also the charges' and mines' arming beep. */
+    public static final RegistryObject<SoundEvent> FSTBMB_START = register("weapon.fstbmb_start");
     public static final RegistryObject<SoundEvent> GRENADE_BOUNCE = register("weapon.grenade_bounce");
     public static final RegistryObject<SoundEvent> GUN_MINIGUN_FIRE = register("weapon.cal_shoot");
     public static final RegistryObject<SoundEvent> GUN_UNDERBARREL_FIRE = register("weapon.fire.underbarrel");

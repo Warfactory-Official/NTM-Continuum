@@ -107,14 +107,6 @@ public class NukeMan extends dev.golem.core.world.CompatBlock implements Ticking
     }
 
     @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        // Drop the bomb's components when it's broken (the old breakBlock behaviour).
-        if (level.getBlockEntity(pos) instanceof TileEntityNukeMan nuke) {
-            net.minecraft.world.Containers.dropContents(level, pos, nuke);
-        }
-    }
-
-    @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
         return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
     }

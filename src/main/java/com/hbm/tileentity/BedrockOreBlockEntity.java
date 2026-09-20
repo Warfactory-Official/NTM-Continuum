@@ -1,5 +1,7 @@
 package com.hbm.tileentity;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;

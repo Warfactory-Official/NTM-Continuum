@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "hbm:conveyor_wand_regular",
+    "D": "hbm:conveyor_wand_double",
+    "P": "#c:plates/steel"
+  },
+  "pattern": [
+    "DPC"
+  ],
+  "result": {
+    "id": "hbm:conveyor_wand_triple"
+  }
+}

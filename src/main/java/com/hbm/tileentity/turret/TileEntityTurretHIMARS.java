@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.projectile.EntityArtilleryRocket;
 import com.hbm.items.ModAmmoItems;

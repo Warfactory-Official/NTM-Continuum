@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rod_quad_empty",
+    "#c:billets/actinium",
+    "#c:billets/actinium",
+    "#c:billets/actinium",
+    "#c:billets/actinium"
+  ],
+  "result": {
+    "id": "hbm:rod_quad_ac227"
+  }
+}

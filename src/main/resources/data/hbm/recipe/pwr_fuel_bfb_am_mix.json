@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": "hbm:billet_am_mix",
+    "I": "hbm:plate_polymer",
+    "B": "#c:billets/bismuth",
+    "N": "hbm:nugget_plutonium_fuel"
+  },
+  "pattern": [
+    "NFN",
+    "NIN",
+    "NBN"
+  ],
+  "result": {
+    "id": "hbm:pwr_fuel_bfb_am_mix",
+    "count": 1
+  }
+}

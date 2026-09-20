@@ -1,5 +1,7 @@
 package com.hbm.entity.item;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "T": "hbm:drone_waypoint",
+    "C": "hbm:crate_steel"
+  },
+  "pattern": [
+    "T",
+    "C"
+  ],
+  "result": {
+    "id": "hbm:drone_crate"
+  }
+}

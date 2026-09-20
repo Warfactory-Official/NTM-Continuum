@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.blocks.machine.FoundryChannel;
 import com.hbm.inventory.material.MaterialShapes;

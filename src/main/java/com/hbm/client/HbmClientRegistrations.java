@@ -192,8 +192,21 @@ public final class HbmClientRegistrations {
         com.hbm.smoke.SmokeChainClientRegistrations.registerScreens(sink);
         com.hbm.foundry.FoundryExpansionScreens.register(sink);
         com.hbm.client.BombClientRegistrations.registerScreens(sink);
+        com.hbm.client.Bombs2ClientRegistrations.registerScreens(sink);
         com.hbm.client.render.RtgClientRegistrations.registerScreen(sink);
         com.hbm.radio.client.RadioClientRegistrations.registerScreens(sink);
+        com.hbm.client.FluidNetClientRegistrations.registerScreens(sink);
+        com.hbm.client.ConveyorClientRegistrations.registerScreens(sink);
+        com.hbm.client.EnergyNetClientRegistrations.registerScreens(sink);
+        com.hbm.client.PneumaticClientRegistrations.registerScreens(sink);
+        com.hbm.client.DroneClientRegistrations.registerScreens(sink);
+        com.hbm.client.ProductionClientRegistrations.registerScreens(sink);
+        com.hbm.client.Production2ClientRegistrations.registerScreens(sink);
+        com.hbm.client.SecurityClientRegistrations.registerScreens(sink);
+        com.hbm.client.NuclearMiscClientRegistrations.registerScreens(sink);
+        com.hbm.client.PwrClientRegistrations.registerScreens(sink);
+        com.hbm.client.PowerGenClientRegistrations.registerScreens(sink);
+        com.hbm.client.ExplosivesClientRegistrations.registerScreens(sink);
         sink.register(com.hbm.blocks.machine.DiFurnaceContent.DI_FURNACE_MENU.get(),
                 com.hbm.inventory.gui.GUIDiFurnace::new);
         sink.register(ModMenus.MASS_STORAGE.get(), com.hbm.inventory.gui.GUIMassStorage::new);
@@ -206,6 +219,7 @@ public final class HbmClientRegistrations {
         com.hbm.items.weapon.sedna.factory.GunFactoryClient.init();
         sink.register("look_overlay", HbmLookOverlay::render);
         sink.register("rad_counter", RadCounterOverlay::render);
+        com.hbm.client.EnergyNetClientRegistrations.registerHud(sink);
         sink.register("nuke_flash", NukeScreenEffects::render);
         sink.register("gun_hud", GunHudOverlay::render);
         sink.register("gun_scope", GunScopeOverlay::render);
@@ -224,7 +238,20 @@ public final class HbmClientRegistrations {
         HbmEntityRenderers.Sink entities = HbmEntityRenderers.recording(downstream, bound);
         HbmEntityRenderers.registerAll(entities);
         com.hbm.radio.client.RadioClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.FluidNetClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.ConveyorClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.EnergyNetClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.PneumaticClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.ProductionClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.Production2ClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.DoorClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.SecurityClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.NuclearMiscClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.PowerGenClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.ExplosivesClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.DecoClientRegistrations.registerRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerBlockEntityRenderers(blockEntities);
+        com.hbm.client.Bombs2ClientRegistrations.registerRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
         com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
         HbmEntityRenderers.verifyCoverage(bound);
@@ -269,6 +296,8 @@ public final class HbmClientRegistrations {
 
     public static void registerBlockColors() {
         HbmBlockColors.registerAll();
+        com.hbm.client.ConveyorClientRegistrations.registerBlockColors();
+        com.hbm.client.TerrainClientRegistrations.registerBlockColors();
     }
 
     /**
@@ -351,11 +380,14 @@ public final class HbmClientRegistrations {
 
     /**
      * Client halves of the ported ntm-next entities: the looped-sound factory behind
-     * {@link com.hbm.sound.AudioSystem} (UFO, hunter chopper, worm) and the entity particle handlers.
+     * {@link com.hbm.sound.AudioSystem} (UFO, hunter chopper, worm), the entity particle handlers, and the
+     * conveyor wand's world-frame ghost preview.
      */
     public static void installEntityEffects() {
         com.hbm.sound.AudioSystem.installClientFactory(com.hbm.client.sound.ClientAudioFactory.INSTANCE);
         com.hbm.client.ClientEffects.install();
+        // 1.7 RenderOverhead.renderActionPreview: the conveyor wand's ghost run, drawn at world-frame end.
+        com.hbm.client.render.ConveyorPreviewRenderer.init();
     }
 
     /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */

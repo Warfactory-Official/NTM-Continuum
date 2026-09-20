@@ -6,7 +6,6 @@ import com.hbm.tileentity.machine.TileEntityMachineShredder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -63,14 +62,6 @@ public class MachineShredder extends dev.golem.core.world.CompatBlock implements
     @Nullable
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
-    }
-
-    /** Spill the 30-slot inventory when broken (the 1.12.2 {@code breakBlock} → {@code dropInventoryItems}). */
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (level.getBlockEntity(pos) instanceof TileEntityMachineShredder shredder) {
-            Containers.dropContents(level, pos, shredder);
-        }
     }
 
     @Override

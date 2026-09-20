@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.advancement.AwardRegions;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.ModHazardBlocks;

@@ -1,0 +1,14 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/blocks/barbed_wire.obj",
+      "texture": "hbm:textures/blocks/barbed_wire_fire_model.png",
+      "scale": 1.0,
+      "yaw": 0,
+      "ty": 0.0
+    }
+  }
+}

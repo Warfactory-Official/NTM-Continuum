@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "hbm:barbed_wire",
+    "I": "#c:dusts/red_phosphorus"
+  },
+  "pattern": [
+    "BBB",
+    "BIB",
+    "BBB"
+  ],
+  "result": {
+    "id": "hbm:barbed_wire_fire",
+    "count": 8
+  }
+}

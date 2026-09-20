@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:asphalt_light"
+  ],
+  "result": {
+    "id": "hbm:asphalt",
+    "count": 1
+  }
+}

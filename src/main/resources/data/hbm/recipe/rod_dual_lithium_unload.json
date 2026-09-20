@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rod_dual_lithium"
+  ],
+  "result": {
+    "id": "hbm:lithium",
+    "count": 2
+  }
+}

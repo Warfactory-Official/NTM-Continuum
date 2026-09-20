@@ -1,5 +1,7 @@
 package com.hbm.entity.effect;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.config.CompatibilityConfig;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;

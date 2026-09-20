@@ -11,13 +11,60 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 /** Shared faithful container-to-tank transfer used by the chemical machines. */
-final class MachineFluidContainerIO {
+public final class MachineFluidContainerIO {
 
     private MachineFluidContainerIO() {}
 
-    static boolean load(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+    private static final java.util.Random RANDOM = new java.util.Random();
+
+    /**
+     * Slot validation for the 1.7 infinite items (inf_water, chlorine pinwheel, the infinite barrel) as a
+     * source: 1.7 {@code FluidTank.loadTank} took them regardless of pressure, typed items only into a
+     * matching tank, the untyped barrel into any typed tank.
+     */
+    public static boolean acceptsInfiniteSource(FluidTankNTM tank, ItemStack stack) {
+        if (!(stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite)) return false;
+        if (tank.getTankType() == Fluids.NONE) return infinite.infiniteType() != null;
+        return infinite.infiniteType() == null || infinite.infiniteType() == tank.getTankType();
+    }
+
+    /** Slot validation for an infinite item as a bottomless drain (1.7 {@code FluidLoaderInfinite.fillItem}). */
+    public static boolean acceptsInfiniteSink(FluidTankNTM tank, ItemStack stack) {
+        if (!(stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite)) return false;
+        if (!infinite.allowPressure(tank.getPressure())) return false;
+        return infinite.infiniteType() == null || infinite.infiniteType() == tank.getTankType();
+    }
+
+    /** True when {@code stack} is an infinite item; the tank was filled from it as 1.7 did (never consumed). */
+    public static boolean loadInfinite(FluidTankNTM tank, ItemStack stack) {
+        if (!(stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite)) return false;
+        if (tank.getTankType() == Fluids.NONE) {
+            if (infinite.infiniteType() == null) return true;
+            tank.setTankType(infinite.infiniteType());
+        }
+        if (infinite.infiniteType() != null && tank.getTankType() != infinite.infiniteType()) return true;
+        if (infinite.infiniteChance() <= 1 || RANDOM.nextInt(infinite.infiniteChance()) == 0) {
+            tank.setFill(Math.min(tank.getFill() + infinite.infiniteAmount(), tank.getMaxFill()));
+        }
+        return true;
+    }
+
+    /** True when {@code stack} is an infinite item; the tank was drained into it as 1.7 did. */
+    public static boolean unloadInfinite(FluidTankNTM tank, ItemStack stack) {
+        if (!(stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite)) return false;
+        if (!infinite.allowPressure(tank.getPressure())) return true;
+        if (infinite.infiniteType() != null && tank.getTankType() != infinite.infiniteType()) return true;
+        if (infinite.infiniteChance() <= 1 || RANDOM.nextInt(infinite.infiniteChance()) == 0) {
+            tank.setFill(Math.max(tank.getFill() - infinite.infiniteAmount(), 0));
+        }
+        return true;
+    }
+
+    public static boolean load(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.isEmpty()) return false;
+        // 1.7 FluidLoaderInfinite.emptyItem: the item is never consumed or moved.
+        if (loadInfinite(tank, input)) return true;
         if (input.getItem() instanceof IFillableItem fillable) {
             ItemStack result = single(input);
             FluidType type = tank.getTankType() != Fluids.NONE
@@ -53,9 +100,18 @@ final class MachineFluidContainerIO {
         return true;
     }
 
-    static boolean unload(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+    public static boolean unload(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
         FluidType type = tank.getTankType();
         ItemStack input = inventory.getStackInSlot(inputSlot);
+        if (input.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite) {
+            // 1.7 FluidLoaderInfinite.fillItem: an infinite item in the unload slot is a bottomless drain.
+            if (!infinite.allowPressure(tank.getPressure())) return false;
+            if (infinite.infiniteType() != null && type != infinite.infiniteType()) return false;
+            if (infinite.infiniteChance() <= 1 || RANDOM.nextInt(infinite.infiniteChance()) == 0) {
+                tank.setFill(Math.max(tank.getFill() - infinite.infiniteAmount(), 0));
+            }
+            return true;
+        }
         if (type == Fluids.NONE || tank.getFill() <= 0 || input.isEmpty() || tank.getPressure() != 0) return false;
         if (input.getItem() instanceof IFillableItem fillable) {
             if (!fillable.acceptsFluid(type, input)) return false;

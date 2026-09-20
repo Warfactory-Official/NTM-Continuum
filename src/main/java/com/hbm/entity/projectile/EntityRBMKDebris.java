@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModRBMKEntities;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.items.ModItems;

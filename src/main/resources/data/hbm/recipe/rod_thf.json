@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rod_empty",
+    "hbm:billet_thorium_fuel"
+  ],
+  "result": {
+    "id": "hbm:rod_thf"
+  }
+}

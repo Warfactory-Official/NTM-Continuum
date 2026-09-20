@@ -22,6 +22,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
@@ -65,6 +67,7 @@ public final class ForgeInit {
         com.hbm.gametest.MaterialCompletionGameTests.init();
         com.hbm.gametest.BedrockOreGameTests.init();
         com.hbm.gametest.ExplosiveContentGameTests.init();
+        com.hbm.gametest.Bombs2GameTests.init();
         com.hbm.gametest.NtmEntityPortGameTests.init();
         com.hbm.gametest.Gen3SednaGameTests.init();
         com.hbm.gametest.RadioGameTests.init();
@@ -122,6 +125,8 @@ public final class ForgeInit {
                 com.hbm.gametest.BedrockOreGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ExplosiveContentGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.Bombs2GameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.NtmEntityPortGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -204,6 +209,23 @@ public final class ForgeInit {
                 HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
         MinecraftForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) ->
                 com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
+        // Forge 1.20.1 has no per-entity tick event: scan each level's item entities at the END of its tick,
+        // over a snapshot because the tickers may spawn new drops (screwdriver, singularity effects).
+        MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent event) -> {
+            if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) return;
+            List<ItemEntity> items = new java.util.ArrayList<>();
+            for (Entity entity : level.getAllEntities()) {
+                if (entity instanceof ItemEntity item) items.add(item);
+                else com.hbm.handler.ExplosivesEntityHooks.tick(entity); // items: below, off the live iterator
+            }
+            for (ItemEntity item : items) {
+                com.hbm.handler.ExplosivesEntityHooks.tick(item);
+                com.hbm.items.special.ItemSingularity.tickDropped(item);
+                com.hbm.items.special.ItemCell.tickDropped(item);
+                com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
+                com.hbm.items.special.ItemDemonCore.tickDropped(item);
+            }
+        });
         MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent event) ->
                 com.hbm.command.HbmCommands.register(event.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {

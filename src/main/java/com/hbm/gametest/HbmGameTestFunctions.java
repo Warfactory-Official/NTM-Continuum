@@ -130,6 +130,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("fluid_tank_invalid_fluid", 40, 8, () -> FluidTankGameTests::invalidFluidStaysInInput);
     public static final GameTests.Function FLUID_TANK_SLOT_DIRECTION =
             TESTS.function("fluid_tank_slot_direction", 40, 8, () -> FluidTankGameTests::menuSlotsAreOneWay);
+    public static final GameTests.Function FLUID_TANK_INFINITE_BARREL =
+            TESTS.function("fluid_tank_infinite_barrel", 40, 8, () -> FluidTankGameTests::infiniteBarrelFillsInput);
     public static final GameTests.Function ADVANCED_OIL_MENU_DIRECTION =
             TESTS.function("advanced_oil_menu_direction", 40, 8,
                     () -> AdvancedOilParityGameTests::oilWellMenuKeepsTankInputAboveOutput);
@@ -514,8 +516,77 @@ public final class HbmGameTestFunctions {
             TESTS.function("electrolyser_molten_pour_rate", 40, 8, () -> ElectrolyserGameTests::moltenPourRate);
     public static final GameTests.Function ELECTROLYSER_MENUS =
             TESTS.function("electrolyser_menus", 40, () -> ElectrolyserGameTests::menus);
+    // --- miscellaneous nuclear machines (radiolysis, legacy reactors, legacy pile) ---
+
+    public static final GameTests.Function NUCLEAR_MISC_RECIPES =
+            TESTS.function("nuclear_misc_recipes", 20, () -> NuclearMiscGameTests::recipes);
+    public static final GameTests.Function NUCLEAR_MISC_RADIOLYSIS =
+            TESTS.function("nuclear_misc_radiolysis_cracking", 60, 8, () -> NuclearMiscGameTests::radiolysisCracking);
+    public static final GameTests.Function NUCLEAR_MISC_RESEARCH_BREEDER =
+            TESTS.function("nuclear_misc_research_feeds_breeder", 60, 8, () -> NuclearMiscGameTests::researchReactorFeedsBreeder);
+    public static final GameTests.Function NUCLEAR_MISC_CONTROLLER =
+            TESTS.function("nuclear_misc_controller_links", 40, 8, () -> NuclearMiscGameTests::controllerLinks);
+    public static final GameTests.Function NUCLEAR_MISC_PILE_INSERT =
+            TESTS.function("nuclear_misc_pile_insert", 40, () -> NuclearMiscGameTests::pileInsert);
+    public static final GameTests.Function NUCLEAR_MISC_MENUS =
+            TESTS.function("nuclear_misc_menus", 40, 8, () -> NuclearMiscGameTests::menus);
+    public static final GameTests.Function NUCLEAR_MISC_PILE_NEUTRONS =
+            TESTS.function("nuclear_misc_pile_neutrons", 100, () -> NuclearMiscGameTests::pileNeutrons);
+
+    // --- production machines (group A) ---
+
+    public static final GameTests.Function PRODUCTION_ROTARY_FURNACE =
+            TESTS.function("production_rotary_furnace_processing", 200, 16, () -> ProductionMachineGameTests::rotaryFurnaceProcessing);
+    public static final GameTests.Function PRODUCTION_MICROWAVE =
+            TESTS.function("production_microwave_processing", 200, () -> ProductionMachineGameTests::microwaveProcessing);
+    public static final GameTests.Function PRODUCTION_MICROWAVE_BATTERY =
+            TESTS.function("production_microwave_battery", 40, () -> ProductionMachineGameTests::microwaveBattery);
+    public static final GameTests.Function PRODUCTION_AUTOCRAFTER =
+            TESTS.function("production_autocrafter_processing", 100, () -> ProductionMachineGameTests::autocrafterProcessing);
+    public static final GameTests.Function PRODUCTION_CONVEYOR_PRESS =
+            TESTS.function("production_conveyor_press_idle", 60, 8, () -> ProductionMachineGameTests::conveyorPressIdle);
+
+    // --- production machines (group B): excavator, ore slopper, RTG furnaces ---
+
+    public static final GameTests.Function PRODUCTION2_ORE_SLOPPER =
+            TESTS.function("production2_ore_slopper_processing", 200, 8, () -> Production2GameTests::oreSlopperProcessing);
+    public static final GameTests.Function PRODUCTION2_RTG_FURNACE =
+            TESTS.function("production2_rtg_furnace_processing", 40, () -> Production2GameTests::rtgFurnaceProcessing);
+    public static final GameTests.Function PRODUCTION2_DIFURNACE_RTG =
+            TESTS.function("production2_difurnace_rtg_processing", 40, () -> Production2GameTests::diFurnaceRtgProcessing);
+    public static final GameTests.Function PRODUCTION2_EXCAVATOR =
+            TESTS.function("production2_excavator_drilling", 100, 16, () -> Production2GameTests::excavatorDrilling);
+
+    // --- large power generation: Leviathan, LPW-2, Hephaestus, IGen memorial, siren ---
+
+    public static final GameTests.Function POWERGEN_CHUNGUS =
+            TESTS.function("powergen_chungus_conversion", 60, 16, () -> PowerGenGameTests::chungusConversion);
+    public static final GameTests.Function POWERGEN_HEPHAESTUS =
+            TESTS.function("powergen_hephaestus_heating", 60, 16, () -> PowerGenGameTests::hephaestusHeating);
+    public static final GameTests.Function POWERGEN_SIREN =
+            TESTS.function("powergen_siren_latch", 40, () -> PowerGenGameTests::sirenLatch);
+    public static final GameTests.Function POWERGEN_LPW2 =
+            TESTS.function("powergen_lpw2_layout", 60, 16, () -> PowerGenGameTests::lpw2Layout);
+    public static final GameTests.Function POWERGEN_IGEN =
+            TESTS.function("powergen_igen_memorial", 40, () -> PowerGenGameTests::igenMemorial);
+
+    // --- doors ---
+
+    public static final GameTests.Function DOOR_FIRE_DOOR_CYCLE =
+            TESTS.function("door_fire_door_cycle", 400, 8, () -> DoorGameTests::fireDoorOpensAndCloses);
+    public static final GameTests.Function DOOR_DECLARATIONS =
+            TESTS.function("door_declarations", 20, () -> DoorGameTests::declarationsAreConsistent);
+    public static final GameTests.Function DOOR_BLAST_DOOR_LEAF =
+            TESTS.function("door_blast_door_leaf", 200, 8, () -> DoorGameTests::blastDoorLeaf);
+
     public static final GameTests.Function ELECTROLYSER_CONSTRUCTION =
             TESTS.function("electrolyser_construction", 40, () -> ElectrolyserGameTests::constructionRecipe);
+
+    // --- pressurized water reactor ---
+    public static final GameTests.Function PWR_ASSEMBLY =
+            TESTS.function("pwr_assembly", 60, 8, () -> PwrGameTests::assembly);
+    public static final GameTests.Function PWR_SIMULATION_TICK =
+            TESTS.function("pwr_simulation_tick", 60, 8, () -> PwrGameTests::simulationTick);
 
     // --- isotope processing ---
     public static final GameTests.Function F6_TANK_CONTRACT =
@@ -799,6 +870,17 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function DAMAGE_TYPES_KEYED =
             TESTS.function("damage_types_keyed", 40, () -> DamageTypeGameTests::everyDamageTypeIsKeyedAndTagged);
 
+    public static final GameTests.Function CONVEYOR_ROUTE_VERTICAL_THEN_TURN =
+            TESTS.function("conveyor_route_vertical_then_turn", 40, 16, () -> ConveyorRouteGameTests::verticalThenTurn);
+
+    // --- volcano cores + blobs (implementations live in VolcanoGameTests) ---
+    public static final GameTests.Function VOLCANO_GROWING_CORE_CLIMBS =
+            TESTS.function("volcano_growing_core_climbs", 400, 64, () -> VolcanoGameTests::growingCoreClimbs);
+    public static final GameTests.Function VOLCANO_SHRAPNEL_POOLS_LAVA =
+            TESTS.function("volcano_shrapnel_pools_lava", 80, 16, () -> VolcanoGameTests::volcanoShrapnelPoolsLavaAndMonoxide);
+    public static final GameTests.Function VOLCANO_LAVA_BLAST =
+            TESTS.function("volcano_lava_blast", 20, 24, () -> VolcanoGameTests::lavaBlastFillsDestroyedCubesOnly);
+
     // --- chunk loading + missiles (implementations live in MissileGameTests) ---
     public static final GameTests.Function CHUNK_REFCOUNTING =
             TESTS.function("chunk_refcounting", 40, () -> MissileGameTests::chunkRefcounting);
@@ -935,6 +1017,20 @@ public final class HbmGameTestFunctions {
             TESTS.function("compatibility_facade_contracts", 20, () -> CompatibilityBoundaryGameTests::facadeContracts);
     public static final GameTests.Function CRATE_CARRIED_ROUND_TRIP =
             TESTS.function("crate_carried_round_trip", 40, () -> CompatibilityBoundaryGameTests::crateCarriedRoundTrip);
+
+    // --- security: locksmith table ---
+
+    public static final GameTests.Function KEY_FORGE =
+            TESTS.function("key_forge", 60, () -> SecurityGameTests::keyForge);
+    public static final GameTests.Function KEY_FORGE_MENU =
+            TESTS.function("key_forge_menu", 20, () -> SecurityGameTests::keyForgeMenu);
+
+    // --- conventional explosives (com.hbm.explosives) ---
+
+    public static final GameTests.Function EXPLOSIVES_LANDMINE =
+            TESTS.function("explosives_landmine_priming_defuse", 40, () -> ExplosivesGameTests::landminePrimingAndDefuse);
+    public static final GameTests.Function EXPLOSIVES_CHARGE =
+            TESTS.function("explosives_charge_timer_defuse", 40, () -> ExplosivesGameTests::chargeTimerAndDefuse);
 
     public static void init() {}
 

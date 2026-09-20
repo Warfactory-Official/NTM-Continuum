@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.rbmk;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;

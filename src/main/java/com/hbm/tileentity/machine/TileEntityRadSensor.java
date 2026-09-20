@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityLoadedBase;

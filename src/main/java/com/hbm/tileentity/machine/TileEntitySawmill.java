@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.recipes.SawmillRecipes;

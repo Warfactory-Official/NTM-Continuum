@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "hbm:circuit_capacitor",
+    "S": "#c:plates/steel",
+    "T": "hbm:coil_tungsten",
+    "G": "#c:glass_panes"
+  },
+  "pattern": [
+    "CSC",
+    "TST",
+    "G G"
+  ],
+  "result": {
+    "id": "hbm:floodlight",
+    "count": 2
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": "#c:billets/pu241",
+    "I": "hbm:plate_polymer",
+    "B": "#c:billets/bismuth",
+    "N": "hbm:nugget_uranium_fuel"
+  },
+  "pattern": [
+    "NFN",
+    "NIN",
+    "NBN"
+  ],
+  "result": {
+    "id": "hbm:pwr_fuel_bfb_pu241",
+    "count": 1
+  }
+}

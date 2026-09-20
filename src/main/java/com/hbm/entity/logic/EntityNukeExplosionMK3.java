@@ -1,5 +1,7 @@
 package com.hbm.entity.logic;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.config.GeneralConfig;
 import com.hbm.advancement.AwardRegions;

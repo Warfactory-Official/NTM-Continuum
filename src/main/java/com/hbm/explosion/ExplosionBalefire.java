@@ -1,5 +1,7 @@
 package com.hbm.explosion;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.ModFalloutBlocks;
 import com.hbm.blocks.ModBlocks;

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "hbm:ducrete",
+    "C": "minecraft:clay_ball",
+    "L": "#c:plates/lead"
+  },
+  "pattern": [
+    "CDC",
+    "DLD",
+    "CDC"
+  ],
+  "result": {
+    "id": "hbm:brick_ducrete",
+    "count": 4
+  }
+}

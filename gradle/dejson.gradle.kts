@@ -21,6 +21,22 @@ val DECLARATION_CLASSES = arrayOf(
     "com.hbm.lib.ModDamageTypes",
     "com.hbm.world.gen.ModBiomeModifiers",
     "com.hbm.inventory.recipes.ModCraftingRecipes",
+    "com.hbm.blocks.FluidNetDeclarations",
+    "com.hbm.blocks.ConveyorDeclarations",
+    "com.hbm.blocks.ProductionDeclarations",
+    "com.hbm.blocks.Production2Declarations",
+    "com.hbm.blocks.SecurityDeclarations",
+    "com.hbm.blocks.DoorDeclarations",
+    "com.hbm.blocks.PneumaticDeclarations",
+    "com.hbm.blocks.PwrDeclarations",
+    "com.hbm.blocks.DroneDeclarations",
+    "com.hbm.blocks.EnergyNetDeclarations",
+    "com.hbm.blocks.PowerGenDeclarations",
+    "com.hbm.blocks.NuclearMiscDeclarations",
+    "com.hbm.blocks.ExplosivesDeclarations",
+    "com.hbm.blocks.DecoDeclarations",
+    "com.hbm.blocks.TerrainDeclarations",
+    "com.hbm.blocks.Bombs2Declarations",
 )
 
 val authoredResources = rootProject.file("src/main/resources")

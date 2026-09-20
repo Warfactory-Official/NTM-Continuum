@@ -129,6 +129,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     /** Slot 2 mirrors the source tank's loadTank path: it accepts only a full, matching fluid source. */
     private boolean isDrainable(ItemStack stack) {
+        if (MachineFluidContainerIO.acceptsInfiniteSource(tank, stack)) return true;
         if (stack.isEmpty() || tank.getPressure() != 0 || tank.getFill() >= tank.getMaxFill()) return false;
         FluidType type;
         int amount;
@@ -146,6 +147,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     /** Slot 4 mirrors the source tank's unloadTank path: it accepts only an empty container to fill. */
     private boolean isFillable(ItemStack stack) {
+        if (MachineFluidContainerIO.acceptsInfiniteSink(tank, stack)) return true;
         if (stack.isEmpty() || tank.getPressure() != 0 || tank.getTankType() == Fluids.NONE
                 || tank.getFill() <= 0) return false;
         if (stack.is(Items.BUCKET)) return true;

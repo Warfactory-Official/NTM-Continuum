@@ -65,7 +65,7 @@ public class ContainerMachineBattery extends AbstractContainerMenu {
     }
 
     public long getMaxPower() {
-        return TileEntityMachineBattery.MAX_POWER;
+        return battery != null ? battery.getMaxPower() : TileEntityMachineBattery.MAX_POWER;
     }
 
     /** Net throughput (HE/s) for the energy-bar tooltip, read off the synced client BlockEntity. */

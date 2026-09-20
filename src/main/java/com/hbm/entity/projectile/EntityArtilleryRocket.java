@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.entity.logic.EntityChunkLoader;
 import com.hbm.entity.logic.IChunkLoader;

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:iron_bars",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "BIB",
+    "BIB"
+  ],
+  "result": {
+    "id": "hbm:fence_metal",
+    "count": 6
+  }
+}

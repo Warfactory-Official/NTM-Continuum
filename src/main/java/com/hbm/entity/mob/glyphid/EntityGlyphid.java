@@ -1,5 +1,7 @@
 package com.hbm.entity.mob.glyphid;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.items.ModFoodItems;
 import com.hbm.config.MobConfig;
 import dev.golem.core.world.Compat;

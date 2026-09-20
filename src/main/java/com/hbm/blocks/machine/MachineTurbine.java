@@ -5,7 +5,6 @@ import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.machine.TileEntityMachineTurbine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
@@ -31,14 +30,6 @@ public class MachineTurbine extends dev.golem.core.world.CompatBlock implements 
             dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
         }
         return InteractionResult.SUCCESS;
-    }
-
-    /** Spill the 7-slot inventory when broken (the 1.12.2 {@code breakBlock} → {@code dropInventoryItems}). */
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (level.getBlockEntity(pos) instanceof TileEntityMachineTurbine turbine) {
-            Containers.dropContents(level, pos, turbine);
-        }
     }
 
 }

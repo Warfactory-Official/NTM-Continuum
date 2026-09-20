@@ -1,5 +1,7 @@
 package com.hbm.entity;
 
+import dev.golem.core.data.Tags;
+
 import java.util.ArrayList;
 import java.util.List;
 

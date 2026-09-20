@@ -97,13 +97,6 @@ public abstract class NukeBombBlock extends dev.golem.core.world.CompatBlock imp
     }
 
     @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (level.getBlockEntity(pos) instanceof TileEntityNukeBomb bomb) {
-            net.minecraft.world.Containers.dropContents(level, pos, bomb);
-        }
-    }
-
-    @Override
     public BombReturnCode explode(Level level, BlockPos pos, @Nullable Entity detonator) {
         return explode(level, pos, detonator, detonator == null ? null : detonator.getUUID());
     }

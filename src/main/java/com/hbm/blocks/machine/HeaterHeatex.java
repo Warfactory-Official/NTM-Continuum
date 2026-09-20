@@ -13,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -90,15 +89,6 @@ public class HeaterHeatex extends BlockMultiblockMachine implements IFluidConnec
         }
         dev.golem.core.gui.Menus.openWithPos(serverPlayer, heater, core);
         return InteractionResult.SUCCESS;
-    }
-
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && !state.getValue(CELL)
-                && level.getBlockEntity(pos) instanceof TileEntityHeaterHeatex heater) {
-            Containers.dropContents(level, pos, heater);
-        }
-        super.onBlockRemoved(state, level, pos, movedByPiston);
     }
 
     @Override

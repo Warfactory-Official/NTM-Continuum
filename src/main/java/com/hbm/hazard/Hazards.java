@@ -19,10 +19,13 @@ public final class Hazards {
         HazardRegistry.registerTrafos();
         HazardRegistry.registerItems();
         com.hbm.items.ModRtgContent.registerHazards();
+        com.hbm.hazard.NuclearMiscHazards.register(); // breeding rods, pile rods, spent plate fuel, demon core
+        com.hbm.blocks.ModPwrContent.registerHazards();   // PWR fuel rods (fresh / hot / depleted)
         com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership
         com.hbm.items.ModArmorItems.configure();      // power-armour set bonuses, rad resistance, hazard classes
         com.hbm.util.DamageResistanceHandler.init();  // threshold/resistance profiles + damage event seam
         com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
+        com.hbm.hazard.TerrainHazards.register(); // nuclear waste blocks, yellowcake/fallout blocks, hot sellafite
         com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables(); // missile item -> entity table
     }
 }

@@ -1,0 +1,30 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "items": [
+        "hbm:conveyor_wand_regular"
+      ]
+    },
+    "L": {
+      "items": [
+        "hbm:fluid_tank"
+      ],
+      "components": {
+        "hbm:fluid_id": 18,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:fluid_tank"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CLC",
+    "CCC"
+  ],
+  "result": {
+    "id": "hbm:conveyor_wand_express",
+    "count": 8
+  }
+}

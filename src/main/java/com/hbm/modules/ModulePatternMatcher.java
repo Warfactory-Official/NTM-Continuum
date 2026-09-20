@@ -1,5 +1,7 @@
 package com.hbm.modules;
 
+import dev.golem.core.data.Tags;
+
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.network.RegistryFriendlyByteBuf;

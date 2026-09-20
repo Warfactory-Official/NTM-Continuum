@@ -488,4 +488,17 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
             if (material != null) liquids.add(new Mats.MaterialStack(material, input.getIntOr("a" + i, 0)));
         }
     }
+
+    /** Molten contents leave as scraps, then the slots spill (1.7 {@code BlockDummyable.breakBlock}). */
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        if (level != null) {
+            for (Mats.MaterialStack liquid : liquids) {
+                com.hbm.items.machine.ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                        liquid.copy());
+            }
+            liquids.clear();
+        }
+        super.preRemoveSideEffects(pos, state);
+    }
 }

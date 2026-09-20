@@ -12,6 +12,7 @@
     "hbm:ladder_steel",
     "hbm:ladder_sturdy",
     "hbm:ladder_titanium",
-    "hbm:ladder_tungsten"
-  ]
+    "hbm:ladder_tungsten",
+    "hbm:dungeon_chain"
+]
 }

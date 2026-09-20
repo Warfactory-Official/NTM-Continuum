@@ -63,6 +63,7 @@ public class NeoForgeInit {
         com.hbm.gametest.MaterialCompletionGameTests.init();
         com.hbm.gametest.BedrockOreGameTests.init();
         com.hbm.gametest.ExplosiveContentGameTests.init();
+        com.hbm.gametest.Bombs2GameTests.init();
         com.hbm.gametest.NtmEntityPortGameTests.init();
          com.hbm.gametest.Gen3SednaGameTests.init();
          com.hbm.gametest.RadioGameTests.init();
@@ -128,6 +129,8 @@ public class NeoForgeInit {
                 com.hbm.gametest.BedrockOreGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ExplosiveContentGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.Bombs2GameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.NtmEntityPortGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -215,10 +218,12 @@ public class NeoForgeInit {
         NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) ->
                  com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
         NeoForge.EVENT_BUS.addListener((EntityTickEvent.Post event) -> {
+            com.hbm.handler.ExplosivesEntityHooks.tick(event.getEntity());
             if (event.getEntity() instanceof ItemEntity item) {
                 com.hbm.items.special.ItemSingularity.tickDropped(item);
                 com.hbm.items.special.ItemCell.tickDropped(item);
                 com.hbm.items.special.ItemAntimatterPellet.tickDropped(item);
+                com.hbm.items.special.ItemDemonCore.tickDropped(item);
             }
         });
 

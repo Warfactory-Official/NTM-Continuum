@@ -1,5 +1,7 @@
 package com.hbm.tileentity.bomb;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.inventory.container.ContainerLaunchPad;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;

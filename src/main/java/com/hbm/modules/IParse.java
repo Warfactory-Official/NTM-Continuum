@@ -1,5 +1,7 @@
 package com.hbm.modules;
 
+import dev.golem.core.data.Tags;
+
 import com.mojang.serialization.Codec;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;

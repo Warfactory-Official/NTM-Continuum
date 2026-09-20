@@ -1,0 +1,7 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {"I": "hbm:plate_polymer", "C": "#c:dusts/any_smokeless", "S": "#c:ingots/steel"},
+  "pattern": ["I", "C", "S"],
+  "result": {"id": "hbm:mine_ap", "count": 4}
+}

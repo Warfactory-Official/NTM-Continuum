@@ -107,7 +107,7 @@ public final class ModMaterialTags {
         shapes("caesium", INGOT, DUST);
         shapes("calcium", INGOT, DUST);
         shapes("cdalloy", 
-                INGOT, DUST, CASTPLATE, WELDEDPLATE, LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, HEAVYRECEIVER);
+                INGOT, DUST, CASTPLATE, WELDEDPLATE, LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, HEAVYRECEIVER, BLOCK);
         shapes("cerium", FRAGMENT, INGOT, DUST);
         shapes("cft", INGOT);
         shapes("charred", CRYSTAL);
@@ -167,7 +167,7 @@ public final class ModMaterialTags {
         shapes("les", NUGGET, BILLET, INGOT);
         shapes("lignite", DUST, ORE);
         shapes("limestone", DUST);
-        shapes("lithium", CRYSTAL, DUST);
+        shapes("lithium", CRYSTAL, DUST, BLOCK);
         shapes("magic", DUST);
         shapes("magnetized_tungsten", INGOT, DUST, DENSEWIRE, BLOCK);
         shapes("mercury", NUGGET);
@@ -244,7 +244,7 @@ public final class ModMaterialTags {
         shapes("sulfur", CRYSTAL, BLOCK);
         shapes("tantalium", NUGGET, INGOT, GEM, DUST, BLOCK);
         shapes("tcalloy", 
-                INGOT, DUST, CASTPLATE, WELDEDPLATE, LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, HEAVYRECEIVER);
+                INGOT, DUST, CASTPLATE, WELDEDPLATE, LIGHTBARREL, HEAVYBARREL, LIGHTRECEIVER, HEAVYRECEIVER, BLOCK);
         shapes("technetium", NUGGET, BILLET, INGOT);
         shapes("tektite", DUST);
         shapes("tennessine", INGOT, DUST);

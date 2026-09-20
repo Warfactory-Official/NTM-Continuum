@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:plates/bismuth",
+    "P": "#c:wires_dense/bscco"
+  },
+  "pattern": [
+    "IPI",
+    "I I",
+    "IPI"
+  ],
+  "result": {
+    "id": "hbm:barrel_antimatter",
+    "count": 1
+  }
+}

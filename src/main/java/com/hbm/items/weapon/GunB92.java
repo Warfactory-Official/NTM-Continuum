@@ -1,5 +1,7 @@
 package com.hbm.items.weapon;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.entity.projectile.EntityB92Beam;
 import com.hbm.items.ModDataComponents;

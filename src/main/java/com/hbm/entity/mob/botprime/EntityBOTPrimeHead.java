@@ -1,5 +1,7 @@
 package com.hbm.entity.mob.botprime;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.advancement.BossKilledTrigger;
 import com.hbm.advancement.HbmCriteria;

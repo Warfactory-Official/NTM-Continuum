@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.blocks.machine.DiFurnaceContent;
 import com.hbm.blocks.machine.MachineDiFurnace;
 import com.hbm.inventory.container.ContainerDiFurnace;

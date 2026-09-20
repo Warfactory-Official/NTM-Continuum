@@ -1,0 +1,15 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/reactors/breeder.obj",
+      "texture": "hbm:textures/models/machines/breeder.png",
+      "noCull": true,
+      "scale": 0.4,
+      "yaw": 90,
+      "ty": 0.0
+    }
+  }
+}

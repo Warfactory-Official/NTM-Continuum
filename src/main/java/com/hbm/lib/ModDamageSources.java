@@ -40,6 +40,8 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> RUBBLE = key("rubble");
     /** Projectile damage from the old shrapnel entity. */
     public static final ResourceKey<DamageType> SHRAPNEL = key("shrapnel");
+    /** Impaled on spikes (old {@code ModDamageSource.spikes}: bypasses armour). */
+    public static final ResourceKey<DamageType> SPIKES = key("spikes");
     /** The sawmill's operating blade: absolute and bypasses armor (old damage id: {@code blender}). */
     public static final ResourceKey<DamageType> TURBOFAN = key("blender");
     /**

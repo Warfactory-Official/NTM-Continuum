@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "#c:plates/steel",
+    "S": "#c:plates/lead"
+  },
+  "pattern": [
+    "II",
+    "SS",
+    "II"
+  ],
+  "result": {
+    "id": "hbm:door_bunker",
+    "count": 1
+  }
+}

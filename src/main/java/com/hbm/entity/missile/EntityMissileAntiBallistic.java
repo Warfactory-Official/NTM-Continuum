@@ -1,5 +1,7 @@
 package com.hbm.entity.missile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.logic.EntityChunkLoader;
 import com.hbm.entity.logic.IChunkLoader;
 import com.hbm.explosion.ExplosionLarge;

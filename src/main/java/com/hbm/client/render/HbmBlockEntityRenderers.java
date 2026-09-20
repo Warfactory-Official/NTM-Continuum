@@ -266,13 +266,15 @@ public final class HbmBlockEntityRenderers {
                  () -> new BombObjRenderer<>(obj("bombs/fatman.obj"), tex("bombs/fatman.png"), 1F));
          regGem(sink, ModBlockEntities.NUKE_N2.get(),
                  () -> new BombObjRenderer<>(obj("bombs/n2.obj"), tex("bombs/n2.png"), 1F,
-                         com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 180F, 0F, 270F, 90F));
+                         // 1.7 RenderNukeN2: 2 -> 90, 4 -> 180, 3 -> 270, 5 -> 0; port facing 2/3/4/5 is 1.7 meta 5/4/2/3.
+                         com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 0F, 180F, 90F, 270F));
          regGem(sink, ModBlockEntities.NUKE_BOY.get(),
                  () -> new BombObjRenderer<>(obj("bombs/lilboy.obj"), tex("bombs/lilboy.png"), 1F,
                          com.hbm.blocks.bomb.NukeBombBlock.FACING, -2F, 0F, 0F, 0F, 180F, 90F, 270F));
          regGem(sink, ModBlockEntities.NUKE_GADGET.get(),
                  () -> new BombObjRenderer<>(obj("bombs/gadget.obj"), tex("bombs/gadget.png"), 1F,
-                         com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 0F, 180F, 90F, 270F));
+                         // 1.7 RenderNukeGadget: 2 -> 0, 4 -> 90, 3 -> 180, 5 -> 270; port facing 2/3/4/5 is 1.7 meta 5/4/2/3.
+                         com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 270F, 90F, 0F, 180F));
          regGem(sink, ModBlockEntities.NUKE_TSAR.get(),
                  () -> new BombObjRenderer<>(obj("bombs/tsar.obj"), tex("bombs/tsar.png"), 1F,
                          com.hbm.blocks.bomb.NukeBombBlock.FACING, 0F, 0F, 0F, 0F, 180F, 90F, 270F));

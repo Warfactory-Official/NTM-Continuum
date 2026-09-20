@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import dev.golem.core.world.Compat;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.inventory.recipes.PressRecipes;
@@ -33,8 +35,8 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Slots: 0 fuel, 1 stamp, 2 input, 3 output, 4–12 storage buffer.
  *
- * <p>Deferred (see IMPLEMENTATION.md §18): the {@code press_preheater} block (speeds up the stroke) is
- * not ported, so {@code preheated} is always false here; the press-operate sound is also deferred.
+ * <p>The {@code press_preheater} block (speeds up the stroke) lives in {@code com.hbm.production}; the
+ * press-operate sound remains deferred (see IMPLEMENTATION.md §18).
  */
 public class TileEntityMachinePress extends TileEntityMachineBase implements MenuProvider, WorldlyContainer {
 
@@ -71,8 +73,15 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePress te) {
-        // The press_preheater block isn't ported yet, so the stroke never gets the preheated speed bonus.
+        // 1.7: any of the six neighbours being a burner press preheater quadruples the spool-up.
         boolean preheated = false;
+        for (com.hbm.lib.ForgeDirection dir : com.hbm.lib.ForgeDirection.VALID_DIRECTIONS) {
+            if (level.getBlockState(pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ))
+                    .is(com.hbm.blocks.ModProductionBlocks.PRESS_PREHEATER.get())) {
+                preheated = true;
+                break;
+            }
+        }
 
         boolean canProcess = te.canProcess();
         if ((canProcess || te.isRetracting) && te.burnTime >= 200) {

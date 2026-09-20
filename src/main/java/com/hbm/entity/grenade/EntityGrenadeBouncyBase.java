@@ -1,5 +1,7 @@
 package com.hbm.entity.grenade;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.config.GeneralConfig;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatProjectile;

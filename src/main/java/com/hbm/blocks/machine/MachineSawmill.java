@@ -11,7 +11,6 @@ import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntitySawmill;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.WorldlyContainer;
@@ -217,15 +216,6 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
         if (!sawmill.hasBlade) text.add("&[16711680&]Blade missing!");
 
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
-    }
-
-    @Override
-    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
-        if (!level.isClientSide() && !state.getValue(CELL)
-                && level.getBlockEntity(pos) instanceof TileEntitySawmill sawmill) {
-            Containers.dropContents(level, pos, sawmill);
-        }
-        super.onBlockRemoved(state, level, pos, movedByPiston);
     }
 
     /** No power or fluid surface at all in 1.7; the four waist cells take items and nothing else. */

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rod_quad_empty",
+    "#c:billets/cobalt",
+    "#c:billets/cobalt",
+    "#c:billets/cobalt",
+    "#c:billets/cobalt"
+  ],
+  "result": {
+    "id": "hbm:rod_quad_co"
+  }
+}

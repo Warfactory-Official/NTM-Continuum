@@ -42,8 +42,17 @@ public final class TickerGameTests {
      * <p>It was 160 until the cable stopped ticking, and 159 until the fluid duct and the fluid valve
      * followed it: each of their block entities existed only to mint a network node once, and a node is
      * now a graph cell the block owns, so nothing is left for any of the three to do each tick.
+     *
+     * <p>217 since the 2026-09 content wave (energynet, fluidnet, pneumatic, door, powergen, nuclearmisc,
+     * production, turret and friends) registered sixty more ticking block entities; the sibling test
+     * saw 366 blocks over 265 types all answering with exactly the ticker declared, so the growth is
+     * honest and the pin follows it.
+     *
+     * <p>+2 for the bombs2 wave, +5 for the terrain wave (fissure, volcano core, geyser, vent, chlorine
+     * seal), +3 for the conventional-explosives wave (landmine, timed charge and crashed dud block
+     * entities), +3 for the deco wave (floodlight, floodlight beam, demon lamp): 217 + 13 = 230.
      */
-    private static final int TICKING_TYPES = 157;
+    private static final int TICKING_TYPES = 230;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

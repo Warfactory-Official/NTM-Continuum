@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "hbm:deco_pipe",
+    "C": "#c:dusts/iron"
+  },
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PPP"
+  ],
+  "result": {
+    "id": "hbm:deco_pipe_rusted",
+    "count": 8
+  }
+}

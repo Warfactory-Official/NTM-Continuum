@@ -65,6 +65,7 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
     private void loadTank(int inSlot, int outSlot) {
         ItemStack input = inventory.getStackInSlot(inSlot);
         if (input.isEmpty()) return;
+        if (MachineFluidContainerIO.loadInfinite(tank, input)) return;
 
         if (input.getItem() instanceof IFillableItem fillable) {
             FluidType heldType = fillable.getFirstFluidType(input);
@@ -95,6 +96,7 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
     private void unloadTank(int inSlot, int outSlot) {
         ItemStack input = inventory.getStackInSlot(inSlot);
         if (input.isEmpty() || tank.getFill() <= 0) return;
+        if (MachineFluidContainerIO.unloadInfinite(tank, input)) return;
 
         if (input.getItem() instanceof IFillableItem fillable) {
             if (!fillable.acceptsFluid(tank.getTankType(), input)) return;
@@ -175,6 +177,7 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
 
     private static boolean isFluidContainer(ItemStack stack) {
         return stack.getItem() instanceof IFillableItem
+                || stack.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem
                 || stack.getItem() instanceof ItemFluidBucket
                 || stack.is(Items.BUCKET);
     }

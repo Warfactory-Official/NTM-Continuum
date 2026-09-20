@@ -1,5 +1,7 @@
 package com.hbm.items.weapon;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModGunItems;
 import dev.golem.core.world.CompatItem;

@@ -48,7 +48,7 @@ public final class ModRBMKBlocks {
     public static final RegistryObject<RBMKDebrisRadiating> rbmk_debris_radiating = debris("rbmk_debris_radiating", RBMKDebrisRadiating::new);
     public static final RegistryObject<RBMKDebrisDigamma> rbmk_debris_digamma = debris("rbmk_debris_digamma", RBMKDebrisDigamma::new);
     /** Current graphite storage block, required by the moderator and modified-control recipes. */
-    public static final RegistryObject<Block> block_graphite = BLOCKS.registerSimpleBlock("block_graphite",
+    public static final RegistryObject<Block> block_graphite = BLOCKS.registerBlock("block_graphite", com.hbm.blocks.machine.pile.BlockGraphite::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(5F, 10F).sound(SoundType.STONE).requiresCorrectToolForDrops());
     /** Hand-written because foam is a machine-safety block, not generated decoration content. */
     public static final RegistryObject<BlockLayering> foam_layer = BLOCKS.registerBlock("foam_layer",

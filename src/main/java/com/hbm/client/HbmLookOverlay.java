@@ -1,11 +1,13 @@
 package com.hbm.client;
 
+import com.hbm.interfaces.IItemLookOverlay;
 import com.hbm.interfaces.ILookOverlay;
 import dev.golem.core.gui.GuiDraw;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,6 +35,16 @@ public final class HbmLookOverlay {
         Block block = level.getBlockState(pos).getBlock();
         if (block instanceof ILookOverlay overlay) {
             ILookOverlay.Data data = overlay.getLookOverlay(level, pos, mc.player);
+            if (data != null) {
+                render(graphics, data);
+                return;
+            }
+        }
+
+        // 1.7 IItemLookOverlay: the held item may add its own readout (the conveyor wand's creative line break).
+        ItemStack held = mc.player.getMainHandItem();
+        if (held.getItem() instanceof IItemLookOverlay overlay) {
+            ILookOverlay.Data data = overlay.getLookOverlay(level, pos, held, mc.player);
             if (data != null) render(graphics, data);
         }
     }

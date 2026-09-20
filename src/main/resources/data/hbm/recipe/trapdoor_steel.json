@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "#minecraft:wooden_trapdoors",
+    "#c:ingots/steel"
+  ],
+  "result": {
+    "id": "hbm:trapdoor_steel",
+    "count": 1
+  }
+}

@@ -1,5 +1,7 @@
 package com.hbm.inventory.fluid.tank;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -133,7 +135,12 @@ public class FluidTankNTM implements Cloneable {
     // --- per-tick sync ---
 
     public void serialize(RegistryFriendlyByteBuf buf) {
-        buf.writeInt(fluid);
+        serialize(buf, fluid);
+    }
+
+    /** Same wire format as {@link #serialize(RegistryFriendlyByteBuf)} but with a caller-supplied fill (a pre-tick snapshot). */
+    public void serialize(RegistryFriendlyByteBuf buf, int fill) {
+        buf.writeInt(fill);
         buf.writeInt(maxFluid);
         buf.writeInt(type.getID());
         buf.writeShort(pressure);

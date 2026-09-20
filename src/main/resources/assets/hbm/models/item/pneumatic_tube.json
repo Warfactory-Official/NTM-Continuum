@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "hbm:blocks/pneumatic_tube",
+    "straight": "hbm:blocks/pneumatic_tube_straight",
+    "connector": "hbm:blocks/pneumatic_tube_connector"
+  },
+  "elements": [
+    {
+      "from": [5, 5, 0],
+      "to": [11, 11, 16],
+      "faces": {
+        "down": { "uv": [5, 0, 11, 16], "texture": "#straight", "rotation": 90 },
+        "up": { "uv": [5, 0, 11, 16], "texture": "#straight", "rotation": 90 },
+        "north": { "uv": [5, 5, 11, 11], "texture": "#connector" },
+        "south": { "uv": [5, 5, 11, 11], "texture": "#connector" },
+        "west": { "uv": [0, 5, 16, 11], "texture": "#straight" },
+        "east": { "uv": [0, 5, 16, 11], "texture": "#straight" }
+      }
+    }
+  ]
+}

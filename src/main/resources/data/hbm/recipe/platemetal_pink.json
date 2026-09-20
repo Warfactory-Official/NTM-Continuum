@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "hbm:platemetal_base",
+    "D": "minecraft:pink_dye"
+  },
+  "pattern": [
+    "PPP",
+    "PDP",
+    "PPP"
+  ],
+  "result": {
+    "id": "hbm:platemetal_pink",
+    "count": 8
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "hbm:rod_dual_waste"
+  ],
+  "result": {
+    "id": "hbm:billet_nuclear_waste",
+    "count": 2
+  }
+}

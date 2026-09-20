@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.inventory.container.ContainerFurnaceIron;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.modules.ModuleBurnTime;

@@ -111,6 +111,8 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
 
     /** The directional input-container bay from {@code TileEntityBarrel.loadTank}. */
     protected boolean loadTank(int inputSlot, int outputSlot) {
+        // 1.7 FluidTank.loadTank: the infinite items bypass the pressure gate and are never consumed.
+        if (MachineFluidContainerIO.loadInfinite(tankNew, inventory.getStackInSlot(inputSlot))) return true;
         if (tankNew.getPressure() != 0) return false;
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.isEmpty()) return false;
@@ -153,6 +155,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
 
     /** The directional output-container bay from {@code TileEntityBarrel.unloadTank}. */
     protected boolean unloadTank(int inputSlot, int outputSlot) {
+        if (MachineFluidContainerIO.unloadInfinite(tankNew, inventory.getStackInSlot(inputSlot))) return true;
         if (tankNew.getPressure() != 0 || tankNew.getTankType() == Fluids.NONE || tankNew.getFill() <= 0) return false;
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.isEmpty()) return false;
@@ -210,6 +213,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     }
 
     private boolean isDrainable(ItemStack stack) {
+        if (MachineFluidContainerIO.acceptsInfiniteSource(tankNew, stack)) return true;
         if (stack.isEmpty() || tankNew.getFill() >= tankNew.getMaxFill()) return false;
         FluidType type;
         int amount;
@@ -226,6 +230,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
     }
 
     private boolean isFillable(ItemStack stack) {
+        if (MachineFluidContainerIO.acceptsInfiniteSink(tankNew, stack)) return true;
         return !stack.isEmpty() && ((stack.getItem() instanceof IFillableItem fillable
                 && fillable.acceptsFluid(tankNew.getTankType(), stack)) || stack.is(Items.BUCKET))
                 && tankNew.getTankType() != Fluids.NONE;

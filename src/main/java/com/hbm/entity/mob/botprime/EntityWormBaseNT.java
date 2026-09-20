@@ -1,5 +1,7 @@
 package com.hbm.entity.mob.botprime;
 
+import dev.golem.core.data.Tags;
+
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.CompatPathfinderMob;
 import net.minecraft.core.BlockPos;

@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import dev.golem.core.data.CompatEntity;
 import dev.golem.core.data.DataIn;

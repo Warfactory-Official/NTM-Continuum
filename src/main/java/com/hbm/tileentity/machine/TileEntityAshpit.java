@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.inventory.container.ContainerAshpit;
 import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.items.ModIngredientItems;

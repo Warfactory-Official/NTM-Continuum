@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "#": "hbm:block_insulator"
+  },
+  "pattern": [
+    "#"
+  ],
+  "result": {
+    "id": "hbm:plate_polymer",
+    "count": 9
+  }
+}

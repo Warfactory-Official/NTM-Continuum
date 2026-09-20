@@ -1,5 +1,7 @@
 package com.hbm.tileentity.turret;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactoryRocket;

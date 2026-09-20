@@ -64,6 +64,7 @@ public final class ModDamageTypes {
                 type("monoxide").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("overdose").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("radiation").tags(BYPASSES_ARMOR),
+                type("spikes").tags(BYPASSES_ARMOR),
                 type("taint").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
 
                 type("acid_player").message("acidPlayer").exhaustion(0.1),

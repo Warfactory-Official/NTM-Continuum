@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import dev.golem.core.data.CompatEntity;
 import com.hbm.entity.ModEntities;
 import com.hbm.handler.radiation.ChunkRadiationManager;

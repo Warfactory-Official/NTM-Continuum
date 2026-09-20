@@ -1,5 +1,7 @@
 package com.hbm.entity.explosive;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.blocks.bomb.BlockTNTBase;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import dev.golem.core.data.CompatEntity;
@@ -126,6 +128,14 @@ public class EntityPrimedExplosive extends CompatEntity {
             case 1 -> ModBombBlocks.dynamite.get();
             case 2 -> ModBombBlocks.semtex.get();
             case 3 -> ModBombBlocks.c4.get();
+            case 4 -> com.hbm.blocks.ModExplosivesBlocks.fissure_bomb.get(); // com.hbm.explosives
+            // The effect barrels of com.hbm.fluidnet (kinds 20-25).
+            case 20 -> com.hbm.blocks.ModFluidNetBlocks.red_barrel.get();
+            case 21 -> com.hbm.blocks.ModFluidNetBlocks.pink_barrel.get();
+            case 22 -> com.hbm.blocks.ModFluidNetBlocks.yellow_barrel.get();
+            case 23 -> com.hbm.blocks.ModFluidNetBlocks.vitrified_barrel.get();
+            case 24 -> com.hbm.blocks.ModFluidNetBlocks.lox_barrel.get();
+            case 25 -> com.hbm.blocks.ModFluidNetBlocks.taint_barrel.get();
             default -> ModBombBlocks.tnt.get();
         };
         return block.defaultBlockState().setValue(BlockTNTBase.ARMED, entityData.get(ARMED));

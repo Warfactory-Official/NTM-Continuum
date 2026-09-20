@@ -142,6 +142,7 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
             current = duct.getFluidType();
             if (current != pipe || current == hand) return;
             duct.setFluidType(hand);
+            if (duct.getFluidType() != hand) return; // refused (an exhaust takes only the smokes): nothing to spread through
         } else if (entity instanceof TileEntityFluidValve valve) {
             current = valve.getFluidType();
             if (current != pipe || current == hand) return;
@@ -231,15 +232,21 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         if (!(stack.getItem() instanceof IItemFluidId ident)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT duct) {
             FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
-            if (type != duct.getFluidType()) {
+            FluidType before = duct.getFluidType();
+            if (type != before) {
                 if (player.isShiftKeyDown()) {
-                    spreadType(level, pos, type, duct.getFluidType(), 256);
+                    spreadType(level, pos, type, before, 256);
                 } else {
                     duct.setFluidType(type);
-                    level.setBlock(pos, recomputeConnections(state, level, pos), 3); // refresh this duct + notify neighbours
                 }
-                player.sendSystemMessage(Component.literal("Duct fluid: ").append(type.getDisplayName())
-                        .withStyle(ChatFormatting.AQUA));
+                // A duct may refuse a type (the exhaust takes only the smokes): re-read rather than assume.
+                if (duct.getFluidType() != before) {
+                    if (!player.isShiftKeyDown()) {
+                        level.setBlock(pos, recomputeConnections(state, level, pos), 3); // refresh this duct + notify neighbours
+                    }
+                    player.sendSystemMessage(Component.literal("Duct fluid: ").append(duct.getFluidType().getDisplayName())
+                            .withStyle(ChatFormatting.AQUA));
+                }
             }
         }
         return InteractionResult.SUCCESS;

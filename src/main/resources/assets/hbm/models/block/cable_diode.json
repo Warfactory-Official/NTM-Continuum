@@ -1,0 +1,74 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "hbm:blocks/cable_diode",
+    "pad": "hbm:blocks/cable_diode",
+    "core": "hbm:blocks/hadron_coil_alloy"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        2
+      ],
+      "faces": {
+        "down": {
+          "texture": "#pad"
+        },
+        "up": {
+          "texture": "#pad"
+        },
+        "north": {
+          "texture": "#pad"
+        },
+        "south": {
+          "texture": "#pad"
+        },
+        "west": {
+          "texture": "#pad"
+        },
+        "east": {
+          "texture": "#pad"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        2
+      ],
+      "to": [
+        14,
+        14,
+        14
+      ],
+      "faces": {
+        "down": {
+          "texture": "#core"
+        },
+        "up": {
+          "texture": "#core"
+        },
+        "north": {
+          "texture": "#core"
+        },
+        "south": {
+          "texture": "#core"
+        },
+        "west": {
+          "texture": "#core"
+        },
+        "east": {
+          "texture": "#core"
+        }
+      }
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.tile.IHeatSource;

@@ -17,6 +17,15 @@
       }
     ]
   },
+  "block.reactor_loop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/reactor_loop",
+        "stream": false
+      }
+    ]
+  },
   "block.reactor_start": {
     "category": "block",
     "sounds": [
@@ -3300,6 +3309,474 @@
         "name": "hbm:weapon/reload/revolver_cock",
         "stream": false
       }
+    ]
+  },
+  "block.reactor_stop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/reactorstop",
+        "stream": false
+      }
+    ]
+  },
+  "block.vault_scrape_new": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/vaultscrapenew",
+        "stream": false
+      }
+    ]
+  },
+  "block.vault_thud_new": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/vaultthudnew",
+        "stream": false
+      }
+    ]
+  },
+  "block.lock_open": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/lockopen",
+        "stream": false
+      }
+    ]
+  },
+  "block.open_door": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door_open_1",
+        "stream": false
+      },
+      {
+        "name": "hbm:block/door_open_2",
+        "stream": false
+      }
+    ]
+  },
+  "item.pin_unlock": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/pinunlock",
+        "stream": false
+      }
+    ]
+  },
+  "item.pin_break": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "hbm:tool/pinbreak",
+        "stream": false
+      }
+    ]
+  },
+  "door.transition_seal_open": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/transition_seal_open",
+        "stream": true
+      }
+    ]
+  },
+  "door.wgh_start": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/wgh_start",
+        "stream": false
+      }
+    ]
+  },
+  "door.wgh_stop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/wgh_stop",
+        "stream": false
+      }
+    ]
+  },
+  "door.alarm6": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/alarm6",
+        "stream": true
+      }
+    ]
+  },
+  "door.sliding_door_shut": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/sliding_door_shut",
+        "stream": false
+      }
+    ]
+  },
+  "door.sliding_door_opened": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/sliding_door_opened",
+        "stream": false
+      }
+    ]
+  },
+  "door.sliding_door_opening": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/sliding_door_opening",
+        "stream": false
+      }
+    ]
+  },
+  "door.garage_move": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/garage_move",
+        "stream": false
+      }
+    ]
+  },
+  "door.garage_stop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/garage_stop",
+        "stream": false
+      }
+    ]
+  },
+  "door.lever": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/lever1",
+        "stream": false
+      }
+    ]
+  },
+  "door.wgh_big_start": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/door_wgh_big_start",
+        "stream": false
+      }
+    ]
+  },
+  "door.wgh_big_stop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/door_wgh_big_stop",
+        "stream": false
+      }
+    ]
+  },
+  "door.qe_sliding_shut": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/doorshut_1",
+        "stream": false
+      }
+    ]
+  },
+  "door.qe_sliding_opened": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/doorslide_opened1",
+        "stream": false
+      }
+    ]
+  },
+  "door.qe_sliding_opening": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/doorslide_opening1",
+        "stream": false
+      }
+    ]
+  },
+  "door.sliding_seal_open": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/doormove2",
+        "stream": false
+      }
+    ]
+  },
+  "door.sliding_seal_stop": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/door/metal_stop1",
+        "stream": false
+      }
+    ]
+  },
+  "block.lock_hang": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/lockhang",
+        "stream": false
+      }
+    ]
+  },
+  "entity.slicer": {
+    "category": "neutral",
+    "sounds": [
+      "hbm:entity/slicer1",
+      "hbm:entity/slicer2",
+      "hbm:entity/slicer3",
+      "hbm:entity/slicer4"
+    ]
+  },
+  "item.battery": {
+    "category": "player",
+    "sounds": [
+      "hbm:tool/battery"
+    ]
+  },
+  "block.hephaestus_running": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/hephaestusrunning",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.ams_siren": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/amssiren",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.apc_loop": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/apcloop",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.apc_pass": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/apcpass",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.bank_alarm": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/bankalarm",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.beep_siren": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/beepsiren",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.autopilot": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/boeing707autopilotdisconnected",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.container_alarm": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/containeralarm",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.hatch": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/lpfhaiwg",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.razortrain_horn": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/razortrainhorn",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.sweep_siren": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/sweepsiren",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.blast_door_alarm": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/blastdooralarm",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.klaxon": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/klaxon",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.strider_siren": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/stridersiren",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.regular_siren": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/regularsiren",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.fo_klaxon_a": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/foklaxona",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.fo_klaxon_b": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/foklaxonb",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.nostromo_siren": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/nostromosiren",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.eas_alarm": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/easalarm",
+        "stream": false
+      }
+    ]
+  },
+  "alarm.air_raid": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/airraid",
+        "stream": true
+      }
+    ]
+  },
+  "alarm.classic": {
+    "category": "record",
+    "sounds": [
+      {
+        "name": "hbm:alarm/classicsiren",
+        "stream": false
+      }
+    ]
+  },
+  "block.engine": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/engine",
+        "stream": false
+      }
+    ]
+  },
+  "block.lever_large": {
+    "category": "block",
+    "sounds": [
+      {
+        "name": "hbm:block/lever_large",
+        "stream": false
+      }
+    ]
+  },
+  "block.platemetal_place": {
+    "category": "block",
+    "sounds": [
+      "hbm:block/platemetal_bar1",
+      "hbm:block/platemetal_bar2",
+      "hbm:block/platemetal_bar3",
+      "hbm:block/platemetal_bar4",
+      "hbm:block/platemetal_bar5",
+      "hbm:block/platemetal_bar6"
+    ]
+  },
+  "step.platemetal": {
+    "category": "block",
+    "sounds": [
+      "hbm:block/platemetal_step"
     ]
   }
 }

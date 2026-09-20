@@ -1,0 +1,6 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": ["hbm:block_c4"],
+  "result": {"id": "hbm:ingot_c4", "count": 9}
+}

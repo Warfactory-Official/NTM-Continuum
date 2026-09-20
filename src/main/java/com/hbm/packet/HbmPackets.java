@@ -167,6 +167,9 @@ public final class HbmPackets {
                 (payload, context) -> payload.apply(context.level()));
         GolemNetwork.registerPlayToClient(FallingMultiblockPayload.CODEC,
                 (payload, context) -> FallingMultiblockPayload.handleClient(context.level(), payload));
+        com.hbm.client.PneumaticClientRegistrations.registerPacketHandlers();
+        com.hbm.client.DroneClientRegistrations.registerPacketHandlers();
+        com.hbm.client.PowerGenClientRegistrations.registerPacketHandlers();
     }
 
     /**

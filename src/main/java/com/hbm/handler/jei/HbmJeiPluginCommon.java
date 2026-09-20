@@ -120,6 +120,7 @@ public final class HbmJeiPluginCommon {
     private static CompressorRecipeHandler compressor;
     private static StorageDrumRecipeHandler storageDrum;
     private static ArcWelderRecipeHandler arcWelder;
+    private static RotaryFurnaceRecipeHandler rotaryFurnace;
     private static ArcFurnaceRecipeHandler arcFurnaceSolid;
     private static ArcFurnaceRecipeHandler arcFurnaceFluid;
     private static DiFurnaceRecipeHandler diFurnace;
@@ -274,12 +275,15 @@ public final class HbmJeiPluginCommon {
                 stack(FoundryExpansion.ARC_FURNACE.get()));
         diFurnace = new DiFurnaceRecipeHandler(helper, HbmJeiRecipeTypes.ALLOY,
                 Component.translatable("block.hbm.machine_difurnace_off"));
+        rotaryFurnace = new RotaryFurnaceRecipeHandler(helper, HbmJeiRecipeTypes.ROTARY_FURNACE,
+                title("rotary_furnace"), stack(com.hbm.blocks.ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
 
           reg.addRecipeCategories(assembly, precisionAssembler, chemplant, mixer, exposure, purex, fusion, fusionBreeder, plasmaForge, press, ammoPress, soldering, crystallizer, centrifuge, cyclotron, gasCentrifuge, silex, shredder, sawmill, crucible, anvilCon, anvilSmith,
                  electrolyserFluid, electrolyserMetal, refinery, fractioning, liquefaction, solidification, boiling, cooling,
                  vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum,
-                 arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace);
+                 arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace);
         RTGJeiIntegration.registerCategory(reg);
+        com.hbm.handler.jei.NuclearMiscJeiIntegration.registerCategories(reg);
     }
 
     public static void registerRecipes(IRecipeRegistration reg) {
@@ -343,12 +347,14 @@ public final class HbmJeiPluginCommon {
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.COMPRESSOR, CompressorRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.STORAGE_DRUM, StorageDrumRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ARC_WELDER, ArcWelderRecipeHandler.buildRecipes());
+         dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ROTARY_FURNACE, RotaryFurnaceRecipeHandler.buildRecipes());
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ARC_FURNACE_SOLID,
                  ArcFurnaceRecipeHandler.buildRecipes(false));
          dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ARC_FURNACE_FLUID,
                  ArcFurnaceRecipeHandler.buildRecipes(true));
           dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ALLOY, DiFurnaceRecipeHandler.buildRecipes());
         RTGJeiIntegration.registerRecipes(reg);
+        com.hbm.handler.jei.NuclearMiscJeiIntegration.registerRecipes(reg);
       }
 
     public static void registerGuiHandlers(IGuiHandlerRegistration reg) {
@@ -370,6 +376,8 @@ public final class HbmJeiPluginCommon {
                 HbmJeiRecipeTypes.FUSION_BREEDER);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMachineArcWelder.class, 72, 38, 32, 13,
                 HbmJeiRecipeTypes.ARC_WELDER);
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIMachineRotaryFurnace.class, 58, 19, 32, 10,
+                HbmJeiRecipeTypes.ROTARY_FURNACE);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMachineArcFurnaceLarge.class, 17, 36, 7, 70,
                 HbmJeiRecipeTypes.ARC_FURNACE_SOLID);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMachineArcFurnaceLarge.class, 152, 36, 16, 70,
@@ -427,6 +435,7 @@ public final class HbmJeiPluginCommon {
 
     public static void registerCatalysts(IRecipeCatalystRegistration reg) {
         RTGJeiIntegration.registerCatalyst(reg);
+        com.hbm.handler.jei.NuclearMiscJeiIntegration.registerCatalysts(reg);
           dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
           dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
                   stack(com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get()));
@@ -466,6 +475,8 @@ public final class HbmJeiPluginCommon {
          dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.CRUCIBLE_ALLOY, stack(ModMachineBlocks.machine_crucible.get()));
          dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ARC_WELDER,
                  stack(ModMachineBlocks.machine_arc_welder.get()));
+         dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ROTARY_FURNACE,
+                 stack(com.hbm.blocks.ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
          dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ARC_FURNACE_SOLID,
                  stack(FoundryExpansion.ARC_FURNACE.get()));
          dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ARC_FURNACE_FLUID,

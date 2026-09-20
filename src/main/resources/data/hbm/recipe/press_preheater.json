@@ -1,0 +1,39 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "items": [
+        "hbm:plate_copper"
+      ]
+    },
+    "S": {
+      "items": [
+        "minecraft:stone"
+      ]
+    },
+    "L": {
+      "items": [
+        "hbm:fluid_tank"
+      ],
+      "components": {
+        "hbm:fluid_id": 7,
+        "hbm:fluid_amount": 1000
+      },
+      "remainder": "hbm:fluid_tank"
+    },
+    "T": {
+      "items": [
+        "hbm:ingot_tungsten"
+      ]
+    }
+  },
+  "pattern": [
+    "CCC",
+    "SLS",
+    "TST"
+  ],
+  "result": {
+    "id": "hbm:press_preheater"
+  }
+}

@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.IControlReceiver;

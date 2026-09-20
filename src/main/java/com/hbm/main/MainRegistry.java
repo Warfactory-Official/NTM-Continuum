@@ -66,6 +66,18 @@ public final class MainRegistry {
         com.hbm.blocks.ModBeaconBlocks.init(); // plain beacon-base storage blocks
         ModMachineBlocks.init();   // machine blocks (must precede block entities, which reference them)
         com.hbm.radio.ModRadioContent.init(); // Redstone-over-Radio blocks, block entities, and menus
+        com.hbm.blocks.ModConveyorContent.init(); // conveyor belts, cranes, piston inserter, wand
+        com.hbm.blocks.ModPneumaticContent.init(); // pneumatic tube storage system
+        com.hbm.blocks.ModDroneContent.init(); // delivery drone blocks, linker, request network sweep
+        com.hbm.blocks.ModProductionContent.init(); // production machines A: rotary furnace, thresher, microwave, autocrafter, conveyor press
+        com.hbm.blocks.ModProduction2Content.init(); // production machines B: excavator, ore slopper, annihilator, old boiler, RTG furnaces
+        com.hbm.blocks.ModEnergyNetContent.init(); // pylons/wires, cable variants, legacy storage tiers, HEV battery, tesla
+        com.hbm.blocks.ModDoorContent.init(); // generic OBJ doors, the old blast door, mod doors and the steel trapdoor
+        com.hbm.blocks.ModSecurityContent.init(); // barbed wire, spikes, fences, barricade, locksmith table, padlocks
+        com.hbm.blocks.ModPwrContent.init(); // pressurized water reactor: parts, controller, fuel rods, printer
+        com.hbm.blocks.ModPowerGenContent.init(); // Leviathan turbine, LPW-2, geothermal exchanger, IGen memorial, siren + tracks
+        com.hbm.blocks.ModDecoContent.init(); // structural/decorative blocks: pipes, pillars, lamps, spotlights, bricks, asphalt, crates, poles
+        com.hbm.blocks.ModTerrainContent.init(); // natural/terrain/hazard blocks: plants, frozen ground, biome stone, fissure, volcano, geysers, vents, storage blocks
         com.hbm.assemblyfactory.AssemblyFactoryRegistrations.init();
         com.hbm.chemicalfactory.ChemicalFactoryRegistrations.init();
         com.hbm.blocks.machine.AutosawFeature.init();
@@ -79,6 +91,7 @@ public final class MainRegistry {
         com.hbm.blocks.turret.ModTurretBlocks.init(); // turret pad cell and the turrets on it
         ModStorageBlocks.init();   // storage crates (iron / steel / desh)
         ModBombBlocks.init();      // bomb blocks (also precede block entities)
+        com.hbm.blocks.ModBombs2Content.init(); // special bombs: custom nuke, F.L.E.I.J.A., Blue Rinse, Prototype, balefire bomb, thermo/EMP/float/flame war
         com.hbm.blocks.ModRailBlocks.init(); // the folded rails the ntm-next trains run on
         com.hbm.blocks.ModHazardBlocks.init(); // radioactive / rad-resistant blocks (radiation emitters)
         com.hbm.blocks.ModFalloutBlocks.init(); // fallout layer + waste/sellafite terrain (nuke aftermath)
@@ -97,6 +110,8 @@ public final class MainRegistry {
         com.hbm.blocks.material.MaterialCompletionRegistrations.init();
         com.hbm.inventory.recipes.ModRecipes.init(); // custom crafting serializers
         ModItems.init();
+        // After ModItems: its container items name ModItems empties as craft remainders at registration time.
+        com.hbm.blocks.ModFluidNetContent.init(); // fluid-network ducts, barrels, foundry tank, fluid blocks, containers
         com.hbm.items.ModEntityItems.init(); // spawn items, carts, drones, trains, grenades, dispersers (entity port)
         com.hbm.items.ModGunSupportItems.init(); // ammo container and stack-backed ammo/casing bags
         com.hbm.items.ModJetpackDependencyItems.init(); // hot steel and the functional xenon thruster part
@@ -129,6 +144,8 @@ public final class MainRegistry {
         com.hbm.items.ModGearItems.init(); // radiation gear (geiger/dosimeter + hazmat armor)
         com.hbm.items.ModArmorItems.init(); // modelled power armour (T-51b)
         com.hbm.items.ModArmorModules.init(); // complete armor modules (storage, cladding, inserts)
+        com.hbm.blocks.ModNuclearMiscContent.init(); // radiolysis RTG, legacy breeder/research reactors + controller, legacy graphite pile, breeding/pile rods, spent plate fuel
+        com.hbm.blocks.ModExplosivesContent.init(); // landmines, timed charges, det blocks, plastic explosive blocks, duds, multi purpose bomb, detonators
         // Ammo, factories, and gun suppliers must all be declared before any loader flushes ITEMs.
         com.hbm.items.weapon.sedna.factory.GunCatalogue.init();
         com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them

@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/conveyor_press.obj",
+    "texture": "hbm:textures/models/machines/conveyor_press.png",
+    "overlayTexture": "hbm:textures/models/machines/conveyor_press_belt.png",
+    "overlayParts": ["Belt"],
+    "scale": 1.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [0.0, -4.0, 0.0],
+    "guiScale": 4.5,
+    "itemTranslate": [0.0, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "ty": 0.0
+  },
+  "oversized_in_gui": true
+}

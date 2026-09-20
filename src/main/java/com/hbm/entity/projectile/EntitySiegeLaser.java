@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import dev.golem.core.world.Compat;
 import dev.golem.core.data.SynchedData;
 import com.hbm.lib.ModDamageSources;

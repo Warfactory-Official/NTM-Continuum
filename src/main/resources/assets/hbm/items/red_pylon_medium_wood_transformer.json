@@ -1,0 +1,37 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/network/pylon_medium.obj",
+    "texture": "hbm:textures/models/network/pylon_medium.png",
+    "scale": 0.5,
+    "yaw": 90.0,
+    "rawLegacyTransform": true,
+    "guiTranslate": [
+      1.0,
+      -5.0,
+      0.0
+    ],
+    "guiScale": 4.5,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "ty": 0.0,
+    "parts": [
+      "Pylon",
+      "Transformer"
+    ],
+    "translate": [
+      0.75,
+      0.0,
+      0.0
+    ]
+  },
+  "oversized_in_gui": true
+}

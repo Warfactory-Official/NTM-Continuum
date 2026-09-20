@@ -1,5 +1,7 @@
 package com.hbm.entity.projectile;
 
+import dev.golem.core.data.Tags;
+
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.ChemicalClientEffects;
 import com.hbm.entity.ModEntities;

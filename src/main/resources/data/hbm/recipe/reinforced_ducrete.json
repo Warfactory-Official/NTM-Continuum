@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "hbm:brick_ducrete",
+    "S": "#c:plates/steel",
+    "U": "#c:billets/u238"
+  },
+  "pattern": [
+    "DSD",
+    "SUS",
+    "DSD"
+  ],
+  "result": {
+    "id": "hbm:reinforced_ducrete",
+    "count": 4
+  }
+}
