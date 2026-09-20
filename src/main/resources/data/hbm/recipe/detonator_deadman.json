@@ -1,6 +1,0 @@
-{
-  "type": "minecraft:crafting_shapeless",
-  "category": "misc",
-  "ingredients": ["hbm:detonator", "hbm:defuser", "hbm:ducttape"],
-  "result": {"id": "hbm:detonator_deadman"}
-}

@@ -322,3 +322,8 @@ dependencies {
     // no runtime component.
     compileOnly("org.jspecify:jspecify:1.0.0")
 }
+
+// The id constants recipe declarations are written against. Generated from the live registry by
+// `runGenerateIds` and committed, because the plain-JVM build step the declarations run in cannot
+// load half the registry classes; see com.hbm.lib.IdConstants.
+sourceSets["main"].java.srcDir(rootProject.file("src/generated/java"))

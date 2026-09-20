@@ -1,6 +1,0 @@
-{
-  "type": "minecraft:crafting_shapeless",
-  "category": "misc",
-  "ingredients": ["hbm:stick_dynamite", "hbm:stick_dynamite", "hbm:stick_dynamite", "hbm:ducttape"],
-  "result": {"id": "hbm:charge_dynamite"}
-}

@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {"C": "hbm:circuit_basic", "P": "#c:plates/steel", "T": "#c:ingots/any_highexplosive"},
-  "pattern": [" C ", "PTP"],
-  "result": {"id": "hbm:mine_he"}
-}

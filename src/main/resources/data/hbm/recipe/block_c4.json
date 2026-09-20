@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {"I": "hbm:ingot_c4"},
-  "pattern": ["III", "III", "III"],
-  "result": {"id": "hbm:block_c4"}
-}

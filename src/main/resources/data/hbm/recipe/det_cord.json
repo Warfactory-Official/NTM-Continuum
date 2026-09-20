@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {"P": "minecraft:paper", "G": "minecraft:gunpowder"},
-  "pattern": [" P ", "PGP", " P "],
-  "result": {"id": "hbm:det_cord", "count": 4}
-}

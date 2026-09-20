@@ -1133,6 +1133,10 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function EXPLOSIVES_CHARGE =
             TESTS.function("explosives_charge_timer_defuse", 40, () -> ExplosivesGameTests::chargeTimerAndDefuse);
 
+    // --- the generated id constants (implementations live in IdGameTests) ---
+    public static final GameTests.Function IDS_MATCH_REGISTRY =
+            TESTS.function("ids_match_registry", 40, () -> IdGameTests::constantsMatchTheRegistry);
+
     public static void init() {}
 
     private static void coolingRecipes(GameTestHelper helper) {

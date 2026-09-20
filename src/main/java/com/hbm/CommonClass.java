@@ -15,5 +15,8 @@ public class CommonClass {
         PowerNetwork.init();
         // The fluid graph's round. Its chunk and level hooks are the ones PowerNetwork already installed.
         com.hbm.api.fluidmk2.FluidNetwork.init();
+
+        // Only a run started with -Dhbm.generateIds does anything here; see IdConstants.
+        com.hbm.lib.IdConstants.install();
     }
 }

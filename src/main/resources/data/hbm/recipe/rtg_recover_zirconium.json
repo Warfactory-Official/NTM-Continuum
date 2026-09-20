@@ -1,5 +1,0 @@
-{
-  "type": "minecraft:crafting_shapeless", "category": "misc",
-  "ingredients": ["hbm:pellet_rtg_depleted_zirconium"],
-  "result": { "id": "hbm:billet_zirconium", "count": 3 }
-}

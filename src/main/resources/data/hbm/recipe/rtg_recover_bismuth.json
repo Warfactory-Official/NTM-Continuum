@@ -1,5 +1,0 @@
-{
-  "type": "minecraft:crafting_shapeless", "category": "misc",
-  "ingredients": ["hbm:pellet_rtg_depleted_bismuth"],
-  "result": { "id": "hbm:billet_bismuth", "count": 3 }
-}

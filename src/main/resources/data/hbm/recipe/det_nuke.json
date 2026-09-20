@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {"P": "hbm:neutron_reflector", "D": "hbm:det_charge", "C": "hbm:man_core", "F": "hbm:circuit_controller"},
-  "pattern": ["PFP", "DCD", "PFP"],
-  "result": {"id": "hbm:det_nuke"}
-}

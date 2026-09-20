@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {"A": "#c:wires/aluminium", "C": "hbm:circuit_basic", "H": "#c:shells/aluminium", "F": "hbm:fins_quad_titanium", "D": "#c:dyes/white"},
-  "pattern": ["AAD", "CHF", "AAD"],
-  "result": {"id": "hbm:bomb_multi"}
-}

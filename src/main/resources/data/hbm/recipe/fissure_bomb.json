@@ -1,7 +1,0 @@
-{
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {"S": "hbm:semtex", "U": "#c:storage_blocks/u238", "R": "#c:ingots/tantalium", "P": "#c:billets/pu239"},
-  "pattern": ["SUS", "RPR", "SUS"],
-  "result": {"id": "hbm:fissure_bomb"}
-}

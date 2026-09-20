@@ -60,6 +60,17 @@ neoForge {
             type = "gameTestServer"
             gameDirectory = file("runs/gametest")
         }
+        // Rewrites src/generated/java from the live registry, then halts before any test runs. Borrows
+        // the gameTestServer type because it is the headless server that needs no EULA, and the tag
+        // roster the generator reads only exists once data packs are loaded.
+        register("generateIds") {
+            type = "gameTestServer"
+            // Its own directory, not the test runner's: this run stops the server without saving, and
+            // a GameTest world is never reset between runs, so leaving a half-written one behind is
+            // something the next test run would inherit.
+            gameDirectory = file("runs/generateids")
+            systemProperty("hbm.generateIds", rootProject.file("src/generated/java").absolutePath)
+        }
         register("server") {
             server()
             gameDirectory = file("runs/server")
@@ -215,3 +226,13 @@ dependencies {
 
 // javac stops reporting after 100 errors by default, which hides the tail while porting a new node.
 tasks.compileJava { options.compilerArgs.addAll(listOf("-Xmaxerrs", "2000")) }
+
+// The id constants recipe declarations are written against. Generated from the live registry by
+// `runGenerateIds` and committed, because the plain-JVM build step the declarations run in cannot
+// load half the registry classes; see com.hbm.lib.IdConstants.
+sourceSets["main"].java.srcDir(rootProject.file("src/generated/java"))
+
+// The generating run stops the server the moment it has written the files, which a GameTest server
+// reports as a failure because it never got to run a test. The files are the whole product of the
+// task, and they are written before the halt.
+tasks.named<JavaExec>("runGenerateIds") { isIgnoreExitValue = true }

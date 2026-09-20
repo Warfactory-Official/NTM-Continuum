@@ -8,7 +8,10 @@ import com.hbm.Constants;
 import com.hbm.blocks.ModBlockDrops;
 import com.hbm.blocks.ModBlockModels;
 import com.hbm.inventory.material.ModMaterialTags;
+import com.hbm.inventory.recipes.ModComponentRecipes;
 import com.hbm.inventory.recipes.ModCraftingRecipes;
+import com.hbm.inventory.recipes.ModShapedRecipes;
+import com.hbm.inventory.recipes.ModShapelessRecipes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModItemModels;
@@ -58,6 +61,9 @@ public final class DejsonGameTests {
         ModDamageTypes.declare();
         ModBiomeModifiers.declare();
         ModCraftingRecipes.declare();
+        ModShapedRecipes.declare();
+        ModShapelessRecipes.declare();
+        ModComponentRecipes.declare();
     }
 
     public static void coversEveryBlockState(GameTestHelper helper) {
