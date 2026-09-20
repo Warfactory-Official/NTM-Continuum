@@ -27,6 +27,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * Diesel Generator — 1:1 port of the 1.12.2 {@code TileEntityMachineDiesel} and the port's <b>first
@@ -46,6 +50,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
     public long powerCap = 50000;
     public FluidTankNTM tank;
     public boolean wasOn = false;
+    private AudioWrapper audio;
 
     /** Grade efficiency table (old {@code fuelEfficiency}); LOW/GAS absent → not burnable here. */
     private static double efficiency(FluidCombustion.FuelGrade grade) {
@@ -65,6 +70,11 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
     @Override
     public String getDefaultName() {
         return "container.machineDiesel";
+    }
+
+    public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDiesel te) {
+        te.audio = MachineAudio.tick(te.audio, te.wasOn, com.hbm.sound.ModProductionSounds.ENGINE.get(), SoundSource.BLOCKS,
+                pos, te.getVolume(1F), 10F, 1.0F, 10);
     }
 
     public long getPowerScaled(long i) {

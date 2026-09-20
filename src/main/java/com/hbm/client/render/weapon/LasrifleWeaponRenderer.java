@@ -1,7 +1,9 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
@@ -22,13 +24,15 @@ public final class LasrifleWeaponRenderer extends WeaponRenderer {
         if (mods == null) mods = SpecialWeaponRenderers.model("lasrifle_mods");
         return mods;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }
     @Override public float viewFov(ItemStack stack, float fov, float partialTick) {
         return aimingFov(stack, fov, partialTick,
                 SpecialWeaponRenderers.hasUpgrade(stack, 218) ? 0.66F : 0.75F);
+    }
+    @Override protected boolean scopedIn(ItemStack stack) {
+        return !SpecialWeaponRenderers.hasUpgrade(stack, XWeaponModManager.ID_LAS_AUTO) && fullyAimed();
     }
     @Override public void setupFirstPerson(ItemStack stack, PoseStack pose) {
         pose.translate(0, 0, 0.875);
@@ -79,5 +83,21 @@ public final class LasrifleWeaponRenderer extends WeaponRenderer {
                 .visibleIf(state -> SpecialWeaponRenderers.hasUpgrade(state, 216));
         root.child(mods().part("UnderBarrel"), MODS)
                 .visibleIf(state -> SpecialWeaponRenderers.hasUpgrade(state, 217));
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.03125F, 1.03125F, 1.03125F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(0.75F, 0F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(1.25F, 1.25F, 1.25F);
+        pose.translate(0F, 0F, 4F);
     }
 }

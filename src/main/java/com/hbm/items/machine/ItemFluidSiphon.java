@@ -34,11 +34,11 @@ public class ItemFluidSiphon extends CompatItem {
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         Player player = context.getPlayer();
-        if (player == null) return InteractionResult.PASS;
+        if (player == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
         BlockPos pos = context.getClickedPos();
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         BlockEntity te = level.getBlockEntity(core != null ? core : pos);
-        if (!(te instanceof IFluidStandardReceiverMK2 receiver)) return InteractionResult.PASS;
+        if (!(te instanceof IFluidStandardReceiverMK2 receiver)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         // We need to iterate through the inventory for _each_ siphonable
@@ -75,6 +75,6 @@ public class ItemFluidSiphon extends CompatItem {
                 return InteractionResult.SUCCESS;
             }
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 }

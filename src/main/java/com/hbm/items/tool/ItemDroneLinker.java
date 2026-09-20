@@ -49,7 +49,7 @@ public class ItemDroneLinker extends CompatItem {
         ItemStack stack = context.getItemInHand();
 
         BlockEntity tile = level.getBlockEntity(pos);
-        if (!(tile instanceof IDroneLinkable linkable)) return InteractionResult.PASS;
+        if (!(tile instanceof IDroneLinkable linkable)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!level.isClientSide() && player != null) {
             Optional<BlockPos> previous = ModDroneContent.LINKER_POSITION.get(stack);
@@ -81,7 +81,7 @@ public class ItemDroneLinker extends CompatItem {
             ModDroneContent.LINKER_POSITION.remove(stack);
             say(player, "Position cleared!", ChatFormatting.GREEN);
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

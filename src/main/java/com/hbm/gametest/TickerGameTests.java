@@ -51,8 +51,10 @@ public final class TickerGameTests {
      * <p>+2 for the bombs2 wave, +5 for the terrain wave (fissure, volcano core, geyser, vent, chlorine
      * seal), +3 for the conventional-explosives wave (landmine, timed charge and crashed dud block
      * entities), +3 for the deco wave (floodlight, floodlight beam, demon lamp): 217 + 13 = 230.
+     * +21 for the Norwood machine wave: five pile types, five dark-fusion types, six Albion types less
+     * the inert beamline, satlink, geiger, cargo elevator, RBMK terminal, two Soyuz types: 251.
      */
-    private static final int TICKING_TYPES = 230;
+    private static final int TICKING_TYPES = 251;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

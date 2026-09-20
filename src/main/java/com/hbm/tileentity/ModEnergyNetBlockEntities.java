@@ -73,7 +73,9 @@ public final class ModEnergyNetBlockEntities {
 
     public static final RegistryObject<BlockEntityType<TileEntityCapacitor>> CAPACITOR =
             BLOCK_ENTITIES.register("capacitor", () -> BlockEntities.serverTicking(TileEntityCapacitor::new,
-                    TileEntityCapacitor::serverTick, ModEnergyNetBlocks.capacitor_tantalium.get(),
+                    TileEntityCapacitor::serverTick, ModEnergyNetBlocks.machine_capacitor_copper.get(),
+                    ModEnergyNetBlocks.machine_capacitor_gold.get(), ModEnergyNetBlocks.machine_capacitor_niobium.get(),
+                    ModEnergyNetBlocks.capacitor_tantalium.get(),
                     ModEnergyNetBlocks.capacitor_schrabidate.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBatteryTier>> BATTERY_TIER =
             BLOCK_ENTITIES.register("machine_battery_tier", () -> BlockEntities.serverTicking(TileEntityBatteryTier::new,

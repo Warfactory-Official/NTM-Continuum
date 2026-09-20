@@ -22,10 +22,13 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
 
 public class EntityChopperMine extends CompatEntity {
 
     public int timer = 0;
+    private AudioWrapper loop;
     // 1.7: plain field - neither synced nor persisted
     public Entity shooter;
 
@@ -106,9 +109,6 @@ public class EntityChopperMine extends CompatEntity {
                 this.detonate();
             }
 
-            level().playSound(null, getX(), getY(), getZ(), ModSounds.NULL_MINE.get(),
-                    SoundSource.PLAYERS, 10.0F, 1F);
-
             if (this.timer >= 100 || !level().getBlockState(
                     new BlockPos((int) getX(), (int) getY(), (int) getZ())).isAir()) {
                 this.detonate();
@@ -125,6 +125,11 @@ public class EntityChopperMine extends CompatEntity {
         // Deliberate divergence: setPos keeps the box on the mine, so proximity detonation works.
         // 1.7: raw integration, no collision resolution - flies through geometry until the air check fires
         this.setPos(getX() + motion.x, getY() + motion.y, getZ() + motion.z);
+
+        if (level().isClientSide()) {
+            this.loop = MachineAudio.tick(this.loop, isAlive(), ModSounds.CHOPPER_MINE_LOOP.get(),
+                    SoundSource.HOSTILE, (float) getX(), (float) getY(), (float) getZ(), 10F, 160F, 1F, 20);
+        }
 
         this.timer++;
     }

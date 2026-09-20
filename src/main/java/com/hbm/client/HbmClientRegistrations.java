@@ -113,6 +113,17 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.MACHINE_CHEMICAL_PLANT.get(), GUIMachineChemicalPlant::new);
         sink.register(ModMenus.MACHINE_MIXER.get(), GUIMixer::new);
         sink.register(ModMenus.MACHINE_EXPOSURE_CHAMBER.get(), GUIMachineExposureChamber::new);
+        sink.register(ModMenus.PA_SOURCE.get(), com.hbm.inventory.gui.GUIPASource::new);
+        sink.register(ModMenus.PA_RFC.get(), com.hbm.inventory.gui.GUIPARFC::new);
+        sink.register(ModMenus.PA_QUADRUPOLE.get(), com.hbm.inventory.gui.GUIPAQuadrupole::new);
+        sink.register(ModMenus.PA_DIPOLE.get(), com.hbm.inventory.gui.GUIPADipole::new);
+        sink.register(ModMenus.PA_DETECTOR.get(), com.hbm.inventory.gui.GUIPADetector::new);
+        sink.register(ModMenus.SOYUZ_LAUNCHER.get(), com.hbm.inventory.gui.GUISoyuzLauncher::new);
+        sink.register(ModMenus.DFC_CORE.get(), com.hbm.inventory.gui.GUICore::new);
+        sink.register(ModMenus.DFC_EMITTER.get(), com.hbm.inventory.gui.GUICoreEmitter::new);
+        sink.register(ModMenus.DFC_RECEIVER.get(), com.hbm.inventory.gui.GUICoreReceiver::new);
+        sink.register(ModMenus.DFC_INJECTOR.get(), com.hbm.inventory.gui.GUICoreInjector::new);
+        sink.register(ModMenus.DFC_STABILIZER.get(), com.hbm.inventory.gui.GUICoreStabilizer::new);
         sink.register(ModMenus.MACHINE_BLAST_FURNACE.get(), GUIBlastFurnace::new);
         sink.register(ModMenus.MACHINE_PUREX.get(), GUIMachinePUREX::new);
         sink.register(ModMenus.MACHINE_SOLDERING_STATION.get(), GUIMachineSolderingStation::new);
@@ -213,6 +224,9 @@ public final class HbmClientRegistrations {
         sink.register(ModMenus.CRATE_TEMPLATE.get(), com.hbm.inventory.gui.GUICrateTemplate::new);
         RBMKClientScreens.register(sink);
         RBMKGauge.OPEN_SCREEN = com.hbm.inventory.gui.ScreenRBMKGauge::new;
+        com.hbm.blocks.machine.rbmk.RBMKTerminal.OPEN_SCREEN = terminal ->
+                net.minecraft.client.Minecraft.getInstance().setScreen(
+                        new com.hbm.inventory.gui.ScreenRBMKTerminal(terminal));
     }
 
     public static void registerHud(HudSink sink) {
@@ -396,6 +410,7 @@ public final class HbmClientRegistrations {
         com.hbm.client.render.projectile.TracerRegistry.init();
         com.hbm.client.particle.CasingParticles.init();
         com.hbm.client.particle.DisintegrationParticles.init();
+        com.hbm.client.particle.DebrisParticles.init();
         GunEffectState.setCasingHandler(event -> com.hbm.client.particle.CasingParticles.spawn(event));
         GunEffectState.setGunCasingHandler(payload -> com.hbm.client.particle.CasingParticles.spawn(
                 new com.hbm.particle.helper.CasingCreator.Event(payload.x(), payload.y(), payload.z(), payload.mX(),

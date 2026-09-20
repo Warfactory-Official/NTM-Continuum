@@ -56,6 +56,36 @@ public final class ParticleEffects {
         HbmEffectNT.ExplosionSmall.send(level, x, y, z, data);
     }
 
+    /**
+     * A large blast: a smoke plume, a shockwave and scoops of the ground thrown into the air.
+     *
+     * <p>The parameter list is upstream's, in upstream's order, so 1.7 call sites port across by
+     * name. {@code waveScale} is carried but not yet drawn — see {@code ExplosionLargeCreator}.
+     *
+     * @param debrisSize  edge of each scoop in blocks
+     * @param debrisRetry how solid a scoop comes out, not how big
+     * @param soundRange  how far the report carries; it also sets how far the effect itself is sent
+     */
+    public static void explosionLarge(Level level, double x, double y, double z,
+            int cloudCount, float cloudScale, float cloudSpeedMult, float waveScale,
+            int debrisCount, int debrisSize, int debrisRetry, float debrisVelocity,
+            float debrisHorizontalDeviation, float debrisVerticalOffset, float soundRange) {
+
+        CompoundTag data = new CompoundTag();
+        data.putInt("cloudCount", cloudCount);
+        data.putFloat("cloudScale", cloudScale);
+        data.putFloat("cloudSpeedMult", cloudSpeedMult);
+        data.putFloat("waveScale", waveScale);
+        data.putInt("debrisCount", debrisCount);
+        data.putInt("debrisSize", debrisSize);
+        data.putInt("debrisRetry", debrisRetry);
+        data.putFloat("debrisVelocity", debrisVelocity);
+        data.putFloat("debrisHorizontalDeviation", debrisHorizontalDeviation);
+        data.putFloat("debrisVerticalOffset", debrisVerticalOffset);
+        data.putFloat("soundRange", soundRange);
+        HbmEffectNT.ExplosionLarge.send(level, x, y, z, data, Math.max(300D, soundRange));
+    }
+
     /** One tongue of flamethrower fire. Emitters call this every tick they are firing. */
     public static void flamethrower(Level level, double x, double y, double z, int meta) {
         CompoundTag data = new CompoundTag();

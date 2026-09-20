@@ -278,7 +278,11 @@ public class TileEntityPWRController extends TileEntityMachineBase
                 this.amountLoaded--;
                 this.markChanged();
             }
-            // 1.7 reported RayEvent.INFO_NUCLEAR to the ray-scan satellite every 100 ticks; not ported.
+            // 1.7: a burning core shows up on the ray-scan satellite every 100 ticks.
+            if (level.getGameTime() % 100 == 0) {
+                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
+                        com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
+            }
         }
 
         if (this.amountLoaded <= 0) this.typeLoaded = -1;

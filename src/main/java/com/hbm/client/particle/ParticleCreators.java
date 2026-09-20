@@ -16,6 +16,7 @@ public final class ParticleCreators {
 
     public static final IParticleCreator FLAME = new FlameCreator();
     public static final IParticleCreator EXPLOSION_SMALL = new ExplosionSmallCreator();
+    public static final IParticleCreator EXPLOSION_LARGE = new ExplosionLargeCreator();
     public static final IParticleCreator BLACK_POWDER = new BlackPowderCreator();
     public static final IParticleCreator ASHES = new AshesCreator();
     public static final IParticleCreator TOWER = new CoolingTowerCreator();
@@ -27,6 +28,7 @@ public final class ParticleCreators {
     static {
         particleCreators.put("flamethrower", FLAME);
         particleCreators.put("explosionSmall", EXPLOSION_SMALL);
+        particleCreators.put("explosionLarge", EXPLOSION_LARGE);
         particleCreators.put("blackPowder", BLACK_POWDER);
         particleCreators.put("ashes", ASHES);
         particleCreators.put("tower", TOWER);

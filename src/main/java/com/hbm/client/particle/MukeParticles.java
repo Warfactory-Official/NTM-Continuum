@@ -6,11 +6,17 @@ import dev.golem.core.Ids;
 import dev.golem.core.client.ClientResourceReloads;
 import dev.golem.core.client.ClientTicks;
 import dev.golem.core.client.Frames;
+import dev.golem.core.client.Colors;
 import dev.golem.core.data.Tags;
+import dev.golem.core.render.Billboards;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatRenderTypes;
 import dev.golem.core.render.Vertexes;
 import dev.golem.core.render.WorldEffects;
+import dev.golem.core.render.gem.Gem;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Quads;
+import dev.golem.core.render.gem.Surface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -37,22 +43,58 @@ public final class MukeParticles {
     private static final int WAVE_LIFETIME = 25;
     private static final int FLASH_LIFETIME = 20;
     private static final int FULLBRIGHT = 0xF000F0;
+    private static final int LAYER_FLARE = 0;
+    private static final int LAYER_EXPLOSION = 1;
+    private static final int LAYER_BALEFIRE = 2;
+    private static final int CLOUD_FRAMES = 5;
     private static final List<Detonation> ACTIVE = new ArrayList<>();
+    private static final Pool POOL = new Pool();
+    private static final Surface SHOCKWAVE_SKIN = Surface.glow(SHOCKWAVE.toString());
+    private static final Geometry SHOCKWAVE_SHEET = Quads.named("hbm_muke_shockwave")
+            .normal(0F, 1F, 0F)
+            .vertex(-1F, -0.25F, -1F, 1F, 1F)
+            .vertex(-1F, -0.25F, 1F, 1F, 0F)
+            .vertex(1F, -0.25F, 1F, 0F, 0F)
+            .vertex(1F, -0.25F, -1F, 0F, 1F)
+            .build();
+    private static Gem.Model<Detonation> shockwave;
     private static boolean initialized;
     private static ClientLevel lastLevel;
 
     private MukeParticles() {}
+
+    /**
+     * The billboards of every live detonation, as one pool.
+     *
+     * <p>One pool rather than one per detonation because a visual is a bucket of GPU instances and
+     * the UBO backend only instances a single billboard visual per level; a nuke is also exactly the
+     * moment not to be allocating.
+     */
+    static final class Pool {
+        private Pool() {}
+    }
 
     public static void register() {
         if (initialized) return;
         initialized = true;
         WorldEffects.init();
         ClientTicks.onEndTick(MukeParticles::tick);
+        Billboards.registerPool(Pool.class, List.of(
+                        new Billboards.Layer(FLARE.toString(), Billboards.Mode.SOURCE_ALPHA_ADDITIVE),
+                        new Billboards.Layer(EXPLOSION.toString(), Billboards.Mode.EMISSIVE_TRANSLUCENT,
+                                Billboards.Align.Y_LOCKED),
+                        new Billboards.Layer(EXPLOSION_BF.toString(), Billboards.Mode.EMISSIVE_TRANSLUCENT,
+                                Billboards.Align.Y_LOCKED)),
+                (pool, frame, layers) -> {
+                    for (Detonation detonation : List.copyOf(ACTIVE)) detonation.writeRows(frame, layers);
+                },
+                pool -> ACTIVE.isEmpty());
         WorldEffects.onBegin(camera -> {
             ClientLevel level = Minecraft.getInstance().level;
             if (level == null) return;
             float partial = Frames.partialTick();
-            for (Detonation detonation : List.copyOf(ACTIVE)) detonation.submit(camera, partial);
+            boolean instanced = Billboards.owns(POOL);
+            for (Detonation detonation : List.copyOf(ACTIVE)) detonation.submit(camera, partial, instanced);
         });
         ClientResourceReloads.register(Constants.MOD_ID, "muke_particles", MukeParticles::clear);
     }
@@ -68,6 +110,7 @@ public final class MukeParticles {
     private static void spawn(Level level, double x, double y, double z, boolean tiny, boolean balefire) {
         if (!(level instanceof ClientLevel client)) return;
         ACTIVE.add(new Detonation(client, x, y, z, tiny, balefire));
+        Billboards.add(client, POOL);
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
             player.animateHurt(0F);
@@ -96,6 +139,8 @@ public final class MukeParticles {
 
     private static void clear() {
         ACTIVE.clear();
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) Billboards.remove(level, POOL);
     }
 
     private static final class Detonation {
@@ -129,6 +174,14 @@ public final class MukeParticles {
 
         private boolean expired() {
             return age >= WAVE_LIFETIME && clouds.isEmpty();
+        }
+
+        private float waveScale() {
+            return (float) (1D - Math.exp((age + Frames.partialTick()) * -0.125D)) * 45F;
+        }
+
+        private float waveAlpha() {
+            return 1F - (age + Frames.partialTick()) / WAVE_LIFETIME;
         }
 
         private void spawnMukeClouds(ClientLevel level) {
@@ -177,51 +230,76 @@ public final class MukeParticles {
             }
         }
 
-        private void submit(CameraInfo camera, float partial) {
-            PoseStack pose = new PoseStack();
-            pose.translate(x - camera.pos.x, y - camera.pos.y, z - camera.pos.z);
-            // The captured world model-view already applies camera orientation.  Supplying camera
-            // rotated billboard axes here would rotate the effect a second time as the player turns.
-            Vector3f right = new Vector3f(1F, 0F, 0F);
-            Vector3f up = new Vector3f(0F, 1F, 0F);
-
-            if (age < WAVE_LIFETIME) {
-                float waveAge = age + partial;
-                float alpha = 1F - waveAge / WAVE_LIFETIME;
-                float scale = (float) (1D - Math.exp(waveAge * -0.125D)) * 45F;
-                WorldEffects.submit(pose, CompatRenderTypes.plasmaGlow(SHOCKWAVE), 0,
-                        (drawPose, buffer) -> wave(buffer, drawPose, scale, alpha));
+        private void writeRows(Billboards.Frame frame, Billboards.LayerWriter layers) {
+            float partial = frame.partialTick();
+            if (!tiny && age < FLASH_LIFETIME) writeFlash(layers.layer(LAYER_FLARE), partial);
+            if (!clouds.isEmpty()) {
+                writeClouds(layers.layer(!tiny && balefire ? LAYER_BALEFIRE : LAYER_EXPLOSION), partial);
             }
-            if (!tiny && age < FLASH_LIFETIME) {
-                submitFlash(pose, right, up, partial);
-            }
-            if (!clouds.isEmpty()) submitClouds(pose, right, up);
         }
 
-        private void submitFlash(PoseStack pose, Vector3f right, Vector3f up, float partial) {
+        private void writeFlash(Billboards.RowWriter writer, float partial) {
             float flashAge = age + partial;
             float alpha = (1F - flashAge / FLASH_LIFETIME) * 0.5F;
             float scale = flashAge * 3F + 1F;
-            WorldEffects.submit(pose, CompatRenderTypes.plasmaGlow(FLARE), 1, (drawPose, buffer) -> {
-                Random random = new Random();
-                for (int i = 0; i < 24; i++) {
-                    random.setSeed(i * 31L + 1L);
-                    float cx = (float) (random.nextDouble() * 15D - 7.5D);
-                    float cy = (float) (random.nextDouble() * 7.5D - 3.75D);
-                    float cz = (float) (random.nextDouble() * 15D - 7.5D);
-                    quad(buffer, drawPose, cx, cy, cz, right, up, scale, 0F, 1F, 0F, 1F,
-                            1F, 0.9F, 0.75F, alpha);
-                }
-            });
+            Random random = new Random();
+            for (int i = 0; i < 24; i++) {
+                random.setSeed(i * 31L + 1L);
+                writer.row(x + random.nextDouble() * 15D - 7.5D,
+                        y + random.nextDouble() * 7.5D - 3.75D,
+                        z + random.nextDouble() * 15D - 7.5D,
+                        scale, 1F, 0.9F, 0.75F, alpha, FULLBRIGHT);
+            }
         }
 
-        private void submitClouds(PoseStack pose, Vector3f right, Vector3f up) {
-            Identifier texture = !tiny && balefire ? EXPLOSION_BF : EXPLOSION;
+        private void writeClouds(Billboards.RowWriter writer, float partial) {
+            for (Cloud cloud : List.copyOf(clouds)) cloud.write(writer, partial);
+        }
+
+        private void submit(CameraInfo camera, float partial, boolean instanced) {
+            PoseStack pose = new PoseStack();
+            pose.translate(x - camera.pos.x, y - camera.pos.y, z - camera.pos.z);
+
+            if (age < WAVE_LIFETIME) {
+                Gem.replay(shockwave(), this, pose, WorldEffects.sink(0), FULLBRIGHT);
+            }
+            if (instanced) return;
+
+            Vector3f right = camera.orientation.transform(new Vector3f(1F, 0F, 0F));
+            Vector3f up = camera.orientation.transform(new Vector3f(0F, 1F, 0F));
+            if (!tiny && age < FLASH_LIFETIME) {
+                WorldEffects.submit(pose, CompatRenderTypes.plasmaGlow(FLARE), 1,
+                        (drawPose, buffer) -> writeFlash(quads(drawPose, buffer, right, up), partial));
+            }
+            if (!clouds.isEmpty()) {
+                Identifier texture = !tiny && balefire ? EXPLOSION_BF : EXPLOSION;
+                Vector3f locked = new Vector3f(up.x, 1F, up.z);
                 WorldEffects.submit(pose, CompatRenderTypes.entityTranslucentEmissive(texture), 2,
-                    (drawPose, buffer) -> {
-                        for (Cloud cloud : List.copyOf(clouds))
-                            cloud.render(buffer, drawPose, right, up, x, y, z);
-                    });
+                        (drawPose, buffer) -> writeClouds(quads(drawPose, buffer, right, locked), partial));
+            }
+        }
+
+        private Billboards.RowWriter quads(PoseStack.Pose pose,
+                com.mojang.blaze3d.vertex.VertexConsumer buffer, Vector3f right, Vector3f up) {
+            return new Billboards.RowWriter() {
+                @Override
+                public void row(double rowX, double rowY, double rowZ, float halfSize,
+                        float red, float green, float blue, float alpha, int packedLight) {
+                    quad(buffer, pose, (float) (rowX - x), (float) (rowY - y), (float) (rowZ - z),
+                            right, up, halfSize, 0F, 1F, 0F, 1F, red, green, blue, alpha);
+                }
+
+                @Override
+                public void sprite(double rowX, double rowY, double rowZ, float halfSize,
+                        float red, float green, float blue, float alpha, int packedLight,
+                        int column, int row, int columns, int rows) {
+                    float u0 = (float) column / columns;
+                    float v0 = (float) row / rows;
+                    quad(buffer, pose, (float) (rowX - x), (float) (rowY - y), (float) (rowZ - z),
+                            right, up, halfSize, u0, u0 + 1F / columns, v0, v0 + 1F / rows,
+                            red, green, blue, alpha);
+                }
+            };
         }
     }
 
@@ -302,31 +380,28 @@ public final class MukeParticles {
             }
         }
 
-        private void render(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
-                Vector3f right, Vector3f up, double ox, double oy, double oz) {
+        private void write(Billboards.RowWriter writer, float partial) {
             int frame = Math.min(24, age * 25 / lifetime);
-            float u0 = (frame % 5) / 5F;
-            float u1 = u0 + 0.2F;
-            float v0 = (frame / 5) / 5F;
-            float v1 = v0 + 0.2F;
-            float partial = Frames.partialTick();
-            float cx = (float) (xo + (x - xo) * partial - ox);
-            float cy = (float) (yo + (y - yo) * partial - oy);
-            float cz = (float) (zo + (z - zo) * partial - oz);
-            quad(buffer, pose, cx, cy, cz, right, up, 3F, u0, u1, v0, v1, 1F, 1F, 1F, 1F);
+            writer.sprite(xo + (x - xo) * partial, yo + (y - yo) * partial, zo + (z - zo) * partial,
+                    3F, 1F, 1F, 1F, 1F, FULLBRIGHT,
+                    frame % CLOUD_FRAMES, frame / CLOUD_FRAMES, CLOUD_FRAMES, CLOUD_FRAMES);
         }
     }
 
-    private static void wave(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,
-            float scale, float alpha) {
-        Vertexes.vertex(buffer, pose, -scale, -0.25F, -scale, 1F, 1F, 1F, alpha,
-                1F, 1F, OverlayTexture.NO_OVERLAY, FULLBRIGHT, 0F, 1F, 0F);
-        Vertexes.vertex(buffer, pose, -scale, -0.25F, scale, 1F, 1F, 1F, alpha,
-                1F, 0F, OverlayTexture.NO_OVERLAY, FULLBRIGHT, 0F, 1F, 0F);
-        Vertexes.vertex(buffer, pose, scale, -0.25F, scale, 1F, 1F, 1F, alpha,
-                0F, 0F, OverlayTexture.NO_OVERLAY, FULLBRIGHT, 0F, 1F, 0F);
-        Vertexes.vertex(buffer, pose, scale, -0.25F, -scale, 1F, 1F, 1F, alpha,
-                0F, 1F, OverlayTexture.NO_OVERLAY, FULLBRIGHT, 0F, 1F, 0F);
+    /**
+     * The ground ring, whose only animation is its radius: one sheet, stretched. Its Y stays put
+     * because the stretch is X and Z alone, which is what keeps it 0.25 under the detonation.
+     */
+    private static Gem.Model<Detonation> shockwave() {
+        if (shockwave != null) return shockwave;
+        Gem.Model<Detonation> model = Gem.model();
+        model.part(SHOCKWAVE_SHEET, SHOCKWAVE_SKIN)
+                .stretch(Gem.Axes.X, Detonation::waveScale)
+                .stretch(Gem.Axes.Z, Detonation::waveScale)
+                .tint(detonation -> Colors.colorFromFloat(detonation.waveAlpha(), 1F, 1F, 1F))
+                .light(detonation -> FULLBRIGHT);
+        shockwave = model.seal();
+        return shockwave;
     }
 
     private static void quad(com.mojang.blaze3d.vertex.VertexConsumer buffer, PoseStack.Pose pose,

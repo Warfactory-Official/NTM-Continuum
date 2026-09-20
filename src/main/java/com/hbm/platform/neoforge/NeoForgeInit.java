@@ -191,6 +191,7 @@ public class NeoForgeInit {
                 com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
             RadiationSystemNT.tickServer(event.getServer());
+            com.hbm.saveddata.satellites.SatelliteSystems.tickServer(event.getServer());
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {

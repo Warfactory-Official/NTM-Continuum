@@ -247,7 +247,7 @@ public final class ModBlockModels {
             "anvil_ferrouranium", "anvil_iron", "anvil_lead", "anvil_murky", "anvil_osmiridium",
             "anvil_saturnite", "anvil_schrabidate", "anvil_steel", "boat", "boxcar", "deco_sat_foeq",
             "deco_sat_laser", "deco_sat_mapper", "deco_sat_radar", "deco_sat_resonator",
-            "deco_sat_scanner", "foundry_outlet", "foundry_slagtap", "machine_diesel", "refueler",
+            "deco_sat_scanner", "foundry_outlet", "foundry_slagtap", "geiger", "machine_diesel", "refueler",
             "steel_corner", "steel_roof", "steel_wall", "turret_arty", "turret_chekhov",
             "turret_friendly", "turret_fritz", "turret_himars", "turret_howard",
             "turret_howard_damaged", "turret_jeremy", "turret_maxwell", "turret_richard",
@@ -255,7 +255,7 @@ public final class ModBlockModels {
     };
 
     private static final String[] RENDERED_2 = {
-            "foundry_basin", "gas_explosive", "gas_flammable", "machine_autosaw", "machine_difurnace_ext",
+            "crate_supply", "foundry_basin", "gas_explosive", "gas_flammable", "machine_autosaw", "machine_difurnace_ext",
             "machine_minirtg", "machine_rtg_grey", "machine_storage_drum", "rbmk_console", "rbmk_crane_console",
             "rtg_polonium", "slag", "solar_mirror", "turret_emplacement", "turret_pad", "turret_sentry",
             "turret_sentry_damaged"
@@ -656,13 +656,6 @@ public final class ModBlockModels {
         Dejson.block(NS, "crate_steel")
                 .models(Models.cubeBottomTop("hbm:blocks/crate_steel_top", "hbm:blocks/crate_steel_side", "hbm:blocks/crate_steel_top"))
                 .states(Variants.facing())
-                .blockItem()
-                .register();
-
-        // 1.7 BlockSupplyCrate: setBlockTextureName crate_can, no per-face icons
-        Dejson.block(NS, "crate_supply")
-                .models(Models.cubeAll("hbm:blocks/crate_can"))
-                .states(Variants.simple())
                 .blockItem()
                 .register();
 

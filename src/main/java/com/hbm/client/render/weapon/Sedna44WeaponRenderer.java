@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.hbm.items.weapon.sedna.mods.XWeaponModManager;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -51,20 +52,6 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
     }
 
     @Override
-    public org.joml.Vector3fc[] extents() {
-        WavefrontObj obj = model();
-        float[] min = obj.boundsMin();
-        float[] max = obj.boundsMax();
-        org.joml.Vector3fc[] corners = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
-            corners[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0],
-                    y == 0 ? min[1] : max[1], z == 0 ? min[2] : max[2]);
-        }
-        return corners;
-    }
-
-    @Override
     protected float getTurnMagnitude(ItemStack stack) {
         if (variant == Variant.HENRY || variant == Variant.HENRY_LINCOLN || variant == Variant.HANGMAN) {
             return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.5F;
@@ -111,10 +98,9 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
             }
             case HEAVY_REVOLVER, LILMAC, PROTEGE -> {
                 heavyRevolver(declaration);
-                rest(declaration, "Gun", "Pivot", "Cylinder", "Bullets", "Hammer");
-                if (variant.scoped) {
-                    declaration.part(model().part("Scope"), SCOPE).visibleIf(state -> !state.animated);
-                }
+                rest(declaration, "Gun", "Pivot", "Cylinder", "Bullets", "Casings", "Hammer");
+                declaration.part(model().part("Scope"), SCOPE)
+                        .visibleIf(state -> !state.animated && isScoped(state.stack));
             }
             case HANGMAN -> {
                 hangman(declaration);
@@ -185,17 +171,19 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
         Gem.Part<WeaponPose> cylinder = pivot.child(obj.part("Cylinder"), body)
                 .spin(Gem.Axes.X, 0F, 1.75F, 0F, state -> (float) (state.bus("DRUM")[2] * -60));
 
-        cylinder.child(obj.part("Bullets"), body)
-                .visibleIf(state -> state.bus("RELOAD_BULLETS_CON")[0] != 1)
+        Gem.Part<WeaponPose> loaded = cylinder.joint()
                 .slide(Gem.Axes.X, state -> (float) state.bus("RELOAD_BULLETS")[0])
                 .slide(Gem.Axes.Y, state -> (float) state.bus("RELOAD_BULLETS")[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("RELOAD_BULLETS")[2]);
+        loaded.child(obj.part("Bullets"), body)
+                .visibleIf(state -> state.bus("RELOAD_BULLETS_CON")[0] != 1);
+        loaded.child(obj.part("Casings"), body);
 
         gun.child(obj.part("Hammer"), body)
                 .spin(Gem.Axes.Z, 4F, 1.25F, 0F,
                         state -> (float) (-30 + 30 * state.bus("HAMMER")[2]));
 
-        if (variant.scoped) gun.child(obj.part("Scope"), SCOPE);
+        gun.child(obj.part("Scope"), SCOPE).visibleIf(state -> isScoped(state.stack));
     }
 
     private void hangman(Gem.Model<WeaponPose> declaration) {
@@ -221,5 +209,73 @@ public final class Sedna44WeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.Z, state -> (float) state.bus("MAG")[2]);
         magazine.child(obj.part("Magazine"), body);
         magazine.child(obj.part("Bullets"), body).visibleIf(state -> state.bus("BULLETS")[0] == 0);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        switch (variant) {
+            case HENRY, HENRY_LINCOLN -> {
+                pose.scale(1.5F, 1.5F, 1.5F);
+                pose.mulPose(Axis.XP.rotationDegrees(25F));
+                pose.mulPose(Axis.YP.rotationDegrees(45F));
+                pose.translate(-0.5F, 0.5F, 0F);
+            }
+            case HANGMAN -> {
+                pose.scale(0.375F, 0.375F, 0.375F);
+                pose.mulPose(Axis.XP.rotationDegrees(25F));
+                pose.mulPose(Axis.YP.rotationDegrees(45F));
+                pose.translate(-0.5F, 2.5F, 0F);
+            }
+            default -> {
+                if (isScoped(stack)) {
+                    pose.scale(1.125F, 1.125F, 1.125F);
+                    pose.mulPose(Axis.XP.rotationDegrees(25F));
+                    pose.mulPose(Axis.YP.rotationDegrees(45F));
+                    pose.translate(0F, -0.5F, 0F);
+                } else {
+                    pose.scale(1.25F, 1.25F, 1.25F);
+                    pose.mulPose(Axis.XP.rotationDegrees(25F));
+                    pose.mulPose(Axis.YP.rotationDegrees(45F));
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        switch (variant) {
+            case HENRY, HENRY_LINCOLN -> {
+                pose.scale(1.75F, 1.75F, 1.75F);
+                pose.translate(0F, 0.25F, 3F);
+            }
+            case HANGMAN -> {
+                pose.scale(0.5F, 0.5F, 0.5F);
+                pose.translate(0F, 4.25F, 11F);
+            }
+            default -> {
+                pose.scale(0.75F, 0.75F, 0.75F);
+                pose.translate(0F, 1F, 3F);
+            }
+        }
+    }
+
+    @Override
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        if (variant == Variant.HANGMAN) {
+            pose.scale(0.0625F, 0.0625F, 0.0625F);
+            return;
+        }
+        super.setupEntity(pose, stack);
+    }
+
+    @Override
+    protected boolean scopedIn(ItemStack stack) {
+        return isScoped(stack) && fullyAimed();
+    }
+
+    private boolean isScoped(ItemStack stack) {
+        return variant.scoped || XWeaponModManager.hasUpgrade(stack, 0, XWeaponModManager.ID_SCOPE);
     }
 }

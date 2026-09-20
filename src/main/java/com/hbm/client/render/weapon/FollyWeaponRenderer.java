@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,7 +17,6 @@ public final class FollyWeaponRenderer extends WeaponRenderer {
         if (model == null) model = SpecialWeaponRenderers.model("folly");
         return model;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2F : 2.5F;
     }
@@ -59,5 +59,21 @@ public final class FollyWeaponRenderer extends WeaponRenderer {
                 .translate(0, 1, 0)
                 .angle(Gem.Axes.Z, state -> (float) state.bus("SCREW")[2])
                 .translate(0, -1, 0);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.25F, 1.25F, 1.25F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(0F, -0.5F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(3F, 3F, 3F);
+        pose.translate(-0.25F, 0.5F, 3F);
     }
 }

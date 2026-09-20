@@ -68,14 +68,14 @@ public class ItemTrain extends CompatItem {
         BlockPos pos = context.getClickedPos();
         BlockRailNTM.Owner owner = new BlockRailNTM.Owner();
 
-        if (!BlockRailNTM.railAt(level, pos, owner)) return InteractionResult.PASS;
+        if (!BlockRailNTM.railAt(level, pos, owner)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         ItemStack stack = context.getItemInHand();
         EntityRailCarBase train = dev.golem.core.registry.Entities.create(type.train.get(), level, EntitySpawnReason.SPAWN_ITEM_USE);
-        if (train == null) return InteractionResult.PASS;
+        if (train == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (train.getGauge() != owner.rail.getGauge(level, pos.getX(), pos.getY(), pos.getZ())) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         train.setPos(context.getClickLocation());
@@ -83,19 +83,19 @@ public class ItemTrain extends CompatItem {
 
         BlockPos anchor = train.getCurrentAnchorPos();
         if (!train.walkRail(anchor.getX(), anchor.getY(), anchor.getZ(), 0, RailCheckType.CORE, 0)) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         train.setPos(train.railResult().x, train.railResult().y, train.railResult().z);
 
         if (!train.walkRail(anchor.getX(), anchor.getY(), anchor.getZ(), train.getLengthSpan(),
                 RailCheckType.FRONT, train.getCollisionSpan() - train.getLengthSpan())) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         double frontX = train.railResult().x, frontZ = train.railResult().z;
 
         if (!train.walkRail(anchor.getX(), anchor.getY(), anchor.getZ(), -train.getLengthSpan(),
                 RailCheckType.BACK, train.getCollisionSpan() - train.getLengthSpan())) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         if (!level.isClientSide()) {

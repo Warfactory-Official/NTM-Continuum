@@ -66,7 +66,7 @@ public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock implement
 
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (corroded) return InteractionResult.PASS;
+        if (corroded) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player.isShiftKeyDown() && stack.getItem() instanceof IItemFluidId ident) {
             if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityBarrel barrel) {
                 FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
@@ -84,7 +84,7 @@ public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock implement
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (corroded) return InteractionResult.PASS;
+        if (corroded) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (player.isShiftKeyDown()) return InteractionResult.SUCCESS; // 1.7: sneaking without an identifier does nothing but consumes the click
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer
                 && level.getBlockEntity(pos) instanceof TileEntityBarrel barrel) {

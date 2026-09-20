@@ -94,7 +94,7 @@ public class BlastDoor extends CompatBlock implements TickingBlock, IBomb {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else if (TileEntityLockableBase.LOCK_TOOLS.test(player.getMainHandItem())) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         if (!player.isShiftKeyDown()) {
             if (level.getBlockEntity(pos) instanceof TileEntityBlastDoor entity) {
@@ -107,7 +107,7 @@ public class BlastDoor extends CompatBlock implements TickingBlock, IBomb {
             }
             return InteractionResult.CONSUME;
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

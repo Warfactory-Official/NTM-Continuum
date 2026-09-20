@@ -35,6 +35,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.hbm.sound.AudioWrapper;
+import com.hbm.sound.MachineAudio;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * The fusion torus — a tokamak that burns a fluid fuel cycle into plasma energy.
@@ -188,6 +192,8 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         te.klystronEnergy = 0;
     }
 
+    private AudioWrapper audio;
+
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFusionTorus te) {
         double powerFactor = getSpeedScaled(te.getMaxPower(), te.power);
         if (te.didProcess) te.magnetSpeed += MAGNET_ACCELERATION;
@@ -200,6 +206,11 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
             te.magnet -= 360F;
             te.prevMagnet -= 360F;
         }
+
+        float speed = te.magnetSpeed / 30F;
+        te.audio = MachineAudio.tick(te.audio, te.magnetSpeed > 0F, ModSounds.FUSION_REACTOR_RUNNING.get(),
+                SoundSource.BLOCKS, pos.getX() + 0.5F, pos.getY() + 2.5F, pos.getZ() + 0.5F,
+                te.getVolume(speed), 30F, speed, 20);
     }
 
     /** A fill fraction, but never zero while anything is in the buffer — the reactor idles, not stalls. */

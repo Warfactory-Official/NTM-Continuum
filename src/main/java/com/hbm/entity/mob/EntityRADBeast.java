@@ -194,7 +194,7 @@ public class EntityRADBeast extends CompatMonster implements IRadiationImmune {
 
     @Override
     protected SoundEvent getDeathSound() {
-        return ModSounds.METAL_STEP.get(); // 1.7 "hbm:step.iron"
+        return ModSounds.STEP_IRON.get();
     }
 
     @Override

@@ -26,6 +26,10 @@ import java.util.List;
  * {@code custom_model_data} colour list (read by the model's {@code minecraft:custom_model_data} tint
  * source) — so one item + one model covers all 157 fluids, no per-fluid model or client colour handler
  * (the 26.1 replacement for the 1.12.2 metadata subtypes + {@code IItemColor}).
+ *
+ * <p>This is the droplet wherever there is an item slot to put it in, which is nearly everywhere JEI
+ * shows a fluid. Where there is not — a fixed corner of a screen, an overlay, a category icon — the same
+ * droplet is on the atlas per fluid, drawn by {@link com.hbm.client.FluidSprites#draw}.
  */
 public class ItemFluidIcon extends CompatItem {
 

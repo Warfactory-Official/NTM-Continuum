@@ -34,6 +34,8 @@ public enum HbmEffectNT {
     Flamethrower,
     /** A small blast: a few fireballs plus tumbling block debris. */
     ExplosionSmall,
+    /** A large blast: a smoke plume and scoops of the ground itself thrown into the air. */
+    ExplosionLarge,
     /** Muzzle smoke and sparks from a gunpowder discharge. */
     BlackPowder,
     /** Drifting embers and ash, for things that are burning down rather than exploding. */

@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,7 +17,6 @@ public final class DrillWeaponRenderer extends WeaponRenderer {
         if (model == null) model = SpecialWeaponRenderers.model("drill");
         return model;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 0F : -0.5F;
     }
@@ -61,5 +61,21 @@ public final class DrillWeaponRenderer extends WeaponRenderer {
         root.child(obj.part(name), BODY)
                 .slide(Gem.Axes.Y, state -> (float) Math.sin((state.bus("SPIN")[0] * 5F)
                         * Math.PI / 180F + phase) * 0.125F - 0.125F);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.25F, 1.25F, 1.25F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(-0.5F, 0F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(2.25F, 2.25F, 2.25F);
+        pose.translate(1F, -2F, 6F);
     }
 }

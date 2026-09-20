@@ -1,37 +1,4 @@
 {
-  "parent": "hbm:item/gun_obj_legacy",
-  "gui_light": "side",
-  "textures": { "particle": "hbm:blocks/block_steel" },
-  "display": {
-    "gui": {
-      "rotation": [-18.881721, -41.641143, -27.236313],
-      "translation": [0.008565, 0.928038, -7.690641],
-      "scale": [0.0546875, 0.0546875, 0.0546875]
-    },
-    "ground": {
-      "rotation": [0.0, -90.0, 0.0],
-      "translation": [-0.5, -3.5, 0.5],
-      "scale": [0.0625, 0.0625, 0.0625]
-    },
-    "fixed": {
-      "rotation": [0.0, 90.0, 0.0],
-      "translation": [1.0, -1.56, -0.5],
-      "scale": [0.125, 0.125, 0.125]
-    },
-    "thirdperson_righthand": {
-      "rotation": [-179.493995, -1.125273, 179.74399],
-      "translation": [-0.784191, 2.283047, -3.47155],
-      "scale": [0.0703125, 0.0703125, 0.0703125]
-    },
-    "thirdperson_lefthand": {
-      "rotation": [-172.402674, 29.330267, 154.481445],
-      "translation": [8.790823, 4.283303, -0.922934],
-      "scale": [0.0703125, 0.0703125, 0.0703125]
-    },
-    "head": {
-      "rotation": [-31.091374, -55.675371, 143.318463],
-      "translation": [-8.938885, -13.512669, 19.28852],
-      "scale": [0.3, 0.3, 0.3]
-    }
-  }
+  "parent": "hbm:item/gun_obj_base",
+  "gui_light": "side"
 }

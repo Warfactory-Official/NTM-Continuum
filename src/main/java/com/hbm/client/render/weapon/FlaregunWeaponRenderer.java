@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,15 +18,6 @@ public final class FlaregunWeaponRenderer extends WeaponRenderer {
     private WavefrontObj model() {
         if (model == null) model = WavefrontObj.load(MODEL_ID);
         return model;
-    }
-
-    @Override public org.joml.Vector3fc[] extents() {
-        float[] min = model().boundsMin(), max = model().boundsMax();
-        org.joml.Vector3fc[] out = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++)
-            out[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0], y == 0 ? min[1] : max[1], z == 0 ? min[2] : max[2]);
-        return out;
     }
 
     @Override protected float getTurnMagnitude(ItemStack stack) {
@@ -50,7 +42,8 @@ public final class FlaregunWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.Y, s -> (float) s.bus("RECOIL")[1])
                 .slide(Gem.Axes.Z, s -> (float) s.bus("RECOIL")[2])
                 .angle(Gem.Axes.X, s -> (float) (s.bus("RECOIL")[2] * 10))
-                .angle(Gem.Axes.X, s -> (float) s.bus("FLIP")[0]);
+                .angle(Gem.Axes.X, s -> (float) s.bus("FLIP")[0])
+                .spin(Gem.Axes.X, 0F, 0F, -8F, s -> (float) -s.bus("EQUIP")[0]);
         held.child(obj.part("Gun"), BODY);
         held.child(obj.part("Hammer"), BODY)
                 .spin(Gem.Axes.X, 0F, 1.8125F, -4F, s -> (float) (s.bus("HAMMER")[0] - 15));
@@ -63,5 +56,27 @@ public final class FlaregunWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.Z, s -> (float) s.bus("SHELL")[2]);
         declaration.part(obj.parts("Gun", "Hammer", "Barrel", "Flare"), BODY)
                 .visibleIf(s -> !s.animated);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1F, 1F, 1F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(-0.5F, 0F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(0.5F, 0.5F, 0.5F);
+        pose.translate(0F, 0.25F, 3F);
+    }
+
+    @Override
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        super.setupEntity(pose, stack);
+        pose.scale(0.5F, 0.5F, 0.5F);
     }
 }

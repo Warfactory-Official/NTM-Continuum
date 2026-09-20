@@ -40,7 +40,7 @@ public class SatelliteHorizons extends Satellite {
 
     @Override
     public void onOrbit(ServerLevel level, double x, double y, double z) {
-        ItemStack chip = new ItemStack(type().item());
+        ItemStack chip = type().stack();
         for (ServerPlayer player : level.players()) HbmCriteria.orbit(player, chip);
     }
 
@@ -56,7 +56,7 @@ public class SatelliteHorizons extends Satellite {
         tom.anchorAndLoad(level, x >> 4, z >> 4);
         level.addFreshEntity(tom);
 
-        ItemStack chip = new ItemStack(type().item());
+        ItemStack chip = type().stack();
         for (ServerPlayer p : level.players()) HbmCriteria.satelliteAction(p, chip);
 
         level.getServer().getPlayerList().broadcastSystemMessage(

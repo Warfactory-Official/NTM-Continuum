@@ -131,12 +131,12 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
 
     @Override
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player, BlockHitResult hit) {
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (level.getBlockEntity(core) instanceof TileEntityDoorGeneric door) {
-            return door.tryToggle(player) ? InteractionResult.CONSUME : InteractionResult.PASS;
+            return door.tryToggle(player) ? InteractionResult.CONSUME : InteractionResult.TRY_WITH_EMPTY_HAND;
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

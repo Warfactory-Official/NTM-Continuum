@@ -85,6 +85,11 @@ public final class MainRegistry {
         com.hbm.items.solar.ModSolarItems.init();
         com.hbm.tileentity.machine.solar.ModSolarBlockEntities.init();
         com.hbm.smoke.SmokeChainRegistration.init();
+        com.hbm.blocks.machine.pile.ModPileBlocks.init();
+        com.hbm.blocks.machine.dfc.ModDFCBlocks.init();
+        com.hbm.blocks.NorwoodMachineDeclarations.declare();
+        com.hbm.items.ModSatelliteItems.init();
+        com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.init();
         com.hbm.foundry.FoundryExpansion.init();
         com.hbm.blocks.machine.DiFurnaceContent.init();
         ModBatteryBlocks.init();   // energy-storage machine blocks (battery socket)
@@ -148,6 +153,7 @@ public final class MainRegistry {
         com.hbm.blocks.ModExplosivesContent.init(); // landmines, timed charges, det blocks, plastic explosive blocks, duds, multi purpose bomb, detonators
         // Ammo, factories, and gun suppliers must all be declared before any loader flushes ITEMs.
         com.hbm.items.weapon.sedna.factory.GunCatalogue.init();
+        com.hbm.tileentity.machine.pile.TileEntityPileCore.initDebris();
         com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them
         com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)
         com.hbm.world.biome.ModBiomes.init(); // crater biome keys, backed by worldgen biome JSON

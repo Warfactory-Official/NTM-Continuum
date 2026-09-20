@@ -32,7 +32,7 @@ public final class ModItemModels {
     private static final String NS = "hbm";
 
     /** How many items are the plain one-sprite case; quoted in this class's own javadoc. */
-    static final int SPRITES = 1372;
+    static final int SPRITES = 1371;
 
     /**
      * The shape art each material-shape sprite is computed from, and the materials it is computed for.
@@ -112,6 +112,7 @@ public final class ModItemModels {
         declared = true;
 
         sprites();
+        variants();
         remappedShapeSprites();
         renamedSprites();
         layeredSprites();
@@ -171,6 +172,30 @@ public final class ModItemModels {
                 .register();
     }
 
+    /**
+     * The families that pick their model from {@code hbm:item_variant}, one sprite per enum constant.
+     *
+     * <p>Order is the declaration: case <i>n</i> is constant <i>n</i>, so these lists are the enum's
+     * own order and nothing else. The six other component-selected families stay written, because
+     * their cases are not all sprites.
+     *
+     * <p>{@code ammo_arty} is here because it was not anywhere: it shipped as a single sprite, so all
+     * twelve shells drew the plain one.
+     */
+    private static void variants() {
+        selectedSprites("ammo_arty", "", "_classic", "_he", "_mini_nuke", "_nuke", "_phosphorus",
+                "_mini_nuke_multi", "_phosphorus_multi", "_cargo", "_chlorine", "_phosgene",
+                "_mustard_gas");
+    }
+
+    private static void selectedSprites(String item, String... suffixes) {
+        Models.Group models = Models.group();
+        for (String suffix : suffixes) {
+            models = models.and(suffix, Models.generated(NS + ":items/" + item + suffix));
+        }
+        Dejson.item(NS, item).models(models).selects(NS + ":item_variant").register();
+    }
+
     /** Items that show a model another item already declares. */
     private static void shared() {
         for (String waste : ZIRNOX_WASTE) {
@@ -184,7 +209,7 @@ public final class ModItemModels {
     };
 
     private static final String[] SPRITE_ITEMS_0 = {
-            "ammo_arty", "ammo_debug", "ammo_dgk", "ammo_fireext", "ammo_fireext_foam",
+            "ammo_debug", "ammo_dgk", "ammo_fireext", "ammo_fireext_foam",
             "ammo_fireext_sand", "ammo_secret_m44_equestrian", "ammo_shell", "ammo_shell_apfsds_du",
             "ammo_shell_apfsds_t", "ammo_shell_explosive", "ammo_shell_w9", "ammo_standard_bmg50_ap",
             "ammo_standard_bmg50_du", "ammo_standard_bmg50_fmj", "ammo_standard_bmg50_he",
@@ -304,17 +329,11 @@ public final class ModItemModels {
             "lithium", "loop_stew", "loops", "magnet_circular", "man_core", "man_explosive",
             "man_explosive8", "man_igniter", "marshmallow", "marshmallow_roasted", "med_bag",
             "med_ipecac", "med_ptsd", "med_schizophrenia", "mike_cooling_unit", "mike_core",
-            "mike_deut", "missile_anti_ballistic", "missile_assembly", "missile_bhole", "missile_burst",
-            "missile_buster", "missile_buster_strong", "missile_carrier", "missile_cluster",
-            "missile_cluster_strong", "missile_decoy", "missile_doomsday", "missile_drill",
-            "missile_emp", "missile_emp_strong", "missile_endo", "missile_exo", "missile_generic",
-            "missile_incendiary", "missile_incendiary_strong", "missile_inferno", "missile_micro",
-            "missile_n2", "missile_nuclear", "missile_nuclear_cluster", "missile_rain",
-            "missile_schrabidium", "missile_shuttle", "missile_skin_camo", "missile_skin_desert",
-            "missile_skin_flames", "missile_skin_manly_pink", "missile_skin_metal",
-            "missile_skin_orange_insulation", "missile_skin_sleek", "missile_skin_soviet_glory",
-            "missile_skin_soviet_stank", "missile_stealth", "missile_strong", "missile_taint",
-            "missile_volcano", "mold_barrel_heavy", "mold_barrel_light", "mold_base", "mold_billet",
+            "mike_deut", "missile_assembly", "missile_carrier", "missile_endo", "missile_exo",
+            "missile_skin_camo", "missile_skin_desert", "missile_skin_flames", "missile_skin_manly_pink",
+            "missile_skin_metal", "missile_skin_orange_insulation", "missile_skin_sleek",
+            "missile_skin_soviet_glory", "missile_skin_soviet_stank",
+            "mold_barrel_heavy", "mold_barrel_light", "mold_base", "mold_billet",
             "mold_blade", "mold_blades", "mold_block", "mold_c50", "mold_c9", "mold_grip", "mold_ingot",
             "mold_ingots", "mold_mechanism", "mold_nugget", "mold_pipe", "mold_pipes", "mold_plate",
             "mold_plate_cast", "mold_plates", "mold_plates_cast", "mold_receiver_heavy",
@@ -518,6 +537,7 @@ public final class ModItemModels {
 
     private static void renamed0() {
         Dejson.item(NS, "gun_b92_ammo").models(Models.generated("hbm:items/gun_b92_ammo_alt")).register();
+        Dejson.item(NS, "gun_b92_flat").models(Models.generated("hbm:items/gun_b92")).register();
         Dejson.item(NS, "arc_electrode").models(Models.generated("hbm:items/arc_electrode.graphite")).register();
         Dejson.item(NS, "arc_electrode_burnt").models(Models.generated("hbm:items/arc_electrode_burnt.graphite")).register();
         Dejson.item(NS, "arc_electrode_burnt_desh").models(Models.generated("hbm:items/arc_electrode_burnt.desh")).register();
@@ -565,6 +585,11 @@ public final class ModItemModels {
         Dejson.item(NS, "circuit_quantum").models(Models.generated("hbm:items/circuit.quantum")).register();
         Dejson.item(NS, "circuit_silicon").models(Models.generated("hbm:items/circuit.silicon")).register();
         Dejson.item(NS, "circuit_vacuum_tube").models(Models.generated("hbm:items/circuit.vacuum_tube")).register();
+        // The core is the one dark fusion block with no model of its own: it is RenderShape.INVISIBLE, as
+        // 1.7's getRenderType() == -1, and 1.7 has no item renderer for it either, so the icon is the flat
+        // sprite that render type falls back to. Its art is a drawn orb, not a tileable face — the four
+        // aimed components next to it do have OBJ icons, declared as machine models.
+        Dejson.item(NS, "dfc_core").models(Models.generated("hbm:blocks/dfc_core")).register();
         Dejson.item(NS, "disperser_canister_empty").models(Models.generated("hbm:items/disperser_canister")).register();
         Dejson.item(NS, "falloutitem").models(Models.generated("hbm:items/fallout")).register();
         Dejson.item(NS, "fuel_additive_antiknock").models(Models.generated("hbm:items/fuel_additive.antiknock")).register();
@@ -597,7 +622,6 @@ public final class ModItemModels {
         Dejson.item(NS, "mechanism_rifle_1").models(Models.generated("hbm:items/mechanism_2")).register();
         Dejson.item(NS, "mechanism_rifle_2").models(Models.generated("hbm:items/mechanism_4")).register();
         Dejson.item(NS, "mechanism_special").models(Models.generated("hbm:items/mechanism_7")).register();
-        Dejson.item(NS, "missile_doomsday_rusted").models(Models.generated("hbm:items/missile_doomsday")).register();
     }
 
     private static void renamed1() {
@@ -1033,13 +1057,40 @@ public final class ModItemModels {
      * field is how these icons ended up most of a slot too high.
      */
     private static void machineFrames() {
-        Map<DisplaySlot, Matrix4f> frame = Pose17.frames(Pose17.Klass.ITEM_RENDER_BASE);
-        Dejson.item(NS, "machine_obj_context_base")
+        machineFrame("machine", Pose17.Klass.ITEM_RENDER_BASE);
+        machineFrame("missile", Pose17.Klass.ITEM_RENDER_MISSILE);
+        gunFrame();
+    }
+
+    /**
+     * The one base model every Sedna gun wears.
+     *
+     * <p>{@link Pose17.Klass#ITEM_RENDER_WEAPON} is the engine slot alone, so this carries none of
+     * {@code ItemRenderWeaponBase}'s setup chain and none of any weapon's own: those are calls, and they
+     * live in {@code WeaponRenderer}. What this replaces is a hand-fitted {@code display{}} that stood
+     * in for all of it — one pose shared by sixty-six guns, in place of the fifty-two the oracle has.
+     */
+    private static void gunFrame() {
+        Dejson.item(NS, "gun_obj_base")
+                .models(Models.guiLight("side", Models.display(Pose17.frames(Pose17.Klass.ITEM_RENDER_WEAPON),
+                        Models.parented("hbm:item/gun_obj_legacy", Slots.EMPTY))))
+                .register();
+    }
+
+    /**
+     * One 1.7 item-render class's frame, in the two spellings. {@code missile} is
+     * {@code ItemRenderMissileGeneric}, which is not an {@code ItemRenderBase} at all: it wraps the body in
+     * nothing, so its GUI frame is the bare 1.7 pixel slot and its hand poses end on that renderer's own
+     * equipped preamble.
+     */
+    private static void machineFrame(String name, Pose17.Klass klass) {
+        Map<DisplaySlot, Matrix4f> frame = Pose17.frames(klass);
+        Dejson.item(NS, name + "_obj_context_base")
                 .models(Models.guiLight("side", Models.display(frame,
                         Models.parented("minecraft:block/block",
                                 Slots.of("particle", "hbm:blocks/block_steel")))))
                 .register();
-        Dejson.item(NS, "machine_obj_context_legacy")
+        Dejson.item(NS, name + "_obj_context_legacy")
                 .models(Models.guiLight("side", Models.display(frame,
                         Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
                 .register();

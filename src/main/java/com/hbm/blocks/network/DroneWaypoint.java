@@ -32,7 +32,7 @@ public class DroneWaypoint extends DroneWaypointBase implements ILookOverlay {
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
-        if (DroneCrate.holdsLinker(player)) return InteractionResult.PASS;
+        if (DroneCrate.holdsLinker(player)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityDroneWaypoint tile) {
             tile.addHeight(player.isShiftKeyDown() ? -1 : 1);
         }

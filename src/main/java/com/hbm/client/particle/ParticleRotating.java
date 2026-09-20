@@ -6,6 +6,7 @@ import dev.golem.core.render.Particles;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 
 /**
  * A camera-facing quad that spins about the view axis — the base for HBM's smoke, fire and ash.
@@ -54,22 +55,29 @@ public abstract class ParticleRotating extends CompatParticle {
     }
 
     /**
-     * Advances the spin by {@code amountPerTick}, tapering to zero at the end of the particle's life.
+     * Advances the spin by {@code degreesPerTick}, tapering to zero at the end of the particle's life.
+     *
+     * <p><b>The rate is in degrees, and {@link #roll} is in radians.</b> Every upstream call site states
+     * degrees because 1.7 spun the quad with {@code cos(rotationPitch * PI / 180)} by hand, and the
+     * ported constants are kept in that unit so they read like their originals — so the conversion
+     * belongs here. Modern {@code roll} goes straight to {@code Quaternionf.rotateZ}, which is radians;
+     * feeding it the degree constant spins the particle 57 times too fast.
      *
      * <p>The per-particle direction comes from {@code identityHashCode % 2} — effectively a coin flip
      * fixed for the particle's lifetime. That is upstream's trick, kept rather than replaced with the
      * RNG precisely because it is stable: drawing from {@code random} each tick would make the spin
      * jitter instead of turn.
      */
-    protected void spin(float amountPerTick) {
+    protected void spin(float degreesPerTick) {
         this.oRoll = this.roll;
         float ageScaled = (float) this.age / (float) this.lifetime;
-        this.roll += (1 - ageScaled) * amountPerTick * ((System.identityHashCode(this) % 2) - 0.5F);
+        this.roll += (1 - ageScaled) * degreesPerTick * Mth.DEG_TO_RAD
+                * ((System.identityHashCode(this) % 2) - 0.5F);
     }
 
-    /** Advances the spin at a constant rate, with no taper. */
-    protected void spinConstant(float amountPerTick) {
+    /** Advances the spin at a constant rate, with no taper. Degrees per tick, as {@link #spin}. */
+    protected void spinConstant(float degreesPerTick) {
         this.oRoll = this.roll;
-        this.roll += amountPerTick * ((System.identityHashCode(this) % 2) - 0.5F);
+        this.roll += degreesPerTick * Mth.DEG_TO_RAD * ((System.identityHashCode(this) % 2) - 0.5F);
     }
 }

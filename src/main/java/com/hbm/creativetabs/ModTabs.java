@@ -67,6 +67,17 @@ public final class ModTabs {
         if (!contents.contains(item)) contents.add(item);
     }
 
+    /**
+     * Add every variant of an enum-backed item, which is what 1.7's {@code getSubItems} put in the tab.
+     *
+     * <p>{@link #addTo} shows one stack, and for these families that stack is the first constant alone:
+     * the other variants live on a data component, so the item entry cannot stand for them.
+     */
+    public static void addVariantsTo(HbmTab tab, RegistryObject<? extends com.hbm.items.ItemEnumMulti> item) {
+        addStacksTo(tab, () -> java.util.Arrays.stream(item.get().theEnum.getEnumConstants())
+                .map(variant -> item.get().of(variant)).toList());
+    }
+
     /** Add a batch of custom display stacks to a tab (resolved lazily at tab-build time). */
     public static void addStacksTo(HbmTab tab, Supplier<List<ItemStack>> stacks) {
         List<Supplier<List<ItemStack>>> contents = STACK_LISTS.get(tab);

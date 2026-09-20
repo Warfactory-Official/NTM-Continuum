@@ -75,13 +75,13 @@ public class ItemChopper extends CompatItem {
 
         ItemStack stack = player.getItemInHand(hand);
         BlockHitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.SOURCE_ONLY);
-        if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.PASS;
+        if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.TRY_WITH_EMPTY_HAND;
         EntityType<? extends Mob> type = this.type.get();
         if (!type.isEnabled(level.enabledFeatures())) return InteractionResult.FAIL;
         if (!(level instanceof ServerLevel serverLevel)) return InteractionResult.SUCCESS;
 
         BlockPos pos = hit.getBlockPos();
-        if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) return InteractionResult.PASS;
+        if (!(level.getBlockState(pos).getBlock() instanceof LiquidBlock)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.mayInteract(player, pos) || !player.mayUseItemAt(pos, hit.getDirection(), stack)) {
             return InteractionResult.FAIL;
         }

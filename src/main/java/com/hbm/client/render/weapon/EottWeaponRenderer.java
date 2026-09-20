@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,7 +18,6 @@ public final class EottWeaponRenderer extends WeaponRenderer {
         if (model == null) model = SpecialWeaponRenderers.model("aberrator");
         return model;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }
@@ -107,5 +107,19 @@ public final class EottWeaponRenderer extends WeaponRenderer {
                 .translate(0, 1.25F, -3.625F)
                 .angle(Gem.Axes.X, state -> -45F + (float) state.bus("HAMMER", rail)[0])
                 .translate(0, -1.25F, 3.625F);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        pose.scale(1F, 1F, -1F);
+        pose.translate(8F, 8F, 0F);
+        pose.scale(2.5F, 2.5F, 2.5F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.translate(0F, -1F, 4F);
+        pose.scale(1.5F, 1.5F, 1.5F);
     }
 }

@@ -17,6 +17,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.List;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * Fusion boiler — turns a torus's plasma output into superheated steam.
@@ -88,6 +90,11 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase
         if (steamCycles <= 0) return;
         tanks[0].setFill(tanks[0].getFill() - steamCycles);
         tanks[1].setFill(tanks[1].getFill() + steamCycles);
+
+        if (level != null && !level.isClientSide() && level.getRandom().nextInt(200) == 0) {
+            level.playSound(null, worldPosition.above(2), ModSounds.BOILER_GROAN.get(),
+                    SoundSource.BLOCKS, 2.5F, 1.0F);
+        }
     }
 
     @Override

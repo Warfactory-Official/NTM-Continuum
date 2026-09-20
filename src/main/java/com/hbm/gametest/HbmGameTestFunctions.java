@@ -151,6 +151,64 @@ public final class HbmGameTestFunctions {
             TESTS.function("industrial_turbine_ports", 100, 8, () -> IndustrialTurbineGameTests::ports);
     public static final GameTests.Function INDUSTRIAL_TURBINE_CONVERSION =
             TESTS.function("industrial_turbine_conversion", 100, 8, () -> IndustrialTurbineGameTests::conversion);
+    public static final GameTests.Function PILE_ASSEMBLY =
+            TESTS.function("pile_assembly", 100, 12, () -> PileGameTests::assembly);
+    public static final GameTests.Function PILE_CHANNELS =
+            TESTS.function("pile_channels", 100, 12, () -> PileGameTests::channels);
+    public static final GameTests.Function PILE_REACTION =
+            TESTS.function("pile_reaction", 100, 12, () -> PileGameTests::reaction);
+    public static final GameTests.Function PILE_DEVICES =
+            TESTS.function("pile_devices", 100, 12, () -> PileGameTests::devices);
+    public static final GameTests.Function PILE_COLLAPSE =
+            TESTS.function("pile_collapse", 100, 12, () -> PileGameTests::collapse);
+    public static final GameTests.Function PILE_RODS =
+            TESTS.function("pile_rods", 20, () -> PileGameTests::rods);
+    public static final GameTests.Function PILE_ASSETS =
+            TESTS.function("pile_assets", 20, () -> PileGameTests::assets);
+    public static final GameTests.Function SOYUZ_READINESS =
+            TESTS.function("soyuz_readiness", 100, 8, () -> SoyuzGameTests::readiness);
+    public static final GameTests.Function SOYUZ_LIFTOFF =
+            TESTS.function("soyuz_liftoff", 100, 16, () -> SoyuzGameTests::liftoff);
+    public static final GameTests.Function SOYUZ_ORBIT =
+            TESTS.function("soyuz_orbit", 100, 16, () -> SoyuzGameTests::orbit);
+    public static final GameTests.Function SOYUZ_ASSETS =
+            TESTS.function("soyuz_assets", 20, () -> SoyuzGameTests::assets);
+    public static final GameTests.Function SATELLITE_REGISTRY =
+            TESTS.function("satellite_registry", 20, () -> SatelliteGameTests::registry);
+    public static final GameTests.Function SATELLITE_ORBIT =
+            TESTS.function("satellite_orbit", 20, () -> SatelliteGameTests::orbit);
+    public static final GameTests.Function SATELLITE_LINK =
+            TESTS.function("satellite_link", 100, 8, () -> SatelliteGameTests::link);
+    public static final GameTests.Function SATELLITE_EMISSIONS =
+            TESTS.function("satellite_emissions", 20, () -> SatelliteGameTests::emissions);
+    public static final GameTests.Function SATELLITE_CHIP =
+            TESTS.function("satellite_chip", 100, 8, () -> SatelliteGameTests::chip);
+    public static final GameTests.Function SATELLITE_ASSETS =
+            TESTS.function("satellite_assets", 20, () -> SatelliteGameTests::assets);
+    public static final GameTests.Function DFC_BEAM =
+            TESTS.function("dfc_beam", 100, 12, () -> DFCGameTests::beam);
+    public static final GameTests.Function DFC_REACTION =
+            TESTS.function("dfc_reaction", 100, 12, () -> DFCGameTests::reaction);
+    public static final GameTests.Function DFC_STABILIZER =
+            TESTS.function("dfc_stabilizer", 100, 12, () -> DFCGameTests::stabilizer);
+    public static final GameTests.Function DFC_INJECTOR =
+            TESTS.function("dfc_injector", 100, 12, () -> DFCGameTests::injector);
+    public static final GameTests.Function DFC_MELTDOWN =
+            TESTS.function("dfc_meltdown", 100, 24, () -> DFCGameTests::meltdown);
+    public static final GameTests.Function DFC_CORES =
+            TESTS.function("dfc_cores", 20, () -> DFCGameTests::cores);
+    public static final GameTests.Function DFC_ASSETS =
+            TESTS.function("dfc_assets", 20, () -> DFCGameTests::assets);
+    public static final GameTests.Function CHUNGUS_STRUCTURE =
+            TESTS.function("chungus_structure", 100, 24, () -> ChungusGameTests::structure);
+    public static final GameTests.Function CHUNGUS_PORTS =
+            TESTS.function("chungus_ports", 100, 24, () -> ChungusGameTests::ports);
+    public static final GameTests.Function CHUNGUS_CONVERSION =
+            TESTS.function("chungus_conversion", 100, 24, () -> ChungusGameTests::conversion);
+    public static final GameTests.Function CHUNGUS_LEVER =
+            TESTS.function("chungus_lever", 100, 24, () -> ChungusGameTests::lever);
+    public static final GameTests.Function CHUNGUS_ASSETS =
+            TESTS.function("chungus_assets", 20, () -> ChungusGameTests::assets);
     public static final GameTests.Function LARGE_TURBINE_LAYOUT =
             TESTS.function("large_turbine_layout", 100, 8, () -> LargeTurbineGameTests::layout);
     public static final GameTests.Function LARGE_TURBINE_PORTS =
@@ -339,6 +397,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("fusion_breeder", 20, () -> HbmGameTestFunctions::fusionBreeder);
     public static final GameTests.Function FLUID_DISPLAY_NAMES =
             TESTS.function("fluid_display_names", 20, () -> HbmGameTestFunctions::fluidDisplayNames);
+    public static final GameTests.Function FLUID_DROPLET_SPRITES =
+            TESTS.function("fluid_droplet_sprites", 20, () -> HbmGameTestFunctions::fluidDropletSprites);
     public static final GameTests.Function LANG_COVERAGE =
             TESTS.function("lang_coverage", 20, () -> HbmGameTestFunctions::langCoverage);
     public static final GameTests.Function BATTERY_REDD_LAYOUT_PORTS =
@@ -606,6 +666,38 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function GIANT_TANK_DROPS =
             TESTS.function("giant_tank_drops", 100, 8, () -> GiantTankGameTests::dropsAndReplacesWithFluid);
 
+    // --- Albion particle accelerator ---
+    public static final GameTests.Function PA_STRUCTURE =
+            TESTS.function("pa_structure", 40, 16, () -> AlbionGameTests::structure);
+    public static final GameTests.Function PA_SOURCE_FIRES =
+            TESTS.function("pa_source_fires", 40, 16, () -> AlbionGameTests::sourceFires);
+    public static final GameTests.Function PA_BEAM_WALKS =
+            TESTS.function("pa_beam_walks", 40, 24, () -> AlbionGameTests::beamWalks);
+    public static final GameTests.Function PA_BEAMLINE =
+            TESTS.function("pa_beamline", 40, 16, () -> AlbionGameTests::beamlineCarries);
+    public static final GameTests.Function PA_RFC =
+            TESTS.function("pa_rfc", 40, 20, () -> AlbionGameTests::rfcAccelerates);
+    public static final GameTests.Function PA_QUADRUPOLE =
+            TESTS.function("pa_quadrupole", 40, 16, () -> AlbionGameTests::quadrupoleFocuses);
+    public static final GameTests.Function PA_DIPOLE =
+            TESTS.function("pa_dipole", 40, 16, () -> AlbionGameTests::dipoleSteers);
+    public static final GameTests.Function PA_DETECTOR =
+            TESTS.function("pa_detector", 40, 20, () -> AlbionGameTests::detectorRuns);
+    public static final GameTests.Function PA_COOLING =
+            TESTS.function("pa_cooling", 40, 8, () -> AlbionGameTests::coolingAndTanks);
+    public static final GameTests.Function PA_RADIO =
+            TESTS.function("pa_radio", 40, 16, () -> AlbionGameTests::redstoneOverRadio);
+    public static final GameTests.Function PA_PARTICLE_USERS =
+            TESTS.function("pa_particle_users", 40, 16, () -> AlbionGameTests::componentsAreParticleUsers);
+    public static final GameTests.Function PA_RECIPES =
+            TESTS.function("pa_recipes", 20, () -> AlbionGameTests::recipes);
+    public static final GameTests.Function PA_CONSTRUCTION =
+            TESTS.function("pa_construction", 40, () -> AlbionGameTests::construction);
+    public static final GameTests.Function PA_COILS =
+            TESTS.function("pa_coils", 20, () -> AlbionGameTests::coils);
+    public static final GameTests.Function PA_ASSETS =
+            TESTS.function("pa_assets", 20, () -> AlbionGameTests::assets);
+
     // --- Exposure Chamber ---
     public static final GameTests.Function EXPOSURE_CHAMBER_RECIPES =
             TESTS.function("exposure_chamber_recipes", 20, () -> ExposureChamberGameTests::recipes);
@@ -703,6 +795,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("gun_lag_firing_route", 200, () -> GunGameTests::gunLagFiringRoute);
     public static final GameTests.Function GUN_DRY_FIRE =
             TESTS.function("gun_dry_fire", 100, () -> GunGameTests::gunDryFire);
+    public static final GameTests.Function GUN_CHEMTHROWER_TANK =
+            TESTS.function("gun_chemthrower_tank", 20, () -> GunGameTests::chemthrowerTank);
     public static final GameTests.Function GUN_AMMO_STATS =
             TESTS.function("gun_ammo_stats", 20, () -> GunGameTests::ammoStats);
     public static final GameTests.Function GUN_AMMO_22_STATS =
@@ -776,6 +870,9 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function GUN_OBTAINMENT_CATALOGUE_REGISTRATION =
             TESTS.function("gun_obtainment_catalogue_registration", 40,
                     () -> GunObtainmentDataAuditGameTests::catalogueRegistration);
+    public static final GameTests.Function GUN_FIRE_SOUNDS =
+            TESTS.function("gun_fire_sounds", 40,
+                    () -> GunObtainmentDataAuditGameTests::gunFireSounds);
     public static final GameTests.Function GUN_OBTAINMENT_ANVIL_AMMO_GATEWAY =
             TESTS.function("gun_obtainment_anvil_ammo_gateway", 40,
                     () -> GunObtainmentDataAuditGameTests::anvilAmmoGateway);
@@ -1017,6 +1114,10 @@ public final class HbmGameTestFunctions {
             TESTS.function("compatibility_facade_contracts", 20, () -> CompatibilityBoundaryGameTests::facadeContracts);
     public static final GameTests.Function CRATE_CARRIED_ROUND_TRIP =
             TESTS.function("crate_carried_round_trip", 40, () -> CompatibilityBoundaryGameTests::crateCarriedRoundTrip);
+    public static final GameTests.Function ENUM_MULTI_TAB_VARIANTS =
+            TESTS.function("enum_multi_tab_variants", 20, () -> HbmGameTestFunctions::enumMultiTabVariants);
+    public static final GameTests.Function DEJSON_VARIANT_MODELS =
+            TESTS.function("dejson_variant_models", 40, () -> DejsonGameTests::variantModelsPerConstant);
 
     // --- security: locksmith table ---
 
@@ -1505,6 +1606,62 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
+    /**
+     * Every fluid's droplet sprite is the shared art plus that fluid's own key, and no two fluids name
+     * the same sprite.
+     *
+     * <p>Two places have to agree on that id and neither can see the other: {@link com.hbm.client.FluidSprites}
+     * mints it while the atlas is stitched, by handing the remap the fluid's key as a permutation name,
+     * and a screen asks {@link com.hbm.inventory.fluid.FluidType#getIconSprite()} for it at draw time.
+     * Change the shape on one side and the other keeps minting the old one — every lookup then quietly
+     * returns the missing-texture sprite, on a client, with nothing logged. The client class itself
+     * cannot be named from here (loading it on a dedicated server pulls in {@code GuiGraphicsExtractor}), so what
+     * is pinned is the shape both sides build.
+     */
+    private static void enumMultiTabVariants(GameTestHelper helper) {
+        java.util.List<net.minecraft.world.item.ItemStack> shown = new java.util.ArrayList<>();
+        for (var entry : com.hbm.creativetabs.ModTabs.CONTENTS.entrySet()) {
+            for (var item : entry.getValue()) {
+                if (com.hbm.creativetabs.ModTabs.shouldDisplay(entry.getKey(), item.get())) {
+                    shown.add(new net.minecraft.world.item.ItemStack(item.get()));
+                }
+            }
+        }
+        com.hbm.creativetabs.ModTabs.STACK_CONTENTS.values()
+                .forEach(list -> list.forEach(supplier -> shown.addAll(supplier.get())));
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (!(item instanceof com.hbm.items.ItemEnumMulti family)) continue;
+            boolean anywhere = shown.stream().anyMatch(stack -> stack.is(item));
+            if (!anywhere) continue;
+            for (Enum<?> variant : family.theEnum.getEnumConstants()) {
+                net.minecraft.world.item.ItemStack wanted = family.of(variant);
+                helper.assertTrue(
+                        shown.stream().anyMatch(stack -> dev.golem.core.world.ItemStacks.sameItemAndData(stack, wanted)),
+                        net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item) + " is in a creative tab "
+                                + "but its " + variant.name().toLowerCase(java.util.Locale.US) + " variant is not");
+            }
+        }
+        helper.succeed();
+    }
+
+    private static void fluidDropletSprites(GameTestHelper helper) {
+        java.util.Map<String, String> bySprite = new java.util.HashMap<>();
+        for (com.hbm.inventory.fluid.FluidType fluid : com.hbm.inventory.fluid.Fluids.getAll()) {
+            String sprite = fluid.getIconSprite().toString();
+            String expected = com.hbm.Constants.MOD_ID + ":"
+                    + com.hbm.inventory.fluid.FluidType.ICON_ART + "_" + fluid.getKey();
+            helper.assertTrue(sprite.equals(expected),
+                    "Fluid " + fluid.getName() + " must name the droplet " + expected + ", names " + sprite);
+            String clash = bySprite.put(sprite, fluid.getName());
+            helper.assertTrue(clash == null,
+                    "Fluids " + clash + " and " + fluid.getName() + " both name the droplet " + sprite);
+        }
+        helper.assertTrue(bySprite.size() == com.hbm.inventory.fluid.Fluids.getAll().length,
+                "Every fluid must have its own droplet, " + bySprite.size() + " for "
+                        + com.hbm.inventory.fluid.Fluids.getAll().length + " fluids");
+        helper.succeed();
+    }
+
     private static void fluidDisplayNames(GameTestHelper helper) {
         for (com.hbm.inventory.fluid.FluidType type : com.hbm.inventory.fluid.Fluids.getAll()) {
             String key = type.getTranslationKey();
@@ -1926,8 +2083,8 @@ public final class HbmGameTestFunctions {
     private static void fusionPlasmaForgeRecipes(GameTestHelper helper) {
         var recipes = com.hbm.inventory.recipes.PlasmaForgeRecipes.INSTANCE;
         recipes.registerRecipes();
-        helper.assertTrue(recipes.recipeOrderedList.size() == 15,
-                "Expected 15 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
+        helper.assertTrue(recipes.recipeOrderedList.size() == 20,
+                "Expected 20 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
         helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", java.util.List.of()).size() == 11,
                 "Expected 11 welded-plate variants in the auto-switch group");
 
@@ -1936,6 +2093,14 @@ public final class HbmGameTestFunctions {
                         && euphemium.duration == 600 && euphemium.power == 10_000_000L
                         && euphemium.outputItem[0].getCount() == 4,
                 "Euphemium plate recipe lost its legacy timing, ignition, power, or output");
+
+        var dfcCore = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.dfccore");
+        helper.assertTrue(dfcCore != null && dfcCore.ignitionTemp == 50_000_000L
+                        && dfcCore.duration == 12_000 && dfcCore.power == 100_000_000L
+                        && dfcCore.inputFluid.length == 1
+                        && dfcCore.inputFluid[0].type == com.hbm.inventory.fluid.Fluids.STELLAR_FLUX
+                        && dfcCore.inputFluid[0].fill == 12_000,
+                "Dark fusion core recipe lost its legacy timing, ignition, power, or stellar flux");
 
         var hde = (com.hbm.inventory.recipes.PlasmaForgeRecipe) recipes.getRecipe("plsm.hde");
         helper.assertTrue(hde != null && hde.inputFluid.length == 1

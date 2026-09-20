@@ -79,7 +79,7 @@ public class PneumoTubePaintableBlock extends CompatBlock
         } else {
             ToolType tool = ToolType.getType(stack);
             if (tool == ToolType.SCREWDRIVER || tool == ToolType.HAND_DRILL || tool == ToolType.DEFUSER) {
-                return InteractionResult.PASS;
+                return InteractionResult.TRY_WITH_EMPTY_HAND;
             }
         }
         return PneumoTube.openTubeMenu(level, pos, player);

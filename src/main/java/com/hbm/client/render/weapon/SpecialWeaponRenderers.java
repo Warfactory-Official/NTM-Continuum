@@ -91,18 +91,6 @@ public final class SpecialWeaponRenderers {
         return Surface.cutoutNoCull("hbm:textures/models/weapons/" + path + ".png");
     }
 
-    static org.joml.Vector3fc[] extents(WavefrontObj obj) {
-        float[] min = obj.boundsMin();
-        float[] max = obj.boundsMax();
-        org.joml.Vector3fc[] out = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
-            out[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0], y == 0 ? min[1] : max[1],
-                    z == 0 ? min[2] : max[2]);
-        }
-        return out;
-    }
-
     static int amount(WeaponPose state) {
         if (!(state.stack.getItem() instanceof ItemGunBaseNT gun)) return 0;
         if (!gun.isValidConfigIndex(0) || gun.getPrimaryMagazine(state.stack, 0) == null) return 0;
@@ -142,5 +130,20 @@ public final class SpecialWeaponRenderers {
 
     static boolean hasUpgrade(ItemStack stack, int config, int id) {
         return XWeaponModManager.hasUpgrade(stack, config, id);
+    }
+
+    /**
+     * How many rounds a belt shows. Upstream prefers a {@code SHELLS} bus over the live magazine
+     * whenever the running animation declares one, so a reload can lay the belt down round by round
+     * rather than snapping to the count the server has already applied.
+     */
+    static int shellCount(WeaponPose state, int rail) {
+        com.hbm.client.anim.HbmAnimations.Animation running =
+                com.hbm.client.anim.HbmAnimations.getRelevantAnim(state.hand, rail);
+        if (running != null && running.animation.getBus("SHELLS") != null) {
+            return (int) state.bus("SHELLS", rail)[0];
+        }
+        return state.stack.getItem() instanceof ItemGunBaseNT gun
+                ? gun.getPrimaryMagazine(state.stack, rail).getAmount(state.stack, null) : 0;
     }
 }

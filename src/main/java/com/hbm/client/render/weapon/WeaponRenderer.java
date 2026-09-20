@@ -11,6 +11,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.InteractionHand;
+import dev.golem.core.render.display.Pose17;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -25,6 +29,9 @@ import org.jspecify.annotations.Nullable;
 public abstract class WeaponRenderer {
 
     protected static float interp;
+
+    /** Phases sampled over one turn when framing an icon that spins; see {@link #staticExtents}. */
+    private static final int SPIN_SAMPLES = 16;
 
     private final WeaponPose pose = new WeaponPose();
     private Gem.@Nullable Model<WeaponPose> model;
@@ -103,6 +110,22 @@ public abstract class WeaponRenderer {
         }
     }
 
+    /**
+     * Whether the weapon is being sighted through its scope right now.
+     *
+     * <p>Upstream returns from {@code renderFirstPerson} before drawing anything when this holds, so
+     * the scope overlay {@code GunScopeOverlay} paints is not obstructed by the weapon it belongs to.
+     * The muzzle flash and smoke go with it, which is why the test sits here and not on a declaration.
+     */
+    protected boolean scopedIn(ItemStack stack) {
+        return false;
+    }
+
+    /** The aim transition has finished, in the previous tick as well as this one. */
+    protected static boolean fullyAimed() {
+        return ItemGunBaseNT.prevAimingProgress == 1F && ItemGunBaseNT.aimingProgress == 1F;
+    }
+
     /** The upstream FOV adjustment for this renderer; most renderers deliberately leave it unchanged. */
     public float viewFov(ItemStack stack, float fov, float partialTick) {
         return fov;
@@ -138,6 +161,7 @@ public abstract class WeaponRenderer {
 
     public final void renderFirstPerson(ItemStack stack, PoseStack pose, SubmitSink collector,
             int light, int overlay, InteractionHand hand) {
+        if (scopedIn(stack)) return;
         replay(stack, true, pose, collector, light, overlay,
                 hand == InteractionHand.OFF_HAND ? ItemDisplayContext.FIRST_PERSON_LEFT_HAND
                         : ItemDisplayContext.FIRST_PERSON_RIGHT_HAND,
@@ -163,17 +187,127 @@ public abstract class WeaponRenderer {
     }
 
     /**
-     * Extra framing for the non-first-person draws, normally left identity: those contexts are framed
-     * by the base model's {@code display{}} block. Upstream's {@code setupInv}/{@code setupThirdPerson}
-     * chains are written in 1.12 GUI space and put the weapon off screen if replayed as calls.
+     * The pose upstream puts a weapon in for every context that is not the first-person hand.
+     *
+     * <p>These used to be dropped, on the reading that the chains are GUI-space calls that would throw
+     * the weapon off screen. They do — on their own. What they are missing is the matrix 1.7 had already
+     * applied before it called the renderer, which is exactly what {@link Pose17.Klass#ITEM_RENDER_WEAPON}
+     * supplies through the base model's {@code display{}}: with the engine slot in front of them the
+     * chains land where they did in 1.7, and the fifty-two per-weapon poses they carry come back with
+     * them. Dropping them instead cost every gun its own inventory and third-person framing and left one
+     * hand-fitted {@code display{}} standing in for all of them.
      */
-    public void setupStatic(PoseStack pose, ItemDisplayContext context) {
+    public final void setupStatic(PoseStack pose, ItemStack stack, ItemDisplayContext context) {
         staticContext = context;
+        applyStatic(pose, stack, context, guiSpinAngle());
+    }
+
+    /** The context-to-chain dispatch, without the side effect, so framing can run it too. */
+    private void applyStatic(PoseStack pose, ItemStack stack, ItemDisplayContext context, float spinDegrees) {
+        switch (context) {
+            case GUI -> setupInv(pose, stack, spinDegrees);
+            case THIRD_PERSON_RIGHT_HAND, THIRD_PERSON_LEFT_HAND, HEAD -> setupThirdPerson(pose, stack);
+            case GROUND, FIXED -> setupEntity(pose, stack);
+            default -> { }
+        }
+    }
+
+    /**
+     * {@code ItemRenderWeaponBase.setupInv}. Written in 1.7's pixel slot — sixteen units wide, y down —
+     * because that is the space {@link Pose17.Klass#ITEM_RENDER_WEAPON}'s GUI frame ends in.
+     */
+    protected void setupInv(PoseStack pose, ItemStack stack, float spinDegrees) {
+        setupInv(pose, stack);
+    }
+
+    /**
+     * Degrees per millisecond of the GUI-only spin some icons have, zero when the icon is still. The
+     * angle is wrapped at a whole turn rather than at the millisecond count 1.7 wrote.
+     */
+    protected float guiSpinSpeed() {
+        return 0F;
+    }
+
+    private float guiSpinAngle() {
+        float speed = guiSpinSpeed();
+        return speed == 0F ? 0F : (float) (System.currentTimeMillis() * (double) speed % 360D);
+    }
+
+    /**
+     * Whether the drawing changes with time in this context. 26.1 has to be told: an icon it believes is
+     * still is drawn once and blitted from a cache afterwards.
+     */
+    public boolean animated(ItemDisplayContext context) {
+        return context == ItemDisplayContext.GUI && guiSpinSpeed() != 0F;
+    }
+
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        pose.scale(1F, 1F, -1F);
+        pose.translate(8F, 8F, 0F);
+        pose.mulPose(Axis.ZP.rotationDegrees(225F));
+        pose.mulPose(Axis.YP.rotationDegrees(90F));
+    }
+
+    /** {@code ItemRenderWeaponBase.setupThirdPerson}, which the head slot inherits. */
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        pose.scale(0.125F, 0.125F, 0.125F);
+        pose.mulPose(Axis.ZP.rotationDegrees(15F));
+        pose.mulPose(Axis.YP.rotationDegrees(12.5F));
+        pose.mulPose(Axis.XP.rotationDegrees(15F));
+        pose.translate(3.5F, 0F, 0F);
+    }
+
+    /** {@code ItemRenderWeaponBase.setupEntity} — the dropped item, and with it the frame and shelf. */
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        pose.scale(0.125F, 0.125F, 0.125F);
+        pose.mulPose(Axis.YP.rotationDegrees(-90F));
     }
 
     /** Recorded because {@code renderStatic} is not handed it and Dani's rest pose depends on it. */
     private ItemDisplayContext staticContext = ItemDisplayContext.NONE;
 
-    /** 26.1 sizes a GUI item from these; no extents means an empty box and no icon at all. */
-    public abstract org.joml.Vector3fc[] extents();
+    /** Separate from the drawing pose: framing runs from {@code update}, which a draw may be mid-way through. */
+    private final WeaponPose framePose = new WeaponPose();
+
+    /**
+     * The box the icon is framed on in one context: what the model draws at rest, carried through the
+     * same chain the draw uses.
+     *
+     * <p>Both halves have to be the declaration's and not the mesh's. The static pose scales the body
+     * by anything from 0.375 to 7.5, so an unposed box sizes the picture-in-picture rectangle for a
+     * weapon nobody draws; and the rest pose turns the body — every gun here opens with a half turn
+     * about Y — so a box taken from the OBJ's own bounds sits mirrored about the pivot. On the SPAS,
+     * whose mesh runs ten units back from its origin, that put the rectangle most of a slot away from
+     * the drawing. Nothing on this path reads a clock, and the result is the union box, so the
+     * rectangle 26.1 floors to whole pixels is fixed for a given stack and context.
+     */
+    public final Vector3fc[] staticExtents(ItemStack stack, ItemDisplayContext context) {
+        framePose.begin(stack, false, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                context, null, InteractionHand.MAIN_HAND);
+        java.util.List<Vector3fc> mesh = new java.util.ArrayList<>();
+        dev.golem.core.render.gem.Gem.extents(gem(), framePose, new Matrix4f(), mesh::add);
+        int phases = animated(context) ? SPIN_SAMPLES : 1;
+        float[] min = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
+        float[] max = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
+        Vector3f point = new Vector3f();
+        for (int phase = 0; phase < phases; phase++) {
+            PoseStack pose = new PoseStack();
+            applyStatic(pose, stack, context, 360F / phases * phase);
+            Matrix4f matrix = pose.last().pose();
+            for (Vector3fc corner : mesh) {
+                matrix.transformPosition(point.set(corner));
+                min[0] = Math.min(min[0], point.x); max[0] = Math.max(max[0], point.x);
+                min[1] = Math.min(min[1], point.y); max[1] = Math.max(max[1], point.y);
+                min[2] = Math.min(min[2], point.z); max[2] = Math.max(max[2], point.z);
+            }
+        }
+        if (min[0] > max[0]) return new Vector3fc[0];
+        Vector3fc[] corners = new Vector3fc[8];
+        int i = 0;
+        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
+            corners[i++] = new Vector3f(x == 0 ? min[0] : max[0], y == 0 ? min[1] : max[1],
+                    z == 0 ? min[2] : max[2]);
+        }
+        return corners;
+    }
 }

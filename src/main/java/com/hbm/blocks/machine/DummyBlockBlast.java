@@ -68,7 +68,7 @@ public class DummyBlockBlast extends CompatBlock implements TickingBlock, IBomb 
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         } else if (TileEntityLockableBase.LOCK_TOOLS.test(player.getMainHandItem())) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         } else if (!player.isShiftKeyDown()) {
             TileEntityBlastDoor door = doorOf(level, pos);
             if (door != null && door.canAccess(player)) door.tryToggle();

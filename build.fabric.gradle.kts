@@ -216,7 +216,11 @@ dependencies {
 }
 
 loom {
-    val aw = rootProject.file("src/main/resources/$modId.accesswidener")
+    // 1.20.1 vanilla hides AbstractMinecart.getDropItem from any subclass outside its package; every other
+    // node either patches it (Forge) or moved it (1.21+), so the widening is stated per era, not globally.
+    val awName = if (obfuscated && mcVersion.startsWith("1.20")) "$modId.legacy.accesswidener"
+    else "$modId.accesswidener"
+    val aw = rootProject.file("src/main/resources/$awName")
     if (aw.exists()) accessWidenerPath = aw
 
     runs {

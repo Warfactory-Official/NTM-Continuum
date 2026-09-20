@@ -207,7 +207,7 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         // 1.7: the screwdriver is handled by onScrew, not by the GUI arm
-        if (ToolType.getType(stack) == ToolType.SCREWDRIVER) return InteractionResult.PASS;
+        if (ToolType.getType(stack) == ToolType.SCREWDRIVER) return InteractionResult.TRY_WITH_EMPTY_HAND;
         return openTubeMenu(level, pos, player);
     }
 
@@ -219,9 +219,9 @@ public class PneumoTube extends CompatBlock implements TickingBlock, IToolable, 
 
     /** 1.7: the full GUI for compressors, the endpoint-only GUI for endpoints, nothing for a plain tube. */
     public static InteractionResult openTubeMenu(Level level, BlockPos pos, Player player) {
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
-        if (!(level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube)) return InteractionResult.PASS;
-        if (!tube.isCompressor() && !tube.isEndpoint()) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityPneumoTube tube)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!tube.isCompressor() && !tube.isEndpoint()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             Menus.openWithPos(serverPlayer, tube, pos);
         }

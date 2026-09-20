@@ -34,6 +34,12 @@ import com.hbm.tileentity.machine.TileEntityMachineMiniRTG;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
 import com.hbm.tileentity.machine.TileEntityRadSensor;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalPlant;
+import com.hbm.tileentity.machine.albion.TileEntityPABeamline;
+import com.hbm.tileentity.machine.albion.TileEntityPADetector;
+import com.hbm.tileentity.machine.albion.TileEntityPADipole;
+import com.hbm.tileentity.machine.albion.TileEntityPAQuadrupole;
+import com.hbm.tileentity.machine.albion.TileEntityPARFC;
+import com.hbm.tileentity.machine.albion.TileEntityPASource;
 import com.hbm.tileentity.machine.TileEntityMachineMixer;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 import com.hbm.tileentity.machine.TileEntityMachineCrystallizer;
@@ -91,6 +97,23 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("radsensor",
                     () -> BlockEntities.serverTicking(TileEntityRadSensor::new, TileEntityRadSensor::serverTick, ModMachineBlocks.radsensor.get()));
 
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCargoElevator>>
+            CARGO_ELEVATOR = BLOCK_ENTITIES.register("cargo_elevator",
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityCargoElevator::new,
+                            com.hbm.tileentity.machine.TileEntityCargoElevator::clientTick,
+                            com.hbm.tileentity.machine.TileEntityCargoElevator::serverTick,
+                            ModMachineBlocks.cargo_elevator.get()));
+
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityGeiger>> GEIGER =
+            BLOCK_ENTITIES.register("geiger",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityGeiger::new,
+                            com.hbm.tileentity.machine.TileEntityGeiger::serverTick,
+                            ModMachineBlocks.geiger.get()));
+
+
+
     public static final RegistryObject<BlockEntityType<TileEntityCableBaseNT>> RED_CABLE =
             BLOCK_ENTITIES.register("red_cable",
                     () -> BlockEntities.type(TileEntityCableBaseNT::new, ModMachineBlocks.red_cable.get()));
@@ -133,6 +156,33 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine>> MACHINE_INDUSTRIAL_TURBINE =
             BLOCK_ENTITIES.register("machine_industrial_turbine",
                     () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine::new, com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine::clientTick, com.hbm.tileentity.machine.TileEntityMachineIndustrialTurbine::serverTick, ModMachineBlocks.machine_industrial_turbine.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2>> PILE_BLOCK =
+            BLOCK_ENTITIES.register("pile_block",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2::new,
+                            com.hbm.tileentity.machine.pile.TileEntityPileBaseMK2::serverTick,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_block.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileCore>> PILE_CORE =
+            BLOCK_ENTITIES.register("pile_core",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.pile.TileEntityPileCore::new,
+                            com.hbm.tileentity.machine.pile.TileEntityPileCore::serverTick,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_block.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileLoader>> PILE_LOADER =
+            BLOCK_ENTITIES.register("pile_loader",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.pile.TileEntityPileLoader::new,
+                            com.hbm.tileentity.machine.pile.TileEntityPileLoader::serverTick,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileVent>> PILE_VENT =
+            BLOCK_ENTITIES.register("pile_vent",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.pile.TileEntityPileVent::new,
+                            com.hbm.tileentity.machine.pile.TileEntityPileVent::serverTick,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.pile.TileEntityPileControl>> PILE_CONTROL =
+            BLOCK_ENTITIES.register("pile_control",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.pile.TileEntityPileControl::new,
+                            com.hbm.tileentity.machine.pile.TileEntityPileControl::serverTick,
+                            com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get()));
+
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCondenser>> MACHINE_CONDENSER =
             BLOCK_ENTITIES.register("machine_condenser",
@@ -182,6 +232,50 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.struct.TileEntityWatzStruct>> STRUCT_WATZ_CORE =
             BLOCK_ENTITIES.register("struct_watz_core",
                     () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.struct.TileEntityWatzStruct::new, com.hbm.tileentity.machine.struct.TileEntityStructBase::serverTick, ModMachineBlocks.struct_watz_core.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCore>> DFC_CORE =
+            BLOCK_ENTITIES.register("dfc_core",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.dfc.TileEntityCore::new,
+                            com.hbm.tileentity.machine.dfc.TileEntityCore::serverTick,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_core.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter>> DFC_EMITTER =
+            BLOCK_ENTITIES.register("dfc_emitter",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter::new,
+                            com.hbm.tileentity.machine.dfc.TileEntityCoreEmitter::serverTick,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_emitter.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver>> DFC_RECEIVER =
+            BLOCK_ENTITIES.register("dfc_receiver",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver::new,
+                            com.hbm.tileentity.machine.dfc.TileEntityCoreReceiver::serverTick,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_receiver.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreInjector>> DFC_INJECTOR =
+            BLOCK_ENTITIES.register("dfc_injector",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.dfc.TileEntityCoreInjector::new,
+                            com.hbm.tileentity.machine.dfc.TileEntityCoreInjector::serverTick,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_injector.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer>> DFC_STABILIZER =
+            BLOCK_ENTITIES.register("dfc_stabilizer",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer::new,
+                            com.hbm.tileentity.machine.dfc.TileEntityCoreStabilizer::serverTick,
+                            com.hbm.blocks.machine.dfc.ModDFCBlocks.dfc_stabilizer.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher>> SOYUZ_LAUNCHER =
+            BLOCK_ENTITIES.register("soyuz_launcher",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher::new,
+                            com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher::serverTick,
+                            com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.soyuz_launcher.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct>> STRUCT_SOYUZ_CORE =
+            BLOCK_ENTITIES.register("struct_soyuz_core",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct::new,
+                            com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct::serverTick,
+                            com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.struct_soyuz_core.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineSatLink>> MACHINE_SATLINK =
+            BLOCK_ENTITIES.register("machine_satlink",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityMachineSatLink::new,
+                            com.hbm.tileentity.machine.TileEntityMachineSatLink::serverTick,
+                            ModMachineBlocks.machine_satlink.get()));
+
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityReactorZirnox>> MACHINE_ZIRNOX =
             BLOCK_ENTITIES.register("machine_zirnox",
@@ -239,6 +333,7 @@ public final class ModBlockEntities {
     public static final RegistryObject<BlockEntityType<TileEntityFluidValve>> FLUID_VALVE =
             BLOCK_ENTITIES.register("fluid_valve",
                     () -> BlockEntities.type(TileEntityFluidValve::new, ModMachineBlocks.fluid_valve.get()));
+
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineDrain>> MACHINE_DRAIN =
             BLOCK_ENTITIES.register("machine_drain",
@@ -404,6 +499,30 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_precass",
                     () -> BlockEntities.ticking(TileEntityMachinePrecAss::new, TileEntityMachinePrecAss::clientTick, TileEntityMachinePrecAss::serverTick, ModMachineBlocks.machine_precass.get()));
 
+    public static final RegistryObject<BlockEntityType<TileEntityPASource>> PA_SOURCE =
+            BLOCK_ENTITIES.register("pa_source",
+                    () -> BlockEntities.serverTicking(TileEntityPASource::new, TileEntityPASource::serverTick, ModMachineBlocks.pa_source.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPABeamline>> PA_BEAMLINE =
+            BLOCK_ENTITIES.register("pa_beamline",
+                    () -> BlockEntities.type(TileEntityPABeamline::new, ModMachineBlocks.pa_beamline.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPARFC>> PA_RFC =
+            BLOCK_ENTITIES.register("pa_rfc",
+                    () -> BlockEntities.serverTicking(TileEntityPARFC::new, TileEntityPARFC::serverTick, ModMachineBlocks.pa_rfc.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPAQuadrupole>> PA_QUADRUPOLE =
+            BLOCK_ENTITIES.register("pa_quadrupole",
+                    () -> BlockEntities.serverTicking(TileEntityPAQuadrupole::new, TileEntityPAQuadrupole::serverTick, ModMachineBlocks.pa_quadrupole.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPADipole>> PA_DIPOLE =
+            BLOCK_ENTITIES.register("pa_dipole",
+                    () -> BlockEntities.serverTicking(TileEntityPADipole::new, TileEntityPADipole::serverTick, ModMachineBlocks.pa_dipole.get()));
+
+    public static final RegistryObject<BlockEntityType<TileEntityPADetector>> PA_DETECTOR =
+            BLOCK_ENTITIES.register("pa_detector",
+                    () -> BlockEntities.serverTicking(TileEntityPADetector::new, TileEntityPADetector::serverTick, ModMachineBlocks.pa_detector.get()));
+
     public static final RegistryObject<BlockEntityType<TileEntityMachineChemicalPlant>> MACHINE_CHEMICAL_PLANT =
             BLOCK_ENTITIES.register("machine_chemical_plant",
                     () -> BlockEntities.ticking(TileEntityMachineChemicalPlant::new, TileEntityMachineChemicalPlant::clientTick, TileEntityMachineChemicalPlant::serverTick, ModMachineBlocks.machine_chemical_plant.get()));
@@ -466,7 +585,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineDiesel>> MACHINE_DIESEL =
             BLOCK_ENTITIES.register("machine_diesel",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityMachineDiesel::new, com.hbm.tileentity.machine.TileEntityMachineDiesel::serverTick, ModMachineBlocks.machine_diesel.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityMachineDiesel::new, com.hbm.tileentity.machine.TileEntityMachineDiesel::clientTick, com.hbm.tileentity.machine.TileEntityMachineDiesel::serverTick, ModMachineBlocks.machine_diesel.get()));
 
     // --- advanced oil wave ---
 
@@ -476,7 +595,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill>> MACHINE_VACUUM_DISTILL =
             BLOCK_ENTITIES.register("machine_vacuum_distill",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::new, com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::serverTick, ModMachineBlocks.machine_vacuum_distill.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::new, com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::clientTick, com.hbm.tileentity.machine.oil.TileEntityMachineVacuumDistill::serverTick, ModMachineBlocks.machine_vacuum_distill.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer>> MACHINE_CATALYTIC_REFORMER =
             BLOCK_ENTITIES.register("machine_catalytic_reformer",
@@ -536,15 +655,15 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineRefinery>> MACHINE_REFINERY =
             BLOCK_ENTITIES.register("machine_refinery",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::new, com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::serverTick, ModMachineBlocks.machine_refinery.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::new, com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::clientTick, com.hbm.tileentity.machine.oil.TileEntityMachineRefinery::serverTick, ModMachineBlocks.machine_refinery.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeatBoiler>> HEAT_BOILER =
             BLOCK_ENTITIES.register("heat_boiler",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityHeatBoiler::new, com.hbm.tileentity.machine.TileEntityHeatBoiler::serverTick, ModMachineBlocks.machine_boiler.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityHeatBoiler::new, com.hbm.tileentity.machine.TileEntityHeatBoiler::clientTick, com.hbm.tileentity.machine.TileEntityHeatBoiler::serverTick, ModMachineBlocks.machine_boiler.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial>> MACHINE_INDUSTRIAL_BOILER =
             BLOCK_ENTITIES.register("machine_industrial_boiler",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::new, com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::serverTick, ModMachineBlocks.machine_industrial_boiler.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::new, com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::clientTick, com.hbm.tileentity.machine.TileEntityHeatBoilerIndustrial::serverTick, ModMachineBlocks.machine_industrial_boiler.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityHeaterOilburner>> HEATER_OILBURNER =
             BLOCK_ENTITIES.register("heater_oilburner",

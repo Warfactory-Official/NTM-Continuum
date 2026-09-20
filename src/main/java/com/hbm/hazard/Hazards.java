@@ -27,5 +27,6 @@ public final class Hazards {
         com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
         com.hbm.hazard.TerrainHazards.register(); // nuclear waste blocks, yellowcake/fallout blocks, hot sellafite
         com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables(); // missile item -> entity table
+        HazardSystem.install();                       // carried hazards, resolved per slot edit
     }
 }

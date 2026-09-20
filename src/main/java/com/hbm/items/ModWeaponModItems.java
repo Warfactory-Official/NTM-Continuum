@@ -27,7 +27,7 @@ public final class ModWeaponModItems {
         RegistryObject<ItemEnumMulti> item = ITEMS.registerItem(id,
                 properties -> new ItemEnumMulti(variants, true, true, properties),
                 properties -> properties.stacksTo(1));
-        ModTabs.addTo(HbmTab.WEAPONS, item);
+        ModTabs.addVariantsTo(HbmTab.WEAPONS, item);
         return item;
     }
 

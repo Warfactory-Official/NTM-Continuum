@@ -52,8 +52,6 @@ public final class DrillHighlightClient {
 
         PoseStack pose = new PoseStack();
         pose.translate(pos.getX() - camera.pos.x, pos.getY() - camera.pos.y, pos.getZ() - camera.pos.z);
-        // WorldEffects replays the camera rotation around this pose; cancel it so the box stays world-aligned.
-        pose.mulPose(new org.joml.Quaternionf(camera.orientation).conjugate());
         submitOutline(pose, -exp, -exp, -exp, 1F + exp, 1F + exp, 1F + exp,
                 aoe > 0 ? Colors.black(102) : 0xFF800000);
         if (aoe > 0) submitOutline(pose, -aoe - exp, -aoe - exp, -aoe - exp,
@@ -80,7 +78,14 @@ public final class DrillHighlightClient {
 
     private static void edge(PoseStack.Pose pose, VertexConsumer buffer,
                              float x1, float y1, float z1, float x2, float y2, float z2, int color) {
-        Vertexes.color(buffer, pose, x1, y1, z1, color);
-        Vertexes.color(buffer, pose, x2, y2, z2, color);
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float dz = z2 - z1;
+        float length = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+        float normalX = dx / length;
+        float normalY = dy / length;
+        float normalZ = dz / length;
+        Vertexes.line(buffer, pose, x1, y1, z1, color, normalX, normalY, normalZ);
+        Vertexes.line(buffer, pose, x2, y2, z2, color, normalX, normalY, normalZ);
     }
 }

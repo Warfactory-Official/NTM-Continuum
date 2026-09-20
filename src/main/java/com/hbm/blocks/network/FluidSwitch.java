@@ -32,7 +32,7 @@ public class FluidSwitch extends FluidValve {
     /** No hand toggle: a redstone valve only listens to its signal. */
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

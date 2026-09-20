@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -26,7 +27,6 @@ public final class PAMeleeWeaponRenderer extends WeaponRenderer {
         if (rpa == null) rpa = WavefrontObj.load(Ids.of("hbm", "models/armor/remnant.obj"));
         return rpa;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(ncr()); }
     @Override protected float getSwayMagnitude(ItemStack stack) { return 2F; }
     @Override protected float getSwayPeriod(ItemStack stack) { return 0.5F; }
     @Override public void setupFirstPerson(ItemStack stack, PoseStack pose) {
@@ -36,10 +36,14 @@ public final class PAMeleeWeaponRenderer extends WeaponRenderer {
     @Override protected void setup(Gem.Model<WeaponPose> declaration) {
         WavefrontObj ncrModel = ncr();
         WavefrontObj rpaModel = rpa();
-        declaration.part(ncrModel.parts("LeftArm", "RightArm"), NCR_SKIN)
+        Gem.Part<WeaponPose> rest = declaration.joint()
                 .visibleIf(state -> !state.animated
                         && state.context != net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
-                        && state.context != net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND);
+                        && state.context != net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND)
+                .scale(0.3125F)
+                .rotate(Gem.Axes.X, 90F);
+        rest.child(ncrModel.part("LeftArm"), NCR_SKIN).translate(-2F, -5.5F, 0F);
+        rest.child(ncrModel.part("RightArm"), NCR_SKIN).translate(2F, -5.5F, 0F);
         firstPerson(declaration, ncrModel, NCR_SKIN, false);
         firstPerson(declaration, rpaModel, RPA_SKIN, true);
     }
@@ -122,5 +126,16 @@ public final class PAMeleeWeaponRenderer extends WeaponRenderer {
         if (chest.isEmpty()) return false;
         return BuiltInRegistries.ITEM.getKey(chest.getItem()).getPath().contains("rpa")
                 && !BuiltInRegistries.ITEM.getKey(chest.getItem()).getPath().contains("ncr");
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        pose.scale(1F, 1F, -1F);
+        pose.translate(8F, 8F, 0F);
+        pose.scale(2.5F, 2.5F, 2.5F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
     }
 }

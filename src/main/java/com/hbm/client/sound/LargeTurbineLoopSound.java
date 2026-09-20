@@ -12,7 +12,7 @@ public final class LargeTurbineLoopSound extends AbstractTickableSoundInstance {
     private final TileEntityMachineLargeTurbine turbine;
 
     public LargeTurbineLoopSound(TileEntityMachineLargeTurbine turbine, float volume, float pitch) {
-        super(ModSounds.TURBOFAN_OPERATE.get(), SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
+        super(ModSounds.INDUSTRIAL_TURBINE.get(), SoundSource.BLOCKS, SoundInstance.createUnseededRandom());
         this.turbine = turbine;
         BlockPos pos = turbine.getBlockPos();
         x = pos.getX() + 0.5D;

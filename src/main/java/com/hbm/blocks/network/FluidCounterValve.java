@@ -32,7 +32,7 @@ public class FluidCounterValve extends FluidValve {
     /** 1.7's FluidCounterValve extends FluidDuctBase and has no onBlockActivated: it is opened only via ROR/OC setstate. */
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

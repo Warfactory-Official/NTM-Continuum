@@ -8,21 +8,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.RadiationConfig;
 import com.hbm.hazard.modifier.IHazardModifier;
 import com.hbm.hazard.transformer.IHazardTransformer;
 import com.hbm.hazard.type.IHazardType;
+import dev.golem.core.player.InventoryScan;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The item-hazard engine, ported from the fork's {@code HazardSystem} with the lookup semantics kept
@@ -35,6 +38,10 @@ import net.minecraft.world.level.block.Block;
  * {@link IHazardTransformer}s.</li>
  * <li>Override/mutex semantics are unchanged (override clears prior entries; colliding mutex bits
  * yield).</li>
+ * <li>Hazards are open: {@link com.hbm.hazard.type.HazardType} builds one out of lambdas with a
+ * payload of the author's own type, {@link com.hbm.hazard.transformer.HazardTransformerCustom}
+ * attaches one to items the registry never mentions, and every mutator here drops the caches, so
+ * all of it works after boot as well as during it.</li>
  * <li>The async scan pipeline (delta tracking, Guava caches, ASM hooks) is replaced by a synchronous
  * {@link #tickEntity} — players scan their full inventory, other living entities their 6 equipment
  * slots, every {@code hazardRate} ticks. The public API is unchanged so the async version can return
@@ -53,21 +60,49 @@ public class HazardSystem {
     public static final HashSet<Item> itemBlacklist = new HashSet<>();
     public static final HashSet<TagKey<Item>> tagBlacklist = new HashSet<>();
 
-    /** Stack-sensitive transformers, run around every lookup. */
-    public static final List<IHazardTransformer> trafos = new ArrayList<>();
+    /**
+     * Stack-sensitive transformers, run around every lookup. Copy-on-write: the list is read on
+     * every resolve, from worker threads and from the client's tooltip build, and a mod adding its
+     * own transformer after boot must not land in the middle of one.
+     */
+    public static final List<IHazardTransformer> trafos = new CopyOnWriteArrayList<>();
 
     /** Per-item memo of the registered (component-agnostic) HazardData chronology. */
     private static final Map<Item, List<HazardData>> chronologyCache = new ConcurrentHashMap<>();
 
+    private static final HazardEntry[] NO_ENTRIES = new HazardEntry[0];
+
+    private static final EquipmentSlot[] EQUIPMENT_SLOTS = EquipmentSlot.values();
+
+    /**
+     * Carried hazards, resolved when a slot changes instead of on every hazard tick.
+     *
+     * <p>The fork scanned the whole inventory on a timer and re-derived each stack's entries from
+     * the tag walk every pass, which is the arrangement this class's javadoc called a stand-in for
+     * the async pipeline. Golem Core's {@link InventoryScan} is that pipeline: the fold below runs
+     * once per slot edit and off the server thread, and the hazard tick walks the memo.
+     *
+     * <p>Only the entry list is memoised. Modifiers are still evaluated against the live stack at
+     * apply time, so a stack's count and its components are read as they are now — a change to
+     * either is itself a slot change, so the entries behind them are never stale either.
+     */
+    private static final InventoryScan<HazardEntry[]> CARRIED = InventoryScan
+            .of(HazardSystem::carriedHazards, HazardSystem::applyCarried)
+            .every(() -> RadiationConfig.hazardRate);
+
+    /** Puts the carried-hazard scan on the server tick. Called once, from {@link Hazards#init()}. */
+    public static void install() {
+        CARRIED.install();
+    }
 
     public static void register(TagKey<Item> tag, HazardData data) {
         tagMap.put(tag, data);
-        chronologyCache.clear();
+        clearCaches();
     }
 
     public static void register(Item item, HazardData data) {
         itemMap.put(item, data);
-        chronologyCache.clear();
+        clearCaches();
     }
 
     public static void register(Block block, HazardData data) {
@@ -76,12 +111,12 @@ public class HazardSystem {
 
     public static void blacklist(Item item) {
         itemBlacklist.add(item);
-        chronologyCache.clear();
+        clearCaches();
     }
 
     public static void blacklist(TagKey<Item> tag) {
         tagBlacklist.add(tag);
-        chronologyCache.clear();
+        clearCaches();
     }
 
     public static boolean isItemBlacklisted(ItemStack stack) {
@@ -201,31 +236,48 @@ public class HazardSystem {
         if (Math.floorMod(entity.level().getGameTime(), tickRate) != 0) return;
 
         for (HazardEntry entry : getHazardsFromStack(stack)) {
-            entry.type.updateEntity(entity,
-                    IHazardModifier.evalAllModifiers(stack, null, entry.baseLevel, entry.mods));
+            entry.applyDropped(entity);
         }
     }
 
+    /** The resolve half of {@link #CARRIED}: the stack's entries, or null when it carries none. */
+    private static HazardEntry @Nullable [] carriedHazards(ItemStack stack) {
+        List<HazardEntry> hazards = getHazardsFromStack(stack);
+        return hazards.isEmpty() ? null : hazards.toArray(NO_ENTRIES);
+    }
+
+    /** The apply half of {@link #CARRIED}, on the server thread at {@code hazardRate}. */
+    private static void applyCarried(Player player, ItemStack stack, HazardEntry[] hazards) {
+        for (HazardEntry hazard : hazards) hazard.applyHazard(stack, player);
+    }
+
     /**
-     * Synchronous per-entity hazard tick, called from {@code EntityEffectHandler.onUpdate} (server
-     * side). Runs every {@link RadiationConfig#hazardRate} ticks: players scan their full inventory
-     * (36 main + armor + offhand via {@link Inventory#getItem}), other living entities their equipment.
+     * Per-entity hazard tick, called from {@code EntityEffectHandler.onUpdate} (server side).
+     *
+     * <p>A player's carried items are not here — they ride {@link #CARRIED}. What is left is the
+     * equipment of everything else alive, six slots that no menu reports and that no scan would have
+     * fewer of, and the neutron buffer the old pipeline reset every hazard tick (activation is
+     * config-off).
      */
     public static void tickEntity(LivingEntity entity) {
         if (entity.tickCount % RadiationConfig.hazardRate != 0) return;
 
         if (entity instanceof Player player) {
-            Inventory inv = player.getInventory();
-            for (int i = 0; i < inv.getContainerSize(); i++) {
-                applyHazards(inv.getItem(i), player);
-            }
-            // old pipeline reset the neutron buffer every hazard tick (activation is config-off)
             HbmLivingProps.setNeutron(player, 0);
-        } else {
-            for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
-                applyHazards(entity.getItemBySlot(slot), entity);
-            }
+            return;
         }
+        for (EquipmentSlot slot : EQUIPMENT_SLOTS) {
+            applyHazards(entity.getItemBySlot(slot), entity);
+        }
+    }
+
+    /**
+     * Resolves and applies this player's carried hazards immediately, outside the tick cadence — for
+     * a caller that has just rewritten an inventory and for the tests that assert the pass end to
+     * end without a connected client to raise slot events.
+     */
+    public static void scanCarried(Player player) {
+        CARRIED.scanNow(player);
     }
 
     /** Adds hazard tooltip info; wired from each loader's item-tooltip event. */
@@ -239,12 +291,18 @@ public class HazardSystem {
         }
 
         for (HazardEntry hazard : getHazardsFromStack(stack)) {
-            hazard.type.addHazardInformation(player, list, hazard.baseLevel, stack, hazard.mods);
+            hazard.addInformation(player, list, stack);
         }
         com.hbm.util.ContaminationUtil.addNeutronRadInfo(stack, list);
     }
 
+    /**
+     * Drops the per-item memo and re-resolves what every player is carrying. Both halves are needed:
+     * the fold's inputs have changed, and the answers already memoised per slot were folded from the
+     * old ones.
+     */
     public static void clearCaches() {
         chronologyCache.clear();
+        CARRIED.invalidate();
     }
 }

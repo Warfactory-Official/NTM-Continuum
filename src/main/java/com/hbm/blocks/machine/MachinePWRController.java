@@ -92,15 +92,15 @@ public class MachinePWRController extends CompatBlock implements TickingBlock {
 
     private InteractionResult activate(BlockState state, Level level, BlockPos pos, Player player) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
-        if (!(level.getBlockEntity(pos) instanceof TileEntityPWRController controller)) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityPWRController controller)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if (!controller.assembled) {
             assemble(level, pos, state, player);
         } else {
             // 1.7: the printer falls through to its own onItemUse on an assembled reactor. PASS here reaches
             // the item's useOn; every other path consumes the click (IMPLEMENTATION.md §22).
-            if (player.getMainHandItem().getItem() instanceof ItemPWRPrinter) return InteractionResult.PASS;
+            if (player.getMainHandItem().getItem() instanceof ItemPWRPrinter) return InteractionResult.TRY_WITH_EMPTY_HAND;
             if (player instanceof ServerPlayer serverPlayer) {
                 dev.golem.core.gui.Menus.openWithPos(serverPlayer, controller, pos);
             }

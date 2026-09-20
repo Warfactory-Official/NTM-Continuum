@@ -529,6 +529,18 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
     }
 
     /**
+     * A gun rewrites its own animation clock every tick, and that is not a change of weapon.
+     *
+     * <p>Without this the hand renderer treats each tick's state as a fresh draw and never finishes
+     * raising the gun. Sixty-five of these are posed in camera space and never notice; the fire
+     * extinguisher, which keeps the pose vanilla hands it, was left below the bottom of the screen.
+     */
+    @Override
+    public boolean compatIsSameHeldItem(ItemStack shown, ItemStack held) {
+        return shown.is(held.getItem());
+    }
+
+    /**
      * A held gun must never break a block: the left button is the trigger.
      *
      * <p>This is only half the story — it stops the block from breaking, but the client still plays the

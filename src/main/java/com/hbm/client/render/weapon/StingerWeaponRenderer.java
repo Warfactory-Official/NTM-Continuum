@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -22,9 +23,6 @@ public final class StingerWeaponRenderer extends WeaponRenderer {
         if (rocketModel == null) rocketModel = SpecialWeaponRenderers.model("panzerschreck");
         return rocketModel;
     }
-    @Override public org.joml.Vector3fc[] extents() {
-        return SpecialWeaponRenderers.extents(model());
-    }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }
@@ -37,11 +35,15 @@ public final class StingerWeaponRenderer extends WeaponRenderer {
         standardAimingTransform(stack, pose, -3.75F * offset, -9F * offset, -3.5F * offset,
                 -2.625F * offset, -6.5, -8.5F);
     }
+    @Override protected boolean scopedIn(ItemStack stack) {
+        return fullyAimed();
+    }
+
     @Override protected void setup(Gem.Model<WeaponPose> declaration) {
         WavefrontObj obj = model();
         declaration.part(obj.all(), BODY).visibleIf(state -> !state.animated);
         Gem.Part<WeaponPose> root = declaration.joint()
-                .visibleIf(state -> state.animated && !SpecialWeaponRenderers.fullyAimed(state))
+                .visibleIf(state -> state.animated)
                 .scale(1.5F)
                 .translate(0, -1, -1)
                 .angle(Gem.Axes.X, state -> (float) state.bus("EQUIP")[0])
@@ -56,5 +58,22 @@ public final class StingerWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.X, state -> (float) state.bus("ROCKET")[0])
                 .slide(Gem.Axes.Y, state -> (float) state.bus("ROCKET")[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("ROCKET")[2]);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.0625F, 1.0625F, 1.0625F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(225F));
+        pose.translate(0.25F, -2.5F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(1.5F, 1.5F, 1.5F);
+        pose.translate(0F, -2.5F, -3.5F);
+        pose.mulPose(Axis.YP.rotationDegrees(180F));
     }
 }

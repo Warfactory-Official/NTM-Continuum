@@ -37,6 +37,7 @@ val DECLARATION_CLASSES = arrayOf(
     "com.hbm.blocks.DecoDeclarations",
     "com.hbm.blocks.TerrainDeclarations",
     "com.hbm.blocks.Bombs2Declarations",
+    "com.hbm.blocks.NorwoodMachineDeclarations",
 )
 
 val authoredResources = rootProject.file("src/main/resources")

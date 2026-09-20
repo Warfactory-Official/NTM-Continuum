@@ -54,7 +54,7 @@ public class ItemReactorSensor extends CompatItem {
             }
             return InteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

@@ -69,6 +69,9 @@ public final class HbmJeiRecipeTypes {
     public static final JeiRecipeType<CentrifugeRecipes.CentrifugeRecipe> CENTRIFUGE = type("centrifuge", CentrifugeRecipes.CentrifugeRecipe.class);
     public static final JeiRecipeType<CyclotronRecipes.CyclotronRecipe> CYCLOTRON =
             type("cyclotron", CyclotronRecipes.CyclotronRecipe.class);
+    public static final JeiRecipeType<com.hbm.inventory.recipes.ParticleAcceleratorRecipes.ParticleAcceleratorRecipe>
+            PARTICLE_ACCELERATOR = type("particle_accelerator",
+            com.hbm.inventory.recipes.ParticleAcceleratorRecipes.ParticleAcceleratorRecipe.class);
     public static final JeiRecipeType<GasCentrifugeRecipes.GasCentrifugeRecipe> GAS_CENTRIFUGE =
             type("gas_centrifuge", GasCentrifugeRecipes.GasCentrifugeRecipe.class);
     public static final JeiRecipeType<ElectrolyserFluidRecipes.ElectrolysisRecipe> ELECTROLYSIS_FLUID =

@@ -177,6 +177,45 @@ public final class HbmBlockEntityRenderers {
                         (te, partial) -> te.prevRotor + (te.rotor - te.prevRotor) * partial));
         regCustom(sink, ModBlockEntities.STRUCT_TORUS_CORE.get(),
                 ctx -> new StructPreviewRenderer<com.hbm.tileentity.machine.struct.TileEntityFusionTorusStruct>());
+
+        regGem(sink, ModRBMKBlockEntities.RBMK_TERMINAL.get(), RBMKTerminalRenderer::new);
+        regGem(sink, ModBlockEntities.CARGO_ELEVATOR.get(), CargoElevatorRenderer::new);
+        regGem(sink, ModBlockEntities.MACHINE_SATLINK.get(), SatLinkRenderer::new);
+        regGem(sink, ModBlockEntities.SOYUZ_LAUNCHER.get(), SoyuzLauncherRenderer::new);
+        regGem(sink, ModBlockEntities.PILE_CONTROL.get(), PileDeviceRenderers.Control::new);
+        regGem(sink, ModBlockEntities.PILE_LOADER.get(), PileDeviceRenderers.Loader::new);
+        regGem(sink, ModBlockEntities.PILE_VENT.get(), PileDeviceRenderers.Vent::new);
+
+        // 1.7 draws both of these from an OBJ and leaves the block itself with no model: the geiger on a
+        // TESR, the supply crate on a chunk-mesh handler that a modern port has no equivalent of. Both
+        // meshes are authored about the origin, which BlockObjRenderer's centring translate answers.
+        regGem(sink, ModBlockEntities.GEIGER.get(),
+                () -> new com.hbm.client.render.BlockObjRenderer<com.hbm.tileentity.machine.TileEntityGeiger>(
+                        "blocks/geiger_counter.obj", "textures/blocks/geiger.png", true));
+        regGem(sink, ModBlockEntities.CRATE_SUPPLY.get(),
+                () -> new com.hbm.client.render.BlockObjRenderer<com.hbm.tileentity.machine.storage.TileEntityCrateSupply>(
+                        "blocks/conservecrate.obj", "textures/block/crate_can.png"));
+
+        regGem(sink, ModBlockEntities.DFC_EMITTER.get(), CoreComponentRenderers.Emitter::new);
+        regGem(sink, ModBlockEntities.DFC_RECEIVER.get(), CoreComponentRenderers.Receiver::new);
+        regGem(sink, ModBlockEntities.DFC_INJECTOR.get(), CoreComponentRenderers.Injector::new);
+        regGem(sink, ModBlockEntities.DFC_STABILIZER.get(), CoreComponentRenderers.Stabilizer::new);
+        regCustom(sink, ModBlockEntities.DFC_CORE.get(), ctx -> new CoreRenderer());
+
+        reg(sink, ModBlockEntities.PA_SOURCE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/source.obj"), tex("particleaccelerator/source.png"), -1F));
+        reg(sink, ModBlockEntities.PA_BEAMLINE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/beamline.obj"), tex("particleaccelerator/beamline.png")));
+        reg(sink, ModBlockEntities.PA_RFC.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/rfc.obj"), tex("particleaccelerator/rfc.png"), -1F));
+        reg(sink, ModBlockEntities.PA_QUADRUPOLE.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/quadrupole.obj"), tex("particleaccelerator/quadrupole.png"), -1F));
+        regGem(sink, ModBlockEntities.PA_DIPOLE.get(),
+                () -> new MachineObjRenderer<com.hbm.tileentity.machine.albion.TileEntityPADipole>(0F, 1F,
+                        new ModelDef(obj("particleaccelerator/dipole.obj"), tex("particleaccelerator/dipole.png"), -1F))
+                        .ignoreFacing());
+        reg(sink, ModBlockEntities.PA_DETECTOR.get(), 90F, 1F,
+                new ModelDef(obj("particleaccelerator/detector.obj"), tex("particleaccelerator/detector.png"), -2F));
         // SILEX: fully static upstream (it had no TESR at all — it was a StaticTesrBakedModels entry).
         // Old yaw map N90/S270/W180/E0 = base yaw 90 + the standard map, same as the compressor's.
         reg(sink, ModBlockEntities.MACHINE_SILEX.get(), 90F, 1F,

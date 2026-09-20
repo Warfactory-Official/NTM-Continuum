@@ -42,7 +42,7 @@ public class BlockCrateSupply extends CarriedBlock {
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack held, BlockHitResult hit) {
-        if (!held.is(CROWBAR)) return InteractionResult.PASS;
+        if (!held.is(CROWBAR)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             if (level.getBlockEntity(pos) instanceof Container crate) Containers.dropContents(level, pos, crate);
             level.destroyBlock(pos, false);

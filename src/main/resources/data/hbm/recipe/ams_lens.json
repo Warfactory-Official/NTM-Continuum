@@ -1,0 +1,29 @@
+{
+  "type": "hbm:component_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "items": [
+        "hbm:plate_dineutronium"
+      ]
+    },
+    "G": {
+      "items": [
+        "hbm:reinforced_glass"
+      ]
+    },
+    "D": {
+      "items": [
+        "minecraft:diamond_block"
+      ]
+    }
+  },
+  "pattern": [
+    "PDP",
+    "GDG",
+    "PDP"
+  ],
+  "result": {
+    "id": "hbm:ams_lens"
+  }
+}

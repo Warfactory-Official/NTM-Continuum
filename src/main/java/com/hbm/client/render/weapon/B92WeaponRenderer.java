@@ -1,11 +1,11 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.items.weapon.GunB92;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.world.item.ItemStack;
-import org.joml.Vector3f;
 
 /** GEM renderer for the original box-model B92, including its pump slide during charge reload. */
 public final class B92WeaponRenderer extends WeaponRenderer {
@@ -15,15 +15,6 @@ public final class B92WeaponRenderer extends WeaponRenderer {
             "Muzzle1", "Barrel1", "Barrel2", "Grip", "Front1", "Front2", "Body", "Top",
             "GripBottom", "Handle", "HandleBack", "Frame1", "Frame2", "Frame3", "Trigger",
             "BackPlate1", "Back", "BackPlate2", "BodyPlate"};
-
-    @Override
-    public org.joml.Vector3fc[] extents() {
-        return new Vector3f[] {
-                new Vector3f(-1.5F, -1F, -3.5F), new Vector3f(20F, 22F, 7F),
-                new Vector3f(-1.5F, -1F, 3.5F), new Vector3f(20F, 22F, -3.5F),
-                new Vector3f(-1.5F, 22F, -3.5F), new Vector3f(20F, 22F, 3.5F),
-                new Vector3f(-1.5F, -1F, 3.5F), new Vector3f(20F, -1F, -3.5F)};
-    }
 
     @Override
     protected float getTurnMagnitude(ItemStack stack) {
@@ -106,5 +97,21 @@ public final class B92WeaponRenderer extends WeaponRenderer {
             case "Frame1", "Frame2", "Frame3" -> -1F; case "Back" -> -2F;
             case "BodyPlate" -> -2.5F; default -> 0F;
         };
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        pose.mulPose(Axis.ZP.rotationDegrees(-200F));
+        pose.mulPose(Axis.YP.rotationDegrees(75F));
+        pose.mulPose(Axis.XP.rotationDegrees(-30F));
+        pose.translate(0F, -0.2F, -0.5F);
+        pose.mulPose(Axis.ZP.rotationDegrees(-5F));
+        pose.scale(0.5F, 0.5F, 0.5F);
+        pose.translate(-0.3F, -0.4F, 0.15F);
+    }
+
+    @Override
+    protected void setupEntity(PoseStack pose, ItemStack stack) {
+        setupThirdPerson(pose, stack);
     }
 }

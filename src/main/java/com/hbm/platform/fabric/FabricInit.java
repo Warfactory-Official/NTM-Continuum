@@ -110,6 +110,7 @@ public class FabricInit implements ModInitializer {
                 com.hbm.tileentity.network.RTTYSystem::updateBroadcastQueue);
         dev.golem.core.platform.Lifecycle.onServerTick(server -> {
             RadiationSystemNT.tickServer(server);
+            com.hbm.saveddata.satellites.SatelliteSystems.tickServer(server);
         });
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> {
             RadiationSystemNT.closeWorld(level);

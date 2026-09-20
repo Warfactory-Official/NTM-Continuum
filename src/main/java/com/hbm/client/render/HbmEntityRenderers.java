@@ -62,8 +62,8 @@ public final class HbmEntityRenderers {
         regGem(sink, ModRBMKEntities.SPEAR.get(), RenderSpear::new);
 
         // Tier 0: both bodies use the old missileTaint OBJ, at the old 2x entity scale.
-        missile(sink, ModMissileEntities.MISSILE_MICRO.get(), "missile_taint.obj", "missile_micro.png", 2.0F);
-        missile(sink, ModMissileEntities.MISSILE_TAINT.get(), "missile_taint.obj", "missile_micro_taint.png", 2.0F);
+        missile(sink, ModMissileEntities.MISSILE_MICRO.get(), "missile_micro.obj", "missile_micro.png", 1.0F);
+        missile(sink, ModMissileEntities.MISSILE_TAINT.get(), "missile_micro.obj", "missile_micro_taint.png", 1.0F);
 
         // The missiles. Model, texture and scale per airframe, exactly as upstream's 24 one-off
         // renderer classes: V2 and strong at 1.0, huge at 0.8, atlas at 1.5, stealth at 2.0.

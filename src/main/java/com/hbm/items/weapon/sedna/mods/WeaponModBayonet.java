@@ -54,7 +54,7 @@ abstract class WeaponModBayonet extends WeaponModBase {
                     (BiFunction<ItemStack, GunAnimation, BusAnimation>) base;
             BiFunction<ItemStack, GunAnimation, BusAnimation> replacement = (stack, type) -> type == GunAnimation.INSPECT
                     ? inspectionAnimation().apply(stack, type)
-                    : original == null ? new BusAnimation() : original.apply(stack, type);
+                    : original == null ? null : original.apply(stack, type);
             return cast(replacement, base);
         }
         if (key == GunConfig.I_INSPECTDURATION) return cast(30, base);

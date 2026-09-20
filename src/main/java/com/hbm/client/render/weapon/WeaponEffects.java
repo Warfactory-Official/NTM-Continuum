@@ -14,11 +14,14 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 
-/** The source Sedna muzzle and attached-node geometry, kept outside the GEM body declaration. */
+/** The source Sedna muzzle, attached-node geometry and weapon labels, kept outside the GEM body declaration. */
 public final class WeaponEffects {
     private static final int FULL_BRIGHT = 0x00F000F0;
     private static final String FLASH = "hbm:textures/models/weapons/lilmac_plume.png";
     private static final String LASER = "hbm:textures/models/weapons/laser_flash.png";
+    private static final String QUADRO_LABEL = ">> <<";
+    private static final String MISSILE_LABEL = "AUTO";
+    private static final String SHREDDER_LABEL = "[> <]";
     private static @org.jspecify.annotations.Nullable String renderedItem;
 
     private WeaponEffects() {}
@@ -82,8 +85,9 @@ public final class WeaponEffects {
             // have no transient smoke or flash call; keep them explicit rather than hiding them in default.
             case "gun_charge_thrower", "gun_chemthrower", "gun_coilgun", "gun_drill",
                     "gun_fatman", "gun_folly", "gun_tau", "gun_tesla_cannon",
-                    "gun_bolter", "gun_flamer", "gun_flamer_topaz", "gun_flamer_daybreaker",
+                    "gun_flamer", "gun_flamer_topaz", "gun_flamer_daybreaker",
                     "gun_pa_melee", "gun_fireext", "gun_pa_ranged" -> { }
+            case "gun_bolter" -> bolter(state, base, sink, light, overlay);
             case "gun_debug" -> debug(state, base, sink, light, overlay);
                 default -> { }
             }
@@ -177,6 +181,32 @@ public final class WeaponEffects {
         pose.mulPose(Axis.YP.rotationDegrees(90));
         if (scale != 1F) pose.scale(scale, scale, scale);
         muzzle(sink, pose, shot(state, index), duration, length, 1);
+    }
+
+    /**
+     * A label 1.7 drew on the weapon body itself, in the weapon's own frame.
+     *
+     * <p>These are the only text upstream draws outside a GUI, and the engine calls are the same every
+     * time: full-bright, unlit, and both faces. Everything that places one is the caller's, the y flip
+     * included — the font's y runs down and a weapon's runs up, so each of these ends its chain in a
+     * scale with a negative y, at the size that weapon wants.
+     */
+    private static void label(SubmitSink sink, PoseStack pose, String text, int color) {
+        sink.submitText(pose, Minecraft.getInstance().font, 0, 0,
+                net.minecraft.network.chat.Component.literal(text).getVisualOrderText(), false,
+                net.minecraft.client.gui.Font.DisplayMode.NORMAL, FULL_BRIGHT, color, 0);
+    }
+
+    private static float labelWidth(String text) {
+        return Minecraft.getInstance().font.width(text);
+    }
+
+    /** The per-frame flicker two of the labels are drawn with, as an opaque colour. */
+    private static int flicker(float low, float red, float green, float blue) {
+        float variance = low + (Minecraft.getInstance().player == null ? 0F
+                : Minecraft.getInstance().player.getRandom().nextFloat() * (1F - low));
+        return 0xFF000000 | (Math.round(red * variance * 255F) << 16)
+                | (Math.round(green * variance * 255F) << 8) | Math.round(blue * variance * 255F);
     }
 
     private static String itemPath(ItemStack stack) {
@@ -484,7 +514,11 @@ public final class WeaponEffects {
     }
 
     private static void shredder(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
-        p.scale(.25F, .25F, .25F); equip(p, s, 0, -2, -6, 6); lift(p, s, 0, 0, -4, 4); p.translate(0, 0, s.bus("RECOIL")[2]); p.pushPose(); p.translate(0, 1, 7.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.75F, .75F, .75F); smoke(s, p, c, 0, .5); p.popPose(); p.pushPose(); p.translate(0, 1, 7.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 75, 7.5, 1); p.popPose();
+        p.scale(.25F, .25F, .25F); equip(p, s, 0, -2, -6, 6); lift(p, s, 0, 0, -4, 4); p.translate(0, 0, s.bus("RECOIL")[2]);
+        if (WeaponRenderer.fullyAimed()) {
+            p.pushPose(); p.translate(labelWidth(SHREDDER_LABEL) / 2F * .04F, 3.25, -1.75); p.scale(.04F, -.04F, .04F); p.mulPose(Axis.YP.rotationDegrees(180)); label(c, p, SHREDDER_LABEL, flicker(.9F, 0F, 1F, 0F)); p.popPose();
+        }
+        p.pushPose(); p.translate(0, 1, 7.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.scale(.75F, .75F, .75F); smoke(s, p, c, 0, .5); p.popPose(); p.pushPose(); p.translate(0, 1, 7.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 75, 7.5, 1); p.popPose();
     }
 
     private static void sexy(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
@@ -521,7 +555,11 @@ public final class WeaponEffects {
     }
 
     private static void missileLauncher(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
-        p.scale(.5F, .5F, .5F); equip(p, s, 0, -2, -2, 2); p.pushPose(); p.translate(0, 1, 6.75); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 75, 7.5, 1); p.popPose();
+        p.scale(.5F, .5F, .5F); equip(p, s, 0, -2, -2, 2);
+        if (WeaponRenderer.fullyAimed()) {
+            p.pushPose(); p.translate(.9375, 2.25, -.5625 + labelWidth(MISSILE_LABEL) / 2F * .04F); p.scale(.04F, -.04F, .04F); p.mulPose(Axis.YP.rotationDegrees(90)); label(c, p, MISSILE_LABEL, flicker(.7F, 1F, 0F, 0F)); p.popPose();
+        }
+        p.pushPose(); p.translate(0, 1, 6.75); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 75, 7.5, 1); p.popPose();
     }
 
     private static void panzerschreck(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
@@ -529,11 +567,28 @@ public final class WeaponEffects {
     }
 
     private static void quadro(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
-        p.scale(1.75F, 1.75F, 1.75F); equip(p, s, 0, -1, -1, 1); p.translate(0, 0, s.bus("RECOIL")[2]); p.translate(0, -1, -1); p.mulPose(Axis.XP.rotationDegrees((float) -s.bus("RELOAD_ROTATE")[2])); p.translate(0, 1, 1); p.pushPose(); p.translate(-1, .75, 6.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 150, 7.5, 1); p.popPose();
+        p.scale(1.75F, 1.75F, 1.75F); equip(p, s, 0, -1, -1, 1); p.translate(0, 0, s.bus("RECOIL")[2]); p.translate(0, -1, -1); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("RELOAD_ROTATE")[2])); p.translate(0, 1, 1);
+        if (WeaponRenderer.fullyAimed()) {
+            p.pushPose(); p.translate(-.375, 2.25, .875); p.mulPose(Axis.YN.rotationDegrees(180F + System.currentTimeMillis() / 2 % 360)); p.translate(-labelWidth(QUADRO_LABEL) / 2F * .04F, 0, 0); p.scale(.04F, -.04F, .04F); label(c, p, QUADRO_LABEL, 0xFF00FFFF); p.popPose();
+        }
+        p.pushPose(); p.translate(-1, .75, 6.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 150, 7.5, 1); p.popPose();
     }
 
     private static void stinger(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
         p.scale(1.5F, 1.5F, 1.5F); equip(p, s, 0, -1, -1, 1); p.pushPose(); p.translate(0, 0, 6.5); p.mulPose(Axis.YP.rotationDegrees(90)); p.mulPose(Axis.XP.rotationDegrees(s.shotRand * 90)); p.scale(.75F, .75F, .75F); muzzle(c, p, shot(s, 0), 150, 10, 1); p.popPose();
+    }
+
+    /**
+     * The bolter's round counter, which 1.7 draws on the weapon rather than in the HUD rail.
+     *
+     * <p>The only one of these labels that is not a constant string, and the only one not gated on
+     * aiming: it is a display on the gun, readable whenever the gun is.
+     */
+    private static void bolter(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {
+        p.scale(.5F, .5F, .5F); p.mulPose(Axis.YP.rotationDegrees(180)); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("RECOIL")[0] * 5)); p.translate(0, 0, s.bus("RECOIL")[0]); p.translate(0, s.bus("TILT")[0], 3); p.mulPose(Axis.XP.rotationDegrees((float) s.bus("TILT")[0] * 35)); p.translate(0, 0, -3);
+        ItemGunBaseNT gun = (ItemGunBaseNT) s.stack.getItem();
+        String rounds = String.valueOf(gun.getConfig(s.stack, 0).getReceivers(s.stack)[0].getMagazine(s.stack).getAmount(s.stack, null));
+        p.translate(.025 - labelWidth(rounds) / 2F * .04F, 2.11, 2.91); p.scale(.04F, -.04F, .04F); p.mulPose(Axis.XP.rotationDegrees(45)); label(c, p, rounds, 0xFFFF0000);
     }
 
     private static void flaregun(WeaponPose s, PoseStack p, SubmitSink c, int l, int o) {

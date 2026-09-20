@@ -35,7 +35,7 @@ public class ItemModBucket extends CompatItem {
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         HitResult hit = getPlayerPOVHitResult(level, player, ClipContext.Fluid.NONE);
-        if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.PASS;
+        if (hit.getType() != HitResult.Type.BLOCK) return InteractionResult.TRY_WITH_EMPTY_HAND;
         BlockHitResult blockHit = (BlockHitResult) hit;
         BlockPos pos = blockHit.getBlockPos();
         if (!level.mayInteract(player, pos)) return InteractionResult.FAIL;

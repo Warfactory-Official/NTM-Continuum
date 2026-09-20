@@ -12,6 +12,7 @@ import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModItems;
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.blocks.machine.dfc.ModDFCBlocks;
 import net.minecraft.world.item.ItemStack;
 
 import static com.hbm.inventory.OreDictManager.*;
@@ -67,6 +68,35 @@ public final class PlasmaForgeRecipes extends GenericRecipes {
                         new ComparableStack(ModMachineBlocks.fusion_component_blanket.get().asItem(), 64),
                         new ComparableStack(ModMachineBlocks.fusion_component_blanket.get().asItem(), 64),
                          new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 4)));
+
+        // --- dark fusion core ---
+        register(new PlasmaForgeRecipe("plsm.dfccore").setInputEnergy(50_000_000).setup(12_000, 100_000_000)
+                .outputItems(new ItemStack(ModDFCBlocks.dfc_core.get()))
+                .inputItems(OSMIRIDIUM.plateWelded().count(16), DNT.wireDense().count(16),
+                        new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_QUANTUM), 12),
+                        new ComparableStack(com.hbm.items.ModSingularityItems.singularity_spark.get()),
+                        new ComparableStack(ModItems.powder_chlorophyte.get(), 64))
+                .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 12_000)));
+        register(new PlasmaForgeRecipe("plsm.dfcemitter").setInputEnergy(50_000_000).setup(1_200, 10_000_000)
+                .outputItems(new ItemStack(ModDFCBlocks.dfc_emitter.get()))
+                .inputItems(OSMIRIDIUM.plateWelded().count(16), STAR.wireDense().count(16),
+                        new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_QUANTUM), 8))
+                .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 4_000)));
+        register(new PlasmaForgeRecipe("plsm.dfcreceiver").setInputEnergy(50_000_000).setup(1_200, 10_000_000)
+                .outputItems(new ItemStack(ModDFCBlocks.dfc_receiver.get()))
+                .inputItems(OSMIRIDIUM.plateWelded().count(16), STAR.plateCast().count(16),
+                        new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_QUANTUM), 8))
+                .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 4_000)));
+        register(new PlasmaForgeRecipe("plsm.dfcinjector").setInputEnergy(50_000_000).setup(1_200, 10_000_000)
+                .outputItems(new ItemStack(ModDFCBlocks.dfc_injector.get()))
+                .inputItems(OSMIRIDIUM.plateWelded().count(16), BIGMT.plateCast().count(16),
+                        new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 4))
+                .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 4_000)));
+        register(new PlasmaForgeRecipe("plsm.dfcstabilizer").setInputEnergy(50_000_000).setup(1_200, 10_000_000)
+                .outputItems(new ItemStack(ModDFCBlocks.dfc_stabilizer.get()))
+                .inputItems(OSMIRIDIUM.plateWelded().count(16), SBD.wireDense().count(16),
+                        new ComparableStack(com.hbm.items.ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_QUANTUM), 8))
+                .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 4_000)));
 
         // ass.fensusan is intentionally deferred: its exact old inputs require the unregistered
         // ingot_electronium and ingot_u238m2. Do not replace either with a similar material.

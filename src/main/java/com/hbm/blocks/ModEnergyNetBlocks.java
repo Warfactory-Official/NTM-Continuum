@@ -91,6 +91,14 @@ public final class ModEnergyNetBlocks {
 
     public static final RegistryObject<MachineCapacitorBus> capacitor_bus = BLOCKS.registerBlock("capacitor_bus", MachineCapacitorBus::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL));
+    // 1.7 capacitor_copper/gold/niobium; the block ids carry a machine_ prefix because the bare names are the
+    // battery-capacitor items in this port. Only copper sits on a tab, as upstream.
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_copper = BLOCKS.registerBlock("machine_capacitor_copper",
+            p -> new MachineCapacitor(p, 1_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_gold = BLOCKS.registerBlock("machine_capacitor_gold",
+            p -> new MachineCapacitor(p, 5_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<MachineCapacitor> machine_capacitor_niobium = BLOCKS.registerBlock("machine_capacitor_niobium",
+            p -> new MachineCapacitor(p, 25_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
     public static final RegistryObject<MachineCapacitor> capacitor_tantalium = BLOCKS.registerBlock("capacitor_tantalium",
             p -> new MachineCapacitor(p, 150_000_000L), p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).noOcclusion());
     public static final RegistryObject<MachineCapacitor> capacitor_schrabidate = BLOCKS.registerBlock("capacitor_schrabidate",
@@ -138,6 +146,9 @@ public final class ModEnergyNetBlocks {
 
         // 1.7 registered the legacy storage tiers with no creative tab; they stay reachable by id and pick-block.
         item(null, "capacitor_bus", capacitor_bus, 2);
+        item(HbmTab.MACHINES, "machine_capacitor_copper", machine_capacitor_copper, 0, capacitorInfo(machine_capacitor_copper));
+        item(null, "machine_capacitor_gold", machine_capacitor_gold, 0, capacitorInfo(machine_capacitor_gold));
+        item(null, "machine_capacitor_niobium", machine_capacitor_niobium, 0, capacitorInfo(machine_capacitor_niobium));
         item(null, "capacitor_tantalium", capacitor_tantalium, 0, capacitorInfo(capacitor_tantalium));
         item(null, "capacitor_schrabidate", capacitor_schrabidate, 0, capacitorInfo(capacitor_schrabidate));
         item(null, "machine_battery_potato", machine_battery_potato, 0, batteryInfo(machine_battery_potato));

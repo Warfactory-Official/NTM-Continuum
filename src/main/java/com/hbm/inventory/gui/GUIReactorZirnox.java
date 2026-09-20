@@ -11,6 +11,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import com.hbm.sound.ModSounds;
 
 /** ZIRNOX reactor control panel. */
 public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<ContainerReactorZirnox> {
@@ -94,6 +96,8 @@ public class GUIReactorZirnox extends dev.golem.core.gui.CompatContainerScreen<C
                 : this.isHovering(VENT_X, VENT_Y, VENT_SIZE, VENT_SIZE, event.x(), event.y()) ? 1 : -1;
         if (button >= 0 && Minecraft.getInstance().gameMode != null) {
             Minecraft.getInstance().gameMode.handleInventoryButtonClick(this.menu.containerId, button);
+            Minecraft.getInstance().getSoundManager().play(
+                    SimpleSoundInstance.forUI(ModSounds.RBMK_AZ5_COVER.get(), 0.5F, 1.0F));
             return true;
         }
         return false;

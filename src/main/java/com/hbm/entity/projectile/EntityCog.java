@@ -95,7 +95,7 @@ public class EntityCog extends EntityThrowableInterp {
             player.getInventory().placeItemBackInInventory(ModGearItems.gear_large.get().of(getMeta()));
             discard();
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     @Override

@@ -112,7 +112,7 @@ public class ItemPWRPrinter extends CompatItem {
     public InteractionResult useOn(UseOnContext context) {
         Level level = context.getLevel();
         BlockEntity tile = level.getBlockEntity(context.getClickedPos());
-        if (!(tile instanceof TileEntityPWRController pwr)) return InteractionResult.PASS;
+        if (!(tile instanceof TileEntityPWRController pwr)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         syncAndScreenshot(level, pwr);

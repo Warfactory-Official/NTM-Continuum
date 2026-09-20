@@ -58,6 +58,11 @@ public final class ModRBMKBlockEntities {
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKConsole>> RBMK_CONSOLE=type("rbmk_console",BlockEntityRBMKConsole::new,ModRBMKBlocks.rbmk_console);
     public static final RegistryObject<BlockEntityType<BlockEntityCraneConsole>> RBMK_CRANE_CONSOLE=type("rbmk_crane_console",BlockEntityCraneConsole::new,ModRBMKBlocks.rbmk_crane_console);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKGauge>> RBMK_GAUGE=type("rbmk_gauge",BlockEntityRBMKGauge::new,ModRBMKBlocks.rbmk_gauge);
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal>> RBMK_TERMINAL=
+            BLOCK_ENTITIES.register("rbmk_terminal", () -> BlockEntities.serverTicking(
+                    com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal::new,
+                    (level, pos, state, be) -> be.serverTick(),
+                    ModRBMKBlocks.rbmk_terminal.get()));
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKDebris>> RBMK_DEBRIS=inert("rbmk_debris",BlockEntityRBMKDebris::new,ModRBMKBlocks.rbmk_debris,ModRBMKBlocks.rbmk_debris_burning,ModRBMKBlocks.rbmk_debris_radiating,ModRBMKBlocks.rbmk_debris_digamma);
     public static void init() {}
 }

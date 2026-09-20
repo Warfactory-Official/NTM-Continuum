@@ -9,6 +9,15 @@ public final class ItemEnums {
     private ItemEnums() {}
 
     /** Ore chunks (centrifuge/shredder ore-processing outputs). */
+    /** The three paint jobs the satellite launch vehicle comes in. */
+    public enum SoyuzSkinType {
+        NORMAL,
+        LUNAR,
+        POST_WAR;
+
+        public static final SoyuzSkinType[] VALUES = values();
+    }
+
     public enum EnumChunkType {
         RARE, MALACHITE, CRYOLITE, MOONSTONE;
         public static final EnumChunkType[] VALUES = values();

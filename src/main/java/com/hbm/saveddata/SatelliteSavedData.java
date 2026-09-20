@@ -19,10 +19,21 @@ import java.util.Map;
  */
 public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
 
+    /**
+     * 1.7 {@code SatelliteBase.writeToNBT} rides on the entry: the target and the reply register belong to
+     * every satellite, so they are stated once here rather than in each type's own codec.
+     */
     private static final Codec<Entry> ENTRY_CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("freq").forGetter(Entry::freq),
-            SatelliteType.DISPATCH_CODEC.fieldOf("sat").forGetter(Entry::sat)
-    ).apply(i, Entry::new));
+            SatelliteType.DISPATCH_CODEC.fieldOf("sat").forGetter(Entry::sat),
+            Codec.INT.optionalFieldOf("targetX", 0).forGetter(e -> e.sat().targetX),
+            Codec.INT.optionalFieldOf("targetZ", 0).forGetter(e -> e.sat().targetZ),
+            Codec.STRING.optionalFieldOf("tx", "").forGetter(e -> e.sat().tx)
+    ).apply(i, (freq, sat, targetX, targetZ, tx) -> {
+        sat.setTarget(targetX, targetZ);
+        sat.tx = tx;
+        return new Entry(freq, sat);
+    }));
     public static final Codec<SatelliteSavedData> CODEC = RecordCodecBuilder.create(i -> i.group(
             ENTRY_CODEC.listOf().optionalFieldOf("sats", List.of()).forGetter(SatelliteSavedData::toEntries)
     ).apply(i, SatelliteSavedData::fromEntries));

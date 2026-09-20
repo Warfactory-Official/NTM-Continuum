@@ -30,4 +30,14 @@ public interface IEnergyConnectorBlock {
         }
         return false;
     }
+
+    /** As {@link #isPort(DirPos[], BlockPos, ForgeDirection)}, for machines whose {@code getConPos()} is a list. */
+    static boolean isPort(java.util.List<DirPos> connections, BlockPos cell, ForgeDirection dir) {
+        int cx = cell.getX() + dir.offsetX, cy = cell.getY() + dir.offsetY, cz = cell.getZ() + dir.offsetZ;
+        for (DirPos dp : connections) {
+            BlockPos p = dp.getPos();
+            if (dp.getDir() == dir && p.getX() == cx && p.getY() == cy && p.getZ() == cz) return true;
+        }
+        return false;
+    }
 }

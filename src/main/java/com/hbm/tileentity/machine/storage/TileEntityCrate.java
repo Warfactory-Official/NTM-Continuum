@@ -12,6 +12,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
+import com.hbm.sound.ModSounds;
+import net.minecraft.sounds.SoundSource;
 
 /**
  * The HBM storage crate BlockEntity — a plain slot inventory whose size and GUI layout come from its
@@ -27,6 +29,19 @@ import net.minecraft.core.BlockPos;
  * fill, and hand-held "open from item" behaviours are dropped — see IMPLEMENTATION.md.)
  */
 public class TileEntityCrate extends TileEntityMachineBase implements MenuProvider {
+
+    public void openInventory() {
+        playLidSound(ModSounds.CRATE_OPEN.get());
+    }
+
+    public void closeInventory() {
+        playLidSound(ModSounds.CRATE_CLOSE.get());
+    }
+
+    private void playLidSound(net.minecraft.sounds.SoundEvent sound) {
+        if (level == null || level.isClientSide()) return;
+        level.playSound(null, worldPosition, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
+    }
 
     public final CrateType crateType;
 

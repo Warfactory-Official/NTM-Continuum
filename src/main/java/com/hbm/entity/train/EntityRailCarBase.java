@@ -502,7 +502,7 @@ public abstract class EntityRailCarBase extends CompatEntity {
             }
         }
 
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     public static class LogicalTrainUnit {

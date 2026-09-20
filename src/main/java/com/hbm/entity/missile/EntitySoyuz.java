@@ -50,6 +50,8 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
     private static final EntityDataAccessor<Integer> SKIN =
             SynchedEntityData.defineId(EntitySoyuz.class, EntityDataSerializers.INT);
     private static final long NONE = Long.MIN_VALUE;
+    /** 1.7 separates the payload here; above it the rocket is spent. */
+    public static final int ORBIT_ALTITUDE = 600;
 
     double acceleration = 0.00D;
     public int mode;
@@ -128,7 +130,7 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
             spawnExhaust(getX(), getY(), getZ() - 2.75);
         }
 
-        if (getY() > 600 && !level().isClientSide()) {
+        if (getY() > ORBIT_ALTITUDE && !level().isClientSide()) {
             deployPayload();
         }
     }
@@ -210,6 +212,11 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
 
     public void setSat(ItemStack stack) {
         this.payload[0] = stack == null ? ItemStack.EMPTY : stack;
+    }
+
+    /** The satellite riding in the nose, which is what the payload separation puts in orbit. */
+    public ItemStack getSat() {
+        return this.payload[0];
     }
 
     public void setPayload(List<ItemStack> payload) {

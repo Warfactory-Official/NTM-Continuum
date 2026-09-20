@@ -37,7 +37,7 @@ public class BlockAmmoCrate extends CompatBlock {
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack held, BlockHitResult hit) {
-        if (!held.is(BlockCrateSupply.CROWBAR)) return InteractionResult.PASS;
+        if (!held.is(BlockCrateSupply.CROWBAR)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             for (ItemStack stack : getContents()) {
                 if (!stack.isEmpty()) Block.popResource(level, pos, stack);

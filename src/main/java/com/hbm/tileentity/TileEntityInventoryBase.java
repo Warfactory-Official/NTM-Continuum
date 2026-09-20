@@ -132,9 +132,16 @@ public abstract class TileEntityInventoryBase extends TileEntityLoadedBase imple
      */
     @Override
     public boolean stillValid(Player player) {
-        return this.level != null
-                && this.level.getBlockEntity(this.worldPosition) == this
-                && com.hbm.inventory.container.Containers.inRangeOfMultiblock(this.level, this.worldPosition, player);
+        if (this.level == null || this.level.getBlockEntity(this.worldPosition) != this) return false;
+        if (this.level.getBlockState(this.worldPosition).getBlock()
+                instanceof com.hbm.blocks.multiblock.BlockMultiblockCore) {
+            return com.hbm.inventory.container.Containers.inRangeOfMultiblock(this.level, this.worldPosition, player);
+        }
+        // A single-cell machine keeps 1.7's isUseableByPlayer: the plain 64-block-squared radius. Routing
+        // it through the multiblock check answered false for every plain block, so the server closed the
+        // menu on the tick after it opened (2026-09-19 regression from 118284fb).
+        return player.distanceToSqr(this.worldPosition.getX() + 0.5D, this.worldPosition.getY() + 0.5D,
+                this.worldPosition.getZ() + 0.5D) <= 64.0D;
     }
 
     @Override

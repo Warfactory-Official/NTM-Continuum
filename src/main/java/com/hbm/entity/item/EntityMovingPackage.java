@@ -67,7 +67,7 @@ public class EntityMovingPackage extends EntityMovingConveyorObject implements I
     /** 1.7 interactFirst: right-clicking unpacks into the player, spilling whatever will not fit. */
     @Override
     protected InteractionResult onInteract(Player player, InteractionHand hand) {
-        if (level().isClientSide() || isRemoved()) return InteractionResult.PASS;
+        if (level().isClientSide() || isRemoved()) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         for (ItemStack stack : this.contents) {
             player.getInventory().placeItemBackInInventory(stack);

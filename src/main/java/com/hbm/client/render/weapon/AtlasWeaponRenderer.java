@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -32,20 +33,6 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
     private WavefrontObj model() {
         if (model == null) model = WavefrontObj.load(MODEL);
         return model;
-    }
-
-    @Override
-    public org.joml.Vector3fc[] extents() {
-        WavefrontObj obj = model();
-        float[] mn = obj.boundsMin();
-        float[] mx = obj.boundsMax();
-        org.joml.Vector3fc[] corners = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int xi = 0; xi < 2; xi++) for (int yi = 0; yi < 2; yi++) for (int zi = 0; zi < 2; zi++) {
-            corners[i++] = new org.joml.Vector3f(xi == 0 ? mn[0] : mx[0],
-                    yi == 0 ? mn[1] : mx[1], zi == 0 ? mn[2] : mx[2]);
-        }
-        return corners;
     }
 
     @Override
@@ -106,4 +93,19 @@ public class AtlasWeaponRenderer extends WeaponRenderer {
                         state -> (float) (-45 + 45 * state.bus("HAMMER")[2]));
     }
 
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.125F, 1.125F, 1.125F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(-0.5F, 1.5F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(0.75F, 0.75F, 0.75F);
+        pose.translate(0F, 1F, 3F);
+    }
 }

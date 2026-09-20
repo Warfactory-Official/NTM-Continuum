@@ -56,6 +56,32 @@ public final class ModMenus {
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
 
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPASource>> PA_SOURCE =
+            MENUS.register("pa_source", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPASource::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPARFC>> PA_RFC =
+            MENUS.register("pa_rfc", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPARFC::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPAQuadrupole>> PA_QUADRUPOLE =
+            MENUS.register("pa_quadrupole", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPAQuadrupole::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPADipole>> PA_DIPOLE =
+            MENUS.register("pa_dipole", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADipole::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPADetector>> PA_DETECTOR =
+            MENUS.register("pa_detector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADetector::new));
+
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCore>> DFC_CORE =
+            MENUS.register("dfc_core", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCore::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreEmitter>> DFC_EMITTER =
+            MENUS.register("dfc_emitter", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreEmitter::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreReceiver>> DFC_RECEIVER =
+            MENUS.register("dfc_receiver", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreReceiver::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreInjector>> DFC_INJECTOR =
+            MENUS.register("dfc_injector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreInjector::new));
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreStabilizer>> DFC_STABILIZER =
+            MENUS.register("dfc_stabilizer", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreStabilizer::new));
+
+    public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerSoyuzLauncher>> SOYUZ_LAUNCHER =
+            MENUS.register("soyuz_launcher", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSoyuzLauncher::new));
+
+
     public static final RegistryObject<MenuType<ContainerMachineBattery>> MACHINE_BATTERY =
             MENUS.register("machine_battery", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineBattery::new));
 
@@ -246,6 +272,7 @@ public final class ModMenus {
 
     public static final RegistryObject<MenuType<ContainerMachineShredder>> MACHINE_SHREDDER =
             MENUS.register("machine_shredder", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineShredder::new));
+
 
     public static final RegistryObject<MenuType<ContainerMachineFluidTank>> FLUID_TANK =
             MENUS.register("machine_fluidtank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineFluidTank::new));

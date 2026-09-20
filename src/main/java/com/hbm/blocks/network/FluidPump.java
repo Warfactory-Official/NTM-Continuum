@@ -74,7 +74,7 @@ public class FluidPump extends dev.golem.core.world.CompatBlock implements Ticki
 
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (stack.getItem() instanceof IItemFluidId ident && level.getBlockEntity(pos) instanceof TileEntityFluidPump pump) {
             if (!level.isClientSide()) {
                 FluidType type = ident.getType(level, pos.getX(), pos.getY(), pos.getZ(), stack);
@@ -92,7 +92,7 @@ public class FluidPump extends dev.golem.core.world.CompatBlock implements Ticki
 
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide() && level.getBlockEntity(pos) instanceof TileEntityFluidPump pump) OPEN_SCREEN.accept(pump);
         return InteractionResult.SUCCESS;
     }

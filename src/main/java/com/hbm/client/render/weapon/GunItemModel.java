@@ -42,19 +42,19 @@ public class GunItemModel implements ItemModel {
     private final WeaponRenderer renderer;
     private final ModelRenderProperties properties;
     private final Body body = new Body();
-    /** Memoised: the OBJ is only loadable once resources are up, and the bounds never change after. */
-    private final java.util.function.Supplier<Vector3fc[]> extents;
 
     private GunItemModel(WeaponRenderer renderer, ModelRenderProperties properties) {
         this.renderer = renderer;
         this.properties = properties;
-        this.extents = com.google.common.base.Suppliers.memoize(renderer::extents);
     }
 
     @Override
     public void update(ItemStackRenderState output, ItemStack item, ItemModelResolver resolver,
             ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
         output.appendModelIdentityElement(this);
+        // Attachments change both the geometry and, on six weapons, the static pose. Without the stack's
+        // own data in the identity the picture-in-picture cache would keep serving the first variant seen.
+        output.appendModelIdentityElement(item.getComponentsPatch());
         ItemStackRenderState.LayerRenderState layer = output.newLayer();
 
         boolean firstPerson = displayContext == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
@@ -70,11 +70,13 @@ public class GunItemModel implements ItemModel {
             otherArm = !mainHand;
         }
 
-        // Without extents the layer reports an empty bounding box and the GUI icon never appears.
-        layer.setExtents(extents);
+        // Without extents the layer reports an empty bounding box and the GUI icon never appears — and
+        // the box has to be the one the static pose actually puts the declared body in, not the mesh's.
+        layer.setExtents(() -> renderer.staticExtents(item, displayContext));
         layer.setupSpecialModel(body, new Argument(item, renderer, firstPerson, otherArm, displayContext, owner));
-        // A held gun animates every frame, so its render state must not be cached.
-        if (firstPerson) output.setAnimated();
+        // A held gun animates every frame, and a few icons spin in the slot; either way the render
+        // state must not be cached.
+        if (firstPerson || renderer.animated(displayContext)) output.setAnimated();
         properties.applyToLayer(layer, displayContext);
     }
 
@@ -98,7 +100,7 @@ public class GunItemModel implements ItemModel {
                 return;
             }
             pose.pushPose();
-            argument.renderer().setupStatic(pose, argument.context());
+            argument.renderer().setupStatic(pose, argument.stack(), argument.context());
             argument.renderer().renderStatic(argument.stack(), pose, sink, lightCoords, overlayCoords,
                     argument.owner() == null ? null : argument.owner().asLivingEntity());
             pose.popPose();

@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -37,20 +38,6 @@ public final class DaniWeaponRenderer extends WeaponRenderer {
     private WavefrontObj model() {
         if (model == null) model = WavefrontObj.load(MODEL);
         return model;
-    }
-
-    @Override
-    public org.joml.Vector3fc[] extents() {
-        WavefrontObj obj = model();
-        float[] min = obj.boundsMin();
-        float[] max = obj.boundsMax();
-        org.joml.Vector3fc[] corners = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
-            corners[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0],
-                    y == 0 ? min[1] : max[1], z == 0 ? min[2] : max[2]);
-        }
-        return corners;
     }
 
     @Override
@@ -190,5 +177,18 @@ public final class DaniWeaponRenderer extends WeaponRenderer {
                         (float) Math.toRadians(right ? -1.125273F : 29.330267F),
                         (float) Math.toRadians(right ? 179.74399F : 154.481445F))
                 .scale(0.0703125F);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        pose.scale(1F, 1F, -1F);
+        pose.translate(8F, 6F, 0F);
+        pose.scale(1.125F, 1.125F, 1.125F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.translate(0F, 1F, 3F);
     }
 }

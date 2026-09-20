@@ -42,43 +42,8 @@ public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<Co
             GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 35, 14.0F, 202.0F, 18, progress, 256, 256);
         }
 
-        // Dynamic speed dial — the rotating needle from the 1.12.2 GUIElements.drawSmoothGauge, a faithful
-        // port: a black outer triangle (×1.5) behind a dark-red inner triangle (tip 5 / base 2 / back -2),
-        // rotated by `-speed*270-45`° about the gauge centre via the original rotateRollSelf math. (fill
-        // only draws rects, so the triangle is scanline-rasterised.)
-        drawSpeedDial(graphics, this.leftPos + 34, this.topPos + 25, press.speed / (double) TileEntityMachinePress.maxSpeed);
-    }
-
-    /** Supersample factor: the triangle is rasterised at SS× and the pose scaled by 1/SS, so the rotated
-     * edges and the tapered sides render smoothly instead of stepped. */
-    private static final int SS = 8;
-
-    private static void drawSpeedDial(GuiGraphicsExtractor graphics, int cx, int cy, double speed) {
-        speed = Math.max(0.0, Math.min(1.0, speed));
-        // The pose rotates the needle smoothly (clean rotated quads). The rotation matrix matches the
-        // original's rotateRollSelf — placing the unrotated local tip (0,+tipLen) at the same screen point
-        // requires pose angle = speed*270 + 45° (= -(−speed*270−45)).
-        float angle = (float) Math.toRadians(speed * 270.0 + 45.0);
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, cx, cy);
-        GuiDraw.rotate(graphics, angle);
-        GuiDraw.scale(graphics, 1.0F / SS, 1.0F / SS);
-        fillNeedle(graphics, 1.5, 0xFF000000); // outer (black) ×1.5
-        fillNeedle(graphics, 1.0, 0xFF7F0000); // inner (dark red) ×1.0
-        GuiDraw.popMatrix(graphics);
-    }
-
-    /** The 1.12.2 gauge needle: a triangle, tip at local +5, base width ±1 at local −2. Symmetric about
-     * the local X axis, so each row's half-width tapers linearly from the base to the tip. Drawn in local
-     * SS-scaled space (the pose handles rotation + the 1/SS down-scale). */
-    private static void fillNeedle(GuiGraphicsExtractor g, double mult, int color) {
-        double tipLen = 5 * mult * SS, backLen = 2 * mult * SS, backSide = 1 * mult * SS;
-        double total = tipLen + backLen;
-        int top = (int) Math.round(tipLen), bot = (int) Math.round(-backLen);
-        for (int y = bot; y < top; y++) {
-            int hw = (int) Math.round(backSide * (tipLen - y) / total);
-            if (hw > 0) g.fill(-hw, y, hw, y + 1, color);
-        }
+        GuiUtil.drawSmoothGauge(graphics, this.leftPos + 34, this.topPos + 25,
+                press.speed / (double) TileEntityMachinePress.maxSpeed, 5, 2, 1, 0x7F0000);
     }
 
     @Override

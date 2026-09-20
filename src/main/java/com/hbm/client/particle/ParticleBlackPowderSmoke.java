@@ -47,7 +47,7 @@ public class ParticleBlackPowderSmoke extends ParticleFXRotating {
         float ageScaled = (float) this.age / (float) this.lifetime;
         this.rotationPitch += (1F - ageScaled) * 2F * ((this.id % 2) - 0.5F);
         this.oRoll = this.roll;
-        this.roll = this.rotationPitch;
+        this.roll = this.rotationPitch * Mth.DEG_TO_RAD;
 
         this.xd *= 0.65D;
         this.yd *= 0.65D;

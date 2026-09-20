@@ -93,7 +93,7 @@ public abstract class EntityRailCarRidable extends EntityRailCarCargo {
     protected InteractionResult onInteract(Player player, InteractionHand hand) {
 
         InteractionResult coupled = super.onInteract(player, hand);
-        if(coupled != InteractionResult.PASS) return coupled;
+        if(coupled != InteractionResult.TRY_WITH_EMPTY_HAND) return coupled;
         if(level().isClientSide()) return InteractionResult.SUCCESS;
 
         int nearestSeat = this.getNearestSeat(player);

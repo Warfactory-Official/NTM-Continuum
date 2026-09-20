@@ -27,6 +27,7 @@ import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControlAuto;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKControlManual;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKHeater;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
+import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal;
 import com.hbm.tileentity.machine.storage.MassStorageType;
 import com.hbm.tileentity.machine.storage.TileEntityBatterySocket;
 import com.hbm.tileentity.machine.storage.TileEntityMassStorage;
@@ -34,11 +35,19 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
+import com.hbm.blocks.turret.ModTurretBlocks;
+import com.hbm.tileentity.machine.TileEntityCargoElevator;
+import com.hbm.tileentity.machine.TileEntityGeiger;
+import com.hbm.items.ModMachineItems;
+import com.hbm.tileentity.turret.TileEntityTurretArty;
+import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
+import com.hbm.tileentity.turret.TileEntityTurretSentry;
 import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 
 import java.util.Arrays;
@@ -79,6 +88,13 @@ public final class RadioProviderGameTests {
                 "Unexpected ROR descriptor list: " + Arrays.toString(info.getFunctionInfo()));
     }
 
+    private static void assertInteractive(GameTestHelper helper, IRORInfo info, String... expected) {
+        helper.assertTrue(info instanceof IRORInteractive,
+                "ROR descriptor target is not interactive: " + info.getClass().getSimpleName());
+        helper.assertTrue(Arrays.equals(expected, info.getFunctionInfo()),
+                "Unexpected ROR descriptor list: " + Arrays.toString(info.getFunctionInfo()));
+    }
+
     private static void descriptors(GameTestHelper helper) {
         assertInfo(helper, new TileEntityMachineBattery(pos(0), state(ModMachineBlocks.machine_battery.get())),
                 "VAL:fill", "VAL:fillpercent", "VAL:delta", "FUN:setmode!mode (0-3)",
@@ -111,6 +127,8 @@ public final class RadioProviderGameTests {
                 "VAL:temp", "VAL:power", "VAL:fuel", "VAL:lubricant", "VAL:water", "VAL:steam",
                 "FUN:setauto!auto", "FUN:setthrottle!percent", "FUN:setstate!state");
         assertInfo(helper, new TileEntityMachineIndustrialTurbine(pos(9), state(ModMachineBlocks.machine_industrial_turbine.get())), "VAL:output", "VAL:flywheel");
+        assertInfo(helper, new com.hbm.tileentity.machine.pile.TileEntityPileLoader(pos(34), state(com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get())),
+                "VAL:meta", "VAL:depletion", "VAL:deppercent", "VAL:lifetime", "VAL:temp");
         assertInfo(helper, new TileEntityMachinePUREX(pos(10), state(ModMachineBlocks.machine_purex.get())), "VAL:progress", "VAL:recipe", "VAL:active");
         assertInfo(helper, new TileEntityWatz(pos(11), state(ModMachineBlocks.watz.get())),
                 "VAL:heat", "VAL:flux", "VAL:mud", "VAL:coolant_hot", "VAL:coolant_cold");
@@ -134,6 +152,22 @@ public final class RadioProviderGameTests {
         assertInfo(helper, new BlockEntityRBMKRod(pos(23), state(ModRBMKBlocks.rbmk_fuel_rod.get())),
                 "VAL:columnheat", "VAL:rodheat", "VAL:depletion", "VAL:xenon", "VAL:fastflux", "VAL:slowflux", "VAL:flux");
         assertInfo(helper, new BlockEntityRBMKBoiler(pos(24), state(ModRBMKBlocks.rbmk_boiler.get())), "VAL:feed", "VAL:steam", "VAL:consumption");
+        assertInfo(helper, new TileEntityGeiger(pos(25), state(ModMachineBlocks.geiger.get())), "VAL:rad");
+        assertInfo(helper, new TileEntityCargoElevator(pos(31), state(ModMachineBlocks.cargo_elevator.get())),
+                "VAL:extension", "FUN:setextension!extension");
+        assertInteractive(helper, new BlockEntityRBMKTerminal(pos(30), state(ModRBMKBlocks.rbmk_terminal.get())),
+                "FUN:clear", "FUN:write!text", "FUN:set<line#>!text", "FUN:submit!command");
+        assertInteractive(helper, new TileEntityTurretSentry(pos(25), state(ModTurretBlocks.turret_sentry.get())),
+                "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
+                "FUN:targetAnimals!enabled (0 or 1)", "FUN:targetMobs!enabled (0 or 1)",
+                "FUN:targetMachines!enabled (0 or 1)", "FUN:addWhitelist!name", "FUN:removeWhitelist!name");
+        assertInteractive(helper, new com.hbm.tileentity.machine.pile.TileEntityPileControl(pos(35), state(com.hbm.blocks.machine.pile.ModPileBlocks.pile_device.get())),
+                "FUN:setrods!percent", "FUN:extendrods!percent");
+        assertInteractive(helper, new TileEntityTurretArty(pos(26), state(ModTurretBlocks.turret_arty.get())),
+                "FUN:setActive!active (0 or 1)", "FUN:targetPlayers!enabled (0 or 1)",
+                "FUN:targetAnimals!enabled (0 or 1)", "FUN:targetMobs!enabled (0 or 1)",
+                "FUN:targetMachines!enabled (0 or 1)", "FUN:addWhitelist!name", "FUN:removeWhitelist!name",
+                "FUN:enqueue!x:y:z");
         helper.succeed();
     }
 
@@ -221,6 +255,66 @@ public final class RadioProviderGameTests {
         TileEntityMassStorage storage = new TileEntityMassStorage(MassStorageType.IRON, pos(6), state(ModStorageBlocks.mass_storage_iron.get()));
         storage.runRORFunction("FUN:toggleoutput", new String[0]);
         helper.assertTrue(storage.output, "Mass-storage output toggle changed");
+
+        TileEntityCargoElevator lift =
+                new TileEntityCargoElevator(pos(12), state(ModMachineBlocks.cargo_elevator.get()));
+        lift.height = 4;
+        lift.runRORFunction("FUN:setextension", new String[]{"3"});
+        helper.assertTrue(lift.targetExtension == 3, "Elevator ROR extension target changed");
+        expectException(helper, () -> lift.runRORFunction("FUN:setextension", new String[]{"5"}),
+                IRORInteractive.EX_FORMAT);
+        lift.extension = 2.75D;
+        helper.assertTrue("2".equals(lift.provideRORValue("VAL:extension")),
+                "Elevator reports whole courses, so a partly-raised platform reads as the one below");
+
+        BlockEntityRBMKTerminal terminal =
+                new BlockEntityRBMKTerminal(pos(11), state(ModRBMKBlocks.rbmk_terminal.get()));
+        terminal.runRORFunction("FUN:write", new String[]{"hello", "world"});
+        helper.assertTrue("hello world".equals(terminal.history[0]),
+                "Terminal write must join its parameters back into one line");
+        terminal.runRORFunction("FUN:set3", new String[]{"third"});
+        helper.assertTrue("third".equals(terminal.history[2]),
+                "Terminal set<line#> is 1-based, so set3 writes history[2]");
+        expectException(helper, () -> terminal.runRORFunction("FUN:set0", new String[]{"x"}),
+                IRORInteractive.EX_FORMAT);
+        expectException(helper, () -> terminal.runRORFunction("FUN:set18", new String[]{"x"}),
+                IRORInteractive.EX_FORMAT);
+        terminal.runRORFunction("FUN:clear", new String[0]);
+        helper.assertTrue(terminal.history[0].isEmpty() && terminal.history[2].isEmpty(),
+                "Terminal clear must empty the whole scrollback");
+
+        TileEntityGeiger geiger = new TileEntityGeiger(pos(10), state(ModMachineBlocks.geiger.get()));
+        geiger.ticker = 3.2D;
+        helper.assertTrue("4".equals(geiger.provideRORValue("VAL:rad")),
+                "Geiger rounds its reading up, so 3.2 must read as 4");
+
+        TileEntityTurretSentry sentry = new TileEntityTurretSentry(pos(7), state(ModTurretBlocks.turret_sentry.get()));
+        sentry.runRORFunction("FUN:setActive", new String[]{"1"});
+        sentry.runRORFunction("FUN:targetPlayers", new String[]{"1"});
+        sentry.runRORFunction("FUN:targetMobs", new String[]{"0"});
+        sentry.runRORFunction("FUN:targetMachines", new String[]{"0"});
+        helper.assertTrue(sentry.isOn && sentry.targetPlayers && !sentry.targetMobs && !sentry.targetMachines,
+                "Turret ROR toggle command changed");
+        expectException(helper, () -> sentry.runRORFunction("FUN:setActive", new String[]{"2"}),
+                IRORInteractive.EX_FORMAT);
+
+        sentry.runRORFunction("FUN:addWhitelist", new String[]{"Steve"});
+        helper.assertTrue(sentry.getWhitelist() == null, "Turret ROR wrote a whitelist with no chip installed");
+        sentry.setItem(TileEntityTurretBaseNT.SLOT_CHIP, new ItemStack(ModMachineItems.turret_chip.get()));
+        sentry.runRORFunction("FUN:addWhitelist", new String[]{"Steve"});
+        helper.assertTrue(sentry.getWhitelist() != null && sentry.getWhitelist().contains("Steve"),
+                "Turret ROR whitelist addition changed");
+        sentry.runRORFunction("FUN:removeWhitelist", new String[]{"Steve"});
+        helper.assertTrue(sentry.getWhitelist() == null, "Turret ROR whitelist removal changed");
+
+        TileEntityTurretArty arty = new TileEntityTurretArty(pos(8), state(ModTurretBlocks.turret_arty.get()));
+        arty.runRORFunction("FUN:setActive", new String[]{"1"});
+        helper.assertTrue(arty.isOn, "Artillery ROR lost the inherited turret commands");
+        arty.runRORFunction("FUN:enqueue", new String[]{"" + (pos(8).getX() + 20), "1"});
+        helper.assertTrue(arty.queuedTargets() == 0, "Artillery ROR enqueued a fire mission without a Z");
+        arty.runRORFunction("FUN:enqueue",
+                new String[]{"" + (pos(8).getX() + 20), "1", "" + pos(8).getZ()});
+        helper.assertTrue(arty.queuedTargets() == 1, "Artillery ROR fire mission changed");
         helper.succeed();
     }
 

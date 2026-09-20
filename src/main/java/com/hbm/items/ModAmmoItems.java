@@ -206,8 +206,10 @@ public final class ModAmmoItems {
                 p45_sp, p45_fmj, p45_jhp, p45_ap, p45_du,
                 ct_hook, ct_mortar, ct_mortar_charge,
                 shell_normal, shell_explosive, shell_ap, shell_du, shell_w9,
-                ammo_himars, ammo_arty, designator_arty_range);
+                designator_arty_range);
         addToWeapons(fext_water, fext_foam, fext_sand);
+        ModTabs.addVariantsTo(HbmTab.WEAPONS, ammo_himars);
+        ModTabs.addVariantsTo(HbmTab.WEAPONS, ammo_arty);
     }
 
     @SafeVarargs

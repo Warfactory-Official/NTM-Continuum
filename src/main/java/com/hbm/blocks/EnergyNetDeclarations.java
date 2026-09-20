@@ -27,6 +27,7 @@ public final class EnergyNetDeclarations {
             "red_pylon_medium_steel", "red_pylon_medium_steel_transformer", "red_pylon_large", "substation",
             "red_connector", "red_connector_super", "red_cable_classic", "red_cable_gauge", "red_cable_paintable",
             "cable_switch", "cable_detector", "cable_diode", "machine_detector", "capacitor_bus",
+            "machine_capacitor_copper", "machine_capacitor_gold", "machine_capacitor_niobium",
             "capacitor_tantalium", "capacitor_schrabidate", "machine_battery_potato", "machine_lithium_battery",
             "machine_schrabidium_battery", "machine_dineutronium_battery", "hev_battery", "tesla"
     };
@@ -48,6 +49,10 @@ public final class EnergyNetDeclarations {
         Dejson.item(NS, "red_cable_gauge").shares("hbm:block/red_cable_gauge").register();
         Dejson.block(NS, "cable_diode").statesOnly().states(Variants.facingAll()).register();
         Dejson.item(NS, "cable_diode").shares("hbm:block/cable_diode").register();
+        for (String tier : new String[]{"machine_capacitor_copper", "machine_capacitor_gold", "machine_capacitor_niobium"}) {
+            Dejson.block(NS, tier).statesOnly().states(Variants.facingUp()).register();
+            Dejson.item(NS, tier).shares("hbm:block/" + tier).register();
+        }
         Dejson.block(NS, "capacitor_tantalium").statesOnly().states(Variants.facingUp()).register();
         Dejson.item(NS, "capacitor_tantalium").shares("hbm:block/capacitor_tantalium").register();
         Dejson.block(NS, "capacitor_schrabidate").statesOnly().states(Variants.facingUp()).register();

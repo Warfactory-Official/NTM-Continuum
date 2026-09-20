@@ -77,6 +77,12 @@ final class GemModels {
                         .writeMask(WriteMask.COLOR)
                         .backfaceCulling(false)
                         .build();
+                // 1.7's SRC_ALPHA/ONE glow: alpha-weighted additive, unculled and not depth-writing.
+                case PLASMA_GLOW -> builder.transparency(Transparency.ADDITIVE)
+                        .light(LightShaders.FLAT)
+                        .writeMask(WriteMask.COLOR)
+                        .backfaceCulling(false)
+                        .build();
             };
         });
     }

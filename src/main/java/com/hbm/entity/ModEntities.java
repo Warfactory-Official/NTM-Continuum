@@ -207,10 +207,7 @@ public final class ModEntities {
                             .clientTrackingRange(64)
                             .updateInterval(1), key));
 
-    /**
-     * A gas cloud. Tracked far out because a chemical shell lands where the player is not, and the
-     * cloud is the only sign it did.
-     */
+
     public static final RegistryObject<EntityType<com.hbm.entity.effect.EntityMist>> MIST =
             ENTITY_TYPES.register("entity_mist", key -> dev.golem.core.registry.Entities.build(
                     EntityType.Builder.<com.hbm.entity.effect.EntityMist>of(

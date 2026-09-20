@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,7 +17,6 @@ public final class TeslaCannonWeaponRenderer extends WeaponRenderer {
         if (model == null) model = SpecialWeaponRenderers.model("tesla_cannon");
         return model;
     }
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.5F;
     }
@@ -81,5 +81,21 @@ public final class TeslaCannonWeaponRenderer extends WeaponRenderer {
                 caps = caps.joint().translate(0.5F, 0, 0);
             }
         }
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.25F, 1.25F, 1.25F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(0F, 0.5F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(2.75F, 2.75F, 2.75F);
+        pose.translate(0F, 1.5F, 1F);
     }
 }

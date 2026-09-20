@@ -33,8 +33,14 @@ public final class ArcWelderGameTests {
 
     public static void feasibleCatalogueAndMatching(GameTestHelper helper) {
         ArcWelderRecipes.register();
-        helper.assertTrue(ArcWelderRecipes.recipes.size() == 41,
-                "Arc Welder must retain 41 feasible legacy recipes");
+        helper.assertTrue(ArcWelderRecipes.recipes.size() == 43,
+                "Arc Welder must retain 43 feasible legacy recipes");
+
+        var scanner = ArcWelderRecipes.getRecipe(new ItemStack(ModItems.sat_base.get()),
+                new ItemStack(ModItems.sat_head_scanner.get()), ItemStack.EMPTY);
+        helper.assertTrue(scanner != null
+                        && scanner.output.is(com.hbm.items.ModSatelliteItems.satellite.get()),
+                "A satellite base welded to a scanner head must make a satellite");
 
         Item wire = ModAutogenItems.get(MaterialShapes.DENSEWIRE, com.hbm.inventory.material.Mats.MAT_RED_COPPER);
         var motor = ArcWelderRecipes.getRecipe(

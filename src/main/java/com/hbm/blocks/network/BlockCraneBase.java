@@ -88,7 +88,7 @@ public abstract class BlockCraneBase extends CompatBlock implements TickingBlock
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                             InteractionHand hand, ItemStack stack, BlockHitResult hit) {
         if (stack.getItem() instanceof ItemTooling || stack.getItem() instanceof ItemConveyorWand) {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         return onUseWithoutItem(state, level, pos, player, hit);
     }
@@ -96,8 +96,8 @@ public abstract class BlockCraneBase extends CompatBlock implements TickingBlock
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
-        if (player.isShiftKeyDown()) return InteractionResult.PASS;
-        if (!(level.getBlockEntity(pos) instanceof MenuProvider provider)) return InteractionResult.PASS;
+        if (player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (!(level.getBlockEntity(pos) instanceof MenuProvider provider)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide() && player instanceof ServerPlayer serverPlayer) {
             dev.golem.core.gui.Menus.openWithPos(serverPlayer, provider, pos);
         }

@@ -56,7 +56,7 @@ public class WeaponModLiberatorSpeedloader extends WeaponModBase {
                     (BiFunction<ItemStack, GunAnimation, BusAnimation>) base;
             BiFunction<ItemStack, GunAnimation, BusAnimation> replacement = (stack, type) -> {
                 BusAnimation source = ANIMS.apply(stack, type);
-                return source != null ? source : original == null ? new BusAnimation() : original.apply(stack, type);
+                return source != null ? source : original == null ? null : original.apply(stack, type);
             };
             return cast(replacement, base);
         }

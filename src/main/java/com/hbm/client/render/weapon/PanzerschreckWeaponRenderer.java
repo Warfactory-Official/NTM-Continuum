@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -17,7 +18,6 @@ public final class PanzerschreckWeaponRenderer extends WeaponRenderer {
         return model;
     }
 
-    @Override public org.joml.Vector3fc[] extents() { return SpecialWeaponRenderers.extents(model()); }
     @Override protected float getTurnMagnitude(ItemStack stack) {
         return ItemGunBaseNT.getIsAiming(stack) ? 2.5F : -0.25F;
     }
@@ -50,5 +50,21 @@ public final class PanzerschreckWeaponRenderer extends WeaponRenderer {
                 .slide(Gem.Axes.X, state -> (float) state.bus("ROCKET")[0])
                 .slide(Gem.Axes.Y, state -> (float) state.bus("ROCKET")[1])
                 .slide(Gem.Axes.Z, state -> (float) state.bus("ROCKET")[2]);
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.5F, 1.5F, 1.5F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(-0.5F, 0.5F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.scale(3F, 3F, 3F);
+        pose.translate(0F, 0.5F, 1F);
     }
 }

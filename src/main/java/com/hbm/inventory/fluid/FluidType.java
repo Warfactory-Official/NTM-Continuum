@@ -35,8 +35,19 @@ public class FluidType {
     private final String fallbackName;
     /** GUI tint (defaults to the colour; overridable for custom fluids). */
     private int guiTint;
+    /** The lowercase id, which every asset path and translation key for this fluid is built from. */
+    private final String key;
     private final Identifier texture;
+    private final Identifier icon;
     private final Map<Class<?>, Object> traits = new HashMap<>();
+
+    /**
+     * The greyscale droplet art every fluid's icon sprite is recoloured from, and therefore the stem of
+     * every one of those sprite ids. {@link com.hbm.client.FluidSprites} declares the recolouring from
+     * this same path, so the id minted there and the id {@link #getIconSprite()} hands a screen cannot
+     * drift apart.
+     */
+    public static final String ICON_ART = "items/fluid_icon";
 
     public static final int ROOM_TEMPERATURE = 20;
     /** How hot this fluid is, in °C. */
@@ -46,9 +57,11 @@ public class FluidType {
         this.stringId = name;
         this.color = color;
         this.guiTint = color;
-        this.unlocalized = "hbmfluid." + name.toLowerCase(Locale.US);
+        this.key = name.toLowerCase(Locale.US);
+        this.unlocalized = "hbmfluid." + this.key;
         this.fallbackName = titleCase(name);
-        this.texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + name.toLowerCase(Locale.US) + ".png");
+        this.texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + this.key + ".png");
+        this.icon = dev.golem.core.Ids.of(Constants.MOD_ID, ICON_ART + "_" + this.key);
         this.id = Fluids.registerSelf(this);
     }
 
@@ -111,6 +124,19 @@ public class FluidType {
     public int getTint() { return this.guiTint; }
 
     public Identifier getTexture() { return this.texture; }
+
+    /** The lowercase id every asset this fluid names is built from. */
+    public String getKey() { return this.key; }
+
+    /**
+     * The droplet sprite for this fluid: the grayscale {@code fluid_icon} art recoloured onto
+     * {@link #getColor()}, stitched into the item atlas by {@link com.hbm.client.FluidSprites}.
+     *
+     * <p>A sprite id, not a texture path — there is no file behind it. Draw it with
+     * {@link com.hbm.client.FluidSprites#draw}, which is what a screen or a JEI category wants when it
+     * has somewhere to put a droplet but no item slot to put it in.
+     */
+    public Identifier getIconSprite() { return this.icon; }
 
     public String getTranslationKey() { return this.unlocalized; }
 

@@ -98,7 +98,7 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem {
         // TODO: 1.7 ItemGrenadeUniversal:98-109 ticks the counter on both sides, so its client gate can pass and
         // swing the arm. Here it only ever advances server-side, so the client always PASSes and never swings;
         // the throw itself still lands, because MultiPlayerGameMode.useItem sends its packet regardless.
-        if (deployment(player) < getData(stack).shell().getDrawDuration()) return InteractionResult.PASS;
+        if (deployment(player) < getData(stack).shell().getDrawDuration()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (!level.isClientSide()) {
             level.addFreshEntity(new EntityGrenadeUniversal(level, player, stack));
             dev.golem.core.world.ItemStacks.consume(stack, 1, player);

@@ -101,7 +101,7 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
         if (!level().isClientSide()) {
 
             if (this.random.nextInt(5) == 0)
-                level().playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS,
+                level().playSound(null, getX(), getY(), getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS,
                         10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
 
             if (!flag) {

@@ -14,11 +14,15 @@ import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ItemEnums.EnumCircuitType;
+import com.hbm.items.ItemEnums.EnumPartType;
 import com.hbm.items.ItemEnums.EnumExpensiveType;
 import com.hbm.items.ModAutogenItems;
 import com.hbm.items.ModBatteryItems;
 import com.hbm.items.ModIntermediateItems;
+import com.hbm.items.ModIngredientItems;
 import com.hbm.items.ModItems;
+import com.hbm.items.machine.ItemSatellite.EnumSatType;
+import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModUpgradeItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -28,6 +32,10 @@ import net.minecraft.world.item.Items;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 
 import static com.hbm.inventory.OreDictManager.*;
+
+import com.hbm.blocks.machine.pile.ModPileBlocks;
+import com.hbm.inventory.material.Mats;
+import com.hbm.items.machine.ItemPileRodMK2.EnumPileRod;
 
 /**
  * Assembly machine recipes — a faithful but <b>feasibility-limited</b> slice of the 1.12.2 catalogue.
@@ -56,6 +64,32 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     public static final String POOL_PLATES = POOL_PREFIX_ALT + "plates";
     private static final String GROUP_PLATES = "plates";
     private static final String GROUP_CYCLOTRON = "cyclotron";
+    private static final String GROUP_PILE_ROD = "pilerod";
+
+    private static ItemStack satellite(EnumSatType type) {
+        return com.hbm.items.ModSatelliteItems.satellite.get().of(type);
+    }
+
+    /** A full fluid barrel as a recipe input; the barrel itself comes back. */
+    private static ComparableStack barrel(com.hbm.inventory.fluid.FluidType fluid) {
+        return new ComparableStack(com.hbm.items.ModFluidItems.fluid_barrel.get().make(fluid, 16_000));
+    }
+
+    private static ComparableStack lithiumPack() {
+        return new ComparableStack(com.hbm.items.ModBatteryItems.PACKS
+                .get(com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack.BATTERY_LITHIUM).get());
+    }
+
+    /** The {@code c:concretes} tag; concrete has no {@link com.hbm.inventory.material.NTMMaterial}. */
+    private static com.hbm.inventory.RecipesCommon.AStack concrete(int count) {
+        return new com.hbm.inventory.RecipesCommon.TagStack(
+                net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
+                        dev.golem.core.Ids.of("c", "concretes")), count);
+    }
+
+    private static ItemStack pileRod(EnumPileRod type, int count) {
+        return ModPileBlocks.pile_rod.get().of(type, count);
+    }
 
     @Override
     public void registerRecipes() {
@@ -236,6 +270,90 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 4))
                 .outputItems(new ItemStack(ModMachineBlocks.machine_industrial_turbine.get())));
 
+        // --- chicago pile (1.12.2 "ass.pile*") ---
+        register(new GenericRecipe("ass.pileblock").setup(20, 250)
+                .inputItems(new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.ItemTags.PLANKS, 1),
+                        Mats.MAT_GRAPHITE.ingot().count(4), STEEL.bolt().count(2))
+                .outputItems(new ItemStack(ModPileBlocks.pile_brick.get())));
+        register(new GenericRecipe("ass.pilepabe").setup(40, 200)
+                .inputItems(new ComparableStack(ModItems.billet_ra226be.get(), 3))
+                .outputItems(pileRod(EnumPileRod.RA226BE, 1))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilepobe").setup(40, 200)
+                .inputItems(new ComparableStack(ModItems.billet_po210be.get(), 3))
+                .outputItems(pileRod(EnumPileRod.PO210BE, 1))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilezr").setup(40, 200)
+                .inputItems(ZR.billet().count(1))
+                .outputItems(pileRod(EnumPileRod.ZR, 3))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilenu").setup(40, 200)
+                .inputItems(U.billet().count(3))
+                .outputItems(pileRod(EnumPileRod.NU, 1))
+                .setGroup(GROUP_PILE_ROD, this));
+        register(new GenericRecipe("ass.pilethorium").setup(40, 200)
+                .inputItems(TH232.billet().count(3))
+                .outputItems(pileRod(EnumPileRod.THORIUM, 1))
+                .setGroup(GROUP_PILE_ROD, this));
+
+        // --- the satellite launch vehicle ---
+        register(new GenericRecipe("ass.soyuz").setup(6_000, 100)
+                .inputItems(TI.shell().count(32), RUBBER.ingot().count(64),
+                        new ComparableStack(com.hbm.items.ModFuelItems.rocket_fuel.get(), 64),
+                        new ComparableStack(ModItems.thruster_small.get(), 12),
+                        new ComparableStack(ModItems.thruster_medium.get(), 12),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 4),
+                        new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 32))
+                .outputItems(com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.get()
+                        .of(com.hbm.items.ItemEnums.SoyuzSkinType.NORMAL)));
+
+        // --- satellites and the ground station ---
+        register(new GenericRecipe("ass.satlink").setup(100, 1_000)
+                .inputItems(new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 16),
+                        AL.plate().count(16), new ComparableStack(ModItems.magnetron.get(), 3),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER), 1))
+                .outputItems(new ItemStack(ModMachineBlocks.machine_satlink.get())));
+
+        register(new GenericRecipe("ass.satelliterelay").setup(600, 100)
+                .inputItems(TI.shell().count(3), new ComparableStack(ModItems.plate_desh.get(), 8),
+                        barrel(Fluids.HYDROGEN), new ComparableStack(ModItems.photo_panel.get(), 16),
+                        new ComparableStack(ModItems.thruster_nuclear.get(), 1),
+                        new ComparableStack(ModItems.ingot_uranium_fuel.get(), 6),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BASIC), 24),
+                        new ComparableStack(ModItems.magnetron.get(), 3), lithiumPack())
+                .outputItems(satellite(EnumSatType.RELAY)));
+        register(new GenericRecipe("ass.satelliteasteroidminer").setup(600, 100)
+                .inputItems(BIGMT.plate().count(24), new ComparableStack(ModItems.motor_desh.get(), 2),
+                        new ComparableStack(ModItems.drill_titanium.get(), 2),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 12),
+                        barrel(Fluids.KEROSENE), new ComparableStack(ModItems.thruster_small.get(), 1),
+                        new ComparableStack(ModItems.photo_panel.get(), 12),
+                        new ComparableStack(ModItems.centrifuge_element.get(), 4), lithiumPack())
+                .outputItems(satellite(EnumSatType.MINER_ASTRO)));
+        register(new GenericRecipe("ass.satellitelunarminer").setup(600, 100)
+                .inputItems(new ComparableStack(ModItems.plate_desh.get(), 4),
+                        new ComparableStack(ModItems.motor.get(), 2),
+                        new ComparableStack(ModItems.drill_titanium.get(), 2),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 8),
+                        barrel(Fluids.KEROSENE), new ComparableStack(ModItems.thruster_small.get(), 1),
+                        new ComparableStack(ModItems.photo_panel.get(), 12), lithiumPack())
+                .outputItems(satellite(EnumSatType.MINER_LUNAR)));
+        register(new GenericRecipe("ass.detectorsat").setup(1_200, 25_000)
+                .inputItems(GOLD.plateCast().count(16), new ComparableStack(ModItems.photo_panel.get(), 64),
+                        BSCCO.wireDense().count(16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 24),
+                        new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 1))
+                .outputItems(satellite(EnumSatType.DETECTOR)));
+        register(new GenericRecipe("ass.rayscansat").setup(1_200, 25_000)
+                .inputItems(BIGMT.shell().count(16), new ComparableStack(ModItems.photo_panel.get(), 32),
+                        SBD.wireDense().count(16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 16),
+                        new ComparableStack(ModIngredientItems.part(EnumPartType.LDE), 16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 3))
+                .outputItems(satellite(EnumSatType.RAY_SCAN)));
+
+
         // --- gas turbine and turbofan (1.12.2 "ass.gasturbine" / "ass.turbofan") ---
         register(new GenericRecipe("ass.gasturbine").setup(400, 100)
                 .inputItems(STEEL.shell().count(10), GOLD.wireDense().count(12), DURA.pipe().count(4),
@@ -290,6 +408,51 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         // else (it was never a FluidContainerRegistry container), 32,000 mB per pack, every fluid without
         // FT_NoContainer. ass.emptypackage (4 Ti plates + 2 any-plastic) is in the generated file.
         fluidPacks();
+
+        // --- Albion particle accelerator ---
+        register(new GenericRecipe("ass.beamline").setup(200, 100)
+                .inputItems(STEEL.plateCast().count(8), CU.plate().count(16), GOLD.wireDense().count(4))
+                .outputItems(new ItemStack(ModMachineBlocks.pa_beamline.get(), 1)));
+        register(new GenericRecipe("ass.rfc").setup(400, 100)
+                .inputItems(new ComparableStack(ModMachineBlocks.pa_beamline.get().asItem(), 3),
+                        STEEL.plateCast().count(16), CU.plate().count(64), ANY_HARDPLASTIC.ingot().count(16),
+                        new ComparableStack(ModItems.magnetron.get(), 16))
+                .outputItems(new ItemStack(ModMachineBlocks.pa_rfc.get(), 1)));
+        register(new GenericRecipe("ass.quadrupole").setup(400, 100)
+                .inputItems(new ComparableStack(ModMachineBlocks.pa_beamline.get().asItem(), 1),
+                        STEEL.plateCast().count(16), ANY_HARDPLASTIC.ingot().count(16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 1))
+                .outputItems(new ItemStack(ModMachineBlocks.pa_quadrupole.get(), 1)));
+        register(new GenericRecipe("ass.dipole").setup(400, 100)
+                .inputItems(new ComparableStack(ModMachineBlocks.pa_beamline.get().asItem(), 2),
+                        STEEL.plateCast().count(16), ANY_HARDPLASTIC.ingot().count(32),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.BISMOID), 4))
+                .outputItems(new ItemStack(ModMachineBlocks.pa_dipole.get(), 1)));
+        register(new GenericRecipe("ass.source").setup(400, 100)
+                .inputItems(new ComparableStack(ModMachineBlocks.pa_beamline.get().asItem(), 3),
+                        STEEL.plateCast().count(16), ANY_HARDPLASTIC.ingot().count(16),
+                        new ComparableStack(ModItems.magnetron.get(), 16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 1))
+                .outputItems(new ItemStack(ModMachineBlocks.pa_source.get(), 1)));
+        register(new GenericRecipe("ass.detector").setup(400, 100)
+                .inputItems(new ComparableStack(ModMachineBlocks.pa_beamline.get().asItem(), 3),
+                        STEEL.plateCast().count(24), GOLD.wireDense().count(16), ANY_HARDPLASTIC.ingot().count(16),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.QUANTUM), 4))
+                .outputItems(new ItemStack(ModMachineBlocks.pa_detector.get(), 1)));
+
+        register(new GenericRecipe("ass.pagold").setup(400, 100)
+                .inputItems(GOLD.wireDense().count(64), GOLD.wireDense().count(64))
+                .outputItems(new ItemStack(ModItems.pa_coil_gold.get(), 1)));
+        register(new GenericRecipe("ass.panbti").setup(400, 100)
+                .inputItems(NB.wireDense().count(64), TI.wireDense().count(64))
+                .outputItems(new ItemStack(ModItems.pa_coil_niobium.get(), 1)));
+        register(new GenericRecipe("ass.pabscco").setup(400, 100)
+                .inputItems(BSCCO.wireDense().count(64), ANY_PLASTIC.ingot().count(64))
+                .outputItems(new ItemStack(ModItems.pa_coil_bscco.get(), 1)));
+        register(new GenericRecipe("ass.pachlorophyte").setup(400, 100)
+                .inputItems(CU.wireDense().count(64), CU.wireDense().count(64),
+                        new ComparableStack(ModItems.powder_chlorophyte.get(), 16))
+                .outputItems(new ItemStack(ModItems.pa_coil_chlorophyte.get(), 1)));
 
         // The bulk of the 1.12.2 catalogue, generated by port-tools/gen_machine_recipes.py (skips
         // anything already registered above — curated recipes win).

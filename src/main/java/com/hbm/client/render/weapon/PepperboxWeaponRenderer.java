@@ -1,5 +1,6 @@
 package com.hbm.client.render.weapon;
 
+import com.mojang.math.Axis;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,19 +17,6 @@ public final class PepperboxWeaponRenderer extends WeaponRenderer {
     private WavefrontObj model() {
         if (model == null) model = WavefrontObj.load(Ids.of("hbm", "models/weapons/pepperbox.obj"));
         return model;
-    }
-
-    @Override
-    public org.joml.Vector3fc[] extents() {
-        WavefrontObj obj = model();
-        float[] min = obj.boundsMin(), max = obj.boundsMax();
-        org.joml.Vector3fc[] out = new org.joml.Vector3fc[8];
-        int i = 0;
-        for (int x = 0; x < 2; x++) for (int y = 0; y < 2; y++) for (int z = 0; z < 2; z++) {
-            out[i++] = new org.joml.Vector3f(x == 0 ? min[0] : max[0], y == 0 ? min[1] : max[1],
-                    z == 0 ? min[2] : max[2]);
-        }
-        return out;
     }
 
     @Override protected float getTurnMagnitude(ItemStack stack) {
@@ -82,5 +70,20 @@ public final class PepperboxWeaponRenderer extends WeaponRenderer {
     private static boolean loading(WeaponPose state) {
         double[] loader = state.bus("LOADER");
         return loader[0] != 0 || loader[1] != 0 || loader[2] != 0;
+    }
+
+    @Override
+    protected void setupInv(PoseStack pose, ItemStack stack) {
+        super.setupInv(pose, stack);
+        pose.scale(1.5F, 1.5F, 1.5F);
+        pose.mulPose(Axis.XP.rotationDegrees(25F));
+        pose.mulPose(Axis.YP.rotationDegrees(45F));
+        pose.translate(0.5F, 0.5F, 0F);
+    }
+
+    @Override
+    protected void setupThirdPerson(PoseStack pose, ItemStack stack) {
+        super.setupThirdPerson(pose, stack);
+        pose.translate(0F, 1F, 3F);
     }
 }

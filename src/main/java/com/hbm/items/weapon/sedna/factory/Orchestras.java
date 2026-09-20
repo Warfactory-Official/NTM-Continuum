@@ -26,15 +26,25 @@ public final class Orchestras {
 
     private Orchestras() {}
 
-    private record Cue(GunAnimation[] types, int timer, Supplier<SoundEvent> sound, float volume, float pitch) {}
+    private record Cue(GunAnimation[] types, int timer, Supplier<SoundEvent> sound, float volume, float pitch,
+            java.util.function.BiPredicate<ItemStack, ItemGunBaseNT.LambdaContext> when) {}
 
     private static Cue cue(GunAnimation type, int timer, Supplier<SoundEvent> sound, float volume, float pitch) {
-        return new Cue(new GunAnimation[] {type}, timer, sound, volume, pitch);
+        return new Cue(new GunAnimation[] {type}, timer, sound, volume, pitch, null);
     }
 
     private static Cue cue(int timer, Supplier<SoundEvent> sound, float volume, float pitch,
             GunAnimation... types) {
-        return new Cue(types, timer, sound, volume, pitch);
+        return new Cue(types, timer, sound, volume, pitch, null);
+    }
+
+    /** The chamber foley upstream plays only when the reload starts on an empty gun. */
+    private static Cue cueWhenEmpty(GunAnimation type, int timer, Supplier<SoundEvent> sound,
+            float volume, float pitch) {
+        return new Cue(new GunAnimation[] {type}, timer, sound, volume, pitch, (stack, ctx) -> {
+            IMagazine<?> mag = magazine(stack, ctx, 0);
+            return mag != null && mag.getAmount(stack, ctx.inventory) == 0;
+        });
     }
 
     private enum Muzzle { NONE, CYCLE, CYCLE_OR_ALT, NI4NI_CYCLE }
@@ -67,6 +77,7 @@ public final class Orchestras {
             if (casing != null) casing.accept(stack, ctx, type, timer);
             for (Cue cue : cues) {
                 if (cue.timer() != timer || !contains(cue.types(), type)) continue;
+                if (cue.when() != null && !cue.when().test(stack, ctx)) continue;
                 play(ctx, cue.sound(), cue.volume(), cue.pitch());
             }
         };
@@ -653,12 +664,15 @@ public final class Orchestras {
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_LIBERATOR = timeline(Muzzle.CYCLE,
             LIBERATOR_CASINGS,
             cue(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_COCK, 1F, 0.75F),
+            cue(GunAnimation.RELOAD, 15, ModGunSounds.MAG_SMALL_INSERT, 1F, 1F),
             cue(GunAnimation.RELOAD_CYCLE, 5, ModGunSounds.MAG_SMALL_INSERT, 1F, 1F),
             cue(GunAnimation.RELOAD_END, 2, ModGunSounds.REVOLVER_CLOSE, 1F, 0.9F),
             cue(GunAnimation.JAMMED, 2, ModGunSounds.REVOLVER_CLOSE, 1F, 0.9F),
             cue(GunAnimation.JAMMED, 12, ModGunSounds.REVOLVER_COCK, 1F, 0.75F),
             cue(GunAnimation.JAMMED, 26, ModGunSounds.REVOLVER_CLOSE, 1F, 0.9F),
-            cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1F));
+            cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1F),
+            cue(GunAnimation.INSPECT, 0, ModGunSounds.REVOLVER_COCK, 1F, 0.75F),
+            cue(GunAnimation.INSPECT, 20, ModGunSounds.REVOLVER_CLOSE, 1F, 0.9F));
 
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_CONGOLAKE = timeline(Muzzle.CYCLE,
             CONGOLAKE_CASINGS,
@@ -713,6 +727,9 @@ public final class Orchestras {
             cue(8, ModGunSounds.SHOTGUN_COCK, 1F, 1F, GunAnimation.CYCLE, GunAnimation.ALT_CYCLE),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1F),
             cue(GunAnimation.CYCLE_DRY, 8, ModGunSounds.SHOTGUN_COCK, 1F, 1F),
+            cueWhenEmpty(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_COCK, 1F, 1F),
+            cueWhenEmpty(GunAnimation.RELOAD, 7, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
+            cue(GunAnimation.RELOAD, 5, ModGunSounds.SHOTGUN_LOAD, 1F, 1F),
             cue(GunAnimation.RELOAD_CYCLE, 5, ModGunSounds.SHOTGUN_LOAD, 1F, 1F),
             cue(GunAnimation.INSPECT, 5, ModGunSounds.SHOTGUN_OPEN, 1F, 1F),
             cue(GunAnimation.INSPECT, 18, ModGunSounds.SHOTGUN_CLOSE, 1F, 1F),
@@ -784,6 +801,8 @@ public final class Orchestras {
             cue(GunAnimation.CYCLE, 7, ModGunSounds.BOLT_OPEN, 0.5F, 1F),
             cue(GunAnimation.CYCLE, 16, ModGunSounds.BOLT_CLOSE, 0.5F, 1F),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.75F),
+            cue(GunAnimation.CYCLE_DRY, 7, ModGunSounds.BOLT_OPEN, 0.5F, 1F),
+            cue(GunAnimation.CYCLE_DRY, 16, ModGunSounds.BOLT_CLOSE, 0.5F, 1F),
             cue(GunAnimation.RELOAD, 2, ModGunSounds.MAG_REMOVE, 1F, 1F),
             cue(GunAnimation.RELOAD, 20, ModGunSounds.MAG_INSERT, 1F, 1F),
             cue(GunAnimation.RELOAD, 32, ModGunSounds.BOLT_OPEN, 0.5F, 1F),
@@ -811,10 +830,20 @@ public final class Orchestras {
             SHREDDER_SEXY_CASINGS,
             cue(GunAnimation.CYCLE, 2, ModGunSounds.SHREDDER_CYCLE, 0.25F, 1.5F),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1F),
-            cue(GunAnimation.RELOAD, 2, ModGunSounds.MAG_REMOVE, 1F, 1F),
-            cue(GunAnimation.RELOAD, 32, ModGunSounds.MAG_INSERT, 1F, 1F),
-            cue(GunAnimation.INSPECT, 2, ModGunSounds.MAG_REMOVE, 1F, 1F),
-            cue(GunAnimation.INSPECT, 28, ModGunSounds.MAG_INSERT, 1F, 1F));
+            cue(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_COCK, 1F, 1F),
+            cue(GunAnimation.RELOAD, 4, ModGunSounds.REVOLVER_CLOSE, 1F, 0.75F),
+            cue(GunAnimation.RELOAD, 16, ModGunSounds.MAG_SMALL_REMOVE, 1F, 1F),
+            cue(GunAnimation.RELOAD, 30, ModGunSounds.MAG_REMOVE, 1F, 1F),
+            cue(GunAnimation.RELOAD, 55, ModGunSounds.IMPACT, 0.5F, 1F),
+            cue(GunAnimation.RELOAD, 65, ModGunSounds.MAG_INSERT, 1F, 1F),
+            cue(GunAnimation.RELOAD, 74, ModGunSounds.MAG_SMALL_INSERT, 1F, 1F),
+            cue(GunAnimation.RELOAD, 88, ModGunSounds.REVOLVER_CLOSE, 1F, 0.75F),
+            cue(GunAnimation.RELOAD, 100, ModGunSounds.REVOLVER_COCK, 1F, 1F),
+            cue(GunAnimation.INSPECT, 20, ModGunSounds.PLAYER_GULP, 1F, 1F),
+            cue(GunAnimation.INSPECT, 25, ModGunSounds.PLAYER_GULP, 1F, 1F),
+            cue(GunAnimation.INSPECT, 30, ModGunSounds.PLAYER_GULP, 1F, 1F),
+            cue(GunAnimation.INSPECT, 35, ModGunSounds.PLAYER_GULP, 1F, 1F),
+            cue(GunAnimation.INSPECT, 50, ModGunSounds.PLAYER_GROAN, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_QUADRO =
             timeline(Muzzle.CYCLE, null, cue(GunAnimation.RELOAD, 30, ModGunSounds.CANISTER_INSERT, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_MINIGUN = timeline(Muzzle.CYCLE,
@@ -846,7 +875,8 @@ public final class Orchestras {
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_TESLA = timeline(
             cue(GunAnimation.CYCLE, 2, ModGunSounds.SHREDDER_CYCLE, 0.25F, 1.25F),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1F),
-            cue(GunAnimation.CYCLE_DRY, 2, ModGunSounds.SHREDDER_CYCLE, 0.25F, 1.25F));
+            cue(GunAnimation.CYCLE_DRY, 2, ModGunSounds.SHREDDER_CYCLE, 0.25F, 1.25F),
+            cue(GunAnimation.INSPECT, 12, ModSounds.SQUEAKY_TOY, 0.25F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_LASER_PISTOL = timeline(
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 1.5F),
             cue(GunAnimation.RELOAD, 0, ModGunSounds.REVOLVER_COCK, 1F, 1F),
@@ -858,6 +888,7 @@ public final class Orchestras {
             cue(GunAnimation.JAMMED, 30, ModGunSounds.IMPACT, 0.25F, 1.5F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_STG77 = timeline(Muzzle.CYCLE,
             STG77_CASINGS,
+            cue(GunAnimation.CYCLE, 40, ModSounds.DRY_FIRE_CLICK, 0.25F, 1.25F),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.8F),
             cue(GunAnimation.CYCLE_DRY, 5, ModGunSounds.PISTOL_COCK, 1F, 0.9F),
             cue(GunAnimation.CYCLE_DRY, 40, ModSounds.DRY_FIRE_CLICK, 0.25F, 1.25F),
@@ -883,7 +914,10 @@ public final class Orchestras {
             cue(GunAnimation.RELOAD, 38, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
             cue(GunAnimation.INSPECT, 2, ModGunSounds.MAG_SMALL_REMOVE, 1F, 1F),
             cue(GunAnimation.INSPECT, 12, ModGunSounds.MAG_INSERT, 1F, 1F),
-            cue(GunAnimation.INSPECT, 20, ModGunSounds.REVOLVER_CLOSE, 1F, 1F));
+            cue(GunAnimation.INSPECT, 20, ModGunSounds.REVOLVER_CLOSE, 1F, 1F),
+            cue(GunAnimation.JAMMED, 2, ModGunSounds.MAG_SMALL_REMOVE, 1F, 1F),
+            cue(GunAnimation.JAMMED, 22, ModGunSounds.MAG_INSERT, 1F, 1F),
+            cue(GunAnimation.JAMMED, 30, ModGunSounds.REVOLVER_CLOSE, 1F, 1F));
     public static final BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> ORCHESTRA_COILGUN = timeline(Muzzle.NI4NI_CYCLE,
             null,
             cue(GunAnimation.RELOAD, 0, ModGunSounds.COIL_RELOAD, 1F, 1F));
@@ -928,6 +962,8 @@ public final class Orchestras {
             cue(GunAnimation.CYCLE, 7, ModGunSounds.BOLT_OPEN, 0.5F, 1F),
             cue(GunAnimation.CYCLE, 16, ModGunSounds.BOLT_CLOSE, 0.5F, 1F),
             cue(GunAnimation.CYCLE_DRY, 0, ModSounds.DRY_FIRE_CLICK, 1F, 0.75F),
+            cue(GunAnimation.CYCLE_DRY, 7, ModGunSounds.BOLT_OPEN, 0.5F, 1F),
+            cue(GunAnimation.CYCLE_DRY, 16, ModGunSounds.BOLT_CLOSE, 0.5F, 1F),
             cue(GunAnimation.RELOAD, 0, ModGunSounds.BOLT_OPEN, 1F, 1F),
             cue(GunAnimation.RELOAD, 20, ModGunSounds.RIFLE_COCK, 1F, 1F),
             cue(GunAnimation.RELOAD, 36, ModGunSounds.BOLT_CLOSE, 1F, 1F),

@@ -35,6 +35,15 @@ public final class GunObtainmentDataAuditGameTests {
             "gun_tau", "gun_lasrifle", "gun_double_barrel_sacred_dragon", "gun_charge_thrower",
             "gun_drill", "gun_pa_melee", "gun_pa_ranged", "gun_b92", "gun_b92_ammo", "gun_fireext");
 
+    /**
+     * The guns original-hbm fires without a report of their own: the two flamethrowers and the
+     * chemthrower run a looping client sound instead, the Tau charges, and the tools and the B92 have
+     * no {@code .sound(...)} on any receiver upstream either.
+     */
+    private static final Set<String> ORIGINAL_SILENT_GUNS = Set.of(
+            "gun_flamer", "gun_flamer_topaz", "gun_chemthrower", "gun_tau", "gun_drill",
+            "gun_pa_melee", "gun_pa_ranged", "gun_b92", "gun_b92_ammo");
+
     private GunObtainmentDataAuditGameTests() {}
 
     /** The source table is 89 rows; the live list may be smaller only while dependency items are absent. */
@@ -122,6 +131,32 @@ public final class GunObtainmentDataAuditGameTests {
         GunCatalogue.init();
         helper.assertTrue(com.hbm.items.weapon.sedna.BulletConfigs.all().size() == configCount,
                 "repeated catalogue initialization must not duplicate bullet configs");
+        helper.succeed();
+    }
+
+    /**
+     * Every receiver that can fire names a sound. A receiver built without one is silent with nothing
+     * logged, which is invisible to every other test here and to the compile.
+     */
+    public static void gunFireSounds(GameTestHelper helper) {
+        int checked = 0;
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof ItemGunBaseNT gun)) continue;
+            String path = BuiltInRegistries.ITEM.getKey(item).getPath();
+            if (ORIGINAL_SILENT_GUNS.contains(path)) continue;
+            net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item);
+            for (int index = 0; gun.isValidConfigIndex(index); index++) {
+                com.hbm.items.weapon.sedna.Receiver[] receivers = gun.getConfig(stack, index).getReceivers(stack);
+                if (receivers == null) continue;
+                for (com.hbm.items.weapon.sedna.Receiver receiver : receivers) {
+                    helper.assertTrue(receiver.getFireSound(stack) != null,
+                            "Gun receiver fires with no sound: " + path + " config " + index);
+                    checked++;
+                }
+            }
+        }
+        helper.assertTrue(checked >= 60, "Expected every registered gun receiver to be audited: " + checked);
+        Constants.LOG.info("[GUNS] {} gun receivers audited, every one names a fire sound", checked);
         helper.succeed();
     }
 }

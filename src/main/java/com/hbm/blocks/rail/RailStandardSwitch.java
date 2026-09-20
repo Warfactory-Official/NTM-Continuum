@@ -128,8 +128,8 @@ public class RailStandardSwitch extends BlockRailWaypointSystem {
 
     @Override
     protected InteractionResult useAtCore(BlockState coreState, Level level, BlockPos core, Player player, BlockHitResult hit) {
-        if(player.isShiftKeyDown()) return InteractionResult.PASS;
-        if(ModEntityItems.train.typeOf(player.getMainHandItem()) != null) return InteractionResult.PASS;
+        if(player.isShiftKeyDown()) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if(ModEntityItems.train.typeOf(player.getMainHandItem()) != null) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         if(!level.isClientSide() && level.getBlockEntity(core) instanceof BlockEntityRail rail) {
             rail.toggleSwitch();

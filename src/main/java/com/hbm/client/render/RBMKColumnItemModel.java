@@ -86,6 +86,6 @@ public final class RBMKColumnItemModel {
     public void extents(Consumer<Vector3fc> output) {
         PoseStack pose = new PoseStack();
         RBMKItemModelBounds.applyColumnTransform(pose, scale, yaw, lift);
-        body.extents(pose, output);
+        body.extents(pose, 0F, output);
     }
 }

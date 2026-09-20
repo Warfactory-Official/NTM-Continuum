@@ -11,6 +11,7 @@ import dev.golem.core.render.gem.Surface;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,6 +41,9 @@ public final class MachineItemModel {
 
     /** The arm pitch the old autosaw item renderer posed its icon at — {@code 80 - rotationPitch}, at rest. */
     private static final float AUTOSAW_PITCH = 80F;
+
+    /** Phases sampled over one turn when framing a model that moves. See {@link #sampleExtents}. */
+    private static final int ANIMATION_SAMPLES = 16;
 
     private final WavefrontObj model;
     private final Surface surface;
@@ -96,10 +100,16 @@ public final class MachineItemModel {
     private final Vector3f primaryTranslation;
     /** Additional ordered OBJ/texture passes. Empty for the existing single-OBJ contract. */
     private final List<ModelPass> passes;
-    /** Degrees per millisecond for the old GUI-only continuous spin, zero when unused. */
+    /**
+     * Degrees per millisecond for the old GUI-only continuous spin, zero when unused. The wrap is taken at a
+     * whole turn — 1.7 wrote each of these as its own millisecond expression, and the two rates in the tree
+     * ({@code % 3600 / 10} and {@code / 15 % 360}) differ in period as well as in speed.
+     */
     private final float guiSpinSpeed;
 
     private final ItemGem body;
+    /** Framing boxes, one per display context; see {@link #sampleExtents}. */
+    private final HashMap<ItemDisplayContext, Vector3fc[]> extentsByContext = new HashMap<>();
 
     /** A legacy renderer adjustment applied after the context display matrix and before the model pose. */
     public record ContextTransform(Vector3f rotation, Vector3f translation, float scale) {
@@ -113,7 +123,22 @@ public final class MachineItemModel {
     }
 
     /** One ordered OBJ pass, optionally restricted to named parts and locally translated. */
-    public record ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation) {}
+    public record ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation,
+                           List<PassStep> steps) {
+
+        public ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation) {
+            this(model, surface, parts, translation, List.of());
+        }
+    }
+
+    /**
+     * One step of a pass's own transform, in declaration order.
+     *
+     * <p>1.7's item renderers never pop between the pieces they draw, so a later piece inherits every
+     * turn the ones before it made. A declared pass is a sibling instead, which is why a pass that is not
+     * the first sometimes has to state a whole chain rather than one offset.
+     */
+    public record PassStep(boolean rotate, Vector3f value) {}
 
     public MachineItemModel(WavefrontObj model, Surface surface, float scale, boolean rawLegacyTransform,
                             boolean blockFramed,
@@ -216,15 +241,63 @@ public final class MachineItemModel {
     }
 
     public void extents(Consumer<Vector3fc> output, @Nullable ItemDisplayContext context) {
-        PoseStack framed = new PoseStack();
-        applyTransform(framed, context);
-        body.extents(framed, output);
+        for (Vector3fc corner : extents(context)) output.accept(corner);
     }
 
     public Vector3fc[] extents(@Nullable ItemDisplayContext context) {
-        List<Vector3fc> points = new ArrayList<>(8);
-        extents(points::add, context);
-        return points.toArray(Vector3fc[]::new);
+        return extentsByContext.computeIfAbsent(context, this::sampleExtents);
+    }
+
+    /**
+     * The box the icon is framed on, held once it is known.
+     *
+     * <p>26.1 turns this box into the oversized-item rectangle, and does so in whole GUI pixels: it floors
+     * the corner and ceils the size. A box taken at the current instant therefore quantised differently
+     * from frame to frame, and since that rectangle is both the picture-in-picture texture and the offset
+     * the model is centred at inside it, the drawing jumped a pixel at a time. So the box is not the
+     * model's pose now, it is the box the whole animation stays inside: the union over a turn of the GUI
+     * spin and a cycle of the body, reduced back to one axis-aligned box.
+     */
+    private Vector3fc[] sampleExtents(@Nullable ItemDisplayContext context) {
+        int spins = context == ItemDisplayContext.GUI && guiSpinSpeed != 0F ? ANIMATION_SAMPLES : 1;
+        int phases = animatedBody() ? ANIMATION_SAMPLES : 1;
+        float[] min = {Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE};
+        float[] max = {-Float.MAX_VALUE, -Float.MAX_VALUE, -Float.MAX_VALUE};
+        Consumer<Vector3fc> include = point -> {
+            min[0] = Math.min(min[0], point.x());
+            min[1] = Math.min(min[1], point.y());
+            min[2] = Math.min(min[2], point.z());
+            max[0] = Math.max(max[0], point.x());
+            max[1] = Math.max(max[1], point.y());
+            max[2] = Math.max(max[2], point.z());
+        };
+        for (int spin = 0; spin < spins; spin++) {
+            PoseStack framed = new PoseStack();
+            applyTransform(framed, context, 360F / spins * spin);
+            for (int phase = 0; phase < phases; phase++) {
+                body.extents(framed, 360F / phases * phase, include);
+            }
+        }
+        if (min[0] > max[0]) return new Vector3fc[0];
+        List<Vector3fc> corners = new ArrayList<>(8);
+        for (int xi = 0; xi < 2; xi++) for (int yi = 0; yi < 2; yi++) for (int zi = 0; zi < 2; zi++) {
+            corners.add(new Vector3f(xi == 0 ? min[0] : max[0], yi == 0 ? min[1] : max[1],
+                    zi == 0 ? min[2] : max[2]));
+        }
+        return corners.toArray(Vector3fc[]::new);
+    }
+
+    /**
+     * Whether the drawing changes with time in this context. 26.1 has to be told: an icon it believes is
+     * still is drawn once and blitted from a cache afterwards.
+     */
+    public boolean animated(@Nullable ItemDisplayContext context) {
+        return animatedBody() || (context == ItemDisplayContext.GUI && guiSpinSpeed != 0F);
+    }
+
+    /** Whether the declared body itself moves — the branches of {@link #declare()} that read the clock. */
+    private boolean animatedBody() {
+        return "pump".equals(animation) || "autosaw".equals(animation) || (spin && !spinParts.isEmpty());
     }
 
     private ItemGem declare() {
@@ -373,12 +446,18 @@ public final class MachineItemModel {
         }
         pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
         for (ModelPass extra : passes) {
-            pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude, extra.translation());
+            pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude, extra.translation(),
+                    extra.steps());
         }
     }
 
     private void pass(ItemGem.Builder builder, WavefrontObj source, Surface skin, List<String> parts,
                       Set<String> excluded, Vector3f translation) {
+        pass(builder, source, skin, parts, excluded, translation, List.of());
+    }
+
+    private void pass(ItemGem.Builder builder, WavefrontObj source, Surface skin, List<String> parts,
+                      Set<String> excluded, Vector3f translation, List<PassStep> steps) {
         Geometry geometry;
         float[][] box;
         if (parts.isEmpty()) {
@@ -393,6 +472,16 @@ public final class MachineItemModel {
         Gem.Part<ItemPose> declared = builder.part(geometry, skin, box);
         if (translation.x != 0F || translation.y != 0F || translation.z != 0F) {
             declared.translate(translation.x, translation.y, translation.z);
+        }
+        for (PassStep step : steps) {
+            Vector3f value = step.value();
+            if (!step.rotate()) {
+                declared.translate(value.x, value.y, value.z);
+                continue;
+            }
+            if (value.x != 0F) declared.rotate(Gem.Axes.X, value.x);
+            if (value.y != 0F) declared.rotate(Gem.Axes.Y, value.y);
+            if (value.z != 0F) declared.rotate(Gem.Axes.Z, value.z);
         }
     }
 
@@ -456,6 +545,10 @@ public final class MachineItemModel {
     }
 
     private void applyTransform(PoseStack poseStack, @Nullable ItemDisplayContext context) {
+        applyTransform(poseStack, context, guiSpinAngle());
+    }
+
+    private void applyTransform(PoseStack poseStack, @Nullable ItemDisplayContext context, float spinDegrees) {
         if (!blockFramed && animation.startsWith("armor_")) {
             applyArmorItemTransform(poseStack, context);
             return;
@@ -474,7 +567,7 @@ public final class MachineItemModel {
             poseStack.mulPose(Axis.YP.rotationDegrees(guiYaw));
         }
         if (context == ItemDisplayContext.GUI && guiSpinSpeed != 0F) {
-            poseStack.mulPose(Axis.YP.rotationDegrees(System.currentTimeMillis() % 3600L * guiSpinSpeed));
+            poseStack.mulPose(Axis.YP.rotationDegrees(spinDegrees));
         }
 
         if (rawLegacyTransform || !blockFramed) {
@@ -509,6 +602,11 @@ public final class MachineItemModel {
     }
 
     /** Reproduces ArmorFSB.setupRender* followed by renderStandard for a BJ/DNS item icon. */
+    /** The GUI spin's angle now, wrapped at a whole turn rather than at the millisecond count 1.7 wrote. */
+    private float guiSpinAngle() {
+        return guiSpinSpeed == 0F ? 0F : (float) (System.currentTimeMillis() * (double) guiSpinSpeed % 360D);
+    }
+
     private void applyArmorItemTransform(PoseStack poseStack, @Nullable ItemDisplayContext context) {
         boolean inventory = context == ItemDisplayContext.GUI;
         if (inventory) {

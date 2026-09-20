@@ -404,6 +404,7 @@ public final class ModGunItems {
     public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver_lilmac = ITEMS.registerItem("gun_heavy_revolver_lilmac", props ->
             new ItemGunBaseNT(props, WeaponQuality.LEGENDARY, new GunConfig()
                     .dura(31_000).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC)
+                    .scopeTexture(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/scope_44.png"))
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(new Receiver(0)
                             .dmg(30F).delay(14).reload(46).jam(23)

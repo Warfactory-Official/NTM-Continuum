@@ -27,9 +27,9 @@ public class BlockGraphiteDrilled extends BlockGraphiteDrilledBase {
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack held, BlockHitResult hit) {
-        if (held.isEmpty()) return InteractionResult.PASS;
+        if (held.isEmpty()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         Direction side = hit.getDirection();
-        if (!isChannelFace(state, side)) return InteractionResult.PASS;
+        if (!isChannelFace(state, side)) return InteractionResult.TRY_WITH_EMPTY_HAND;
 
         BlockState placed = checkInteractions(held);
         if (placed != null) {
@@ -42,7 +42,7 @@ public class BlockGraphiteDrilled extends BlockGraphiteDrilledBase {
                 return place(level, pos, player, held, ModRBMKBlocks.block_graphite.get().defaultBlockState());
             }
         }
-        return InteractionResult.PASS;
+        return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     private InteractionResult place(Level level, BlockPos pos, Player player, ItemStack held, BlockState placed) {

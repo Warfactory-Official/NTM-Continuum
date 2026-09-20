@@ -69,10 +69,7 @@ public final class GunAnimations {
         register(ModGunItems.gun_debug::get, (stack, cue, rail) -> debug(cue));
         register(ModGunItems.gun_star_f::get, GunAnimations::star);
         register(ModGunItems.gun_star_f_akimbo::get, GunAnimations::star);
-        register(ModGunItems.gun_am180::get, (stack, cue, rail) -> resource("am180", cue,
-                Map.of(GunAnimation.CYCLE, "Fire", GunAnimation.CYCLE_DRY, "FireDry",
-                        GunAnimation.RELOAD, "Reload", GunAnimation.JAMMED, "Jammed",
-                        GunAnimation.INSPECT, "Inspect")));
+        register(ModGunItems.gun_am180::get, GunAnimations::am180);
         register(ModGunItems.gun_greasegun::get, GunAnimations::greasegun);
         register(ModGunItems.gun_lag::get, (stack, cue, rail) -> lag(cue));
         register(ModGunItems.gun_uzi::get, GunAnimations::uzi);
@@ -92,9 +89,7 @@ public final class GunAnimations {
         registerById("gun_minigun", GunAnimations::LAMBDA_MINIGUN_ANIMS);
         registerById("gun_minigun_lacunae", GunAnimations::LAMBDA_MINIGUN_ANIMS);
         registerById("gun_minigun_dual", GunAnimations::LAMBDA_MINIGUN_ANIMS);
-        registerById("gun_stg77", (stack, cue, rail) -> resource("stg77", cue,
-                Map.of(GunAnimation.CYCLE, "Fire", GunAnimation.CYCLE_DRY, "FireDry",
-                        GunAnimation.RELOAD, "Reload", GunAnimation.INSPECT, "Inspect")));
+        registerById("gun_stg77", GunAnimations::stg77);
         registerById("gun_flaregun", GunAnimations::flaregun);
         registerById("gun_flamer", GunAnimations::flamer);
         registerById("gun_flamer_topaz", GunAnimations::flamer);
@@ -102,16 +97,8 @@ public final class GunAnimations {
         registerById("gun_chemthrower", (stack, cue, rail) -> cue == GunAnimation.EQUIP
                 ? new BusAnimation().addBus("EQUIP", seq().addPos(-45, 0, 0, 0)
                         .addPos(0, 0, 0, 500, IType.SIN_DOWN)) : null);
-        registerById("gun_congolake", (stack, cue, rail) -> resource("congolake", cue,
-                Map.of(GunAnimation.EQUIP, "Equip", GunAnimation.CYCLE, "Fire",
-                        GunAnimation.RELOAD, "ReloadStart", GunAnimation.RELOAD_CYCLE, "Reload",
-                        GunAnimation.RELOAD_END, "ReloadEnd", GunAnimation.JAMMED, "Jammed",
-                        GunAnimation.INSPECT, "Inspect")));
-        registerById("gun_spas12", (stack, cue, rail) -> resource("spas12", cue,
-                Map.of(GunAnimation.CYCLE, "Fire", GunAnimation.CYCLE_DRY, "FireDry",
-                        GunAnimation.ALT_CYCLE, "FireAlt", GunAnimation.RELOAD, "ReloadStart",
-                        GunAnimation.RELOAD_CYCLE, "Reload", GunAnimation.RELOAD_END, "ReloadEnd",
-                        GunAnimation.JAMMED, "Jammed", GunAnimation.INSPECT, "Inspect")));
+        registerById("gun_congolake", GunAnimations::congolake);
+        registerById("gun_spas12", GunAnimations::spas12);
         registerById("gun_panzerschreck", GunAnimations::panzerschreck);
         registerById("gun_stinger", GunAnimations::panzerschreck);
         registerById("gun_quadro", GunAnimations::quadro);
@@ -152,6 +139,64 @@ public final class GunAnimations {
         registerById("gun_drill", GunAnimations::drill);
         registerById("gun_aberrator", GunAnimations::aberrator);
         registerById("gun_aberrator_eott", GunAnimations::aberrator);
+    }
+
+    private static BusAnimation am180(ItemStack stack, GunAnimation type, int rail) {
+        if (type == GunAnimation.EQUIP) {
+            return new BusAnimation().addBus("EQUIP", seq().addPos(45, 0, 0, 0)
+                    .addPos(0, 0, 0, 500, IType.SIN_FULL));
+        }
+        return resource("am180", type, Map.of(GunAnimation.CYCLE, "Fire",
+                GunAnimation.CYCLE_DRY, "FireDry", GunAnimation.RELOAD, "Reload",
+                GunAnimation.JAMMED, "Jammed", GunAnimation.INSPECT, "Inspect"));
+    }
+
+    private static BusAnimation stg77(ItemStack stack, GunAnimation type, int rail) {
+        return switch (type) {
+            case EQUIP -> new BusAnimation().addBus("EQUIP", seq().addPos(45, 0, 0, 0)
+                    .addPos(0, 0, 0, 500, IType.SIN_FULL));
+            case CYCLE -> new BusAnimation().addBus("RECOIL", seq()
+                    .addPos(0, 0, ItemGunBaseNT.getIsAiming(stack) ? -0.125 : -0.375, 25, IType.SIN_DOWN)
+                    .addPos(0, 0, 0, 75, IType.SIN_FULL))
+                    .addBus("SAFETY", seq().addPos(0.25, 0, 0, 0).addPos(0.25, 0, 0, 2000)
+                            .addPos(0, 0, 0, 50));
+            default -> resource("stg77", type, Map.of(GunAnimation.CYCLE_DRY, "FireDry",
+                    GunAnimation.RELOAD, "Reload", GunAnimation.INSPECT, "Inspect"));
+        };
+    }
+
+    private static BusAnimation congolake(ItemStack stack, GunAnimation type, int rail) {
+        int ammo = loaded(stack, rail);
+        String animation = switch (type) {
+            case EQUIP -> "Equip";
+            case CYCLE -> ammo <= 1 ? "FireEmpty" : "Fire";
+            case RELOAD -> ammo == 0 ? "ReloadEmpty" : "ReloadStart";
+            case RELOAD_CYCLE -> "Reload";
+            case RELOAD_END -> "ReloadEnd";
+            case JAMMED -> "Jammed";
+            case INSPECT -> "Inspect";
+            default -> null;
+        };
+        return animation == null ? null : LagAnimationLoader.load("congolake").get(animation);
+    }
+
+    private static BusAnimation spas12(ItemStack stack, GunAnimation type, int rail) {
+        if (type == GunAnimation.EQUIP) {
+            return new BusAnimation().addBus("EQUIP", seq().addPos(-60, 0, 0, 0)
+                    .addPos(0, 0, -3, 500, IType.SIN_DOWN));
+        }
+        String animation = switch (type) {
+            case CYCLE -> "Fire";
+            case CYCLE_DRY -> "FireDry";
+            case ALT_CYCLE -> "FireAlt";
+            case RELOAD -> loaded(stack, rail) <= 0 ? "ReloadEmptyStart" : "ReloadStart";
+            case RELOAD_CYCLE -> "Reload";
+            case RELOAD_END -> "ReloadEnd";
+            case JAMMED -> "Jammed";
+            case INSPECT -> "Inspect";
+            default -> null;
+        };
+        return animation == null ? null : LagAnimationLoader.load("spas12").get(animation);
     }
 
     private static BusAnimation greasegun(ItemStack stack, GunAnimation type, int rail) {
@@ -641,6 +686,10 @@ public final class GunAnimations {
     }
 
     private static BusAnimation mareslegShort(ItemStack stack, GunAnimation type, int rail) {
+        if (type == GunAnimation.EQUIP) {
+            return new BusAnimation().addBus("EQUIP", seq().addPos(-60, 0, 0, 0)
+                    .addPos(0, 0, -3, 250, IType.SIN_DOWN));
+        }
         if (type == GunAnimation.CYCLE || type == GunAnimation.CYCLE_DRY) {
             return maresleg(stack, type, rail).addBus("FLIP", seq().addPos(0, 0, 0, 600).addPos(360, 0, 0, 400))
                     .addBus("SHELL", seq().addPos(-20, 0, 0, 0));
