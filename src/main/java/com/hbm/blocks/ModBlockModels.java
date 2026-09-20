@@ -1186,6 +1186,12 @@ public final class ModBlockModels {
                 .blockItem()
                 .register();
 
+        Dejson.block(NS, "fireworks")
+                .models(Models.cubeBottomTop("hbm:blocks/fireworks_bottom", "hbm:blocks/fireworks_side", "hbm:blocks/fireworks_top"))
+                .states(Variants.simple())
+                .blockItemDirect()
+                .register();
+
         Dejson.block(NS, "tnt_ntm")
                 .models(Models.cubeBottomTop("hbm:blocks/tnt_bottom", "hbm:blocks/tnt_side", "hbm:blocks/tnt_top"))
                 .states(Variants.uniform("armed", "false", "true"))

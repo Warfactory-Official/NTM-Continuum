@@ -267,6 +267,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> STEP_POWERED = register("step.powered");
 
     public static final RegistryObject<SoundEvent> HKS_SHOOT = register("weapon.hks_shoot");
+    public static final RegistryObject<SoundEvent> WEAPON_ROCKET_FLAME = register("weapon.rocket_flame");
 
     private static RegistryObject<SoundEvent> register(String name) {
         return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(

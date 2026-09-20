@@ -994,6 +994,7 @@ public final class ItemIds {
     public static final String fins_small_steel = "hbm:fins_small_steel";
     public static final String fins_tri_steel = "hbm:fins_tri_steel";
     public static final String fire_door = "hbm:fire_door";
+    public static final String fireworks = "hbm:fireworks";
     public static final String fissure_bomb = "hbm:fissure_bomb";
     public static final String five_htp = "hbm:five_htp";
     public static final String flame_conspiracy = "hbm:flame_conspiracy";

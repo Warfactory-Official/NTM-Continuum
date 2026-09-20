@@ -71,6 +71,10 @@ public final class ModBombBlocks {
             "nuke_mike", NukeMike::new,
             p -> p.strength(5.0F, 6000.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
 
+    /** The firework battery. 1.7 sets resistance only, leaving the default 1.0 hardness. */
+    public static final RegistryObject<BlockFireworks> fireworks = BLOCKS.registerBlock(
+            "fireworks", BlockFireworks::new, p -> p.strength(1.0F, 5.0F).sound(SoundType.METAL));
+
     public static final RegistryObject<BlockTNT> tnt = BLOCKS.registerBlock(
             "tnt_ntm", BlockTNT::new, p -> p.strength(0.0F).sound(SoundType.GRASS).ignitedByLava());
     public static final RegistryObject<BlockDynamite> dynamite = BLOCKS.registerBlock(
@@ -102,6 +106,8 @@ public final class ModBombBlocks {
         ModTabs.addTo(HbmTab.BOMBS, item);
         item = ITEMS.registerItem("nuke_mike", p -> new ItemNukeMikeBlock(nuke_mike.get(), p),
                 Compat::blockDescription);
+        ModTabs.addTo(HbmTab.BOMBS, item);
+        item = ITEMS.registerBlockItem("fireworks", fireworks);
         ModTabs.addTo(HbmTab.BOMBS, item);
         item = ITEMS.registerBlockItem("tnt_ntm", tnt);
         ModTabs.addTo(HbmTab.BOMBS, item);

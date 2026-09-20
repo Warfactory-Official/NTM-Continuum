@@ -162,7 +162,7 @@ public final class ModBlockDrops {
             "rbmk_debris_burning", "rbmk_debris_digamma", "rbmk_debris_radiating", "rbmk_fuel_rod",
             "rbmk_fuel_rod_moderated", "rbmk_fuel_rod_reasim", "rbmk_fuel_rod_reasim_moderated", "rbmk_gauge",
             "rbmk_heater", "rbmk_moderator", "rbmk_outgasser", "rbmk_reflector", "rbmk_steam_inlet",
-            "rbmk_steam_outlet", "rbmk_storage", "semtex", "tile_lab_broken", "tnt_ntm"
+            "rbmk_steam_outlet", "rbmk_storage", "semtex", "tile_lab_broken", "tnt_ntm", "fireworks"
     };
 
     private static final String[] NOTHING = {

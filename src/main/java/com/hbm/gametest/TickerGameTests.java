@@ -53,9 +53,10 @@ public final class TickerGameTests {
      * entities), +3 for the deco wave (floodlight, floodlight beam, demon lamp): 217 + 13 = 230.
      * +21 for the Norwood machine wave: five pile types, five dark-fusion types, six Albion types less
      * the inert beamline, satlink, geiger, cargo elevator, RBMK terminal, two Soyuz types: 251.
-     * +2 for the Norwood deco wave (the lantern post, the cyber crab assembler): 253.
+     * +3 for the Norwood deco wave (the lantern post, the cyber crab assembler, the firework
+     * battery): 254.
      */
-    private static final int TICKING_TYPES = 253;
+    private static final int TICKING_TYPES = 254;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();
