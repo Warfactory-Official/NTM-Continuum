@@ -174,6 +174,8 @@ public final class ForgeInit {
                 com.hbm.gametest.GunSupportGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.FlywheelGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.PollutionGameTests.TESTS));
 
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();

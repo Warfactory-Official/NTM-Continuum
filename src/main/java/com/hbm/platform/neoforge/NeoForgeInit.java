@@ -180,6 +180,8 @@ public class NeoForgeInit {
                  com.hbm.gametest.FlywheelGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.WeaponTableGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.PollutionGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {
