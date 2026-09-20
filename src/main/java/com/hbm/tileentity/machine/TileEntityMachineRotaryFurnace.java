@@ -323,8 +323,9 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         tank.setFill(tank.getFill() + fluidAmount);
 
         if (tank.getFill() > tank.getMaxFill()) {
+            int overflow = tank.getFill() - tank.getMaxFill();
             tank.setFill(tank.getMaxFill());
-            // The overflow would go to PollutionHandler.incrementPollution; the port has no pollution store yet.
+            PollutionHandler.incrementPollution(level, worldPosition, type, overflow / 100F);
             this.isVenting = true;
         }
     }

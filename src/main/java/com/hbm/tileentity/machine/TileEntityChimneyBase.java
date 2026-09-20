@@ -2,6 +2,8 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.inventory.fluid.FluidType;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -100,8 +102,14 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
         if (cpaturesAsh()) ashTick += fluid;
         if (cpaturesSoot()) sootTick += fluid;
 
-        // Preserve the old pollution multiplier arithmetic, but do not call a replacement pollution API.
         fluid *= getPollutionMod();
+
+        PollutionType pollutant = type == Fluids.SMOKE ? PollutionType.SOOT
+                : type == Fluids.SMOKE_LEADED ? PollutionType.HEAVYMETAL
+                : type == Fluids.SMOKE_POISON ? PollutionType.POISON : null;
+        if (pollutant != null) {
+            PollutionHandler.incrementPollution(level, worldPosition, pollutant, fluid / 100F);
+        }
         return 0L;
     }
 

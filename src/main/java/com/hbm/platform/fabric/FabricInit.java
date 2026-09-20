@@ -58,8 +58,10 @@ public class FabricInit implements ModInitializer {
             com.hbm.config.AutocalConfig.load(server);
             Constants.LOG.info("[HBM] Loaded {} total recipes", server.getRecipeManager().getRecipes().size());
         });
-        ServerEntityEvents.ENTITY_LOAD.register((entity, level) ->
-                com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(entity));
+        ServerEntityEvents.ENTITY_LOAD.register((entity, level) -> {
+            com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(entity);
+            com.hbm.handler.pollution.PollutionHandler.decorateMob(entity);
+        });
         dev.golem.core.platform.Lifecycle.onServerTick(server -> server.getAllLevels().forEach(level ->
                 level.getAllEntities().forEach(entity -> {
                     com.hbm.handler.ExplosivesEntityHooks.tick(entity);

@@ -91,6 +91,7 @@ public final class ForgeInit {
         com.hbm.gametest.FoldedPortParityGameTests.init();
         com.hbm.gametest.WeaponTableGameTests.init();
         com.hbm.gametest.GunSupportGameTests.init();
+        com.hbm.gametest.PollutionGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -207,8 +208,10 @@ public final class ForgeInit {
         });
         MinecraftForge.EVENT_BUS.addListener((ItemTooltipEvent event) ->
                 HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
-        MinecraftForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) ->
-                com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
+        MinecraftForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> {
+            com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity());
+            com.hbm.handler.pollution.PollutionHandler.decorateMob(event.getEntity());
+        });
         // Forge 1.20.1 has no per-entity tick event: scan each level's item entities at the END of its tick,
         // over a snapshot because the tickers may spawn new drops (screwdriver, singularity effects).
         MinecraftForge.EVENT_BUS.addListener((TickEvent.LevelTickEvent event) -> {
