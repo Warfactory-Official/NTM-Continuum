@@ -771,6 +771,12 @@ public final class ModBlockEntities {
                             com.hbm.blocks.ModDecoBlocks.OBJ_BLOCKS.stream(), com.hbm.blocks.ModSteelBlocks.OBJ_BLOCKS.stream())
                             .map(RegistryObject::get).toArray(net.minecraft.world.level.block.Block[]::new)));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityCyberCrab>> METEOR_SPAWNER =
+            BLOCK_ENTITIES.register("meteor_spawner",
+                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.TileEntityCyberCrab::new,
+                            (level, pos, state, be) -> be.serverTick(),
+                            com.hbm.blocks.ModBlocks.meteor_spawner.get()));
+
     private static RegistryObject<BlockEntityType<com.hbm.tileentity.machine.storage.TileEntityMassStorage>> massStorage(
             com.hbm.tileentity.machine.storage.MassStorageType type,
             RegistryObject<? extends net.minecraft.world.level.block.Block> block) {
