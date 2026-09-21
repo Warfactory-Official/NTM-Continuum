@@ -380,11 +380,14 @@ public final class HbmJeiPluginCommon {
                 HbmJeiRecipeTypes.EXPOSURE_CHAMBER);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUICentrifuge.class, 35, 9, 106, 40,
                 HbmJeiRecipeTypes.CENTRIFUGE);
-        dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMachineCyclotron.class, 11, 18, 134, 54,
+        // 1.7.10's NEI rect (43, 16, 34 x 34): the earlier 134 x 54 area covered all nine slots.
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, GUIMachineCyclotron.class, 43, 16, 34, 34,
                 HbmJeiRecipeTypes.CYCLOTRON);
-        dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIPADetector.class, 62, 18, 36, 45,
+        // The arrow between the two slot rows, as in 1.12.2 (75, 35, 7 x 8): a 36 x 45 area here covered all
+        // four slots, and JEI took every click on them, so nothing could be put into the source by hand.
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIPADetector.class, 75, 35, 7, 8,
                 HbmJeiRecipeTypes.PARTICLE_ACCELERATOR);
-        dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIPASource.class, 62, 18, 36, 45,
+        dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIPASource.class, 75, 35, 7, 8,
                 HbmJeiRecipeTypes.PARTICLE_ACCELERATOR);
         dev.golem.core.jei.Jei.addRecipeClickArea(reg, com.hbm.inventory.gui.GUIMachineGasCent.class, 70, 36, 36, 12,
                 HbmJeiRecipeTypes.GAS_CENTRIFUGE);
