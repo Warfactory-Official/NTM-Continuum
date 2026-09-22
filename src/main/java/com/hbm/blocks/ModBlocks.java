@@ -95,6 +95,8 @@ public final class ModBlocks {
     public static final RegistryObject<Block> meteor_brick_cracked = block("meteor_brick_cracked", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F));
     public static final RegistryObject<Block> meteor_brick_chiseled = block("meteor_brick_chiseled", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F));
     public static final RegistryObject<Block> meteor_battery = block("meteor_battery", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F));
+    public static final RegistryObject<Block> meteor_spawner = block("meteor_spawner", HbmTab.BLOCKS,
+            com.hbm.blocks.machine.BlockCybercrab::new, p -> p.strength(15.0F, 360.0F));
     public static final RegistryObject<Block> brick_jungle = block("brick_jungle", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F));
     public static final RegistryObject<Block> brick_jungle_cracked = block("brick_jungle_cracked", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F));
     public static final RegistryObject<Block> brick_dungeon = block("brick_dungeon", HbmTab.BLOCKS, p -> p.strength(15.0F, 360.0F));

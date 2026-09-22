@@ -57,6 +57,12 @@ public final class RadiationConfig {
     public static boolean disableCold = false;
     public static boolean disableToxic = false;
 
+    // ---- pollution (PollutionHandler) ----
+    /** If disabled, none of the pollution related things will work. */
+    public static boolean enablePollution = true;
+    /** The amount of soot required to buff naturally spawning mobs. */
+    public static double buffMobThreshold = 15D;
+
     // ---- chunk radiation engine (RadiationSystemNT) ----
     /** How many ticks between each radiation system update. 1 = once per tick. */
     public static int radTickRate = 1;

@@ -146,6 +146,17 @@ public final class ModDecoContent {
     public static final RegistryObject<TritiumLamp> lamp_tritium_blue_on = tritiumLamp("lamp_tritium_blue_on", true, SpotlightBeams.META_BLUE,
             () -> ModDecoContent.lamp_tritium_blue_off.get(), () -> ModDecoContent.lamp_tritium_blue_on.get());
 
+    /**
+     * 1.7 {@code BlockLantern}: a five-tall folded post whose lamp blinds glyphids in range.
+     * {@code Material.iron}, hardness 3, metal sound; the light comes from the lamp cell, not the base.
+     */
+    public static final RegistryObject<com.hbm.blocks.generic.BlockLantern> lantern =
+            plain("lantern", com.hbm.blocks.generic.BlockLantern::new,
+                    p -> p.strength(3.0F).sound(SoundType.METAL).lightLevel(s -> 15).noOcclusion()
+                            .requiresCorrectToolForDrops()
+                            .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false),
+                    HbmTab.BLOCKS);
+
     /** DemonLamp: BlockContainer(Material.iron), metal sound, light 1.0, hardness 3. */
     public static final RegistryObject<DemonLamp> lamp_demon = plain("lamp_demon", DemonLamp::new,
             p -> p.strength(3.0F).sound(SoundType.METAL).lightLevel(s -> 15).noOcclusion().requiresCorrectToolForDrops()

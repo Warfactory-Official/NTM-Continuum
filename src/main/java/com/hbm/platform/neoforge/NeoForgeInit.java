@@ -88,6 +88,7 @@ public class NeoForgeInit {
          com.hbm.gametest.FoldedPortParityGameTests.init();
          com.hbm.gametest.WeaponTableGameTests.init();
          com.hbm.gametest.GunSupportGameTests.init();
+         com.hbm.gametest.PollutionGameTests.init();
         // Bootstrap the Common mod: this populates all DeferredRegisters before RegisterEvent fires.
         CommonClass.init();
 
@@ -179,6 +180,8 @@ public class NeoForgeInit {
                  com.hbm.gametest.FlywheelGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.WeaponTableGameTests.TESTS));
+         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                 com.hbm.gametest.PollutionGameTests.TESTS));
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {
@@ -216,8 +219,10 @@ public class NeoForgeInit {
         // Hazard tooltips (radioactive/hot/etc. traits on items).
         NeoForge.EVENT_BUS.addListener((ItemTooltipEvent event) ->
                 HazardSystem.addHazardInfo(event.getItemStack(), event.getEntity(), event.getToolTip()));
-        NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) ->
-                 com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity()));
+        NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent event) -> {
+            com.hbm.items.special.ItemNuclearWaste.preserveDroppedEntity(event.getEntity());
+            com.hbm.handler.pollution.PollutionHandler.decorateMob(event.getEntity());
+        });
         NeoForge.EVENT_BUS.addListener((EntityTickEvent.Post event) -> {
             com.hbm.handler.ExplosivesEntityHooks.tick(event.getEntity());
             if (event.getEntity() instanceof ItemEntity item) {

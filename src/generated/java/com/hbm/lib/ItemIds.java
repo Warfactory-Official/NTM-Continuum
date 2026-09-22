@@ -994,6 +994,7 @@ public final class ItemIds {
     public static final String fins_small_steel = "hbm:fins_small_steel";
     public static final String fins_tri_steel = "hbm:fins_tri_steel";
     public static final String fire_door = "hbm:fire_door";
+    public static final String fireworks = "hbm:fireworks";
     public static final String fissure_bomb = "hbm:fissure_bomb";
     public static final String five_htp = "hbm:five_htp";
     public static final String flame_conspiracy = "hbm:flame_conspiracy";
@@ -1434,6 +1435,7 @@ public final class ItemIds {
     public static final String lamp_tritium_blue_on = "hbm:lamp_tritium_blue_on";
     public static final String lamp_tritium_green_off = "hbm:lamp_tritium_green_off";
     public static final String lamp_tritium_green_on = "hbm:lamp_tritium_green_on";
+    public static final String lantern = "hbm:lantern";
     public static final String large_vehicle_door = "hbm:large_vehicle_door";
     public static final String laser_crystal_bale = "hbm:laser_crystal_bale";
     public static final String laser_crystal_bismuth = "hbm:laser_crystal_bismuth";
@@ -1610,6 +1612,7 @@ public final class ItemIds {
     public static final String meteor_brick_mossy = "hbm:meteor_brick_mossy";
     public static final String meteor_pillar = "hbm:meteor_pillar";
     public static final String meteor_polished = "hbm:meteor_polished";
+    public static final String meteor_spawner = "hbm:meteor_spawner";
     public static final String mike_cooling_unit = "hbm:mike_cooling_unit";
     public static final String mike_core = "hbm:mike_core";
     public static final String mike_deut = "hbm:mike_deut";

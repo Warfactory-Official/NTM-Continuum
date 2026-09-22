@@ -159,6 +159,12 @@ public final class TerrainDeclarations {
         cube("block_meteor_molten", "hbm:blocks/meteor_cobble_molten");
         Drops.nothing(NS, "block_meteor_molten");
 
+        Dejson.block(NS, "meteor_spawner")
+                .models(Models.cubeBottomTop("hbm:blocks/meteor_polished", "hbm:blocks/meteor_spawner_side",
+                        "hbm:blocks/meteor_spawner_top"))
+                .states(Variants.simple()).blockItemDirect().register();
+        Drops.nothing(NS, "meteor_spawner");
+
         // fissure: authored bedrock + molten overlay model, both crater states
         Dejson.block(NS, "ore_volcano").statesOnly().states(Variants.uniform("crater", "false", "true")).register();
         Dejson.item(NS, "ore_volcano").models(Models.blockItem("hbm:block/ore_volcano")).register();

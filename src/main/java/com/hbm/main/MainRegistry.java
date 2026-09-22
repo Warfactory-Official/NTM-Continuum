@@ -172,6 +172,7 @@ public final class MainRegistry {
         ModSounds.init();          // sound events (assembly machine motor/strike/start/stop)
         ModTabs.init();
         com.hbm.handler.neutron.NeutronLifecycle.init();
+        com.hbm.handler.pollution.PollutionLifecycle.init();   // soot/poison field: diffusion, decay and blight
         com.hbm.world.chunk.ChunkLoadingManager.init();   // forced-chunk bookkeeping + restart reconciliation
         dev.golem.core.platform.Lifecycle.onLevelUnload((server, level) -> com.hbm.handler.JetpackHandler.clear(level));
         dev.golem.core.platform.Lifecycle.onServerTick(server ->
