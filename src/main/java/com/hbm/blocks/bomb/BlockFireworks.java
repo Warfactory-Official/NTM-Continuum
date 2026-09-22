@@ -55,13 +55,17 @@ public class BlockFireworks extends CompatBlock implements TickingBlock {
         if (stack.isEmpty()) return InteractionResult.PASS;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
+        // A local rather than an `instanceof DyeColor dye` pattern: the facade already returns a
+        // DyeColor, and a pattern whose type the expression always matches is an error on Java 17.
+        DyeColor dye = Dyes.colorOf(stack);
+
         if (stack.is(Items.GUNPOWDER)) {
             fireworks.charges += stack.getCount() * GUNPOWDER_CHARGES;
             stack.setCount(0);
         } else if (stack.is(ModItems.sulfur.get())) {
             fireworks.charges += stack.getCount();
             stack.setCount(0);
-        } else if (Dyes.colorOf(stack) instanceof DyeColor dye) {
+        } else if (dye != null) {
             fireworks.color = dye.getFireworkColor();
             stack.shrink(1);
         } else if (stack.is(Items.NAME_TAG)) {
