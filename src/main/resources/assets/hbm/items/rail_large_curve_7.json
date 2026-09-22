@@ -1,0 +1,26 @@
+{
+  "model": {
+    "type": "minecraft:special",
+    "base": "hbm:item/machine_obj_base",
+    "model": {
+      "type": "hbm:machine_obj",
+      "obj": "hbm:models/blocks/rail_standard_bend_wide.obj",
+      "texture": "hbm:textures/blocks/rail_standard_straight.png",
+      "scale": 0.225,
+      "yaw": 45.0,
+      "pitch": 60.0,
+      "rawLegacyTransform": true,
+      "itemTranslate": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "itemPreTranslate": [
+        0.675,
+        -0.584567148,
+        0.3375
+      ]
+    }
+  },
+  "oversized_in_gui": true
+}

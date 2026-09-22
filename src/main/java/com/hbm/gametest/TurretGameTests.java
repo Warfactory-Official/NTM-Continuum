@@ -726,15 +726,28 @@ public final class TurretGameTests {
     }
 
     public static void lingeringFire(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos targetPos = helper.absolutePos(new BlockPos(2, 2, 2));
+        int targetChunkX = targetPos.getX() >> 4;
+        int targetChunkZ = targetPos.getZ() >> 4;
+        boolean[][] forcedByTest = new boolean[3][3];
+        // 26.1 can keep a GameTest entity section loaded while DistanceManager skips entity ticks
+        // outside its ticking range. Hold the target chunk and its neighbours as simulation chunks for
+        // the real delayed burn assertion; only release tickets this fixture added.
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                forcedByTest[dx + 1][dz + 1] = level.setChunkForced(targetChunkX + dx, targetChunkZ + dz, true);
+            }
+        }
         var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 2, 2));
         zombie.setNoGravity(true);
         zombie.setNoAi(true);
 
-        var fire = new com.hbm.entity.effect.EntityFireLingering(helper.getLevel())
+        var fire = new com.hbm.entity.effect.EntityFireLingering(level)
                 .setArea(6, 2).setDuration(300)
                 .setFireType(com.hbm.entity.effect.EntityFireLingering.TYPE_DIESEL);
         fire.setPos(zombie.getX(), zombie.getY(), zombie.getZ());
-        helper.getLevel().addFreshEntity(fire);
+        level.addFreshEntity(fire);
 
         fire.tick();
         helper.assertTrue(com.hbm.capability.HbmLivingProps.getFire(zombie) == 60,
@@ -744,8 +757,14 @@ public final class TurretGameTests {
         // The burn damages on a forty-tick stride keyed to the entity id, so this has to run over real
         // ticks rather than a synchronous loop: tickCount never advances inside one.
         helper.runAfterDelay(50, () -> {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (forcedByTest[dx + 1][dz + 1]) level.setChunkForced(targetChunkX + dx, targetChunkZ + dz, false);
+                }
+            }
             helper.assertTrue(zombie.getHealth() < before,
-                    "The burn must damage what it is set on; health " + zombie.getHealth() + " of " + before);
+                    "The burn must damage what it is set on; health " + zombie.getHealth() + " of " + before
+                            + "; zombie ticks=" + zombie.tickCount + ", fire ticks=" + fire.tickCount);
             helper.succeed();
         });
     }
@@ -1044,26 +1063,44 @@ public final class TurretGameTests {
      * deferred.
      */
     public static void artyMist(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos targetPos = helper.absolutePos(new BlockPos(2, 2, 2));
+        int targetChunkX = targetPos.getX() >> 4;
+        int targetChunkZ = targetPos.getZ() >> 4;
+        boolean[][] forcedByTest = new boolean[3][3];
+        // The 26.1 GameTest runner may report the plot's entity section as loaded while the
+        // DistanceManager still excludes this playerless fixture from the entity tick range. Keep a
+        // small simulation square around the cloud so this assertion exercises its real server tick.
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                forcedByTest[dx + 1][dz + 1] = level.setChunkForced(targetChunkX + dx, targetChunkZ + dz, true);
+            }
+        }
         var zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, 2, 2));
         zombie.setNoGravity(true);
         zombie.setNoAi(true);
         float before = zombie.getHealth();
 
-        var mist = new com.hbm.entity.effect.EntityMist(helper.getLevel());
+        var mist = new com.hbm.entity.effect.EntityMist(level);
         mist.setType(com.hbm.inventory.fluid.Fluids.CHLORINE);
         mist.setArea(8F, 4F);
         mist.setDuration(200);
         mist.setPos(zombie.getX(), zombie.getY(), zombie.getZ());
-        helper.getLevel().addFreshEntity(mist);
+        level.addFreshEntity(mist);
 
         helper.assertTrue(com.hbm.inventory.fluid.Fluids.CHLORINE.getTrait(
                         com.hbm.inventory.fluid.trait.FT_Corrosive.class) != null,
                 "Chlorine must carry the corrosive trait its cloud dispatches on");
 
         helper.runAfterDelay(40, () -> {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    if (forcedByTest[dx + 1][dz + 1]) level.setChunkForced(targetChunkX + dx, targetChunkZ + dz, false);
+                }
+            }
             helper.assertTrue(zombie.getHealth() < before,
                     "A corrosive cloud must eat what stands in it; health " + zombie.getHealth()
-                            + " of " + before);
+                            + " of " + before + "; zombie ticks=" + zombie.tickCount + ", mist ticks=" + mist.tickCount);
             helper.assertTrue(mist.isAlive(), "The cloud must outlive its first few ticks");
             helper.succeed();
         });

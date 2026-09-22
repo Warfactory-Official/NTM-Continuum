@@ -5,8 +5,9 @@ package com.hbm.platform.fabric;
  * {@code @GameTestGenerator} when the server starts with {@code -Dfabric-api.gametest}
  * ({@code gradlew :<node>-fabric:runGametest}); the generator hands over every suite Golem collected, the
  * same list the Forge init registers through {@code RegisterGameTestsEvent}, after each suite's
- * {@code init()} (the side hooks some suites listen through, which ForgeInit calls at construction). 26.1 has no generator API
- * and no Fabric test wiring yet, so the class is a plain entrypoint there.
+ * {@code init()} (the side hooks some suites listen through, which ForgeInit calls at construction).
+ * 26.1 has no generator API; its Fabric API registry hook is forwarded to Golem Core by the
+ * loader-specific mixin, while this entrypoint still owns suite initialisation.
  */
 public final class FabricGameTests {
 
@@ -17,7 +18,7 @@ public final class FabricGameTests {
     /**
      * Runs every suite's {@code init()} once. FabricInit calls this before the registries are flushed,
      * because a suite that owns a test-only block (IntakeFanGameTests) must have created its register by
-     * then; the generator below calls it as well in case the gametest entrypoint runs first.
+     * then; the legacy generator below calls it as well in case the gametest entrypoint runs first.
      */
     public static synchronized void initAll() {
         if (initialised) return;
@@ -46,6 +47,7 @@ public final class FabricGameTests {
         com.hbm.gametest.AutocalGameTests.init();
         com.hbm.gametest.RadioProviderGameTests.init();
         com.hbm.gametest.RtgGameTests.init();
+        com.hbm.gametest.SingularityGameTests.init();
         com.hbm.gametest.TurretGameTests.init();
         com.hbm.gametest.PowerNetworkGameTests.init();
         com.hbm.gametest.NetworkReachGameTests.init();
@@ -92,6 +94,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.AutocalGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.RadioProviderGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.RtgGameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.SingularityGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.TurretGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.PowerNetworkGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.NetworkReachGameTests.TESTS);

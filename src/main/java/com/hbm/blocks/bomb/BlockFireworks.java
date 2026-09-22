@@ -51,8 +51,8 @@ public class BlockFireworks extends CompatBlock implements TickingBlock {
     @Override
     protected InteractionResult onUseItem(BlockState state, Level level, BlockPos pos, Player player,
                                           InteractionHand hand, ItemStack stack, BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityFireworks fireworks)) return InteractionResult.PASS;
-        if (stack.isEmpty()) return InteractionResult.PASS;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityFireworks fireworks)) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (stack.isEmpty()) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         // A local rather than an `instanceof DyeColor dye` pattern: the facade already returns a
@@ -72,7 +72,7 @@ public class BlockFireworks extends CompatBlock implements TickingBlock {
             fireworks.message = stack.getHoverName().getString();
             stack.shrink(1);
         } else {
-            return InteractionResult.PASS;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
 
         fireworks.setChanged();
@@ -82,7 +82,7 @@ public class BlockFireworks extends CompatBlock implements TickingBlock {
     @Override
     protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player,
                                                  BlockHitResult hit) {
-        if (!(level.getBlockEntity(pos) instanceof TileEntityFireworks fireworks)) return InteractionResult.PASS;
+        if (!(level.getBlockEntity(pos) instanceof TileEntityFireworks fireworks)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         player.sendSystemMessage(Component.translatable("tile.fireworks.name")

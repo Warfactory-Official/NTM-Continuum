@@ -122,9 +122,11 @@ public final class ArmorWaveGameTests {
     }
 
     public static void tableSlotsAndLifecycle(GameTestHelper helper) {
-        Player player = player(helper);
+        // Item dropping is a ServerPlayer operation on vanilla/Fabric, not the helper's bare Player.
+        try (var fixture = dev.golem.core.gametest.GameTestHelpers.mockServerPlayer(helper)) {
+        Player player = fixture.player();
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
-        helper.setBlock(pos, com.hbm.blocks.machine.ModArmorTableBlocks.ARMOR_TABLE.get().defaultBlockState());
+        helper.setBlock(new BlockPos(1, 1, 1), com.hbm.blocks.machine.ModArmorTableBlocks.ARMOR_TABLE.get().defaultBlockState());
         player.setPos(pos.getX() + 0.5D, pos.getY(), pos.getZ() + 0.5D);
 
         ContainerArmorTable menu = new ContainerArmorTable(0, player.getInventory(), pos);
@@ -150,6 +152,7 @@ public final class ArmorWaveGameTests {
         int drops = (int) helper.getLevel().getEntitiesOfClass(ItemEntity.class, player.getBoundingBox().inflate(4D)).stream()
                 .filter(e -> !before.contains(e.getId())).count();
         helper.assertTrue(drops == 2, "closing the table dropped " + drops + " stacks, expected armor + module");
+        }
         helper.succeed();
     }
 

@@ -62,27 +62,34 @@ public final class DFCGameTests {
 
     public static void reaction(GameTestHelper helper) {
         TileEntityCore core = build(helper);
-        fuel(core);
-        core.inventory.setStackInSlot(1, new ItemStack(ModDFCBlocks.ams_core_sing.get()));
-        catalysts(core);
+        try {
+            fuel(core);
+            core.inventory.setStackInSlot(1, new ItemStack(ModDFCBlocks.ams_core_sing.get()));
+            catalysts(core);
 
-        helper.assertTrue(core.hasCore(), "The chamber should see its exotic core");
-        helper.assertTrue(core.getCore() == 500, "The vibrant singularity multiplies by five hundred");
+            helper.assertTrue(core.hasCore(), "The chamber should see its exotic core");
+            helper.assertTrue(core.getCore() == 500, "The vibrant singularity multiplies by five hundred");
 
-        tick(helper, CORE, core, TileEntityCore::serverTick);
-        helper.assertTrue(core.isReady(), "A fuelled, cored, catalysed chamber should be ready");
-        helper.assertTrue(core.color != 0, "Two catalysts should give the chamber a colour");
+            tick(helper, CORE, core, TileEntityCore::serverTick);
+            helper.assertTrue(core.isReady(), "A fuelled, cored, catalysed chamber should be ready");
+            helper.assertTrue(core.color != 0, "Two catalysts should give the chamber a colour");
 
-        long before = core.tanks[0].getFill();
-        long out = core.burn(1_000_000L);
-        helper.assertTrue(out > 1_000_000L, "The reaction should give back more than it was handed");
-        helper.assertTrue(core.heat > 0, "Burning should leave heat behind");
-        helper.assertTrue(core.tanks[0].getFill() < before, "Burning should consume fuel");
+            long before = core.tanks[0].getFill();
+            long out = core.burn(1_000_000L);
+            helper.assertTrue(out > 1_000_000L, "The reaction should give back more than it was handed");
+            helper.assertTrue(core.heat > 0, "Burning should leave heat behind");
+            helper.assertTrue(core.tanks[0].getFill() < before, "Burning should consume fuel");
 
-        core.inventory.setStackInSlot(1, ItemStack.EMPTY);
-        helper.assertTrue(core.burn(1_000_000L) == 1_000_000L,
-                "Without an exotic core the beam should pass through untouched");
-        helper.succeed();
+            core.inventory.setStackInSlot(1, ItemStack.EMPTY);
+            helper.assertTrue(core.burn(1_000_000L) == 1_000_000L,
+                    "Without an exotic core the beam should pass through untouched");
+            // The direct burn above intentionally leaves heat behind to prove the reaction.  Quench the
+            // fixture before returning: the real block entity keeps ticking after helper.succeed(), and
+            // would otherwise detonate on the next server tick while the suite is running.
+            helper.succeed();
+        } finally {
+            quench(core);
+        }
     }
 
     public static void stabilizer(GameTestHelper helper) {
@@ -138,27 +145,31 @@ public final class DFCGameTests {
      */
     public static void meltdown(GameTestHelper helper) {
         TileEntityCore core = build(helper);
-        fuel(core);
-        core.inventory.setStackInSlot(1, new ItemStack(ModDFCBlocks.ams_core_sing.get()));
-        catalysts(core);
+        try {
+            fuel(core);
+            core.inventory.setStackInSlot(1, new ItemStack(ModDFCBlocks.ams_core_sing.get()));
+            catalysts(core);
 
-        core.heat = 50;
-        core.field = 100;
-        tick(helper, CORE, core, TileEntityCore::serverTick);
-        helper.assertBlockPresent(ModDFCBlocks.dfc_core.get(), CORE);
-        helper.assertTrue(!core.shouldDetonate(), "A field above the heat should hold the reaction");
+            core.heat = 50;
+            core.field = 100;
+            tick(helper, CORE, core, TileEntityCore::serverTick);
+            helper.assertBlockPresent(ModDFCBlocks.dfc_core.get(), CORE);
+            helper.assertTrue(!core.shouldDetonate(), "A field above the heat should hold the reaction");
 
-        helper.assertTrue(core.field == 99, "The field should decay by one each tick");
+            helper.assertTrue(core.field == 99, "The field should decay by one each tick");
 
-        core.heat = 100;
-        core.field = 0;
-        helper.assertTrue(core.shouldDetonate(), "Heat above the field should open the gate");
-        helper.assertTrue(core.blastSize() == 1000, "A full chamber at full heat is the largest blast");
+            core.heat = 100;
+            core.field = 0;
+            helper.assertTrue(core.shouldDetonate(), "Heat above the field should open the gate");
+            helper.assertTrue(core.blastSize() == 1000, "A full chamber at full heat is the largest blast");
 
-        core.tanks[0].setFill(0);
-        core.tanks[1].setFill(0);
-        helper.assertTrue(core.blastSize() == 50, "An empty chamber still makes the smallest blast");
-        helper.succeed();
+            core.tanks[0].setFill(0);
+            core.tanks[1].setFill(0);
+            helper.assertTrue(core.blastSize() == 50, "An empty chamber still makes the smallest blast");
+            helper.succeed();
+        } finally {
+            quench(core);
+        }
     }
 
     public static void cores(GameTestHelper helper) {
@@ -241,6 +252,14 @@ public final class DFCGameTests {
         ItemStack catalyst = new ItemStack(com.hbm.items.ModCatalystItems.iron.get());
         core.inventory.setStackInSlot(0, catalyst.copy());
         core.inventory.setStackInSlot(2, catalyst.copy());
+    }
+
+    /** Stop the deliberately overheated test core from detonating after its assertions complete. */
+    private static void quench(TileEntityCore core) {
+        core.heat = 0;
+        core.field = 0;
+        core.tanks[0].setFill(0);
+        core.tanks[1].setFill(0);
     }
 
     private static <T extends BlockEntity> T be(GameTestHelper helper, BlockPos pos, Class<T> type) {

@@ -37,7 +37,7 @@ import java.util.Set;
  *       behind it is a rename nobody carried through, and a registered item with no constant is one
  *       the next recipe will not be able to name.
  *   <li><b>Vanilla items</b> must all have a constant, but a constant may name one this node has
- *       never heard of: 26.1 has 279 items 1.20.1 does not, and none the other way round.
+ *       never heard of. Historical vanilla renames are normalized by Core in the shared roster.
  *   <li><b>Convention tags</b> are required only where this mod has an item in them. Which
  *       {@code c:} tags exist at all is up to the loader — NeoForge and Fabric API ship different
  *       sets — so that is not something one committed file can be right about everywhere.

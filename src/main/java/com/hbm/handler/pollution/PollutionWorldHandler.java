@@ -19,7 +19,7 @@ public final class PollutionWorldHandler {
         // 1.7 gates dirt on meta 0, so the plain block alone is the faithful test here.
         if (block == Blocks.GRASS_BLOCK || block == Blocks.DIRT) {
             level.setBlock(pos, Blocks.COARSE_DIRT.defaultBlockState(), Block.UPDATE_CLIENTS);
-        // 1.7's Material.plants; Vegetation.isPlant covers the BushBlock/VegetationBlock split, which
+        // 1.7's Material.plants; Vegetation.isPlant covers the VegetationBlock/VegetationBlock split, which
         // is what keeps tall grass and ferns reachable on the newer API.
         } else if (Vegetation.isLeaves(state) || Vegetation.isPlant(state)) {
             level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);

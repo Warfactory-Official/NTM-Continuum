@@ -633,6 +633,32 @@ public final class ModBlockEntities {
             BLOCK_ENTITIES.register("machine_compressor",
                     () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityMachineCompressor::new, com.hbm.tileentity.machine.TileEntityMachineCompressor::clientTick, TileEntityMachineCompressorBase::serverTick, ModMachineBlocks.machine_compressor.get()));
 
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineCompressorCompact>> MACHINE_COMPRESSOR_COMPACT =
+            BLOCK_ENTITIES.register("machine_compressor_compact",
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.TileEntityMachineCompressorCompact::new,
+                            com.hbm.tileentity.machine.TileEntityMachineCompressorCompact::clientTick,
+                            TileEntityMachineCompressorBase::serverTick,
+                            ModMachineBlocks.machine_compressor_compact.get()));
+
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.BlockEntityDecon>> DECON =
+            BLOCK_ENTITIES.register("decon", () -> BlockEntities.ticking(
+                    com.hbm.tileentity.machine.BlockEntityDecon::new,
+                    com.hbm.tileentity.machine.BlockEntityDecon::clientTick,
+                    com.hbm.tileentity.machine.BlockEntityDecon::serverTick,
+                    ModMachineBlocks.decon.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityTowerSmall>> MACHINE_TOWER_SMALL =
+            BLOCK_ENTITIES.register("cooling_tower_small", () -> BlockEntities.ticking(
+                    com.hbm.tileentity.machine.TileEntityTowerSmall::new,
+                    com.hbm.tileentity.machine.TileEntityTowerSmall::clientTick,
+                    com.hbm.tileentity.machine.TileEntityTowerSmall::serverTick,
+                    ModMachineBlocks.machine_tower_small.get()));
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityTowerLarge>> MACHINE_TOWER_LARGE =
+            BLOCK_ENTITIES.register("cooling_tower_large", () -> BlockEntities.ticking(
+                    com.hbm.tileentity.machine.TileEntityTowerLarge::new,
+                    com.hbm.tileentity.machine.TileEntityTowerLarge::clientTick,
+                    com.hbm.tileentity.machine.TileEntityTowerLarge::serverTick,
+                    ModMachineBlocks.machine_tower_large.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare>> MACHINE_GAS_FLARE =
             BLOCK_ENTITIES.register("machine_flare",
                     () -> BlockEntities.ticking(com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare::new, com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare::clientTick, com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare::serverTick, ModMachineBlocks.machine_flare.get()));

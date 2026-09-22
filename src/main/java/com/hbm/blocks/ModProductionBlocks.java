@@ -14,6 +14,7 @@ import com.hbm.blocks.machine.MachineConveyorPress;
 import com.hbm.blocks.machine.MachineMicrowave;
 import com.hbm.blocks.machine.MachineRotaryFurnace;
 import com.hbm.blocks.machine.MachineThresher;
+import com.hbm.blocks.machine.MachineFunnel;
 import com.hbm.items.block.ItemBlockProductionDesc;
 
 /** Feature-local block and block-item registry for the production machines (group A). */
@@ -43,19 +44,24 @@ public final class ModProductionBlocks {
     public static final RegistryObject<Block> PRESS_PREHEATER = BLOCKS.registerBlock(
             "press_preheater", dev.golem.core.world.CompatBlock::new,
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    public static final RegistryObject<MachineFunnel> MACHINE_FUNNEL = BLOCKS.registerBlock(
+            "machine_funnel", MachineFunnel::new,
+            p -> p.strength(10.0F, 20.0F).sound(SoundType.METAL).noOcclusion().requiresCorrectToolForDrops());
 
-    public static final RegistryObject<BlockItem> MACHINE_ROTARY_FURNACE_ITEM = ITEMS.registerItem(
-            "machine_rotary_furnace", p -> new BlockItem(MACHINE_ROTARY_FURNACE.get(), p), Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_ROTARY_FURNACE_ITEM = ITEMS.registerBlockItem(
+            "machine_rotary_furnace", MACHINE_ROTARY_FURNACE, Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_THRESHER_ITEM = ITEMS.registerItem(
             "machine_thresher", p -> new ItemBlockProductionDesc(MACHINE_THRESHER.get(), p, 7), Compat::blockDescription);
-    public static final RegistryObject<BlockItem> MACHINE_MICROWAVE_ITEM = ITEMS.registerItem(
-            "machine_microwave", p -> new BlockItem(MACHINE_MICROWAVE.get(), p), Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_MICROWAVE_ITEM = ITEMS.registerBlockItem(
+            "machine_microwave", MACHINE_MICROWAVE, Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_AUTOCRAFTER_ITEM = ITEMS.registerItem(
             "machine_autocrafter", p -> new BlockItem(MACHINE_AUTOCRAFTER.get(), p), Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_CONVEYOR_PRESS_ITEM = ITEMS.registerItem(
             "machine_conveyor_press", p -> new ItemBlockProductionDesc(MACHINE_CONVEYOR_PRESS.get(), p, 3), Compat::blockDescription);
     public static final RegistryObject<BlockItem> PRESS_PREHEATER_ITEM = ITEMS.registerItem(
             "press_preheater", p -> new BlockItem(PRESS_PREHEATER.get(), p), Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_FUNNEL_ITEM = ITEMS.registerBlockItem(
+            "machine_funnel", MACHINE_FUNNEL, Compat::blockDescription);
 
     static {
         ModTabs.addTo(HbmTab.MACHINES, MACHINE_ROTARY_FURNACE_ITEM);
@@ -64,6 +70,7 @@ public final class ModProductionBlocks {
         ModTabs.addTo(HbmTab.MACHINES, MACHINE_AUTOCRAFTER_ITEM);
         ModTabs.addTo(HbmTab.MACHINES, MACHINE_CONVEYOR_PRESS_ITEM);
         ModTabs.addTo(HbmTab.MACHINES, PRESS_PREHEATER_ITEM);
+        ModTabs.addTo(HbmTab.MACHINES, MACHINE_FUNNEL_ITEM);
     }
 
     public static void init() {}

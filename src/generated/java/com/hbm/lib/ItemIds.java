@@ -481,8 +481,16 @@ public final class ItemIds {
     public static final String bomb_multi = "hbm:bomb_multi";
     public static final String book_secret = "hbm:book_secret";
     public static final String bottle2_empty = "hbm:bottle2_empty";
+    public static final String bottle2_fritz = "hbm:bottle2_fritz";
+    public static final String bottle2_korl = "hbm:bottle2_korl";
+    public static final String bottle_cherry = "hbm:bottle_cherry";
     public static final String bottle_empty = "hbm:bottle_empty";
     public static final String bottle_mercury = "hbm:bottle_mercury";
+    public static final String bottle_nuka = "hbm:bottle_nuka";
+    public static final String bottle_opener = "hbm:bottle_opener";
+    public static final String bottle_quantum = "hbm:bottle_quantum";
+    public static final String bottle_rad = "hbm:bottle_rad";
+    public static final String bottle_sparkle = "hbm:bottle_sparkle";
     public static final String bottled_cloud = "hbm:bottled_cloud";
     public static final String boxcar = "hbm:boxcar";
     public static final String boy_bullet = "hbm:boy_bullet";
@@ -539,8 +547,17 @@ public final class ItemIds {
     public static final String cable_detector = "hbm:cable_detector";
     public static final String cable_diode = "hbm:cable_diode";
     public static final String cable_switch = "hbm:cable_switch";
+    public static final String can_bepis = "hbm:can_bepis";
+    public static final String can_breen = "hbm:can_breen";
+    public static final String can_creature = "hbm:can_creature";
     public static final String can_empty = "hbm:can_empty";
     public static final String can_key = "hbm:can_key";
+    public static final String can_luna = "hbm:can_luna";
+    public static final String can_mrsugar = "hbm:can_mrsugar";
+    public static final String can_mug = "hbm:can_mug";
+    public static final String can_overcharge = "hbm:can_overcharge";
+    public static final String can_redbomb = "hbm:can_redbomb";
+    public static final String can_smart = "hbm:can_smart";
     public static final String canister_empty = "hbm:canister_empty";
     public static final String canister_full = "hbm:canister_full";
     public static final String canister_napalm = "hbm:canister_napalm";
@@ -669,6 +686,8 @@ public final class ItemIds {
     public static final String cobalt_helmet = "hbm:cobalt_helmet";
     public static final String cobalt_legs = "hbm:cobalt_legs";
     public static final String cobalt_plate = "hbm:cobalt_plate";
+    public static final String coffee = "hbm:coffee";
+    public static final String coffee_radium = "hbm:coffee_radium";
     public static final String coil_copper = "hbm:coil_copper";
     public static final String coil_copper_torus = "hbm:coil_copper_torus";
     public static final String coil_gold = "hbm:coil_gold";
@@ -793,6 +812,7 @@ public final class ItemIds {
     public static final String crayon_yellow = "hbm:crayon_yellow";
     public static final String creative_fluid_source = "hbm:creative_fluid_source";
     public static final String creative_generator = "hbm:creative_generator";
+    public static final String crowbar = "hbm:crowbar";
     public static final String crt_display = "hbm:crt_display";
     public static final String crystal_aluminium = "hbm:crystal_aluminium";
     public static final String crystal_asbestos = "hbm:crystal_asbestos";
@@ -895,6 +915,7 @@ public final class ItemIds {
     public static final String deco_toaster_steel = "hbm:deco_toaster_steel";
     public static final String deco_toaster_wood = "hbm:deco_toaster_wood";
     public static final String deco_tungsten = "hbm:deco_tungsten";
+    public static final String decon = "hbm:decon";
     public static final String definitelyfood = "hbm:definitelyfood";
     public static final String defuser = "hbm:defuser";
     public static final String defuser_gold = "hbm:defuser_gold";
@@ -907,6 +928,7 @@ public final class ItemIds {
     public static final String depth_tiles = "hbm:depth_tiles";
     public static final String designator = "hbm:designator";
     public static final String designator_arty_range = "hbm:designator_arty_range";
+    public static final String designator_manual = "hbm:designator_manual";
     public static final String designator_range = "hbm:designator_range";
     public static final String det_charge = "hbm:det_charge";
     public static final String det_cord = "hbm:det_cord";
@@ -1489,6 +1511,7 @@ public final class ItemIds {
     public static final String machine_coker = "hbm:machine_coker";
     public static final String machine_combustion_engine = "hbm:machine_combustion_engine";
     public static final String machine_compressor = "hbm:machine_compressor";
+    public static final String machine_compressor_compact = "hbm:machine_compressor_compact";
     public static final String machine_condenser = "hbm:machine_condenser";
     public static final String machine_condenser_powered = "hbm:machine_condenser_powered";
     public static final String machine_controller = "hbm:machine_controller";
@@ -1516,6 +1539,7 @@ public final class ItemIds {
     public static final String machine_fluidtank = "hbm:machine_fluidtank";
     public static final String machine_fracking_tower = "hbm:machine_fracking_tower";
     public static final String machine_fraction_tower = "hbm:machine_fraction_tower";
+    public static final String machine_funnel = "hbm:machine_funnel";
     public static final String machine_furnace_brick_off = "hbm:machine_furnace_brick_off";
     public static final String machine_furnace_combination = "hbm:machine_furnace_combination";
     public static final String machine_gascent = "hbm:machine_gascent";
@@ -1567,6 +1591,8 @@ public final class ItemIds {
     public static final String machine_storage_drum = "hbm:machine_storage_drum";
     public static final String machine_strand_caster = "hbm:machine_strand_caster";
     public static final String machine_thresher = "hbm:machine_thresher";
+    public static final String machine_tower_large = "hbm:machine_tower_large";
+    public static final String machine_tower_small = "hbm:machine_tower_small";
     public static final String machine_transformer = "hbm:machine_transformer";
     public static final String machine_transformer_20 = "hbm:machine_transformer_20";
     public static final String machine_transformer_dnt = "hbm:machine_transformer_dnt";
@@ -2379,6 +2405,7 @@ public final class ItemIds {
     public static final String rail_large_switch_flipped = "hbm:rail_large_switch_flipped";
     public static final String rail_narrow_curve = "hbm:rail_narrow_curve";
     public static final String rail_narrow_straight = "hbm:rail_narrow_straight";
+    public static final String rangefinder = "hbm:rangefinder";
     public static final String rbmk_absorber = "hbm:rbmk_absorber";
     public static final String rbmk_blank = "hbm:rbmk_blank";
     public static final String rbmk_boiler = "hbm:rbmk_boiler";

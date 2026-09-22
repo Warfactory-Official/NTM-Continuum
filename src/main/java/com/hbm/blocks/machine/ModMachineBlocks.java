@@ -438,6 +438,21 @@ public final class ModMachineBlocks {
             "machine_compressor", MachineCompressor::new,
             p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
+    public static final RegistryObject<MachineTowerSmall> machine_tower_small = BLOCKS.registerBlock(
+            "machine_tower_small", MachineTowerSmall::new,
+            p -> p.strength(5.0F, 20.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<MachineTowerLarge> machine_tower_large = BLOCKS.registerBlock(
+            "machine_tower_large", MachineTowerLarge::new,
+            p -> p.strength(5.0F, 20.0F).sound(SoundType.METAL).noOcclusion());
+    public static final RegistryObject<BlockDecon> decon = BLOCKS.registerBlock(
+            "decon", BlockDecon::new,
+            p -> p.strength(5.0F, 20.0F).sound(SoundType.METAL).noOcclusion());
+
+    /** Compact pressure compressor; same processing/menu path, with the old six-port ring footprint. */
+    public static final RegistryObject<MachineCompressorCompact> machine_compressor_compact = BLOCKS.registerBlock(
+            "machine_compressor_compact", MachineCompressorCompact::new,
+            p -> dummyable(p.strength(10.0F, 20.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+
     public static final RegistryObject<MachineSolderingStation> machine_soldering_station = BLOCKS.registerBlock(
             "machine_soldering_station", MachineSolderingStation::new,
             p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
@@ -671,7 +686,11 @@ public final class ModMachineBlocks {
         tabItem("machine_pyrooven", machine_pyrooven);
         tabItem("machine_combustion_engine", machine_combustion_engine);
         tabItem("refueler", refueler);
-        tabItem("machine_compressor", machine_compressor);
+         tabItem("machine_compressor", machine_compressor);
+         tabItem("machine_compressor_compact", machine_compressor_compact);
+         tabItem("machine_tower_small", machine_tower_small);
+         tabItem("machine_tower_large", machine_tower_large);
+         tabItem("decon", decon);
         tabItem("machine_diesel", machine_diesel);
         tabItem("machine_flare", machine_flare);
         tabItem("machine_fraction_tower", machine_fraction_tower);

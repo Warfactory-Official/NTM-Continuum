@@ -48,6 +48,8 @@ public final class HbmPackets {
                 (payload, player) -> handleControl(player, payload));
         GolemNetwork.registerPlayToServer(AnvilCraftPayload.CODEC,
                 (payload, player) -> handleAnvilCraft(player, payload));
+        GolemNetwork.registerPlayToServer(ManualDesignatorPayload.CODEC,
+                (payload, player) -> ManualDesignatorPayload.handle(player, payload));
         GolemNetwork.declarePlayToClient(GunAnimationPayload.CODEC);
         GolemNetwork.declarePlayToClient(PlasmaBlastPayload.CODEC);
         GolemNetwork.declarePlayToClient(MuzzleFlashPayload.CODEC);

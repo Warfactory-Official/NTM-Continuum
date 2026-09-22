@@ -22,8 +22,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * 1.7 {@code BlockSupplyCrate}: the crate the parachute drop places, no GUI, contents carried by the
- * dropped item. The crowbar is 1.7's only way into a placed one; this port has no crowbar item yet, so the
- * gate is the {@code hbm:crowbar} item tag the crowbar joins when it is ported.
+ * dropped item. The crowbar is 1.7's only way into a placed one; the shared {@code hbm:crowbar} tag keeps
+ * this interaction aligned with the other legacy loot crates.
  */
 public class BlockCrateSupply extends CarriedBlock {
 

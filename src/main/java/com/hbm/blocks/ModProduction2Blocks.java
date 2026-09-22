@@ -54,12 +54,12 @@ public final class ModProduction2Blocks {
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
                     .lightLevel(state -> state.getValue(MachineDiFurnaceRTG.LIT) ? 15 : 0));
 
-    public static final RegistryObject<BlockItem> MACHINE_EXCAVATOR_ITEM = ITEMS.registerItem(
-            "machine_excavator", p -> new BlockItem(MACHINE_EXCAVATOR.get(), p), Compat::blockDescription);
-    public static final RegistryObject<BlockItem> MACHINE_ORE_SLOPPER_ITEM = ITEMS.registerItem(
-            "machine_ore_slopper", p -> new BlockItem(MACHINE_ORE_SLOPPER.get(), p), Compat::blockDescription);
-    public static final RegistryObject<BlockItem> MACHINE_ANNIHILATOR_ITEM = ITEMS.registerItem(
-            "machine_annihilator", p -> new BlockItem(MACHINE_ANNIHILATOR.get(), p), Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_EXCAVATOR_ITEM = ITEMS.registerBlockItem(
+            "machine_excavator", MACHINE_EXCAVATOR, Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_ORE_SLOPPER_ITEM = ITEMS.registerBlockItem(
+            "machine_ore_slopper", MACHINE_ORE_SLOPPER, Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_ANNIHILATOR_ITEM = ITEMS.registerBlockItem(
+            "machine_annihilator", MACHINE_ANNIHILATOR, Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_BOILER_OFF_ITEM = ITEMS.registerItem(
             "machine_boiler_off", p -> new BlockItem(MACHINE_BOILER_OFF.get(), p), Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_RTG_FURNACE_ITEM = ITEMS.registerItem(

@@ -14,6 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.nbt.CompoundTag;
+import com.hbm.particle.helper.HbmEffectNT;
 
 /** Passive 100 mB/t spent-steam condenser used to close the ZIRNOX water loop. */
 public class TileEntityCondenser extends TileEntityMachineBase implements IFluidStandardTransceiverMK2 {
@@ -67,6 +69,18 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
     protected boolean extraCondition(int amount) { return true; }
 
     protected void postConvert(int amount) {}
+
+    /** Client-side old Tower particle payload; subclasses choose its timing and plume shape. */
+    protected final void spawnSmoke(Level level, BlockPos pos, double y, float lift, float base,
+                                    float max, int life) {
+        CompoundTag data = new CompoundTag();
+        data.putFloat("lift", lift);
+        data.putFloat("base", base);
+        data.putFloat("max", max);
+        data.putInt("life", life);
+        HbmEffectNT.Tower.summonParticle(level, pos.getX() + 0.5D, pos.getY() + y,
+                pos.getZ() + 0.5D, data);
+    }
 
     protected void updateConnections(Level level) {
         for (DirPos connection : getConPos()) {

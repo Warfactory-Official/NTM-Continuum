@@ -289,6 +289,8 @@ public final class HbmBlockEntityRenderers {
         // Compressor: own renderer — the Pump part sits at −3 blocks at rest (lift·3−3) and the Fan spins,
         // so a static render would drop the pump through the floor.
         regGem(sink, ModBlockEntities.MACHINE_COMPRESSOR.get(), CompressorRenderer::new);
+        // Compact compressor: two condenser fans counter-rotate at 45 degrees per running tick.
+        regGem(sink, ModBlockEntities.MACHINE_COMPRESSOR_COMPACT.get(), CompressorCompactRenderer::new);
 
         // Heat boiler: static OBJ + the burst husk + the near-full wobble (own renderer).
          regGem(sink, ModBlockEntities.HEAT_BOILER.get(), HeatBoilerRenderer::new);
@@ -334,6 +336,16 @@ public final class HbmBlockEntityRenderers {
                    new ModelDef(obj("tank.obj"), tex("machines/puf6tank.png")));
            regGem(sink, ModBlockEntities.MACHINE_BIG_ASS_TANK.get(), BigAssTankRenderer::new);
            regGem(sink, ModBlockEntities.MACHINE_BAT9000.get(), BAT9000Renderer::new);
+           // Original RenderSmallTower/RenderLargeTower: unit scale, cell-centred, no facing rotation,
+           // and culling disabled so the open tower shell can be seen from inside and above.
+           regGem(sink, ModBlockEntities.MACHINE_TOWER_SMALL.get(),
+                   () -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityTowerSmall>(0F, 1F,
+                           new ModelDef(obj("machines/tower_small.obj"), tex("machines/tower_small.png"), true))
+                           .ignoreFacing());
+           regGem(sink, ModBlockEntities.MACHINE_TOWER_LARGE.get(),
+                   () -> new MachineObjRenderer<com.hbm.tileentity.machine.TileEntityTowerLarge>(0F, 1F,
+                           new ModelDef(obj("machines/tower_large.obj"), tex("machines/tower_large.png"), true))
+                           .ignoreFacing());
            reg(sink, ModBlockEntities.MACHINE_DEUTERIUM_TOWER.get(), 180F, 1F, 0.5F, -0.5F,
                    new ModelDef(obj("machines/machine_deuterium_tower.obj"),
                            tex("machines/machine_deuterium_tower.png")));

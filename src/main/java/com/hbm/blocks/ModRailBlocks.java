@@ -32,9 +32,10 @@ import java.util.List;
  * {@code ModBlocks.RAIL_LARGE_*}/{@code RAIL_NARROW_*} entries; ids, strengths and the rail family are as
  * there). 1.7 gave this family no creative tab entry beyond the item; the items sit in the machines tab.
  *
- * <p>Rendering is not part of this wave: ntm-next draws every rail through one OBJ block renderer, and
- * this port's rail OBJ/blockstate assets and renderer are a follow-up recorded in the entity port
- * manifest. The blocks and their geometry are complete, so trains move on them.
+ * <p>The renderer and Dejson declarations live beside this registration: the folded core owns one
+ * {@code BlockEntityRail}, and its client BER draws the source OBJ across the full footprint. The
+ * source-faithful meshes, skins, and machine_obj item definitions are emitted by
+ * {@code port-tools/gen_rail_assets.py}.
  */
 public final class ModRailBlocks {
 

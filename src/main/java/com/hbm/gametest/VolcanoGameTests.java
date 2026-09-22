@@ -137,16 +137,37 @@ public final class VolcanoGameTests {
     public static void volcanoShrapnelPoolsLavaAndMonoxide(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
 
+        BlockPos shardOrigin = helper.absolutePos(SHARD_FLOOR);
+        int targetChunkX = shardOrigin.getX() >> 4;
+        int targetChunkZ = shardOrigin.getZ() >> 4;
+        boolean[][] forcedByTest = new boolean[3][3];
+        // A GameTest plot can remain loaded while its playerless entity section is outside the
+        // DistanceManager's ticking range. Keep the shard flight and delayed death assertion on
+        // real server ticks; release only simulation tickets this fixture added.
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                forcedByTest[dx + 1][dz + 1] = level.setChunkForced(targetChunkX + dx, targetChunkZ + dz, true);
+            }
+        }
+
         helper.setBlock(SHARD_FLOOR, Blocks.STONE);
         helper.setBlock(PLAIN_FLOOR, Blocks.STONE);
-        drop(helper, level, SHARD_FLOOR, true);
-        drop(helper, level, PLAIN_FLOOR, false);
+        EntityShrapnel volcanoShard = drop(helper, level, SHARD_FLOOR, true);
+        EntityShrapnel plainShard = drop(helper, level, PLAIN_FLOOR, false);
 
         poll(helper, EntityShrapnel.GRACE_TICKS + 2, 50,
                 () -> isLava(helper, level, SHARD_FLOOR.above()),
-                () -> "1.7 EntityShrapnel.onImpact: a volcano shard landing at motionY < -0.2 lays volcanic_lava_block on "
-                        + "top of the block it hit; " + SHARD_FLOOR.above() + " is "
-                        + level.getBlockState(helper.absolutePos(SHARD_FLOOR.above())),
+                () -> {
+                    String failure = "1.7 EntityShrapnel.onImpact: a volcano shard landing at motionY < -0.2 lays volcanic_lava_block on "
+                            + "top of the block it hit; " + SHARD_FLOOR.above() + " is "
+                            + level.getBlockState(helper.absolutePos(SHARD_FLOOR.above()))
+                            + "; volcano ticks=" + volcanoShard.tickCount + ", removed=" + volcanoShard.isRemoved()
+                            + ", position=" + volcanoShard.position();
+                    volcanoShard.discard();
+                    plainShard.discard();
+                    releaseSimulationChunks(level, targetChunkX, targetChunkZ, forcedByTest);
+                    return failure;
+                },
                 () -> {
                     List<String> broken = new ArrayList<>();
                     Block monoxide = ModNuclearBlocks.gas_monoxide.get();
@@ -161,24 +182,41 @@ public final class VolcanoGameTests {
                     check(broken, around(PLAIN_FLOOR).stream()
                                     .noneMatch(p -> level.getBlockState(helper.absolutePos(p)).is(monoxide)),
                             "control: a plain shard must outgas nothing");
-                    helper.assertTrue(broken.isEmpty(), "volcano shrapnel is wrong (" + broken.size() + " failures): "
-                            + String.join(" | ", broken));
+                    if (!broken.isEmpty()) {
+                        volcanoShard.discard();
+                                plainShard.discard();
+                        releaseSimulationChunks(level, targetChunkX, targetChunkZ, forcedByTest);
+                        helper.fail("volcano shrapnel is wrong (" + broken.size() + " failures): "
+                                + String.join(" | ", broken));
+                        return;
+                    }
                     // Both shards die on impact (1.7: setDead past the 5-tick grace); the control shard may land a
                     // tick or two apart from the volcano one, so wait for it rather than asserting the same tick.
                     poll(helper, 1, 20,
-                            () -> level.getEntitiesOfClass(EntityShrapnel.class,
-                                    new AABB(helper.absolutePos(SHARD_FLOOR)).inflate(12)).isEmpty(),
-                            () -> "both shards must be dead after their impact (1.7: setDead past the 5-tick grace)",
-                            helper::succeed);
+                            () -> volcanoShard.isRemoved() && plainShard.isRemoved(),
+                            () -> {
+                                volcanoShard.discard();
+                                plainShard.discard();
+                                releaseSimulationChunks(level, targetChunkX, targetChunkZ, forcedByTest);
+                                return "both shards must be dead after their impact (1.7: setDead past the 5-tick grace)"
+                                        + "; volcano ticks=" + volcanoShard.tickCount + ", plain ticks=" + plainShard.tickCount;
+                            },
+                            () -> {
+                                volcanoShard.discard();
+                                plainShard.discard();
+                                releaseSimulationChunks(level, targetChunkX, targetChunkZ, forcedByTest);
+                                helper.succeed();
+                            });
                 });
     }
 
-    private static void drop(GameTestHelper helper, ServerLevel level, BlockPos floor, boolean volcano) {
+    private static EntityShrapnel drop(GameTestHelper helper, ServerLevel level, BlockPos floor, boolean volcano) {
         Vec3 top = helper.absoluteVec(Vec3.atCenterOf(floor)).add(0D, 0.5D + DROP_HEIGHT, 0D);
         EntityShrapnel shard = new EntityShrapnel(level, top.x, top.y, top.z);
         shard.setDeltaMovement(0D, -0.5D, 0D);
         shard.setVolcano(volcano);
         level.addFreshEntity(shard);
+        return shard;
     }
 
     // ------------------------------------------------------------------ the blast
@@ -231,6 +269,17 @@ public final class VolcanoGameTests {
     private static void cleanup(GameTestHelper helper, ServerLevel level, BlockPos core) {
         level.getEntitiesOfClass(EntityShrapnel.class, new AABB(helper.absolutePos(core)).inflate(64))
                 .forEach(Entity::discard);
+    }
+
+    private static void releaseSimulationChunks(ServerLevel level, int centerChunkX, int centerChunkZ,
+                                                boolean[][] forcedByTest) {
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (forcedByTest[dx + 1][dz + 1]) {
+                    level.setChunkForced(centerChunkX + dx, centerChunkZ + dz, false);
+                }
+            }
+        }
     }
 
     private static boolean isLava(GameTestHelper helper, ServerLevel level, BlockPos pos) {

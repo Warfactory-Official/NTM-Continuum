@@ -25,7 +25,10 @@ public final class NorwoodMachineDeclarations {
         declared = true;
 
         // --- blocks ---
-        Dejson.block(NS, "cargo_elevator").statesOnly().states(Variants.simple()).register();
+        Dejson.block(NS, "cargo_elevator")
+                .models(Models.parented("minecraft:block/block",
+                        dev.golem.core.dejson.Slots.of("particle", "hbm:blocks/block_steel")))
+                .states(Variants.simple()).register();
         Dejson.block(NS, "dfc_core").models(Models.cubeAll("hbm:blocks/dfc_core")).states(Variants.simple()).register();
         Dejson.block(NS, "dfc_emitter").models(Models.cubeAll("hbm:blocks/dfc_emitter")).states(Variants.facingAll()).register();
         Dejson.block(NS, "dfc_injector").models(Models.cubeAll("hbm:blocks/dfc_injector")).states(Variants.facingAll()).register();

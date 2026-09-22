@@ -100,6 +100,9 @@ public final class HbmClientRegistrations {
     }
 
     public static void registerScreens(ScreenSink sink) {
+        com.hbm.items.tool.ItemDesignatorManual.setClientScreenOpener(stack ->
+                net.minecraft.client.Minecraft.getInstance().setScreen(
+                        new com.hbm.inventory.gui.GUIScreenDesignator(stack)));
         com.hbm.items.tool.ItemTurretMobFilter.setClientScreenOpener(turret ->
                 net.minecraft.client.Minecraft.getInstance().setScreen(
                         new com.hbm.inventory.gui.GUITurretMobFilter(turret)));
@@ -248,6 +251,7 @@ public final class HbmClientRegistrations {
     public static void registerRenderers(HbmBlockEntityRenderers.Sink blockEntities,
             HbmEntityRenderers.Sink downstream) {
         HbmBlockEntityRenderers.registerAll(blockEntities);
+        RailClientRegistrations.registerRenderers(blockEntities);
         java.util.Set<net.minecraft.world.entity.EntityType<?>> bound = new java.util.HashSet<>();
         HbmEntityRenderers.Sink entities = HbmEntityRenderers.recording(downstream, bound);
         HbmEntityRenderers.registerAll(entities);

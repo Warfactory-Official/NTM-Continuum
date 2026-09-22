@@ -59,6 +59,14 @@ public final class HbmParticleHandlers {
         HbmEffectNT.Jetpack_BJ.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 1));
         HbmEffectNT.Jetpack_DNS.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 2));
         HbmEffectNT.VanillaExt_BlockDust.setHandler(HbmParticleHandlers::spawnVanillaExtBlockDust);
+        HbmEffectNT.DeconAura.setHandler((level, x, y, z, data) -> {
+            var particle = Minecraft.getInstance().particleEngine.createParticle(
+                    ParticleTypes.MYCELIUM, x, y, z, 0, 0, 0);
+            if (particle == null) return;
+            float color = 0.5F + level.getRandom().nextFloat() * 0.5F;
+            Particles.color(particle, 0.8F * color, 0.9F * color, color);
+            particle.setParticleSpeed(0, 0.04D, 0);
+        });
     }
 
     /**

@@ -42,6 +42,10 @@ public final class ModMaterialTags {
         }
         declared = true;
 
+        // Original ModSword's steel material repaired with ingot_steel; this tag also gates every
+        // legacy crate-opening path through BlockCrateSupply.CROWBAR.
+        Tags.item("hbm", "crowbar", "hbm:crowbar");
+
         shapes0();
         shapes1();
         shapes2();

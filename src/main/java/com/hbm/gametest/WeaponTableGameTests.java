@@ -355,24 +355,38 @@ public final class WeaponTableGameTests {
     }
 
     private static void closeDropsOneGunAndModifier(GameTestHelper helper) {
-        var player = dev.golem.core.gametest.GameTestHelpers.mockServerPlayerInLevel(helper);
-        ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
-        ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
-        ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
-        Item bayonetItem = bayonet.getItem();
-        menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
-        menu.getSlot(0).set(bayonet);
-        menu.removed(player);
+        // Dropping is a ServerPlayer operation on 1.21.1 NeoForge. Keep the fixture scoped so its
+        // connection and entity cannot leak into the next test, and count only entities created by this
+        // close: neighboring plots may legitimately have their own item drops in the legacy packer.
+        try (GameTestHelpers.MockServerPlayer fixture = GameTestHelpers.mockServerPlayer(helper)) {
+            var player = fixture.player();
+            BlockPos origin = helper.absolutePos(new BlockPos(1, 1, 1));
+            player.setPos(origin.getX() + 0.5D, origin.getY(), origin.getZ() + 0.5D);
 
-        List<ItemStack> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class,
-                        player.getBoundingBox().inflate(8D)).stream().map(ItemEntity::getItem).toList();
-        helper.assertTrue(drops.stream().mapToInt(stack -> stack.is(ModGunItems.gun_carbine.get()) ? stack.getCount() : 0).sum() == 1,
-                "closing the table must drop exactly one gun");
-        helper.assertTrue(drops.stream().mapToInt(stack -> stack.is(bayonetItem) ? stack.getCount() : 0).sum() == 1,
-                "closing the table must drop exactly one modifier");
-        ItemStack droppedGun = drops.stream().filter(stack -> stack.is(ModGunItems.gun_carbine.get())).findFirst().orElse(ItemStack.EMPTY);
-        helper.assertTrue(!XWeaponModManager.hasUpgrade(droppedGun, 0, XWeaponModManager.ID_CARBINE_BAYONET),
-                "the dropped gun must be uninstalled exactly once");
+            ContainerWeaponTable menu = new ContainerWeaponTable(0, player.getInventory());
+            ItemStack gun = new ItemStack(ModGunItems.gun_carbine.get());
+            ItemStack bayonet = ModWeaponModItems.weapon_mod_special.get().of(EnumModSpecial.BAYONET);
+            Item bayonetItem = bayonet.getItem();
+            menu.getSlot(ContainerWeaponTable.GUN_SLOT).set(gun);
+            menu.getSlot(0).set(bayonet);
+
+            java.util.Set<Integer> before = new java.util.HashSet<>();
+            for (ItemEntity entity : helper.getLevel().getEntitiesOfClass(ItemEntity.class,
+                    player.getBoundingBox().inflate(4D))) before.add(entity.getId());
+            menu.removed(player);
+
+            List<ItemStack> drops = helper.getLevel().getEntitiesOfClass(ItemEntity.class,
+                            player.getBoundingBox().inflate(4D)).stream()
+                    .filter(entity -> !before.contains(entity.getId()))
+                    .map(ItemEntity::getItem).toList();
+            helper.assertTrue(drops.stream().mapToInt(stack -> stack.is(ModGunItems.gun_carbine.get()) ? stack.getCount() : 0).sum() == 1,
+                    "closing the table must drop exactly one gun");
+            helper.assertTrue(drops.stream().mapToInt(stack -> stack.is(bayonetItem) ? stack.getCount() : 0).sum() == 1,
+                    "closing the table must drop exactly one modifier");
+            ItemStack droppedGun = drops.stream().filter(stack -> stack.is(ModGunItems.gun_carbine.get())).findFirst().orElse(ItemStack.EMPTY);
+            helper.assertTrue(!XWeaponModManager.hasUpgrade(droppedGun, 0, XWeaponModManager.ID_CARBINE_BAYONET),
+                    "the dropped gun must be uninstalled exactly once");
+        }
         helper.succeed();
     }
 

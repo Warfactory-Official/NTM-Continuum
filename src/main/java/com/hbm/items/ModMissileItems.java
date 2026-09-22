@@ -5,6 +5,8 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.tool.ItemDesignator;
 import com.hbm.items.tool.ItemDesignatorRange;
+import com.hbm.items.tool.ItemDesignatorManual;
+import com.hbm.items.tool.ItemRangefinder;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.items.weapon.ItemMissileStandard.MissileFormFactor;
 import com.hbm.items.weapon.ItemMissileStandard.MissileFuel;
@@ -25,8 +27,9 @@ import dev.golem.core.registry.RegistryObject;
  * <p>The plain {@code detonator} is here too: it is how a pad is fired by hand (shift-click to bind,
  * click to launch), and without it a pad can only be triggered by redstone.
  *
- * <p>Deferred: {@code designator_manual} (needs the coordinate-entry screen and a set-coords payload)
- * and {@code sat_designator}/{@code designator_arty_range}, which belong to the satellite and
+ * <p>{@code sat_designator} remains deferred because it belongs to the satellite system. The
+ * manual coordinate designator is implemented here with the source GUI and server payload.
+ * {@code designator_arty_range} belongs to the artillery system and is declared by that slice.
  * artillery systems rather than to this one. The other three detonators
  * ({@code detonator_laser}/{@code _multi}/{@code _deadman}) are their own wave.
  */
@@ -42,6 +45,10 @@ public final class ModMissileItems {
             ITEMS.registerItem("designator", ItemDesignator::new);
     public static final RegistryObject<ItemDesignatorRange> designator_range =
             ITEMS.registerItem("designator_range", ItemDesignatorRange::new);
+    public static final RegistryObject<ItemRangefinder> rangefinder =
+            ITEMS.registerItem("rangefinder", ItemRangefinder::new);
+    public static final RegistryObject<ItemDesignatorManual> designator_manual =
+            ITEMS.registerItem("designator_manual", ItemDesignatorManual::new);
 
     /**
      * The detonator. Lives here rather than with the tools because it is the launch pad's manual trigger
@@ -144,6 +151,8 @@ public final class ModMissileItems {
         ModTabs.addTo(HbmTab.CONTROL, detonator);
         ModTabs.addTo(HbmTab.MISSILES, designator);
         ModTabs.addTo(HbmTab.MISSILES, designator_range);
+        ModTabs.addTo(HbmTab.MISSILES, rangefinder);
+        ModTabs.addTo(HbmTab.MISSILES, designator_manual);
         for (RegistryObject<ItemMissileStandard> missile : new RegistryObject[]{
                 missile_micro, missile_bhole, missile_schrabidium, missile_taint, missile_emp,
                 missile_generic, missile_incendiary, missile_cluster, missile_buster, missile_decoy,

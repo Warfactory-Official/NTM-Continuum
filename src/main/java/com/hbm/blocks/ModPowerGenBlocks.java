@@ -48,11 +48,10 @@ public final class ModPowerGenBlocks {
             "machine_chungus", p -> new PowerGenBlockItem(MACHINE_CHUNGUS.get(), p, 1), Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_LPW2_ITEM = ITEMS.registerItem(
             "machine_lpw2", p -> new BlockItem(MACHINE_LPW2.get(), p), Compat::blockDescription);
-    public static final RegistryObject<BlockItem> MACHINE_HEPHAESTUS_ITEM = ITEMS.registerItem(
-            "machine_hephaestus", p -> new BlockItem(MACHINE_HEPHAESTUS.get(), p), Compat::blockDescription);
-    public static final RegistryObject<BlockItem> MACHINE_INDUSTRIAL_GENERATOR_ITEM = ITEMS.registerItem(
-            "machine_industrial_generator", p -> new BlockItem(MACHINE_INDUSTRIAL_GENERATOR.get(), p),
-            Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_HEPHAESTUS_ITEM = ITEMS.registerBlockItem(
+            "machine_hephaestus", MACHINE_HEPHAESTUS, Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_INDUSTRIAL_GENERATOR_ITEM = ITEMS.registerBlockItem(
+            "machine_industrial_generator", MACHINE_INDUSTRIAL_GENERATOR, Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_SIREN_ITEM = ITEMS.registerItem(
             "machine_siren", p -> new BlockItem(MACHINE_SIREN.get(), p), Compat::blockDescription);
 

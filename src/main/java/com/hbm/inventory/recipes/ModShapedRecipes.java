@@ -49,6 +49,11 @@ public final class ModShapedRecipes {
     }
 
     private static void shaped0() {
+        shaped(NS, "crowbar", "hbm:crowbar", rows("II", " I", " I"), "I", TagIds.ingots_steel);
+        shaped(NS, "rangefinder", "hbm:rangefinder", rows("GRC", "  S"),
+                "G", VanillaIds.glass, "R", VanillaIds.redstone, "C", ItemIds.circuit_basic, "S", TagIds.ingots_steel);
+        shaped(NS, "designator_manual", "hbm:designator_manual", rows("  A", "#C#", "#B#"),
+                "A", ItemIds.crystal_redstone, "C", ItemIds.circuit_basic, "B", ItemIds.battery_redstone, "#", TagIds.ingots_steel);
         shaped(NS, "ammo_arty", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0), rows("CIC", "CSC", "CCC"),
                 "C", ItemIds.cordite, "I", TagIds.storage_blocks_iron, "S", TagIds.shells_copper);
         shaped(NS, "ammo_arty_4", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 8), rows(" I ", " S ", "CCC"),
@@ -1070,6 +1075,8 @@ public final class ModShapedRecipes {
         shaped(NS, "machine_autocrafter", ItemIds.machine_autocrafter, rows("SCS", "MWM", "SCS"),
                 "S", TagIds.plates_steel, "C", ItemIds.circuit_vacuum_tube, "M", ItemIds.motor,
                 "W", VanillaIds.crafting_table);
+        shaped(NS, "machine_funnel", "hbm:machine_funnel", rows("S S", "SRS", " S "),
+                "S", TagIds.ingots_steel, "R", TagIds.dusts_redstone);
         shaped(NS, "machine_battery_socket", ItemIds.machine_battery_socket, rows("I I", "I I", "IRI"),
                 "I", ItemIds.plate_polymer, "R", ItemIds.coil_copper);
         shaped(NS, "machine_battery_socket_1", ItemIds.machine_battery_socket, rows("PRP"),

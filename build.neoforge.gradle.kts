@@ -238,3 +238,9 @@ sourceSets["main"].java.srcDir(rootProject.file("src/generated/java"))
 // reports as a failure because it never got to run a test. The files are the whole product of the
 // task, and they are written before the halt.
 tasks.named<JavaExec>("runGenerateIds") { isIgnoreExitValue = true }
+
+// Match Forge/Fabric: an aborted test world can retain armed machines and live blasts. Loading it
+// into the next run lets those old fixtures tick alongside the new suite (including DFC detonations).
+tasks.matching { it.name == "runGameTestServer" }.configureEach {
+    doFirst { delete(layout.projectDirectory.dir("runs/gametest/world")) }
+}

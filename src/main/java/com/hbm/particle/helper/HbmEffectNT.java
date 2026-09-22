@@ -83,7 +83,9 @@ public enum HbmEffectNT {
      * Arc endpoints for a tesla/taint crab (ntm-next {@code TeslaArcPayload}). Tag: {@code entityID} and a
      * {@code targets} list of {@code x/y/z} doubles; the client hands them to the crab it names.
      */
-    TeslaArc;
+    TeslaArc,
+    /** Original decontaminator's recoloured town-aura particle, emitted once per client tick. */
+    DeconAura;
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

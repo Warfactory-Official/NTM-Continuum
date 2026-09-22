@@ -55,6 +55,7 @@ public final class MainRegistry {
         // Order matters: blocks before items (block items reference blocks), tabs last.
         ModBlocks.init();
         com.hbm.blocks.ModBlockModels.declare();
+        com.hbm.blocks.RailDeclarations.declare();
         com.hbm.items.ModItemModels.declare();
         com.hbm.blocks.ModBlockDrops.declare();
         com.hbm.inventory.material.ModMaterialTags.declare();
@@ -126,6 +127,7 @@ public final class MainRegistry {
         com.hbm.items.ModChemicalDyeItems.init(); // flattened chemical-dye and crayon variants
         com.hbm.items.ModStorageDrumItems.init();
         com.hbm.items.ModFoodItems.init();
+        com.hbm.items.ModConsumableTailItems.init();
         com.hbm.items.ModCatalystItems.init();
         ModMedicineItems.init();
         com.hbm.items.ModRBMKItems.init(); // RBMK rods/pellets and reactor tools

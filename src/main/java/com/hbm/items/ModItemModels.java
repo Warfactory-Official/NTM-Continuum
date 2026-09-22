@@ -1,5 +1,6 @@
 package com.hbm.items;
 
+import com.google.gson.JsonObject;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Slots;
@@ -121,6 +122,7 @@ public final class ModItemModels {
         tools();
         blockItems();
         machineFrames();
+        funnelModel();
         entityItems();
     }
 
@@ -1028,6 +1030,14 @@ public final class ModItemModels {
         Dejson.item(NS, "drillbit_tcalloy").models(Models.handheld("hbm:items/drillbit.tcalloy")).register();
         Dejson.item(NS, "drillbit_tcalloy_diamond").models(Models.handheld("hbm:items/drillbit.tcalloy_diamond")).register();
         Dejson.item(NS, "hand_drill").models(Models.handheld("hbm:items/hand_drill")).register();
+        Dejson.item(NS, "crowbar").models(Models.handheld("hbm:items/crowbar")).register();
+        Dejson.item(NS, "rangefinder").models(Models.generated("hbm:items/rangefinder")).register();
+        Dejson.item(NS, "designator_manual").models(Models.generated("hbm:items/designator_manual")).register();
+        for (String id : new String[]{"can_smart", "can_creature", "can_redbomb", "can_mrsugar", "can_overcharge",
+                "can_luna", "can_bepis", "can_breen", "can_mug", "bottle_nuka", "bottle_cherry",
+                "bottle_quantum", "bottle_sparkle", "bottle_rad", "bottle2_korl", "bottle2_fritz",
+                "coffee", "coffee_radium", "bottle_opener"})
+            Dejson.item(NS, id).models(Models.generated("hbm:items/" + id)).register();
         Dejson.item(NS, "igniter").models(Models.handheld("hbm:items/trigger")).register();
         Dejson.item(NS, "key_red").models(Models.handheld("hbm:items/key_red")).register();
         Dejson.item(NS, "mech_key").models(Models.handheld("hbm:items/mech_key")).register();
@@ -1094,6 +1104,42 @@ public final class ModItemModels {
                 .models(Models.guiLight("side", Models.display(frame,
                         Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
                 .register();
+    }
+
+    /**
+     * The funnel's inventory icon is the old block OBJ with separate Top/Bottom/Side skins. Dejson's
+     * ordinary item vocabulary intentionally does not claim renderer-owned special models, so this
+     * declaration owns both the legacy marker and the special-model definition from the same registry.
+     * {@link Models#blockItem(String)} emits the {@code builtin/entity} marker directly, while the
+     * legacy-assets pass also recognises the special definition and keeps that marker authoritative.
+     */
+    private static void funnelModel() {
+        Dejson.item(NS, "machine_funnel")
+                .models(Models.blockItem("hbm:item/machine_obj_legacy"))
+                .register();
+
+        // Dejson.itemDefinition returns the object stored in its definition registry (not a copy), and
+        // DejsonWriter writes that same object. This is the narrow escape hatch for the custom OBJ
+        // definition that the generic model-shape vocabulary deliberately cannot represent.
+        JsonObject definition = Dejson.itemDefinition("hbm:item/machine_funnel");
+        JsonObject special = new JsonObject();
+        special.addProperty("type", "minecraft:special");
+        special.addProperty("base", "hbm:item/machine_obj_base");
+
+        JsonObject machine = new JsonObject();
+        machine.addProperty("type", "hbm:machine_obj");
+        machine.addProperty("obj", "hbm:models/blocks/funnel.obj");
+        machine.addProperty("texture", "hbm:textures/blocks/machine_funnel_side.png");
+        JsonObject partTextures = new JsonObject();
+        partTextures.addProperty("Top", "hbm:textures/blocks/machine_funnel_top.png");
+        partTextures.addProperty("Bottom", "hbm:textures/blocks/machine_funnel_bottom.png");
+        partTextures.addProperty("Side", "hbm:textures/blocks/machine_funnel_side.png");
+        machine.add("partTextures", partTextures);
+        machine.addProperty("scale", 1.0F);
+        machine.addProperty("yaw", 0.0F);
+        machine.addProperty("ty", -0.5F);
+        special.add("model", machine);
+        definition.add("model", special);
     }
 
     /**

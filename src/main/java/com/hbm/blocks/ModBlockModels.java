@@ -227,7 +227,7 @@ public final class ModBlockModels {
             "machine_battery_redd", "machine_battery_socket", "machine_bigasstank",
             "machine_blast_furnace", "machine_catalytic_cracker", "machine_catalytic_reformer",
             "machine_centrifuge", "machine_chemical_factory", "machine_chemical_plant", "machine_coker",
-            "machine_combustion_engine", "machine_compressor", "machine_condenser_powered",
+            "machine_combustion_engine", "machine_compressor", "machine_compressor_compact", "machine_condenser_powered",
             "machine_crucible", "machine_crystallizer", "machine_cyclotron", "machine_deuterium_tower",
             "machine_drain", "machine_electrolyser", "machine_epress", "machine_exposure_chamber",
             "machine_fel", "machine_fensu", "machine_flare", "machine_fluidtank", "machine_fracking_tower",

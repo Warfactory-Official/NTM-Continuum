@@ -55,6 +55,7 @@ public final class DejsonGameTests {
 
     private static void declareAll() {
         ModBlockModels.declare();
+        com.hbm.blocks.RailDeclarations.declare();
         ModItemModels.declare();
         ModBlockDrops.declare();
         ModMaterialTags.declare();

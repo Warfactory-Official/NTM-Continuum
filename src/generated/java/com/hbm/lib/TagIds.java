@@ -484,6 +484,7 @@ public final class TagIds {
     public static final String grips_weaponsteel = "#c:grips/weaponsteel";
     public static final String grips_wood = "#c:grips/wood";
     public static final String gunpowders = "#c:gunpowders";
+    public static final String hbm_crowbar = "#hbm:crowbar";
     public static final String hbm_music_discs = "#hbm:music_discs";
     public static final String hbm_repairs_asbestos = "#hbm:repairs/asbestos";
     public static final String hbm_repairs_bj = "#hbm:repairs/bj";

@@ -98,42 +98,51 @@ public final class ExplosiveContentGameTests {
 
     public static void mikeEmptyAndFilledRadii(GameTestHelper helper) {
         TileEntityNukeMike testDevice = placeMike(helper, new BlockPos(2, 2, 6));
-        fillPrimary(testDevice);
-        UUID owner = UUID.randomUUID();
-        testDevice.placerID = owner;
-        IBomb.BombReturnCode result = ModBombBlocks.nuke_mike.get().explode(
-                helper.getLevel(), testDevice.getBlockPos(), null, null);
-        EntityNukeExplosionMK5 testBlast = onlyBlast(helper, testDevice.getBlockPos());
-        helper.assertTrue(result == IBomb.BombReturnCode.DETONATED
-                        && testBlast.getRadius() == BombConfig.manRadius
-                        && owner.equals(testBlast.detonator),
-                "under-filled Mike did not use the old manRadius/placer path");
-        discardNuclear(helper, testDevice.getBlockPos());
+        BlockPos testOrigin = testDevice.getBlockPos();
+        BlockPos filledOrigin = helper.absolutePos(new BlockPos(8, 2, 6));
+        try {
+            fillPrimary(testDevice);
+            UUID owner = UUID.randomUUID();
+            testDevice.placerID = owner;
+            IBomb.BombReturnCode result = ModBombBlocks.nuke_mike.get().explode(
+                    helper.getLevel(), testOrigin, null, null);
+            EntityNukeExplosionMK5 testBlast = onlyBlast(helper, testOrigin);
+            helper.assertTrue(result == IBomb.BombReturnCode.DETONATED
+                            && testBlast.getRadius() == BombConfig.manRadius
+                            && owner.equals(testBlast.detonator),
+                    "under-filled Mike did not use the old manRadius/placer path");
 
-        TileEntityNukeMike filled = placeMike(helper, new BlockPos(8, 2, 6));
-        fillPrimary(filled);
-        filled.setItem(5, new ItemStack(ModBombItems.mike_core.get()));
-        filled.setItem(6, new ItemStack(ModBombItems.mike_deut.get()));
-        filled.setItem(7, new ItemStack(ModBombItems.mike_cooling_unit.get()));
-        ModBombBlocks.nuke_mike.get().explode(helper.getLevel(), filled.getBlockPos(), null);
-        EntityNukeExplosionMK5 fullBlast = onlyBlast(helper, filled.getBlockPos());
-        helper.assertTrue(fullBlast.getRadius() == BombConfig.mikeRadius && filled.isEmpty(),
-                "fully assembled Mike did not consume all parts at mikeRadius");
-        discardNuclear(helper, filled.getBlockPos());
-        helper.succeed();
+            TileEntityNukeMike filled = placeMike(helper, new BlockPos(8, 2, 6));
+            fillPrimary(filled);
+            filled.setItem(5, new ItemStack(ModBombItems.mike_core.get()));
+            filled.setItem(6, new ItemStack(ModBombItems.mike_deut.get()));
+            filled.setItem(7, new ItemStack(ModBombItems.mike_cooling_unit.get()));
+            ModBombBlocks.nuke_mike.get().explode(helper.getLevel(), filledOrigin, null);
+            EntityNukeExplosionMK5 fullBlast = onlyBlast(helper, filledOrigin);
+            helper.assertTrue(fullBlast.getRadius() == BombConfig.mikeRadius && filled.isEmpty(),
+                    "fully assembled Mike did not consume all parts at mikeRadius");
+            helper.succeed();
+        } finally {
+            discardNuclear(helper, testOrigin);
+            discardNuclear(helper, filledOrigin);
+        }
     }
 
     public static void mikeRedstoneArming(GameTestHelper helper) {
         TileEntityNukeMike mike = placeMike(helper, new BlockPos(2, 2, 10));
-        fillPrimary(mike);
-        BlockPos power = mike.getBlockPos().east();
-        helper.getLevel().setBlock(power, Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
-        helper.getLevel().updateNeighborsAt(power, Blocks.REDSTONE_BLOCK);
-        helper.assertTrue(helper.getLevel().getBlockState(mike.getBlockPos()).isAir()
-                        && onlyBlast(helper, mike.getBlockPos()).getRadius() == BombConfig.manRadius,
-                "redstone did not arm the under-filled Mike through its test-device path");
-        discardNuclear(helper, mike.getBlockPos());
-        helper.succeed();
+        BlockPos origin = mike.getBlockPos();
+        try {
+            fillPrimary(mike);
+            BlockPos power = origin.east();
+            helper.getLevel().setBlock(power, Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+            helper.getLevel().updateNeighborsAt(power, Blocks.REDSTONE_BLOCK);
+            helper.assertTrue(helper.getLevel().getBlockState(origin).isAir()
+                            && onlyBlast(helper, origin).getRadius() == BombConfig.manRadius,
+                    "redstone did not arm the under-filled Mike through its test-device path");
+            helper.succeed();
+        } finally {
+            discardNuclear(helper, origin);
+        }
     }
 
     public static void primedFusePersistence(GameTestHelper helper) {

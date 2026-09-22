@@ -56,7 +56,8 @@ public final class TickerGameTests {
      * +3 for the Norwood deco wave (the lantern post, the cyber crab assembler, the firework
      * battery): 254.
      */
-    private static final int TICKING_TYPES = 254;
+    // +5: compact compressor, funnel, decon, small tower and large tower (2026-09-21).
+    private static final int TICKING_TYPES = 259;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

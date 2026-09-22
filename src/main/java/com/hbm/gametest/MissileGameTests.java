@@ -243,14 +243,18 @@ public final class MissileGameTests {
         BlockPos origin = helper.absolutePos(new BlockPos(2, 2, 2));
         EntityMissileTier0.EntityMissileMicro missile = new EntityMissileTier0.EntityMissileMicro(
                 level, origin.getX(), origin.getY(), origin.getZ(), origin.getX() + 1, origin.getZ());
-        missile.onMissileImpact(null);
+        try {
+            missile.onMissileImpact(null);
 
-        java.util.List<EntityNukeExplosionMK5> blasts = level.getEntitiesOfClass(EntityNukeExplosionMK5.class,
-                new AABB(origin).inflate(4));
-        helper.assertTrue(!blasts.isEmpty(), "the micro did not hand off to an mk5 crater entity");
-        blasts.forEach(net.minecraft.world.entity.Entity::discard);
-        missile.discard();
-        helper.succeed();
+            java.util.List<EntityNukeExplosionMK5> blasts = level.getEntitiesOfClass(EntityNukeExplosionMK5.class,
+                    new AABB(origin).inflate(4));
+            helper.assertTrue(!blasts.isEmpty(), "the micro did not hand off to an mk5 crater entity");
+            helper.succeed();
+        } finally {
+            level.getEntitiesOfClass(EntityNukeExplosionMK5.class, new AABB(origin).inflate(4))
+                    .forEach(net.minecraft.world.entity.Entity::discard);
+            missile.discard();
+        }
     }
 
     /** The taint block keeps its sixteen ages and old shallow collision box. */

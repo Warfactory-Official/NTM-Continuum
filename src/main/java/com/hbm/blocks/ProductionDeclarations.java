@@ -37,6 +37,17 @@ public final class ProductionDeclarations {
                 .states(Variants.simple())
                 .blockItemDirect()
                 .register();
+        Dejson.block(NS, "machine_funnel").rendered("hbm:block/machine_dummy_empty")
+                .states(Variants.simple()).register();
+
+        // The folded cooling towers are renderer-owned and every runtime state has identical empty
+        // geometry. Their old metadata blockstates are generator output from 1.7; the declaration keeps
+        // the renderer placeholder in the shared Dejson ownership path.
+        for (String tower : new String[]{"machine_tower_small", "machine_tower_large"}) {
+            Dejson.block(NS, tower).rendered("hbm:block/machine_dummy_empty")
+                    .states(Variants.simple())
+                    .register();
+        }
 
         // Renderer-drawn machines: the blockstate exists only because vanilla demands one.
         for (String folded : new String[]{"machine_rotary_furnace", "machine_conveyor_press"}) {
@@ -53,5 +64,6 @@ public final class ProductionDeclarations {
                 "machine_autocrafter", "machine_conveyor_press", "press_preheater"}) {
             Drops.self(NS, block);
         }
+        Drops.self(NS, "machine_funnel");
     }
 }

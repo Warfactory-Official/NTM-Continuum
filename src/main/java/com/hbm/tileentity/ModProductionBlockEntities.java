@@ -12,6 +12,7 @@ import com.hbm.tileentity.machine.TileEntityMachineAutocrafter;
 import com.hbm.tileentity.machine.TileEntityMachineRotaryFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineThresher;
 import com.hbm.tileentity.machine.TileEntityMicrowave;
+import com.hbm.tileentity.machine.TileEntityMachineFunnel;
 
 /** Feature-local block-entity types for the production machines. */
 public final class ModProductionBlockEntities {
@@ -41,6 +42,10 @@ public final class ModProductionBlockEntities {
             BLOCK_ENTITIES.register("machine_conveyor_press", () -> BlockEntities.ticking(
                     TileEntityConveyorPress::new, TileEntityConveyorPress::clientTick,
                     TileEntityConveyorPress::serverTick, ModProductionBlocks.MACHINE_CONVEYOR_PRESS.get()));
+    public static final RegistryObject<BlockEntityType<TileEntityMachineFunnel>> FUNNEL =
+            BLOCK_ENTITIES.register("machine_funnel", () -> BlockEntities.serverTicking(
+                    TileEntityMachineFunnel::new, (level, pos, state, be) -> TileEntityMachineFunnel.serverTick(level, pos, state, be),
+                    ModProductionBlocks.MACHINE_FUNNEL.get()));
 
     public static void init() {}
 }

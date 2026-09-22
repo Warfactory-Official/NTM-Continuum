@@ -58,12 +58,12 @@ public final class ModNuclearMiscBlocks {
     public static final RegistryObject<BlockGraphiteBreedingProduct> BLOCK_GRAPHITE_TRITIUM = graphite("block_graphite_tritium", BlockGraphiteBreedingProduct::new);
     public static final RegistryObject<BlockGraphiteNeutronDetector> BLOCK_GRAPHITE_DETECTOR = graphite("block_graphite_detector", BlockGraphiteNeutronDetector::new);
 
-    public static final RegistryObject<BlockItem> MACHINE_RADIOLYSIS_ITEM = ITEMS.registerItem(
-            "machine_radiolysis", p -> new BlockItem(MACHINE_RADIOLYSIS.get(), p), Compat::blockDescription);
-    public static final RegistryObject<BlockItem> MACHINE_REACTOR_BREEDING_ITEM = ITEMS.registerItem(
-            "machine_reactor", p -> new BlockItem(MACHINE_REACTOR_BREEDING.get(), p), Compat::blockDescription);
-    public static final RegistryObject<BlockItem> REACTOR_RESEARCH_ITEM = ITEMS.registerItem(
-            "machine_reactor_small", p -> new BlockItem(REACTOR_RESEARCH.get(), p), Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_RADIOLYSIS_ITEM = ITEMS.registerBlockItem(
+            "machine_radiolysis", MACHINE_RADIOLYSIS, Compat::blockDescription);
+    public static final RegistryObject<BlockItem> MACHINE_REACTOR_BREEDING_ITEM = ITEMS.registerBlockItem(
+            "machine_reactor", MACHINE_REACTOR_BREEDING, Compat::blockDescription);
+    public static final RegistryObject<BlockItem> REACTOR_RESEARCH_ITEM = ITEMS.registerBlockItem(
+            "machine_reactor_small", REACTOR_RESEARCH, Compat::blockDescription);
     public static final RegistryObject<BlockItem> MACHINE_CONTROLLER_ITEM = ITEMS.registerItem(
             "machine_controller", p -> new BlockItem(MACHINE_CONTROLLER.get(), p), Compat::blockDescription);
 

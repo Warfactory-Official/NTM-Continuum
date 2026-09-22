@@ -99,7 +99,8 @@ public final class IdConstants {
             if (id.startsWith(Constants.MOD_ID + ":")) {
                 put(items, name(path(id)), id);
             } else if (id.startsWith("minecraft:")) {
-                put(vanilla, name(path(id)), id);
+                String canonical = dev.golem.core.Ids.canonicalItemId(id);
+                put(vanilla, name(path(canonical)), canonical);
             }
             BuiltInRegistries.ITEM.wrapAsHolder(item).tags().forEach(tag -> {
                 String tagId = tag.location().toString();

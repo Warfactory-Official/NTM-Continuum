@@ -10,6 +10,8 @@ import com.hbm.client.render.RenderThresher;
 import com.hbm.inventory.gui.GUIAutocrafter;
 import com.hbm.inventory.gui.GUIMachineRotaryFurnace;
 import com.hbm.inventory.gui.GUIMicrowave;
+import com.hbm.inventory.gui.GUIFunnel;
+import com.hbm.client.render.RenderFunnel;
 
 /** Screens and block-entity renderers for the production machines (group A). */
 public final class ProductionClientRegistrations {
@@ -19,6 +21,7 @@ public final class ProductionClientRegistrations {
         sink.register(ModProductionMenus.ROTARY_FURNACE.get(), GUIMachineRotaryFurnace::new);
         sink.register(ModProductionMenus.MICROWAVE.get(), GUIMicrowave::new);
         sink.register(ModProductionMenus.AUTOCRAFTER.get(), GUIAutocrafter::new);
+        sink.register(ModProductionMenus.FUNNEL.get(), GUIFunnel::new);
     }
 
     public static void registerRenderers(HbmBlockEntityRenderers.Sink sink) {
@@ -26,5 +29,6 @@ public final class ProductionClientRegistrations {
         HbmBlockEntityRenderers.regGem(sink, ModProductionBlockEntities.THRESHER.get(), RenderThresher::new);
         HbmBlockEntityRenderers.regGem(sink, ModProductionBlockEntities.MICROWAVE.get(), RenderMicrowave::new);
         HbmBlockEntityRenderers.regGem(sink, ModProductionBlockEntities.CONVEYOR_PRESS.get(), RenderConveyorPress::new);
+        HbmBlockEntityRenderers.regGem(sink, ModProductionBlockEntities.FUNNEL.get(), RenderFunnel::new);
     }
 }

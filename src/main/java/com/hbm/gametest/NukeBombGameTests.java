@@ -69,20 +69,25 @@ public final class NukeBombGameTests {
 
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 6));
         n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
-        IBomb.BombReturnCode result = ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), n2.getBlockPos(), null);
-        helper.assertTrue(result == IBomb.BombReturnCode.DETONATED, "armed N2 did not detonate");
-        EntityNukeExplosionMK5 blast = onlyBlast(helper, n2.getBlockPos());
-        helper.assertTrue(blast.getRadius() == 16 && !blast.hasFallout(),
-                "N2 did not use its one-charge radius and statFacNoRad");
-        helper.assertTrue(blast.isChunkLoading(),
-                "N2 did not hand source-chunk ownership to MK5 at spawn time");
-        var clouds = helper.getLevel().getEntitiesOfClass(EntityNukeTorex.class,
-                new net.minecraft.world.phys.AABB(n2.getBlockPos()).inflate(2D));
-        helper.assertTrue(!clouds.isEmpty(),
-                "N2 did not create its configured Torex cloud");
-        helper.assertTrue(clouds.get(0).isChunkLoading(),
-                "Torex did not claim its source chunk before the spawning blast handoff");
-        helper.succeed();
+        BlockPos origin = n2.getBlockPos();
+        try {
+            IBomb.BombReturnCode result = ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), origin, null);
+            helper.assertTrue(result == IBomb.BombReturnCode.DETONATED, "armed N2 did not detonate");
+            EntityNukeExplosionMK5 blast = onlyBlast(helper, origin);
+            helper.assertTrue(blast.getRadius() == 16 && !blast.hasFallout(),
+                    "N2 did not use its one-charge radius and statFacNoRad");
+            helper.assertTrue(blast.isChunkLoading(),
+                    "N2 did not hand source-chunk ownership to MK5 at spawn time");
+            var clouds = helper.getLevel().getEntitiesOfClass(EntityNukeTorex.class,
+                    new net.minecraft.world.phys.AABB(origin).inflate(2D));
+            helper.assertTrue(!clouds.isEmpty(),
+                    "N2 did not create its configured Torex cloud");
+            helper.assertTrue(clouds.get(0).isChunkLoading(),
+                    "Torex did not claim its source chunk before the spawning blast handoff");
+            helper.succeed();
+        } finally {
+            discardNuclearNear(helper, origin);
+        }
     }
 
     public static void menuRoutesComponents(GameTestHelper helper) {
@@ -130,53 +135,64 @@ public final class NukeBombGameTests {
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 18));
         n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
-        IBomb.BombReturnCode result = ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), n2.getBlockPos(), player);
-        EntityNukeExplosionMK5 blast = onlyBlast(helper, n2.getBlockPos());
-        helper.assertTrue(result == IBomb.BombReturnCode.DETONATED
-                        && helper.getLevel().getBlockState(n2.getBlockPos()).isAir()
-                        && n2.isEmpty() && blast.detonator.equals(player.getUUID()),
-                "N2 IBomb detonation did not consume components or retain its detonator");
-
         TileEntityNukeN2 redstone = placeN2(helper, new BlockPos(8, 2, 18));
         redstone.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
-        BlockPos power = redstone.getBlockPos().east();
-        helper.getLevel().setBlock(power, Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
-        helper.assertTrue(helper.getLevel().hasNeighborSignal(redstone.getBlockPos()),
-                "the redstone block did not provide a neighbor signal");
-        helper.getLevel().updateNeighborsAt(power, Blocks.REDSTONE_BLOCK);
-        helper.assertTrue(helper.getLevel().getBlockState(redstone.getBlockPos()).isAir(),
-                "powered N2 did not take the redstone detonation path");
-        helper.succeed();
+        BlockPos directOrigin = n2.getBlockPos();
+        BlockPos redstoneOrigin = redstone.getBlockPos();
+        try {
+            IBomb.BombReturnCode result = ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), directOrigin, player);
+            EntityNukeExplosionMK5 blast = onlyBlast(helper, directOrigin);
+            helper.assertTrue(result == IBomb.BombReturnCode.DETONATED
+                            && helper.getLevel().getBlockState(directOrigin).isAir()
+                            && n2.isEmpty() && blast.detonator.equals(player.getUUID()),
+                    "N2 IBomb detonation did not consume components or retain its detonator");
+
+            BlockPos power = redstoneOrigin.east();
+            helper.getLevel().setBlock(power, Blocks.REDSTONE_BLOCK.defaultBlockState(), 3);
+            helper.assertTrue(helper.getLevel().hasNeighborSignal(redstoneOrigin),
+                    "the redstone block did not provide a neighbor signal");
+            helper.getLevel().updateNeighborsAt(power, Blocks.REDSTONE_BLOCK);
+            helper.assertTrue(helper.getLevel().getBlockState(redstoneOrigin).isAir(),
+                    "powered N2 did not take the redstone detonation path");
+            helper.succeed();
+        } finally {
+            discardNuclearNear(helper, directOrigin);
+            discardNuclearNear(helper, redstoneOrigin);
+        }
     }
 
     public static void consumptionAndChunkLifecycle(GameTestHelper helper) {
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 22));
         n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
         BlockPos origin = n2.getBlockPos();
-        ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), origin, null);
-        helper.assertTrue(helper.getLevel().getBlockState(origin).isAir() && n2.isEmpty(),
-                "N2 left its consumed component inventory behind");
-        EntityNukeExplosionMK5 blast = onlyBlast(helper, origin);
-        blast.tick();
-        int cx = origin.getX() >> 4;
-        int cz = origin.getZ() >> 4;
-        helper.assertTrue(ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
-                "MK5 blast did not claim its active chunk");
-        blast.discard();
-        discardTorexNear(helper, origin);
-        helper.assertFalse(ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
-                "MK5 blast left a forced chunk claim after removal");
+        try {
+            ModBombBlocks.nuke_n2.get().explode(helper.getLevel(), origin, null);
+            helper.assertTrue(helper.getLevel().getBlockState(origin).isAir() && n2.isEmpty(),
+                    "N2 left its consumed component inventory behind");
+            EntityNukeExplosionMK5 blast = onlyBlast(helper, origin);
+            blast.tick();
+            int cx = origin.getX() >> 4;
+            int cz = origin.getZ() >> 4;
+            helper.assertTrue(ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
+                    "MK5 blast did not claim its active chunk");
+            blast.discard();
+            discardTorexNear(helper, origin);
+            helper.assertFalse(ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
+                    "MK5 blast left a forced chunk claim after removal");
 
-        EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), helper.getLevel());
-        rain.setPos(origin.getX() + 0.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D);
-        helper.getLevel().addFreshEntity(rain);
-        rain.startChunkLoading();
-        helper.assertTrue(rain.isChunkLoading() && ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
-                "fallout did not claim its source chunk before the MK5 handoff");
-        rain.discard();
-        helper.assertFalse(ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
-                "fallout left its source chunk forced after removal");
-        helper.succeed();
+            EntityFalloutRain rain = new EntityFalloutRain(ModEntities.FALLOUT_RAIN.get(), helper.getLevel());
+            rain.setPos(origin.getX() + 0.5D, origin.getY() + 0.5D, origin.getZ() + 0.5D);
+            helper.getLevel().addFreshEntity(rain);
+            rain.startChunkLoading();
+            helper.assertTrue(rain.isChunkLoading() && ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
+                    "fallout did not claim its source chunk before the MK5 handoff");
+            rain.discard();
+            helper.assertFalse(ChunkLoadingManager.isForced(helper.getLevel(), cx, cz),
+                    "fallout left its source chunk forced after removal");
+            helper.succeed();
+        } finally {
+            discardNuclearNear(helper, origin);
+        }
     }
 
     public static void detonatorLoadsTarget(GameTestHelper helper) {
@@ -221,32 +237,36 @@ public final class NukeBombGameTests {
         TileEntityNukeN2 n2 = placeN2(helper, new BlockPos(2, 2, 2));
         n2.setItem(0, new ItemStack(ModBombItems.n2_charge.get()));
         BlockPos origin = n2.getBlockPos();
-        UUID offlineDetonator = UUID.randomUUID();
-        PendingDetonations.queue(helper.getLevel(), origin, offlineDetonator);
-        helper.assertFalse(helper.getLevel().getBlockState(origin).isAir(),
-                "loading request fired the bomb before its chunk became available");
-        PendingDetonations.tick(helper.getLevel());
-        EntityNukeExplosionMK5 blast = onlyBlast(helper, origin);
-        helper.assertTrue(helper.getLevel().getBlockState(origin).isAir(),
-                "chunk load did not detonate the pending nuke");
-        helper.assertTrue(offlineDetonator.equals(blast.detonator),
-                "pending nuke detonation lost the original detonator UUID");
-        helper.assertFalse(PendingDetonations.isPending(helper.getLevel(), origin),
-                "chunk load detonated the nuke without consuming its pending request");
-        blast.tick();
-        helper.assertTrue(ChunkLoadingManager.isForced(helper.getLevel(), origin.getX() >> 4, origin.getZ() >> 4),
-                "spawned MK5 did not claim its chunk on the first tick");
-        helper.assertTrue(PendingDetonations.isLoading(helper.getLevel(), origin),
-                "pending owner released before the spawned MK5 took ownership");
-        blast.discard();
-        discardTorexNear(helper, origin);
-        helper.assertTrue(ChunkLoadingManager.isForced(helper.getLevel(), origin.getX() >> 4, origin.getZ() >> 4),
-                "removing the MK5 also removed the pending handoff claim too early");
-        helper.runAfterDelay(3, () -> {
-            helper.assertFalse(ChunkLoadingManager.isForced(helper.getLevel(), origin.getX() >> 4, origin.getZ() >> 4),
-                    "pending detonation ticket survived its two-tick handoff window");
-            helper.succeed();
-        });
+        try {
+            UUID offlineDetonator = UUID.randomUUID();
+            PendingDetonations.queue(helper.getLevel(), origin, offlineDetonator);
+            helper.assertFalse(helper.getLevel().getBlockState(origin).isAir(),
+                    "loading request fired the bomb before its chunk became available");
+            PendingDetonations.tick(helper.getLevel());
+            EntityNukeExplosionMK5 blast = onlyBlast(helper, origin);
+            helper.assertTrue(helper.getLevel().getBlockState(origin).isAir(),
+                    "chunk load did not detonate the pending nuke");
+            helper.assertTrue(offlineDetonator.equals(blast.detonator),
+                    "pending nuke detonation lost the original detonator UUID");
+            helper.assertFalse(PendingDetonations.isPending(helper.getLevel(), origin),
+                    "chunk load detonated the nuke without consuming its pending request");
+            blast.tick();
+            helper.assertTrue(ChunkLoadingManager.isForced(helper.getLevel(), origin.getX() >> 4, origin.getZ() >> 4),
+                    "spawned MK5 did not claim its chunk on the first tick");
+            helper.assertTrue(PendingDetonations.isLoading(helper.getLevel(), origin),
+                    "pending owner released before the spawned MK5 took ownership");
+            blast.discard();
+            discardTorexNear(helper, origin);
+            helper.assertTrue(ChunkLoadingManager.isForced(helper.getLevel(), origin.getX() >> 4, origin.getZ() >> 4),
+                    "removing the MK5 also removed the pending handoff claim too early");
+            helper.runAfterDelay(3, () -> {
+                helper.assertFalse(ChunkLoadingManager.isForced(helper.getLevel(), origin.getX() >> 4, origin.getZ() >> 4),
+                        "pending detonation ticket survived its two-tick handoff window");
+                helper.succeed();
+            });
+        } finally {
+            discardNuclearNear(helper, origin);
+        }
     }
 
     public static void torexTrackingAge(GameTestHelper helper) {
@@ -283,6 +303,16 @@ public final class NukeBombGameTests {
     private static void discardTorexNear(GameTestHelper helper, BlockPos origin) {
         helper.getLevel().getEntitiesOfClass(EntityNukeTorex.class,
                 new net.minecraft.world.phys.AABB(origin).inflate(2D))
+                .forEach(net.minecraft.world.entity.Entity::discard);
+    }
+
+    private static void discardNuclearNear(GameTestHelper helper, BlockPos origin) {
+        helper.getLevel().getEntitiesOfClass(EntityNukeExplosionMK5.class,
+                new net.minecraft.world.phys.AABB(origin).inflate(3D))
+                .forEach(net.minecraft.world.entity.Entity::discard);
+        discardTorexNear(helper, origin);
+        helper.getLevel().getEntitiesOfClass(EntityFalloutRain.class,
+                new net.minecraft.world.phys.AABB(origin).inflate(3D))
                 .forEach(net.minecraft.world.entity.Entity::discard);
     }
 }

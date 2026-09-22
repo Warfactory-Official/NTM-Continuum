@@ -9,6 +9,7 @@ import net.minecraft.world.inventory.MenuType;
 import com.hbm.inventory.container.ContainerAutocrafter;
 import com.hbm.inventory.container.ContainerMachineRotaryFurnace;
 import com.hbm.inventory.container.ContainerMicrowave;
+import com.hbm.inventory.container.ContainerFunnel;
 
 /** Feature-local position-bound menus for the production machines. */
 public final class ModProductionMenus {
@@ -23,6 +24,8 @@ public final class ModProductionMenus {
             MENUS.register("machine_microwave", () -> Menus.typeWithPos(ContainerMicrowave::new));
     public static final RegistryObject<MenuType<ContainerAutocrafter>> AUTOCRAFTER =
             MENUS.register("machine_autocrafter", () -> Menus.typeWithPos(ContainerAutocrafter::new));
+    public static final RegistryObject<MenuType<ContainerFunnel>> FUNNEL =
+            MENUS.register("machine_funnel", () -> Menus.typeWithPos(ContainerFunnel::new));
 
     public static void init() {}
 }
