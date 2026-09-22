@@ -24,6 +24,13 @@ public final class ProductionDeclarations {
         if (declared) return;
         declared = true;
 
+        Dejson.block(NS, "decon")
+                .models(Models.cubeBottomTop("hbm:blocks/decon_side", "hbm:blocks/decon_side",
+                        "hbm:blocks/decon_top"))
+                .states(Variants.simple()).blockItem().register();
+        Drops.self(NS, "decon");
+        ModMiningTags.declare();
+
         // 1.7 icons: machine_autocrafter_top / _side / _bottom.
         Dejson.block(NS, "machine_autocrafter")
                 .models(Models.cubeBottomTop("hbm:blocks/machine_autocrafter_bottom",
@@ -47,6 +54,7 @@ public final class ProductionDeclarations {
             Dejson.block(NS, tower).rendered("hbm:block/machine_dummy_empty")
                     .states(Variants.simple())
                     .register();
+            Drops.self(NS, tower);
         }
 
         // Renderer-drawn machines: the blockstate exists only because vanilla demands one.

@@ -123,6 +123,7 @@ public final class ModItemModels {
         blockItems();
         machineFrames();
         funnelModel();
+        ContentItemModels.declare();
         entityItems();
     }
 
