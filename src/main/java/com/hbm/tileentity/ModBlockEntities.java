@@ -581,7 +581,7 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack>> MACHINE_PUMPJACK =
             BLOCK_ENTITIES.register("machine_pumpjack",
-                    () -> BlockEntities.clientTicking(com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack::new, com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack::clientTick, ModMachineBlocks.machine_pumpjack.get()));
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack::new, com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack::clientTick, TileEntityOilDrillBase::serverTick, ModMachineBlocks.machine_pumpjack.get()));
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.TileEntityMachineDiesel>> MACHINE_DIESEL =
             BLOCK_ENTITIES.register("machine_diesel",

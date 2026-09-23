@@ -1021,6 +1021,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("missile_pad_sync", 20, () -> MissileGameTests::padSyncsLoadedMissile);
     public static final GameTests.Function MISSILE_LAUNCHABLE_SET =
             TESTS.function("missile_launchable_set", 20, () -> MissileGameTests::launchableSet);
+    public static final GameTests.Function MISSILE_STEALTH_RECIPE =
+            TESTS.function("missile_stealth_recipe", 20, () -> MissileGameTests::stealthRecipe);
     public static final GameTests.Function MISSILE_DESIGNATOR =
             TESTS.function("missile_designator", 20, () -> MissileGameTests::designatorRecordsTarget);
 

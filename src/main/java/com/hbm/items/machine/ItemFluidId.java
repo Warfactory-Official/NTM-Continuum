@@ -9,6 +9,9 @@ import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -44,6 +47,51 @@ public class ItemFluidId extends CompatItem implements IItemFluidId {
         ModDataComponents.fluidId(stack, fluid.getID());
         ModelData.setColor(stack, fluid.getColor());
         return stack;
+    }
+
+    /**
+     * Sneak-click on a duct or valve: retype the connected pipe network of the clicked pipe's old type (up to 256
+     * pipes), the 1.7 sneaking behaviour. Vanilla never passes a sneak-click with an item in hand to the block, so
+     * {@code BlockFluidDuct.onUseItem} only ever sees plain clicks; the spread runs here instead, as ntm-next's
+     * {@code FluidIdentifierItem.useOn} does it.
+     */
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        Level level = context.getLevel();
+        if (player == null || !player.isShiftKeyDown()) return super.useOn(context);
+        var pos = context.getClickedPos();
+        var entity = level.getBlockEntity(pos);
+        FluidType before;
+        if (entity instanceof com.hbm.tileentity.network.TileEntityFluidDuctNT duct) before = duct.getFluidType();
+        else if (entity instanceof com.hbm.tileentity.network.TileEntityFluidValve valve) before = valve.getFluidType();
+        else return super.useOn(context);
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        FluidType hand = getFluid(context.getItemInHand());
+        if (hand != before) {
+            com.hbm.blocks.network.BlockFluidDuct.spreadType(level, pos, hand, before, 256);
+            player.sendSystemMessage(Component.literal("Duct fluid: ").append(hand.getDisplayName())
+                    .withStyle(ChatFormatting.AQUA));
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * The tint reads the colour stored beside the fluid id, which only {@link #make} writes. A stack built any
+     * other way ({@code /give hbm:fluid_identifier[hbm:fluid_id=22]}, a recipe, another mod) carried the id
+     * alone and rendered untinted; the first server tick in an inventory now stores the fluid's colour.
+     */
+    @Override
+    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+                                       net.minecraft.world.entity.Entity owner,
+                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+        syncColor(stack);
+    }
+
+    /** Stores the fluid's colour for the tint when the stack does not already carry it. */
+    public static void syncColor(ItemStack stack) {
+        int color = getFluid(stack).getColor();
+        if (ModelData.color(stack, ~color) != color) ModelData.setColor(stack, color);
     }
 
     @Override

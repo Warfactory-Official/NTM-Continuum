@@ -132,8 +132,27 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         return state;
     }
 
-    /** Retypes the connected old-style pipe network, matching fluid_identifier's sneaking behavior. */
+    /**
+     * Retypes the connected old-style pipe network, matching fluid_identifier's sneaking behavior. The whole run is
+     * retyped first and its arms recomputed afterwards, as ntm-next's {@code retypeComponent} does: recomputing
+     * pipe by pipe during the walk left stale arms. An untyped pipe already reaches toward a freshly typed
+     * neighbour, so when its own turn came its state did not change, {@code setBlock} did nothing, and the
+     * neighbour was never told to grow its arm back.
+     */
     public static void spreadType(Level level, BlockPos pos, FluidType hand, FluidType pipe, int remaining) {
+        java.util.List<BlockPos> retyped = new java.util.ArrayList<>();
+        retype(level, pos, hand, pipe, remaining, retyped);
+        for (BlockPos p : retyped) {
+            BlockState state = level.getBlockState(p);
+            if (state.getBlock() instanceof BlockFluidDuct) {
+                level.setBlock(p, recomputeConnections(state, level, p), 3);
+            } else {
+                level.updateNeighborsAt(p, state.getBlock());
+            }
+        }
+    }
+
+    private static void retype(Level level, BlockPos pos, FluidType hand, FluidType pipe, int remaining, java.util.List<BlockPos> retyped) {
         if (remaining <= 0) return;
 
         BlockEntity entity = level.getBlockEntity(pos);
@@ -150,16 +169,11 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
         } else {
             return;
         }
-
-        if (level.getBlockState(pos).getBlock() instanceof BlockFluidDuct) {
-            level.setBlock(pos, recomputeConnections(level.getBlockState(pos), level, pos), 3);
-        } else {
-            level.updateNeighborsAt(pos, level.getBlockState(pos).getBlock());
-        }
+        retyped.add(pos.immutable());
 
         if (remaining == 1) return;
         for (Direction direction : Direction.values()) {
-            spreadType(level, pos.relative(direction), hand, pipe, remaining - 1);
+            retype(level, pos.relative(direction), hand, pipe, remaining - 1, retyped);
         }
     }
 

@@ -1280,8 +1280,13 @@ public class LevelNodeGraph<D> extends CompatSavedData<LevelNodeGraph<D>> {
     }
 
     public void replaceNodeData(long posKey, D data) {
-        GraphNode<D> node = nodesByPos.get(posKey);
-        if (node == null || node.data.equals(data)) return;
+        // A folded interior cell must be retyped too: answering only for first-class nodes left a duct typed
+        // in the middle of a straight run carrying its old fluid in the graph, which cut the run in two.
+        // Compare before promoting, so an unchanged cell (every duct on chunk load) never unfolds its segment.
+        D current = dataAt(posKey);
+        if (current == null || current.equals(data)) return;
+        GraphNode<D> node = firstClass(posKey);
+        if (node == null) return;
         replaceNode(posKey, data, node.openConnections);
     }
 

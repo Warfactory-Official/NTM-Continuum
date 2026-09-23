@@ -764,6 +764,31 @@ public final class MissileGameTests {
      * it here leaves a missile that flies in code and is refused in game; the reverse crashes on launch.
      * Update this list deliberately when a warhead's subsystem lands.
      */
+    /**
+     * The stealth missile's assembler recipe, 1.7 {@code ass.stealthmissile}: 1200 ticks at 100 HE/t, seven
+     * ingredients, one missile. The generated recipe file has no entry for it, so without the curated recipe the
+     * missile was creative-only. TNT and PVC stand in for the high-explosive and hard-plastic ore keys.
+     */
+    public static void stealthRecipe(GameTestHelper helper) {
+        com.hbm.inventory.recipes.AssemblyMachineRecipes.INSTANCE.registerRecipes();
+        com.hbm.inventory.recipes.loader.GenericRecipe recipe =
+                com.hbm.inventory.recipes.AssemblyMachineRecipes.INSTANCE.getRecipe("ass.stealthmissile");
+        helper.assertTrue(recipe != null && recipe.duration == 1_200 && recipe.power == 100,
+                "stealth missile assembly recipe is missing or has wrong processing parameters");
+        helper.assertTrue(recipe.outputItem != null && recipe.outputItem.length == 1
+                        && recipe.outputItem[0].is(ModMissileItems.missile_stealth.get()),
+                "stealth missile assembly recipe has the wrong output");
+        helper.assertTrue(recipe.inputItem.length == 7, "stealth missile recipe needs seven ingredients");
+        for (net.minecraft.world.item.Item needed : new net.minecraft.world.item.Item[]{
+                com.hbm.items.ModItems.ball_tnt.get(), com.hbm.items.ModItems.ingot_pvc.get(),
+                net.minecraft.world.item.Items.BLACK_DYE}) {
+            boolean used = false;
+            for (var input : recipe.inputItem) used |= input.matchesRecipe(new ItemStack(needed, 64), true);
+            helper.assertTrue(used, "stealth missile recipe does not accept " + needed);
+        }
+        helper.succeed();
+    }
+
     public static void launchableSet(GameTestHelper helper) {
         TileEntityLaunchPadBase.registerLaunchables();
         TileEntityLaunchPad pad = pad(helper);

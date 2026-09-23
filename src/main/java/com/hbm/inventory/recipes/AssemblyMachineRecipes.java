@@ -87,6 +87,13 @@ public class AssemblyMachineRecipes extends GenericRecipes {
                         dev.golem.core.Ids.of("c", "concretes")), count);
     }
 
+    /** The old {@code ANY_HIGHEXPLOSIVE} ore key: the {@code c:ingots/any_highexplosive} tag (TATB, TNT). */
+    private static com.hbm.inventory.RecipesCommon.AStack highExplosive(int count) {
+        return new com.hbm.inventory.RecipesCommon.TagStack(
+                net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
+                        dev.golem.core.Ids.of("c", "ingots/any_highexplosive")), count);
+    }
+
     private static ItemStack pileRod(EnumPileRod type, int count) {
         return ModPileBlocks.pile_rod.get().of(type, count);
     }
@@ -408,6 +415,16 @@ public class AssemblyMachineRecipes extends GenericRecipes {
         // else (it was never a FluidContainerRegistry container), 32,000 mB per pack, every fluid without
         // FT_NoContainer. ass.emptypackage (4 Ti plates + 2 any-plastic) is in the generated file.
         fluidPacks();
+
+        // 1.7 AssemblyMachineRecipes 823-824, values unchanged. Curated because the generated file has no entry
+        // for it, which left the stealth missile creative-only. KEY_BLACK is black dye, as gen_recipes maps it
+        // for the generated recipes.
+        register(new GenericRecipe("ass.stealthmissile").setup(1_200, 100)
+                .inputItems(TI.plate().count(20), AL.plate().count(20), new ComparableStack(Items.BLACK_DYE, 16),
+                        ANY_HARDPLASTIC.ingot().count(16), highExplosive(4),
+                        new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4),
+                        STEEL.bolt().count(32))
+                .outputItems(new ItemStack(com.hbm.items.ModMissileItems.missile_stealth.get(), 1)));
 
         // --- Albion particle accelerator ---
         register(new GenericRecipe("ass.beamline").setup(200, 100)
