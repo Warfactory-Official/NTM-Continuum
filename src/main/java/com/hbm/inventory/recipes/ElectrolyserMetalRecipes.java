@@ -62,6 +62,34 @@ public final class ElectrolyserMetalRecipes {
                 stack(ModItems.powder_astatine, 3), stack(ModItems.nugget_mercury, 72));
         add(ModItems.crystal_cobalt.get(), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 3), out(Mats.MAT_IRON, MaterialShapes.INGOT, 4),
                 stack(ModItems.powder_copper, 4), stack(ModItems.powder_lithium_tiny, 3));
+        com.hbm.scripting.ScriptedRecipes.apply(ElectrolyserMetalRecipes.class);
+    }
+
+    public static void put(net.minecraft.world.item.Item input, Mats.MaterialStack output1, Mats.MaterialStack output2,
+                           ItemStack... byproduct) {
+        register();
+        remove(input);
+        add(input, output1, output2, byproduct);
+    }
+
+    public static boolean remove(net.minecraft.world.item.Item input) {
+        register();
+        ElectrolysisMetalRecipe recipe = BY_ITEM.remove(input);
+        if (recipe == null) return false;
+        RECIPES.remove(recipe);
+        return true;
+    }
+
+    public static void removeAll() {
+        register();
+        RECIPES.clear();
+        BY_ITEM.clear();
+    }
+
+    public static synchronized void reset() {
+        RECIPES.clear();
+        BY_ITEM.clear();
+        initialized = false;
     }
 
     public static ElectrolysisMetalRecipe getRecipe(ItemStack stack) {

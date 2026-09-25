@@ -119,6 +119,14 @@ public class HazardSystem {
         clearCaches();
     }
 
+    public static void unblacklist(Item item) {
+        if (itemBlacklist.remove(item)) clearCaches();
+    }
+
+    public static void unblacklist(TagKey<Item> tag) {
+        if (tagBlacklist.remove(tag)) clearCaches();
+    }
+
     public static boolean isItemBlacklisted(ItemStack stack) {
         if (itemBlacklist.contains(stack.getItem())) return true;
         for (TagKey<Item> tag : tagBlacklist) {

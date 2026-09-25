@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.*;
 import static com.hbm.items.ItemEnums.EnumCircuitType.*;
@@ -108,6 +109,38 @@ public final class SolderingRecipes {
         addSecondUpgrade(ModUpgradeItems.upgrade_power_2.get(), ModUpgradeItems.upgrade_power_3.get());
         addFirstUpgrade(ModUpgradeItems.upgrade_fortune_1.get(), ModUpgradeItems.upgrade_fortune_2.get());
         addSecondUpgrade(ModUpgradeItems.upgrade_fortune_2.get(), ModUpgradeItems.upgrade_fortune_3.get());
+        com.hbm.scripting.ScriptedRecipes.apply(SolderingRecipes.class);
+    }
+
+    public static void addRecipe(ItemStack output, int duration, long consumption, FluidStack fluid,
+                                 AStack[] top, AStack[] board, AStack[] sold) {
+        register();
+        recipes.add(0, new SolderingRecipe(output, duration, consumption, fluid, top, board, sold));
+        java.util.Collections.addAll(toppings, top);
+        java.util.Collections.addAll(pcb, board);
+        java.util.Collections.addAll(solder, sold);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        toppings.clear();
+        pcb.clear();
+        solder.clear();
+        initialized = false;
+    }
+
+    public static boolean removeIf(Predicate<SolderingRecipe> filter) {
+        register();
+        if (!recipes.removeIf(filter)) return false;
+        toppings.clear();
+        pcb.clear();
+        solder.clear();
+        for (SolderingRecipe recipe : recipes) {
+            java.util.Collections.addAll(toppings, recipe.toppings);
+            java.util.Collections.addAll(pcb, recipe.pcb);
+            java.util.Collections.addAll(solder, recipe.solder);
+        }
+        return true;
     }
 
     /** Tier I → II (the 1.12.2 {@code addFirstUpgrade}, non-LBSM ingredient counts). */

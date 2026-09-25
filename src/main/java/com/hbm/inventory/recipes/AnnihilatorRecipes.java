@@ -10,7 +10,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import com.hbm.saveddata.AnnihilatorSavedData;
@@ -23,7 +23,7 @@ import com.hbm.saveddata.AnnihilatorSavedData;
  */
 public final class AnnihilatorRecipes {
 
-    public static final Map<Object, AnnihilatorRecipe> recipes = new HashMap<>();
+    public static final Map<Object, AnnihilatorRecipe> recipes = new LinkedHashMap<>();
     private static boolean registered;
 
     private AnnihilatorRecipes() {}
@@ -51,6 +51,35 @@ public final class AnnihilatorRecipes {
         registered = true;
 
         // 1.7 registers its fifteen 528 milestone payouts inside if(GeneralConfig.enable528); config-gated content is not ported.
+        com.hbm.scripting.ScriptedRecipes.apply(AnnihilatorRecipes.class);
+    }
+
+    public static void addMilestone(Object key, Milestone milestone) {
+        register();
+        recipes.computeIfAbsent(key, k -> new AnnihilatorRecipe()).milestones.add(milestone);
+    }
+
+    public static boolean remove(Object key) {
+        register();
+        return recipes.remove(key) != null;
+    }
+
+    public static void removeAll() {
+        register();
+        recipes.clear();
+    }
+
+    public static boolean removeMilestone(Object key, Milestone milestone) {
+        register();
+        AnnihilatorRecipe recipe = recipes.get(key);
+        if (recipe == null || !recipe.milestones.remove(milestone)) return false;
+        if (recipe.milestones.isEmpty()) recipes.remove(key);
+        return true;
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        registered = false;
     }
 
     /** The 1.7 ore-dictionary key, spelled as the material's item tag id. */

@@ -80,7 +80,7 @@ public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
         drawSmoothGauge(graphics, leftPos + 124, topPos + 40, (double) controller.coreHeat / (double) controller.coreHeatCapacity);
         drawSmoothGauge(graphics, leftPos + 160, topPos + 40, (double) controller.hullHeat / (double) TileEntityPWRController.hullHeatCapacityBase);
 
-        EnumPWRFuel loaded = EnumPWRFuel.byOrdinal(controller.typeLoaded);
+        EnumPWRFuel loaded = EnumPWRFuel.byIndex(controller.typeLoaded);
         if (loaded != null && controller.amountLoaded > 0) {
             ItemStack display = new ItemStack(ModPwrItems.fuel(loaded));
             GuiDraw.item(graphics, display, leftPos + 89, topPos + 5);
@@ -178,7 +178,7 @@ public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
             tooltip(graphics, List.of(Component.literal("Control rod level: "
                     + (100 - (Math.round(controller.rodLevel * 100) / 100)) + "%")), mouseX, mouseY);
         } else if (legacyHover(88, 4, 18, 18, mouseX, mouseY)) {
-            EnumPWRFuel loaded = EnumPWRFuel.byOrdinal(controller.typeLoaded);
+            EnumPWRFuel loaded = EnumPWRFuel.byIndex(controller.typeLoaded);
             if (loaded != null && controller.amountLoaded > 0) {
                 ItemStack display = new ItemStack(ModPwrItems.fuel(loaded));
                 tooltip(graphics, net.minecraft.client.gui.screens.Screen.getTooltipFromItem(Minecraft.getInstance(), display), mouseX, mouseY);

@@ -116,6 +116,10 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
             ensureForced();
         }
 
+        if (!this.did && com.hbm.scripting.NTMServerEvents.postDetonation(level(), getX(), getY(), getZ(), extType == 1 ? "solinium" : "fleija", destructionRange)) {
+            discard();
+            return;
+        }
         if (!this.did) {
             if (level() instanceof ServerLevel server) {
                 AwardRegions.inLevel(server, p -> HbmCriteria.detonation(p, DetonationTrigger.Kind.NUKE));

@@ -5,7 +5,9 @@ import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.ModAutogenItems;
+import com.hbm.scripting.ScriptedMaterials;
 import dev.golem.core.render.Sprites;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -38,24 +40,36 @@ public final class AutogenSprites {
      */
     private static final Set<String> AUTHORED = Set.of("bedrock_ore_fragment_bismuth");
 
+    private static final Set<String> DECLARED = new HashSet<>();
+    private static boolean installed;
+
     /** Declares every material-shape remap. Client only, before the first resource load. */
-    public static void install() {
+    public static synchronized void install() {
+        installed = true;
+        sync();
+    }
+
+    /** Declares the pairs added since {@link #install}; a no-op before it. */
+    public static synchronized void sync() {
+        if (!installed) {
+            return;
+        }
         int sprites = 0;
         for (MaterialShapes shape : ModAutogenItems.shapeOrder()) {
-            String art = ModAutogenItems.base(shape);
+            String art = ModAutogenItems.art(shape);
             if (art == null) {
                 continue;
             }
-            Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(Constants.MOD_ID + ":items/" + art);
+            String base = ModAutogenItems.base(shape);
+            Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(art);
             for (NTMMaterial material : Mats.orderedList) {
-                if (!material.autogen.contains(shape) || AUTHORED.contains(art + "_" + material.name)) {
+                if (!material.autogen.contains(shape) || AUTHORED.contains(base + "_" + material.name)
+                        || !DECLARED.add(base + "_" + material.name)) {
                     continue;
                 }
                 if (material.solidColorLight == material.solidColorDark) {
-                    // Flat on both ends: there is nothing to interpolate, and a remap would return the
-                    // one colour for every pixel. Leave the sprite to an authored file and say so.
                     Constants.LOG.warn("{} declares one flat colour, so {}_{} needs an authored sprite",
-                            material.name, art, material.name);
+                            material.name, base, material.name);
                     continue;
                 }
                 remap.permutation(material.name, material.solidColorLight, material.solidColorDark);
@@ -64,6 +78,17 @@ public final class AutogenSprites {
             if (!remap.isEmpty()) {
                 remap.declare();
             }
+        }
+        for (ScriptedMaterials.Remap remap : ScriptedMaterials.remaps()) {
+            if (!DECLARED.add(remap.source() + "_" + remap.material().name)) {
+                continue;
+            }
+            Sprites.remap(remap.blockAtlas() ? Sprites.Atlas.BLOCKS : Sprites.Atlas.ITEMS)
+                    .texture(remap.source())
+                    .band(remap.bandLight(), remap.bandDark())
+                    .permutation(remap.material().name, remap.material().solidColorLight, remap.material().solidColorDark)
+                    .declare();
+            sprites++;
         }
         Constants.LOG.info("Declared {} material-shape sprite(s) for load-time generation", sprites);
     }

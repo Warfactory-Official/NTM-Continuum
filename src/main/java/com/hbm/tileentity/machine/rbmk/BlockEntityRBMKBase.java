@@ -137,6 +137,7 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
                 : Blocks.AIR.defaultBlockState(), 3);
     }
     public void meltdown() {
+        if (com.hbm.scripting.NTMServerEvents.postMeltdown(level, worldPosition, "rbmk")) return;
         columns.clear(); floodFill();
         int minX = worldPosition.getX(), maxX = minX, minZ = worldPosition.getZ(), maxZ = minZ;
         for (BlockEntityRBMKBase column : columns) { minX = Math.min(minX, column.worldPosition.getX()); maxX = Math.max(maxX, column.worldPosition.getX()); minZ = Math.min(minZ, column.worldPosition.getZ()); maxZ = Math.max(maxZ, column.worldPosition.getZ()); }

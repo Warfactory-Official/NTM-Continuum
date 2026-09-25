@@ -30,9 +30,7 @@ public final class ExposureChamberRecipes extends GenericRecipes {
     private ExposureChamberRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         add("exposure.uranium", new ComparableStack(ModItems.particle_higgs.get()), U.ingot(),
                 new ItemStack(ModFuelItems.ingot_schraranium.get()));
         add("exposure.uranium238", new ComparableStack(ModItems.particle_higgs.get()), U238.ingot(),
@@ -48,7 +46,7 @@ public final class ExposureChamberRecipes extends GenericRecipes {
     }
 
     private void add(String name, AStack particle, AStack ingredient, ItemStack output) {
-        ExposureChamberRecipe recipe = new ExposureChamberRecipe(particle, ingredient, output.copy());
+        ExposureChamberRecipe recipe = new ExposureChamberRecipe(name, particle, ingredient, output.copy());
         recipes.add(recipe);
 
         // The old JEI adapter displayed one catalyst and eight ingredient/output units, while the
@@ -65,6 +63,23 @@ public final class ExposureChamberRecipes extends GenericRecipes {
                 .outputItems(new ItemStack(output.getItem(), TileEntityMachineExposureChamber.MAX_PARTICLES)));
     }
 
+    public static void put(String name, AStack particle, AStack ingredient, ItemStack output) {
+        INSTANCE.registerRecipes();
+        INSTANCE.add(name, particle, ingredient, output);
+    }
+
+    @Override
+    public boolean remove(String name) {
+        recipes.removeIf(recipe -> recipe.name.equals(name));
+        return super.remove(name);
+    }
+
+    @Override
+    protected void clear() {
+        super.clear();
+        recipes.clear();
+    }
+
     public static ExposureChamberRecipe getRecipe(ItemStack particle, ItemStack ingredient) {
         INSTANCE.registerRecipes();
         for (ExposureChamberRecipe recipe : recipes) {
@@ -76,11 +91,13 @@ public final class ExposureChamberRecipes extends GenericRecipes {
     }
 
     public static final class ExposureChamberRecipe {
+        public final String name;
         public final AStack particle;
         public final AStack ingredient;
         public final ItemStack output;
 
-        private ExposureChamberRecipe(AStack particle, AStack ingredient, ItemStack output) {
+        private ExposureChamberRecipe(String name, AStack particle, AStack ingredient, ItemStack output) {
+            this.name = name;
             this.particle = particle;
             this.ingredient = ingredient;
             this.output = output;

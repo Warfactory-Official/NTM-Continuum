@@ -312,7 +312,7 @@ public class HazardRegistry {
         registerMat(mat, baseRad, null, 0F);
     }
 
-    private static void registerMat(NTMMaterial mat, float baseRad, IHazardType extra, float extraLevel) {
+    public static void registerMat(NTMMaterial mat, float baseRad, IHazardType extra, float extraLevel) {
         registerShape(mat, MaterialShapes.NUGGET, baseRad * nugget, extra, extraLevel);
         registerShape(mat, MaterialShapes.INGOT, baseRad * ingot, extra, extraLevel);
         registerShape(mat, MaterialShapes.DUST, baseRad * powder, extra, extraLevel);
@@ -339,14 +339,12 @@ public class HazardRegistry {
     }
 
     private static float shapeMult(MaterialShapes shape) {
-        return switch (shape) {
-            case NUGGET -> nugget;
-            case DUST -> powder;
-            case BILLET -> billet;
-            case BLOCK -> block;
-            case CRYSTAL -> crystal;
-            default -> ingot;
-        };
+        if (shape == MaterialShapes.NUGGET) return nugget;
+        if (shape == MaterialShapes.DUST) return powder;
+        if (shape == MaterialShapes.BILLET) return billet;
+        if (shape == MaterialShapes.BLOCK) return block;
+        if (shape == MaterialShapes.CRYSTAL) return crystal;
+        return ingot;
     }
 
     /** Registers a fuel family (nugget/billet/ingot/block) by id prefix, if the items exist. */
@@ -364,22 +362,21 @@ public class HazardRegistry {
     }
 
     private static void registerZirnoxFuel() {
-        for (com.hbm.items.machine.ZirnoxFuel fuel : com.hbm.items.machine.ZirnoxFuel.values()) {
+        for (com.hbm.items.machine.ZirnoxFuel fuel : com.hbm.items.machine.ZirnoxFuel.BUILTIN) {
             if (!com.hbm.items.ModZirnoxItems.hasDepleted(fuel)) continue;
-            HazardData rod = makeData(RADIATION, fuel.depletedRadiation);
-            if (fuel == com.hbm.items.machine.ZirnoxFuel.LES) rod.addEntry(BLINDING, 20F);
-            HazardSystem.register(com.hbm.items.ModZirnoxItems.depleted(fuel), rod);
-
-            HazardData waste = makeData(RADIATION, fuel.depletedRadiation * 0.0375F)
-                    .addEntry(CONTAMINATING, fuel == com.hbm.items.machine.ZirnoxFuel.ZFB_MOX ? 10F : 15F);
-            if (fuel == com.hbm.items.machine.ZirnoxFuel.THORIUM) {
-                waste = makeData(RADIATION, fuel.depletedRadiation * 0.0375F).addEntry(CONTAMINATING, 10F);
-            } else if (fuel == com.hbm.items.machine.ZirnoxFuel.LES) {
-                waste = makeData(RADIATION, fuel.depletedRadiation * 0.0375F).addEntry(CONTAMINATING, 40F);
-            }
-            HazardSystem.register(com.hbm.items.ModZirnoxItems.waste(fuel), waste);
+            boolean les = fuel == com.hbm.items.machine.ZirnoxFuel.LES;
+            registerZirnoxFuel(fuel, les ? 20F : 0F, les ? 40F
+                    : fuel == com.hbm.items.machine.ZirnoxFuel.ZFB_MOX || fuel == com.hbm.items.machine.ZirnoxFuel.THORIUM ? 10F : 15F);
         }
         regItem("rod_zirnox_tritium", makeData(RADIATION, 0.001F));
+    }
+
+    public static void registerZirnoxFuel(com.hbm.items.machine.ZirnoxFuel fuel, float blinding, float wasteContamination) {
+        HazardData rod = makeData(RADIATION, fuel.depletedRadiation);
+        if (blinding > 0F) rod.addEntry(BLINDING, blinding);
+        HazardSystem.register(com.hbm.items.ModZirnoxItems.depleted(fuel), rod);
+        HazardSystem.register(com.hbm.items.ModZirnoxItems.waste(fuel),
+                makeData(RADIATION, fuel.depletedRadiation * 0.0375F).addEntry(CONTAMINATING, wasteContamination));
     }
 
     private static void registerResearchPlateFuel() {
@@ -500,13 +497,18 @@ public class HazardRegistry {
         }
 
         private HazardData data(double base, double depleted, boolean hot, boolean linear, double blinding, double digamma) {
-            HazardData hazard = new HazardData().addEntry(new HazardEntry(RADIATION, (float) base)
-                    .addMod(new HazardModifierRBMKRadiation(depleted, linear)));
-            if (hot) hazard.addEntry(new HazardEntry(HOT, 0F).addMod(new HazardModifierRBMKHot()));
-            if (blinding > 0D) hazard.addEntry(BLINDING, (float) blinding);
-            if (digamma > 0D) hazard.addEntry(DIGAMMA, (float) digamma);
-            return hazard;
+            return rbmkData(base, depleted, hot, linear, blinding, digamma);
         }
+    }
+
+    /** RBMK rod/pellet hazard: radiation scaled from {@code base} fresh toward {@code depleted} spent. */
+    public static HazardData rbmkData(double base, double depleted, boolean hot, boolean linear, double blinding, double digamma) {
+        HazardData hazard = new HazardData().addEntry(new HazardEntry(RADIATION, (float) base)
+                .addMod(new HazardModifierRBMKRadiation(depleted, linear)));
+        if (hot) hazard.addEntry(new HazardEntry(HOT, 0F).addMod(new HazardModifierRBMKHot()));
+        if (blinding > 0D) hazard.addEntry(BLINDING, (float) blinding);
+        if (digamma > 0D) hazard.addEntry(DIGAMMA, (float) digamma);
+        return hazard;
     }
 
     // ---- helpers ----
@@ -532,7 +534,7 @@ public class HazardRegistry {
         }
     }
 
-    private static void registerOtherFuel(Item fuel, float base, float target, boolean blinding) {
+    public static void registerOtherFuel(Item fuel, float base, float target, boolean blinding) {
         HazardData data = new HazardData();
         data.addEntry(new HazardEntry(RADIATION, base).addMod(new HazardModifierFuelRadiation(target)));
         if (blinding) data.addEntry(BLINDING, 20F);

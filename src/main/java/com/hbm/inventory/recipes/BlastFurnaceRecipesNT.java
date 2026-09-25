@@ -29,9 +29,7 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
     private BlastFurnaceRecipesNT() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         // The slag item is the modern one-item-per-material replacement for old ingot_raw[slag].
         ItemStack slag = slag(1);
         ItemStack slagTwo = slag(2);

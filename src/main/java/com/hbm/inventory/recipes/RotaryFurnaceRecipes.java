@@ -19,6 +19,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.*;
 
@@ -61,6 +62,22 @@ public final class RotaryFurnaceRecipes {
         add(new MaterialStack(Mats.MAT_ALUMINIUM, MaterialShapes.INGOT.quantity * 2), 100, 400, new FluidStack(Fluids.SODIUM_ALUMINATE, 150));
         add(new MaterialStack(Mats.MAT_ALUMINIUM, MaterialShapes.INGOT.quantity * 3), 40, 200, new FluidStack(Fluids.SODIUM_ALUMINATE, 150),
                 new ComparableStack(ModItems.powder_flux.get(), 2));
+        com.hbm.scripting.ScriptedRecipes.apply(RotaryFurnaceRecipes.class);
+    }
+
+    public static void addRecipe(RotaryFurnaceRecipe recipe) {
+        register();
+        recipes.add(0, recipe);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
+    }
+
+    public static boolean removeIf(Predicate<RotaryFurnaceRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
     }
 
     private static AStack fragment(com.hbm.inventory.material.NTMMaterial material, int count) {

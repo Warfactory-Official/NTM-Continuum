@@ -50,6 +50,16 @@ public final class ModPwrBlocks {
         descItem("pwr_casing", PWR_CASING, 2);
         descItem("pwr_port", PWR_PORT, 2);
         descItem("pwr_controller", PWR_CONTROLLER, 3);
+
+        PwrParts.register(PWR_FUEL, PwrParts.Kind.FUEL, 1);
+        PwrParts.register(PWR_CONTROL, PwrParts.Kind.CONTROL, 1);
+        PwrParts.register(PWR_CHANNEL, PwrParts.Kind.CHANNEL, 1);
+        PwrParts.register(PWR_HEATEX, PwrParts.Kind.HEATEX, 1);
+        PwrParts.register(PWR_HEATSINK, PwrParts.Kind.HEATSINK, 1);
+        PwrParts.register(PWR_NEUTRON_SOURCE, PwrParts.Kind.SOURCE, 1);
+        PwrParts.register(PWR_REFLECTOR, PwrParts.Kind.REFLECTOR, 1);
+        PwrParts.register(PWR_CASING, PwrParts.Kind.CASING, 1);
+        PwrParts.register(PWR_PORT, PwrParts.Kind.PORT, 1);
     }
 
     private static RegistryObject<Block> part(String name) {

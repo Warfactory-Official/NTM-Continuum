@@ -75,7 +75,7 @@ public final class ShredderRecipes {
         if (in != null && !out.isEmpty()) recipes.putIfAbsent(in, out);
     }
 
-    public static void register() {
+    public static synchronized void register() {
         if (initialized) return;
         initialized = true;
 
@@ -83,6 +83,22 @@ public final class ShredderRecipes {
         registerModernParity();
         registerVanillaSweeps();
         registerTagSweep();
+        com.hbm.scripting.ScriptedRecipes.apply(ShredderRecipes.class);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
+    }
+
+    public static void put(Item in, ItemStack out) {
+        register();
+        recipes.put(in, out);
+    }
+
+    public static boolean remove(Item in) {
+        register();
+        return recipes.remove(in) != null;
     }
 
     /**

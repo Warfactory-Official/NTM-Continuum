@@ -206,7 +206,7 @@ public final class BlastFurnaceGameTests {
                 .outputFluids(new FluidStack(Fluids.STEAM, 100));
 
         private TestRecipes() { registerGenerated(recipe); }
-        @Override public void registerRecipes() {}
+        @Override protected void populate() {}
     }
 
     private static final class TestEnergy implements IEnergyHandlerMK2 {

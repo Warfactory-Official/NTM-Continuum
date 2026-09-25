@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import com.hbm.blocks.ModPwrBlocks;
+import com.hbm.blocks.PwrParts;
 import com.hbm.items.machine.ItemPWRPrinter;
 import com.hbm.tileentity.machine.TileEntityBlockPWR;
 import com.hbm.tileentity.machine.TileEntityPWRController;
@@ -144,7 +145,7 @@ public class MachinePWRController extends CompatBlock implements TickingBlock {
                 Block block = entry.getValue();
                 if (block == this) continue;
 
-                boolean port = block == ModPwrBlocks.PWR_PORT.get();
+                boolean port = PwrParts.is(block, PwrParts.Kind.PORT);
                 level.setBlock(cell, shell.defaultBlockState().setValue(BlockPWR.PORT, port), 3);
 
                 if (level.getBlockEntity(cell) instanceof TileEntityBlockPWR pwr) {
@@ -182,8 +183,8 @@ public class MachinePWRController extends CompatBlock implements TickingBlock {
 
         if (isValidCore(block)) {
             assembly.put(pos, block);
-            if (block == ModPwrBlocks.PWR_FUEL.get()) fuelRods.put(pos, block);
-            if (block == ModPwrBlocks.PWR_NEUTRON_SOURCE.get()) sources.put(pos, block);
+            if (PwrParts.is(block, PwrParts.Kind.FUEL)) fuelRods.put(pos, block);
+            if (PwrParts.is(block, PwrParts.Kind.SOURCE)) sources.put(pos, block);
             floodFill(level, pos.offset(1, 0, 0), player);
             floodFill(level, pos.offset(-1, 0, 0), player);
             floodFill(level, pos.offset(0, 1, 0), player);
@@ -206,17 +207,12 @@ public class MachinePWRController extends CompatBlock implements TickingBlock {
     }
 
     public static boolean isValidCore(Block block) {
-        return block == ModPwrBlocks.PWR_FUEL.get()
-                || block == ModPwrBlocks.PWR_CONTROL.get()
-                || block == ModPwrBlocks.PWR_CHANNEL.get()
-                || block == ModPwrBlocks.PWR_HEATEX.get()
-                || block == ModPwrBlocks.PWR_HEATSINK.get()
-                || block == ModPwrBlocks.PWR_NEUTRON_SOURCE.get();
+        PwrParts.Part part = PwrParts.of(block);
+        return part != null && part.core();
     }
 
     public static boolean isValidCasing(Block block) {
-        return block == ModPwrBlocks.PWR_CASING.get()
-                || block == ModPwrBlocks.PWR_REFLECTOR.get()
-                || block == ModPwrBlocks.PWR_PORT.get();
+        PwrParts.Part part = PwrParts.of(block);
+        return part != null && !part.core();
     }
 }

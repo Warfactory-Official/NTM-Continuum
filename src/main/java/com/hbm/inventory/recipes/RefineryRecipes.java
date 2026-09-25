@@ -131,5 +131,32 @@ public final class RefineryRecipes {
                 new FluidStack(Fluids.LIGHTOIL_VACUUM, vac_frac_light),
                 new FluidStack(Fluids.REFORMGAS, vac_frac_sour)
         ));
+        com.hbm.scripting.ScriptedRecipes.apply(RefineryRecipes.class);
+    }
+
+    public static void putRefinery(FluidType oil, RefineryRecipe recipe) {
+        init();
+        refinery.put(oil, recipe);
+    }
+
+    public static boolean removeRefinery(FluidType oil) {
+        init();
+        return refinery.remove(oil) != null;
+    }
+
+    public static void putVacuum(FluidType oil, VacuumRecipe recipe) {
+        init();
+        vacuum.put(oil, recipe);
+    }
+
+    public static boolean removeVacuum(FluidType oil) {
+        init();
+        return vacuum.remove(oil) != null;
+    }
+
+    public static synchronized void reset() {
+        refinery.clear();
+        vacuum.clear();
+        initialized = false;
     }
 }

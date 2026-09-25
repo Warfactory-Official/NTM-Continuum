@@ -47,6 +47,14 @@ public class HazmatRegistry {
         entries.put(item, resistance);
     }
 
+    public static @org.jspecify.annotations.Nullable Double registered(Item item) {
+        return entries.get(item);
+    }
+
+    public static void unregisterHazmat(Item item) {
+        entries.remove(item);
+    }
+
     public static double getResistance(ItemStack stack) {
         if (stack == null || stack.isEmpty())
             return 0;

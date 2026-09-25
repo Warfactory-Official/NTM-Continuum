@@ -22,9 +22,8 @@ public final class OutgasserRecipes extends GenericRecipes {
     public static final OutgasserRecipes INSTANCE = new OutgasserRecipes();
     public static final int DURATION = 10_000;
     private OutgasserRecipes() {}
-    @Override public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    @Override
+    protected void populate() {
         // Lithium to tritium.
         register(new OutgasserRecipe("outgasser.tritium_block").inputItems(MAT_LITHIUM.block())
                 .outputFluids(new FluidStack(Fluids.TRITIUM, 10_000)).setup(DURATION, 0));

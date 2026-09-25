@@ -1,5 +1,7 @@
 package com.hbm.client;
 
+import java.util.HashSet;
+import java.util.Set;
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
@@ -40,16 +42,33 @@ public final class FluidSprites {
     /** The size an item slot draws an icon at, and so the size a droplet is expected at. */
     private static final int ICON_SIZE = 16;
 
+    private static final Set<FluidType> DECLARED = new HashSet<>();
+    private static boolean installed;
+
     /** Declares every fluid's droplet. Client only, before the first resource load. */
-    public static void install() {
+    public static synchronized void install() {
         Fluids.init();
-        FluidType[] fluids = Fluids.getAll();
-        Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(ART).band(ART_LIGHT, ART_DARK);
-        for (FluidType fluid : fluids) {
-            remap.tint(fluid.getKey(), fluid.getColor());
+        installed = true;
+        sync();
+    }
+
+    /** Declares the droplets of fluids added since {@link #install}; a no-op before it. */
+    public static synchronized void sync() {
+        if (!installed) {
+            return;
         }
-        remap.declare();
-        Constants.LOG.info("Declared {} fluid droplet sprite(s) for load-time generation", fluids.length);
+        Sprites.Remap remap = Sprites.remap(Sprites.Atlas.ITEMS).texture(ART).band(ART_LIGHT, ART_DARK);
+        int count = 0;
+        for (FluidType fluid : Fluids.getAll()) {
+            if (DECLARED.add(fluid)) {
+                remap.tint(fluid.getKey(), fluid.getColor());
+                count++;
+            }
+        }
+        if (count > 0) {
+            remap.declare();
+        }
+        Constants.LOG.info("Declared {} fluid droplet sprite(s) for load-time generation", count);
     }
 
     /** Draws {@code fluid}'s droplet at the size an item slot would have drawn it. */

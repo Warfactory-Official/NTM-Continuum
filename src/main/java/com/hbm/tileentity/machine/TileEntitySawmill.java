@@ -5,7 +5,6 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.NTMItemHandler;
 import com.hbm.inventory.recipes.SawmillRecipes;
-import com.hbm.items.ModItems;
 import com.hbm.entity.projectile.EntitySawblade;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.sound.ModSounds;
@@ -95,21 +94,16 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
             if (sawmill.warnCooldown > 0) sawmill.warnCooldown--;
 
             if (sawmill.heat >= 100) {
-                ItemStack result = sawmill.getOutput(level, sawmill.inventory.getStackInSlot(0));
+                ItemStack input = sawmill.inventory.getStackInSlot(0);
+                ItemStack result = sawmill.getOutput(level, input);
                 if (!result.isEmpty()) {
                     sawmill.progress += sawmill.heat / 10;
                     if (sawmill.progress >= PROCESSING_TIME) {
                         sawmill.progress = 0;
+                        ItemStack secondary = SawmillRecipes.rollSecondary(input, result, level.getRandom());
                         sawmill.inventory.setStackInSlot(0, ItemStack.EMPTY);
                         sawmill.inventory.setStackInSlot(1, result);
-
-                        if (!result.is(ModItems.powder_sawdust.get())) {
-                            int chance = result.is(net.minecraft.world.item.Items.STICK) ? 10 : 50;
-                            if (level.getRandom().nextInt(100) < chance) {
-                                sawmill.inventory.setStackInSlot(2,
-                                        new ItemStack(com.hbm.items.ModItems.powder_sawdust.get()));
-                            }
-                        }
+                        if (!secondary.isEmpty()) sawmill.inventory.setStackInSlot(2, secondary);
                         sawmill.setChanged();
                     }
                 } else {

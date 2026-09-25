@@ -9,6 +9,7 @@ import com.hbm.inventory.recipes.RTGRecipes;
 import com.hbm.items.ModRtgContent;
 import com.hbm.items.machine.DepletedRTGMaterial;
 import com.hbm.items.machine.ItemRTGPellet;
+import com.hbm.items.machine.ItemRTGPelletDepleted;
 import com.hbm.tileentity.machine.TileEntityMachineRTG;
 import com.hbm.util.RTGUtil;
 import dev.golem.core.gametest.GameTests;
@@ -62,7 +63,8 @@ public final class RtgGameTests {
             helper.assertTrue(pellet.getHeat() == heat[index]
                             && pellet.getHalfLife() == halfLife[index]
                             && pellet.getMaxLifespan() == halfLife[index] * halfLives[index]
-                            && pellet.getDecayItem().material == residual[index],
+                            && pellet.getDecayItem() instanceof ItemRTGPelletDepleted decayed
+                            && decayed.material == residual[index],
                     "RTG pellet table drifted at index " + index);
             index++;
         }

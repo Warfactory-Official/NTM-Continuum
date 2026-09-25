@@ -360,6 +360,7 @@ public class TileEntityWatz extends TileEntityMachineBase
      * dumps 1000 rads and plays the RBMK detonation.
      */
     private void meltdown(Level level, BlockPos pos) {
+        if (com.hbm.scripting.NTMServerEvents.postMeltdown(level, pos, "watz")) return;
         for (int x = -3; x <= 3; x++) {
             for (int y = 3; y < 6; y++) {
                 for (int z = -3; z <= 3; z++) {
@@ -508,7 +509,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         output.putDouble("lastFluxR", fluxLastReaction);
         output.putBoolean("isLocked", isLocked);
         for (int i = 0; i < SLOTS; i++) {
-            output.putInt("lock" + i, locks[i] == null ? -1 : locks[i].ordinal());
+            output.putInt("lock" + i, locks[i] == null ? -1 : locks[i].index);
         }
     }
 
@@ -521,8 +522,8 @@ public class TileEntityWatz extends TileEntityMachineBase
         fluxLastReaction = input.getDoubleOr("lastFluxR", 0D);
         isLocked = input.getBooleanOr("isLocked", false);
         for (int i = 0; i < SLOTS; i++) {
-            int ordinal = input.getIntOr("lock" + i, -1);
-            locks[i] = ordinal >= 0 && ordinal < EnumWatzType.VALUES.length ? EnumWatzType.VALUES[ordinal] : null;
+            int index = input.getIntOr("lock" + i, -1);
+            locks[i] = index >= 0 && index < EnumWatzType.values().size() ? EnumWatzType.values().get(index) : null;
         }
         resetSharedTanks();
     }

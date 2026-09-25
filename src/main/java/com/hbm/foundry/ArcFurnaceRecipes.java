@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Feature-local replacement for the old {@code ArcFurnaceRecipes}. It deliberately has no global
@@ -81,6 +82,51 @@ public final class ArcFurnaceRecipes {
 
         registerMaterialShapes();
         registerExplicitMaterialItems();
+        com.hbm.scripting.ScriptedRecipes.apply(ArcFurnaceRecipes.class);
+    }
+
+    public static void put(RecipesCommon.AStack input, ItemStack solidOutput, Mats.MaterialStack... fluidOutput) {
+        register();
+        String key = inputKey(input);
+        boolean solid = solidOutput != null && !solidOutput.isEmpty();
+        boolean liquid = fluidOutput.length > 0;
+        for (int index = 0; index < RECIPES.size(); index++) {
+            ArcFurnaceRecipe recipe = RECIPES.get(index);
+            if (!inputKey(recipe.input).equals(key)) continue;
+            ItemStack keptSolid = solid ? null : recipe.solidOutput;
+            Mats.MaterialStack[] keptLiquid = liquid ? new Mats.MaterialStack[0] : recipe.fluidOutput;
+            if (keptSolid == null && keptLiquid.length == 0) RECIPES.remove(index--);
+            else RECIPES.set(index, new ArcFurnaceRecipe(recipe.input, keptSolid, keptLiquid));
+        }
+        reindex();
+        register(input, solidOutput, fluidOutput);
+    }
+
+    public static boolean remove(RecipesCommon.AStack input) {
+        String key = inputKey(input);
+        return removeIf(recipe -> inputKey(recipe.input).equals(key));
+    }
+
+    public static boolean removeIf(Predicate<ArcFurnaceRecipe> filter) {
+        register();
+        boolean removed = RECIPES.removeIf(filter);
+        reindex();
+        return removed;
+    }
+
+    public static synchronized void reset() {
+        RECIPES.clear();
+        reindex();
+        registered = false;
+    }
+
+    private static void reindex() {
+        SOLID_INPUTS.clear();
+        LIQUID_INPUTS.clear();
+        for (ArcFurnaceRecipe recipe : RECIPES) {
+            if (recipe.solidOutput != null) SOLID_INPUTS.add(inputKey(recipe.input));
+            if (recipe.fluidOutput.length > 0) LIQUID_INPUTS.add(inputKey(recipe.input));
+        }
     }
 
     private static void registerMaterialShapes() {

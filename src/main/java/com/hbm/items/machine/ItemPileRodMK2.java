@@ -1,6 +1,5 @@
 package com.hbm.items.machine;
 
-import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
@@ -8,57 +7,138 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * The Chicago Pile's fuel and source rods. A rod carries its own burn-up, so depletion lives on the
  * stack rather than on the channel: the pile advances it while the rod sits in a fuel channel, and once
  * it passes the rod's lifetime the rod becomes whatever it breeds into.
  */
-public class ItemPileRodMK2 extends ItemEnumMulti {
+public class ItemPileRodMK2 extends dev.golem.core.world.CompatItem {
 
     public ItemPileRodMK2(Properties properties) {
-        super(EnumPileRod.class, true, true, properties);
+        super(properties);
     }
 
-    public enum EnumPileRod {
-        RA226BE(1D),
-        PO210BE(1D),
-        ZR(0D, 0D, 0D, 2),
-        NU(1D, 25_000D, 0.25D, 4),
-        PU239(1D, 500D, 0.5D, 5),
-        RGP(1D, 1_000D, 0.5D, 6),
-        WASTE(1D, 0D, 1.5D, 6),
-        THORIUM(1D, 35_000D, 0.25D, 8),
-        THORIUM_FUEL(1D, 2_000D, 0.5D, 6);
+    /** Persisted as {@code ITEM_VARIANT} = {@link #ordinal()}: built-ins first, scripted after in declaration order. */
+    public static final class EnumPileRod {
 
-        public static final EnumPileRod[] VALUES = values();
+        private static final List<EnumPileRod> VALUES = new ArrayList<>();
+        private static final List<EnumPileRod> VIEW = Collections.unmodifiableList(VALUES);
 
-        public double reactionMult;
-        public double life;
-        public double heatMult;
-        public double neutronSource;
-        public int turnsInto;
+        public static final EnumPileRod RA226BE = source("RA226BE", 1D, "");
+        public static final EnumPileRod PO210BE = source("PO210BE", 1D, "_po210be");
+        public static final EnumPileRod ZR = fuel("ZR", 0D, 0D, 0D, "ZR", "_zr");
+        public static final EnumPileRod NU = fuel("NU", 1D, 25_000D, 0.25D, "PU239", "_nu");
+        public static final EnumPileRod PU239 = fuel("PU239", 1D, 500D, 0.5D, "RGP", "_mk2_pu239");
+        public static final EnumPileRod RGP = fuel("RGP", 1D, 1_000D, 0.5D, "WASTE", "_rgp");
+        public static final EnumPileRod WASTE = fuel("WASTE", 1D, 0D, 1.5D, "WASTE", "_waste");
+        public static final EnumPileRod THORIUM = fuel("THORIUM", 1D, 35_000D, 0.25D, "THORIUM_FUEL", "_thorium");
+        public static final EnumPileRod THORIUM_FUEL = fuel("THORIUM_FUEL", 1D, 2_000D, 0.5D, "WASTE", "_thorium_fuel");
 
-        EnumPileRod(double neutronSource) {
+        private final String name;
+        private final int ordinal;
+        public final String model;
+        public final boolean described;
+        public final double reactionMult;
+        public final double life;
+        public final double heatMult;
+        public final double neutronSource;
+        private final @Nullable String turnsIntoName;
+
+        private EnumPileRod(String name, double neutronSource, double reaction, double life, double heat,
+                            @Nullable String turnsInto, String model, boolean described) {
+            this.name = name;
+            this.ordinal = VALUES.size();
             this.neutronSource = neutronSource;
-            this.reactionMult = 0D;
-            this.life = 0D;
-            this.heatMult = 0D;
-        }
-
-        EnumPileRod(double reaction, double life, double heat, int turnsInto) {
             this.reactionMult = reaction;
             this.life = life;
             this.heatMult = heat;
-            this.turnsInto = turnsInto;
+            this.turnsIntoName = turnsInto;
+            this.model = model;
+            this.described = described;
+        }
+
+        private static EnumPileRod source(String name, double neutronSource, String suffix) {
+            return create(name, neutronSource, 0D, 0D, 0D, null, "hbm:item/pile_rod" + suffix, true);
+        }
+
+        private static EnumPileRod fuel(String name, double reaction, double life, double heat, String turnsInto, String suffix) {
+            return create(name, 0D, reaction, life, heat, turnsInto, "hbm:item/pile_rod" + suffix, true);
+        }
+
+        /** {@code turnsInto} resolves by name on first spend, so it may name a type declared later. */
+        public static EnumPileRod create(String name, double neutronSource, double reaction, double life, double heat,
+                                         @Nullable String turnsInto, String model, boolean described) {
+            if (byName(name) != null) throw new IllegalArgumentException("Duplicate pile rod " + name);
+            EnumPileRod rod = new EnumPileRod(name.toUpperCase(Locale.ROOT), neutronSource, reaction, life, heat,
+                    turnsInto == null ? null : turnsInto.toUpperCase(Locale.ROOT), model, described);
+            VALUES.add(rod);
+            return rod;
+        }
+
+        public static List<EnumPileRod> values() {
+            return VIEW;
+        }
+
+        public static @Nullable EnumPileRod byName(String name) {
+            String key = name.toUpperCase(Locale.ROOT);
+            for (EnumPileRod rod : VALUES) if (rod.name.equals(key)) return rod;
+            return null;
+        }
+
+        public static @Nullable EnumPileRod byOrdinal(int ordinal) {
+            return ordinal >= 0 && ordinal < VALUES.size() ? VALUES.get(ordinal) : null;
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public String id() {
+            return name.toLowerCase(Locale.ROOT);
+        }
+
+        public int ordinal() {
+            return ordinal;
+        }
+
+        public EnumPileRod turnsInto() {
+            EnumPileRod target = turnsIntoName == null ? null : byName(turnsIntoName);
+            if (target == null) throw new IllegalStateException("Pile rod " + name + " turns into unknown " + turnsIntoName);
+            return target;
+        }
+
+        @Override
+        public String toString() {
+            return name;
         }
     }
 
+    public ItemStack of(EnumPileRod type, int count) {
+        ItemStack stack = new ItemStack(this, count);
+        ModDataComponents.ITEM_VARIANT.set(stack, type.ordinal());
+        return stack;
+    }
+
+    public ItemStack of(EnumPileRod type) {
+        return of(type, 1);
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        EnumPileRod rod = typeOf(stack);
+        return rod == null ? super.getName(stack) : Component.translatable(getDescriptionId() + "." + rod.id());
+    }
+
     public static EnumPileRod typeOf(ItemStack stack) {
-        if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2 rod)) return null;
-        return (EnumPileRod) rod.getType(stack);
+        if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2)) return null;
+        return EnumPileRod.byOrdinal(ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
     }
 
     @Override
@@ -73,7 +153,7 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
             if (depletion > 0) tooltip.add(Component.literal("Depletion: " + (int) Math.round(depletion) + "%"));
         }
 
-        tooltip.add(Component.translatable(getDescriptionId() + "." + rod.name().toLowerCase(Locale.US) + ".desc")
+        if (rod.described) tooltip.add(Component.translatable(getDescriptionId() + "." + rod.id() + ".desc")
                 .withStyle(ChatFormatting.YELLOW));
     }
 
@@ -134,7 +214,7 @@ public class ItemPileRodMK2 extends ItemEnumMulti {
             setDepletion(stack, depletion);
             return stack;
         }
-        return ((ItemPileRodMK2) stack.getItem()).of(EnumPileRod.VALUES[rod.turnsInto]);
+        return ((ItemPileRodMK2) stack.getItem()).of(rod.turnsInto());
     }
 
     /** Upstream's {@code BobMathUtil.squirt}: a square root that stays finite and smooth through zero. */

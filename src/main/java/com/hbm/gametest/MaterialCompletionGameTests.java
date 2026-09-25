@@ -325,7 +325,7 @@ public final class MaterialCompletionGameTests {
         for (NTMMaterial material : Mats.orderedList) {
             for (MaterialShapes shape : MaterialShapes.values()) {
                 if (!material.autogen.contains(shape)) continue;
-                String base = autogenBase(shape);
+                String base = ModAutogenItems.base(shape);
                 if (base == null) continue;
                 var item = ModAutogenItems.get(shape, material);
                 helper.assertTrue(item != null && item.shape == shape && item.material == material,
@@ -562,29 +562,6 @@ public final class MaterialCompletionGameTests {
                         && recipe.outputItem != null && recipe.outputItem.length == 1
                         && recipe.outputItem[0].is(output),
                 "Changed assembler recipe " + name);
-    }
-
-    private static String autogenBase(MaterialShapes shape) {
-        switch (shape) {
-            case INGOT: return "ingot_raw";
-            case FRAGMENT: return "bedrock_ore_fragment";
-            case CASTPLATE: return "plate_cast";
-            case WELDEDPLATE: return "plate_welded";
-            case SHELL: return "shell";
-            case PIPE: return "pipe";
-            case WIRE: return "wire_fine";
-            case DENSEWIRE: return "wire_dense";
-            case BOLT: return "bolt";
-            case HEAVY_COMPONENT: return "heavy_component";
-            case LIGHTBARREL: return "part_barrel_light";
-            case HEAVYBARREL: return "part_barrel_heavy";
-            case LIGHTRECEIVER: return "part_receiver_light";
-            case HEAVYRECEIVER: return "part_receiver_heavy";
-            case MECHANISM: return "part_mechanism";
-            case STOCK: return "part_stock";
-            case GRIP: return "part_grip";
-            default: return null;
-        }
     }
 
     private static void assertCrystallizer(GameTestHelper helper, ItemStack input, FluidType fluid, int acidAmount,

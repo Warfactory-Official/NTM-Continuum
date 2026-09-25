@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.Blocks;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /** Combination-furnace recipes ported from the 1.12.2 {@code CombinationRecipes} defaults. */
 public final class CombinationRecipes {
@@ -80,6 +81,22 @@ public final class CombinationRecipes {
 
         add(new ComparableStack(Items.SUGAR_CANE), new ItemStack(Items.SUGAR, 2), fluid(Fluids.ETHANOL, 50));
         add(new ComparableStack(Blocks.CLAY.asItem()), new ItemStack(Blocks.BRICKS.asItem()), null);
+        com.hbm.scripting.ScriptedRecipes.apply(CombinationRecipes.class);
+    }
+
+    public static void putFirst(CombinationRecipe recipe) {
+        register();
+        RECIPES.add(0, recipe);
+    }
+
+    public static boolean removeIf(Predicate<CombinationRecipe> filter) {
+        register();
+        return RECIPES.removeIf(filter);
+    }
+
+    public static synchronized void reset() {
+        RECIPES.clear();
+        initialized = false;
     }
 
     private static void add(AStack input, ItemStack itemOutput, FluidStack fluidOutput) {

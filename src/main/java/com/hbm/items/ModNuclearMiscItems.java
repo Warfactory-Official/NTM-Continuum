@@ -17,6 +17,7 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
 
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 
 /** Feature-local items: breeding rods, legacy pile rods, spent plate fuel and the odd nuclear specials. */
@@ -30,20 +31,26 @@ public final class ModNuclearMiscItems {
     static {
         // 1.7 ItemBreedingRod (ItemEnumMulti): rod / rod_dual / rod_quad x BreedingRodType, container = the empty rod.
         for (RodSize size : RodSize.values()) {
-            Map<BreedingRodType, RegistryObject<ItemBreedingRod>> bySize = new EnumMap<>(BreedingRodType.class);
-            RegistryObject<Item> empty = switch (size) {
-                case SINGLE -> ModItems.rod_empty;
-                case DUAL -> ModItems.rod_dual_empty;
-                case QUAD -> ModItems.rod_quad_empty;
-            };
-            for (BreedingRodType type : BreedingRodType.values()) {
-                RegistryObject<ItemBreedingRod> rod = ITEMS.registerItem(size.base + "_" + type.id,
-                        p -> new ItemBreedingRod(p, size, type), p -> p.craftRemainder(empty.get()));
-                bySize.put(type, rod);
-                ModTabs.addTo(HbmTab.CONTROL, rod);
-            }
-            RODS.put(size, bySize);
+            RODS.put(size, new HashMap<>());
+            for (BreedingRodType type : BreedingRodType.values()) registerRod(ITEMS, size, type);
         }
+    }
+
+    /** Single, dual and quad rods of {@code type}, each on the creative tab. */
+    public static void registerRods(DeferredRegister.Items register, BreedingRodType type) {
+        for (RodSize size : RodSize.values()) registerRod(register, size, type);
+    }
+
+    private static void registerRod(DeferredRegister.Items register, RodSize size, BreedingRodType type) {
+        RegistryObject<Item> empty = switch (size) {
+            case SINGLE -> ModItems.rod_empty;
+            case DUAL -> ModItems.rod_dual_empty;
+            case QUAD -> ModItems.rod_quad_empty;
+        };
+        RegistryObject<ItemBreedingRod> rod = register.registerItem(size.base + "_" + type.id,
+                p -> new ItemBreedingRod(p, size, type), p -> p.craftRemainder(empty.get()));
+        RODS.get(size).put(type, rod);
+        ModTabs.addTo(HbmTab.CONTROL, rod);
     }
 
     // Legacy Chicago pile rods (1.7: creative tab null).

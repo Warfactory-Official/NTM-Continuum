@@ -464,6 +464,8 @@ public class Fluids {
 
     /** Registers a fluid with a forced ID (custom/foreign fluids). */
     static void register(FluidType fluid, int id) {
+        if (idMapping.containsKey(id)) throw new IllegalStateException("Fluid ID " + id + " is taken by " + idMapping.get(id));
+        if (nameMapping.containsKey(fluid.getName())) throw new IllegalStateException("Fluid " + fluid.getName() + " is already registered");
         idMapping.put(id, fluid);
         nameMapping.put(fluid.getName(), fluid);
         registerOrder.add(fluid);

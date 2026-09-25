@@ -23,9 +23,7 @@ public class ChemicalPlantRecipes extends GenericRecipes {
     public static final ChemicalPlantRecipes INSTANCE = new ChemicalPlantRecipes();
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return; // idempotent
-
+    protected void populate() {
         // --- pure fluid → fluid ---
         register(new GenericRecipe("chem.oxygen").setup(20, 400)
                 .inputFluids(new FluidStack(Fluids.AIR, 8_000))

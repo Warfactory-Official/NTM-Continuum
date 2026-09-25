@@ -30,8 +30,37 @@ public abstract class GenericRecipes {
     /** recipe internal name → recipe, for blueprint tooltip display. */
     public static final Map<String, GenericRecipe> pooledBlueprints = new HashMap<>();
 
-    /** Populates {@link #recipeNameMap}/{@link #recipeOrderedList} — implemented per machine. */
-    public abstract void registerRecipes();
+    private boolean registered;
+
+    /** Builds the set on first use, then applies what startup scripts declared for it. */
+    public synchronized void registerRecipes() {
+        if (registered && !stale()) return;
+        if (registered) clear();
+        registered = true;
+        populate();
+        com.hbm.scripting.ScriptedRecipes.apply(this);
+    }
+
+    /** Empties the set; the next {@link #registerRecipes} rebuilds it and re-applies script edits. */
+    public synchronized void reset() {
+        List.copyOf(recipeOrderedList).forEach(recipe -> remove(recipe.getInternalName()));
+        clear();
+        registered = false;
+    }
+
+    /** The machine's built-in recipes. */
+    protected abstract void populate();
+
+    /** A built set that must be rebuilt from scratch. */
+    protected boolean stale() {
+        return false;
+    }
+
+    protected void clear() {
+        recipeOrderedList.clear();
+        recipeNameMap.clear();
+        autoSwitchGroups.clear();
+    }
 
     protected void register(GenericRecipe recipe) {
         if (recipeNameMap.containsKey(recipe.getInternalName())) {
@@ -45,6 +74,17 @@ public abstract class GenericRecipes {
     /** Public registration entry point for the generated recipe classes (com.hbm.inventory.recipes.gen). */
     public void registerGenerated(GenericRecipe recipe) {
         register(recipe);
+    }
+
+    /** Drops a recipe from the set, its auto-switch group and every blueprint pool. */
+    public boolean remove(String name) {
+        GenericRecipe recipe = recipeNameMap.remove(name);
+        if (recipe == null) return false;
+        recipeOrderedList.remove(recipe);
+        autoSwitchGroups.values().forEach(group -> group.remove(recipe));
+        blueprintPools.values().forEach(pool -> pool.remove(name));
+        pooledBlueprints.remove(name);
+        return true;
     }
 
     public GenericRecipe getRecipe(String name) {

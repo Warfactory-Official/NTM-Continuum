@@ -57,7 +57,7 @@ public final class ModPwrContent {
         registerPWRFuel(EnumPWRFuel.BFB_PU241, HazardRegistry.pu241 * billet);
     }
 
-    private static void registerPWRFuel(EnumPWRFuel fuel, float baseRad) {
+    public static void registerPWRFuel(EnumPWRFuel fuel, float baseRad) {
         HazardSystem.register(ModPwrItems.fuel(fuel), new HazardData().addEntry(HazardRegistry.RADIATION, baseRad));
         HazardSystem.register(ModPwrItems.hot(fuel), new HazardData().addEntry(HazardRegistry.RADIATION, baseRad * 10)
                 .addEntry(HazardRegistry.HOT, 5));

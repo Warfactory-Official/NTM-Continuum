@@ -45,6 +45,13 @@ public final class Mats {
     public static final Map<String, NTMMaterial> matByName = new LinkedHashMap<>();
     public static final Map<Integer, NTMMaterial> matById = new LinkedHashMap<>();
 
+    /** A material declared after the built-ins; id and name must both be free. */
+    public static NTMMaterial register(int id, String name) {
+        if (matById.containsKey(id)) throw new IllegalStateException("Material id " + id + " is taken by " + matById.get(id));
+        if (matByName.containsKey(name)) throw new IllegalStateException("Material " + name + " is already registered");
+        return mat(id, name);
+    }
+
     private static NTMMaterial mat(int id, String name) {
         NTMMaterial m = new NTMMaterial(id, name);
         orderedList.add(m);
@@ -491,12 +498,17 @@ public final class Mats {
      * (e.g. {@code c:ores/iron}). Checked before the shape-prefix scan, like the old ore entries. */
     private static Map<String, List<MaterialStack>> materialTagEntries = null;
 
-    /** {@code c:} tag plural → shape (skipping quantity-0 shapes like ORE). */
-    private static final Map<String, MaterialShapes> shapeByPlural = new LinkedHashMap<>();
-    static {
-        for (MaterialShapes shape : MaterialShapes.values()) {
-            if (shape.quantity > 0) shapeByPlural.putIfAbsent(shape.tagPlural, shape);
-        }
+    private static final Map<Item, List<MaterialStack>> overrideEntries = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final Map<String, List<MaterialStack>> addedTagEntries = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** {@code item} melts into exactly {@code stacks}, ahead of its tags and every other entry. */
+    public static void registerEntry(Item item, List<MaterialStack> stacks) {
+        overrideEntries.put(item, List.copyOf(stacks));
+    }
+
+    /** Items in {@code tagId} ({@code c:ores/iron}, any namespace) melt into {@code stacks}, ahead of the shape scan. */
+    public static void registerTagEntry(String tagId, List<MaterialStack> stacks) {
+        addedTagEntries.put(tagId, List.copyOf(stacks));
     }
 
     private static void entry(Map<Item, List<MaterialStack>> map, Item item, Object... matDef) {
@@ -584,20 +596,27 @@ public final class Mats {
 
     /**
      * Resolves an item to the raw materials it consists of (old {@code Mats.getMaterialsFromItem}).
-     * Ignores stack size. Order of precedence, matching the old ore-dict scan: explicit tag entries,
+     * Ignores stack size. A {@link #registerEntry} override answers alone. Otherwise, matching the old ore-dict scan: explicit tag entries,
      * then the {@code c:<plural>/<material>} shape scan (first match wins), then explicit item entries,
      * then scraps/autogen items by their own data.
      */
     public static List<MaterialStack> getMaterialsFromItem(ItemStack stack) {
         ensureSmeltingEntries();
         List<MaterialStack> list = new ArrayList<>();
+        List<MaterialStack> override = overrideEntries.get(stack.getItem());
+        if (override != null) {
+            for (MaterialStack ms : override) list.add(ms.copy());
+            return list;
+        }
 
         outer:
         for (var tag : stack.getItem().builtInRegistryHolder().tags().toList()) {
             Identifier id = tag.location();
-            if (!"c".equals(id.getNamespace())) continue;
-
-            List<MaterialStack> tagEntries = materialTagEntries.get(id.toString());
+            List<MaterialStack> tagEntries = addedTagEntries.get(id.toString());
+            if (tagEntries == null) {
+                if (!"c".equals(id.getNamespace())) continue;
+                tagEntries = materialTagEntries.get(id.toString());
+            }
             if (tagEntries != null) {
                 for (MaterialStack ms : tagEntries) list.add(ms.copy());
                 break;
@@ -606,7 +625,7 @@ public final class Mats {
             String path = id.getPath();
             int slash = path.indexOf('/');
             if (slash < 0) continue;
-            MaterialShapes shape = shapeByPlural.get(path.substring(0, slash));
+            MaterialShapes shape = MaterialShapes.byTagPlural(path.substring(0, slash));
             if (shape == null) continue;
             NTMMaterial material = matByName.get(path.substring(slash + 1));
             if (material != null && (material.smeltsInto.smeltable == SmeltingBehavior.SMELTABLE

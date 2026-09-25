@@ -41,6 +41,18 @@ public final class ElectrolyserFluidRecipes {
         add(Fluids.POTASSIUM_CHLORIDE, 250, new FluidStack(Fluids.CHLORINE, 125), new FluidStack(Fluids.NONE, 0), 20,
                 new net.minecraft.world.item.ItemStack(ModItems.dust.get()));
         add(Fluids.CALCIUM_CHLORIDE, 250, new FluidStack(Fluids.CHLORINE, 125), new FluidStack(Fluids.CALCIUM_SOLUTION, 125));
+        com.hbm.scripting.ScriptedRecipes.apply(ElectrolyserFluidRecipes.class);
+    }
+
+    public static void put(FluidType input, int amount, FluidStack output1, FluidStack output2, int duration,
+                           net.minecraft.world.item.ItemStack... byproducts) {
+        register();
+        add(input, amount, output1, output2, duration, byproducts);
+    }
+
+    public static boolean remove(FluidType input) {
+        register();
+        return RECIPES.remove(input) != null;
     }
 
     public static ElectrolysisRecipe getRecipe(FluidType input) {
@@ -82,5 +94,10 @@ public final class ElectrolyserFluidRecipes {
             for (net.minecraft.world.item.ItemStack stack : byproduct) outputs.add(stack.copy());
             return outputs;
         }
+    }
+
+    public static synchronized void reset() {
+        RECIPES.clear();
+        initialized = false;
     }
 }

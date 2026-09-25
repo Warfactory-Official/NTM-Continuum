@@ -1,8 +1,10 @@
 package com.hbm.mixin;
 
 import com.hbm.handler.radiation.RadiationSystemNT;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ProgressListener;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -23,4 +25,16 @@ public class MixinServerLevel {
     private void hbm$flushRadiation(ProgressListener progress, boolean flush, boolean skipSave, CallbackInfo ci) {
         RadiationSystemNT.flushForSave((ServerLevel) (Object) this, flush);
     }
+
+    //? if >=26.1 {
+    @Inject(method = "updatePOIOnBlockStateChange", at = @At("HEAD"))
+    private void hbm$radiationBlockChanged(BlockPos pos, BlockState oldState, BlockState newState, CallbackInfo ci) {
+        RadiationSystemNT.onBlockChanged((ServerLevel) (Object) this, pos, oldState, newState);
+    }
+    //?} else {
+    /*@Inject(method = "onBlockStateChange", at = @At("HEAD"))
+    private void hbm$radiationBlockChanged(BlockPos pos, BlockState oldState, BlockState newState, CallbackInfo ci) {
+        RadiationSystemNT.onBlockChanged((ServerLevel) (Object) this, pos, oldState, newState);
+    }
+    *///?}
 }

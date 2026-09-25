@@ -490,6 +490,11 @@ public class ContaminationUtil {
             return false;
         }
 
+        if (hazard == HazardType.RADIATION || hazard == HazardType.NEUTRON) {
+            amount = com.hbm.scripting.NTMServerEvents.postRadiation(entity, amount, hazard == HazardType.NEUTRON);
+            if (Double.isNaN(amount)) return false;
+        }
+
         switch (hazard) {
             case MONOXIDE -> {
                 if (entity.level() instanceof ServerLevel serverLevel)

@@ -22,9 +22,7 @@ public final class FoundryExpansionAssemblyRecipes extends GenericRecipes {
     private FoundryExpansionAssemblyRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         register(new GenericRecipe("ass.arcfurnace").setup(200, 100)
                 .inputItems(new TagStack(CONCRETE, 12), com.hbm.inventory.OreDictManager.ANY_PLASTIC.ingot().count(8),
                         new ComparableStack(ModItems.ingot_firebrick.get(), 16), Mats.MAT_STEEL.plateCast().count(8),

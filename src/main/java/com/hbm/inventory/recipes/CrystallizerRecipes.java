@@ -179,6 +179,35 @@ public final class CrystallizerRecipes {
             add(CO.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.BLUE), 4),
                     mixingTime, 0.15F, oil, 100);
         }
+        com.hbm.scripting.ScriptedRecipes.apply(CrystallizerRecipes.class);
+    }
+
+    public static void put(AStack input, ItemStack output, int duration, float productivity, FluidType fluid, int acidAmount) {
+        register();
+        Object key = inputKey(input);
+        recipes.removeIf(r -> r.fluid == fluid && inputKey(r.input).equals(key));
+        add(input, output, duration, productivity, fluid, acidAmount);
+    }
+
+    public static boolean remove(AStack input, FluidType fluid) {
+        Object key = inputKey(input);
+        return removeIf(r -> r.fluid == fluid && inputKey(r.input).equals(key));
+    }
+
+    public static boolean removeIf(java.util.function.Predicate<CrystallizerRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
+    }
+
+    private static Object inputKey(AStack input) {
+        if (input instanceof ComparableStack comparable) return comparable.item;
+        if (input instanceof TagStack tag) return tag.tag;
+        return input;
     }
 
     /** The recipe matching {@code stack} under the given tank fluid, or null. */

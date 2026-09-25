@@ -27,6 +27,7 @@ public final class ExplosionNukeSmall {
 
     /** Keeps the old effect/sound/damage/entity ordering used by all small-nuke presets. */
     public static void explode(Level world, double x, double y, double z, MukeParams params) {
+        if (params.miniNuke && com.hbm.scripting.NTMServerEvents.postDetonation(world, x, y, z, "mini_nuke", params.blastRadius)) return;
         if (params.particle != null) {
             net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
             if (params.particle == HbmEffectNT.Muke

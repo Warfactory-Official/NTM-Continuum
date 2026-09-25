@@ -48,5 +48,21 @@ public final class RadiolysisRecipes {
         for (Map.Entry<FluidType, CrackingRecipes.CrackingRecipe> recipe : cracking.entrySet()) {
             radiolysis.put(recipe.getKey(), new RadiolysisRecipe(recipe.getValue().left(), recipe.getValue().right()));
         }
+        com.hbm.scripting.ScriptedRecipes.apply(RadiolysisRecipes.class);
+    }
+
+    public static void put(FluidType input, RadiolysisRecipe recipe) {
+        init();
+        radiolysis.put(input, recipe);
+    }
+
+    public static boolean remove(FluidType input) {
+        init();
+        return radiolysis.remove(input) != null;
+    }
+
+    public static synchronized void reset() {
+        radiolysis.clear();
+        initialized = false;
     }
 }

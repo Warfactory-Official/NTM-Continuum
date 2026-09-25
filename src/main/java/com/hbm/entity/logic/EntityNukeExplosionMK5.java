@@ -115,6 +115,10 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
             discard();
             return;
         }
+        if (!initialized && com.hbm.scripting.NTMServerEvents.postDetonation(level(), getX(), getY(), getZ(), "mk5", radius)) {
+            discard();
+            return;
+        }
 
         double r2 = this.radius * 2.0D;
         List<Entity> list = level().getEntities(this,

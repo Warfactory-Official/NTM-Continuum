@@ -39,10 +39,7 @@ public final class ModIngredientItems {
             ModTabs.addTo(HbmTab.MATERIALS, item);
         }
         for (PlateFuelType type : PlateFuelType.values()) {
-            RegistryObject<ItemPlateFuel> item = ITEMS.registerItem(type.id,
-                    p -> new ItemPlateFuel(p.stacksTo(1), type.lifeTime, type.function, type.reactivity));
-            PLATE_FUELS.put(type, item);
-            ModTabs.addTo(HbmTab.CONTROL, item);
+            PLATE_FUELS.put(type, registerPlateFuel(ITEMS, type.id, type.lifeTime, type.function, type.reactivity));
         }
     }
 
@@ -60,6 +57,14 @@ public final class ModIngredientItems {
 
     public static ItemStack ash(EnumAshType type, int count) {
         return new ItemStack(ash(type), count);
+    }
+
+    public static RegistryObject<ItemPlateFuel> registerPlateFuel(DeferredRegister.Items items, String id, int lifeTime,
+                                                                  FunctionEnum function, int reactivity) {
+        RegistryObject<ItemPlateFuel> item = items.registerItem(id,
+                p -> new ItemPlateFuel(p.stacksTo(1), lifeTime, function, reactivity));
+        ModTabs.addTo(HbmTab.CONTROL, item);
+        return item;
     }
 
     public static ItemPlateFuel plateFuel(PlateFuelType type) {

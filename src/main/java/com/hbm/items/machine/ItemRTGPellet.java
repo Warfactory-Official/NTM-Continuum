@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -40,11 +41,11 @@ public final class ItemRTGPellet extends CompatItem {
     private final short heat;
     private final long halfLife;
     private final long lifespan;
-    private final Supplier<? extends ItemRTGPelletDepleted> decayItem;
+    private final Supplier<? extends Item> decayItem;
     private final String displayName;
 
     public ItemRTGPellet(Properties properties, int heat, long halfLife, int halfLives,
-                         Supplier<? extends ItemRTGPelletDepleted> decayItem, String displayName) {
+                         Supplier<? extends Item> decayItem, String displayName) {
         super(properties);
         this.heat = (short) heat;
         this.halfLife = halfLife;
@@ -56,7 +57,7 @@ public final class ItemRTGPellet extends CompatItem {
     public short getHeat() { return heat; }
     public long getHalfLife() { return halfLife; }
     public long getMaxLifespan() { return lifespan; }
-    public ItemRTGPelletDepleted getDecayItem() { return decayItem.get(); }
+    public Item getDecayItem() { return decayItem.get(); }
 
     public long getLifespan(ItemStack stack) {
         if (!ModRtgContent.PELLET_DEPLETION.has(stack)) {

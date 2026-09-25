@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.ANY_PLASTIC;
 import static com.hbm.inventory.OreDictManager.CU;
@@ -199,6 +200,23 @@ public final class AmmoPressRecipes {
 
         add(standard("ct_hook"), 16, null, steel, null, null, pipe, null, null, smokeless, null);
         add(standard("ct_mortar"), 4, null, count(highExplosive, 4), null, null, pipe, null, null, smokeless, null);
+        com.hbm.scripting.ScriptedRecipes.apply(AmmoPressRecipes.class);
+    }
+
+    public static void put(ItemStack output, AStack[] input) {
+        register();
+        if (input.length != 9) throw new IllegalArgumentException("Ammo Press recipes require exactly nine inputs");
+        recipes.add(new AmmoPressRecipe(output, input));
+    }
+
+    public static boolean removeIf(Predicate<AmmoPressRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 
     private static String standard(String suffix) {

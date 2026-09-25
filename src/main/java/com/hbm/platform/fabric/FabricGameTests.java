@@ -111,6 +111,12 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.GunSupportGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.FlywheelGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.PollutionGameTests.TESTS);
+        if (dev.golem.core.platform.Platform.isModLoaded("kubejs")) {
+            dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ScriptingGameTests.TESTS);
+            dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ScriptingMaterialsGameTests.TESTS);
+            dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ScriptingFuelsGameTests.TESTS);
+            dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ScriptingEventsGameTests.TESTS);
+        }
         return dev.golem.core.gametest.GameTests.pending();
     }
     *///?}

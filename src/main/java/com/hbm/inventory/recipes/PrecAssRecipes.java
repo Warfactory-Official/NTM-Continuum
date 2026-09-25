@@ -33,11 +33,18 @@ public final class PrecAssRecipes extends GenericRecipes {
     private Boolean builtWith528;
 
     @Override
-    public synchronized void registerRecipes() {
-        if (!recipeOrderedList.isEmpty() && builtWith528 != null && builtWith528 == GeneralConfig.enable528) return;
-        recipeOrderedList.clear();
-        recipeNameMap.clear();
+    protected boolean stale() {
+        return builtWith528 != GeneralConfig.enable528;
+    }
+
+    @Override
+    protected void clear() {
+        super.clear();
         blueprintPools.values().forEach(pool -> pool.removeIf(name -> name.startsWith("precass.")));
+    }
+
+    @Override
+    protected void populate() {
         builtWith528 = GeneralConfig.enable528;
 
         // The central 528 switch is false by default in old-hbm. Keep these recipes behind the same

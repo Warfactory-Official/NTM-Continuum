@@ -41,7 +41,11 @@ public final class ModMoldItems {
     public static final RegistryObject<Item> mold_base = ModItems.mold_base;
 
     private static RegistryObject<ItemMold> mold(Mold mold) {
-        RegistryObject<ItemMold> ro = ITEMS.registerItem("mold_" + mold.name, p -> new ItemMold(p, mold), p -> p.stacksTo(64));
+        return register(ITEMS, mold);
+    }
+
+    public static RegistryObject<ItemMold> register(DeferredRegister.Items register, Mold mold) {
+        RegistryObject<ItemMold> ro = register.registerItem("mold_" + mold.name, p -> new ItemMold(p, mold), p -> p.stacksTo(64));
         MOLDS.add(ro);
         ModTabs.addTo(HbmTab.TEMPLATES, ro);
         return ro;

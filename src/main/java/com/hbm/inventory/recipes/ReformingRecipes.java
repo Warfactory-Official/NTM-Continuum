@@ -55,5 +55,21 @@ public final class ReformingRecipes {
                 new FluidStack(Fluids.SULFURIC_ACID, 75), new FluidStack(Fluids.PETROLEUM, 10), new FluidStack(Fluids.HYDROGEN, 15)));
         recipes.put(Fluids.CHOLESTEROL, new ReformingRecipe(
                 new FluidStack(Fluids.ESTRADIOL, 50), new FluidStack(Fluids.REFORMGAS, 35), new FluidStack(Fluids.HYDROGEN, 15)));
+        com.hbm.scripting.ScriptedRecipes.apply(ReformingRecipes.class);
+    }
+
+    public static void put(FluidType type, ReformingRecipe recipe) {
+        init();
+        recipes.put(type, recipe);
+    }
+
+    public static boolean remove(FluidType type) {
+        init();
+        return recipes.remove(type) != null;
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 }

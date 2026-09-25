@@ -73,9 +73,25 @@ public final class FluidCombustionRecipes {
         add(Fluids.UNSATURATEDS, 1_000);
         add(Fluids.NITAN, 2_000);
         add(Fluids.BALEFIRE, 10_000);
+        com.hbm.scripting.ScriptedRecipes.apply(FluidCombustionRecipes.class);
+    }
+
+    public static void put(FluidType fluid, int heatPerMilliBucket) {
+        init();
+        add(fluid, heatPerMilliBucket);
+    }
+
+    public static boolean remove(FluidType fluid) {
+        init();
+        return resultingTU.remove(fluid) != null;
     }
 
     private static void add(FluidType fluid, int heatPerMilliBucket) {
         resultingTU.put(fluid, heatPerMilliBucket);
+    }
+
+    public static synchronized void reset() {
+        resultingTU.clear();
+        initialized = false;
     }
 }

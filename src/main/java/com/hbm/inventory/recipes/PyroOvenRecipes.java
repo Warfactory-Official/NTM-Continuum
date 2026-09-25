@@ -22,6 +22,7 @@ import net.minecraft.world.item.Items;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Pyro oven recipes — 1:1 port of the 1.12.2 {@code PyroOvenRecipes}. An optional fluid + optional item
@@ -120,6 +121,22 @@ public final class PyroOvenRecipes {
         recipes.add(new PyroOvenRecipe(60).in(new FluidStack(Fluids.GAS_COKER, 4_000)).out(new FluidStack(Fluids.REFORMGAS, 100)));
         // hydrogen and carbon from natgas
         recipes.add(new PyroOvenRecipe(60).in(new FluidStack(Fluids.GAS, 12_000)).out(new FluidStack(Fluids.HYDROGEN, 8_000)).out(new ItemStack(ModFuelItems.ingot_graphite.get(), 1)));
+        com.hbm.scripting.ScriptedRecipes.apply(PyroOvenRecipes.class);
+    }
+
+    public static void addRecipe(PyroOvenRecipe recipe) {
+        init();
+        recipes.add(0, recipe);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
+    }
+
+    public static boolean removeIf(Predicate<PyroOvenRecipe> filter) {
+        init();
+        return recipes.removeIf(filter);
     }
 
     private static void registerSFAuto(FluidType fluid) {

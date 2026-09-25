@@ -179,6 +179,14 @@ public final class ForgeInit {
                 com.hbm.gametest.FlywheelGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.PollutionGameTests.TESTS));
+        if (dev.golem.core.platform.Platform.isModLoaded("kubejs")) {
+            modBus.addListener((RegisterGameTestsEvent event) -> {
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingGameTests.TESTS);
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingMaterialsGameTests.TESTS);
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingFuelsGameTests.TESTS);
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingEventsGameTests.TESTS);
+            });
+        }
 
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();

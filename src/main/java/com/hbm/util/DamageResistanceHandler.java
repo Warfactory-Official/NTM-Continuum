@@ -140,6 +140,15 @@ public final class DamageResistanceHandler {
         DamageEvents.install();
     }
 
+    public static @org.jspecify.annotations.Nullable ResistanceStats setItemStats(Item item,
+            @org.jspecify.annotations.Nullable ResistanceStats stats) {
+        return stats == null ? ITEM_STATS.remove(item) : ITEM_STATS.put(item, stats);
+    }
+
+    public static @org.jspecify.annotations.Nullable ResistanceStats itemStats(Item item) {
+        return ITEM_STATS.get(item);
+    }
+
     private static void registerSet(Item helmet, Item chest, Item legs, Item boots, ResistanceStats stats) {
         ArmorSet set = new ArmorSet(helmet, chest, legs, boots);
         SET_STATS.put(set, stats);

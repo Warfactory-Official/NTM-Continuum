@@ -14,10 +14,12 @@ import com.hbm.items.machine.ItemRTGPelletDepleted;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import net.minecraft.world.item.Item;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /** Feature-local registration and post-registration hooks for the grey RTG pellet family. */
 public final class ModRtgContent {
@@ -74,8 +76,14 @@ public final class ModRtgContent {
 
     private static RegistryObject<ItemRTGPellet> pellet(String id, int heat, long halfLife, int halfLives,
                                                          DepletedRTGMaterial decay, String displayName) {
-        RegistryObject<ItemRTGPellet> result = ITEMS.registerItem(id,
-                p -> new ItemRTGPellet(p, heat, halfLife, halfLives, () -> DEPLETED.get(decay).get(), displayName),
+        return registerPellet(ITEMS, id, heat, halfLife, halfLives, () -> DEPLETED.get(decay).get(), displayName);
+    }
+
+    public static RegistryObject<ItemRTGPellet> registerPellet(DeferredRegister.Items items, String id, int heat,
+                                                               long halfLife, int halfLives,
+                                                               Supplier<? extends Item> decay, String displayName) {
+        RegistryObject<ItemRTGPellet> result = items.registerItem(id,
+                p -> new ItemRTGPellet(p, heat, halfLife, halfLives, decay, displayName),
                 p -> p.stacksTo(1));
         PELLETS.put(id, result);
         ModTabs.addTo(HbmTab.CONTROL, result);
@@ -106,11 +114,15 @@ public final class ModRtgContent {
     }
 
     private static void rtgHazard(RegistryObject<ItemRTGPellet> pellet, float radiation, float hot, float blinding) {
+        rtgHazard(pellet.get(), radiation, hot, blinding);
+    }
+
+    public static void rtgHazard(Item pellet, float radiation, float hot, float blinding) {
         HazardData data = new HazardData().addEntry(new HazardEntry(HazardRegistry.RADIATION, radiation)
                 .addMod(new HazardModifierRTGRadiation(0D)));
         if (hot > 0F) data.addEntry(HazardRegistry.HOT, hot);
         if (blinding > 0F) data.addEntry(HazardRegistry.BLINDING, blinding);
-        HazardSystem.register(pellet.get(), data);
+        HazardSystem.register(pellet, data);
     }
 
     /** Forces the local items, component, block entity, and menu entries into the deferred queues. */

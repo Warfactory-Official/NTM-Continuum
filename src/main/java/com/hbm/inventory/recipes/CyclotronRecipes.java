@@ -12,6 +12,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.*;
 
@@ -91,6 +92,22 @@ public final class CyclotronRecipes {
 
         // Omitted rather than remapped: two dustPhosphorus inputs have no c:dusts/phosphorus tag, one
         // recipe consumes the absent ingot_mercury, and one recipe produces it.
+        com.hbm.scripting.ScriptedRecipes.apply(CyclotronRecipes.class);
+    }
+
+    public static void putFirst(Item particle, AStack input, ItemStack output, int antimatter) {
+        register();
+        recipes.add(0, new CyclotronRecipe(new ComparableStack(particle), input, output, antimatter));
+    }
+
+    public static boolean removeIf(Predicate<CyclotronRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 
     public static CyclotronRecipe getRecipe(ItemStack particle, ItemStack input) {

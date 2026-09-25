@@ -99,9 +99,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     }
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return; // idempotent
-
+    protected void populate() {
         // --- plates (pooled: need the plate blueprint; auto-switch by inserted ingot) ---
         // Ingredients are now MATERIAL TAGS (c:ingots/<metal>) via the material system, so any mod's ingot
         // of that metal works — the modern ore-dictionary equivalent.

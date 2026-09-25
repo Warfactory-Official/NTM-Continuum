@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.*;
 
@@ -83,6 +84,37 @@ public final class AnvilRecipes {
         registerSmithing();
         registerConstruction();
         registerConstructionSirens();
+        com.hbm.scripting.ScriptedRecipes.apply(AnvilRecipes.class);
+    }
+
+    public static void addSmithing(AnvilSmithingRecipe recipe) {
+        register();
+        smithingRecipes.add(recipe);
+    }
+
+    public static boolean removeSmithingIf(Predicate<AnvilSmithingRecipe> filter) {
+        register();
+        return smithingRecipes.removeIf(filter);
+    }
+
+    public static void addConstruction(AnvilConstructionRecipe recipe) {
+        register();
+        constructionRecipes.add(recipe);
+    }
+
+    public static boolean removeConstructionIf(Predicate<AnvilConstructionRecipe> filter) {
+        register();
+        return constructionRecipes.removeIf(filter);
+    }
+
+    public static List<AStack> smithingInputs(AnvilSmithingRecipe recipe) {
+        return List.of(recipe.left, recipe.right);
+    }
+
+    public static synchronized void reset() {
+        smithingRecipes.clear();
+        constructionRecipes.clear();
+        initialized = false;
     }
 
     private static void registerSmithing() {

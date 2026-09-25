@@ -34,9 +34,7 @@ public final class DiFurnaceRecipes extends GenericRecipes {
     private DiFurnaceRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         // These entries are the old BlastFurnaceRecipes.registerDefaults() entries whose item
         // dependencies exist in the current port. Missing old dependencies are listed in the
         // integration report rather than being replaced with a plausible modern item.

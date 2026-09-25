@@ -43,6 +43,7 @@ public class FabricInit implements ModInitializer {
         // GameTest suites first: one of them owns a test-only block, whose register must exist to be flushed.
         FabricGameTests.initAll();
         DeferredRegister.flushAllToVanilla();
+        com.hbm.scripting.ScriptedContent.registriesFlushed();
         // Living entity attribute sets (ModNtmEntities and the self-registering mobs); Forge-like loaders
         // deliver these through EntityAttributeCreationEvent, Fabric writes them once the types exist.
         dev.golem.core.registry.LivingAttributes.flushFabric();

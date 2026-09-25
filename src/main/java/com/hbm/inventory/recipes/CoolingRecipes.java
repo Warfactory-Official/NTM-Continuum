@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/** Read-only turbine projection of the authoritative {@link FT_Coolable} fluid traits. */
+/** Turbine projection of the {@link FT_Coolable} fluid traits; scripts may override entries. */
 public final class CoolingRecipes {
 
     public record CoolingRecipe(FluidType input, int inputAmount, FluidType output, int outputAmount, int heatEnergy) {}
@@ -42,9 +42,21 @@ public final class CoolingRecipes {
                 put(new CoolingRecipe(input, trait.amountReq, trait.coolsTo, trait.amountProduced, trait.heatEnergy));
             }
         }
+        com.hbm.scripting.ScriptedRecipes.apply(CoolingRecipes.class);
     }
 
-    private static void put(CoolingRecipe recipe) {
+    public static void put(CoolingRecipe recipe) {
+        init();
         COOLING.put(recipe.input(), recipe);
+    }
+
+    public static boolean remove(FluidType input) {
+        init();
+        return COOLING.remove(input) != null;
+    }
+
+    public static synchronized void reset() {
+        COOLING.clear();
+        initialized = false;
     }
 }

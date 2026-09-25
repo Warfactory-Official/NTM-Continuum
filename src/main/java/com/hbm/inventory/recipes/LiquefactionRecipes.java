@@ -14,7 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -31,8 +31,8 @@ public final class LiquefactionRecipes {
 
     private LiquefactionRecipes() {}
 
-    private static final Map<Item, FluidStack> byItem = new HashMap<>();
-    private static final Map<TagKey<Item>, FluidStack> byTag = new java.util.LinkedHashMap<>();
+    private static final Map<Item, FluidStack> byItem = new LinkedHashMap<>();
+    private static final Map<TagKey<Item>, FluidStack> byTag = new LinkedHashMap<>();
     private static boolean initialized = false;
 
     public static FluidStack getOutput(ItemStack stack) {
@@ -97,9 +97,36 @@ public final class LiquefactionRecipes {
         byTag.putIfAbsent(ItemTags.FISHES, new FluidStack(Fluids.FISHOIL, 100));
         item(byName("hbm", "biomass"), 125, Fluids.BIOGAS);
         item(com.hbm.blocks.ModFallingBlocks.ore_oil_sand.get().asItem(), 100, Fluids.BITUMEN);
+        com.hbm.scripting.ScriptedRecipes.apply(LiquefactionRecipes.class);
+    }
+
+    public static void put(Item in, FluidStack out) {
+        init();
+        byItem.put(in, out);
+    }
+
+    public static void put(TagKey<Item> in, FluidStack out) {
+        init();
+        byTag.put(in, out);
+    }
+
+    public static boolean remove(Item in) {
+        init();
+        return byItem.remove(in) != null;
+    }
+
+    public static boolean remove(TagKey<Item> in) {
+        init();
+        return byTag.remove(in) != null;
     }
 
     private static Item byName(String ns, String path) {
         return BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.of(ns, path)).orElse(null);
+    }
+
+    public static synchronized void reset() {
+        byItem.clear();
+        byTag.clear();
+        initialized = false;
     }
 }

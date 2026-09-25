@@ -60,5 +60,21 @@ public final class FractionRecipes {
         put(Fluids.GAS_COKER, Fluids.AROMATICS, 25, Fluids.CARBONDIOXIDE, 75);
         put(Fluids.CHLOROCALCITE_MIX, Fluids.CHLOROCALCITE_CLEANED, 50, Fluids.COLLOID, 50);
         put(Fluids.BAUXITE_SOLUTION, Fluids.REDMUD, 50, Fluids.SODIUM_ALUMINATE, 50);
+        com.hbm.scripting.ScriptedRecipes.apply(FractionRecipes.class);
+    }
+
+    public static void put(FluidType in, FractionPair pair) {
+        init();
+        fractions.put(in, pair);
+    }
+
+    public static boolean remove(FluidType in) {
+        init();
+        return fractions.remove(in) != null;
+    }
+
+    public static synchronized void reset() {
+        fractions.clear();
+        initialized = false;
     }
 }

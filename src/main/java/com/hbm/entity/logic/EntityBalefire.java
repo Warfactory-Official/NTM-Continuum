@@ -36,6 +36,10 @@ public class EntityBalefire extends EntityExplosionChunkloading {
             ensureForced();
         }
 
+        if (!this.did && com.hbm.scripting.NTMServerEvents.postDetonation(level(), getX(), getY(), getZ(), "balefire", destructionRange)) {
+            discard();
+            return;
+        }
         if (!this.did) {
             if (!level().isClientSide() && GeneralConfig.enableExtendedLogging)
                 com.hbm.Constants.LOG.info("[NUKE] Initialized BF explosion at {} / {} / {} with strength {}!", getX(),

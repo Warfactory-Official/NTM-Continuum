@@ -40,7 +40,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import com.hbm.blocks.ModPwrBlocks;
+import com.hbm.blocks.PwrParts;
 import com.hbm.blocks.ModPwrContent;
 import com.hbm.inventory.container.ContainerPWR;
 import com.hbm.items.ModPwrItems;
@@ -113,16 +113,6 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
     /** The initial creation of the reactor, does all the pre-calculation and whatnot. */
     public void setup(Map<BlockPos, Block> partMap, Map<BlockPos, Block> rodMap) {
-        Block fuel = ModPwrBlocks.PWR_FUEL.get();
-        Block heatex = ModPwrBlocks.PWR_HEATEX.get();
-        Block channel = ModPwrBlocks.PWR_CHANNEL.get();
-        Block heatsink = ModPwrBlocks.PWR_HEATSINK.get();
-        Block source = ModPwrBlocks.PWR_NEUTRON_SOURCE.get();
-        Block port = ModPwrBlocks.PWR_PORT.get();
-        Block casing = ModPwrBlocks.PWR_CASING.get();
-        Block control = ModPwrBlocks.PWR_CONTROL.get();
-        Block reflector = ModPwrBlocks.PWR_REFLECTOR.get();
-
         rodCount = 0;
         connections = 0;
         connectionsControlled = 0;
@@ -137,13 +127,17 @@ public class TileEntityPWRController extends TileEntityMachineBase
         int connectionsControlledDouble = 0;
 
         for (Map.Entry<BlockPos, Block> entry : partMap.entrySet()) {
-            Block block = entry.getValue();
-            if (block == fuel) rodCount++;
-            if (block == heatex) heatexCount++;
-            if (block == channel) channelCount++;
-            if (block == heatsink) heatsinkCount++;
-            if (block == source) sourceCount++;
-            if (block == port) ports.add(entry.getKey().immutable());
+            PwrParts.Part part = PwrParts.of(entry.getValue());
+            if (part == null) continue;
+            switch (part.kind()) {
+                case FUEL -> rodCount++;
+                case HEATEX -> heatexCount += part.weight();
+                case CHANNEL -> channelCount += part.weight();
+                case HEATSINK -> heatsinkCount += part.weight();
+                case SOURCE -> sourceCount += part.weight();
+                case PORT -> ports.add(entry.getKey().immutable());
+                default -> { }
+            }
         }
 
         for (Map.Entry<BlockPos, Block> entry : rodMap.entrySet()) {
@@ -156,14 +150,17 @@ public class TileEntityPWRController extends TileEntityMachineBase
                 for (int i = 1; i < 16; i++) {
                     BlockPos checkPos = fuelPos.offset(dir.offsetX * i, dir.offsetY * i, dir.offsetZ * i);
                     Block atPos = partMap.get(checkPos);
-                    if (atPos == null || atPos == casing) break;
-                    if (atPos == control) controlled = true;
-                    if (atPos == fuel) {
+                    if (atPos == null) break;
+                    PwrParts.Part part = PwrParts.of(atPos);
+                    PwrParts.Kind kind = part == null ? null : part.kind();
+                    if (kind == PwrParts.Kind.CASING) break;
+                    if (kind == PwrParts.Kind.CONTROL) controlled = true;
+                    if (kind == PwrParts.Kind.FUEL) {
                         if (controlled) connectionsControlledDouble++;
                         else connectionsDouble++;
                         break;
                     }
-                    if (atPos == reflector) {
+                    if (kind == PwrParts.Kind.REFLECTOR) {
                         if (controlled) connectionsControlledDouble += 2;
                         else connectionsDouble += 2;
                         break;
@@ -225,11 +222,11 @@ public class TileEntityPWRController extends TileEntityMachineBase
         EnumPWRFuel inputFuel = ModPwrItems.fuelOf(input.getItem());
 
         if ((typeLoaded == -1 || amountLoaded <= 0) && inputFuel != null) {
-            typeLoaded = inputFuel.ordinal();
+            typeLoaded = inputFuel.index;
             amountLoaded++;
             inventory.extractItem(0, 1, false);
             this.markChanged();
-        } else if (inputFuel != null && inputFuel.ordinal() == typeLoaded && amountLoaded < rodCount) {
+        } else if (inputFuel != null && inputFuel.index == typeLoaded && amountLoaded < rodCount) {
             amountLoaded++;
             inventory.extractItem(0, 1, false);
             this.markChanged();
@@ -247,7 +244,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
         int newFlux = this.sourceCount * 20;
 
         if (typeLoaded != -1 && amountLoaded > 0) {
-            EnumPWRFuel fuel = EnumPWRFuel.VALUES[Math.abs(typeLoaded) % EnumPWRFuel.VALUES.length];
+            EnumPWRFuel fuel = EnumPWRFuel.VALUES.get(Math.abs(typeLoaded) % EnumPWRFuel.VALUES.size());
             double usedRods = getTotalProcessMultiplier();
             double fluxPerRod = this.flux / this.rodCount;
             double outputPerRod = fuel.function.effonix(fluxPerRod);
@@ -307,6 +304,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
     /** 1.7 {@code meltDown}: the controller goes, every fuel rod becomes corium, and the core explodes. */
     protected void meltDown(Level level, BlockPos pos) {
+        if (com.hbm.scripting.NTMServerEvents.postMeltdown(level, pos, "pwr")) return;
         level.destroyBlock(pos, false);
 
         double x = 0;
@@ -520,7 +518,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
         this.flux = input.getDoubleOr("flux", 0);
         this.rodLevel = input.getDoubleOr("rodLevel", 0);
         this.rodTarget = input.getDoubleOr("rodTarget", 0);
-        this.typeLoaded = input.getIntOr("typeLoaded", 0);
+        EnumPWRFuel named = EnumPWRFuel.byName(input.getStringOr("typeName", ""));
+        this.typeLoaded = named != null ? named.index : input.getIntOr("typeLoaded", 0);
         this.amountLoaded = input.getIntOr("amountLoaded", 0);
         this.progress = input.getDoubleOr("progress", 0);
         this.processTime = input.getDoubleOr("processTime", 0);
@@ -564,6 +563,8 @@ public class TileEntityPWRController extends TileEntityMachineBase
         output.putDouble("rodLevel", rodLevel);
         output.putDouble("rodTarget", rodTarget);
         output.putInt("typeLoaded", typeLoaded);
+        EnumPWRFuel loaded = EnumPWRFuel.byIndex(typeLoaded);
+        if (loaded != null) output.putString("typeName", loaded.name());
         output.putInt("amountLoaded", amountLoaded);
         output.putDouble("progress", progress);
         output.putDouble("processTime", processTime);

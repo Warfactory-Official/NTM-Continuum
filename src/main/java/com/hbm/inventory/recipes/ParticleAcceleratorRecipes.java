@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.SBD;
 
@@ -52,6 +53,22 @@ public final class ParticleAcceleratorRecipes {
                 new ItemStack(ModRBMKItems.particle_digamma.get()), null);
         add(exact(ModIntermediateItems.expensive(EnumExpensiveType.GOLD_DUST)), SBD.ingot(), 10_000,
                 ModIntermediateItems.expensive(EnumExpensiveType.DEGENERATE_MATTER, 1), null);
+        com.hbm.scripting.ScriptedRecipes.apply(ParticleAcceleratorRecipes.class);
+    }
+
+    public static void addRecipe(AStack in1, AStack in2, int momentum, ItemStack out1, @Nullable ItemStack out2) {
+        register();
+        recipes.add(0, new ParticleAcceleratorRecipe(in1, in2, momentum, out1, out2));
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
+    }
+
+    public static boolean removeIf(Predicate<ParticleAcceleratorRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
     }
 
     private static ComparableStack exact(net.minecraft.world.item.Item item) {

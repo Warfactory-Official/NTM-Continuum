@@ -65,5 +65,21 @@ public final class CrackingRecipes {
         cracking.put(Fluids.XYLENE, new CrackingRecipe(new FluidStack(Fluids.AROMATICS, xyl_crack_aroma), new FluidStack(Fluids.PETROLEUM, xyl_crack_petro)));
         cracking.put(Fluids.HEATINGOIL_VACUUM, new CrackingRecipe(new FluidStack(Fluids.HEATINGOIL, 80), new FluidStack(Fluids.REFORMGAS, 20)));
         cracking.put(Fluids.REFORMATE, new CrackingRecipe(new FluidStack(Fluids.UNSATURATEDS, 40), new FluidStack(Fluids.REFORMGAS, 60)));
+        com.hbm.scripting.ScriptedRecipes.apply(CrackingRecipes.class);
+    }
+
+    public static void put(FluidType oil, CrackingRecipe recipe) {
+        init();
+        cracking.put(oil, recipe);
+    }
+
+    public static boolean remove(FluidType oil) {
+        init();
+        return cracking.remove(oil) != null;
+    }
+
+    public static synchronized void reset() {
+        cracking.clear();
+        initialized = false;
     }
 }

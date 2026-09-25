@@ -49,5 +49,21 @@ public final class HydrotreatingRecipes {
                 new FluidStack(Fluids.HYDROGEN, 10, 1), new FluidStack(Fluids.DIESEL_REFORM, 80), new FluidStack(Fluids.SOURGAS, 30)));
         recipes.put(Fluids.COALOIL, new HydrotreatingRecipe(
                 new FluidStack(Fluids.HYDROGEN, 10, 1), new FluidStack(Fluids.COALGAS, 80), new FluidStack(Fluids.SOURGAS, 15)));
+        com.hbm.scripting.ScriptedRecipes.apply(HydrotreatingRecipes.class);
+    }
+
+    public static void put(FluidType type, HydrotreatingRecipe recipe) {
+        init();
+        recipes.put(type, recipe);
+    }
+
+    public static boolean remove(FluidType type) {
+        init();
+        return recipes.remove(type) != null;
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 }

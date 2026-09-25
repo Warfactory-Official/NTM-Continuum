@@ -9,7 +9,7 @@ import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.CompatItem;
 import net.minecraft.world.item.Item;
 
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import com.hbm.items.machine.ItemPWRFuel;
 import com.hbm.items.machine.ItemPWRPrinter;
@@ -23,32 +23,32 @@ public final class ModPwrItems {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
-    private static final Map<EnumPWRFuel, RegistryObject<ItemPWRFuel>> FUEL = new EnumMap<>(EnumPWRFuel.class);
-    private static final Map<EnumPWRFuel, RegistryObject<ItemPWRFuelSpent>> HOT = new EnumMap<>(EnumPWRFuel.class);
-    private static final Map<EnumPWRFuel, RegistryObject<ItemPWRFuelSpent>> DEPLETED = new EnumMap<>(EnumPWRFuel.class);
+    private static final Map<EnumPWRFuel, RegistryObject<ItemPWRFuel>> FUEL = new HashMap<>();
+    private static final Map<EnumPWRFuel, RegistryObject<ItemPWRFuelSpent>> HOT = new HashMap<>();
+    private static final Map<EnumPWRFuel, RegistryObject<ItemPWRFuelSpent>> DEPLETED = new HashMap<>();
 
     public static final RegistryObject<ItemPWRPrinter> PWR_PRINTER = ITEMS.registerItem("pwr_printer", ItemPWRPrinter::new);
 
     static {
-        for (EnumPWRFuel fuel : EnumPWRFuel.VALUES) {
-            RegistryObject<ItemPWRFuel> fresh = ITEMS.registerItem("pwr_fuel_" + fuel.id,
-                    p -> new ItemPWRFuel(p, fuel));
-            FUEL.put(fuel, fresh);
-            ModTabs.addTo(HbmTab.CONTROL, fresh);
-        }
-        for (EnumPWRFuel fuel : EnumPWRFuel.VALUES) {
-            RegistryObject<ItemPWRFuelSpent> hot = ITEMS.registerItem("pwr_fuel_hot_" + fuel.id,
-                    p -> new ItemPWRFuelSpent(p, fuel));
-            HOT.put(fuel, hot);
-            ModTabs.addTo(HbmTab.CONTROL, hot);
-        }
-        for (EnumPWRFuel fuel : EnumPWRFuel.VALUES) {
-            RegistryObject<ItemPWRFuelSpent> depleted = ITEMS.registerItem("pwr_fuel_depleted_" + fuel.id,
-                    p -> new ItemPWRFuelSpent(p, fuel));
-            DEPLETED.put(fuel, depleted);
-            ModTabs.addTo(HbmTab.CONTROL, depleted);
-        }
+        for (EnumPWRFuel fuel : EnumPWRFuel.VALUES) register(ITEMS, fuel);
+        for (EnumPWRFuel fuel : EnumPWRFuel.VALUES) ModTabs.addTo(HbmTab.CONTROL, FUEL.get(fuel));
+        for (EnumPWRFuel fuel : EnumPWRFuel.VALUES) ModTabs.addTo(HbmTab.CONTROL, HOT.get(fuel));
+        for (EnumPWRFuel fuel : EnumPWRFuel.VALUES) ModTabs.addTo(HbmTab.CONTROL, DEPLETED.get(fuel));
         ModTabs.addTo(HbmTab.CONTROL, PWR_PRINTER);
+    }
+
+    public record Rods(RegistryObject<ItemPWRFuel> fresh, RegistryObject<ItemPWRFuelSpent> hot,
+                       RegistryObject<ItemPWRFuelSpent> depleted) {}
+
+    public static Rods register(DeferredRegister.Items items, EnumPWRFuel fuel) {
+        Rods rods = new Rods(
+                items.registerItem("pwr_fuel_" + fuel.id, p -> new ItemPWRFuel(p, fuel)),
+                items.registerItem("pwr_fuel_hot_" + fuel.id, p -> new ItemPWRFuelSpent(p, fuel)),
+                items.registerItem("pwr_fuel_depleted_" + fuel.id, p -> new ItemPWRFuelSpent(p, fuel)));
+        FUEL.put(fuel, rods.fresh());
+        HOT.put(fuel, rods.hot());
+        DEPLETED.put(fuel, rods.depleted());
+        return rods;
     }
 
     public static ItemPWRFuel fuel(EnumPWRFuel fuel) { return FUEL.get(fuel).get(); }

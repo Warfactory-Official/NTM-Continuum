@@ -25,6 +25,14 @@ sourceSets["main"].java {
 repositories {
     mavenCentral()
     maven("https://maven.blamejared.com") { name = "BlameJared" }
+    maven("https://maven.latvian.dev/releases") {
+        name = "LatvianDev"
+        content { includeGroup("dev.latvian.mods"); includeGroup("dev.latvian.apps") }
+    }
+    maven("https://maven.architectury.dev") {
+        name = "Architectury"
+        content { includeGroup("dev.architectury") }
+    }
     maven("https://maven.createmod.net") {
         name = "CreateMod"
         content { includeGroup("dev.engine-room.flywheel") }
@@ -329,3 +337,29 @@ dependencies {
 // `runGenerateIds` and committed, because the plain-JVM build step the declarations run in cannot
 // load half the registry classes; see com.hbm.lib.IdConstants.
 sourceSets["main"].java.srcDir(rootProject.file("src/generated/java"))
+
+// KubeJS, compile-only: com.hbm.scripting.NTMScriptPlugin extends Golem Core's GolemScriptPlugin, whose
+// supertype on these nodes is KubeJS's plugin type.
+dependencies {
+    propOrNull("deps.kubejs")?.let { kubejs ->
+        val cfg = if (obfuscated) "modCompileOnly" else "compileOnly"
+        cfg("dev.latvian.mods:kubejs-fabric:$kubejs") { isTransitive = false }
+        cfg(if (mcVersion.startsWith("1.20")) "dev.latvian.mods:rhino-fabric:${prop("deps.rhino")}"
+            else "dev.latvian.mods:rhino:${prop("deps.rhino")}") { isTransitive = false }
+        propOrNull("deps.architectury")?.let { cfg("dev.architectury:architectury-fabric:$it") { isTransitive = false } }
+    }
+}
+
+// -Pkubejs puts KubeJS 6 on the dev runtime and stages src/gametest/kubejs into the run directories.
+if (providers.gradleProperty("kubejs").isPresent && propOrNull("deps.kubejs_dev") != null) {
+    dependencies {
+        devRuntime("dev.latvian.mods:kubejs-fabric:${prop("deps.kubejs")}") { isTransitive = false }
+        devRuntime("dev.latvian.mods:rhino-fabric:${prop("deps.rhino")}") { isTransitive = false }
+        devRuntime("dev.architectury:architectury-fabric:${prop("deps.architectury")}") { isTransitive = false }
+    }
+    mapOf("runClient" to "runs/client", "runServer" to "runs/server", "runGametest" to "runs/gametest").forEach { (task, dir) ->
+        tasks.matching { it.name == task }.configureEach {
+            doFirst { copy { from(rootProject.file("src/gametest/kubejs")); into(layout.projectDirectory.dir("$dir/kubejs")) } }
+        }
+    }
+}

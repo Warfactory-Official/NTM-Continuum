@@ -95,6 +95,18 @@ repositories {
         forRepository { maven("https://api.modrinth.com/maven") { name = "Modrinth" } }
         filter { includeGroup("maven.modrinth") }
     }
+    maven("https://maven.latvian.dev/releases") {
+        name = "LatvianDev"
+        content { includeGroup("dev.latvian.mods"); includeGroup("dev.latvian.apps") }
+    }
+    maven("https://maven.architectury.dev") {
+        name = "Architectury"
+        content { includeGroup("dev.architectury") }
+    }
+    maven("https://jitpack.io") {
+        name = "JitPack"
+        content { includeGroup("com.github.rtyley") }
+    }
 }
 
 // MDG for this MC version exposes no per-run additional classpath, so dev-only mods go on a
@@ -165,6 +177,24 @@ dependencies {
     // server run and not only the client: it ships no mixins, so it needs no `mods` folder placement.
     // Nothing compiles against it — the tests that drive it reach its one public setter reflectively.
     propOrNull("deps.pipez")?.let { localRuntime("maven.modrinth:pipez:$it") }
+
+    // -Pkubejs puts KubeJS on the dev runtime. Off by default: its datapack sync throws for GameTest mock
+    // players, and the fixture script's content fails every roster test (material/autogen/tag/id counts).
+    // Scripting tests: -Pkubejs with -Dgolem.gametest.filter='hbm:scripting_.*'.
+    if (providers.gradleProperty("kubejs").isPresent && propOrNull("deps.kubejs_dev") != null) {
+        localRuntime("dev.latvian.mods:kubejs-neoforge:${prop("deps.kubejs")}")
+    }
+}
+
+mapOf("runGameTestServer" to "runs/gametest", "runClient" to "runs/client").forEach { (task, dir) ->
+    tasks.matching { it.name == task }.configureEach {
+        if (providers.gradleProperty("kubejs").isPresent && propOrNull("deps.kubejs_dev") != null) doFirst {
+            copy {
+                from(rootProject.file("src/gametest/kubejs"))
+                into(layout.projectDirectory.dir("$dir/kubejs"))
+            }
+        }
+    }
 }
 
 tasks.processResources {
@@ -243,4 +273,16 @@ tasks.named<JavaExec>("runGenerateIds") { isIgnoreExitValue = true }
 // into the next run lets those old fixtures tick alongside the new suite (including DFC detonations).
 tasks.matching { it.name == "runGameTestServer" }.configureEach {
     doFirst { delete(layout.projectDirectory.dir("runs/gametest/world")) }
+}
+
+// KubeJS, compile-only: com.hbm.scripting.NTMScriptPlugin extends Golem Core's GolemScriptPlugin, whose
+// supertype on these nodes is KubeJS's plugin type.
+dependencies {
+    propOrNull("deps.kubejs")?.let { kubejs ->
+        val cfg = "compileOnly"
+        cfg("dev.latvian.mods:kubejs-neoforge:$kubejs") { isTransitive = false }
+        cfg(if (mcVersion.startsWith("1.20")) "dev.latvian.mods:rhino-neoforge:${prop("deps.rhino")}"
+            else "dev.latvian.mods:rhino:${prop("deps.rhino")}") { isTransitive = false }
+        propOrNull("deps.architectury")?.let { cfg("dev.architectury:architectury-neoforge:$it") { isTransitive = false } }
+    }
 }

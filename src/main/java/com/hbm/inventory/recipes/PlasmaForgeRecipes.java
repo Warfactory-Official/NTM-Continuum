@@ -26,9 +26,7 @@ public final class PlasmaForgeRecipes extends GenericRecipes {
     private PlasmaForgeRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         register(new PlasmaForgeRecipe("plsm.plateeuphemium").setInputEnergy(1_000_000).setup(600, 10_000_000)
                 .outputItems(new ItemStack(ModItems.plate_euphemium.get(), 4))
                 .inputItems(new ComparableStack(ModItems.ingot_euphemium.get(), 4), new ComparableStack(ModItems.powder_astatine.get(), 3), BI.dust(),

@@ -50,9 +50,7 @@ public final class PUREXRecipes extends GenericRecipes {
     private PUREXRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         // Uranium-zirconium-hydride fuel billets (no group, no name wrapper).
         register(new GenericRecipe("purex.uzh").setup(600, 1_000)
                 .inputItems(new ComparableStack(ModItems.billet_uranium_fuel.get()), ZR.billet().count(3))

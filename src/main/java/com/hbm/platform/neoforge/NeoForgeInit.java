@@ -182,6 +182,14 @@ public class NeoForgeInit {
                  com.hbm.gametest.WeaponTableGameTests.TESTS));
          eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                  com.hbm.gametest.PollutionGameTests.TESTS));
+        if (dev.golem.core.platform.Platform.isModLoaded("kubejs")) {
+            eventBus.addListener((RegisterGameTestsEvent event) -> {
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingGameTests.TESTS);
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingMaterialsGameTests.TESTS);
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingFuelsGameTests.TESTS);
+                dev.golem.core.gametest.GameTests.register(event, com.hbm.gametest.ScriptingEventsGameTests.TESTS);
+            });
+        }
 
         // Client-only setup (screen registration). Isolated so the server never loads client classes.
         if (dev.golem.core.platform.Platform.isClient()) {

@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.Blocks;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.*;
 
@@ -121,6 +122,22 @@ public final class PressRecipes {
                 makeRecipe(StampType.WIRE, mat.ingot(), new ItemStack(wire, 8));
             }
         }
+        com.hbm.scripting.ScriptedRecipes.apply(PressRecipes.class);
+    }
+
+    public static void addRecipe(StampType type, AStack in, ItemStack out) {
+        register();
+        RECIPES.add(0, new PressRecipe(type, in, out));
+    }
+
+    public static synchronized void reset() {
+        RECIPES.clear();
+        initialized = false;
+    }
+
+    public static boolean removeIf(Predicate<PressRecipe> filter) {
+        register();
+        return RECIPES.removeIf(filter);
     }
 
     private static void plate(NTMMaterial mat, Item plate) {

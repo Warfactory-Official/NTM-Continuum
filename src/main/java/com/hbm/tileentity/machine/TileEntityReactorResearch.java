@@ -65,6 +65,12 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
     }
 
     private static Map<Item, ItemStack> fuelMap;
+    private static final Map<Item, ItemStack> EXTRA_FUELS = new HashMap<>();
+
+    public static void registerFuel(Item plate, ItemStack waste) {
+        EXTRA_FUELS.put(plate, waste);
+        fuelMap = null;
+    }
 
     /** 1.7 {@code fuelMap}: fresh plate -> hot spent plate (metadata 1). */
     private static Map<Item, ItemStack> fuelMap() {
@@ -77,6 +83,7 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
             map.put(ModIngredientItems.plateFuel(PlateFuelType.SA326), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_SA326.get(), 1));
             map.put(ModIngredientItems.plateFuel(PlateFuelType.RA226BE), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_RA226BE.get(), 1));
             map.put(ModIngredientItems.plateFuel(PlateFuelType.PU238BE), ItemDepletedFuel.makeHot(ModNuclearMiscItems.WASTE_PLATE_PU238BE.get(), 1));
+            map.putAll(EXTRA_FUELS);
             fuelMap = map;
         }
         return fuelMap;
@@ -237,6 +244,7 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
     }
 
     private void explode() {
+        if (com.hbm.scripting.NTMServerEvents.postMeltdown(level, worldPosition, "research")) return;
         for (int i = 0; i < inventory.getSlots(); i++) inventory.setStackInSlot(i, ItemStack.EMPTY);
 
         Level world = this.level;

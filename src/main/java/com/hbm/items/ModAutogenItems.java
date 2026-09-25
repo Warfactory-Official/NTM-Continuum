@@ -53,6 +53,9 @@ public final class ModAutogenItems {
         SHAPES.put(MaterialShapes.FRAGMENT, "bedrock_ore_fragment");
     }
 
+    /** Shape -> greyscale art each material's sprite is remapped from, when not {@code hbm:items/<base>}. */
+    private static final Map<MaterialShapes, String> ART = new LinkedHashMap<>();
+
     /** (shape, material name) -> the registered item. */
     private static final Map<String, RegistryObject<ItemAutogen>> BY_KEY = new LinkedHashMap<>();
 
@@ -61,18 +64,41 @@ public final class ModAutogenItems {
     }
 
     static {
-        // One item per material that auto-generates each shape (registry id <base>_<material>).
-        for (Map.Entry<MaterialShapes, String> e : SHAPES.entrySet()) {
-            MaterialShapes shape = e.getKey();
-            String base = e.getValue();
+        for (MaterialShapes shape : SHAPES.keySet()) {
             for (NTMMaterial mat : Mats.orderedList) {
-                if (!mat.autogen.contains(shape)) continue;
-                RegistryObject<ItemAutogen> item = ITEMS.registerItem(base + "_" + mat.name,
-                        p -> new ItemAutogen(p, shape, mat), p -> p.stacksTo(64));
-                BY_KEY.put(key(shape, mat.name), item);
-                ModTabs.addTo(HbmTab.MATERIALS, item);
+                if (mat.autogen.contains(shape)) register(ITEMS, shape, mat);
             }
         }
+    }
+
+    /** Registry id {@code <base>_<material>}, into {@code register}; a pair already present is refused. */
+    public static RegistryObject<ItemAutogen> register(DeferredRegister.Items register, MaterialShapes shape, NTMMaterial mat) {
+        String base = SHAPES.get(shape);
+        if (base == null) throw new IllegalArgumentException(shape + " is not an autogen shape");
+        if (BY_KEY.containsKey(key(shape, mat.name))) throw new IllegalStateException(base + "_" + mat.name + " is already registered");
+        RegistryObject<ItemAutogen> item = register.registerItem(base + "_" + mat.name,
+                p -> new ItemAutogen(p, shape, mat), p -> p.stacksTo(64));
+        BY_KEY.put(key(shape, mat.name), item);
+        ModTabs.addTo(HbmTab.MATERIALS, item);
+        return item;
+    }
+
+    /** Makes {@code shape} an autogen shape; {@code art} is the full sprite id of its greyscale source. */
+    public static void addShape(MaterialShapes shape, String base, String art) {
+        if (SHAPES.putIfAbsent(shape, base) != null) throw new IllegalStateException(shape + " is already an autogen shape");
+        ART.put(shape, art);
+    }
+
+    /** The greyscale source sprite a shape's material sprites are remapped from. */
+    public static @Nullable String art(MaterialShapes shape) {
+        String base = SHAPES.get(shape);
+        if (base == null) return null;
+        return ART.getOrDefault(shape, Constants.MOD_ID + ":items/" + base);
+    }
+
+    /** Whether an item exists for the pair. */
+    public static boolean has(MaterialShapes shape, NTMMaterial material) {
+        return BY_KEY.containsKey(key(shape, material.name));
     }
 
     /** The item for a given material+shape, or null if that combination isn't auto-generated. */

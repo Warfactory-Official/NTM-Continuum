@@ -116,6 +116,17 @@ public final class SolidificationRecipes {
         registerSFAuto(Fluids.REFORMATE);
         registerSFAuto(Fluids.XYLENE);
         registerSFAuto(Fluids.BALEFIRE, 24_000_000L, ModItems.solid_fuel_bf.get());
+        com.hbm.scripting.ScriptedRecipes.apply(SolidificationRecipes.class);
+    }
+
+    public static void put(FluidType type, SolidRecipe recipe) {
+        init();
+        recipes.put(type, recipe);
+    }
+
+    public static boolean remove(FluidType type) {
+        init();
+        return recipes.remove(type) != null;
     }
 
     private static void registerSFAuto(FluidType fluid) {
@@ -137,5 +148,10 @@ public final class SolidificationRecipes {
         mB = Math.max(mB, 1);
 
         reg(fluid, mB, fuel);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 }

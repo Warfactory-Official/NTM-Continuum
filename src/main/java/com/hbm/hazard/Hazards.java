@@ -28,5 +28,6 @@ public final class Hazards {
         com.hbm.hazard.TerrainHazards.register(); // nuclear waste blocks, yellowcake/fallout blocks, hot sellafite
         com.hbm.tileentity.bomb.TileEntityLaunchPadBase.registerLaunchables(); // missile item -> entity table
         HazardSystem.install();                       // carried hazards, resolved per slot edit
+        com.hbm.scripting.ScriptedContent.hazardsReady();
     }
 }

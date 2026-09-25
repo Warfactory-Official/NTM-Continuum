@@ -64,6 +64,21 @@ public final class FluidCombustion {
         return type != null && LIQUID_VISCOUS.contains(type.getName());
     }
 
+    public static void setFlammable(FluidType type, long energy) {
+        init();
+        flam(type, energy);
+    }
+
+    public static void setCombustible(FluidType type, FuelGrade grade, long energy) {
+        init();
+        comb(type, grade, energy);
+    }
+
+    public static void setGaseous(FluidType type) {
+        init();
+        GASEOUS.add(type);
+    }
+
     private static void flam(FluidType type, long energy) {
         FLAMMABLE.put(type, energy);
     }

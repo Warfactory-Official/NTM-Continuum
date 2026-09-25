@@ -54,15 +54,26 @@ public class FluidType {
     public int temperature = ROOM_TEMPERATURE;
 
     public FluidType(String name, int color) {
+        this(name, color, null);
+        this.id = Fluids.registerSelf(this);
+    }
+
+    /** 1.7 {@code setupCustom}: an explicit id, and any GUI texture. */
+    public FluidType(int id, String name, int color, Identifier texture) {
+        this(name, color, texture);
+        Fluids.register(this, id);
+    }
+
+    private FluidType(String name, int color, Identifier texture) {
         this.stringId = name;
         this.color = color;
         this.guiTint = color;
         this.key = name.toLowerCase(Locale.US);
         this.unlocalized = "hbmfluid." + this.key;
         this.fallbackName = titleCase(name);
-        this.texture = dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + this.key + ".png");
+        this.texture = texture != null ? texture
+                : dev.golem.core.Ids.of(Constants.MOD_ID, "textures/gui/fluids/" + this.key + ".png");
         this.icon = dev.golem.core.Ids.of(Constants.MOD_ID, ICON_ART + "_" + this.key);
-        this.id = Fluids.registerSelf(this);
     }
 
     /** Constructor with an asserted ID, mirroring the 1.12.2 safeguard against fluid-ID drift. */

@@ -9,6 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /** The old storage-drum waste transformation table, including its liquid/gas byproducts. */
 public final class StorageDrumRecipes {
@@ -25,7 +26,7 @@ public final class StorageDrumRecipes {
 
     private StorageDrumRecipes() {}
 
-    public static void registerRecipes() {
+    public static synchronized void registerRecipes() {
         if (initialized) return;
         initialized = true;
 
@@ -48,6 +49,22 @@ public final class StorageDrumRecipes {
         add(new ItemStack(ModItems.ingot_au198.get()), new ItemStack(ModItems.bottle_mercury.get()),
                 (int) (decayChance * 0.01), 500, 500);
         // Deferred faithfully: the old nugget_au198 -> ingot_mercury recipe needs the unported item.
+        com.hbm.scripting.ScriptedRecipes.apply(StorageDrumRecipes.class);
+    }
+
+    public static void addRecipe(ItemStack input, ItemStack output, int chance, int liquid, int gas) {
+        registerRecipes();
+        RECIPES.add(0, new Recipe(input, output, chance, liquid, gas));
+    }
+
+    public static synchronized void reset() {
+        RECIPES.clear();
+        initialized = false;
+    }
+
+    public static boolean removeIf(Predicate<Recipe> filter) {
+        registerRecipes();
+        return RECIPES.removeIf(filter);
     }
 
     private static void addWasteFamily(Item input, Item output, ItemWasteStorage.LongWasteClass[] values,

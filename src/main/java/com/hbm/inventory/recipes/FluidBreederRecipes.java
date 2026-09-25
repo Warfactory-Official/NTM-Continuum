@@ -14,9 +14,7 @@ public final class FluidBreederRecipes extends GenericRecipes {
     private FluidBreederRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         register(new GenericRecipe("fluid_breeder.gas")
                 .inputFluids(new FluidStack(Fluids.GAS, 1_000))
                 .outputFluids(new FluidStack(Fluids.SYNGAS, 1_000)));

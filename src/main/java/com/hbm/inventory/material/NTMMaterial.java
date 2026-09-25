@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 
-import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
@@ -51,7 +51,7 @@ public final class NTMMaterial {
     public int convOut = 1;
 
     /** Shapes this material is auto-generated in (gates the autogen item's creative variants). */
-    public final Set<MaterialShapes> autogen = EnumSet.noneOf(MaterialShapes.class);
+    public final Set<MaterialShapes> autogen = new LinkedHashSet<>();
 
     private String displayName;
 

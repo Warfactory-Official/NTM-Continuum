@@ -50,5 +50,21 @@ public final class CompressorRecipes {
 
         recipes.put(new Key(Fluids.PERFLUOROMETHYL, 0), new CompressorRecipe(1_000, new FluidStack(Fluids.PERFLUOROMETHYL, 1_000, 1), 50));
         recipes.put(new Key(Fluids.PERFLUOROMETHYL, 1), new CompressorRecipe(1_000, new FluidStack(Fluids.PERFLUOROMETHYL_COLD, 1_000, 0), 50));
+        com.hbm.scripting.ScriptedRecipes.apply(CompressorRecipes.class);
+    }
+
+    public static void put(FluidType type, int pressure, CompressorRecipe recipe) {
+        init();
+        recipes.put(new Key(type, pressure), recipe);
+    }
+
+    public static boolean remove(FluidType type, int pressure) {
+        init();
+        return recipes.remove(new Key(type, pressure)) != null;
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 }

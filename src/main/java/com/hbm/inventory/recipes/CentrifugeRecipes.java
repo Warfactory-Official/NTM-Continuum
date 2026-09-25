@@ -20,6 +20,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.*;
 
@@ -162,6 +163,22 @@ public final class CentrifugeRecipes {
                 item(ModItems.powder_quartz, 1), item(ModItems.fluorite, 1));
         add(exact(ModItems.crystal_cobalt), item(ModItems.powder_cobalt, 2), item(ModItems.powder_iron, 3),
                 item(ModItems.powder_copper, 3), item(ModItems.powder_lithium_tiny, 1));
+        com.hbm.scripting.ScriptedRecipes.apply(CentrifugeRecipes.class);
+    }
+
+    public static void putFirst(AStack input, ItemStack... output) {
+        register();
+        recipes.add(0, new CentrifugeRecipe(input, output));
+    }
+
+    public static boolean removeIf(Predicate<CentrifugeRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 
     public static ItemStack[] getOutput(ItemStack stack) {

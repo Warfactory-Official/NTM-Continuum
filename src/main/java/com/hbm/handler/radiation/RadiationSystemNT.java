@@ -178,7 +178,17 @@ public final class RadiationSystemNT {
     }
 
     public static void onChunkLoaded(ServerLevel level, LevelChunk chunk) {
-        get(level).onChunkLoaded(chunk.getPos());
+        WorldRadiationData data = get(level);
+        data.onChunkLoaded(chunk.getPos());
+        if (RadiationBlocks.emitting()) data.scanEmitters(chunk);
+    }
+
+    public static void onBlockChanged(ServerLevel level, BlockPos pos, BlockState oldState, BlockState newState) {
+        if (!RadiationBlocks.active() || oldState == newState) return;
+        boolean emits = RadiationBlocks.emits(oldState) || RadiationBlocks.emits(newState);
+        if (!emits && RadiationBlocks.sealOverride(oldState) == null && RadiationBlocks.sealOverride(newState) == null) return;
+        WorldRadiationData data = worldMap.get(level);
+        if (data != null) data.touch(pos, emits);
     }
 
     public static void onChunkUnloaded(ServerLevel level, LevelChunk chunk) {
@@ -359,6 +369,43 @@ public final class RadiationSystemNT {
             pendingReads.put(ChunkPos.pack(cx, cz), sidecar.read(pos));
         }
 
+        void scanEmitters(LevelChunk chunk) {
+            ChunkRad cr = chunks.get(ChunkPos.pack(Compat.chunkX(chunk.getPos()), Compat.chunkZ(chunk.getPos())));
+            if (cr == null) return;
+            LevelChunkSection[] sections = chunk.getSections();
+            for (int i = 0; i < sections.length && i < cr.sections.length; i++) {
+                LevelChunkSection section = sections[i];
+                if (section.hasOnlyAir() || !section.maybeHas(RadiationBlocks::emits)) continue;
+                cr.section(i, true).emitterCandidate = true;
+            }
+        }
+
+        void touch(BlockPos pos, boolean emits) {
+            ChunkRad cr = chunks.get(ChunkPos.pack(pos.getX() >> 4, pos.getZ() >> 4));
+            if (cr == null) return;
+            SectionRad sr = cr.section(cr.index(pos.getY()), true);
+            if (sr == null) return;
+            sr.dirty = true;
+            if (emits) sr.emitterCandidate = true;
+        }
+
+        private int scriptedEpoch = RadiationBlocks.epoch();
+
+        private void rescanScripted() {
+            scriptedEpoch = RadiationBlocks.epoch();
+            ServerChunkCache cache = level.getChunkSource();
+            for (ChunkRad cr : chunks.values()) {
+                for (SectionRad sr : cr.sections) {
+                    if (sr == null) continue;
+                    sr.dirty = true;
+                    sr.emitterCandidate = false;
+                }
+                if (!RadiationBlocks.emitting()) continue;
+                LevelChunk chunk = cache.getChunkNow(cr.cx, cr.cz);
+                if (chunk != null) scanEmitters(chunk);
+            }
+        }
+
         void onChunkUnloaded(ChunkPos pos) {
             long key = ChunkPos.pack(Compat.chunkX(pos), Compat.chunkZ(pos));
             ChunkRad cr = chunks.remove(key);
@@ -406,10 +453,12 @@ public final class RadiationSystemNT {
 
         // ---- server-thread pre-pass: build the sections the sweep will touch (reads block state) ----
         void prepare() {
+            if (scriptedEpoch != RadiationBlocks.epoch()) rescanScripted();
             snapshot = new ArrayList<>(chunks.values());
             for (ChunkRad cr : snapshot) {
                 for (int i = 0; i < cr.sections.length; i++) {
                     SectionRad sr = cr.sections[i];
+                    if (sr != null && sr.emitterCandidate) sr.emit(dT());
                     if (sr == null || sr.maxDensity <= RAD_EPSILON) continue;
                     // build this section + its 6 neighbours (in loaded chunks) so the parallel sweep can
                     // push radiation into them without any block-state access off-thread.
@@ -548,7 +597,7 @@ public final class RadiationSystemNT {
             this.sections = new SectionRad[world.level.getSectionsCount()];
         }
 
-        private int index(int worldY) {
+        int index(int worldY) {
             return (worldY >> 4) - world.minSectionY;
         }
 
@@ -743,6 +792,9 @@ public final class RadiationSystemNT {
         int[] volume;       // per pocket
         float[] faceDist;   // per pocket × 6 faces: centre-of-mass distance to the face (old SectionRef)
         double maxDensity;
+        boolean emitterCandidate;
+        double[] emitRate;
+        double[] emitCap;
 
         SectionRad(WorldRadiationData world, int cx, int sy, int cz) {
             this.world = world;
@@ -780,6 +832,8 @@ public final class RadiationSystemNT {
                 // one pocket covering the whole section (fast path for sky/air) — centre of mass is the
                 // exact section centre (7.5), so every face distance is 8.0 (the old code's uniform 8.0d).
                 java.util.Arrays.fill(pocketOf, (short) 0);
+                emitRate = null;
+                emitCap = null;
                 pocketCount = 1;
                 density = density != null && density.length == 1 ? density : new double[] {0D};
                 volume = new int[] {SECTION_BLOCKS};
@@ -791,7 +845,8 @@ public final class RadiationSystemNT {
             boolean[] wall = new boolean[SECTION_BLOCKS];
             for (int y = 0; y < 16; y++) for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {
                 BlockState state = sec.getBlockState(x, y, z);
-                if (state.getBlock() instanceof IRadResistantBlock r
+                Boolean scripted = RadiationBlocks.sealOverride(state);
+                if (scripted != null ? scripted : state.getBlock() instanceof IRadResistantBlock r
                         && r.isRadResistant(world.level, new BlockPos((cx << 4) + x, (sy << 4) + y, (cz << 4) + z))) {
                     wall[idx(x, y, z)] = true;
                 }
@@ -843,7 +898,40 @@ public final class RadiationSystemNT {
                 faceDist[i * 6 + 5] = (float) (15.5D - comX);
             }
             density = new double[pocketCount];
+            buildEmitters(sec);
             built = true;
+        }
+
+        private void buildEmitters(LevelChunkSection sec) {
+            emitRate = null;
+            emitCap = null;
+            if (!RadiationBlocks.emitting() || !sec.maybeHas(RadiationBlocks::emits)) return;
+            for (int y = 0; y < 16; y++) for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {
+                short p = pocketOf[idx(x, y, z)];
+                if (p == WALL) continue;
+                double rads = RadiationBlocks.emission(sec.getBlockState(x, y, z));
+                if (rads <= 0D) continue;
+                if (emitRate == null) {
+                    emitRate = new double[pocketCount];
+                    emitCap = new double[pocketCount];
+                }
+                emitRate[p] += rads * RadiationBlocks.EMISSION_RATE;
+                emitCap[p] = Math.max(emitCap[p], rads);
+            }
+        }
+
+        void emit(double dt) {
+            ensureBuilt();
+            if (emitRate == null) {
+                emitterCandidate = false;
+                return;
+            }
+            for (int p = 0; p < pocketCount; p++) {
+                if (emitRate[p] <= 0D || density[p] >= emitCap[p]) continue;
+                double next = sanitize(Math.min(density[p] + emitRate[p] * dt, emitCap[p]));
+                density[p] = next;
+                if (next > maxDensity) maxDensity = next;
+            }
         }
 
         private int push(int[] stack, int sp, int i, boolean[] wall, short pocket) {

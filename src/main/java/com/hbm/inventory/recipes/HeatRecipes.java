@@ -54,6 +54,11 @@ public final class HeatRecipes {
         return Collections.unmodifiableMap(BOILER);
     }
 
+    public static Map<FluidType, HeatStep> getAllReactor() {
+        init();
+        return Collections.unmodifiableMap(REACTOR);
+    }
+
     private static synchronized void init() {
         if (initialized) return;
         initialized = true;
@@ -69,5 +74,32 @@ public final class HeatRecipes {
         BOILER.put(Fluids.CRACKOIL_DS, new HeatStep(10, 1, Fluids.HOTCRACKOIL_DS, 1));
 
         REACTOR.put(Fluids.COOLANT, new HeatStep(300, 1, Fluids.COOLANT_HOT, 1));
+        com.hbm.scripting.ScriptedRecipes.apply(HeatRecipes.class);
+    }
+
+    public static void putBoiler(FluidType input, HeatStep step) {
+        init();
+        BOILER.put(input, step);
+    }
+
+    public static boolean removeBoiler(FluidType input) {
+        init();
+        return BOILER.remove(input) != null;
+    }
+
+    public static void putReactor(FluidType input, HeatStep step) {
+        init();
+        REACTOR.put(input, step);
+    }
+
+    public static boolean removeReactor(FluidType input) {
+        init();
+        return REACTOR.remove(input) != null;
+    }
+
+    public static synchronized void reset() {
+        BOILER.clear();
+        REACTOR.clear();
+        initialized = false;
     }
 }

@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -24,7 +25,7 @@ public final class GasCentrifugeRecipes {
     private GasCentrifugeRecipes() {}
 
     public static final class PseudoFluidType {
-        private static final Map<String, PseudoFluidType> TYPES = new HashMap<>();
+        private static final Map<String, PseudoFluidType> TYPES = new LinkedHashMap<>();
 
         public static final PseudoFluidType NONE = new PseudoFluidType("NONE", 0, 0, null, false);
         public static final PseudoFluidType HEUF6 = new PseudoFluidType("HEUF6", 300, 0, NONE, true,
@@ -46,11 +47,11 @@ public final class GasCentrifugeRecipes {
                 new ItemStack(ModItems.powder_lead.get()), new ItemStack(ModItems.dust.get()));
 
         private final String name;
-        private final int fluidConsumed;
-        private final int fluidProduced;
-        private final PseudoFluidType outputType;
-        private final boolean highSpeed;
-        private final ItemStack[] output;
+        private int fluidConsumed;
+        private int fluidProduced;
+        private PseudoFluidType outputType;
+        private boolean highSpeed;
+        private ItemStack[] output;
 
         private PseudoFluidType(String name, int fluidConsumed, int fluidProduced, PseudoFluidType outputType,
                                 boolean highSpeed, ItemStack... output) {
@@ -71,7 +72,27 @@ public final class GasCentrifugeRecipes {
         public String getName() { return name; }
         public String getNameKey() { return "hbmpseudofluid." + name.toLowerCase(Locale.ROOT); }
         public static PseudoFluidType fromName(String name) { return TYPES.getOrDefault(name, NONE); }
+
+        private Stage stage() {
+            return new Stage(fluidConsumed, fluidProduced, outputType, highSpeed, output);
+        }
+
+        private void set(Stage stage) {
+            fluidConsumed = stage.consumed();
+            fluidProduced = stage.produced();
+            outputType = stage.outputType();
+            highSpeed = stage.highSpeed();
+            output = stage.output();
+        }
+
+        public static PseudoFluidType byName(String name) {
+            PseudoFluidType type = TYPES.get(name);
+            if (type == null) throw new IllegalArgumentException("Unknown pseudo-fluid " + name);
+            return type;
+        }
     }
+
+    private record Stage(int consumed, int produced, PseudoFluidType outputType, boolean highSpeed, ItemStack[] output) {}
 
     public static final class GasCentrifugeRecipe {
         public final FluidStack input;
@@ -89,11 +110,14 @@ public final class GasCentrifugeRecipes {
 
     public static final Map<FluidType, PseudoFluidType> FLUID_CONVERSIONS = new HashMap<>();
     public static final List<GasCentrifugeRecipe> RECIPES = new ArrayList<>();
+    private static final Map<PseudoFluidType, Stage> BUILT_IN_STAGES = new HashMap<>();
     private static boolean initialized;
 
     public static synchronized void register() {
         if (initialized) return;
         initialized = true;
+
+        if (BUILT_IN_STAGES.isEmpty()) for (PseudoFluidType type : PseudoFluidType.TYPES.values()) BUILT_IN_STAGES.put(type, type.stage());
 
         FLUID_CONVERSIONS.put(Fluids.UF6, PseudoFluidType.NUF6);
         FLUID_CONVERSIONS.put(Fluids.PUF6, PseudoFluidType.PF6);
@@ -110,6 +134,59 @@ public final class GasCentrifugeRecipes {
         add(Fluids.WATZ, 1000, new ItemStack[]{new ItemStack(ModItems.powder_iron.get()),
                 new ItemStack(ModItems.powder_lead.get()), new ItemStack(ModItems.nuclear_waste_tiny.get()),
                 new ItemStack(ModItems.dust.get(), 2)}, false, 2);
+        com.hbm.scripting.ScriptedRecipes.apply(GasCentrifugeRecipes.class);
+    }
+
+    public static synchronized PseudoFluidType defineStage(String name, int fluidConsumed, int fluidProduced,
+                                                           PseudoFluidType outputType, boolean highSpeed,
+                                                           ItemStack... output) {
+        register();
+        PseudoFluidType type = PseudoFluidType.TYPES.get(name);
+        if (type == PseudoFluidType.NONE) throw new IllegalArgumentException("NONE is not a stage");
+        if (type == null) return new PseudoFluidType(name, fluidConsumed, fluidProduced, outputType, highSpeed, output);
+        type.fluidConsumed = fluidConsumed;
+        type.fluidProduced = fluidProduced;
+        type.outputType = outputType;
+        type.highSpeed = highSpeed;
+        type.output = output;
+        return type;
+    }
+
+    public static List<PseudoFluidType> stages() {
+        register();
+        return PseudoFluidType.TYPES.values().stream().filter(type -> type != PseudoFluidType.NONE).toList();
+    }
+
+    public static void putConversion(FluidType fluid, PseudoFluidType stage) {
+        register();
+        FLUID_CONVERSIONS.put(fluid, stage);
+    }
+
+    public static boolean removeConversion(FluidType fluid) {
+        register();
+        return FLUID_CONVERSIONS.remove(fluid) != null;
+    }
+
+    public static void put(FluidType type, int amount, ItemStack[] output, boolean highSpeed, int centrifuges) {
+        register();
+        add(type, amount, output, highSpeed, centrifuges);
+    }
+
+    public static boolean remove(FluidType type) {
+        register();
+        return RECIPES.removeIf(recipe -> recipe.input.type == type);
+    }
+
+    public static boolean remove(GasCentrifugeRecipe recipe) {
+        register();
+        return RECIPES.remove(recipe);
+    }
+
+    public static synchronized void reset() {
+        BUILT_IN_STAGES.forEach(PseudoFluidType::set);
+        FLUID_CONVERSIONS.clear();
+        RECIPES.clear();
+        initialized = false;
     }
 
     private static void add(FluidType type, int amount, ItemStack[] output, boolean highSpeed, int centrifuges) {

@@ -20,7 +20,9 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.item.Items;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,9 +39,7 @@ public final class MixerRecipes extends GenericRecipes {
     private MixerRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         register(Fluids.COOLANT, recipe(2_000, 50).fluid1(Fluids.WATER, 1_800).solid(OreDictManager.KNO.dust()));
         register(Fluids.CRYOGEL, recipe(2_000, 50).fluid1(Fluids.COOLANT, 1_800).solid(item(ModItems.powder_ice.get())));
         register(Fluids.NITAN, recipe(1_000, 50).fluid1(Fluids.KEROSENE, 600).fluid2(Fluids.MERCURY, 200)
@@ -120,19 +120,76 @@ public final class MixerRecipes extends GenericRecipes {
 
     private void register(FluidType output, MixerRecipe... entries) {
         recipes.put(output, entries);
-        for (int i = 0; i < entries.length; i++) {
-            MixerRecipe entry = entries[i];
-            GenericRecipe generic = new GenericRecipe("mixer." + output.getName().toLowerCase() + "." + i)
-                    .setup(entry.processTime, 0)
-                    .outputFluids(new FluidStack(output, entry.output));
-            if (entry.solidInput != null) generic.inputItems(entry.solidInput);
-            if (entry.input1 != null) generic.inputFluids(entry.input1);
-            if (entry.input2 != null) {
-                if (generic.inputFluid == null) generic.inputFluids(entry.input2);
-                else generic.inputFluids(entry.input1, entry.input2);
-            }
-            register(generic);
+        for (int i = 0; i < entries.length; i++) display(output, i, entries[i]);
+    }
+
+    private static String displayName(FluidType output, int index) {
+        return "mixer." + output.getName().toLowerCase() + "." + index;
+    }
+
+    private void display(FluidType output, int index, MixerRecipe entry) {
+        GenericRecipe generic = new GenericRecipe(displayName(output, index))
+                .setup(entry.processTime, 0)
+                .outputFluids(new FluidStack(output, entry.output));
+        if (entry.solidInput != null) generic.inputItems(entry.solidInput);
+        if (entry.input1 != null) generic.inputFluids(entry.input1);
+        if (entry.input2 != null) {
+            if (generic.inputFluid == null) generic.inputFluids(entry.input2);
+            else generic.inputFluids(entry.input1, entry.input2);
         }
+        register(generic);
+    }
+
+    public static void add(FluidType output, int amount, int processTime, FluidStack input1, FluidStack input2, AStack solid) {
+        INSTANCE.registerRecipes();
+        MixerRecipe entry = recipe(amount, processTime);
+        entry.input1 = input1;
+        entry.input2 = input2;
+        entry.solidInput = solid;
+        MixerRecipe[] old = recipes.get(output);
+        int index = old == null ? 0 : old.length;
+        MixerRecipe[] entries = old == null ? new MixerRecipe[1] : Arrays.copyOf(old, index + 1);
+        entries[index] = entry;
+        recipes.put(output, entries);
+        INSTANCE.display(output, index, entry);
+    }
+
+    public static boolean removeOutput(FluidType output) {
+        INSTANCE.registerRecipes();
+        MixerRecipe[] entries = recipes.remove(output);
+        if (entries == null) return false;
+        for (int i = 0; i < entries.length; i++) INSTANCE.remove(displayName(output, i));
+        return true;
+    }
+
+    public static void removeAll() {
+        INSTANCE.registerRecipes();
+        for (FluidType output : List.copyOf(recipes.keySet())) removeOutput(output);
+    }
+
+    public static boolean removeEntry(MixerRecipe entry) {
+        INSTANCE.registerRecipes();
+        for (Map.Entry<FluidType, MixerRecipe[]> row : recipes.entrySet()) {
+            MixerRecipe[] old = row.getValue();
+            if (!Arrays.asList(old).contains(entry)) continue;
+            FluidType output = row.getKey();
+            for (int i = 0; i < old.length; i++) INSTANCE.remove(displayName(output, i));
+            MixerRecipe[] kept = Arrays.stream(old).filter(e -> e != entry).toArray(MixerRecipe[]::new);
+            if (kept.length == 0) {
+                recipes.remove(output);
+                return true;
+            }
+            row.setValue(kept);
+            for (int i = 0; i < kept.length; i++) INSTANCE.display(output, i, kept[i]);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected void clear() {
+        super.clear();
+        recipes.clear();
     }
 
     public static MixerRecipe[] getOutput(FluidType type) {

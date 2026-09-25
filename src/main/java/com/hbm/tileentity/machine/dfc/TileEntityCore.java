@@ -149,6 +149,7 @@ public class TileEntityCore extends TileEntityMachineBase implements MenuProvide
 
     /** The whole reaction volume goes up, scaled by how much fuel was in it and how hot it had run. */
     private void detonate(Level level) {
+        if (com.hbm.scripting.NTMServerEvents.postMeltdown(level, getBlockPos(), "dfc")) return;
         BlockPos pos = getBlockPos();
         int size = blastSize();
 

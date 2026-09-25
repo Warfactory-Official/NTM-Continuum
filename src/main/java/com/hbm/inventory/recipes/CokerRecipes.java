@@ -112,5 +112,21 @@ public final class CokerRecipes {
         registerRecipe(Fluids.SOURGAS, 1_000, new ItemStack(ModItems.sulfur.get()), new FluidStack(Fluids.GAS_COKER, 150));
         registerRecipe(Fluids.SLOP, 1_000, new ItemStack(ModItems.powder_limestone.get()), new FluidStack(Fluids.COLLOID, 250));
         registerRecipe(Fluids.VITRIOL, 4_000, new ItemStack(ModItems.powder_iron.get()), new FluidStack(Fluids.SULFURIC_ACID, 500));
+        com.hbm.scripting.ScriptedRecipes.apply(CokerRecipes.class);
+    }
+
+    public static void put(FluidType type, CokerRecipe recipe) {
+        init();
+        recipes.put(type, recipe);
+    }
+
+    public static boolean remove(FluidType type) {
+        init();
+        return recipes.remove(type) != null;
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 }

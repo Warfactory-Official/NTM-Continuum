@@ -24,6 +24,7 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.hbm.inventory.OreDictManager.*;
 
@@ -161,6 +162,22 @@ public final class ArcWelderRecipes {
 
         // The spy, radar and death-ray satellites stay deferred with their satellite classes, so that
         // nothing craftable here can be launched into a registry slot that is still empty.
+        com.hbm.scripting.ScriptedRecipes.apply(ArcWelderRecipes.class);
+    }
+
+    public static void put(ArcWelderRecipe recipe) {
+        register();
+        recipes.add(recipe);
+    }
+
+    public static boolean removeIf(Predicate<ArcWelderRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
     }
 
     private static ItemStack satellite(EnumSatType type) {

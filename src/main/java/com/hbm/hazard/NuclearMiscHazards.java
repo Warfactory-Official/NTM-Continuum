@@ -54,7 +54,7 @@ public final class NuclearMiscHazards {
         HazardSystem.register(ModNuclearMiscItems.PILE_ROD_SOURCE.get(), new HazardData().addEntry(RADIATION, rabe * billet * 3));
     }
 
-    private static void registerBreedingRodRadiation(BreedingRodType type, float base) {
+    public static void registerBreedingRodRadiation(BreedingRodType type, float base) {
         HazardSystem.register(ModNuclearMiscItems.rod(RodSize.SINGLE, type), new HazardData().addEntry(RADIATION, base));
         HazardSystem.register(ModNuclearMiscItems.rod(RodSize.DUAL, type), new HazardData().addEntry(RADIATION, base * rod_dual));
         HazardSystem.register(ModNuclearMiscItems.rod(RodSize.QUAD, type), new HazardData().addEntry(RADIATION, base * rod_quad));

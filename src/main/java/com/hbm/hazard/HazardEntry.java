@@ -59,7 +59,9 @@ public class HazardEntry implements Cloneable {
     }
 
     public void applyHazard(final ItemStack stack, final LivingEntity entity) {
-        type.onUpdate(entity, IHazardModifier.evalAllModifiers(stack, entity, baseLevel, mods), stack, payload);
+        final double level = com.hbm.scripting.NTMServerEvents.postHazard(entity, stack, type,
+                IHazardModifier.evalAllModifiers(stack, entity, baseLevel, mods));
+        if (!Double.isNaN(level)) type.onUpdate(entity, level, stack, payload);
     }
 
     /** The dropped-item half of {@link #applyHazard}; modifiers see a null holder, as they always have. */

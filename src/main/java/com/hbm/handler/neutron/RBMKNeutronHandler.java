@@ -1,6 +1,9 @@
 package com.hbm.handler.neutron;
 
+import com.hbm.blocks.machine.rbmk.RBMKAbsorber;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
+import com.hbm.blocks.machine.rbmk.RBMKModerator;
+import com.hbm.blocks.machine.rbmk.RBMKReflector;
 import com.hbm.handler.neutron.NeutronNodeWorld.StreamWorld;
 import com.hbm.handler.radiation.RadiationSystemNT;
 import com.hbm.tileentity.machine.rbmk.*;
@@ -58,11 +61,11 @@ public final class RBMKNeutronHandler {
                 if(target==null) { if(blockPosToTE(world,targetPos) instanceof BlockEntityRBMKBase cell) { target=makeNode(streamWorld,cell); streamWorld.addNode(target); } else { int hits=getHits(targetPos); if(hits==columnHeight)return; if(hits>0){irradiateFromFlux(originPos,hits);fluxQuantity*=1D-(double)hits/columnHeight;}else irradiateFromFlux(originPos,0); continue; } }
                 RBMKType type=target.get(RBMKNeutronNode.COLUMN_TYPE); if(type==RBMKType.OTHER||type==null)continue; BlockEntityRBMKBase targetTE=(BlockEntityRBMKBase)target.tile;
                 if(Boolean.FALSE.equals(target.get(RBMKNeutronNode.HAS_LID))) RadiationSystemNT.incrementRad((ServerLevel)world,targetPos,fluxQuantity*.05D,fluxQuantity*.05D*1024D);
-                if(type==RBMKType.MODERATOR||targetTE.isModerated()){moderated++;moderateStream();}
+                if(type==RBMKType.MODERATOR||targetTE.isModerated()){moderated++;moderateStream(targetTE.getBlockState().getBlock() instanceof RBMKModerator moderator?moderator.moderation:1D);}
                 if(targetTE instanceof IRBMKFluxReceiver receiver) { if(type==RBMKType.ROD){BlockEntityRBMKRod rod=(BlockEntityRBMKRod)receiver;if(rod.hasRod){rod.receiveFlux(this);return;}} else if(type==RBMKType.OUTGASSER){BlockEntityRBMKOutgasser out=(BlockEntityRBMKOutgasser)receiver;if(out.canProcess()){out.receiveFlux(this);return;}} }
                 else if(type==RBMKType.CONTROL_ROD){BlockEntityRBMKControl rod=(BlockEntityRBMKControl)targetTE;if(rod.level>0D){fluxQuantity*=rod.getMult();continue;}return;}
-                else if(type==RBMKType.REFLECTOR){if(originTE.isModerated())moderated++;if(fluxRatio>0D&&moderated>0)for(int i=0;i<moderated;i++)moderateStream();if(reflectorEfficiency!=1D){fluxQuantity*=reflectorEfficiency;continue;}if(originTE instanceof BlockEntityRBMKRod rod)rod.receiveFlux(this);return;}
-                else if(type==RBMKType.ABSORBER){targetTE.heat+=RBMKDials.getAbsorberHeatConversion(world)*fluxQuantity;if(absorberEfficiency==1D)return;fluxQuantity*=absorberEfficiency;}
+                else if(type==RBMKType.REFLECTOR){if(originTE.isModerated())moderated++;if(fluxRatio>0D&&moderated>0)for(int i=0;i<moderated;i++)moderateStream();if(reflectorEfficiency!=1D){fluxQuantity*=reflectorEfficiency;continue;}if(originTE instanceof BlockEntityRBMKRod rod){if(targetTE.getBlockState().getBlock() instanceof RBMKReflector reflector)fluxQuantity*=reflector.reflection;rod.receiveFlux(this);}return;}
+                else if(type==RBMKType.ABSORBER){targetTE.heat+=RBMKDials.getAbsorberHeatConversion(world)*fluxQuantity*(targetTE.getBlockState().getBlock() instanceof RBMKAbsorber absorber?absorber.heatMult:1D);if(absorberEfficiency==1D)return;fluxQuantity*=absorberEfficiency;}
             }
             NeutronNode[] nodes=getNodes(streamWorld,true);NeutronNode last=nodes[nodes.length-1];if(last==null){irradiateFromFlux(new BlockPos((int)(originPos.getX()+vector.x),originPos.getY(),(int)(originPos.getZ()+vector.z)));return;}
             if(last.get(RBMKNeutronNode.COLUMN_TYPE)==RBMKType.CONTROL_ROD){BlockEntityRBMKControl rod=(BlockEntityRBMKControl)last.tile;if(rod.getMult()>0D){fluxQuantity*=rod.getMult();BlockPos after=new BlockPos((int)(last.tile.getBlockPos().getX()+vector.x),last.tile.getBlockPos().getY(),(int)(last.tile.getBlockPos().getZ()+vector.z));if(NeutronNodeWorld.getNode(world,originPos)==null){if(blockPosToTE(world,after) instanceof BlockEntityRBMKBase cell)NeutronNodeWorld.getOrAddWorld(world).addNode(makeNode(NeutronNodeWorld.getOrAddWorld(world),cell));else irradiateFromFlux(after);}}}
@@ -70,6 +73,7 @@ public final class RBMKNeutronHandler {
         public int getHits(BlockPos pos){int hits=0;Level world=origin.tile.getLevel();for(int h=0;h<columnHeight;h++)if(neutronOpaque(world.getBlockState(pos.above(h))))hits++;return hits;}
         public void irradiateFromFlux(BlockPos pos){double amount=fluxQuantity*.05D*(1D-(double)getHits(pos)/columnHeight);RadiationSystemNT.incrementRad((ServerLevel)origin.tile.getLevel(),pos,amount,Math.abs(amount)*1024D+1D);}
         public void irradiateFromFlux(BlockPos pos,int hits){double amount=fluxQuantity*.05D*(1D-(double)hits/columnHeight);RadiationSystemNT.incrementRad((ServerLevel)origin.tile.getLevel(),pos,amount,Math.abs(amount)*1024D+1D);}
-        public void moderateStream(){fluxRatio*=1D-moderatorEfficiency;}
+        public void moderateStream(){moderateStream(1D);}
+        public void moderateStream(double factor){fluxRatio*=1D-moderatorEfficiency*factor;}
     }
 }

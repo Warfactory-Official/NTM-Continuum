@@ -15,7 +15,6 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerReactorZirnox;
-import com.hbm.items.ModItems;
 import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.items.machine.ItemFluidBucket;
@@ -193,11 +192,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
                 int life = rod.getLife(stack) + 1;
                 rod.setLife(stack, life);
                 if (life > fuel.maxLife) {
-                    inventory.setStackInSlot(slot, fuel == ZirnoxFuel.TH232
-                            ? new net.minecraft.world.item.ItemStack(ModZirnoxItems.active(ZirnoxFuel.THORIUM))
-                            : fuel == ZirnoxFuel.LITHIUM
-                            ? new net.minecraft.world.item.ItemStack(ModItems.rod_zirnox_tritium.get())
-                            : new net.minecraft.world.item.ItemStack(ModZirnoxItems.depleted(fuel)));
+                    inventory.setStackInSlot(slot, new net.minecraft.world.item.ItemStack(ModZirnoxItems.spent(fuel)));
                     break;
                 }
             }
@@ -205,6 +200,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     }
 
     private void meltdown(Level level, BlockPos pos, BlockState state) {
+        if (com.hbm.scripting.NTMServerEvents.postMeltdown(level, pos, "zirnox")) return;
         isOn = false;
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
             inventory.setStackInSlot(slot, net.minecraft.world.item.ItemStack.EMPTY);

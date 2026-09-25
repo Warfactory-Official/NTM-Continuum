@@ -45,7 +45,7 @@ public final class ModPileBlocks {
         ModTabs.addTo(HbmTab.MACHINES, pile_brick_item);
         ModTabs.addStacksTo(HbmTab.MACHINES,
                 () -> IntStream.range(0, 3).mapToObj(ModPileBlocks::pileDeviceItem).toList());
-        ModTabs.addStacksTo(HbmTab.CONTROL, () -> java.util.Arrays.stream(EnumPileRod.VALUES)
+        ModTabs.addStacksTo(HbmTab.CONTROL, () -> EnumPileRod.values().stream()
                 .map(type -> pile_rod.get().of(type)).toList());
     }
 

@@ -36,9 +36,7 @@ public final class FusionRecipes extends GenericRecipes {
     private FusionRecipes() {}
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return;
-
+    protected void populate() {
         long solenoid = 25_000;
         double breederCapacity = BREEDER_CAPACITY;
 

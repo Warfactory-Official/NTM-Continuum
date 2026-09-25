@@ -17,6 +17,7 @@ import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * SILEX (laser isotope separation) recipes — a faithful, feasibility-limited port of the 1.12.2
@@ -221,6 +222,24 @@ public final class SILEXRecipes {
 
         add(fluidIcon(Fluids.FULLERENE), 1_000, 1_000, EnumWavelengths.VISIBLE)
                 .out(ModIngredientItems.ash(EnumAshType.FULLERENE), 1);
+        com.hbm.scripting.ScriptedRecipes.apply(SILEXRecipes.class);
+    }
+
+    public static void addRecipe(AStack input, int produced, int consumed, EnumWavelengths strength, List<WeightedOutput> outputs) {
+        register();
+        SILEXRecipe recipe = new SILEXRecipe(input, produced, consumed, strength);
+        recipe.outputs.addAll(outputs);
+        recipes.add(0, recipe);
+    }
+
+    public static synchronized void reset() {
+        recipes.clear();
+        initialized = false;
+    }
+
+    public static boolean removeIf(Predicate<SILEXRecipe> filter) {
+        register();
+        return recipes.removeIf(filter);
     }
 
     // ---------------------------------------------------------------- helpers

@@ -65,6 +65,10 @@ public class EntityTomBlast extends EntityExplosionChunkloading {
             ensureForced();
         }
 
+        if (!this.did && com.hbm.scripting.NTMServerEvents.postDetonation(level(), getX(), getY(), getZ(), "tom", destructionRange)) {
+            discard();
+            return;
+        }
         if (!this.did) {
 
             if (!level().isClientSide() && GeneralConfig.enableExtendedLogging)

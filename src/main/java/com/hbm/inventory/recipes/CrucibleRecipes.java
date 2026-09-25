@@ -80,9 +80,7 @@ public class CrucibleRecipes extends GenericRecipes {
     }
 
     @Override
-    public void registerRecipes() {
-        if (!recipeOrderedList.isEmpty()) return; // idempotent
-
+    protected void populate() {
         int n = MaterialShapes.NUGGET.quantity;
         int i = MaterialShapes.INGOT.quantity;
 

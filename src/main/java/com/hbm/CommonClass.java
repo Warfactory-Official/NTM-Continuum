@@ -18,5 +18,7 @@ public class CommonClass {
 
         // Only a run started with -Dhbm.generateIds does anything here; see IdConstants.
         com.hbm.lib.IdConstants.install();
+
+        com.hbm.scripting.ScriptedContent.bootstrapDone();
     }
 }

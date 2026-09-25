@@ -171,6 +171,8 @@ public final class HbmJeiPluginCommon {
                 ModDataComponents.ITEM_VARIANT);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
                 com.hbm.blocks.ModSteelBlocks.steel_scaffold.get().asItem(), ModDataComponents.ITEM_VARIANT);
+        dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg,
+                com.hbm.blocks.machine.pile.ModPileBlocks.pile_rod.get(), ModDataComponents.ITEM_VARIANT);
         for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
             if (item instanceof com.hbm.items.ItemEnumMulti) {
                 dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, item, ModDataComponents.ITEM_VARIANT);
