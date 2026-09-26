@@ -4,7 +4,7 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RadiolysisRecipes;
@@ -13,7 +13,6 @@ import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.items.machine.ItemRTGPelletDepleted;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.util.RTGUtil;
@@ -89,14 +88,14 @@ public final class TileEntityMachineRadiolysis extends TileEntityMachineBase
         }
 
         for (DirPos con : te.getConPos()) {
-            te.tryProvide(level, con.getPos(), con.getDir());
+            te.tryProvide(level, con.getPos(), con.getDir().toDirection());
             // 1.7 trySubscribe(tanks[0]) at the same points: the port's net discovers the intake through the passive ports.
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con);
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con);
+            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con.getPos(), con.getDir().toDirection());
+            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con.getPos(), con.getDir().toDirection());
         }
 
         te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** 1.7 {@code tanks[0].setType(10, 11, slots)}: the identifier passes from slot 10 to slot 11 once used. */
@@ -216,8 +215,8 @@ public final class TileEntityMachineRadiolysis extends TileEntityMachineBase
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && dir != ForgeDirection.DOWN;
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir != null && dir != Direction.DOWN;
     }
 
     @Override public Component getDisplayName() { return Component.translatable(getName()); }

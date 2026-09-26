@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.inventory.fluid.FluidType;
+
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import dev.golem.core.multiblock.MultiblockMachine;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.tileentity.machine.TileEntityChimneyBase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

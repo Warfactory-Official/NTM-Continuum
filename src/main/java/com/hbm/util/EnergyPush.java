@@ -1,9 +1,9 @@
 package com.hbm.util;
 
-import com.hbm.api.energymk2.ForeignEnergyBridge;
+import com.hbm.network.power.ForeignEnergyBridge;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerNetwork;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerNetwork;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -44,7 +44,7 @@ public final class EnergyPush {
     private static @Nullable IEnergyReceiverMK2 receiverAt(ServerLevel level, BlockPos target, ForgeDirection dir,
                                                          @Nullable Object self) {
         BlockEntity te = level.getBlockEntity(target);
-        if (te instanceof IEnergyReceiverMK2 rec && te != self && rec.canConnect(dir.getOpposite())
+        if (te instanceof IEnergyReceiverMK2 rec && te != self && rec.canConnect(dir.getOpposite().toDirection())
                 && rec.allowDirectProvision()) {
             return rec;
         }

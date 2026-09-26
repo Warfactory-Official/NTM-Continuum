@@ -1,6 +1,7 @@
 package com.hbm.hazard;
 
-import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.api.hazard.HazardEntry;
+import com.hbm.api.hazard.IHazardModifier;
 import com.hbm.items.machine.ItemBreedingRod.BreedingRodType;
 import com.hbm.items.machine.ItemBreedingRod.RodSize;
 import com.hbm.items.machine.ItemDepletedFuel;

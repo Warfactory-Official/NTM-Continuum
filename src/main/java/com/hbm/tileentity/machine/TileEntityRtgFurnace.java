@@ -132,7 +132,7 @@ public final class TileEntityRtgFurnace extends TileEntityMachineBase implements
             te.setChanged();
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     @Override

@@ -122,7 +122,7 @@ public final class DejsonGameTests {
                 continue;
             }
             String art = ModAutogenItems.base(autogen.shape);
-            String id = art + "_" + autogen.material.name;
+            String id = art + "_" + autogen.material.name();
             String sprite = Constants.MOD_ID + ":items/" + id;
             boolean isComputed = generated.containsKey(sprite);
             boolean hasFile = DejsonGameTests.class.getResource(
@@ -134,7 +134,7 @@ public final class DejsonGameTests {
                 problems.add(id + " is both computed and shipped as a file; one of the two is stale");
             } else if (isComputed) {
                 computed++;
-                if (autogen.material.solidColorLight == autogen.material.solidColorDark) {
+                if (autogen.material.solidColorLight() == autogen.material.solidColorDark()) {
                     problems.add(id + " is computed from a flat colour band, which draws a silhouette;"
                             + " it needs an authored sprite the way 1.7's aot() gave bismuth one");
                 }

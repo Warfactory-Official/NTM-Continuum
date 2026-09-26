@@ -7,6 +7,7 @@ import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.CompatBlockRenderState;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Quads;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -31,13 +32,13 @@ public class PneumoTubePaintableRenderer extends GemBER<TileEntityPneumoTubePain
     @Override
     protected void setup(Gem.Model<State> model) {
         // pass 0, unpainted
-        model.part(TubeBoxes.box("pneumo_paintable_plain", 0, 0, 0, 1, 1, 1, TubeBoxes.ALL, 0), Surface.cutout(PLAIN))
+        model.part(Quads.box("pneumo_paintable_plain", 0, 0, 0, 1, 1, 1, TubeBoxes.ALL, 0), Surface.cutout(PLAIN))
                 .visibleIf(s -> !s.painted);
 
         // pass 1, the overlay, one face at a time so the in/out faces can swap sprites
         for (Direction dir : Direction.values()) {
             int ordinal = dir.ordinal();
-            var face = TubeBoxes.box("pneumo_paintable_overlay_" + dir.getName(), 0, 0, 0, 1, 1, 1, 1 << ordinal, 0);
+            var face = Quads.box("pneumo_paintable_overlay_" + dir.getName(), 0, 0, 0, 1, 1, 1, 1 << ordinal, 0);
             model.part(face, Surface.cutout(OVERLAY_IN)).visibleIf(s -> s.overlay && s.ejection == ordinal);
             model.part(face, Surface.cutout(OVERLAY_OUT))
                     .visibleIf(s -> s.overlay && s.insertion == ordinal && s.ejection != ordinal);

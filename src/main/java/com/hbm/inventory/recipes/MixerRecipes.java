@@ -5,7 +5,7 @@ import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.OreDictManager;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;

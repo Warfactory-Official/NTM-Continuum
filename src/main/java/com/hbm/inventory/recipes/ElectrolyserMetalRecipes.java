@@ -1,6 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.MaterialShapes;
@@ -62,10 +63,10 @@ public final class ElectrolyserMetalRecipes {
                 stack(ModItems.powder_astatine, 3), stack(ModItems.nugget_mercury, 72));
         add(ModItems.crystal_cobalt.get(), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 3), out(Mats.MAT_IRON, MaterialShapes.INGOT, 4),
                 stack(ModItems.powder_copper, 4), stack(ModItems.powder_lithium_tiny, 3));
-        com.hbm.scripting.ScriptedRecipes.apply(ElectrolyserMetalRecipes.class);
+        dev.golem.core.content.Replay.apply(ElectrolyserMetalRecipes.class);
     }
 
-    public static void put(net.minecraft.world.item.Item input, Mats.MaterialStack output1, Mats.MaterialStack output2,
+    public static void put(net.minecraft.world.item.Item input, MaterialStack output1, MaterialStack output2,
                            ItemStack... byproduct) {
         register();
         remove(input);
@@ -97,15 +98,15 @@ public final class ElectrolyserMetalRecipes {
         return stack.isEmpty() ? null : BY_ITEM.get(stack.getItem());
     }
 
-    private static void add(net.minecraft.world.item.Item input, Mats.MaterialStack output1, Mats.MaterialStack output2,
+    private static void add(net.minecraft.world.item.Item input, MaterialStack output1, MaterialStack output2,
                             ItemStack... byproduct) {
         ElectrolysisMetalRecipe recipe = new ElectrolysisMetalRecipe(new ComparableStack(input), output1, output2, byproduct);
         RECIPES.add(recipe);
         BY_ITEM.put(input, recipe);
     }
 
-    private static Mats.MaterialStack out(com.hbm.inventory.material.NTMMaterial material, MaterialShapes shape, int count) {
-        return new Mats.MaterialStack(material, shape.quantity * count);
+    private static MaterialStack out(com.hbm.inventory.material.NTMMaterial material, MaterialShapes shape, int count) {
+        return new MaterialStack(material, shape.quantity * count);
     }
 
     private static ItemStack stack(dev.golem.core.registry.RegistryObject<? extends net.minecraft.world.item.Item> item, int count) {
@@ -114,12 +115,12 @@ public final class ElectrolyserMetalRecipes {
 
     public static final class ElectrolysisMetalRecipe {
         public final AStack input;
-        public final Mats.MaterialStack output1;
-        public final Mats.MaterialStack output2;
+        public final MaterialStack output1;
+        public final MaterialStack output2;
         public final ItemStack[] byproduct;
         public final int duration = 600;
 
-        private ElectrolysisMetalRecipe(AStack input, Mats.MaterialStack output1, Mats.MaterialStack output2,
+        private ElectrolysisMetalRecipe(AStack input, MaterialStack output1, MaterialStack output2,
                                         ItemStack[] byproduct) {
             this.input = input;
             this.output1 = output1;

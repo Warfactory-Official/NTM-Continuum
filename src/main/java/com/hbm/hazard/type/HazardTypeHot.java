@@ -1,10 +1,11 @@
 package com.hbm.hazard.type;
 
+import com.hbm.api.hazard.IHazardType;
 import java.util.List;
 
 import com.hbm.config.RadiationConfig;
 import com.hbm.hazard.helper.HazardHelper;
-import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.api.hazard.IHazardModifier;
 import dev.golem.core.world.Effects;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

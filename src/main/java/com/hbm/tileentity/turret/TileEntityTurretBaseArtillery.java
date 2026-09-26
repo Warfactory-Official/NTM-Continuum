@@ -2,7 +2,7 @@ package com.hbm.tileentity.turret;
 
 import com.hbm.api.block.IRadarCommandReceiver;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import java.util.ArrayList;
@@ -50,8 +50,8 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
      */
     @Override
     public DirPos[] getConPos() {
-        Direction facing = getBlockState().hasProperty(BlockMultiblockCore.FACING)
-                ? getBlockState().getValue(BlockMultiblockCore.FACING)
+        Direction facing = getBlockState().hasProperty(MultiblockCore.FACING)
+                ? getBlockState().getValue(MultiblockCore.FACING)
                 : Direction.SOUTH;
         Direction dir = facing.getOpposite();
         Direction rot = dir.getClockWise();
@@ -136,7 +136,7 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
             int y = IRORInteractive.parseInt(params[1], Integer.MIN_VALUE, Integer.MAX_VALUE);
             int z = IRORInteractive.parseInt(params[2], Integer.MIN_VALUE, Integer.MAX_VALUE);
             sendCommandPosition(x, y, z);
-            markChanged();
+            setChanged();
         }
 
         return null;

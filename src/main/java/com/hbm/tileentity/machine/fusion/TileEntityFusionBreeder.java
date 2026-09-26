@@ -5,14 +5,14 @@ import dev.golem.core.data.Tags;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerFusionBreeder;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.FluidBreederRecipes;
 import com.hbm.inventory.recipes.OutgasserRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -72,13 +72,13 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
         breeder.neutronEnergySync = breeder.neutronEnergy;
 
         for (DirPos port : breeder.getConPos()) {
-            if (breeder.tanks[1].getFill() > 0) breeder.tryProvide(breeder.tanks[1], level, port);
+            if (breeder.tanks[1].getFill() > 0) breeder.tryProvide(breeder.tanks[1], level, port.getPos(), port.getDir().toDirection());
         }
 
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
-        FusionLink.claim(level, breeder, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
+        FusionLink.claim(level, breeder, plasmaCell(pos, dir), FusionLink.PLASMA_IN);
 
-        breeder.networkPackNT();
+        breeder.syncState();
         breeder.neutronEnergy = 0;
     }
 

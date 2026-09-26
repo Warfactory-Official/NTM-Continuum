@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine.solar;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** A solar mirror that feeds heat into the boiler at its recorded target coordinates. */
-public class TileEntitySolarMirror extends TileEntityLoadedBase {
+public class TileEntitySolarMirror extends SyncedBlockEntity {
 
     public int tX;
     public int tY;
@@ -26,7 +26,7 @@ public class TileEntitySolarMirror extends TileEntityLoadedBase {
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntitySolarMirror te) {
-        if (TickPhase.every(level, pos, 20L)) te.networkPackNT();
+        if (TickPhase.every(level, pos, 20L)) te.syncState();
 
         if (te.tY < pos.getY()) {
             te.isOn = false;
@@ -73,7 +73,7 @@ public class TileEntitySolarMirror extends TileEntityLoadedBase {
         tY = y;
         tZ = z;
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     public BlockPos getTarget() {

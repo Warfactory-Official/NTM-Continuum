@@ -1,7 +1,9 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.smoke.SmokeChainRegistration;
 import com.hbm.tileentity.machine.TileEntityAshpit;
 import net.minecraft.core.BlockPos;

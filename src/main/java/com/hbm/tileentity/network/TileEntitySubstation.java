@@ -1,6 +1,7 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import net.minecraft.core.Direction;
+import dev.golem.core.multiblock.MultiblockCore;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -50,7 +51,7 @@ public class TileEntitySubstation extends TileEntityPylonBase {
     }
 
     @Override
-    public boolean canConnect(com.hbm.lib.ForgeDirection dir) {
+    public boolean canConnect(net.minecraft.core.Direction dir) {
         return false;
     }
 
@@ -63,11 +64,11 @@ public class TileEntitySubstation extends TileEntityPylonBase {
     /** Index order of {@link #getCellPos}: core, (+1,+1), (+1,-1), (-1,+1), (-1,-1). */
     public static int cornerMask(int index) {
         return switch (index) {
-            case 1 -> BlockMultiblockCore.MASK_EAST | BlockMultiblockCore.MASK_SOUTH;
-            case 2 -> BlockMultiblockCore.MASK_EAST | BlockMultiblockCore.MASK_NORTH;
-            case 3 -> BlockMultiblockCore.MASK_WEST | BlockMultiblockCore.MASK_SOUTH;
-            case 4 -> BlockMultiblockCore.MASK_WEST | BlockMultiblockCore.MASK_NORTH;
-            default -> BlockMultiblockCore.MASK_NONE;
+            case 1 -> MultiblockCore.MASK_EAST | MultiblockCore.MASK_SOUTH;
+            case 2 -> MultiblockCore.MASK_EAST | MultiblockCore.MASK_NORTH;
+            case 3 -> MultiblockCore.MASK_WEST | MultiblockCore.MASK_SOUTH;
+            case 4 -> MultiblockCore.MASK_WEST | MultiblockCore.MASK_NORTH;
+            default -> MultiblockCore.MASK_NONE;
         };
     }
 

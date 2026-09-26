@@ -2,7 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.blocks.machine.solar.MachineSolarBoiler;
 import com.hbm.blocks.machine.solar.SolarMirror;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.items.solar.SolarDataComponents;
 import com.hbm.tileentity.machine.solar.TileEntitySolarMirror;
 import dev.golem.core.world.CompatItem;

@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.tile.IHeatSource;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;

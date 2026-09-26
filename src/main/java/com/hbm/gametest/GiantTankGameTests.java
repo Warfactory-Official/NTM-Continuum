@@ -1,8 +1,9 @@
 package com.hbm.gametest;
 
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
-import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.network.fluid.DuctData;
+import net.minecraft.core.Direction;
+import com.hbm.network.fluid.FluidGraph;
+import com.hbm.network.fluid.FluidNetwork;
 import com.hbm.blocks.machine.MachineBigAssTank9000;
 import com.hbm.blocks.machine.MachineBigAssTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -15,8 +16,8 @@ import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
 import com.hbm.tileentity.machine.TileEntityMachineBigAssTank;
 import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.graph.LevelNodeGraph;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.LevelNodeGraph;
+import dev.golem.core.graph.NodeNetwork;
 import dev.golem.core.Ids;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
@@ -51,11 +52,11 @@ public final class GiantTankGameTests {
         FoldedTestSupport.assertCell(helper, new BlockPos(8, 1, 8), new BlockPos(4, 1, 8));
         BlockPos bigPortCell = helper.absolutePos(new BlockPos(8, 1, 2));
         helper.assertTrue(bigBlock.canConnect(Fluids.WATER, helper.getLevel(), bigPortCell.getX(), bigPortCell.getY(),
-                        bigPortCell.getZ(), ForgeDirection.NORTH),
+                        bigPortCell.getZ(), Direction.NORTH),
                 "Big Ass Tank north port must connect at its real port cell");
         BlockPos falseBigPortCell = helper.absolutePos(new BlockPos(8, 1, 3));
         helper.assertFalse(bigBlock.canConnect(Fluids.WATER, helper.getLevel(), falseBigPortCell.getX(),
-                        falseBigPortCell.getY(), falseBigPortCell.getZ(), ForgeDirection.NORTH),
+                        falseBigPortCell.getY(), falseBigPortCell.getZ(), Direction.NORTH),
                 "Big Ass Tank must not expose a false intermediate port");
 
         TileEntityMachineBAT9000 bat = placeBat(helper, new BlockPos(8, 1, 8));
@@ -66,7 +67,7 @@ public final class GiantTankGameTests {
         assertPort(helper, bat.getConPos()[4], new BlockPos(11, 1, 9), ForgeDirection.EAST);
         BlockPos batPortCell = helper.absolutePos(new BlockPos(9, 1, 10));
         helper.assertTrue(batBlock.canConnect(Fluids.WATER, helper.getLevel(), batPortCell.getX(), batPortCell.getY(),
-                        batPortCell.getZ(), ForgeDirection.SOUTH),
+                        batPortCell.getZ(), Direction.SOUTH),
                 "BAT-9000 south port must connect at its real port cell");
         helper.succeed();
     }
@@ -210,7 +211,7 @@ public final class GiantTankGameTests {
     private static void assertDrop(GameTestHelper helper, ItemStack drop, Block block, int amount, int pressure,
                                    int mode) {
         helper.assertTrue(drop.getItem() == block.asItem()
-                        && ModDataComponents.fluidId(drop) == Fluids.WATER.getID()
+                        && ModDataComponents.fluid(drop) == Fluids.WATER
                         && ModDataComponents.fluidAmount(drop) == amount
                         && ModDataComponents.fluidPressure(drop) == pressure
                         && ModDataComponents.GIANT_TANK_MODE.getOr(drop, -1) == mode,

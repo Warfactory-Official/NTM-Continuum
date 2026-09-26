@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine.fusion;
 
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * with an {@code instanceof TileEntityFusionCollector} test on the torus's side; here the collector
  * declares it, so the torus needs no knowledge of this class.
  */
-public class TileEntityFusionCollector extends TileEntityLoadedBase implements IFusionPowerReceiver {
+public class TileEntityFusionCollector extends SyncedBlockEntity implements IFusionPowerReceiver {
 
 
     public TileEntityFusionCollector(BlockPos pos, BlockState state) {
@@ -26,7 +26,7 @@ public class TileEntityFusionCollector extends TileEntityLoadedBase implements I
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionCollector te) {
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
-        FusionLink.claim(level, te, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
+        FusionLink.claim(level, te, plasmaCell(pos, dir), FusionLink.PLASMA_IN);
     }
 
     /** False — the collector adds to the reactor's rate without taking a share of its output. */

@@ -79,7 +79,7 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements Men
                 furnace.setChanged();
             }
         }
-        furnace.networkPackNT();
+        furnace.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceSteel furnace) {

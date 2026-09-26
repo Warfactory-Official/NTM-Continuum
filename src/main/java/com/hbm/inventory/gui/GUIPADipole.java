@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerPADipole;
 import com.hbm.items.machine.ItemPACoil;
 import com.hbm.packet.ControlEventPayload;
@@ -150,7 +151,7 @@ public class GUIPADipole extends GUIPABase<ContainerPADipole> {
     }
 
     private boolean cycle(TileEntityPADipole dipole, String key) {
-        GuiUtil.playClickSound();
+        Gauges.click();
         CompoundTag data = new CompoundTag();
         data.putBoolean(key, true);
         GolemNetwork.sendToServer(ControlEventPayload.CODEC,

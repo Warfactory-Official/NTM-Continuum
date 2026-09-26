@@ -1,7 +1,7 @@
 package com.hbm.modules.machine;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
@@ -10,7 +10,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipes;
 /** Precision assembler processing module: nine item inputs/outputs and one fluid tank pair. */
 public final class ModuleMachinePrecAss extends ModuleMachineBase {
 
-    public ModuleMachinePrecAss(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {
+    public ModuleMachinePrecAss(int index, IEnergyHandlerMK2 battery, ItemHandler inventory) {
         super(index, battery, inventory);
         inputSlots = new int[9];
         outputSlots = new int[9];

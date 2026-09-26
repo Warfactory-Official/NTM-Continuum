@@ -5,7 +5,7 @@ import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerSolidifier;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.SolidificationRecipes;
@@ -78,7 +78,7 @@ public class TileEntityMachineSolidifier extends TileEntityMachineBase
         if (te.canProcess()) te.process();
         else te.progress = 0;
 
-        te.networkPackNT();
+        te.syncState();
     }
 
 

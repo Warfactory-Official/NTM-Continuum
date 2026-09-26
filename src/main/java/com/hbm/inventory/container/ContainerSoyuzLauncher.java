@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
@@ -86,7 +87,7 @@ public class ContainerSoyuzLauncher extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModSoyuzBlocks.soyuz_launcher.get());
+        return Menus.stillValid(access, player, ModSoyuzBlocks.soyuz_launcher.get());
     }
 
     @Override

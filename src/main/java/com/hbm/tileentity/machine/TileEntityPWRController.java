@@ -1,11 +1,12 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModFluidNetBlocks;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
@@ -199,7 +200,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
             for (BlockPos port : te.ports) {
                 for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
                     BlockPos portPos = port.relative(dir.toDirection());
-                    if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, portPos, dir);
+                    if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, portPos, dir.toDirection());
                     // 1.7 also subscribed the cold tank here; the port's fluid net finds the port cells itself
                 }
             }
@@ -213,7 +214,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** One fission step; split out of the tick so a test can drive it without the chunk-loading gate. */
@@ -225,11 +226,11 @@ public class TileEntityPWRController extends TileEntityMachineBase
             typeLoaded = inputFuel.index;
             amountLoaded++;
             inventory.extractItem(0, 1, false);
-            this.markChanged();
+            this.setChanged();
         } else if (inputFuel != null && inputFuel.index == typeLoaded && amountLoaded < rodCount) {
             amountLoaded++;
             inventory.extractItem(0, 1, false);
-            this.markChanged();
+            this.setChanged();
         }
 
         double diff = this.rodLevel - this.rodTarget;
@@ -273,7 +274,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
                 }
 
                 this.amountLoaded--;
-                this.markChanged();
+                this.setChanged();
             }
             // 1.7: a burning core shows up on the ray-scan satellite every 100 ticks.
             if (level.getGameTime() % 100 == 0) {
@@ -519,7 +520,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
         this.rodLevel = input.getDoubleOr("rodLevel", 0);
         this.rodTarget = input.getDoubleOr("rodTarget", 0);
         EnumPWRFuel named = EnumPWRFuel.byName(input.getStringOr("typeName", ""));
-        this.typeLoaded = named != null ? named.index : input.getIntOr("typeLoaded", 0);
+        this.typeLoaded = named != null ? named.index : -1;
         this.amountLoaded = input.getIntOr("amountLoaded", 0);
         this.progress = input.getDoubleOr("progress", 0);
         this.processTime = input.getDoubleOr("processTime", 0);
@@ -562,7 +563,6 @@ public class TileEntityPWRController extends TileEntityMachineBase
         output.putDouble("flux", flux);
         output.putDouble("rodLevel", rodLevel);
         output.putDouble("rodTarget", rodTarget);
-        output.putInt("typeLoaded", typeLoaded);
         EnumPWRFuel loaded = EnumPWRFuel.byIndex(typeLoaded);
         if (loaded != null) output.putString("typeName", loaded.name());
         output.putInt("amountLoaded", amountLoaded);
@@ -603,7 +603,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
     public void receiveControl(CompoundTag data) {
         if (data.contains("control")) {
             this.rodTarget = Mth.clamp(Tags.getIntOr(data, "control", 0), 0, 100);
-            this.markChanged();
+            this.setChanged();
         }
     }
 
@@ -625,7 +625,7 @@ public class TileEntityPWRController extends TileEntityMachineBase
 
     /** The controller block itself has no fluid faces; the port cells relay to it. */
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction dir) {
         return false;
     }
 
@@ -665,14 +665,14 @@ public class TileEntityPWRController extends TileEntityMachineBase
         if ((PREFIX_FUNCTION + "setrods").equals(name) && params.length > 0) {
             int percent = IRORInteractive.parseInt(params[0], 0, 100);
             this.rodTarget = percent;
-            this.markChanged();
+            this.setChanged();
             return null;
         }
         if ((PREFIX_FUNCTION + "jettison").equals(name)) {
             this.typeLoaded = -1;
             this.amountLoaded = 0;
             this.progress = 0;
-            this.markChanged();
+            this.setChanged();
             return null;
         }
         return null;

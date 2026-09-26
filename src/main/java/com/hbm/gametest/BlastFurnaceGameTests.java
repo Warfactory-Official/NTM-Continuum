@@ -1,9 +1,11 @@
 package com.hbm.gametest;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.api.material.MaterialStack;
+import net.minecraft.core.Direction;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
@@ -14,7 +16,6 @@ import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemScraps;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.machine.ModuleMachineBase;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -53,14 +54,14 @@ public final class BlastFurnaceGameTests {
         TileEntityMachineBlastFurnace furnace = GameTestHelpers.blockEntity(helper, core,
                 TileEntityMachineBlastFurnace.class);
         helper.assertTrue(furnace != null, "Blast furnace controller setup failed");
-        helper.assertBlockProperty(core, BlockMultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
+        helper.assertBlockProperty(core, MultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
         FoldedTestSupport.assertPort(helper, core, core.above(6));
         FoldedTestSupport.assertPort(helper, core, core.offset(1, 0, 0));
         helper.assertTrue(furnace.getConPos().length == 6, "Blast furnace must expose six fluid/power ports");
         var eastCell = helper.absolutePos(core.offset(1, 0, 0));
-        helper.assertTrue(block.canConnect(Fluids.AIRBLAST, helper.getLevel(), eastCell.getX(), eastCell.getY(), eastCell.getZ(), ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(Fluids.AIRBLAST, helper.getLevel(), eastCell.getX(), eastCell.getY(), eastCell.getZ(), Direction.EAST),
                 "The east airblast port must connect");
-        helper.assertFalse(block.canConnect(Fluids.AIRBLAST, helper.getLevel(), eastCell.getX(), eastCell.getY(), eastCell.getZ(), ForgeDirection.WEST),
+        helper.assertFalse(block.canConnect(Fluids.AIRBLAST, helper.getLevel(), eastCell.getX(), eastCell.getY(), eastCell.getZ(), Direction.WEST),
                 "The inside-facing furnace side must not connect");
         helper.succeed();
     }
@@ -114,7 +115,7 @@ public final class BlastFurnaceGameTests {
         helper.assertTrue(furnace.inventory.getStackInSlot(3).is(ModItems.ingot_steel.get())
                         && furnace.inventory.getStackInSlot(3).getCount() == 2,
                 "Blast furnace did not produce two steel ingots");
-        Mats.MaterialStack slag = ItemScraps.getMats(furnace.inventory.getStackInSlot(4));
+        MaterialStack slag = ItemScraps.getMats(furnace.inventory.getStackInSlot(4));
         helper.assertTrue(slag != null && slag.material == Mats.MAT_SLAG
                         && slag.amount == MaterialShapes.INGOT.quantity,
                 "Blast furnace did not produce its slag byproduct");
@@ -130,7 +131,7 @@ public final class BlastFurnaceGameTests {
         TestRecipes recipes = new TestRecipes();
         GenericRecipe recipe = recipes.recipe;
         TestEnergy energy = new TestEnergy(100);
-        NTMItemHandler inventory = new NTMItemHandler(2);
+        ItemHandler inventory = new ItemHandler(2);
         ModuleMachineBase module = new ModuleMachineBase(0, energy, inventory) {
             { inputSlots = new int[]{0}; outputSlots = new int[]{1};
               inputTanks = new com.hbm.inventory.fluid.tank.FluidTankNTM[]{new com.hbm.inventory.fluid.tank.FluidTankNTM(Fluids.WATER, 100)};
@@ -161,7 +162,7 @@ public final class BlastFurnaceGameTests {
                 .outputItems(new ItemStack(Items.GOLD_INGOT))
                 .outputChances(0F);
         TestEnergy energy = new TestEnergy(0);
-        NTMItemHandler inventory = new NTMItemHandler(2);
+        ItemHandler inventory = new ItemHandler(2);
         ModuleMachineBase module = new ModuleMachineBase(0, energy, inventory) {
             { inputSlots = new int[]{0}; outputSlots = new int[]{1}; }
             @Override public GenericRecipes getRecipeSet() { return recipes; }

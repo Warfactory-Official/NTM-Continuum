@@ -11,7 +11,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidCombustion.Combustible;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -99,11 +99,11 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
         te.power = Library.chargeItemsFromTE(te.inventory, 3, te.power, maxPower);
 
         for (DirPos dp : te.getConPos()) {
-            te.tryProvide(level, dp.getPos().getX(), dp.getPos().getY(), dp.getPos().getZ(), dp.getDir());
+            te.tryProvide(level, dp.getPos().getX(), dp.getPos().getY(), dp.getPos().getZ(), dp.getDir().toDirection());
         }
 
         if (te.power > maxPower) te.power = maxPower;
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCombustionEngine te) {

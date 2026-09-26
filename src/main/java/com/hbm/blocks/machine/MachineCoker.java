@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCoker;
 import net.minecraft.core.BlockPos;
@@ -48,10 +50,10 @@ public class MachineCoker extends BlockMultiblockMachine implements IFluidConnec
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
-        if (!MultiblockHandlerXR.checkSpace(level, core.above(), COLLAR, clicked, facing)) return false;
+        if (!MultiblockFootprint.checkSpace(level, core.above(), COLLAR, clicked, facing)) return false;
         for (int dx = -2; dx <= 2; dx += 4) {
             for (int dz = -2; dz <= 2; dz += 4) {
-                if (!MultiblockHandlerXR.checkSpace(level, core.offset(dx, 1, dz), PILLAR, clicked, facing)) {
+                if (!MultiblockFootprint.checkSpace(level, core.offset(dx, 1, dz), PILLAR, clicked, facing)) {
                     return false;
                 }
             }
@@ -63,10 +65,10 @@ public class MachineCoker extends BlockMultiblockMachine implements IFluidConnec
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.above(), COLLAR, facing, visitor);
+        MultiblockFootprint.visitBox(core.above(), COLLAR, facing, visitor);
         for (int dx = -2; dx <= 2; dx += 4) {
             for (int dz = -2; dz <= 2; dz += 4) {
-                MultiblockHandlerXR.visitBox(core.offset(dx, 1, dz), PILLAR, facing, visitor);
+                MultiblockFootprint.visitBox(core.offset(dx, 1, dz), PILLAR, facing, visitor);
             }
         }
         for (int dx = -1; dx <= 1; dx += 2) {

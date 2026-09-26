@@ -1,10 +1,11 @@
 package com.hbm.blocks.network;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CarriedBlock;
@@ -56,8 +57,9 @@ public abstract class PneumaticStorageBlockBase extends CarriedBlock
 
     /** The storage banks take compressed air on any face; the machines take no fluid at all. */
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return world.getBlockEntity(new BlockPos(x, y, z)) instanceof IFluidConnectorMK2 connector
-                && connector.canConnect(type, dir);
+                && connector.canConnect(type, dir.toDirection());
     }
 }

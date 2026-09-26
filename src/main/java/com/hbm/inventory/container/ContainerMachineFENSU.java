@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.inventory.ModMenus;
@@ -77,7 +78,7 @@ public class ContainerMachineFENSU extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModBatteryBlocks.machine_fensu.get());
+        return Menus.stillValid(access, player, ModBatteryBlocks.machine_fensu.get());
     }
 
     @Override

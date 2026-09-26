@@ -1,5 +1,6 @@
 package com.hbm.tileentity.bomb;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -15,14 +16,13 @@ import com.hbm.entity.missile.EntityMissileTier2;
 import com.hbm.entity.missile.EntityMissileTier3;
 import com.hbm.entity.missile.EntityMissileTier4;
 import com.hbm.interfaces.IBomb.BombReturnCode;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModMissileItems;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.weapon.ItemMissileStandard;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -134,7 +134,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
      * Client-side: the missile the pad is holding, for the pad's renderer.
      *
      * <p>It has two sources, and it needs both. The periodic network pack carries it while the pad is
-     * being used, but {@code networkPackNT} only sends when the payload <em>changes</em> — so a player
+     * being used, but {@code syncState} only sends when the payload <em>changes</em> — so a player
      * who logs in next to an idle, fully loaded pad would never receive one, and the pad would render
      * empty forever. {@link #syncFullTagOnChunkLoad()} closes that: the whole block entity (inventory
      * included) travels with the chunk, and {@link #refreshRenderMissile()} derives this from slot 0.
@@ -195,7 +195,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
             setFuel(missile);
         }
 
-        this.networkPackNT();
+        this.syncState();
     }
 
     /** Drains a fluid container in {@code inSlot} into {@code tank}, emptied container → {@code outSlot}. */
@@ -481,8 +481,8 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
     @Override public FluidTankNTM[] getReceivingTanks() { return this.tanks; }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
-        return dir != ForgeDirection.UP && dir != ForgeDirection.DOWN;
+    public boolean canConnect(Direction dir) {
+        return dir != Direction.UP && dir != Direction.DOWN;
     }
 
     // --- sync + persistence ---

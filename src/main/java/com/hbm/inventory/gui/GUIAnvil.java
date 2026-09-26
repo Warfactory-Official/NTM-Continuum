@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
@@ -9,13 +10,10 @@ import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilConstructionRecipe;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes.AnvilOutput;
 import com.hbm.packet.AnvilCraftPayload;
 import dev.golem.core.net.GolemNetwork;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -205,18 +203,18 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
         int x = (int) event.x(), y = (int) event.y();
 
         if (isOver(x, y, 7, 71, 9, 36)) { // page left
-            click();
+            Gauges.click();
             if (this.index > 0) this.index--;
             return true;
         }
         if (isOver(x, y, 106, 71, 9, 36)) { // page right
-            click();
+            Gauges.click();
             if (this.index < this.size) this.index++;
             return true;
         }
         if (isOver(x, y, 52, 53, 18, 18)) { // craft the selection
             if (this.selection >= 0 && this.selection < this.recipes.size()) {
-                click();
+                Gauges.click();
                 int globalIndex = AnvilRecipes.getConstruction().indexOf(this.recipes.get(this.selection));
                 GolemNetwork.sendToServer(AnvilCraftPayload.CODEC,
                         new AnvilCraftPayload(globalIndex, event.hasShiftDown() ? 1 : 0));
@@ -224,7 +222,7 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
             return true;
         }
         if (isOver(x, y, 97, 107, 18, 18)) { // (re-)apply the search
-            click();
+            Gauges.click();
             if (this.search != null) search(this.search.getValue());
             return true;
         }
@@ -232,7 +230,7 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
             int ind = i - index * 2;
             if (isOver(x, y, 16 + 18 * (ind / 2), 71 + 18 * (ind % 2), 18, 18)) {
                 this.selection = this.selection == i ? -1 : i;
-                click();
+                Gauges.click();
                 return true;
             }
         }
@@ -262,9 +260,6 @@ public class GUIAnvil extends dev.golem.core.gui.CompatContainerScreen<Container
         return false;
     }
 
-    private void click() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-    }
 
     private boolean isOver(int mouseX, int mouseY, int x, int y, int w, int h) {
         return mouseX >= leftPos + x && mouseX < leftPos + x + w && mouseY >= topPos + y && mouseY < topPos + y + h;

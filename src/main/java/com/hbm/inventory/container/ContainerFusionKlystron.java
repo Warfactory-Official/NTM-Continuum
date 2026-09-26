@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.lib.Library;
@@ -71,7 +72,7 @@ public class ContainerFusionKlystron extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.fusion_klystron.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.fusion_klystron.get());
     }
 
     @Override

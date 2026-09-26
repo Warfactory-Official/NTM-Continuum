@@ -1,15 +1,19 @@
 package com.hbm.scripting;
 
+import com.hbm.api.content.HazardsEvent;
+import com.hbm.api.material.MaterialStack;
+import com.hbm.api.material.SmeltingBehavior;
+import com.hbm.api.content.MaterialsEvent;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.hbm.Constants;
 import com.hbm.blocks.ModOreBlocks;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardData;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
-import com.hbm.hazard.type.IHazardType;
+import com.hbm.api.hazard.IHazardType;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
@@ -71,18 +75,18 @@ public final class ScriptedMaterials {
     private static final int ORE_BAND_DARK = 0xD8D8D8;
     private static final String ORE_STEP = "underground_ores";
 
-    static final class Declared {
-        final NTMMaterial material;
-        final Set<MaterialShapes> items = new LinkedHashSet<>();
-        final Map<MaterialShapes, String> textures = new LinkedHashMap<>();
-        boolean block;
-        MaterialsEvent.OreSpec ore;
-        double rads;
-        @Nullable String hazard;
-        double hazardLevel;
+    public static final class Declared {
+        public final NTMMaterial material;
+        public final Set<MaterialShapes> items = new LinkedHashSet<>();
+        public final Map<MaterialShapes, String> textures = new LinkedHashMap<>();
+        public boolean block;
+        public MaterialsEvent.OreSpec ore;
+        public double rads;
+        public @Nullable String hazard;
+        public double hazardLevel;
 
-        final Map<MaterialShapes, RegistryObject<? extends Item>> minted = new LinkedHashMap<>();
-        final List<String> oreIds = new ArrayList<>();
+        public final Map<MaterialShapes, RegistryObject<? extends Item>> minted = new LinkedHashMap<>();
+        public final List<String> oreIds = new ArrayList<>();
 
         Declared(NTMMaterial material) {
             this.material = material;
@@ -94,7 +98,7 @@ public final class ScriptedMaterials {
     private static final Map<String, JsonObject> BLOCK_MODELS = new LinkedHashMap<>();
     private static boolean generatorsAdded;
 
-    static Declared spec(NTMMaterial material) {
+    public static Declared spec(NTMMaterial material) {
         return SPECS.computeIfAbsent(material, Declared::new);
     }
 
@@ -112,7 +116,7 @@ public final class ScriptedMaterials {
                 if (spec.rads > 0 || spec.hazard != null) radiation(spec);
                 ScriptedContent.whenRegistered(() -> smelting(spec));
             } catch (RuntimeException e) {
-                Constants.LOG.error("[scripts] material {} failed: {}", spec.material.name, e.getMessage(), e);
+                Constants.LOG.error("[scripts] material {} failed: {}", spec.material.name(), e.getMessage(), e);
             }
         }
         if (!generatorsAdded && !SPECS.isEmpty()) {
@@ -132,7 +136,7 @@ public final class ScriptedMaterials {
         Art art = ART.get(shape);
         if (art == null) throw new IllegalArgumentException(shape + " has no default art; give texture('" + shape + "', sprite)");
         REMAPS.add(new Remap(art.sprite(), shape == BLOCK, art.band().solidColorLight, art.band().solidColorDark, spec.material));
-        return art.sprite() + "_" + spec.material.name;
+        return art.sprite() + "_" + spec.material.name();
     }
 
     private static void mintItem(Declared spec, MaterialShapes shape) {
@@ -160,13 +164,13 @@ public final class ScriptedMaterials {
         String overlay = spec.textures.get(ORE);
         if (overlay == null) {
             REMAPS.add(new Remap(ORE_OVERLAY, true, ORE_BAND_LIGHT, ORE_BAND_DARK, spec.material));
-            overlay = ORE_OVERLAY + "_" + spec.material.name;
+            overlay = ORE_OVERLAY + "_" + spec.material.name();
         }
         String name = ORE.displayName(spec.material.getDisplayName());
         List<String> stones = ore.stones();
         for (int i = 0; i < stones.size(); i++) {
             String stone = stones.get(i);
-            String id = i == 0 ? "ore_" + spec.material.name : "ore_" + stonePrefix(stone) + "_" + spec.material.name;
+            String id = i == 0 ? "ore_" + spec.material.name() : "ore_" + stonePrefix(stone) + "_" + spec.material.name();
             float hardness = stone.equals("deepslate") ? ore.hardness * 1.5F : ore.hardness;
             SoundType sound = switch (stone) {
                 case "deepslate" -> SoundType.DEEPSLATE;
@@ -185,12 +189,12 @@ public final class ScriptedMaterials {
                 if (smelts(spec.material)) Mats.registerEntry(item.get(), oreYield(spec.material));
             });
         }
-        if (smelts(spec.material)) Mats.registerTagEntry("c:" + ORE.tagPlural + "/" + spec.material.name, oreYield(spec.material));
+        if (smelts(spec.material)) Mats.registerTagEntry("c:" + ORE.tagPlural + "/" + spec.material.name(), oreYield(spec.material));
         BiomeFeatures.inject(ore.dimension, feature(spec.material), ORE_STEP);
     }
 
-    private static List<Mats.MaterialStack> oreYield(NTMMaterial material) {
-        return List.of(new Mats.MaterialStack(material, INGOT.quantity * 2), new Mats.MaterialStack(Mats.MAT_STONE, INGOT.quantity / 4));
+    private static List<MaterialStack> oreYield(NTMMaterial material) {
+        return List.of(new MaterialStack(material, INGOT.quantity * 2), new MaterialStack(Mats.MAT_STONE, INGOT.quantity / 4));
     }
 
     private static String feature(NTMMaterial material) {
@@ -226,14 +230,14 @@ public final class ScriptedMaterials {
     }
 
     private static boolean smelts(NTMMaterial material) {
-        return material.smeltsInto.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE
-                || material.smeltsInto.smeltable == NTMMaterial.SmeltingBehavior.ADDITIVE;
+        return material.smeltsInto.smeltable == SmeltingBehavior.SMELTABLE
+                || material.smeltsInto.smeltable == SmeltingBehavior.ADDITIVE;
     }
 
     private static void smelting(Declared spec) {
         if (!smelts(spec.material)) return;
         spec.minted.forEach((shape, item) ->
-                Mats.registerEntry(item.get(), List.of(new Mats.MaterialStack(spec.material, shape.quantity))));
+                Mats.registerEntry(item.get(), List.of(new MaterialStack(spec.material, shape.quantity))));
     }
 
     private static final Map<MaterialShapes, Float> RAD_MULT = Map.of(
@@ -352,7 +356,7 @@ public final class ScriptedMaterials {
     }
 
     private static void recipes(GolemScriptPlugin.Resources out, Declared spec) {
-        String mat = spec.material.name;
+        String mat = spec.material.name();
         if (spec.minted.containsKey(INGOT) && spec.minted.containsKey(BLOCK)) {
             compress(out, hbm(id(INGOT, spec.material)), hbm(id(BLOCK, spec.material)), "block_" + mat);
         }
@@ -427,8 +431,8 @@ public final class ScriptedMaterials {
         if (shape == null) return drop;
         if (spec.minted.containsKey(shape)) return hbm(id(shape, spec.material));
         String base = ModAutogenItems.base(shape);
-        if (base != null && ModAutogenItems.has(shape, spec.material)) return hbm(base + "_" + spec.material.name);
-        Constants.LOG.error("[scripts] {} has no {} item to drop; its ore drops itself", spec.material.name, shape);
+        if (base != null && ModAutogenItems.has(shape, spec.material)) return hbm(base + "_" + spec.material.name());
+        Constants.LOG.error("[scripts] {} has no {} item to drop; its ore drops itself", spec.material.name(), shape);
         return null;
     }
 

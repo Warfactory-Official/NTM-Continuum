@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;

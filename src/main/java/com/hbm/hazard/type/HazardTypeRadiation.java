@@ -1,9 +1,10 @@
 package com.hbm.hazard.type;
 
+import com.hbm.api.hazard.IHazardType;
 import java.util.List;
 
 import com.hbm.hazard.helper.HazardHelper;
-import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.api.hazard.IHazardModifier;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.ContaminationUtil.ContaminationType;
 import com.hbm.util.ContaminationUtil.HazardType;

@@ -84,7 +84,7 @@ public final class AnvilRecipes {
         registerSmithing();
         registerConstruction();
         registerConstructionSirens();
-        com.hbm.scripting.ScriptedRecipes.apply(AnvilRecipes.class);
+        dev.golem.core.content.Replay.apply(AnvilRecipes.class);
     }
 
     public static void addSmithing(AnvilSmithingRecipe recipe) {

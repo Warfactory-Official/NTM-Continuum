@@ -56,7 +56,7 @@ public class TileEntityTesla extends TileEntityMachineBase implements IEnergyRec
             tesla.targets = TeslaZap.zap(server, dx, dy, dz, range, null);
         }
 
-        tesla.networkPackNT();
+        tesla.syncState();
     }
 
     @Override

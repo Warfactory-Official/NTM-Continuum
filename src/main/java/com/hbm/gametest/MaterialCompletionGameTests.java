@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.material.BlockConcreteColored;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.blocks.material.BlockConcreteColoredExt;
 import com.hbm.blocks.material.BlockLightstone;
 import com.hbm.blocks.material.MaterialCompletionRegistrations;
@@ -39,7 +40,7 @@ import com.hbm.items.material.FuelAdditiveItems;
 import com.hbm.inventory.recipes.material.FuelAdditiveRecipes;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.items.machine.ModStampItems;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.Ids;
 import dev.golem.core.registry.RegistryObject;
@@ -166,9 +167,9 @@ public final class MaterialCompletionGameTests {
     }
 
     public static void materialIdentityAndSmelting(GameTestHelper helper) {
-        helper.assertTrue(Mats.MAT_IRON.id == 2600 && Mats.MAT_IRON.name.equals("iron"),
+        helper.assertTrue(Mats.MAT_IRON.id.toString().equals("hbm:iron") && Mats.MAT_IRON.name.equals("iron"),
                 "Iron material identity changed");
-        List<Mats.MaterialStack> iron = Mats.getSmeltingMaterialsFromItem(new ItemStack(Items.IRON_INGOT));
+        List<MaterialStack> iron = Mats.getSmeltingMaterialsFromItem(new ItemStack(Items.IRON_INGOT));
         helper.assertTrue(iron.size() == 1 && iron.get(0).material == Mats.MAT_IRON
                         && iron.get(0).amount == 72,
                 "Iron ingot smelting sample changed");
@@ -292,12 +293,9 @@ public final class MaterialCompletionGameTests {
                 Mats.MAT_METEORICIRON, Mats.MAT_MALACHITE, Mats.MAT_BAUXITE, Mats.MAT_CRYOLITE,
                 Mats.MAT_RGP, Mats.MAT_RGA, Mats.MAT_EMERALD, Mats.MAT_KNO, Mats.MAT_MUD,
                 Mats.MAT_RAREEARTH);
-        int[] ids = {4, 610, 611, 612, 1430, 2601, 2602, 2603, 2604, 2901, 2902, 2903,
-                9401, 9501, 401, 700, 44, 20000};
-        for (int i = 0; i < completion.size(); i++) {
-            NTMMaterial material = completion.get(i);
-            helper.assertTrue(material.id == ids[i] && Mats.matById.get(ids[i]) == material,
-                    "Wrong completion material identity at index " + i);
+        for (NTMMaterial material : completion) {
+            helper.assertTrue(Mats.matById.get(material.id) == material && Mats.byIndex(material.index) == material,
+                    "Wrong completion material identity " + material.id);
         }
         helper.succeed();
     }
@@ -349,7 +347,7 @@ public final class MaterialCompletionGameTests {
         assertMaterial(helper, new ItemStack(ModStampItems.stamp_titanium_flat.get()), Mats.MAT_TITANIUM, 216);
         assertMaterial(helper, new ItemStack(ModStampItems.stamp_obsidian_flat.get()), Mats.MAT_OBSIDIAN, 216);
         assertExactDistribution(helper, new ItemStack(ModIntermediateItems.chunk(EnumChunkType.CRYOLITE)),
-                new Mats.MaterialStack(Mats.MAT_ALUMINIUM, 72), new Mats.MaterialStack(Mats.MAT_SODIUM, 72));
+                new MaterialStack(Mats.MAT_ALUMINIUM, 72), new MaterialStack(Mats.MAT_SODIUM, 72));
         assertMaterial(helper, new ItemStack(ModOreBlocks.stone_resource_limestone.get().asItem()), Mats.MAT_FLUX, 720);
         assertMaterial(helper, new ItemStack(ModIngredientItems.ash(EnumAshType.WOOD)), Mats.MAT_CARBON, 8);
         assertMaterial(helper, new ItemStack(ModIngredientItems.ash(EnumAshType.COAL)), Mats.MAT_CARBON, 16);
@@ -581,21 +579,21 @@ public final class MaterialCompletionGameTests {
 
     private static void assertExactMaterial(GameTestHelper helper, ItemStack input, NTMMaterial material,
                                             int amount, int cardinality) {
-        List<Mats.MaterialStack> actual = Mats.getSmeltingMaterialsFromItem(input);
+        List<MaterialStack> actual = Mats.getSmeltingMaterialsFromItem(input);
         helper.assertTrue(actual.size() == cardinality
                         && actual.stream().allMatch(stack -> stack.material == material && stack.amount == amount),
                 "Material distribution drift for " + input + ": " + actual);
     }
 
     private static void assertMaterial(GameTestHelper helper, ItemStack input, NTMMaterial material, int amount) {
-        List<Mats.MaterialStack> actual = Mats.getSmeltingMaterialsFromItem(input);
+        List<MaterialStack> actual = Mats.getSmeltingMaterialsFromItem(input);
         helper.assertTrue(actual.size() == 1 && actual.get(0).material == material && actual.get(0).amount == amount,
                 "Missing material distribution " + material.name + "=" + amount + " for " + input);
     }
 
     private static void assertExactDistribution(GameTestHelper helper, ItemStack input,
-                                                Mats.MaterialStack... expected) {
-        List<Mats.MaterialStack> actual = Mats.getSmeltingMaterialsFromItem(input);
+                                                MaterialStack... expected) {
+        List<MaterialStack> actual = Mats.getSmeltingMaterialsFromItem(input);
         boolean matches = actual.size() == expected.length;
         if (matches) {
             for (int i = 0; i < expected.length; i++) {

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.Library;
@@ -86,7 +87,7 @@ public final class ContainerMachineAssemblyFactory extends AbstractContainerMenu
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player,
+        return Menus.stillValid(access, player,
                 AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get());
     }
 

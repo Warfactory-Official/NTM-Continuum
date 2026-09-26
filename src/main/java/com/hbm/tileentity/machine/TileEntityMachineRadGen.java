@@ -87,7 +87,7 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
         generator.isOn = false;
 
         for (DirPos connection : generator.getConPos()) {
-            generator.tryProvide(level, connection.getPos(), connection.getDir());
+            generator.tryProvide(level, connection.getPos(), connection.getDir().toDirection());
         }
 
         for (int i = 0; i < CHANNELS; i++) {
@@ -127,7 +127,7 @@ public class TileEntityMachineRadGen extends TileEntityMachineBase
         }
 
         generator.setChanged();
-        generator.networkPackNT();
+        generator.syncState();
     }
 
     /** The rear port is four blocks behind the core, adjacent to the extra dummy cell. */

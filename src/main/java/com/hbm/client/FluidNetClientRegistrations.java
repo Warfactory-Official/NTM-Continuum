@@ -26,7 +26,7 @@ public final class FluidNetClientRegistrations {
 
     private FluidNetClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModFluidNetMenus.BARREL.get(), GUIBarrel::new);
         FluidPump.OPEN_SCREEN = pump -> net.minecraft.client.Minecraft.getInstance().setScreen(new GUIPump(pump));
     }

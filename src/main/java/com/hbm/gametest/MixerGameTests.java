@@ -55,10 +55,10 @@ public final class MixerGameTests {
 
         helper.assertTrue(helper.getLevel().getBlockEntity(absolute) instanceof TileEntityMachineMixer,
                 "Mixer core block entity was not created");
-        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, net.minecraft.core.Direction.EAST),
                 "Mixer east power port did not connect");
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), absolute.getX(), absolute.getY(), absolute.getZ(),
-                        com.hbm.lib.ForgeDirection.NORTH),
+                        net.minecraft.core.Direction.NORTH),
                 "Mixer north fluid port did not connect");
         helper.succeed();
     }

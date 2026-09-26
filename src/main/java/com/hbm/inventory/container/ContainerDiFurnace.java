@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.DiFurnaceContent;
 import com.hbm.tileentity.machine.TileEntityDiFurnace;
 import dev.golem.core.world.Compat;
@@ -84,7 +85,7 @@ public class ContainerDiFurnace extends CompatContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, DiFurnaceContent.MACHINE_DIFURNACE.get());
+        return Menus.stillValid(access, player, DiFurnaceContent.MACHINE_DIFURNACE.get());
     }
 
     @Override

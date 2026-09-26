@@ -1,5 +1,6 @@
 package com.hbm.radio.client;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.radio.RadioTelexMenu;
 import com.hbm.tileentity.network.TileEntityRadioTelex;
@@ -10,14 +11,11 @@ import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import org.jspecify.annotations.Nullable;
 
@@ -240,7 +238,7 @@ public final class RadioTelexScreen extends CompatContainerScreen<RadioTelexMenu
         if (over(x, y, 167, 219, 18, 18)) command = "rxcls";
 
         if (command != null) {
-            click();
+            Gauges.click();
             if ("rxdel".equals(command)) {
                 // The old GUI cleared its local transmit buffer before sending the delete packet.
                 for (EditBox line : txLines) line.setValue("");
@@ -259,7 +257,7 @@ public final class RadioTelexScreen extends CompatContainerScreen<RadioTelexMenu
         }
 
         if (character != 0) {
-            click();
+            Gauges.click();
             textFocus = true;
             txFrequency.setFocused(false);
             rxFrequency.setFocused(false);
@@ -333,10 +331,6 @@ public final class RadioTelexScreen extends CompatContainerScreen<RadioTelexMenu
         }
     }
 
-    private void click() {
-        Minecraft.getInstance().getSoundManager().play(
-                SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1F));
-    }
 
     private boolean over(double mouseX, double mouseY, int x, int y, int width, int height) {
         return mouseX >= leftPos + x && mouseX < leftPos + x + width

@@ -1,7 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.sound.ModSounds;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;

@@ -5,8 +5,8 @@ import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorMK2;
-import com.hbm.inventory.NTMItemHandler;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.machine.ItemHandler;
+import com.hbm.api.fluid.FluidType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
@@ -79,12 +79,12 @@ public final class Library {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
 
         if (world.getBlockState(pos).getBlock() instanceof IFluidConnectorBlockMK2 con) {
-            if (con.canConnect(type, world, x, y, z, dir.getOpposite())) return true;
+            if (con.canConnect(type, world, x, y, z, dir.getOpposite().toDirection())) return true;
         }
 
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof IFluidConnectorMK2 con) {
-            return con.canConnect(type, dir.getOpposite());
+            return con.canConnect(type, dir.getOpposite().toDirection());
         }
 
         return false;
@@ -100,12 +100,12 @@ public final class Library {
         if (dir == ForgeDirection.UNKNOWN) return false;
 
         if (world.getBlockState(pos).getBlock() instanceof IEnergyConnectorBlock con) {
-            if (con.canConnect(world, pos, dir.getOpposite())) return true;
+            if (con.canConnect(world, pos, dir.getOpposite().toDirection())) return true;
         }
 
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof IEnergyConnectorMK2 con) {
-            return con.canConnect(dir.getOpposite());
+            return con.canConnect(dir.getOpposite().toDirection());
         }
 
         return false;
@@ -176,7 +176,7 @@ public final class Library {
      * {@code maxPower}. Returns the new power level. Faithful port of the 1.12.2
      * {@code Library.chargeTEFromItems} (battery-item path).
      */
-    public static long chargeTEFromItems(NTMItemHandler inventory, int index, long power, long maxPower) {
+    public static long chargeTEFromItems(ItemHandler inventory, int index, long power, long maxPower) {
         ItemStack stack = inventory.getStackInSlot(index);
         long powerNeeded = maxPower - power;
         if (powerNeeded <= 0) return power;
@@ -189,22 +189,13 @@ public final class Library {
      * Returns the machine's new power level. Faithful port of the 1.12.2 {@code Library.chargeItemsFromTE}
      * (the inverse of {@link #chargeTEFromItems}, used by generators like the diesel gen).
      */
-    public static long chargeItemsFromTE(NTMItemHandler inventory, int index, long power, long maxPower) {
+    public static long chargeItemsFromTE(ItemHandler inventory, int index, long power, long maxPower) {
         if (power <= 0) return power;
         ItemStack stack = inventory.getStackInSlot(index);
         long moved = chargeBatteryIfValid(stack, power, false);
         return power - moved;
     }
 
-    /** FNV-1a 64-bit hash over a byte array; used to dedupe identical per-tick sync packets. */
-    public static long fnv1a64(byte[] data) {
-        long hash = 0xcbf29ce484222325L;
-        for (byte b : data) {
-            hash ^= (b & 0xFFL);
-            hash *= 0x100000001b3L;
-        }
-        return hash;
-    }
     /** ntm-next: the integer block columns along {@code vec0} from (x,y,z), with the step index as the 4th slot. */
     public static java.util.List<int[]> getBlockPosInPath(int x, int y, int z, int length, net.minecraft.world.phys.Vec3 vec0) {
         java.util.List<int[]> list = new java.util.ArrayList<>();

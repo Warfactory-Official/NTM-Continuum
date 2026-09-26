@@ -1,13 +1,13 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineF6Tank;
+import net.minecraft.core.Direction;
 import com.hbm.blocks.machine.MachineUF6Tank;
 import com.hbm.blocks.machine.MachineDeuteriumTower;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineF6Tank;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityDeuteriumExtractor;
 import com.hbm.tileentity.machine.TileEntityDeuteriumTower;
 import com.hbm.tileentity.machine.TileEntityMachineUF6Tank;
@@ -40,7 +40,7 @@ public final class IsotopeProcessingGameTests {
         MachineUF6Tank block = ModMachineBlocks.machine_uf6_tank.get();
         BlockPos core = helper.absolutePos(new BlockPos(2, 1, 2));
         helper.assertTrue(block.canConnect(Fluids.UF6, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        ForgeDirection.NORTH),
+                        Direction.NORTH),
                 "UF6 tank must expose its north fluid port");
 
         Player player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper,
@@ -90,7 +90,7 @@ public final class IsotopeProcessingGameTests {
         for (DirPos port : ports) {
             BlockPos cell = port.getPos().offset(-port.getDir().offsetX, -port.getDir().offsetY, -port.getDir().offsetZ);
             helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(),
-                            port.getDir()),
+                            port.getDir().toDirection()),
                     "heavy-water tower port did not accept water at " + port.getPos());
         }
         helper.succeed();

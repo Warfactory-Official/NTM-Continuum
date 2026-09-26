@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerCoreStabilizer;
 import com.hbm.items.machine.ItemLens;
 import com.hbm.packet.ControlEventPayload;
@@ -108,7 +109,7 @@ public class GUICoreStabilizer extends GUIDFCBase<ContainerCoreStabilizer> {
         data.putInt("watts", watts);
         GolemNetwork.sendToServer(ControlEventPayload.CODEC,
                 new ControlEventPayload(stabilizer.getBlockPos(), data));
-        GuiUtil.playClickSound();
+        Gauges.click();
         return true;
     }
 

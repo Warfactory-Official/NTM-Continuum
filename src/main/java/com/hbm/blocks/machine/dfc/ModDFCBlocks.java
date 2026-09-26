@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine.dfc;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemLens;
 import com.hbm.items.special.ItemAMSCore;

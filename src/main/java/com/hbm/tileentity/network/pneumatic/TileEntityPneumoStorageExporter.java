@@ -127,7 +127,7 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
 
         this.lastRedstone = redstone;
 
-        this.networkPackNT();
+        this.syncState();
     }
 
     public void doRequest(boolean force) {
@@ -188,7 +188,7 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
                 inventory.setStackInSlot(i + 9, newStack.copyWithCount(existingSize + pulled));
             }
 
-            this.markChanged();
+            this.setChanged();
         }
     }
 
@@ -230,7 +230,7 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
 
         int pulled = (int) this.cache.consumeItemsAndReturnQuantity(newStack, toPull);
         inventory.setStackInSlot(slot + 9, newStack.copyWithCount(existingSize + pulled));
-        this.markChanged();
+        this.setChanged();
 
         return true;
     }
@@ -324,7 +324,7 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
         if (Tags.contains(data, "slot")) {
             setFilterContents(data);
         }
-        this.markChanged();
+        this.setChanged();
     }
 
     @Override
@@ -343,7 +343,7 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
         if (slot < getFilterSlots()[0] || slot >= getFilterSlots()[1]) return;
         ItemStack item = IControlReceiverFilter.readFilterStack(nbt, level);
         inventory.setStackInSlot(slot, item);
-        this.markChanged();
+        this.setChanged();
     }
 
     @Override
@@ -366,14 +366,14 @@ public class TileEntityPneumoStorageExporter extends TileEntityPneumaticMachineB
             int amount = IRORInteractive.parseInt(params[2], 1, 64);
 
             this.rorFilters[slot] = item.isEmpty() ? ItemStack.EMPTY : item.copyWithCount(amount);
-            this.markChanged();
+            this.setChanged();
             return null;
         }
 
         if ((PREFIX_FUNCTION + "setcontinuous").equals(name) && params.length == 1) {
             if ("on".equals(params[0])) this.continuousRequest = true;
             if ("off".equals(params[0])) this.continuousRequest = false;
-            this.markChanged();
+            this.setChanged();
             return null;
         }
 

@@ -4,7 +4,7 @@ import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.MenuRBMKHeater;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
@@ -50,7 +50,7 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
                     feed.setFill(feed.getFill() - step.amountReq * ops);
                     steam.setFill(steam.getFill() + step.amountProduced * ops);
                     heat -= (step.heatReq * ops / tuPerDegree) * efficiency;
-                    markChanged();
+                    setChanged();
                 }
             }
         }
@@ -63,7 +63,7 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
         FluidType target = item.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), identifier);
         if (target != null && feed.getFill() == 0 && feed.getTankType() != target) {
             feed.setTankType(target);
-            markChanged();
+            setChanged();
         }
     }
 
@@ -83,12 +83,12 @@ public class BlockEntityRBMKHeater extends BlockEntityRBMKBase implements IFluid
         return data;
     }
     @Override public long getFluidAvailable(FluidType type, int pressure) { return pressure == steam.getPressure() && type == steam.getTankType() ? steam.getFill() : 0L; }
-    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (type == steam.getTankType() && pressure == steam.getPressure()) { steam.setFill(steam.getFill() - (int) Math.min(amount, steam.getFill())); markChanged(); } }
+    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (type == steam.getTankType() && pressure == steam.getPressure()) { steam.setFill(steam.getFill() - (int) Math.min(amount, steam.getFill())); setChanged(); } }
     @Override public long getDemand(FluidType type, int pressure) { return type == feed.getTankType() && pressure == feed.getPressure() && feedHeatable() ? (long) feed.getMaxFill() - feed.getFill() : 0L; }
     @Override public long transferFluid(FluidType type, int pressure, long amount) {
         if (type != feed.getTankType() || pressure != feed.getPressure() || !feedHeatable()) return amount;
         int accepted = feed.fill(type, (int) Math.min(amount, Integer.MAX_VALUE), true);
-        if (accepted > 0) markChanged();
+        if (accepted > 0) setChanged();
         return amount - accepted;
     }
     @Override protected void saveData(DataOut output) { super.saveData(output); feed.writeToNBT(output, "feed"); steam.writeToNBT(output, "steam"); }

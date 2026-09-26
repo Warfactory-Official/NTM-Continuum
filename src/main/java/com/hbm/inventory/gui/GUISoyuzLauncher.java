@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
@@ -114,7 +115,7 @@ public class GUISoyuzLauncher extends CompatContainerScreen<ContainerSoyuzLaunch
         Minecraft mc = Minecraft.getInstance();
         if (mc.gameMode == null) return false;
         mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);
-        GuiUtil.playClickSound();
+        Gauges.click();
         return true;
     }
 

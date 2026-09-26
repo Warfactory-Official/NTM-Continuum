@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.handler.ArmorUtil;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.util.ArmorRegistry;
 import dev.golem.core.world.Effects;
 import net.minecraft.core.BlockPos;
@@ -30,7 +31,7 @@ public class BlockGasChlorine extends BlockGasBase {
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level.isClientSide() || !(entity instanceof LivingEntity living)) return;
 
-        if (ArmorRegistry.hasAllProtection(living, EquipmentSlot.HEAD, ArmorRegistry.HazardClass.GAS_LUNG)) {
+        if (ArmorRegistry.hasAllProtection(living, EquipmentSlot.HEAD, HazardClass.GAS_LUNG)) {
             ArmorUtil.damageGasMaskFilter(living, 1);
         } else {
             Effects.add(living, MobEffects.BLINDNESS, 5 * 20, 0);

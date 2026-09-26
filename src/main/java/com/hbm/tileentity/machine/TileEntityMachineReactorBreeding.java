@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.inventory.recipes.BreederRecipes;
 import com.hbm.inventory.recipes.BreederRecipes.BreederRecipe;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -58,7 +58,7 @@ public final class TileEntityMachineReactorBreeding extends TileEntityMachineBas
             te.progress = 0.0F;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Every research reactor touching one of the four sides (any cell of it) feeds its total flux in. */

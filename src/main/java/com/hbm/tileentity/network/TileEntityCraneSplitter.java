@@ -1,6 +1,6 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -12,7 +12,7 @@ import java.util.List;
 import com.hbm.tileentity.ModConveyorBlockEntities;
 
 /** 1.7 {@code tileentity/network/TileEntityCraneSplitter}: the deal state and the two lane ratios. */
-public class TileEntityCraneSplitter extends TileEntityLoadedBase {
+public class TileEntityCraneSplitter extends SyncedBlockEntity {
 
     /* false: left belt is preferred, true: right belt is preferred */
     private boolean position;
@@ -51,7 +51,7 @@ public class TileEntityCraneSplitter extends TileEntityLoadedBase {
     }
 
     public void serverTick() {
-        networkPackNT();
+        syncState();
     }
 
     @Override

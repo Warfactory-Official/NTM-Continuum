@@ -2,7 +2,6 @@ package com.hbm.tileentity.machine.storage;
 
 import com.hbm.inventory.container.ContainerMachineFENSU;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import dev.golem.core.data.DataIn;
@@ -60,7 +59,7 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
         System.arraycopy(fensu.log, 1, fensu.log, 0, fensu.log.length - 1);
         fensu.log[fensu.log.length - 1] = average;
         fensu.prevPowerState = fensu.power;
-        fensu.networkPackNT();
+        fensu.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFENSU fensu) {
@@ -158,8 +157,8 @@ public class TileEntityMachineFENSU extends TileEntityBatteryBase implements Men
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
-        return dir == ForgeDirection.DOWN;
+    public boolean canConnect(Direction dir) {
+        return dir == Direction.DOWN;
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine.fusion;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
+import dev.golem.core.multiblock.MultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionCollector;
 import net.minecraft.core.BlockPos;

@@ -1,12 +1,15 @@
 package com.hbm.blocks.machine.rbmk;
 
+import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import com.hbm.lib.ForgeDirection;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKNeutronNode;
 import com.hbm.items.ModRBMKItems;
@@ -62,20 +65,22 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     protected abstract BlockEntityType<? extends BlockEntityRBMKBase> beType();
     protected abstract BlockEntityRBMKBase createCore(BlockPos pos, BlockState state);
     @Override public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) { return state.getValue(PART) == Part.CORE ? createCore(pos, state) : null; }
-    @Override public boolean canConnect(com.hbm.inventory.fluid.FluidType type, net.minecraft.world.level.BlockGetter world, int x, int y, int z, com.hbm.lib.ForgeDirection dir) {
+    @Override public boolean canConnect(com.hbm.api.fluid.FluidType type, net.minecraft.world.level.BlockGetter world, int x, int y, int z, net.minecraft.core.Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         if (!(world instanceof Level level) || dir == com.hbm.lib.ForgeDirection.UNKNOWN) return false;
         BlockPos surface = new BlockPos(x, y, z), core = MultiblockSurface.coreOfAny(level, surface);
         if (core == null || !MultiblockSurface.isOpen(level, surface, level.getBlockState(surface), dir.toDirection())) return false;
         BlockEntity blockEntity = level.getBlockEntity(core);
         return blockEntity instanceof IFluidReceiverMK2 || blockEntity instanceof IFluidProviderMK2;
     }
-    @Override public boolean canConnect(net.minecraft.world.level.BlockGetter world, BlockPos pos, com.hbm.lib.ForgeDirection dir) {
+    @Override public boolean canConnect(net.minecraft.world.level.BlockGetter world, BlockPos pos, net.minecraft.core.Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         if (!(world instanceof Level level) || dir == com.hbm.lib.ForgeDirection.UNKNOWN) return false;
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         if (core == null || !MultiblockSurface.isOpen(level, pos, level.getBlockState(pos), dir.toDirection())) return false;
-        return level.getBlockEntity(core) instanceof IEnergyConnectorMK2 energy && energy.canConnect(dir);
+        return level.getBlockEntity(core) instanceof IEnergyConnectorMK2 energy && energy.canConnect(dir.toDirection());
     }
-    @Override protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) { if (state.getValue(PART) == Part.CORE) super.removedAt(state, level, pos, movedByPiston); else BlockMultiblockCore.foldedCellRemoved(level, pos, movedByPiston); }
+    @Override protected void removedAt(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) { if (state.getValue(PART) == Part.CORE) super.removedAt(state, level, pos, movedByPiston); else MultiblockCore.foldedCellRemoved(level, pos, movedByPiston); }
     public @Nullable BlockPos rigidStructureCore(Level level, BlockPos member) { BlockState state = level.getBlockState(member); return state.getBlock() instanceof RBMKBase ? coreOf(level, member, state) : null; }
     @Override protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { BlockPos core = coreOf(level, pos, state); return core == null ? 0 : super.onAnalogOutputSignal(level.getBlockState(core), level, core); }
     @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {

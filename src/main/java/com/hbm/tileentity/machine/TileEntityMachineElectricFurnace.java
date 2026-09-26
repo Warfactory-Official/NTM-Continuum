@@ -125,7 +125,7 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     private boolean canProcess(ServerLevel level) {

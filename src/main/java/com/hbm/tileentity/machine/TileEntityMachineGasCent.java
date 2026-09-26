@@ -97,7 +97,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
         }
 
         if (TickPhase.every(level, pos, 10)) te.transferCascade(level);
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasCent te) {
@@ -189,7 +189,7 @@ public class TileEntityMachineGasCent extends TileEntityMachineBase
     private void setTankTypeFromIdentifier() {
         ItemStack id = inventory.getStackInSlot(5);
         if (!(id.getItem() instanceof IItemFluidId identifier)) return;
-        com.hbm.inventory.fluid.FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
+        com.hbm.api.fluid.FluidType type = identifier.getType(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), id);
         PseudoFluidType pseudo = GasCentrifugeRecipes.FLUID_CONVERSIONS.get(type);
         if (pseudo == null || tank.getTankType() == type) return;
         tank.setTankType(type);

@@ -3,7 +3,7 @@ package com.hbm.tileentity.network;
 import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.radio.RadioTorchMenu;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Shared persisted and synchronized configuration for sender and receiver torches. */
-public abstract class TileEntityRadioTorchBase extends TileEntityLoadedBase
+public abstract class TileEntityRadioTorchBase extends SyncedBlockEntity
         implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 16;
 
@@ -43,7 +43,7 @@ public abstract class TileEntityRadioTorchBase extends TileEntityLoadedBase
     }
 
     protected final void syncRadio() {
-        networkPackNT();
+        syncState();
     }
 
     protected final void setLit(boolean lit) {

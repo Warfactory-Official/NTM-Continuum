@@ -1,5 +1,6 @@
 package com.hbm.radio.client;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.radio.RadioReaderMenu;
 import com.hbm.radio.RadioTargets;
@@ -68,8 +69,8 @@ public final class RadioReaderScreen extends CompatContainerScreen<RadioReaderMe
         }
     }
     @Override protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
-        if (over(event, 173, 17)) { RadioScreenUtil.click(); polling = !polling; CompoundTag tag = new CompoundTag(); tag.putBoolean("polling", polling); send(tag); return true; }
-        if (over(event, 209, 17)) { RadioScreenUtil.click(); CompoundTag tag = new CompoundTag(); for (int i = 0; i < channels.length; i++) { tag.putString("channels" + i, channels[i].getValue()); tag.putString("names" + i, names[i].getValue()); } send(tag); return true; }
+        if (over(event, 173, 17)) { Gauges.click(); polling = !polling; CompoundTag tag = new CompoundTag(); tag.putBoolean("polling", polling); send(tag); return true; }
+        if (over(event, 209, 17)) { Gauges.click(); CompoundTag tag = new CompoundTag(); for (int i = 0; i < channels.length; i++) { tag.putString("channels" + i, channels[i].getValue()); tag.putString("names" + i, names[i].getValue()); } send(tag); return true; }
         return false;
     }
     private boolean over(MouseInput event, int x, int y) { return event.x() >= leftPos + x && event.x() < leftPos + x + 18 && event.y() >= topPos + y && event.y() < topPos + y + 18; }

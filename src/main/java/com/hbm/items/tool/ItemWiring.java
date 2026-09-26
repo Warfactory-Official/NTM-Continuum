@@ -1,6 +1,6 @@
 package com.hbm.items.tool;
 
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.core.BlockPos;

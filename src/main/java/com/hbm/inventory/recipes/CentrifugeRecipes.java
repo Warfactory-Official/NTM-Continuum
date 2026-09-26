@@ -163,7 +163,7 @@ public final class CentrifugeRecipes {
                 item(ModItems.powder_quartz, 1), item(ModItems.fluorite, 1));
         add(exact(ModItems.crystal_cobalt), item(ModItems.powder_cobalt, 2), item(ModItems.powder_iron, 3),
                 item(ModItems.powder_copper, 3), item(ModItems.powder_lithium_tiny, 1));
-        com.hbm.scripting.ScriptedRecipes.apply(CentrifugeRecipes.class);
+        dev.golem.core.content.Replay.apply(CentrifugeRecipes.class);
     }
 
     public static void putFirst(AStack input, ItemStack... output) {

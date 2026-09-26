@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.inventory.container.ContainerSILEX;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.SILEXRecipes;
@@ -29,7 +29,7 @@ public final class SilexGameTests {
     /** Places a bare SILEX core and returns its BlockEntity. */
     private static TileEntitySILEX place(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
+                .setValue(MultiblockCore.FACING, Direction.NORTH));
         TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;
@@ -322,7 +322,7 @@ public final class SilexGameTests {
             helper.assertTrue(helper.getLevel().getBlockState(machineCell).is(block),
                     "The SILEX fluid-port cell " + machineCell + " is not part of the machine");
             helper.assertTrue(block.canConnect(Fluids.PEROXIDE, helper.getLevel(),
-                            machineCell.getX(), machineCell.getY(), machineCell.getZ(), outward),
+                            machineCell.getX(), machineCell.getY(), machineCell.getZ(), outward.toDirection()),
                     "MachineSILEX.canConnect must accept the fluid port on side " + outward
                             + " — a duct placed at " + pipe + " will not connect otherwise");
         }

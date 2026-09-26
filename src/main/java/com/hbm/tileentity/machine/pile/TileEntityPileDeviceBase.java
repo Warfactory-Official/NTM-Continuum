@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine.pile;
 
 import com.hbm.blocks.machine.pile.BlockPileDevice;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * single channel mouth, so it carries the index of the channel it found and the horizontal direction it
  * points, both read from the low two bits of its block meta.
  */
-public abstract class TileEntityPileDeviceBase extends TileEntityLoadedBase {
+public abstract class TileEntityPileDeviceBase extends SyncedBlockEntity {
 
     /** Index of the channel this device is docked to, for the look overlay and radio readouts. */
     public int chanNum;

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -7,7 +8,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerMachineTurbineGas;
@@ -108,11 +109,12 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         turbine.powerBeforeNet = Math.min(turbine.power, MAX_POWER);
         turbine.power = Library.chargeItemsFromTE(turbine.inventory, 0, turbine.power, MAX_POWER);
         DirPos power = turbine.getPowerPos();
-        turbine.tryProvide(level, power.getPos(), power.getDir());
+        turbine.tryProvide(level, power.getPos(), power.getDir().toDirection());
         turbine.power = Math.min(turbine.power, MAX_POWER);
 
-        turbine.tryProvide(turbine.tanks[3], level, turbine.getSteamPos());
-        turbine.networkPackNT();
+        DirPos steamPos = turbine.getSteamPos();
+        turbine.tryProvide(turbine.tanks[3], level, steamPos.getPos(), steamPos.getDir().toDirection());
+        turbine.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbineGas turbine) {
@@ -303,10 +305,10 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         DirPos[] ports = {
                 getFuelPos()[0], getFuelPos()[1], getWaterPos()[0], getWaterPos()[1], getSteamPos()
         };
-        return com.hbm.api.energymk2.IEnergyConnectorBlock.isPort(ports, pos, dir);
+        return com.hbm.lib.Ports.isPort(ports, pos, dir.toDirection());
     }
 
-    @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return dir != ForgeDirection.DOWN; }
+    @Override public boolean canConnect(FluidType type, Direction dir) { return dir != Direction.DOWN; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0], tanks[1], tanks[2]}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[3]}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }

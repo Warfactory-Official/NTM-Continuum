@@ -1,11 +1,13 @@
 package com.hbm.hazard.type;
 
+import com.hbm.api.hazard.IHazardType;
+import com.hbm.api.hazard.HazardClass;
 import java.util.List;
 
 import com.hbm.config.RadiationConfig;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.hazard.helper.HazardHelper;
-import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.api.hazard.IHazardModifier;
 import com.hbm.util.ArmorRegistry;
 import dev.golem.core.world.Effects;
 import net.minecraft.ChatFormatting;
@@ -29,7 +31,7 @@ public class HazardTypeToxic implements IHazardType {
         boolean hasHazmat = false;
 
         if (target instanceof Player player) {
-            hasToxFilter = ArmorRegistry.hasProtection(player, EquipmentSlot.HEAD, ArmorRegistry.HazardClass.NERVE_AGENT);
+            hasToxFilter = ArmorRegistry.hasProtection(player, EquipmentSlot.HEAD, HazardClass.NERVE_AGENT);
 
             if (hasToxFilter) {
                 ArmorUtil.damageGasMaskFilter(player, hazardRate);

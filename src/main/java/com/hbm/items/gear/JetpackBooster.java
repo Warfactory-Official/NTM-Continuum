@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 /** High-powered vectorized jetpack: the five-speed-cap, one-tick fuel tier. */
 public class JetpackBooster extends JetpackFueledBase {
 
-    public JetpackBooster(com.hbm.inventory.fluid.FluidType fuel, int maxFuel, Properties properties) {
+    public JetpackBooster(com.hbm.api.fluid.FluidType fuel, int maxFuel, Properties properties) {
         super(fuel, maxFuel, properties);
     }
 

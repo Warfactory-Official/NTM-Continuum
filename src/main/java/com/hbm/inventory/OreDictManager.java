@@ -136,9 +136,9 @@ public final class OreDictManager {
     // (deliberately NOT in Mats, so they generate no autogen items); their .ingot()/.dust()/.nugget()/…
     // resolve to the composite c: tags-of-tags emitted by gen_material_tags.py (e.g. c:ingots/any_plastic
     // = [#c:ingots/polymer, #c:ingots/bakelite]). Only the tag-backed shapes are wired.
-    public static final NTMMaterial ANY_RUBBER         = new NTMMaterial(-1, "any_rubber");
-    public static final NTMMaterial ANY_PLASTIC        = new NTMMaterial(-1, "any_plastic");
-    public static final NTMMaterial ANY_HARDPLASTIC    = new NTMMaterial(-1, "any_hardplastic");
-    public static final NTMMaterial ANY_RESISTANTALLOY = new NTMMaterial(-1, "any_resistant_alloy");
-    public static final NTMMaterial ANY_BISMOID        = new NTMMaterial(-1, "any_bismoid");
+    public static final NTMMaterial ANY_RUBBER         = NTMMaterial.group("any_rubber");
+    public static final NTMMaterial ANY_PLASTIC        = NTMMaterial.group("any_plastic");
+    public static final NTMMaterial ANY_HARDPLASTIC    = NTMMaterial.group("any_hardplastic");
+    public static final NTMMaterial ANY_RESISTANTALLOY = NTMMaterial.group("any_resistant_alloy");
+    public static final NTMMaterial ANY_BISMOID        = NTMMaterial.group("any_bismoid");
 }

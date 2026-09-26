@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
 import dev.golem.core.Ids;
@@ -234,7 +235,7 @@ public final class GUITurretMobFilter extends CompatScreen {
     }
 
     private void click() {
-        GuiUtil.playClickSound();
+        Gauges.click();
     }
 
     private boolean isOver(int mouseX, int mouseY, int x, int y, int width, int height) {

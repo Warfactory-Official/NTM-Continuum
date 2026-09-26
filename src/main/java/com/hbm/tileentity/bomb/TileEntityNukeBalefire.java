@@ -62,7 +62,7 @@ public class TileEntityNukeBalefire extends TileEntityNukeBomb implements IContr
         }
 
         // 1.7: networkPackNT(250)
-        networkPackNT();
+        syncState();
     }
 
     /** 1.7 {@code handleButtonPacket}: meta 0 starts (when loaded), meta 1 sets the timer in seconds. */

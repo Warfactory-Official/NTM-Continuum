@@ -14,7 +14,7 @@ import com.hbm.uninos.networkproviders.PneumaticNetwork;
 
 /**
  * 1.7 {@code TileEntityPneumaticMachineBase}: an automation endpoint reading the network through its own
- * {@link StackCache}. Also the trunk of the access terminal, which 1.7 wrote against {@code TileEntityLoadedBase}
+ * {@link StackCache}. Also the trunk of the access terminal, which 1.7 wrote against {@code SyncedBlockEntity}
  * with the same body.
  */
 public abstract class TileEntityPneumaticMachineBase extends TileEntityMachineBase implements MenuProvider {

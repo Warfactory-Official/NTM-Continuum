@@ -138,7 +138,7 @@ public class TileEntityMachineAutocrafter extends TileEntityMachineBase
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     @Override

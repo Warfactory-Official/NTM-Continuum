@@ -9,7 +9,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
@@ -25,7 +25,7 @@ import dev.golem.core.data.DataOut;
  * buffer = 20 ticks of consumption, reservoir decays ×0.999/t, setting 0–10. The port has no
  * screwdriver/hand-drill tools, so the setting is cycled by right-clicking the block (sneak = down).
  */
-public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IHeatSource, IEnergyReceiverMK2 {
+public class TileEntityHeaterElectric extends SyncedBlockEntity implements IHeatSource, IEnergyReceiverMK2 {
 
     public long power;
     public int heatEnergy;
@@ -48,7 +48,7 @@ public class TileEntityHeaterElectric extends TileEntityLoadedBase implements IH
             te.isOn = true;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityHeaterElectric te) {

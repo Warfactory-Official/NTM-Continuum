@@ -9,7 +9,7 @@ import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.ContainerOilburner;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -87,7 +87,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
             te.heatEnergy = Math.max(te.heatEnergy - Math.max(te.heatEnergy / 1000, 1), 0);
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Drains a fluid container in slot 0 INTO the tank, emptied container → slot 1 (old tank.loadTank(0,1)). */

@@ -1,8 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.inventory.NTMItemHandler;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.machine.ItemHandler;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemFluidBucket;
@@ -60,7 +60,7 @@ public final class MachineFluidContainerIO {
         return true;
     }
 
-    public static boolean load(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+    public static boolean load(FluidTankNTM tank, ItemHandler inventory, int inputSlot, int outputSlot) {
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.isEmpty()) return false;
         // 1.7 FluidLoaderInfinite.emptyItem: the item is never consumed or moved.
@@ -100,7 +100,7 @@ public final class MachineFluidContainerIO {
         return true;
     }
 
-    public static boolean unload(FluidTankNTM tank, NTMItemHandler inventory, int inputSlot, int outputSlot) {
+    public static boolean unload(FluidTankNTM tank, ItemHandler inventory, int inputSlot, int outputSlot) {
         FluidType type = tank.getTankType();
         ItemStack input = inventory.getStackInSlot(inputSlot);
         if (input.getItem() instanceof com.hbm.api.fluidmk2.IInfiniteFluidItem infinite) {
@@ -169,14 +169,14 @@ public final class MachineFluidContainerIO {
     }
 
     /** Internal machine movement mirrors the old raw ItemStackHandler, not sided automation validation. */
-    private static boolean fitsInternally(NTMItemHandler inventory, int slot, ItemStack stack) {
+    private static boolean fitsInternally(ItemHandler inventory, int slot, ItemStack stack) {
         ItemStack existing = inventory.getStackInSlot(slot);
         int limit = Math.min(inventory.getSlotLimit(slot), stack.getMaxStackSize());
         return existing.isEmpty() ? stack.getCount() <= limit
                 : ItemStacks.sameItemAndData(existing, stack) && existing.getCount() + stack.getCount() <= limit;
     }
 
-    private static void insertInternally(NTMItemHandler inventory, int slot, ItemStack stack) {
+    private static void insertInternally(ItemHandler inventory, int slot, ItemStack stack) {
         ItemStack existing = inventory.getStackInSlot(slot);
         if (existing.isEmpty()) {
             inventory.setStackInSlot(slot, stack);

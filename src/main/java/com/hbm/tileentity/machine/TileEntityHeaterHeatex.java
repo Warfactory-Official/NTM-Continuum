@@ -1,11 +1,12 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
@@ -66,11 +67,11 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
         // The old machine decays its stored TU before adding the current cooling operation's heat.
         heater.heatEnergy *= 0.999;
         heater.tryConvert(level);
-        heater.networkPackNT();
+        heater.syncState();
 
         for (DirPos connection : heater.getConPos()) {
             if (heater.tanks[1].getFill() > 0) {
-                heater.tryProvide(heater.tanks[1], level, connection);
+                heater.tryProvide(heater.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
             }
         }
     }
@@ -150,7 +151,8 @@ public class TileEntityHeaterHeatex extends TileEntityMachineBase
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         ForgeDirection facing = MachineCore.facing(getBlockState());
         return dir == facing || dir == facing.getOpposite();
     }

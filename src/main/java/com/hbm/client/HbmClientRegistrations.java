@@ -77,10 +77,6 @@ import com.hbm.inventory.gui.GUIFurnaceBrick;
 import com.hbm.inventory.gui.GUIFurnaceIron;
 import com.hbm.inventory.gui.GUIFurnaceSteel;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
 
 /**
  * Loader-neutral inventory of HBM's client registrations. This class is loaded only from client
@@ -90,16 +86,11 @@ public final class HbmClientRegistrations {
 
     private HbmClientRegistrations() {}
 
-    public interface ScreenSink {
-        <M extends AbstractContainerMenu, U extends AbstractContainerScreen<M>> void register(
-                MenuType<M> menu, MenuScreens.ScreenConstructor<M, U> factory);
-    }
-
     public interface HudSink {
         void register(String id, java.util.function.Consumer<GuiGraphicsExtractor> renderer);
     }
 
-    public static void registerScreens(ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         com.hbm.items.tool.ItemDesignatorManual.setClientScreenOpener(stack ->
                 net.minecraft.client.Minecraft.getInstance().setScreen(
                         new com.hbm.inventory.gui.GUIScreenDesignator(stack)));
@@ -380,7 +371,7 @@ public final class HbmClientRegistrations {
             };
         }, stack -> {
             if (stack.isEmpty()) return null;
-            com.hbm.inventory.fluid.FluidType type = com.hbm.handler.JetpackHandler.getFuelType(stack);
+            com.hbm.api.fluid.FluidType type = com.hbm.handler.JetpackHandler.getFuelType(stack);
             return new com.hbm.client.jetpack.JetpackClientBridge.Fuel(type == null ? "" : type.getName(),
                     com.hbm.handler.JetpackHandler.getFuel(stack),
                     com.hbm.handler.JetpackHandler.getMaxFuel(stack));

@@ -1,14 +1,14 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.DuctData;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.network.FluidValve;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.sound.ModSounds;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.NodeNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;

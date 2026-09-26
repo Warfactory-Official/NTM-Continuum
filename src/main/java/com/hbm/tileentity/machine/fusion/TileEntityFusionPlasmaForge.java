@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
@@ -135,8 +135,8 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         te.plasmaEnergy = 0;
 
         ForgeDirection facing = FusionNodes.facing(state);
-        FusionLink.claim(level, te, intake(pos, facing), MachineCaps.PLASMA_IN);
-        FusionLink.claim(level, te, outlet(pos, facing), MachineCaps.PLASMA_OUT);
+        FusionLink.claim(level, te, intake(pos, facing), FusionLink.PLASMA_IN);
+        FusionLink.claim(level, te, outlet(pos, facing), FusionLink.PLASMA_OUT);
 
         PlasmaForgeRecipe recipe = te.plasmaModule.getRecipe() instanceof PlasmaForgeRecipe plasma ? plasma : null;
         if (recipe != null) te.maxPower = recipe.power * 100L;
@@ -164,14 +164,14 @@ public class TileEntityFusionPlasmaForge extends TileEntityMachineBase
         long powerReceived = (long) Math.ceil(te.plasmaEnergySync * 0.75D);
         ForgeDirection out = FusionNodes.facing(te.getBlockState());
         net.minecraft.world.level.block.entity.BlockEntity downstream =
-                FusionLink.at(level, beam(pos, out), MachineCaps.PLASMA_IN);
+                FusionLink.at(level, beam(pos, out), FusionLink.PLASMA_IN);
         te.connected = downstream != null;
         if (powerReceived > 0 && downstream instanceof IFusionPowerReceiver receiver) {
             receiver.receiveFusionPower(powerReceived, te.neutronEnergy, te.plasmaRed, te.plasmaGreen, te.plasmaBlue);
         }
         if (te.didProcess && te.booster > 0) te.booster--;
         te.neutronEnergy = 0D;
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFusionPlasmaForge te) {

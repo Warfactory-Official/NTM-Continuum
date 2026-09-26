@@ -4,7 +4,7 @@ NTMEvents.shapes(e => {
 })
 
 NTMEvents.materials(e => {
-    e.create(990100, 'gt_mithril')
+    e.create('gt_mithril')
         .colors(0xE0E0FF, 0x303060, 0xA0A0FF)
         .displayName('Test Mithril')
         .smelting('SMELTABLE')
@@ -13,7 +13,7 @@ NTMEvents.materials(e => {
         .block()
         .radioactive(5, 'hot', 3)
         .ore(o => o.stone('stone', 'deepslate').veinSize(6).count(4).height(-32, 48).drops('INGOT', 1, 2).xp(0, 2).tool('iron'))
-    e.create(990101, 'gt_cinder')
+    e.create('gt_cinder')
         .colors(0xFF8040, 0x401000, 0xFF6020)
         .items('GEM')
         .texture('GEM', 'minecraft:item/diamond')

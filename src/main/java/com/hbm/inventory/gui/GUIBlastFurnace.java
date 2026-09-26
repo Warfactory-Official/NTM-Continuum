@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerBlastFurnace;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
 import dev.golem.core.gui.GuiDraw;
@@ -49,35 +50,10 @@ public class GUIBlastFurnace extends dev.golem.core.gui.CompatContainerScreen<Co
             GuiDraw.blit(graphics, TEXTURE, leftPos + 81, topPos + 64, 176F, 0F, 14, 14, 256, 256);
         }
 
-        drawGauge(graphics, leftPos + 34, topPos + 80,
+        Gauges.needle(graphics, leftPos + 34, topPos + 80,
                 (double) furnace.tanks[0].getFill() / furnace.tanks[0].getMaxFill(), 0x800000);
-        drawGauge(graphics, leftPos + 34, topPos + 26,
+        Gauges.needle(graphics, leftPos + 34, topPos + 26,
                 (double) furnace.tanks[1].getFill() / furnace.tanks[1].getMaxFill(), 0x800000);
-    }
-
-    private static void drawGauge(GuiGraphicsExtractor graphics, int x, int y, double progress, int color) {
-        progress = Math.max(0D, Math.min(1D, progress));
-        float angle = (float) Math.toRadians(progress * 270D + 45D);
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, x, y);
-        GuiDraw.rotate(graphics, angle);
-        GuiDraw.scale(graphics, 1F / 8F, 1F / 8F);
-        fillNeedle(graphics, 1.5D, 0xFF000000);
-        fillNeedle(graphics, 1D, 0xFF000000 | (color & 0xFFFFFF));
-        GuiDraw.popMatrix(graphics);
-    }
-
-    private static void fillNeedle(GuiGraphicsExtractor graphics, double multiplier, int color) {
-        double tipLength = 5D * multiplier * 8D;
-        double backLength = 2D * multiplier * 8D;
-        double backSide = multiplier * 8D;
-        double total = tipLength + backLength;
-        int top = (int) Math.round(tipLength);
-        int bottom = (int) Math.round(-backLength);
-        for (int y = bottom; y < top; y++) {
-            int halfWidth = (int) Math.round(backSide * (tipLength - y) / total);
-            if (halfWidth > 0) graphics.fill(-halfWidth, y, halfWidth, y + 1, color);
-        }
     }
 
     @Override

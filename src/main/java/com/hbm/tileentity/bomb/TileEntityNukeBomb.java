@@ -37,7 +37,7 @@ public abstract class TileEntityNukeBomb extends TileEntityMachineBase implement
     protected void onSlotContentsChanged(int slot, ItemStack stack) {
         super.onSlotContentsChanged(slot, stack);
         // Menus receive ordinary slot changes, while this also keeps observers and already-open clients in sync.
-        networkPackNT();
+        syncState();
     }
 
     @Override

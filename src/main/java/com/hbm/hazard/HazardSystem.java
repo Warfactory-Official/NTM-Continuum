@@ -1,5 +1,6 @@
 package com.hbm.hazard;
 
+import com.hbm.api.hazard.HazardEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,9 +13,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.RadiationConfig;
-import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.api.hazard.IHazardModifier;
 import com.hbm.hazard.transformer.IHazardTransformer;
-import com.hbm.hazard.type.IHazardType;
+import com.hbm.api.hazard.IHazardType;
 import dev.golem.core.player.InventoryScan;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.TagKey;
@@ -38,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  * {@link IHazardTransformer}s.</li>
  * <li>Override/mutex semantics are unchanged (override clears prior entries; colliding mutex bits
  * yield).</li>
- * <li>Hazards are open: {@link com.hbm.hazard.type.HazardType} builds one out of lambdas with a
+ * <li>Hazards are open: {@link com.hbm.api.hazard.HazardType} builds one out of lambdas with a
  * payload of the author's own type, {@link com.hbm.hazard.transformer.HazardTransformerCustom}
  * attaches one to items the registry never mentions, and every mutator here drops the caches, so
  * all of it works after boot as well as during it.</li>
@@ -107,6 +108,20 @@ public class HazardSystem {
 
     public static void register(Block block, HazardData data) {
         register(block.asItem(), data);
+    }
+
+    /** Sets or (null) removes {@code item}'s data; returns the previous. */
+    public static @org.jspecify.annotations.Nullable HazardData replace(Item item, @org.jspecify.annotations.Nullable HazardData data) {
+        HazardData previous = data == null ? itemMap.remove(item) : itemMap.put(item, data);
+        clearCaches();
+        return previous;
+    }
+
+    /** Sets or (null) removes {@code tag}'s data; returns the previous. */
+    public static @org.jspecify.annotations.Nullable HazardData replace(TagKey<Item> tag, @org.jspecify.annotations.Nullable HazardData data) {
+        HazardData previous = data == null ? tagMap.remove(tag) : tagMap.put(tag, data);
+        clearCaches();
+        return previous;
     }
 
     public static void blacklist(Item item) {

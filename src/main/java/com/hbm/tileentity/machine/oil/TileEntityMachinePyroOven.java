@@ -6,7 +6,7 @@ import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerPyroOven;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.PyroOvenRecipes;
@@ -79,7 +79,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         te.setTypeFromFluidId();
 
         for (DirPos dp : te.getConPos()) {
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
+            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp.getPos(), dp.getDir().toDirection());
         }
 
         te.upgradeManager.checkSlots(te.inventory, 4, 5);
@@ -104,7 +104,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
             te.progress = 0F;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePyroOven te) {

@@ -1,6 +1,6 @@
 package com.hbm.inventory;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

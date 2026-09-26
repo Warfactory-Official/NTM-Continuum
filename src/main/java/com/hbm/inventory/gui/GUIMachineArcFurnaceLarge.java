@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerMachineArcFurnaceLarge;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.material.Mats;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
@@ -46,14 +48,14 @@ public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContaine
         drawStack(graphics, furnace.liquids, TileEntityMachineArcFurnaceLarge.MAX_LIQUID, 152, 106);
     }
 
-    private void drawStack(GuiGraphicsExtractor graphics, List<Mats.MaterialStack> stack, int capacity,
+    private void drawStack(GuiGraphicsExtractor graphics, List<MaterialStack> stack, int capacity,
                            int x, int y) {
         int lastHeight = 0;
         int lastAmount = 0;
-        for (Mats.MaterialStack material : stack) {
+        for (MaterialStack material : stack) {
             int height = (lastAmount + material.amount) * 70 / Math.max(capacity, 1);
             if (height != lastHeight) {
-                int color = 0xFF000000 | (material.material.moltenColor & 0xFFFFFF);
+                int color = 0xFF000000 | (material.material.moltenColor() & 0xFFFFFF);
                 GuiDraw.blit(graphics, TEXTURE, leftPos + x, topPos + y - height,
                         208F, 70F - height, 16, height - lastHeight, 256, 256, color);
             }
@@ -80,7 +82,7 @@ public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContaine
         } else if (isHovering(152, 36, 16, 70, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             if (furnace.liquids.isEmpty()) lines.add(Component.literal("Empty"));
-            for (Mats.MaterialStack material : furnace.liquids) lines.add(Component.literal(
+            for (MaterialStack material : furnace.liquids) lines.add(Component.literal(
                     material.material.getDisplayName() + ": " + Mats.formatAmount(material.amount, false)));
             GuiDraw.tooltip(graphics, font, lines, Optional.empty(), mouseX, mouseY);
         } else if (isHovering(151, 17, 18, 18, mouseX, mouseY)) {
@@ -93,7 +95,7 @@ public class GUIMachineArcFurnaceLarge extends dev.golem.core.gui.CompatContaine
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineArcFurnaceLarge furnace = menu.getFurnace();
         if (furnace != null && isHovering(151, 17, 18, 18, event.x(), event.y())) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
             data.putBoolean("liquid", true);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC,

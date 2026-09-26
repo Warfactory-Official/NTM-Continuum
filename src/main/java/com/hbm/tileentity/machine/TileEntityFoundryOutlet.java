@@ -1,10 +1,11 @@
 package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
+import net.minecraft.core.Direction;
 
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -57,7 +58,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
         if (te.pourColor >= 0 && level.getGameTime() - te.lastPourTime > STREAM_LIFETIME) {
             te.pourColor = -1;
         }
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** TRUE prevents flow through the outlet. */
@@ -94,7 +95,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
         if (acc == null) return false;
 
         Vec3 hit = mop[0].getLocation();
-        return acc.canAcceptPartialPour(world, mop[0].getBlockPos(), hit.x, hit.y, hit.z, ForgeDirection.UP, stack);
+        return acc.canAcceptPartialPour(world, mop[0].getBlockPos(), hit.x, hit.y, hit.z, Direction.UP, stack);
     }
 
     @Override
@@ -107,10 +108,10 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
         if (acc == null) return stack;
 
         Vec3 hit = mop[0].getLocation();
-        MaterialStack didPour = acc.pour(world, mop[0].getBlockPos(), hit.x, hit.y, hit.z, ForgeDirection.UP, stack);
+        MaterialStack didPour = acc.pour(world, mop[0].getBlockPos(), hit.x, hit.y, hit.z, Direction.UP, stack);
 
         // stream visual: from the outlet's underside down to the impact
-        this.pourColor = stack.material.moltenColor;
+        this.pourColor = stack.material.moltenColor();
         this.pourLen = Math.max(1F, p.getY() - (float) (Math.ceil(mop[0].getBlockPos().getY() + 1) - 0.875));
         this.lastPourTime = world.getGameTime();
 
@@ -127,7 +128,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
-        buf.writeInt(filter == null ? -1 : filter.id);
+        buf.writeInt(filter == null ? -1 : filter.index);
         buf.writeBoolean(invertFilter);
         buf.writeBoolean(invertRedstone);
         buf.writeInt(pourColor);
@@ -137,8 +138,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
-        int id = buf.readInt();
-        filter = id < 0 ? null : Mats.matById.get(id);
+        filter = Mats.byIndex(buf.readInt());
         invertFilter = buf.readBoolean();
         invertRedstone = buf.readBoolean();
         pourColor = buf.readInt();
@@ -150,7 +150,7 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
         super.saveData(output);
         output.putBoolean("invert", this.invertRedstone);
         output.putBoolean("invertFilter", this.invertFilter);
-        output.putInt("filter", this.filter == null ? -1 : this.filter.id);
+        if (this.filter != null) output.putString("filter", this.filter.id.toString());
     }
 
     @Override
@@ -158,7 +158,6 @@ public class TileEntityFoundryOutlet extends TileEntityFoundryBase {
         super.loadData(input);
         this.invertRedstone = input.getBooleanOr("invert", false);
         this.invertFilter = input.getBooleanOr("invertFilter", false);
-        int id = input.getIntOr("filter", -1);
-        this.filter = id < 0 ? null : Mats.matById.get(id);
+        this.filter = Mats.byId(input.getStringOr("filter", ""));
     }
 }

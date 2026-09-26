@@ -21,7 +21,7 @@ import com.hbm.inventory.gui.GUIDroneRequester;
 public final class DroneClientRegistrations {
     private DroneClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModDroneMenus.DRONE_CRATE.get(), GUIDroneCrate::new);
         sink.register(ModDroneMenus.DRONE_DOCK.get(), GUIDroneDock::new);
         sink.register(ModDroneMenus.DRONE_PROVIDER.get(), GUIDroneProvider::new);

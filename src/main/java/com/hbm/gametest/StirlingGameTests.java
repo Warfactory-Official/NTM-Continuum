@@ -42,7 +42,7 @@ public final class StirlingGameTests {
         assertPort(helper, ports[1], core.west(2), ForgeDirection.WEST);
         assertPort(helper, ports[2], core.south(2), ForgeDirection.SOUTH);
         assertPort(helper, ports[3], core.north(2), ForgeDirection.NORTH);
-        helper.assertTrue(ModMachineBlocks.machine_stirling.get().canConnect(helper.getLevel(), core.east(), ForgeDirection.EAST),
+        helper.assertTrue(ModMachineBlocks.machine_stirling.get().canConnect(helper.getLevel(), core.east(), Direction.EAST),
                 "Stirling must expose its east cable port");
         helper.succeed();
     }

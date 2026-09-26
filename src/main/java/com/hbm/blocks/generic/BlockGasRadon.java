@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.config.GeneralConfig;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.util.ArmorRegistry;
 import com.hbm.util.ContaminationUtil;
@@ -51,7 +52,7 @@ public class BlockGasRadon extends BlockGasBase {
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (!level.isClientSide() && GeneralConfig.enableRadon && entity instanceof LivingEntity living) {
             boolean protectedByFilter = ArmorRegistry.hasProtection(living, net.minecraft.world.entity.EquipmentSlot.HEAD,
-                    ArmorRegistry.HazardClass.PARTICLE_FINE);
+                    HazardClass.PARTICLE_FINE);
             if (protectedByFilter) ArmorUtil.damageGasMaskFilter(living, dense ? 2 : 1);
             ContaminationUtil.contaminate(living, ContaminationUtil.HazardType.RADIATION,
                     protectedByFilter ? ContaminationUtil.ContaminationType.CREATIVE

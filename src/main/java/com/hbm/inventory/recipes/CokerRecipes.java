@@ -3,7 +3,7 @@ package com.hbm.inventory.recipes;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidCombustion.Combustible;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums.EnumCokeType;
 import com.hbm.items.ModItems;
@@ -112,7 +112,7 @@ public final class CokerRecipes {
         registerRecipe(Fluids.SOURGAS, 1_000, new ItemStack(ModItems.sulfur.get()), new FluidStack(Fluids.GAS_COKER, 150));
         registerRecipe(Fluids.SLOP, 1_000, new ItemStack(ModItems.powder_limestone.get()), new FluidStack(Fluids.COLLOID, 250));
         registerRecipe(Fluids.VITRIOL, 4_000, new ItemStack(ModItems.powder_iron.get()), new FluidStack(Fluids.SULFURIC_ACID, 500));
-        com.hbm.scripting.ScriptedRecipes.apply(CokerRecipes.class);
+        dev.golem.core.content.Replay.apply(CokerRecipes.class);
     }
 
     public static void put(FluidType type, CokerRecipe recipe) {

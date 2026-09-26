@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.inventory.container.ContainerPWR;
@@ -77,8 +78,8 @@ public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
         int c = (int) (controller.rodLevel * 52 / 100);
         GuiDraw.blit(graphics, TEXTURE, leftPos + 53, topPos + 54, 176F, 40F, c, 2, 256, 256);
 
-        drawSmoothGauge(graphics, leftPos + 124, topPos + 40, (double) controller.coreHeat / (double) controller.coreHeatCapacity);
-        drawSmoothGauge(graphics, leftPos + 160, topPos + 40, (double) controller.hullHeat / (double) TileEntityPWRController.hullHeatCapacityBase);
+        Gauges.needle(graphics, leftPos + 124, topPos + 40, (double) controller.coreHeat / (double) controller.coreHeatCapacity, 0x7F0000);
+        Gauges.needle(graphics, leftPos + 160, topPos + 40, (double) controller.hullHeat / (double) TileEntityPWRController.hullHeatCapacityBase, 0x7F0000);
 
         EnumPWRFuel loaded = EnumPWRFuel.byIndex(controller.typeLoaded);
         if (loaded != null && controller.amountLoaded > 0) {
@@ -98,30 +99,6 @@ public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
         drawTank(graphics, controller.tanks[1], 26, 5, 16, 52);
     }
 
-    /** 1.7 {@code GUIElements.drawSmoothGauge(x, y, z, progress, 5, 2, 1, 0x7F0000)}: the same needle the press uses. */
-    private static final int SS = 8;
-
-    private static void drawSmoothGauge(GuiGraphicsExtractor graphics, int cx, int cy, double progress) {
-        progress = Mth.clamp(progress, 0.0, 1.0);
-        float angle = (float) Math.toRadians(progress * 270.0 + 45.0);
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, cx, cy);
-        GuiDraw.rotate(graphics, angle);
-        GuiDraw.scale(graphics, 1.0F / SS, 1.0F / SS);
-        fillNeedle(graphics, 1.5, 0xFF000000);
-        fillNeedle(graphics, 1.0, 0xFF7F0000);
-        GuiDraw.popMatrix(graphics);
-    }
-
-    private static void fillNeedle(GuiGraphicsExtractor g, double mult, int color) {
-        double tipLen = 5 * mult * SS, backLen = 2 * mult * SS, backSide = 1 * mult * SS;
-        double total = tipLen + backLen;
-        int top = (int) Math.round(tipLen), bot = (int) Math.round(-backLen);
-        for (int y = bot; y < top; y++) {
-            int hw = (int) Math.round(backSide * (tipLen - y) / total);
-            if (hw > 0) g.fill(-hw, y, hw, y + 1, color);
-        }
-    }
 
     /** Repeats the 16x16 fluid texture up from the tank's bottom, matching the old GL_REPEAT quad. */
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y, int width, int height) {
@@ -221,7 +198,7 @@ public class GUIPWR extends CompatContainerScreen<ContainerPWR> {
             CompoundTag control = new CompoundTag();
             control.putInt("control", 100 - level);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(controller.getBlockPos(), control));
-            GuiUtil.playClickSound();
+            Gauges.click();
             return true;
         }
         return false;

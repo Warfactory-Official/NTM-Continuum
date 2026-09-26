@@ -7,8 +7,8 @@ import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.entity.projectile.EntityRBMKDebris;
 import com.hbm.entity.effect.EntitySpear;
@@ -66,7 +66,7 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
         if (craneIndicator > 0) craneIndicator--;
         moveHeat();
         if (RBMKDials.getReasimBoilers(level)) boilWater();
-        networkPackNT();
+        syncState();
     }
 
     /** Repair a top segment missed while its chunk was unavailable during column placement. */
@@ -105,7 +105,7 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
             for (BlockEntityRBMKBase other : neighborCache) if (other != null) { other.heat += (target - other.heat) * flow; if (reasim) { other.reasimWater = water; other.reasimSteam = steam; } }
             heat += (target - heat) * flow;
             if (reasim) { reasimWater = water + totalWater % members; reasimSteam = steam + totalSteam % members; }
-            markChanged();
+            setChanged();
         }
         heat = Math.max(20D, heat - passiveCooling(members - 1));
     }
@@ -142,7 +142,7 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
         int minX = worldPosition.getX(), maxX = minX, minZ = worldPosition.getZ(), maxZ = minZ;
         for (BlockEntityRBMKBase column : columns) { minX = Math.min(minX, column.worldPosition.getX()); maxX = Math.max(maxX, column.worldPosition.getX()); minZ = Math.min(minZ, column.worldPosition.getZ()); maxZ = Math.max(maxZ, column.worldPosition.getZ()); }
         final int x0 = minX, x1 = maxX, z0 = minZ, z1 = maxZ;
-        BlockMultiblockCore.withoutTeardown(() -> { for (BlockEntityRBMKBase column : columns) { BlockPos p = column.worldPosition; column.onMelt(Math.min(Math.min(p.getX() - x0, x1 - p.getX()), Math.min(p.getZ() - z0, z1 - p.getZ())) + 1); } });
+        MultiblockCore.withoutTeardown(() -> { for (BlockEntityRBMKBase column : columns) { BlockPos p = column.worldPosition; column.onMelt(Math.min(Math.min(p.getX() - x0, x1 - p.getX()), Math.min(p.getZ() - z0, z1 - p.getZ())) + 1); } });
         boolean digamma = RBMKBase.digamma;
         BlockState hot = (digamma ? ModRBMKBlocks.rbmk_debris_digamma : ModRBMKBlocks.rbmk_debris_radiating).get().defaultBlockState();
         for (BlockEntityRBMKBase column : columns) if (column instanceof BlockEntityRBMKRod && level.getBlockState(column.worldPosition).is(ModHazardBlocks.block_corium.get())) for (BlockPos p : BlockPos.betweenClosed(column.worldPosition.offset(-1, -1, -1), column.worldPosition.offset(1, 1, 1))) if (level.getRandom().nextInt(3) == 0 && (level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris.get()) || level.getBlockState(p).is(ModRBMKBlocks.rbmk_debris_burning.get()))) level.setBlock(p, hot, 3);

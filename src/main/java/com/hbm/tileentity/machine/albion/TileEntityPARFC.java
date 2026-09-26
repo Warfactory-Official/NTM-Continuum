@@ -56,7 +56,7 @@ public class TileEntityPARFC extends TileEntityCooledBase implements MenuProvide
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.getMaxPower());
         te.exchangeCoolant(level);
         te.updateCooling();
-        te.networkPackNT();
+        te.syncState();
     }
 
     @Override

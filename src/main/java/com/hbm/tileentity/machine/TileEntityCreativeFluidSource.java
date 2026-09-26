@@ -29,12 +29,12 @@ public class TileEntityCreativeFluidSource extends BlockEntity implements IFluid
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCreativeFluidSource source) {
         source.tank.setFill(CAPACITY); // infinite — refill before providing
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            source.tryProvide(source.tank, level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+            source.tryProvide(source.tank, level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir.toDirection());
         }
     }
 
     @Override
-    public void useUpFluid(com.hbm.inventory.fluid.FluidType type, int pressure, long amount) {
+    public void useUpFluid(com.hbm.api.fluid.FluidType type, int pressure, long amount) {
         // infinite source — never actually drains
     }
 
@@ -49,12 +49,8 @@ public class TileEntityCreativeFluidSource extends BlockEntity implements IFluid
     }
 
     @Override
-    public long getProviderSpeed(com.hbm.inventory.fluid.FluidType type, int pressure) {
+    public long getProviderSpeed(com.hbm.api.fluid.FluidType type, int pressure) {
         return 100_000L;
     }
 
-    @Override
-    public boolean isLoaded() {
-        return !isRemoved();
-    }
 }

@@ -6,7 +6,7 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerFusionKlystron;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
@@ -104,11 +104,11 @@ public class TileEntityFusionKlystron extends TileEntityMachineBase
         if (te.output < te.outputTarget / 50) te.output = 0;
 
         FusionLink.claim(level, te, FusionNodes.emitter(pos, FusionNodes.facing(state)),
-                MachineCaps.KLYSTRON_OUT);
+                FusionLink.KLYSTRON_OUT);
         FusionNodes.provideKyU(level, pos, FusionNodes.facing(state), te.output);
 
         te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFusionKlystron te) {

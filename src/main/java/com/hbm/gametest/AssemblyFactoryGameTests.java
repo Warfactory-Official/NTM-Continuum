@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineAssemblyFactory;
 import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
@@ -10,7 +10,6 @@ import com.hbm.items.ModItems;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
 import com.hbm.tileentity.machine.AssemblyFactoryArmLayout;
 import dev.golem.core.gametest.GameTestHelpers;
@@ -54,7 +53,7 @@ public final class AssemblyFactoryGameTests {
         DirPos coolant = factory.getCoolPos()[0];
         BlockPos coolantCell = coolant.getPos().relative(coolant.getDir().toDirection().getOpposite());
         helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.OIL, helper.getLevel(),
-                        coolantCell.getX(), coolantCell.getY(), coolantCell.getZ(), coolant.getDir()),
+                        coolantCell.getX(), coolantCell.getY(), coolantCell.getZ(), coolant.getDir().toDirection()),
                 "Assembly Factory coolant proxy accepted a non-water fluid");
 
         for (int lane = 0; lane < TileEntityMachineAssemblyFactory.LANES; lane++) {
@@ -79,10 +78,10 @@ public final class AssemblyFactoryGameTests {
         BlockPos cell = port.getPos().relative(port.getDir().toDirection().getOpposite());
         helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                 "Assembly Factory port cell does not resolve to its core: " + cell);
-        helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir()),
+        helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir().toDirection()),
                 "Assembly Factory power/coolant port does not connect: " + port.getPos());
         helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
-                        cell.getX(), cell.getY(), cell.getZ(), port.getDir()),
+                        cell.getX(), cell.getY(), cell.getZ(), port.getDir().toDirection()),
                 "Assembly Factory fluid port does not connect: " + port.getPos());
     }
 

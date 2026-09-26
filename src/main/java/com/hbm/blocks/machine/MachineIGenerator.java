@@ -1,6 +1,8 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
+import dev.golem.core.multiblock.MultiblockMachine;
 import com.hbm.interfaces.ILookOverlay;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;

@@ -1,7 +1,7 @@
 package com.hbm.blocks;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.blocks.machine.pile.BlockGraphiteBreedingFuel;
 import com.hbm.blocks.machine.pile.BlockGraphiteBreedingProduct;

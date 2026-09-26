@@ -23,7 +23,7 @@ public final class IndustrialTurbineSoundHandler {
         double distance = minecraft.player.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D);
         if (turbine.spin > 0D && distance <= 35D * 35D) {
             float spin = (float) Math.min(1D, turbine.spin * 2D);
-            float volume = turbine.getVolume(0.25F + spin * 0.75F);
+            float volume = 0.25F + spin * 0.75F;
             float pitch = 0.5F + spin * 0.5F + turbine.getAudioDesync();
             if (loop == null || loop.isStopped()) {
                 loop = new IndustrialTurbineLoopSound(turbine, volume, pitch);

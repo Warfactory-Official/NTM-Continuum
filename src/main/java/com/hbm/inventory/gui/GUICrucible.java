@@ -1,9 +1,10 @@
 package com.hbm.inventory.gui;
 
 import dev.golem.core.gui.GuiDraw;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.container.ContainerCrucible;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
+import com.hbm.api.material.SmeltingBehavior;
 import com.hbm.inventory.recipes.CrucibleRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.items.ModItems;
@@ -75,17 +76,17 @@ public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<Contai
      * fills upward as material accumulates (the 1.12.2 {@code drawStack}). Additives sample the second
      * molten texture (u=176+34) to read visually distinct.
      */
-    private void drawStack(GuiGraphicsExtractor graphics, List<Mats.MaterialStack> stack, int capacity, int x, int y) {
+    private void drawStack(GuiGraphicsExtractor graphics, List<MaterialStack> stack, int capacity, int x, int y) {
         if (stack.isEmpty()) return;
 
         int lastHeight = 0;
         int lastQuant = 0;
 
-        for (Mats.MaterialStack sta : stack) {
+        for (MaterialStack sta : stack) {
             int targetHeight = (int) ((lastQuant + (long) sta.amount) * 79 / capacity);
             if (lastHeight != targetHeight) {
-                int offset = sta.material.smeltable == SmeltingBehavior.ADDITIVE ? 34 : 0; // additives use a different texture
-                int tint = 0xFF000000 | (sta.material.moltenColor & 0xFFFFFF);
+                int offset = sta.material.smeltable() == SmeltingBehavior.ADDITIVE ? 34 : 0; // additives use a different texture
+                int tint = 0xFF000000 | (sta.material.moltenColor() & 0xFFFFFF);
                 GuiDraw.blit(graphics, TEXTURE,
                         this.leftPos + x, this.topPos + y - targetHeight,
                         176.0F + offset, 89.0F - targetHeight,
@@ -121,10 +122,10 @@ public class GUICrucible extends dev.golem.core.gui.CompatContainerScreen<Contai
         }
     }
 
-    private static List<Component> stackInfo(List<Mats.MaterialStack> stack) {
+    private static List<Component> stackInfo(List<MaterialStack> stack) {
         List<Component> list = new ArrayList<>();
         if (stack.isEmpty()) list.add(Component.literal("Empty").withStyle(ChatFormatting.RED));
-        for (Mats.MaterialStack sta : stack) {
+        for (MaterialStack sta : stack) {
             list.add(Component.literal(sta.material.getDisplayName() + ": " + Mats.formatAmount(sta.amount, false)).withStyle(ChatFormatting.YELLOW));
         }
         return list;

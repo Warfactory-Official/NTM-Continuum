@@ -3,7 +3,7 @@ package com.hbm.tileentity.turret;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.entity.IRadarDetectableNT;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.entity.missile.EntityMissileBaseNT;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.interfaces.IControlReceiver;
@@ -13,7 +13,6 @@ import com.hbm.items.machine.ItemTurretBiometry;
 import com.hbm.inventory.container.ContainerTurretBase;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.mojang.serialization.Codec;
@@ -183,7 +182,7 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
         if (level instanceof ServerLevel server) connectorMask = computeConnectorMask(server);
 
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     protected void tickClient() {
@@ -544,35 +543,35 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setActive").equals(name) && params.length > 0) {
             isOn = IRORInteractive.parseInt(params[0], 0, 1) == 1;
-            markChanged();
+            setChanged();
         }
         if ((PREFIX_FUNCTION + "targetPlayers").equals(name) && params.length > 0) {
             targetPlayers = IRORInteractive.parseInt(params[0], 0, 1) == 1;
-            markChanged();
+            setChanged();
         }
         if ((PREFIX_FUNCTION + "targetAnimals").equals(name) && params.length > 0) {
             targetAnimals = IRORInteractive.parseInt(params[0], 0, 1) == 1;
-            markChanged();
+            setChanged();
         }
         if ((PREFIX_FUNCTION + "targetMobs").equals(name) && params.length > 0) {
             targetMobs = IRORInteractive.parseInt(params[0], 0, 1) == 1;
-            markChanged();
+            setChanged();
         }
         if ((PREFIX_FUNCTION + "targetMachines").equals(name) && params.length > 0) {
             targetMachines = IRORInteractive.parseInt(params[0], 0, 1) == 1;
-            markChanged();
+            setChanged();
         }
         if ((PREFIX_FUNCTION + "addWhitelist").equals(name) && params.length > 0) {
             List<String> whitelist = getWhitelist();
             if (whitelist == null || !whitelist.contains(params[0])) addName(params[0]);
-            markChanged();
+            setChanged();
         }
         if ((PREFIX_FUNCTION + "removeWhitelist").equals(name) && params.length > 0) {
             List<String> whitelist = getWhitelist();
             if (whitelist != null && whitelist.contains(params[0])) {
                 removeName(whitelist.indexOf(params[0]));
             }
-            markChanged();
+            setChanged();
         }
         return null;
     }
@@ -629,8 +628,8 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     public Vec3 getHorizontalOffset() {
         BlockState state = getBlockState();
-        if (!state.hasProperty(BlockMultiblockCore.FACING)) return new Vec3(0.5D, 0D, 0.5D);
-        Direction facing = state.getValue(BlockMultiblockCore.FACING);
+        if (!state.hasProperty(MultiblockCore.FACING)) return new Vec3(0.5D, 0D, 0.5D);
+        Direction facing = state.getValue(MultiblockCore.FACING);
         double x = facing == Direction.NORTH || facing == Direction.WEST ? 1D : 0D;
         double z = facing == Direction.NORTH || facing == Direction.EAST ? 1D : 0D;
         return new Vec3(x, 0D, z);

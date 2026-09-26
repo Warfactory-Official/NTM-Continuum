@@ -1,12 +1,12 @@
 package com.hbm.blocks.machine;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityDeuteriumExtractor;
@@ -39,13 +39,13 @@ public class MachineDeuteriumExtractor extends dev.golem.core.world.CompatBlock
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && world.getBlockEntity(pos) instanceof TileEntityDeuteriumExtractor;
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction dir) {
+        return dir != null && world.getBlockEntity(pos) instanceof TileEntityDeuteriumExtractor;
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityDeuteriumExtractor
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction dir) {
+        return dir != null && world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityDeuteriumExtractor
                 && (type == Fluids.WATER || type == Fluids.HEAVYWATER);
     }
 

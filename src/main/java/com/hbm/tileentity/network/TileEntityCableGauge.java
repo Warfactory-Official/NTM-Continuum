@@ -1,14 +1,14 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.api.energymk2.CableData;
+import com.hbm.network.power.CableData;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerGraphProvider;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.capability.MachineCaps;
-import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.uninos.graph.LevelNodeGraph;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.Domains;
+import dev.golem.core.machine.SyncedBlockEntity;
+import dev.golem.core.graph.LevelNodeGraph;
+import dev.golem.core.graph.NodeNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +21,7 @@ import com.hbm.tileentity.ModEnergyNetBlockEntities;
  * 1.7's {@code BlockCableGauge.TileEntityCableGauge}: a cable that reads its net's energy tracker -- the
  * HE the last round delivered -- and keeps a one-second total for the look overlay and Redstone-over-Radio.
  */
-public class TileEntityCableGauge extends TileEntityLoadedBase implements IEnergyConductorMK2, IRORValueProvider {
+public class TileEntityCableGauge extends SyncedBlockEntity implements IEnergyConductorMK2, IRORValueProvider {
 
     public long deltaTick = 0;
     private long deltaSecond = 0;
@@ -38,7 +38,7 @@ public class TileEntityCableGauge extends TileEntityLoadedBase implements IEnerg
             LevelNodeGraph<CableData> graph = PowerGraph.get(server);
             long key = getBlockPos().asLong();
             if (!graph.containsCell(key)) {
-                graph.addNode(key, PowerGraphProvider.INSTANCE.createData(getBlockState()), MachineCaps.FACE_MASK_ALL);
+                graph.addNode(key, PowerGraphProvider.INSTANCE.createData(getBlockState()), Domains.FACES_ALL);
             }
         }
     }
@@ -54,7 +54,7 @@ public class TileEntityCableGauge extends TileEntityLoadedBase implements IEnerg
             }
             gauge.deltaSecond += gauge.deltaTick;
         }
-        gauge.networkPackNT();
+        gauge.syncState();
     }
 
     @Override

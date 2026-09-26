@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.blocks.machine.storage.ModStorageBlocks;
 import com.hbm.tileentity.machine.storage.TileEntityCrate;
 import com.hbm.inventory.material.MaterialShapes;
@@ -42,7 +43,7 @@ public final class CompatibilityBoundaryGameTests {
 
         java.util.Set<Integer> before = itemIds(helper, pos);
         helper.getLevel().destroyBlock(pos, false);
-        Mats.MaterialStack dropped = onlyScrap(helper, pos, before);
+        MaterialStack dropped = onlyScrap(helper, pos, before);
         helper.assertTrue(dropped != null && dropped.material == Mats.MAT_IRON
                         && dropped.amount == MaterialShapes.INGOT.quantity * 2,
                 "breaking a molten foundry channel did not preserve its exact material");
@@ -57,12 +58,12 @@ public final class CompatibilityBoundaryGameTests {
                 "crucible did not create its block entity");
         TileEntityCrucible crucible = (TileEntityCrucible) helper.getLevel().getBlockEntity(pos);
         crucible.setItem(0, new ItemStack(Items.COBBLESTONE));
-        crucible.recipeStack.add(new Mats.MaterialStack(Mats.MAT_IRON, MaterialShapes.INGOT.quantity));
-        crucible.wasteStack.add(new Mats.MaterialStack(Mats.MAT_COPPER, MaterialShapes.NUGGET.quantity * 3));
+        crucible.recipeStack.add(new MaterialStack(Mats.MAT_IRON, MaterialShapes.INGOT.quantity));
+        crucible.wasteStack.add(new MaterialStack(Mats.MAT_COPPER, MaterialShapes.NUGGET.quantity * 3));
 
         java.util.Set<Integer> before = itemIds(helper, pos);
         helper.getLevel().destroyBlock(pos, false);
-        List<Mats.MaterialStack> scraps = scraps(helper, pos, before);
+        List<MaterialStack> scraps = scraps(helper, pos, before);
         List<ItemEntity> drops = newItems(helper, pos, before);
         helper.assertTrue(scraps.size() == 2
                         && scraps.stream().anyMatch(stack -> stack.material == Mats.MAT_IRON
@@ -136,12 +137,12 @@ public final class CompatibilityBoundaryGameTests {
                 .filter(e -> !before.contains(e.getId())).toList();
     }
 
-    private static Mats.MaterialStack onlyScrap(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
-        List<Mats.MaterialStack> scraps = scraps(helper, pos, before);
+    private static MaterialStack onlyScrap(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+        List<MaterialStack> scraps = scraps(helper, pos, before);
         return scraps.size() == 1 ? scraps.get(0) : null;
     }
 
-    private static List<Mats.MaterialStack> scraps(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
+    private static List<MaterialStack> scraps(GameTestHelper helper, BlockPos pos, java.util.Set<Integer> before) {
         return newItems(helper, pos, before).stream()
                 .map(ItemEntity::getItem)
                 .map(ItemScraps::getMats)

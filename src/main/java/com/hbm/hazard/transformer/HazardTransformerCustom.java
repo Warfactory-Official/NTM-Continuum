@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 import com.hbm.Constants;
-import com.hbm.hazard.HazardEntry;
+import com.hbm.api.hazard.HazardEntry;
 import com.hbm.hazard.HazardSystem;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;

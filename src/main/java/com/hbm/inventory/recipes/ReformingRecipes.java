@@ -1,7 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 
 import java.util.Collections;
@@ -55,7 +55,7 @@ public final class ReformingRecipes {
                 new FluidStack(Fluids.SULFURIC_ACID, 75), new FluidStack(Fluids.PETROLEUM, 10), new FluidStack(Fluids.HYDROGEN, 15)));
         recipes.put(Fluids.CHOLESTEROL, new ReformingRecipe(
                 new FluidStack(Fluids.ESTRADIOL, 50), new FluidStack(Fluids.REFORMGAS, 35), new FluidStack(Fluids.HYDROGEN, 15)));
-        com.hbm.scripting.ScriptedRecipes.apply(ReformingRecipes.class);
+        dev.golem.core.content.Replay.apply(ReformingRecipes.class);
     }
 
     public static void put(FluidType type, ReformingRecipe recipe) {

@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBigAssTank;
@@ -69,7 +69,7 @@ public class MachineBigAssTank extends MachineGiantTank {
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
         for (int[] arm : ARMS) {
-            if (!MultiblockHandlerXR.checkSpace(level, core, arm, clicked, facing)) return false;
+            if (!MultiblockFootprint.checkSpace(level, core, arm, clicked, facing)) return false;
         }
         return true;
     }
@@ -78,7 +78,7 @@ public class MachineBigAssTank extends MachineGiantTank {
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int[] arm : ARMS) MultiblockHandlerXR.visitBox(core, arm, facing, visitor);
+        for (int[] arm : ARMS) MultiblockFootprint.visitBox(core, arm, facing, visitor);
         visitor.cell(core.relative(facing, 6), MASK_SOUTH);
         visitor.cell(core.relative(facing, -6), MASK_NORTH);
     }

@@ -1,6 +1,6 @@
 package com.hbm.hazard.transformer;
 
-import com.hbm.hazard.HazardEntry;
+import com.hbm.api.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.items.machine.ItemZirnoxWaste;

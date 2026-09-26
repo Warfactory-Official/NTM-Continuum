@@ -1,9 +1,10 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.inventory.ModMenus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemZirnoxRod;
@@ -109,7 +110,7 @@ public class ContainerReactorZirnox extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_zirnox.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.machine_zirnox.get());
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
@@ -8,7 +9,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineTurbofan;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModItems;
@@ -103,11 +104,11 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
 
         fan.power = Library.chargeItemsFromTE(fan.inventory, 3, fan.power, fan.power);
         for (DirPos connection : fan.getConPos()) {
-            fan.tryProvide(level, connection.getPos(), connection.getDir());
-            if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection);
+            fan.tryProvide(level, connection.getPos(), connection.getDir().toDirection());
+            if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection.getPos(), connection.getDir().toDirection());
         }
         fan.power = Math.min(fan.power, MAX_POWER);
-        fan.networkPackNT();
+        fan.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbofan fan) {
@@ -207,7 +208,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
         };
     }
 
-    @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return dir != ForgeDirection.DOWN; }
+    @Override public boolean canConnect(FluidType type, Direction dir) { return dir != Direction.DOWN; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{blood}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank, blood}; }

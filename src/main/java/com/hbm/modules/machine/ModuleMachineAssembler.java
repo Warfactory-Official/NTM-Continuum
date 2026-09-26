@@ -1,14 +1,14 @@
 package com.hbm.modules.machine;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 
 /** Assembler processing module: 12 item input slots, 1 output slot. */
 public class ModuleMachineAssembler extends ModuleMachineBase {
 
-    public ModuleMachineAssembler(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {
+    public ModuleMachineAssembler(int index, IEnergyHandlerMK2 battery, ItemHandler inventory) {
         super(index, battery, inventory);
         this.inputSlots = new int[12];
         this.outputSlots = new int[1];

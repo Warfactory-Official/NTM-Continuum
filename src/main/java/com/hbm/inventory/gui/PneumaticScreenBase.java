@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.packet.ControlEventPayload;
 import dev.golem.core.gui.CompatContainerScreen;
@@ -19,8 +20,7 @@ import java.util.Optional;
 
 /**
  * The 1.7 {@code GuiInfoContainer} helpers this family's screens lean on: a hover tooltip over a painted region
- * ({@code drawCustomInfoStat}), a click on a region that sends one control flag ({@code clickSendFlag}), and the
- * smooth needle gauge ({@code GUIElements.drawSmoothGauge}).
+ * ({@code drawCustomInfoStat}) and a click on a region that sends one control flag ({@code clickSendFlag}).
  */
 public abstract class PneumaticScreenBase<T extends AbstractContainerMenu> extends CompatContainerScreen<T> {
 
@@ -52,7 +52,7 @@ public abstract class PneumaticScreenBase<T extends AbstractContainerMenu> exten
     protected boolean clickSendFlag(BlockPos pos, double mouseX, double mouseY, int x, int y, int width, int height,
                                     String key) {
         if (!hover(x, y, width, height, mouseX, mouseY)) return false;
-        GuiUtil.playClickSound();
+        Gauges.click();
         CompoundTag data = new CompoundTag();
         data.putBoolean(key, true);
         GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(pos, data));
@@ -85,35 +85,4 @@ public abstract class PneumaticScreenBase<T extends AbstractContainerMenu> exten
         }
     }
 
-    /** Supersample factor: the needle is rasterised at SS times and the pose scaled by 1/SS. */
-    private static final int SS = 8;
-
-    /**
-     * 1.7 {@code GUIElements.drawSmoothGauge}: a needle turned by {@code -progress * 270 - 45} degrees, an outer
-     * triangle 1.5 times the inner one behind it. The ported rasteriser from the press dial.
-     */
-    protected static void drawSmoothGauge(GuiGraphicsExtractor graphics, int cx, int cy, double progress,
-                                          double tipLength, double backLength, double backSide,
-                                          int color, int colorOuter) {
-        progress = Math.max(0.0, Math.min(1.0, progress));
-        float angle = (float) Math.toRadians(progress * 270.0 + 45.0);
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, cx, cy);
-        GuiDraw.rotate(graphics, angle);
-        GuiDraw.scale(graphics, 1.0F / SS, 1.0F / SS);
-        fillNeedle(graphics, 1.5, tipLength, backLength, backSide, 0xFF000000 | colorOuter);
-        fillNeedle(graphics, 1.0, tipLength, backLength, backSide, 0xFF000000 | color);
-        GuiDraw.popMatrix(graphics);
-    }
-
-    private static void fillNeedle(GuiGraphicsExtractor g, double mult, double tipLength, double backLength,
-                                   double backSide, int color) {
-        double tipLen = tipLength * mult * SS, backLen = backLength * mult * SS, side = backSide * mult * SS;
-        double total = tipLen + backLen;
-        int top = (int) Math.round(tipLen), bot = (int) Math.round(-backLen);
-        for (int y = bot; y < top; y++) {
-            int hw = (int) Math.round(side * (tipLen - y) / total);
-            if (hw > 0) GuiDraw.fill(g, -hw, y, hw, y + 1, color);
-        }
-    }
 }

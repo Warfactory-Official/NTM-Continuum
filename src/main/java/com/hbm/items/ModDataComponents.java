@@ -14,13 +14,15 @@ public final class ModDataComponents {
 
     private ModDataComponents() {}
 
-    public static final GolemComponent<Integer> FLUID_ID = GolemComponent.integer(Constants.MOD_ID, "fluid_id");
+    public static final GolemComponent<String> FLUID = GolemComponent.string(Constants.MOD_ID, "fluid");
     public static final GolemComponent<Integer> FLUID_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "fluid_amount");
     public static final GolemComponent<Integer> FLUID_PRESSURE = GolemComponent.integer(Constants.MOD_ID, "fluid_pressure");
     /** Filled giant-tank block state carried when a giant tank is broken and picked up. */
     public static final GolemComponent<Integer> GIANT_TANK_MODE =
             GolemComponent.integer(Constants.MOD_ID, "giant_tank_mode");
     public static final GolemComponent<String> MATERIAL = GolemComponent.string(Constants.MOD_ID, "material");
+    /** Pile rod identity; {@code ITEM_VARIANT} carries only its model index. */
+    public static final GolemComponent<String> PILE_ROD = GolemComponent.string(Constants.MOD_ID, "pile_rod");
     public static final GolemComponent<Integer> MAT_AMOUNT = GolemComponent.integer(Constants.MOD_ID, "mat_amount");
     public static final GolemComponent<Long> BATTERY_CHARGE = GolemComponent.longValue(Constants.MOD_ID, "battery_charge");
     public static final GolemComponent<Integer> PLATE_FUEL_LIFE = GolemComponent.integer(Constants.MOD_ID, "plate_fuel_life");
@@ -145,9 +147,11 @@ public final class ModDataComponents {
     public static final GolemComponent<net.minecraft.nbt.CompoundTag> CASING_PROGRESS =
             GolemComponent.compound(Constants.MOD_ID, "casing_progress");
 
-    public static int fluidId(ItemStack stack) { return FLUID_ID.getOr(stack, 0); }
-    public static void fluidId(ItemStack stack, int value) { FLUID_ID.set(stack, value); }
-    public static void removeFluidId(ItemStack stack) { FLUID_ID.remove(stack); }
+    public static com.hbm.api.fluid.FluidType fluid(ItemStack stack) {
+        return com.hbm.inventory.fluid.Fluids.byId(FLUID.getOr(stack, ""));
+    }
+    public static void fluid(ItemStack stack, com.hbm.api.fluid.FluidType fluid) { FLUID.set(stack, fluid.id().toString()); }
+    public static void removeFluid(ItemStack stack) { FLUID.remove(stack); }
     public static int fluidAmount(ItemStack stack) { return FLUID_AMOUNT.getOr(stack, 0); }
     public static void fluidAmount(ItemStack stack, int value) { FLUID_AMOUNT.set(stack, value); }
     public static void removeFluidAmount(ItemStack stack) { FLUID_AMOUNT.remove(stack); }

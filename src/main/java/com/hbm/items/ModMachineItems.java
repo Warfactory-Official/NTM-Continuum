@@ -1,16 +1,17 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.material.MaterialStack;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
-import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
+import com.hbm.api.material.SmeltingBehavior;
 import com.hbm.items.machine.ItemBlades;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.machine.ItemBlueprintFolder;
@@ -128,7 +129,7 @@ public final class ModMachineItems {
             List<ItemStack> list = new ArrayList<>();
             for (NTMMaterial mat : Mats.orderedList) {
                 if (mat.smeltable == SmeltingBehavior.SMELTABLE || mat.smeltable == SmeltingBehavior.ADDITIVE) {
-                    list.add(ItemScraps.create(new Mats.MaterialStack(mat, MaterialShapes.INGOT.quantity)));
+                    list.add(ItemScraps.create(new MaterialStack(mat, MaterialShapes.INGOT.quantity)));
                 }
             }
             return list;

@@ -1,7 +1,7 @@
 package com.hbm.foundry;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerMachineArcFurnaceLarge;
 import com.hbm.inventory.container.ContainerMachineStrandCaster;

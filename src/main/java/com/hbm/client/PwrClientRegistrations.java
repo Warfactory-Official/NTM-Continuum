@@ -10,7 +10,7 @@ import com.hbm.inventory.gui.GUIScreenSlicePrinter;
 public final class PwrClientRegistrations {
     private PwrClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModPwrMenus.PWR_CONTROLLER.get(), GUIPWR::new);
         ItemPWRPrinter.OPEN_SCREEN = (x1, y1, z1, x2, y2, z2, dir, whitelist) -> {
             Minecraft minecraft = Minecraft.getInstance();

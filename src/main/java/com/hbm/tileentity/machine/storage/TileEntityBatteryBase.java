@@ -1,16 +1,16 @@
 package com.hbm.tileentity.machine.storage;
 
-import com.hbm.api.energymk2.CableData;
+import com.hbm.network.power.CableData;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
-import com.hbm.capability.MachineCaps;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerGraphProvider;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.DirPos;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.EndpointRegistry;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.EndpointRegistry;
+import dev.golem.core.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -79,7 +79,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
             lastRedstone = comparator;
         }
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     /**
@@ -98,7 +98,7 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
         for (BlockPos port : ports) {
             if (graph.containsCell(port.asLong())) continue;
             graph.addNode(port.asLong(), PowerGraphProvider.INSTANCE.createData(getBlockState()),
-                    MachineCaps.FACE_MASK_ALL);
+                    Domains.FACES_ALL);
             minted = true;
         }
         if (minted) {
@@ -106,8 +106,8 @@ public abstract class TileEntityBatteryBase extends TileEntityMachineBase
             cells = new long[ports.length];
             for (int i = 0; i < ports.length; i++) cells[i] = ports[i].asLong();
         }
-        EndpointRegistry.of(level).declare(ports[0], getBlockPos(), MachineCaps.FACE_MASK_ALL,
-                MachineCaps.POWER_IN | MachineCaps.POWER_OUT);
+        EndpointRegistry.of(level).declare(ports[0], getBlockPos(), Domains.FACES_ALL,
+                Domains.POWER_IN | Domains.POWER_OUT);
         graph.setSelfEndpoint(anchor, true);
     }
 

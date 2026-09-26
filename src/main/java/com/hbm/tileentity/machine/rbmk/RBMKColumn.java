@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine.rbmk;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
@@ -34,14 +34,14 @@ public abstract class RBMKColumn {
 
     protected static String fluidName(int fluidId) {
         if (fluidId < 0) return "";
-        return Fluids.fromID(fluidId).getDisplayName().getString();
+        return Fluids.byIndex(fluidId).getDisplayName().getString();
     }
 
     /**
      * A tank's fluid type as its registry id for the DTO (-1 = empty).
      */
     public static int fluidId(FluidType fluid) {
-        return fluid == null ? -1 : fluid.getID();
+        return fluid == null ? -1 : fluid.index();
     }
 
     public static RBMKColumn readFromBuf(ByteBuf buf) {

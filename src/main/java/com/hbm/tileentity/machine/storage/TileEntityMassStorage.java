@@ -3,7 +3,7 @@ package com.hbm.tileentity.machine.storage;
 import com.hbm.inventory.container.ContainerMassStorage;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -87,7 +87,7 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
             storage.pushOutput(Math.min(storage.stockpile, type.getMaxStackSize()));
         }
 
-        storage.networkPackNT();
+        storage.syncState();
     }
 
     private int pushOutput(int requested) {
@@ -133,20 +133,20 @@ public class TileEntityMassStorage extends TileEntityMachineBase implements Menu
         if (stockpile > 0) return;
         inventory.setStackInSlot(FILTER_SLOT, stack.isEmpty() ? ItemStack.EMPTY : ItemStacks.copyWithCount(stack, 1));
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     public void provide(boolean stack) {
         ItemStack type = getFilterType();
         if (type.isEmpty() || stockpile <= 0) return;
         pushOutput(Math.min(stockpile, stack ? type.getMaxStackSize() : 1));
-        networkPackNT();
+        syncState();
     }
 
     public void toggleOutput() {
         output = !output;
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     public int getComparatorPower() {

@@ -7,7 +7,7 @@ import com.hbm.blocks.machine.FanPhysics;
 import com.hbm.blocks.machine.MachineFan;
 import com.hbm.blocks.machine.MachineIntake;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -65,14 +65,14 @@ public final class IntakeFanGameTests {
         assertPort(helper, ports[6], core.west(), ForgeDirection.WEST);
         assertPort(helper, ports[7], core.west().south(), ForgeDirection.WEST);
 
-        helper.assertTrue(block.canConnect(helper.getLevel(), core, ForgeDirection.NORTH),
+        helper.assertTrue(block.canConnect(helper.getLevel(), core, Direction.NORTH),
                 "Intake must expose its north energy anchor");
         helper.assertTrue(block.canConnect(Fluids.AIR, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        ForgeDirection.NORTH), "Intake must accept AIR at its north anchor");
+                        Direction.NORTH), "Intake must accept AIR at its north anchor");
         helper.assertFalse(block.canConnect(Fluids.OXYGEN, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        ForgeDirection.NORTH), "Intake must reject non-AIR fluids");
+                        Direction.NORTH), "Intake must reject non-AIR fluids");
         helper.assertFalse(block.canConnect(Fluids.AIR, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        ForgeDirection.UP), "Intake must reject vertical AIR connections");
+                        Direction.UP), "Intake must reject vertical AIR connections");
         helper.assertTrue(block.getDimensions()[2] == 1 && block.getDimensions()[4] == 1
                         && block.getOffset() == 0, "Intake footprint or offset changed");
         helper.succeed();
@@ -200,7 +200,8 @@ public final class IntakeFanGameTests {
 
         @Override
         public void applyFan(net.minecraft.world.level.Level level, BlockPos pos,
-                             ForgeDirection direction, int distance) {
+                             Direction side, int distance) {
+            ForgeDirection direction = ForgeDirection.of(side);
             calls++;
             BlowableBlock.distance = distance;
             BlowableBlock.direction = direction;

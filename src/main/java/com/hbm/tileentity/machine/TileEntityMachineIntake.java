@@ -7,7 +7,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Server buffer and client motor state for the legacy air intake. */
-public class TileEntityMachineIntake extends TileEntityLoadedBase
+public class TileEntityMachineIntake extends SyncedBlockEntity
         implements IEnergyReceiverMK2, IFluidStandardSenderMK2 {
 
     public static final long MAX_POWER = 2_000L;
@@ -44,11 +44,11 @@ public class TileEntityMachineIntake extends TileEntityLoadedBase
         }
 
         for (DirPos connection : intake.getConPos()) {
-            if (intake.compair.getFill() > 0) intake.tryProvide(intake.compair, level, connection);
+            if (intake.compair.getFill() > 0) intake.tryProvide(intake.compair, level, connection.getPos(), connection.getDir().toDirection());
         }
 
         intake.setChanged();
-        intake.networkPackNT();
+        intake.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineIntake intake) {

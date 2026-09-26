@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineExposureChamber;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineExposureChamber;
@@ -12,7 +12,6 @@ import com.hbm.items.ModFuelItems;
 import com.hbm.items.ModItems;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.BlockPos;
@@ -56,7 +55,7 @@ public final class ExposureChamberGameTests {
                     -connection.getDir().offsetY, -connection.getDir().offsetZ);
             helper.assertTrue(helper.getLevel().getBlockState(cell).getBlock() == block,
                     "Exposure Chamber power connection is missing its extra cell");
-            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
+            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir().toDirection()),
                     "Exposure Chamber power port does not connect");
             helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                     "Exposure Chamber extra cell does not resolve to the core");

@@ -73,7 +73,7 @@ public class DetMiner extends CompatBlock implements IBomb, IFuckingExplode {
     }
 
     @Override
-    public void explodeEntity(Level level, double x, double y, double z, EntityTntNtm entity) {
+    public void explodeEntity(Level level, double x, double y, double z, Entity entity) {
         explode(level, BlockPos.containing(x, y, z), entity);
     }
 }

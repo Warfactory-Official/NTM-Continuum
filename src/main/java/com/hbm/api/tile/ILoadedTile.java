@@ -1,6 +1,10 @@
 package com.hbm.api.tile;
 
+import net.minecraft.world.level.block.entity.BlockEntity;
+
 public interface ILoadedTile {
 
-    boolean isLoaded();
+    default boolean isLoaded() {
+        return !(this instanceof BlockEntity be) || !be.isRemoved();
+    }
 }

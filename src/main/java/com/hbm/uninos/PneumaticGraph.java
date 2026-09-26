@@ -1,7 +1,7 @@
 package com.hbm.uninos;
 
-import com.hbm.uninos.graph.LevelNodeGraph;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.LevelNodeGraph;
+import dev.golem.core.graph.NodeNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -19,7 +19,7 @@ public final class PneumaticGraph {
     }
 
     public static LevelNodeGraph<PneumaticData> get(ServerLevel level) {
-        return LevelNodeGraph.getOrCreate(level, PneumaticGraphProvider.INSTANCE, "pneumatic_graph");
+        return LevelNodeGraph.getOrCreate(level, PneumaticGraphProvider.INSTANCE, com.hbm.Constants.MOD_ID + ":pneumatic_graph");
     }
 
     /** 1.7 {@code new PneumaticNode(pos).setStandardConnections(...)}: every face open. Idempotent. */
@@ -33,7 +33,7 @@ public final class PneumaticGraph {
         get(level).removeNode(pos.asLong());
     }
 
-    /** @see com.hbm.api.fluidmk2.FluidGraph#dropCells(BlockEntity, BlockPos) */
+    /** @see com.hbm.network.fluid.FluidGraph#dropCells(BlockEntity, BlockPos) */
     public static void dropCell(BlockEntity owner, BlockPos pos) {
         if (!(owner.getLevel() instanceof ServerLevel server) || !LevelNodeGraph.blockWentWithIt(owner)) return;
         removeNode(server, pos);

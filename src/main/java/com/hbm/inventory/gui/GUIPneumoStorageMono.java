@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerPneumoStorageMono;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageMono;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
@@ -37,7 +38,7 @@ public class GUIPneumoStorageMono extends PneumaticScreenBase<ContainerPneumoSto
         }
 
         GuiDraw.blit(graphics, TEXTURE, leftPos + 174 + 4 * (storage.compair.getPressure() - 1), topPos + 36, 200, 0, 4, 8, 256, 256);
-        drawSmoothGauge(graphics, leftPos + 184, topPos + 25,
+        Gauges.needle(graphics, leftPos + 184, topPos + 25,
                 (double) storage.compair.getFill() / (double) storage.compair.getMaxFill(), 5, 2, 1, 0xCA6C43, 0xAB4223);
     }
 

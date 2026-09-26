@@ -12,7 +12,7 @@ import com.hbm.inventory.recipes.HeatRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -26,7 +26,7 @@ import com.hbm.sound.MachineAudio;
 import com.hbm.sound.AudioWrapper;
 
 /** Industrial boiler, ported from {@code TileEntityHeatBoilerIndustrial}. */
-public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
+public class TileEntityHeatBoilerIndustrial extends SyncedBlockEntity implements IFluidStandardTransceiverMK2, IRORValueProvider {
     public static final int maxHeat = 12_800_000;
     public static final double diffusion = 0.1D;
 
@@ -50,9 +50,9 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         te.tryConvert(level);
 
         if (te.tanks[1].getFill() > 0) {
-            for (DirPos connection : te.getConPos()) te.tryProvide(te.tanks[1], level, connection);
+            for (DirPos connection : te.getConPos()) te.tryProvide(te.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state,
@@ -60,7 +60,7 @@ public class TileEntityHeatBoilerIndustrial extends TileEntityLoadedBase impleme
         if (te.isOn) te.audioTime = 20;
         if (te.audioTime > 0) te.audioTime--;
         te.audio = MachineAudio.tick(te.audio, te.audioTime > 0, ModSounds.BOILER.get(),
-                SoundSource.BLOCKS, pos, te.getVolume(0.125F), 10F, 1.0F, 20);
+                SoundSource.BLOCKS, pos, 0.125F, 10F, 1.0F, 20);
     }
 
     private void setupTanks() {

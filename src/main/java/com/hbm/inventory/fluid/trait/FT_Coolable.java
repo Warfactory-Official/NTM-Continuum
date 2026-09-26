@@ -1,6 +1,6 @@
 package com.hbm.inventory.fluid.trait;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 
 import java.util.Collections;
 import java.util.EnumMap;

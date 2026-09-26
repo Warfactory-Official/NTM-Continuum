@@ -1,5 +1,6 @@
 package com.hbm.scripting;
 
+import com.hbm.api.content.Spec;
 import dev.golem.core.script.GolemScriptPlugin;
 import net.minecraft.world.item.ItemStack;
 

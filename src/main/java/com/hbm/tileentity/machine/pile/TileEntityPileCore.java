@@ -11,7 +11,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.particle.helper.FlameCreator;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -44,7 +44,7 @@ import java.util.List;
  * <p>Deferred: the burning debris thrown out on meltdown still flies and detonates, but does not trail
  * flame — the trail is a client-only particle and {@code BulletConfig}'s update hook runs on both sides.
  */
-public class TileEntityPileCore extends TileEntityLoadedBase {
+public class TileEntityPileCore extends SyncedBlockEntity {
 
     public static final int MAX_HEAT = 800;
     /** Set while a meltdown is tearing the structure down, so the cells do not each try to clean up. */
@@ -100,7 +100,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
         core.runSimulation();
         core.handleVentilation(level);
         core.handleMeltdown(level);
-        core.networkPackNT();
+        core.syncState();
     }
 
     // --- structure ---
@@ -229,7 +229,7 @@ public class TileEntityPileCore extends TileEntityLoadedBase {
 
         list.add(new PileChannel(x, y, z, dir, size, type));
         level.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, 1F, 1.25F);
-        markChanged();
+        setChanged();
         recalculateSegments();
         return true;
     }

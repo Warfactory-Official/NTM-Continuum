@@ -1,6 +1,6 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.fluid.trait.FT_Coolable.CoolingType;
@@ -42,7 +42,7 @@ public final class CoolingRecipes {
                 put(new CoolingRecipe(input, trait.amountReq, trait.coolsTo, trait.amountProduced, trait.heatEnergy));
             }
         }
-        com.hbm.scripting.ScriptedRecipes.apply(CoolingRecipes.class);
+        dev.golem.core.content.Replay.apply(CoolingRecipes.class);
     }
 
     public static void put(CoolingRecipe recipe) {

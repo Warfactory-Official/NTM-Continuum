@@ -7,7 +7,7 @@ import com.hbm.inventory.recipes.FractionRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -25,7 +25,7 @@ import dev.golem.core.data.DataOut;
  * if they fit. The input tank type is set by a fluid-identifier right-click on the bottom segment (the
  * old onBlockActivated, in {@link com.hbm.blocks.machine.MachineFractionTower}).
  */
-public class TileEntityMachineFractionTower extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2 {
+public class TileEntityMachineFractionTower extends SyncedBlockEntity implements IFluidStandardTransceiverMK2 {
 
     public FluidTankNTM[] tanks;
 
@@ -61,13 +61,13 @@ public class TileEntityMachineFractionTower extends TileEntityLoadedBase impleme
         if (TickPhase.every(level, pos, 10)) te.fractionate();
 
         te.sendFluid();
-        te.networkPackNT();
+        te.syncState();
     }
 
     private void sendFluid() {
         for (DirPos dp : getConPos()) {
-            this.tryProvide(tanks[1], level, dp);
-            this.tryProvide(tanks[2], level, dp);
+            this.tryProvide(tanks[1], level, dp.getPos(), dp.getDir().toDirection());
+            this.tryProvide(tanks[2], level, dp.getPos(), dp.getDir().toDirection());
         }
     }
 

@@ -32,6 +32,10 @@ public class ItemPWRFuel extends CompatItem {
         private static final Map<String, EnumPWRFuel> BY_NAME = new HashMap<>();
         public static final List<EnumPWRFuel> VALUES = Collections.unmodifiableList(REGISTERED);
 
+        static {
+            dev.golem.core.content.SyncedIndex.register("hbm:pwr_fuels", () -> REGISTERED.stream().map(EnumPWRFuel::name).toList());
+        }
+
         public static final EnumPWRFuel MEU =        new EnumPWRFuel("MEU",        5.0D,  new FunctionLogarithmic(20 * 30).withDiv(2_500));
         public static final EnumPWRFuel HEU233 =     new EnumPWRFuel("HEU233",     7.5D,  new FunctionSqrt(25));
         public static final EnumPWRFuel HEU235 =     new EnumPWRFuel("HEU235",     7.5D,  new FunctionSqrt(22.5));

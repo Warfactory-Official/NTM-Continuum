@@ -5,7 +5,7 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineVacuumDistill;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.RefineryRecipes;
@@ -91,11 +91,11 @@ public class TileEntityMachineVacuumDistill extends TileEntityMachineBase
 
         for (DirPos dp : te.getConPos()) {
             for (int i = 1; i < 5; i++) {
-                if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);
+                if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp.getPos(), dp.getDir().toDirection());
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
 

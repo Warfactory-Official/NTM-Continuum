@@ -1,5 +1,6 @@
 package com.hbm.hazard.modifier;
 
+import com.hbm.api.hazard.IHazardModifier;
 import com.hbm.items.machine.ItemRTGPellet;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;

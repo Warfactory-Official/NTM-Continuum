@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineArcWelder;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
@@ -108,10 +108,10 @@ public final class ArcWelderGameTests {
         for (DirPos connection : welder.getConPos()) {
             BlockPos cell = connection.getPos().offset(-connection.getDir().offsetX,
                     -connection.getDir().offsetY, -connection.getDir().offsetZ);
-            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
+            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir().toDirection()),
                     "Arc Welder power port does not connect");
             helper.assertTrue(block.canConnect(Fluids.OXYGEN, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(),
-                            connection.getDir()), "Arc Welder fluid port does not connect");
+                            connection.getDir().toDirection()), "Arc Welder fluid port does not connect");
             helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                     "Arc Welder port cell does not resolve to the core");
         }

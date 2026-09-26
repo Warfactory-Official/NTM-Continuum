@@ -71,7 +71,7 @@ public class TileEntityCondenserPowered extends TileEntityCondenser implements I
     @Override
     protected void updateConnections(Level level) {
         for (DirPos connection : getConPos()) {
-            tryProvide(output, level, connection);
+            tryProvide(output, level, connection.getPos(), connection.getDir().toDirection());
         }
     }
 

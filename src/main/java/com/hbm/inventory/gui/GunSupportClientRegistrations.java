@@ -8,7 +8,7 @@ public final class GunSupportClientRegistrations {
 
     private GunSupportClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModGunSupportMenus.AMMO_BAG.get(), ScreenItemBox::new);
         sink.register(ModGunSupportMenus.CASING_BAG.get(), ScreenItemBox::new);
     }

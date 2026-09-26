@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachinePUREX;
@@ -30,12 +32,14 @@ public final class MachinePUREX extends BlockMultiblockMachine implements IEnerg
     @Override public @Nullable WorldlyContainer getContainer(BlockState state, LevelAccessor level, BlockPos pos) {
         return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachinePUREX purex ? purex : null;
     }
-    @Override public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
-        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachinePUREX purex && IEnergyConnectorBlock.isPort(purex.getConPos(), pos, dir);
+    @Override public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
+        return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachinePUREX purex && com.hbm.lib.Ports.isPort(purex.getConPos(), pos, dir.toDirection());
     }
-    @Override public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    @Override public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return MultiblockSurface.coreEntity(world, new BlockPos(x, y, z)) instanceof TileEntityMachinePUREX purex
-                && IEnergyConnectorBlock.isPort(purex.getConPos(), new BlockPos(x, y, z), dir);
+                && com.hbm.lib.Ports.isPort(purex.getConPos(), new BlockPos(x, y, z), dir.toDirection());
     }
     
 

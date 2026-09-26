@@ -1,9 +1,10 @@
 package com.hbm.blocks.network;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorMK2;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.TickingBlock;
@@ -68,8 +69,9 @@ public class DroneCrate extends CompatBlock implements TickingBlock, ILookOverla
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return world.getBlockEntity(new BlockPos(x, y, z)) instanceof IFluidConnectorMK2 connector
-                && connector.canConnect(type, dir);
+                && connector.canConnect(type, dir.toDirection());
     }
 }

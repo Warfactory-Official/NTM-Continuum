@@ -1,18 +1,18 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingStep;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.sound.AudioSystem;
 import com.hbm.sound.AudioWrapper;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -34,7 +34,7 @@ import com.hbm.tileentity.ModPowerGenBlockEntities;
  * 15x15 layer below itself (ten layers, one per tick, cycling on world time) for lava, volcanic lava and
  * volcanic fissures, and heats one {@code FT_Heatable} step of the input fluid with the ten-layer sum.
  */
-public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2 {
+public class TileEntityMachineHephaestus extends SyncedBlockEntity implements IFluidStandardTransceiverMK2 {
 
     public final FluidTankNTM input;
     public final FluidTankNTM output;
@@ -82,10 +82,10 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
 
         if (heatex.output.getFill() > 0) {
             for (DirPos connection : heatex.getConPos()) {
-                heatex.tryProvide(heatex.output, level, connection);
+                heatex.tryProvide(heatex.output, level, connection.getPos(), connection.getDir().toDirection());
             }
         }
-        heatex.networkPackNT();
+        heatex.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineHephaestus heatex) {
@@ -215,8 +215,8 @@ public class TileEntityMachineHephaestus extends TileEntityLoadedBase implements
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{input}; }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && dir != ForgeDirection.UP && dir != ForgeDirection.DOWN;
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir != null && dir != Direction.UP && dir != Direction.DOWN;
     }
 
     @Override

@@ -90,7 +90,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
             furnace.progress = 0;
         }
 
-        furnace.networkPackNT();
+        furnace.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceIron furnace) {

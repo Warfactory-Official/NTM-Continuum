@@ -1,5 +1,7 @@
 package com.hbm.inventory.material;
 
+import com.hbm.api.material.Material;
+import com.hbm.api.material.SmeltingBehavior;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.MaterialStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
@@ -30,12 +32,14 @@ import java.util.Set;
  * (how a material behaves when melted, e.g. coal → carbon at 2:1) — is ported for the foundry system;
  * traits remain deferred.
  */
-public final class NTMMaterial {
+public final class NTMMaterial implements Material {
 
-    /** Snake-case id, matching the ported item naming (e.g. {@code iron}, {@code combine_steel}). */
+    /** Item-naming key: {@code iron} for {@code hbm:iron}, else {@code <namespace>_<path>}; {@link Mats#byName} key. */
     public final String name;
-    /** The original numeric id, kept for reference / ordering. */
-    public final int id;
+    /** Persisted identity. */
+    public final net.minecraft.resources.Identifier id;
+    /** Session index = registration order; network buffers only. */
+    public final int index;
 
     /** The legacy constructor defaults, used by the three coke materials. */
     public int solidColorLight = 0xFF4A00;
@@ -55,10 +59,27 @@ public final class NTMMaterial {
 
     private String displayName;
 
-    public NTMMaterial(int id, String name) {
+    /** A tag-only aggregate: in no registry, no index. */
+    public static NTMMaterial group(String name) {
+        return new NTMMaterial(dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, name), name, -1);
+    }
+
+    NTMMaterial(net.minecraft.resources.Identifier id, String name, int index) {
         this.id = id;
         this.name = name;
+        this.index = index;
     }
+
+    @Override public net.minecraft.resources.Identifier id() { return id; }
+    @Override public int index() { return index; }
+    @Override public String name() { return name; }
+    @Override public int solidColorLight() { return solidColorLight; }
+    @Override public int solidColorDark() { return solidColorDark; }
+    @Override public int moltenColor() { return moltenColor; }
+    @Override public SmeltingBehavior smeltable() { return smeltable; }
+    @Override public NTMMaterial smeltsInto() { return smeltsInto; }
+    @Override public int convIn() { return convIn; }
+    @Override public int convOut() { return convOut; }
 
     public NTMMaterial smelting(SmeltingBehavior behavior) {
         this.smeltable = behavior;
@@ -91,6 +112,7 @@ public final class NTMMaterial {
     }
 
     /** Title-cased display name, e.g. {@code combine_steel → "Combine Steel"}. */
+    @Override
     public String getDisplayName() {
         if (displayName != null) return displayName;
         StringBuilder sb = new StringBuilder();
@@ -132,14 +154,5 @@ public final class NTMMaterial {
     @Override
     public String toString() {
         return "NTMMaterial[" + name + "]";
-    }
-
-    /** 1.12.2 {@code NTMMaterial.SmeltingBehavior}, verbatim. */
-    public enum SmeltingBehavior {
-        NOT_SMELTABLE,  // anything that can't be smelted or otherwise doesn't belong in a smelter, like diamond
-        VAPORIZES,      // can't be smelted because the material would skadoodle
-        BREAKS,         // can't be smelted because the material doesn't survive the temperatures
-        SMELTABLE,      // mostly metal
-        ADDITIVE        // stuff like coal which isn't smeltable but can be put in a crucible anyway
     }
 }

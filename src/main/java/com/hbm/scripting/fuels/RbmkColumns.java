@@ -8,7 +8,7 @@ import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKControl;
 import com.hbm.blocks.machine.rbmk.RBMKModerator;
 import com.hbm.blocks.machine.rbmk.RBMKReflector;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.scripting.ScriptedContent;
 import com.hbm.tileentity.ModRBMKBlockEntities;

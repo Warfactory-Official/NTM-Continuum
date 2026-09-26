@@ -54,7 +54,7 @@ public class BlockEntityRBMKConsole extends TileEntityMachineBase implements ICo
         }
         rescan();
         prepareScreenInfo();
-        networkPackNT();
+        syncState();
     }
 
     private void rescan() {

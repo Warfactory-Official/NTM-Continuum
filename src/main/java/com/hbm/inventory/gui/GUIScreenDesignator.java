@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.items.ModDataComponents;
 import com.hbm.packet.ManualDesignatorPayload;
 import dev.golem.core.Ids;
@@ -95,9 +96,7 @@ public final class GUIScreenDesignator extends CompatScreen {
     }
 
     private void apply(int operator, int value, int reference) {
-        Minecraft.getInstance().getSoundManager().play(
-                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                        net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        Gauges.click();
         GolemNetwork.sendToServer(ManualDesignatorPayload.CODEC,
                 new ManualDesignatorPayload(operator, value, reference));
         if (operator == 2) {

@@ -1,7 +1,8 @@
 package com.hbm.tileentity.machine.storage;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -9,19 +10,18 @@ import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.inventory.container.ContainerBarrel;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.blocks.ModFluidNetBlocks;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.saveddata.TomSaveData;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.machine.MachineFluidContainerIO;
-import com.hbm.uninos.graph.EndpointRegistry;
+import dev.golem.core.graph.EndpointRegistry;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -105,11 +105,11 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         // otherwise, it is a regular providing/receiving machine, blocking further propagation
         if (level instanceof ServerLevel server) barrel.updateCells(server);
         if (barrel.mode == 2) {
-            for (DirPos dp : barrel.getConPos()) barrel.tryProvide(barrel.tank, level, dp.getPos(), dp.getDir());
+            for (DirPos dp : barrel.getConPos()) barrel.tryProvide(barrel.tank, level, dp.getPos(), dp.getDir().toDirection());
         }
 
         if (barrel.tank.getFill() > 0) barrel.checkFluidInteraction();
-        barrel.networkPackNT(); // 1.7 packed every 50 ticks; unchanged payloads are skipped here
+        barrel.syncState(); // 1.7 packed every 50 ticks; unchanged payloads are skipped here
     }
 
     /** 1.7 {@code tank.setType(0, 1, slots)}: an identifier in slot 0 sets the type and passes to slot 1. */
@@ -234,7 +234,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
     }
 
     @Override
-    public boolean canConnect(FluidType fluid, ForgeDirection dir) {
+    public boolean canConnect(FluidType fluid, Direction dir) {
         return fluid == tank.getTankType();
     }
 
@@ -254,7 +254,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         if (tank.getFill() == 0) return null;
         CompoundTag data = new CompoundTag();
         data.putInt("fill", tank.getFill());
-        data.putInt("type", tank.getTankType().getID());
+        data.putString("type", tank.getTankType().id().toString());
         data.putInt("max", tank.getMaxFill());
         data.putShort("mode", mode);
         return data;
@@ -262,7 +262,7 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
 
     @Override
     protected void applyCarriedData(CompoundTag data) {
-        tank.setTankType(Fluids.fromID(Tags.getIntOr(data, "type", Fluids.NONE.getID())));
+        tank.setTankType(Fluids.byId(Tags.getStringOr(data, "type", "")));
         tank.setFill(Math.min(Tags.getIntOr(data, "fill", 0), tank.getMaxFill()));
         mode = (short) Tags.getIntOr(data, "mode", 0);
     }
@@ -344,10 +344,10 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
             int m = IRORInteractive.parseInt(params[0], 0, 3);
             if (m != this.mode) {
                 this.mode = (short) m;
-                this.markChanged();
+                this.setChanged();
             } else if (params.length > 1) {
                 this.mode = (short) IRORInteractive.parseInt(params[1], 0, 3);
-                this.markChanged();
+                this.setChanged();
             }
         }
         return null;

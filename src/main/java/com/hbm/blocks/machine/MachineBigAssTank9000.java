@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBAT9000;
 import net.minecraft.core.BlockPos;
@@ -40,7 +40,7 @@ public class MachineBigAssTank9000 extends MachineGiantTank {
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
         for (int[] arm : ARMS) {
-            if (!MultiblockHandlerXR.checkSpace(level, core, arm, clicked, facing)) return false;
+            if (!MultiblockFootprint.checkSpace(level, core, arm, clicked, facing)) return false;
         }
         return true;
     }
@@ -49,7 +49,7 @@ public class MachineBigAssTank9000 extends MachineGiantTank {
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int[] arm : ARMS) MultiblockHandlerXR.visitBox(core, arm, facing, visitor);
+        for (int[] arm : ARMS) MultiblockFootprint.visitBox(core, arm, facing, visitor);
         for (int off = -1; off <= 1; off += 2) {
             visitor.cell(core.offset(off, 0, 2), MASK_SOUTH);
             visitor.cell(core.offset(off, 0, -2), MASK_NORTH);

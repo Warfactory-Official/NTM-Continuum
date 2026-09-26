@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionMHDT;
@@ -87,9 +89,9 @@ public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOv
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
         for (int[] box : EXTRA_BOXES) {
-            if (!MultiblockHandlerXR.checkSpace(level, core, box, clicked, facing)) return false;
+            if (!MultiblockFootprint.checkSpace(level, core, box, clicked, facing)) return false;
         }
-        return MultiblockHandlerXR.checkSpace(level, nozzle(core, facing), NOZZLE_BOX, clicked, facing);
+        return MultiblockFootprint.checkSpace(level, nozzle(core, facing), NOZZLE_BOX, clicked, facing);
     }
 
     private static BlockPos nozzle(BlockPos core, Direction facing) {
@@ -100,8 +102,8 @@ public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOv
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int[] box : EXTRA_BOXES) MultiblockHandlerXR.visitBox(core, box, facing, visitor);
-        MultiblockHandlerXR.visitBox(nozzle(core, facing), NOZZLE_BOX, facing, visitor);
+        for (int[] box : EXTRA_BOXES) MultiblockFootprint.visitBox(core, box, facing, visitor);
+        MultiblockFootprint.visitBox(nozzle(core, facing), NOZZLE_BOX, facing, visitor);
 
         Direction rot = facing.getClockWise();
         int dx = facing.getStepX(), dz = facing.getStepZ();

@@ -3,7 +3,7 @@ package com.hbm.gametest;
 import com.hbm.blocks.machine.MachineGasCent;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.MachineUF6Tank;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.inventory.container.ContainerMachineGasCent;
 import com.hbm.inventory.fluid.FluidStack;
@@ -69,10 +69,10 @@ public final class GasCentrifugeGameTests {
                 "gas centrifuge core block entity was not created");
         helper.assertTrue(core.equals(MultiblockSurface.coreOfCell(helper.getLevel(), core.above())),
                 "gas centrifuge tower dummy did not resolve to the core");
-        helper.assertTrue(block.canConnect(helper.getLevel(), core, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), core, net.minecraft.core.Direction.EAST),
                 "gas centrifuge east power port did not connect");
         helper.assertTrue(block.canConnect(Fluids.UF6, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        com.hbm.lib.ForgeDirection.EAST),
+                        net.minecraft.core.Direction.EAST),
                 "gas centrifuge east fluid port did not connect");
         helper.succeed();
     }

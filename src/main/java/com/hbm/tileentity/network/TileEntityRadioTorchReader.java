@@ -6,7 +6,7 @@ import com.hbm.interfaces.IControlReceiver;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.radio.RadioReaderMenu;
 import com.hbm.radio.RadioTargets;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Locale;
 
-public final class TileEntityRadioTorchReader extends TileEntityLoadedBase
+public final class TileEntityRadioTorchReader extends SyncedBlockEntity
         implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 8;
     public final String[] channels = new String[MAPPING_SIZE];
@@ -55,7 +55,7 @@ public final class TileEntityRadioTorchReader extends TileEntityLoadedBase
                 }
             }
         }
-        networkPackNT();
+        syncState();
     }
 
     public Direction getTorchFacing() {

@@ -83,7 +83,7 @@ public final class ShredderRecipes {
         registerModernParity();
         registerVanillaSweeps();
         registerTagSweep();
-        com.hbm.scripting.ScriptedRecipes.apply(ShredderRecipes.class);
+        dev.golem.core.content.Replay.apply(ShredderRecipes.class);
     }
 
     public static synchronized void reset() {

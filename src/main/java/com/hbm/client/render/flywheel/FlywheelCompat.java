@@ -1,6 +1,6 @@
 package com.hbm.client.render.flywheel;
 
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.client.render.TorexCloudletRenderData;
 import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityNukeTorex;
@@ -152,9 +152,9 @@ public final class FlywheelCompat {
         if (packed != null) {
             BlockPos core = BlockPos.of(packed);
             BlockState coreState = level.getBlockState(core);
-            com.hbm.blocks.multiblock.BlockMultiblockCore block = MultiblockSurface.foldedCore(coreState);
+            dev.golem.core.multiblock.MultiblockCore block = MultiblockSurface.foldedCore(coreState);
             if (block != null && block.claimsCell(core, mined,
-                    coreState.getValue(com.hbm.blocks.multiblock.BlockMultiblockCore.FACING))) return core;
+                    coreState.getValue(dev.golem.core.multiblock.MultiblockCore.FACING))) return core;
             cache.remove(mined.asLong());
         }
 

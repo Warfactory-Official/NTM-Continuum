@@ -25,7 +25,7 @@ import com.hbm.inventory.container.ContainerPneumoStorageAccess;
  *
  * <p>1.7 keys a type by a hash of (item, meta, nbt) that both sides re-derive; the cache here is keyed by the stack
  * itself, so the menu hands out a per-menu id and the wire carries the type once. The deltas are compiled into a
- * registry-aware buffer on the sending side (like {@code BlockEntitySyncPayload}) so item stacks encode on every
+ * registry-aware buffer on the sending side (like {@code StateSyncPayload}) so item stacks encode on every
  * node.
  */
 public record PneumoAccessSyncPayload(int containerId, byte[] data) implements GolemPayload {

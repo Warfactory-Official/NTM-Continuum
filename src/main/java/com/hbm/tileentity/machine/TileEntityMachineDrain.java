@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.ModOilBlocks;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -10,7 +10,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -25,7 +25,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 /** Drainage-pipe core: receives a fluid network and spills half its contents each server tick. */
-public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
+public class TileEntityMachineDrain extends SyncedBlockEntity implements IFluidStandardReceiverMK2 {
 
     public final FluidTankNTM tank = new FluidTankNTM(Fluids.NONE, 2_000);
 
@@ -36,7 +36,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDrain drain) {
 
         // Upstream synchronizes the pre-spill tank state, then performs the destructive/release branch.
-        drain.networkPackNT();
+        drain.syncState();
 
         if (drain.tank.getFill() > 0) {
             if (drain.tank.getTankType() == Fluids.AMAT || drain.tank.getTankType() == Fluids.ASCHRAB) {
@@ -92,8 +92,8 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UP && dir != ForgeDirection.DOWN;
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir != Direction.UP && dir != Direction.DOWN;
     }
 
     @Override

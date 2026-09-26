@@ -7,7 +7,7 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.container.ContainerFurnaceCombination;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CombinationRecipes;
@@ -76,7 +76,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
 
         if (TickPhase.every(level, pos, 20L)) {
             for (DirPos connection : furnace.getConPos()) {
-                if (furnace.tank.getFill() > 0) furnace.tryProvide(furnace.tank, level, connection);
+                if (furnace.tank.getFill() > 0) furnace.tryProvide(furnace.tank, level, connection.getPos(), connection.getDir().toDirection());
             }
         }
 
@@ -114,7 +114,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
             furnace.progress = 0;
         }
 
-        furnace.networkPackNT();
+        furnace.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFurnaceCombination furnace) {

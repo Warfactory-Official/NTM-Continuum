@@ -9,7 +9,7 @@ import com.hbm.blocks.ModHazardBlocks;
 import com.hbm.blocks.ModOutgasBlocks;
 import com.hbm.blocks.generic.BlockSlag;
 import com.hbm.blocks.generic.HbmStairBlock;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.util.valueproviders.ConstantInt;

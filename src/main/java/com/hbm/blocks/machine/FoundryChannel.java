@@ -2,7 +2,7 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
 import dev.golem.core.registry.TickingBlock;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -128,23 +128,27 @@ public class FoundryChannel extends dev.golem.core.world.CompatBlock implements 
     // --- ICrucibleAcceptor: delegate to the TE ---
 
     @Override
-    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
+    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         return world.getBlockEntity(pos) instanceof TileEntityFoundryChannel te && te.canAcceptPartialPour(world, pos, dX, dY, dZ, side, stack);
     }
 
     @Override
-    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
+    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         if (!(world.getBlockEntity(pos) instanceof TileEntityFoundryChannel te)) return stack;
         return te.pour(world, pos, dX, dY, dZ, side, stack);
     }
 
     @Override
-    public boolean canAcceptPartialFlow(Level world, BlockPos pos, ForgeDirection side, MaterialStack stack) {
+    public boolean canAcceptPartialFlow(Level world, BlockPos pos, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         return world.getBlockEntity(pos) instanceof TileEntityFoundryChannel te && te.canAcceptPartialFlow(world, pos, side, stack);
     }
 
     @Override
-    public MaterialStack flow(Level world, BlockPos pos, ForgeDirection side, MaterialStack stack) {
+    public MaterialStack flow(Level world, BlockPos pos, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         if (!(world.getBlockEntity(pos) instanceof TileEntityFoundryChannel te)) return stack;
         return te.flow(world, pos, side, stack);
     }

@@ -6,7 +6,7 @@ import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.radio.RadioCounterMenu;
 import com.hbm.radio.RadioTargets;
-import com.hbm.tileentity.TileEntityInventoryBase;
+import dev.golem.core.machine.InventoryBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Server-side three-slot ROR inventory counter. */
-public final class TileEntityRadioTorchCounter extends TileEntityInventoryBase implements IControlReceiver, RadioTorchTicking,
+public final class TileEntityRadioTorchCounter extends InventoryBlockEntity implements IControlReceiver, RadioTorchTicking,
         net.minecraft.world.MenuProvider {
     public static final int MAPPING_SIZE = 3;
 
@@ -60,7 +60,7 @@ public final class TileEntityRadioTorchCounter extends TileEntityInventoryBase i
                 lastCount[i] = count;
             }
         }
-        networkPackNT();
+        syncState();
     }
 
     public void nextMode(int index) {

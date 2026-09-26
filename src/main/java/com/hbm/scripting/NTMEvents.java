@@ -1,5 +1,11 @@
 package com.hbm.scripting;
 
+import com.hbm.api.content.HazardsEvent;
+import com.hbm.api.content.RecipesEvent;
+import com.hbm.api.content.FuelsEvent;
+import com.hbm.api.content.FluidsEvent;
+import com.hbm.api.content.MaterialsEvent;
+import com.hbm.api.content.ShapesEvent;
 import com.hbm.Constants;
 
 import java.util.List;

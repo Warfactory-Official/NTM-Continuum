@@ -352,7 +352,7 @@ public final class BallisticGunCatalog {
                 gun_maresleg_broken, gun_liberator, gun_spas12, gun_autoshotgun, gun_autoshotgun_shredder, gun_autoshotgun_sexy,
                 gun_flaregun, gun_congolake, gun_mk108, gun_amat, gun_amat_subtlety, gun_amat_penance,
                 gun_bolter, gun_double_barrel, gun_double_barrel_sacred_dragon, gun_autoshotgun_heretic}) {
-            com.hbm.creativetabs.ModTabs.addTo(com.hbm.creativetabs.HbmTab.WEAPONS, gun);
+            com.hbm.creativetabs.ModTabs.addTo(com.hbm.api.tab.HbmTab.WEAPONS, gun);
         }
     }
 

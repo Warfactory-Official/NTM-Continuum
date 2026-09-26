@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine.storage;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemBatteryREDD;
 import com.hbm.items.machine.ItemFENSU;

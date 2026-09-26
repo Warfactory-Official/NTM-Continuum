@@ -41,11 +41,11 @@ public final class TerrainHazards {
         }
     }
 
-    private static void item(RegistryObject<? extends Block> block, com.hbm.hazard.type.IHazardType type, float level) {
+    private static void item(RegistryObject<? extends Block> block, com.hbm.api.hazard.IHazardType type, float level) {
         item(block.get(), type, level);
     }
 
-    private static void item(Block block, com.hbm.hazard.type.IHazardType type, float level) {
+    private static void item(Block block, com.hbm.api.hazard.IHazardType type, float level) {
         HazardSystem.register(block.asItem(), new HazardData().addEntry(type, level));
     }
 }

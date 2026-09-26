@@ -1,10 +1,10 @@
 package com.hbm.blocks.network;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
-import com.hbm.capability.MachineCaps;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerGraphProvider;
+import dev.golem.core.graph.Domains;
+import dev.golem.core.graph.LevelNodeGraph;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
@@ -107,11 +107,11 @@ public class BlockCable extends dev.golem.core.world.CompatBlock implements Tick
         ForgeDirection neighbourSide = ForgeDirection.getOrientation(dir.getOpposite());
 
         if (level.getBlockState(neighbour).getBlock() instanceof IEnergyConnectorBlock connectorBlock
-                && connectorBlock.canConnect(level, neighbour, neighbourSide)) {
+                && connectorBlock.canConnect(level, neighbour, neighbourSide.toDirection())) {
             return true;
         }
         BlockEntity be = level.getBlockEntity(neighbour);
-        return be instanceof IEnergyConnectorMK2 connector && connector.canConnect(neighbourSide);
+        return be instanceof IEnergyConnectorMK2 connector && connector.canConnect(neighbourSide.toDirection());
     }
 
     @Override
@@ -141,7 +141,7 @@ public class BlockCable extends dev.golem.core.world.CompatBlock implements Tick
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (level instanceof ServerLevel server && !oldState.is(this)) {
             PowerGraph.get(server).addNode(pos.asLong(), PowerGraphProvider.INSTANCE.createData(state),
-                    MachineCaps.FACE_MASK_ALL);
+                    Domains.FACES_ALL);
         }
     }
 

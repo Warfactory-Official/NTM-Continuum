@@ -8,7 +8,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -26,7 +26,7 @@ import dev.golem.core.data.DataOut;
  *
  * <p>Deferred (§20): the Forge fluid-capability wrapper ({@code NTMFluidHandlerWrapper}).
  */
-public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2 {
+public class TileEntityMachineCatalyticCracker extends SyncedBlockEntity implements IFluidStandardTransceiverMK2 {
 
     public FluidTankNTM[] tanks;
 
@@ -48,10 +48,10 @@ public class TileEntityMachineCatalyticCracker extends TileEntityLoadedBase impl
         if (TickPhase.every(level, pos, 10)) {
             for (DirPos dp : te.getConPos()) {
                 for (int i = 2; i <= 4; i++) {
-                    if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);
+                    if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp.getPos(), dp.getDir().toDirection());
                 }
             }
-            te.networkPackNT();
+            te.syncState();
         }
     }
 

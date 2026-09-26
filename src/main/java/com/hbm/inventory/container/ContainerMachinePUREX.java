@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -87,7 +88,7 @@ public class ContainerMachinePUREX extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_purex.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.machine_purex.get());
     }
 
     /** The 1.12.2 routing: batteries → 0, blueprints → 1, upgrades → 2–3, everything else → the inputs. */

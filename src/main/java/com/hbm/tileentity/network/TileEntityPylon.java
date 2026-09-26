@@ -1,6 +1,6 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.lib.ForgeDirection;
+import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -29,13 +29,13 @@ public class TileEntityPylon extends TileEntityPylonBase {
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
-        return dir != ForgeDirection.DOWN;
+    public boolean canConnect(Direction dir) {
+        return dir != Direction.DOWN;
     }
 
     /** 1.7 lists the four horizontal neighbours of the foot as its cable connections. */
     @Override
     protected int getCellMask(int index) {
-        return com.hbm.blocks.multiblock.BlockMultiblockCore.MASK_HORIZONTAL;
+        return dev.golem.core.multiblock.MultiblockCore.MASK_HORIZONTAL;
     }
 }

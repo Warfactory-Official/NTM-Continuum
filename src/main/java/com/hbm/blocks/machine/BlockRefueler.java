@@ -3,7 +3,7 @@ package com.hbm.blocks.machine;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -103,9 +103,10 @@ public class BlockRefueler extends dev.golem.core.world.CompatBlock implements T
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityRefueler te
-                && IEnergyConnectorBlock.isPort(portOf(te), new BlockPos(x, y, z), dir);
+                && com.hbm.lib.Ports.isPort(portOf(te), new BlockPos(x, y, z), dir.toDirection());
     }
 
     private static com.hbm.lib.DirPos[] portOf(TileEntityRefueler te) {

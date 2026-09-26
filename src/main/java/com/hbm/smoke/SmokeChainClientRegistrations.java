@@ -13,7 +13,7 @@ public final class SmokeChainClientRegistrations {
 
     private SmokeChainClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(SmokeChainRegistration.ASHPIT_MENU.get(), GUIAshpit::new);
     }
 

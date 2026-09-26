@@ -63,7 +63,7 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
         }
 
         updateConnections(level);
-        networkPackNT();
+        syncState();
     }
 
     protected boolean extraCondition(int amount) { return true; }
@@ -84,7 +84,7 @@ public class TileEntityCondenser extends TileEntityMachineBase implements IFluid
 
     protected void updateConnections(Level level) {
         for (DirPos connection : getConPos()) {
-            tryProvide(output, level, connection);
+            tryProvide(output, level, connection.getPos(), connection.getDir().toDirection());
         }
     }
 

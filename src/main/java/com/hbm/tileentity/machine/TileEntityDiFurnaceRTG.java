@@ -88,7 +88,7 @@ public final class TileEntityDiFurnaceRTG extends TileEntityMachineBase implemen
         // 1.7 calls hasPower() (and so pellet decay) again here; kept as-is.
         BlockRtgFurnaceBase.updateBlockState(te.isProcessing() || (te.canProcess() && te.hasPower()), level, pos);
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     @Override

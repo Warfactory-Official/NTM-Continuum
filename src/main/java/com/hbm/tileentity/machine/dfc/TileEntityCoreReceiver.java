@@ -5,7 +5,7 @@ import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.dfc.CoreComponent;
 import com.hbm.interfaces.ILaserable;
 import com.hbm.inventory.container.ContainerCoreReceiver;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
@@ -59,7 +59,7 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase
         power = joules * 5000;
 
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+            tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir.toDirection());
         }
 
         if (joules > 0) {
@@ -72,7 +72,7 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase
         }
 
         prevJoules = joules;
-        networkPackNT();
+        syncState();
         joules = 0;
     }
 
@@ -95,8 +95,8 @@ public class TileEntityCoreReceiver extends TileEntityMachineBase
     @Override public void setPower(long i) { this.power = i; }
     @Override public long getMaxPower() { return power; }
 
-    @Override public boolean canConnect(ForgeDirection dir) { return dir != ForgeDirection.UNKNOWN; }
-    @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return type == tank.getTankType(); }
+    @Override public boolean canConnect(Direction dir) { return dir != null; }
+    @Override public boolean canConnect(FluidType type, Direction dir) { return type == tank.getTankType(); }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }

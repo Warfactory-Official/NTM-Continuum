@@ -25,7 +25,7 @@ import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.IRepairable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.registries.BuiltInRegistries;

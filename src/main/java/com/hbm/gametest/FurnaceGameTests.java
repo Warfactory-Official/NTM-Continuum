@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerFurnaceBrick;
 import com.hbm.inventory.container.ContainerFurnaceIron;
@@ -54,7 +54,7 @@ public final class FurnaceGameTests {
                 "Iron furnace did not smelt iron ore");
         helper.assertTrue(furnace.processingTime == TileEntityFurnaceIron.baseTime,
                 "Iron furnace base processing time changed");
-        helper.assertBlockProperty(pos, BlockMultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
+        helper.assertBlockProperty(pos, MultiblockCore.FACING, net.minecraft.core.Direction.NORTH);
         helper.succeed();
     }
 

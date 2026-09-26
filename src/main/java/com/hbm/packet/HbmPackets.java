@@ -3,8 +3,6 @@ package com.hbm.packet;
 import com.hbm.Constants;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.tileentity.IBufPacketReceiver;
-import dev.golem.core.net.GolemBuffers;
 import dev.golem.core.net.GolemNetwork;
 import io.netty.buffer.Unpooled;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,11 +15,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-/**
- * Loader-agnostic handling for HBM's custom packets. Each loader registers
- * {@link BlockEntitySyncPayload#TYPE}/{@link BlockEntitySyncPayload#CODEC} with its own networking API
- * and routes received payloads here on the client main thread.
- */
+/** HBM's play payloads: declarations + handlers, loader-agnostic. */
 public final class HbmPackets {
 
     private HbmPackets() {}
@@ -42,7 +36,6 @@ public final class HbmPackets {
                         event.smoking(), event.smokeLife(), event.smokeLift(), event.nodeLife()));
             }
         });
-        GolemNetwork.declarePlayToClient(BlockEntitySyncPayload.CODEC);
         GolemNetwork.declarePlayToClient(EntityPropsSyncPayload.CODEC);
         GolemNetwork.registerPlayToServer(ControlEventPayload.CODEC,
                 (payload, player) -> handleControl(player, payload));
@@ -141,8 +134,6 @@ public final class HbmPackets {
 
     /** Attaches client handlers only after the physical client is available. */
     public static void registerClientHandlers() {
-        GolemNetwork.registerPlayToClient(BlockEntitySyncPayload.CODEC,
-                (payload, context) -> handleSync(context.level(), payload));
         GolemNetwork.registerPlayToClient(EntityPropsSyncPayload.CODEC,
                 (payload, context) -> handlePropsSync(context.player(), payload));
         GolemNetwork.registerPlayToClient(GunAnimationPayload.CODEC,
@@ -175,36 +166,13 @@ public final class HbmPackets {
     }
 
     /**
-     * Applies a received {@link BlockEntitySyncPayload}: resolves the tile in the given (client) level
-     * and replays the byte blob into its {@link IBufPacketReceiver#deserialize}. Must run on the main
-     * client thread (each loader's receiver is responsible for that). Failures are swallowed with a
-     * warning — a malformed/underflowing buffer must never tear down the netty pipeline.
-     */
-    public static void handleSync(Level level, BlockEntitySyncPayload payload) {
-        handleSync(level, payload.pos(), payload.data());
-    }
-
-    public static void handleSync(Level level, net.minecraft.core.BlockPos pos, byte[] data) {
-        if (level == null) return;
-        BlockEntity be = level.getBlockEntity(pos);
-        if (be instanceof IBufPacketReceiver receiver) {
-            var buf = GolemBuffers.wrap(Unpooled.wrappedBuffer(data), level);
-            try {
-                receiver.deserialize(buf);
-            } catch (Exception e) {
-                Constants.LOG.warn("Failed to apply BlockEntitySyncPayload at {}: {}", pos, e.toString());
-            }
-        }
-    }
-
-    /**
      * Applies a received {@link ParticlePayload}: resolves the named effect and runs its client
      * handler. Must run on the main client thread (each loader's receiver is responsible for that).
      *
      * <p>An unknown effect name is ignored rather than logged — a server running a build with more
      * effects than this client knows about is a version skew, not a bug worth spamming the log for.
      * A handler that throws is caught and warned about: a bad particle must never tear down the netty
-     * pipeline, which is the same rule {@link #handleSync} follows.
+     * pipeline.
      */
     public static void handleParticle(Level level, ParticlePayload payload) {
         if (level == null) return;

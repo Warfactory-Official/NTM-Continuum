@@ -1,6 +1,6 @@
 package com.hbm.blocks.rail;
 
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
@@ -88,13 +88,13 @@ public class RailStandardRamp extends BlockRailNTM {
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.above(), getDimensions(), facing, visitor);
+        MultiblockFootprint.visitBox(core.above(), getDimensions(), facing, visitor);
     }
 
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction dir, BlockPos placed) {
         BlockPos origin = core;
-        return MultiblockHandlerXR.checkSpace(level, origin, getDimensions(), placed, dir)
-                && MultiblockHandlerXR.checkSpace(level, origin.above(), getDimensions(), placed, dir);
+        return MultiblockFootprint.checkSpace(level, origin, getDimensions(), placed, dir)
+                && MultiblockFootprint.checkSpace(level, origin.above(), getDimensions(), placed, dir);
     }
 }

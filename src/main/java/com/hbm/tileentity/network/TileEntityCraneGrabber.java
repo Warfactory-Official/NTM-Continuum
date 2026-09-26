@@ -134,7 +134,7 @@ public class TileEntityCraneGrabber extends TileEntityCraneBase implements ICont
             }
         }
 
-        networkPackNT();
+        syncState();
     }
 
     /** 1.7: the reach shrinks in front of a double or triple belt so only the nearest lane is taken from. */

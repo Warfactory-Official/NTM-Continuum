@@ -1,10 +1,11 @@
 package com.hbm.tileentity.machine.albion;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.container.ContainerPADipole;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.machine.ItemPACoil;
 import com.hbm.items.machine.ItemPACoil.EnumCoilType;
 import com.hbm.lib.DirPos;
@@ -68,13 +69,13 @@ public class TileEntityPADipole extends TileEntityCooledBase
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
-        return dir == ForgeDirection.UP || dir == ForgeDirection.DOWN;
+    public boolean canConnect(Direction dir) {
+        return dir == Direction.UP || dir == Direction.DOWN;
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir == ForgeDirection.UP || dir == ForgeDirection.DOWN;
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir == Direction.UP || dir == Direction.DOWN;
     }
 
     @Override
@@ -86,7 +87,7 @@ public class TileEntityPADipole extends TileEntityCooledBase
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.getMaxPower());
         te.exchangeCoolant(level);
         te.updateCooling();
-        te.networkPackNT();
+        te.syncState();
     }
 
     @Override
@@ -231,7 +232,7 @@ public class TileEntityPADipole extends TileEntityCooledBase
         if (this.dirRedstone > 3) this.dirRedstone -= 4;
 
         this.threshold = Mth.clamp(threshold, 0, 999_999_999);
-        this.markChanged();
+        this.setChanged();
     }
 
     public static String dirToName(int dir) {
@@ -272,7 +273,7 @@ public class TileEntityPADipole extends TileEntityCooledBase
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setthreshold").equals(name) && params.length > 0) {
             this.threshold = IRORInteractive.parseInt(params[0], 0, 999_999_999);
-            this.markChanged();
+            this.setChanged();
         }
         return null;
     }

@@ -3,7 +3,7 @@ package com.hbm.items.machine;
 import dev.golem.core.data.ModelData;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModMachineItems;
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * A fluid identifier: stamps a tank/duct with one fixed {@link FluidType} (right-click a duct or drop it
  * in a tank's identifier slot). Each fluid has its <b>own dedicated</b> identifier — a single registered
- * item carries the fluid in {@link ModDataComponents#FLUID_ID}, and the creative menu shows one variant
+ * item carries the fluid in {@link ModDataComponents#FLUID}, and the creative menu shows one variant
  * per fluid (see {@link ModMachineItems}), exactly as the 1.12.2 {@code ItemFluidIDMulti} listed one
  * metadata subtype per fluid.
  *
@@ -38,13 +38,13 @@ public class ItemFluidId extends CompatItem implements IItemFluidId {
     }
 
     public static FluidType getFluid(ItemStack stack) {
-        return Fluids.fromID(ModDataComponents.fluidId(stack));
+        return ModDataComponents.fluid(stack);
     }
 
-    /** Builds a dedicated identifier for {@code fluid} (FLUID_ID for logic + the tint colour for rendering). */
+    /** Builds a dedicated identifier for {@code fluid} (FLUID for logic + the tint colour for rendering). */
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModMachineItems.fluid_identifier.get());
-        ModDataComponents.fluidId(stack, fluid.getID());
+        ModDataComponents.fluid(stack, fluid);
         ModelData.setColor(stack, fluid.getColor());
         return stack;
     }

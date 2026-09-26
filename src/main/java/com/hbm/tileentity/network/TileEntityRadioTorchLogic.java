@@ -4,7 +4,7 @@ import com.hbm.blocks.network.RadioTorchBase;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.radio.RadioLogicMenu;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 
-public final class TileEntityRadioTorchLogic extends TileEntityLoadedBase
+public final class TileEntityRadioTorchLogic extends SyncedBlockEntity
         implements IControlReceiver, net.minecraft.world.MenuProvider, RadioTorchTicking {
     public static final int MAPPING_SIZE = 16;
     public String channel = "";
@@ -39,7 +39,7 @@ public final class TileEntityRadioTorchLogic extends TileEntityLoadedBase
     @Override public void serverTick() {
         if (level == null) return;
         if (lastUpdate == Long.MIN_VALUE) lastUpdate = level.getGameTime();
-        if (channel == null || channel.isEmpty()) { networkPackNT(); return; }
+        if (channel == null || channel.isEmpty()) { syncState(); return; }
         RTTYSystem.RTTYChannel received = RTTYSystem.listen(level, channel);
         if (received != null && (polling || (received.timeStamp > lastUpdate - 1 && received.timeStamp != -1))) {
             String message = String.valueOf(received.signal);
@@ -59,7 +59,7 @@ public final class TileEntityRadioTorchLogic extends TileEntityLoadedBase
                 setChanged(); dataChanged();
             }
         }
-        networkPackNT();
+        syncState();
     }
 
     public boolean parseSignal(String signal, int index) {

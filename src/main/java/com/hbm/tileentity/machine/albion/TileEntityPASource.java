@@ -3,10 +3,10 @@ package com.hbm.tileentity.machine.albion;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.container.ContainerPASource;
 import com.hbm.lib.DirPos;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.lib.Library;
@@ -96,8 +96,8 @@ public class TileEntityPASource extends TileEntityCooledBase
 
     /** One item per slot, like the 1.12.2 tile: the beam takes a single particle from each input. */
     @Override
-    protected NTMItemHandler createInventory(int slotCount) {
-        return new NTMItemHandler(slotCount, 1) {
+    protected ItemHandler createInventory(int slotCount) {
+        return new ItemHandler(slotCount, 1) {
             @Override
             protected void onContentsChanged(int slot) {
                 TileEntityPASource.this.setChanged();
@@ -145,7 +145,7 @@ public class TileEntityPASource extends TileEntityCooledBase
 
         te.exchangeCoolant(level);
         te.updateCooling();
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Advances the beam by one component. */
@@ -203,7 +203,7 @@ public class TileEntityPASource extends TileEntityCooledBase
                 worldPosition.offset(rot.offsetX * 5, 0, rot.offsetZ * 5), rot, slot1, slot2);
         inventory.setStackInSlot(1, ItemStack.EMPTY);
         inventory.setStackInSlot(2, ItemStack.EMPTY);
-        this.markChanged();
+        this.setChanged();
     }
 
     /** The direction the beam leaves in — the machine's facing rotated a quarter turn, as in 1.12.2. */

@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.entity.missile.EntityMissileBaseNT;
+import net.minecraft.core.Direction;
 import com.hbm.entity.missile.EntityMissileTier0;
 import com.hbm.entity.missile.EntityMissileTier1;
 import com.hbm.entity.logic.EntityEMP;
@@ -477,19 +478,19 @@ public final class MissileGameTests {
         // coordinates, so the cell is the port position stepped back along its own direction.
         for (com.hbm.lib.DirPos dp : pad.getConPos()) {
             BlockPos cell = dp.getPos().offset(-dp.getDir().offsetX, -dp.getDir().offsetY, -dp.getDir().offsetZ);
-            helper.assertTrue(block.canConnect(helper.getLevel(), cell, dp.getDir()),
+            helper.assertTrue(block.canConnect(helper.getLevel(), cell, dp.getDir().toDirection()),
                     "no power port at " + dp.getPos() + " facing " + dp.getDir());
             helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.KEROSENE, helper.getLevel(),
-                            cell.getX(), cell.getY(), cell.getZ(), dp.getDir()),
+                            cell.getX(), cell.getY(), cell.getZ(), dp.getDir().toDirection()),
                     "no fluid port at " + dp.getPos() + " facing " + dp.getDir());
         }
 
         // A face that is not a port refuses — the mid-edge cell, and any cell looking inward.
         BlockPos eastEdge = helper.absolutePos(core.offset(1, 0, 0));
-        helper.assertFalse(block.canConnect(helper.getLevel(), eastEdge, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertFalse(block.canConnect(helper.getLevel(), eastEdge, net.minecraft.core.Direction.EAST),
                 "the middle of an edge is not a port, but it accepted a connection");
         BlockPos corner = helper.absolutePos(core.offset(1, 0, 1));
-        helper.assertFalse(block.canConnect(helper.getLevel(), corner, com.hbm.lib.ForgeDirection.WEST),
+        helper.assertFalse(block.canConnect(helper.getLevel(), corner, net.minecraft.core.Direction.WEST),
                 "a corner cell accepted a connection pointing back into the pad");
         helper.succeed();
     }
@@ -733,7 +734,7 @@ public final class MissileGameTests {
         roundTrip(helper, pad, copy);
         helper.assertTrue(copy.toRender == null, "an emptied pad still reports a missile to the client");
 
-        // The other source: the chunk-load tag. networkPackNT only sends on CHANGE, so a player logging
+        // The other source: the chunk-load tag. syncState only sends on CHANGE, so a player logging
         // in beside an idle loaded pad gets no pack at all and the renderer would have nothing. The
         // load path derives it from slot 0 instead. (This exercises the derivation, not the transport —
         // the tag plumbing itself is vanilla's and differs by era.)

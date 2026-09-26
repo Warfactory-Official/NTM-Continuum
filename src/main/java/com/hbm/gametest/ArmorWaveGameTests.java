@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.handler.ArmorModHandler;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.ModArmorItems;
 import com.hbm.items.ModArmorModules;
@@ -95,7 +96,7 @@ public final class ArmorWaveGameTests {
                 - HazmatRegistry.cobalt * HazmatRegistry.helmet) < 1.0E-6,
                 "cobalt radiation coefficient is incorrect");
         helper.assertTrue(ArmorRegistry.getProtectionFromItem(new ItemStack(ModArmorItems.schrabidium_helmet.get()))
-                        .contains(ArmorRegistry.HazardClass.LIGHT),
+                        .contains(HazardClass.LIGHT),
                 "schrabidium helmet is missing light protection");
 
         Player player = player(helper);

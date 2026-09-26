@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.inventory.container.ContainerPneumoTube;
 import com.hbm.uninos.networkproviders.PneumaticNetwork;
@@ -50,7 +51,7 @@ public class GUIPneumoTube extends PneumaticScreenBase<ContainerPneumoTube> {
             GuiDraw.blit(graphics, TEXTURE, leftPos + 151, topPos + 52, 215, 18 * tube.sendOrder, 18, 18, 256, 256);
 
             GuiDraw.blit(graphics, TEXTURE, leftPos + 6 + 4 * (tube.compair.getPressure() - 1), topPos + 36, 179, 18, 4, 8, 256, 256);
-            drawSmoothGauge(graphics, leftPos + 16, topPos + 25,
+            Gauges.needle(graphics, leftPos + 16, topPos + 25,
                     (double) tube.compair.getFill() / (double) tube.compair.getMaxFill(), 5, 2, 1, 0xCA6C43, 0xAB4223);
         }
     }

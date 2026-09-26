@@ -1,15 +1,17 @@
 package com.hbm.blocks.machine.soyuz;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
 import net.minecraft.world.level.BlockGetter;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher;
@@ -80,7 +82,7 @@ public class SoyuzLauncher extends BlockMultiblockMachine
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         BlockPos ground = core.below(HEIGHT);
-        for (int[] box : BOXES) MultiblockHandlerXR.visitBox(ground, box, facing, visitor);
+        for (int[] box : BOXES) MultiblockFootprint.visitBox(ground, box, facing, visitor);
         visitor.cell(ground, MASK_NONE);
         ring(ground, (pos, mask) -> visitor.cell(pos, mask, ROLE_ALL));
     }
@@ -106,7 +108,7 @@ public class SoyuzLauncher extends BlockMultiblockMachine
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         BlockPos ground = core.below(HEIGHT);
         for (int[] box : BOXES) {
-            if (!MultiblockHandlerXR.checkSpace(level, ground, box, clicked, facing)) return false;
+            if (!MultiblockFootprint.checkSpace(level, ground, box, clicked, facing)) return false;
         }
         return true;
     }
@@ -122,16 +124,18 @@ public class SoyuzLauncher extends BlockMultiblockMachine
      * resolves the core and defers to the same port list the launcher pushes through.
      */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntitySoyuzLauncher launcher
-                && IEnergyConnectorBlock.isPort(launcher.getConPos(), pos, dir);
+                && com.hbm.lib.Ports.isPort(launcher.getConPos(), pos, dir.toDirection());
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         BlockPos pos = new BlockPos(x, y, z);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntitySoyuzLauncher launcher
-                && IEnergyConnectorBlock.isPort(launcher.getConPos(), pos, dir);
+                && com.hbm.lib.Ports.isPort(launcher.getConPos(), pos, dir.toDirection());
     }
 
     /** The complex cannot be picked up; breaking it gives back the bulk it was built from. */

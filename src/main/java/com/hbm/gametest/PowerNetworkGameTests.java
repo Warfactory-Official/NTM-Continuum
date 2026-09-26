@@ -1,21 +1,21 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.api.energymk2.CableData;
-import com.hbm.api.energymk2.EnergyBus;
-import com.hbm.api.energymk2.EnergyConversion;
+import com.hbm.network.power.CableData;
+import com.hbm.network.power.EnergyBus;
+import com.hbm.network.power.EnergyConversion;
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerNetwork;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerNetwork;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.tileentity.machine.TileEntityMachineBattery;
-import com.hbm.uninos.graph.Distribution;
-import com.hbm.uninos.graph.LevelNodeGraph;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.Distribution;
+import dev.golem.core.graph.LevelNodeGraph;
+import dev.golem.core.graph.NodeNetwork;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.world.EnergyCompat;
 import dev.golem.core.world.EnergyExposure;
@@ -255,7 +255,7 @@ public final class PowerNetworkGameTests {
         long[] cells = new long[CABLE_TO - CABLE_FROM + 1];
         for (int x = CABLE_FROM; x <= CABLE_TO; x++) {
             cells[x - CABLE_FROM] = helper.absolutePos(new BlockPos(x, 3, GRAPH_Z)).asLong();
-            graph.addNode(cells[x - CABLE_FROM], CableData.INSTANCE, MachineCaps.FACE_MASK_ALL);
+            graph.addNode(cells[x - CABLE_FROM], CableData.INSTANCE, Domains.FACES_ALL);
         }
 
         String failure;

@@ -1,10 +1,10 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.api.fluidmk2.DuctData;
+import net.minecraft.core.Direction;
+import com.hbm.network.fluid.DuctData;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -14,8 +14,8 @@ import net.minecraft.world.level.block.state.BlockState;
  *
  * <p>1.7 minted one node per smoke type on the same block (three overlapping nets). The port's fluid
  * graph keys a cell by position, so the exhaust's one cell carries {@link DuctData#SMOKE_ANY} instead:
- * {@link com.hbm.api.fluidmk2.FluidGraphProvider#dataCompatible} joins it to any smoke duct and
- * {@link com.hbm.api.fluidmk2.FluidNetwork} rounds its net once per smoke, which is the same three
+ * {@link com.hbm.network.fluid.FluidGraphProvider#dataCompatible} joins it to any smoke duct and
+ * {@link com.hbm.network.fluid.FluidNetwork} rounds its net once per smoke, which is the same three
  * flows 1.7 ran. The tile's own {@link #getFluidType() type} is only the skin the renderer tints and the
  * look-overlay names: it defaults to {@code SMOKE}, a fluid identifier holding one of the other two
  * smokes reskins it (any other fluid is refused), and the graph cell never changes.
@@ -45,8 +45,8 @@ public class TileEntityPipeExhaust extends TileEntityFluidDuctVariant {
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && isSmoke(type);
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir != null && isSmoke(type);
     }
 
     @Override

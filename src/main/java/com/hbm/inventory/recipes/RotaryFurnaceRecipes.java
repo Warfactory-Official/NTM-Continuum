@@ -7,7 +7,7 @@ import com.hbm.inventory.fluid.FluidStack;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.items.ModItems;
 import dev.golem.core.Ids;
 import net.minecraft.core.registries.Registries;
@@ -62,7 +62,7 @@ public final class RotaryFurnaceRecipes {
         add(new MaterialStack(Mats.MAT_ALUMINIUM, MaterialShapes.INGOT.quantity * 2), 100, 400, new FluidStack(Fluids.SODIUM_ALUMINATE, 150));
         add(new MaterialStack(Mats.MAT_ALUMINIUM, MaterialShapes.INGOT.quantity * 3), 40, 200, new FluidStack(Fluids.SODIUM_ALUMINATE, 150),
                 new ComparableStack(ModItems.powder_flux.get(), 2));
-        com.hbm.scripting.ScriptedRecipes.apply(RotaryFurnaceRecipes.class);
+        dev.golem.core.content.Replay.apply(RotaryFurnaceRecipes.class);
     }
 
     public static void addRecipe(RotaryFurnaceRecipe recipe) {

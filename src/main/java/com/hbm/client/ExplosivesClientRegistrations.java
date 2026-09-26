@@ -14,7 +14,7 @@ import com.hbm.inventory.gui.GUIBombMulti;
 public final class ExplosivesClientRegistrations {
     private ExplosivesClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModExplosivesMenus.BOMB_MULTI.get(), GUIBombMulti::new);
     }
 

@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.config.GeneralConfig;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.ArmorRegistry;
@@ -24,7 +25,7 @@ public class BlockGasMonoxide extends BlockGasBase {
     @Override
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level.isClientSide() || !GeneralConfig.enableCarbonMonoxide || !(entity instanceof LivingEntity living)) return;
-        if (ArmorRegistry.hasAllProtection(living, EquipmentSlot.HEAD, ArmorRegistry.HazardClass.GAS_MONOXIDE)) {
+        if (ArmorRegistry.hasAllProtection(living, EquipmentSlot.HEAD, HazardClass.GAS_MONOXIDE)) {
             ArmorUtil.damageGasMaskFilter(living, 1);
         } else if (level instanceof ServerLevel server) {
             Compat.hurt(living, server, ModDamageSources.monoxide(server), 1.0F);

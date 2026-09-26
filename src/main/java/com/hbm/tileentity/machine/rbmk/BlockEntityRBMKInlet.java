@@ -3,8 +3,8 @@ package com.hbm.tileentity.machine.rbmk;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModRBMKBlockEntities;
@@ -29,7 +29,7 @@ public class BlockEntityRBMKInlet extends TileEntityMachineBase implements IFlui
             BlockPos core = MultiblockSurface.coreOfCell(level, adjacent);
             if (core == null || !(level.getBlockEntity(core) instanceof BlockEntityRBMKBase column)) continue;
             int moved = Math.min(BlockEntityRBMKBase.maxWater - column.reasimWater, water.getFill());
-            if (moved > 0) { column.reasimWater += moved; water.setFill(water.getFill() - moved); column.markChanged(); markChanged(); }
+            if (moved > 0) { column.reasimWater += moved; water.setFill(water.getFill() - moved); column.setChanged(); setChanged(); }
         }
     }
     @Override public long getDemand(FluidType type, int pressure) { return type == Fluids.WATER && pressure == water.getPressure() ? water.getMaxFill() - water.getFill() : 0; }

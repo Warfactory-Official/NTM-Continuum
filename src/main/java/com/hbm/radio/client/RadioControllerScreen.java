@@ -1,5 +1,6 @@
 package com.hbm.radio.client;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.api.redstoneoverradio.IRORInfo;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.radio.RadioControllerMenu;
@@ -96,7 +97,7 @@ public final class RadioControllerScreen extends CompatContainerScreen<RadioCont
     @Override
     protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         if (hover(173, 17, 18, 18, event.x(), event.y())) {
-            RadioScreenUtil.click();
+            Gauges.click();
             polling = !polling;
             CompoundTag data = new CompoundTag();
             data.putBoolean("polling", polling);
@@ -104,7 +105,7 @@ public final class RadioControllerScreen extends CompatContainerScreen<RadioCont
             return true;
         }
         if (hover(209, 17, 18, 18, event.x(), event.y())) {
-            RadioScreenUtil.click();
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             data.putString("channel", frequency.getValue());
             send(data);

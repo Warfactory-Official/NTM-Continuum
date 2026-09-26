@@ -1,7 +1,9 @@
 package com.hbm.blocks.machine.albion;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.machine.albion.TileEntityPABeamline;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;

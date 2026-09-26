@@ -4,7 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockBeaconable;
 import com.hbm.blocks.generic.BlockLayering;
 import com.hbm.blocks.generic.BlockStalagmite;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ModItems;
 import dev.golem.core.registry.DeferredRegister;

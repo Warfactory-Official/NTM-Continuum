@@ -136,7 +136,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase {
             state = STATE_CLOSED;
         }
 
-        this.networkPackNT();
+        this.syncState();
 
         if (redstonePower == -1 && state == STATE_OPEN) {
             tryToggle(-1);
@@ -337,7 +337,7 @@ public class TileEntityDoorGeneric extends TileEntityLockableBase {
 
     public float getVolume() {
         DoorDecl decl = getDoorType();
-        return getVolume(decl == null ? 1F : decl.getSoundVolume());
+        return decl == null ? 1F : decl.getSoundVolume();
     }
 
     public int getSkinIndex() {

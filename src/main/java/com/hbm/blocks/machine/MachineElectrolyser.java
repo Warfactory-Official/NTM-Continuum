@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
 import net.minecraft.core.BlockPos;
@@ -55,10 +57,10 @@ public final class MachineElectrolyser extends BlockMultiblockMachine
     public boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
         for (int[] volume : EXTRA_VOLUMES) {
-            if (!MultiblockHandlerXR.checkSpace(level, core, volume, clicked, facing)) return false;
+            if (!MultiblockFootprint.checkSpace(level, core, volume, clicked, facing)) return false;
         }
         for (int along : RING_OFFSETS) {
-            if (!MultiblockHandlerXR.checkSpace(level, ring(core, facing, along), RING_VOLUME, clicked, facing)) {
+            if (!MultiblockFootprint.checkSpace(level, ring(core, facing, along), RING_VOLUME, clicked, facing)) {
                 return false;
             }
         }
@@ -69,9 +71,9 @@ public final class MachineElectrolyser extends BlockMultiblockMachine
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int[] volume : EXTRA_VOLUMES) MultiblockHandlerXR.visitBox(core, volume, facing, visitor);
+        for (int[] volume : EXTRA_VOLUMES) MultiblockFootprint.visitBox(core, volume, facing, visitor);
         for (int along : RING_OFFSETS) {
-            MultiblockHandlerXR.visitBox(ring(core, facing, along), RING_VOLUME, facing, visitor);
+            MultiblockFootprint.visitBox(ring(core, facing, along), RING_VOLUME, facing, visitor);
         }
 
         Direction rot = facing.getClockWise();

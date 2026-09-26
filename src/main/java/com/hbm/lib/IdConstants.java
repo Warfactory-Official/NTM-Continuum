@@ -1,5 +1,9 @@
 package com.hbm.lib;
 
+import com.hbm.api.ids.VanillaIds;
+import com.hbm.api.ids.ComponentIds;
+import com.hbm.api.ids.TagIds;
+import com.hbm.api.ids.ItemIds;
 import com.hbm.Constants;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.platform.Lifecycle;
@@ -47,7 +51,7 @@ public final class IdConstants {
     /** The system property a generating run sets: where to write the sources. */
     public static final String OUTPUT = "hbm.generateIds";
 
-    private static final String PACKAGE = "com.hbm.lib";
+    private static final String PACKAGE = "com.hbm.api.ids";
     private static final String CONVENTION = "c";
 
     private static final Set<String> KEYWORDS = Set.of(
@@ -83,7 +87,7 @@ public final class IdConstants {
     }
 
     /**
-     * The four families as the live registry has them.
+     * The families as the live registry has them.
      *
      * <p>This is the one definition of what the constants are, used both to write them and to check
      * the written ones, so the two cannot disagree about anything but staleness.
@@ -117,6 +121,17 @@ public final class IdConstants {
             if (key.startsWith(Constants.MOD_ID + ":")) {
                 put(components, name(path(key)), key);
             }
+        }
+
+        Map<String, String> fluids = new TreeMap<>();
+        for (var fluid : com.hbm.inventory.fluid.Fluids.getAll()) {
+            String id = fluid.id().toString();
+            if (id.startsWith(Constants.MOD_ID + ":")) put(fluids, name(path(id)), id);
+        }
+        Map<String, String> materials = new TreeMap<>();
+        for (var material : com.hbm.inventory.material.Mats.orderedList) {
+            String id = material.id.toString();
+            if (id.startsWith(Constants.MOD_ID + ":")) put(materials, name(path(id)), id);
         }
 
         List<Family> roster = new ArrayList<>();
@@ -163,6 +178,12 @@ public final class IdConstants {
                 {@code GolemComponent}s, which a declaration cannot reach for the reason given in
                 {@link ItemIds}.""",
                 components));
+        roster.add(new Family("FluidIds", """
+                Every HBM fluid id: what saves, item components and {@code FluidTypes.byId} take.""",
+                fluids));
+        roster.add(new Family("MaterialIds", """
+                Every HBM material id: what saves take.""",
+                materials));
         return roster;
     }
 
@@ -195,7 +216,7 @@ public final class IdConstants {
         return backed;
     }
 
-    /** Writes every family into {@code <root>/com/hbm/lib/<Class>.java}. */
+    /** Writes every family into {@code <root>/com/hbm/api/ids/<Class>.java}. */
     public static void write(Path root) {
         Path directory = root.resolve(PACKAGE.replace('.', '/'));
         try {

@@ -95,7 +95,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
         if (drum.age >= 20) drum.age -= 20;
         if (drum.age == 9 || drum.age == 19) drum.sendTank(drum.liquid);
         if (drum.age == 8 || drum.age == 18) drum.sendTank(drum.gas);
-        drum.networkPackNT();
+        drum.syncState();
 
         if (rad > 0) {
             // Preserve the legacy call's X/Z argument order; old storage drums emitted at (z,y,x).
@@ -110,7 +110,7 @@ public class TileEntityStorageDrum extends TileEntityMachineBase implements IFlu
     }
 
     private void sendTank(FluidTankNTM tank, DirPos connection) {
-        tryProvide(tank, level, connection);
+        tryProvide(tank, level, connection.getPos(), connection.getDir().toDirection());
     }
 
     @Override

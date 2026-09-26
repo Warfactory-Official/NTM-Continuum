@@ -1,7 +1,7 @@
 package com.hbm.inventory.gui;
 
 import com.hbm.inventory.container.MenuRBMKBoiler;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKBoiler;

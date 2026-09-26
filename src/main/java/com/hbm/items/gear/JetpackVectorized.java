@@ -16,7 +16,7 @@ import net.minecraft.world.phys.Vec3;
 /** Vectorized jetpack: capped look-direction acceleration, three-tick fuel cadence. */
 public class JetpackVectorized extends JetpackFueledBase {
 
-    public JetpackVectorized(com.hbm.inventory.fluid.FluidType fuel, int maxFuel, Properties properties) {
+    public JetpackVectorized(com.hbm.api.fluid.FluidType fuel, int maxFuel, Properties properties) {
         super(fuel, maxFuel, properties);
     }
 

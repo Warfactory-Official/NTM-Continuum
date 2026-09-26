@@ -5,7 +5,7 @@ import com.hbm.tileentity.machine.TileEntityChimneyBase;
 import com.hbm.blocks.machine.MachineAshpit;
 import com.hbm.blocks.machine.MachineChimneyBrick;
 import com.hbm.blocks.machine.MachineChimneyIndustrial;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerAshpit;
 import com.hbm.tileentity.machine.TileEntityAshpit;

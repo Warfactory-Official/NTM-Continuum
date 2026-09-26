@@ -7,7 +7,6 @@ import com.hbm.items.ISatChip;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
 import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.saveddata.SatelliteSavedData;

@@ -1,6 +1,6 @@
 package com.hbm.api.fluidmk2;
 
-import com.hbm.lib.ForgeDirection;
+import net.minecraft.core.Direction;
 
 /**
  * A fluid user whose role depends on which of its sides the net reaches it through. 1.7 expressed this
@@ -9,12 +9,12 @@ import com.hbm.lib.ForgeDirection;
  * machine built entirely on that asymmetry. The port's net discovers users by probing faces, so the
  * face is known at discovery and this is where the pump says which role each face carries.
  *
- * <p>{@code side} is the user's own side the duct touches ({@link ForgeDirection#UNKNOWN} for a cell's
+ * <p>{@code side} is the user's own side the duct touches (null for a cell's
  * pseudo-face). A user that does not implement this is offered in every role it has on every face.
  */
 public interface IFluidDirectionalMK2 extends IFluidUserMK2 {
 
-    boolean providesOn(ForgeDirection side);
+    boolean providesOn(@org.jspecify.annotations.Nullable Direction side);
 
-    boolean receivesOn(ForgeDirection side);
+    boolean receivesOn(@org.jspecify.annotations.Nullable Direction side);
 }

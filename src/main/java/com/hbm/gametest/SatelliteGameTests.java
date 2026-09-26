@@ -4,7 +4,6 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ISatChip;
 import com.hbm.items.ModSatelliteItems;
 import com.hbm.items.machine.ItemSatellite.EnumSatType;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteDetector;
 import com.hbm.saveddata.satellites.SatelliteRayScan;

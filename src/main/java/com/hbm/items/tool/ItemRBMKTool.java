@@ -3,7 +3,7 @@ package com.hbm.items.tool;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
 import com.hbm.blocks.machine.rbmk.RBMKConsole;
 import com.hbm.blocks.machine.rbmk.RBMKCraneConsole;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.items.ModDataComponents;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole;

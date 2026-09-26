@@ -1,5 +1,6 @@
 package com.hbm.inventory.fluid;
 
+import com.hbm.api.fluid.FluidType;
 /**
  * An amount of a {@link FluidType} at a given pressure. Ported verbatim from 1.12.2.
  *

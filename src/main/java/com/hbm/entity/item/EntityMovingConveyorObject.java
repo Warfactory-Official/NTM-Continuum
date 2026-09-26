@@ -3,7 +3,7 @@ package com.hbm.entity.item;
 import dev.golem.core.data.CompatEntity;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.conveyor.IEnterableBlock;
-import com.hbm.api.conveyor.ConveyorLookup;
+import com.hbm.blocks.network.ConveyorLookup;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.ExplosionEffectTiny;
 import net.minecraft.core.BlockPos;

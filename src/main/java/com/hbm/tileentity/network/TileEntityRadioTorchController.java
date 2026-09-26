@@ -10,7 +10,7 @@ import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.radio.RadioControllerMenu;
 import com.hbm.radio.RadioTargets;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /** Server-side ROR command controller. */
-public final class TileEntityRadioTorchController extends TileEntityLoadedBase implements IControlReceiver, RadioTorchTicking,
+public final class TileEntityRadioTorchController extends SyncedBlockEntity implements IControlReceiver, RadioTorchTicking,
         net.minecraft.world.MenuProvider {
     public String channel = "";
     public String prev;
@@ -39,7 +39,7 @@ public final class TileEntityRadioTorchController extends TileEntityLoadedBase i
     @Override
     public void serverTick() {
         if (level == null || channel == null || channel.isEmpty()) {
-            networkPackNT();
+            syncState();
             return;
         }
 
@@ -68,7 +68,7 @@ public final class TileEntityRadioTorchController extends TileEntityLoadedBase i
                 }
             }
         }
-        networkPackNT();
+        syncState();
     }
 
     private void selfDestruct() {

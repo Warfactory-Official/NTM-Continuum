@@ -3,8 +3,8 @@ package com.hbm.gametest;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.bomb.ModBombBlocks;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockMachine;
 import com.hbm.inventory.container.ContainerFEL;
 import com.hbm.items.ModMachineItems;
 import com.hbm.items.machine.ItemFELCrystal.EnumWavelengths;
@@ -32,7 +32,7 @@ public final class FelGameTests {
 
     private static TileEntityFEL placeFel(GameTestHelper helper, BlockPos pos) {
         helper.setBlock(pos, ModMachineBlocks.machine_fel.get().defaultBlockState()
-                .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
+                .setValue(MultiblockCore.FACING, Direction.NORTH));
         TileEntityFEL te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntityFEL.class);
         helper.assertTrue(te != null, "FEL BlockEntity was not created");
         return te;
@@ -40,7 +40,7 @@ public final class FelGameTests {
 
     private static TileEntitySILEX placeSilex(GameTestHelper helper, BlockPos pos, Direction facing) {
         helper.setBlock(pos, ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockMultiblockCore.FACING, facing));
+                .setValue(MultiblockCore.FACING, facing));
         TileEntitySILEX te = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, pos, TileEntitySILEX.class);
         helper.assertTrue(te != null, "SILEX BlockEntity was not created");
         return te;
@@ -83,7 +83,7 @@ public final class FelGameTests {
         TileEntitySILEX chamber = placeSilex(helper, silex, Direction.NORTH);
         // The beam travels at y+1 and must find a solid SILEX cell there.
         helper.setBlock(silex.offset(0, 1, 1), ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
+                .setValue(MultiblockMachine.CELL, Boolean.TRUE));
 
         arm(te, EnumWavelengths.UV);
         tick(helper, te, fel);
@@ -106,7 +106,7 @@ public final class FelGameTests {
         // Facing WEST while the FEL faces NORTH: a perpendicular axis, so invalid.
         placeSilex(helper, silex, Direction.WEST);
         helper.setBlock(silex.offset(0, 1, 1), ModMachineBlocks.machine_silex.get().defaultBlockState()
-                .setValue(BlockMultiblockMachine.CELL, Boolean.TRUE));
+                .setValue(MultiblockMachine.CELL, Boolean.TRUE));
 
         arm(te, EnumWavelengths.UV);
         tick(helper, te, fel);
@@ -283,7 +283,7 @@ public final class FelGameTests {
 
         // Block-level check: this is what BlockCable.canConnectTo asks, and what makes a cable visually
         // (and structurally) attach to a multiblock that has no BlockEntity in every cell.
-        helper.assertTrue(block.canConnect(helper.getLevel(), machineCell, outward),
+        helper.assertTrue(block.canConnect(helper.getLevel(), machineCell, outward.toDirection()),
                 "MachineFEL.canConnect must accept the rear port cell on side " + outward
                         + " — a cable placed there will not connect otherwise");
 

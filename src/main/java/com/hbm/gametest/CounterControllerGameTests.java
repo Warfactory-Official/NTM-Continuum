@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.radio.ModRadioBlocks;
@@ -120,7 +120,7 @@ public final class CounterControllerGameTests {
      * walk, only cells with no block entity at all, and 1.12.2 had no such thing to port a rule from.
      */
     public static void controllerResolvesFoldedMultiblock(GameTestHelper helper) {
-        BlockMultiblockCore block = ModTurretBlocks.turret_chekhov.get();
+        MultiblockCore block = ModTurretBlocks.turret_chekhov.get();
         BlockPos clicked = helper.absolutePos(new BlockPos(2, 1, 2));
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);

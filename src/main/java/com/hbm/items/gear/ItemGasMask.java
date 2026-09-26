@@ -2,7 +2,7 @@ package com.hbm.items.gear;
 
 import com.hbm.api.item.IGasMask;
 import com.hbm.items.ModDataComponents;
-import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.api.hazard.HazardClass;
 import dev.golem.core.world.ArmorSlot;
 import dev.golem.core.world.CompatArmorItem;
 import com.hbm.items.HbmArmorMaterials;

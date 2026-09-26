@@ -21,8 +21,8 @@ import com.hbm.tileentity.machine.albion.TileEntityPASource;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.PAState;
 import com.hbm.tileentity.machine.albion.TileEntityPASource.Particle;
 import dev.golem.core.gametest.GameTestHelpers;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.item.ItemStack;
@@ -47,7 +47,7 @@ public final class AlbionGameTests {
     }
 
     private static <T extends BlockEntity> T place(GameTestHelper helper, BlockPos relative, Block block, Class<T> type) {
-        FoldedTestSupport.assemble(helper, (BlockMultiblockCore) block, relative);
+        FoldedTestSupport.assemble(helper, (MultiblockCore) block, relative);
         return GameTestHelpers.blockEntity(helper, relative, type);
     }
 
@@ -83,7 +83,7 @@ public final class AlbionGameTests {
                     "The particle source is missing the cell behind a port at " + cell);
             helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                     "A particle source cell at " + cell + " does not resolve to its core");
-            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
+            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir().toDirection()),
                     "A particle source port does not accept a cable at " + cell);
         }
 

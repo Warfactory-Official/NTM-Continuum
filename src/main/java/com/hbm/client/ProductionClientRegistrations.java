@@ -17,7 +17,7 @@ import com.hbm.client.render.RenderFunnel;
 public final class ProductionClientRegistrations {
     private ProductionClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModProductionMenus.ROTARY_FURNACE.get(), GUIMachineRotaryFurnace::new);
         sink.register(ModProductionMenus.MICROWAVE.get(), GUIMicrowave::new);
         sink.register(ModProductionMenus.AUTOCRAFTER.get(), GUIAutocrafter::new);

@@ -1,9 +1,9 @@
 package com.hbm.tileentity.machine.fusion;
 
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * <p>Its two claims straddle the machine: klystron one block to the left at +2, plasma one to the right,
  * so a coupler bridges the two beams without them ever touching.
  */
-public class TileEntityFusionCoupler extends TileEntityLoadedBase implements IFusionPowerReceiver {
+public class TileEntityFusionCoupler extends SyncedBlockEntity implements IFusionPowerReceiver {
 
     public TileEntityFusionCoupler(BlockPos pos, BlockState state) {
         super(ModBlockEntities.FUSION_COUPLER.get(), pos, state);
@@ -27,8 +27,8 @@ public class TileEntityFusionCoupler extends TileEntityLoadedBase implements IFu
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
         ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
 
-        FusionLink.claim(level, te, klystronCell(pos, rot), MachineCaps.KLYSTRON_OUT);
-        FusionLink.claim(level, te, plasmaCell(pos, rot), MachineCaps.PLASMA_IN);
+        FusionLink.claim(level, te, klystronCell(pos, rot), FusionLink.KLYSTRON_OUT);
+        FusionLink.claim(level, te, plasmaCell(pos, rot), FusionLink.PLASMA_IN);
     }
 
     /** True: the coupler takes a full share of the plasma output, like a boiler or turbine would. */
@@ -37,7 +37,7 @@ public class TileEntityFusionCoupler extends TileEntityLoadedBase implements IFu
     @Override
     public void receiveFusionPower(long fusionPower, double neutronPower, float r, float g, float b) {
         ForgeDirection rot = FusionNodes.facing(getBlockState()).getOpposite().getRotation(ForgeDirection.UP);
-        if (FusionLink.at(level, beamPos(worldPosition, rot), MachineCaps.KLYSTRON_IN)
+        if (FusionLink.at(level, beamPos(worldPosition, rot), FusionLink.KLYSTRON_IN)
                 instanceof TileEntityFusionTorus torus && torus.isLoaded() && !torus.isRemoved()) {
             torus.receiveKlystronEnergy(fusionPower);
         }

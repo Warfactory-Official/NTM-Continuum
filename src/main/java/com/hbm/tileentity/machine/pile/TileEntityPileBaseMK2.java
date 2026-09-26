@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine.pile;
 
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  * that a device docked anywhere on the face can walk straight to the simulation, and so that the whole
  * structure collapses back to graphite the moment the core goes.
  */
-public class TileEntityPileBaseMK2 extends TileEntityLoadedBase {
+public class TileEntityPileBaseMK2 extends SyncedBlockEntity {
 
     /**
      * "No core recorded". Upstream uses {@code coreY = -999} and tests {@code coreY >= 0}, which only

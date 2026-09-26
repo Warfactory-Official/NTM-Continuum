@@ -1,6 +1,6 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;

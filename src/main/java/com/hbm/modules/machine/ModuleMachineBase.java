@@ -3,7 +3,7 @@ package com.hbm.modules.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
@@ -32,7 +32,7 @@ public abstract class ModuleMachineBase {
 
     public final int index;
     public final IEnergyHandlerMK2 battery;
-    public final NTMItemHandler inventory;
+    public final ItemHandler inventory;
     public int[] inputSlots;
     public int[] outputSlots;
     /** Optional fluid tanks (null for item-only machines like the assembler). Set by fluid machines. */
@@ -49,7 +49,7 @@ public abstract class ModuleMachineBase {
     /** Redstone-over-Radio recipe selection uses the old quarter-speed restricted mode. */
     public boolean restrictedMode = false;
 
-    public ModuleMachineBase(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {
+    public ModuleMachineBase(int index, IEnergyHandlerMK2 battery, ItemHandler inventory) {
         this.index = index;
         this.battery = battery;
         this.inventory = inventory;

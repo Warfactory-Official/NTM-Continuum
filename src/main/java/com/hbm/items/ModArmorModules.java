@@ -1,7 +1,7 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.armor.ItemModBattery;
 import com.hbm.items.armor.ItemModCladding;

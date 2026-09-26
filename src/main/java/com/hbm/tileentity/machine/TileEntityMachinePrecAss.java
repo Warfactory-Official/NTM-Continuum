@@ -100,7 +100,7 @@ public final class TileEntityMachinePrecAss extends TileEntityMachineBase implem
 
         te.upgradeManager.checkSlots(te.inventory, 2, 3);
         for (DirPos connection : te.getConPos()) {
-            if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, connection);
+            if (te.outputTank.getFill() > 0) te.tryProvide(te.outputTank, level, connection.getPos(), connection.getDir().toDirection());
         }
 
         int speedLevel = Math.min(te.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -112,7 +112,7 @@ public final class TileEntityMachinePrecAss extends TileEntityMachineBase implem
         te.assemblerModule.update(speed, consumption, true, te.inventory.getStackInSlot(1));
         te.didProcess = te.assemblerModule.didProcess;
         if (te.assemblerModule.markDirty) te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePrecAss te) {

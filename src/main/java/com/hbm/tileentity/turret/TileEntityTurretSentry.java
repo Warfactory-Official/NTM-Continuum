@@ -1,9 +1,9 @@
 package com.hbm.tileentity.turret;
 
+import net.minecraft.core.Direction;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.XFactory9mm;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
@@ -60,8 +60,8 @@ public class TileEntityTurretSentry extends TileEntityTurretBaseNT {
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
-        return dir == ForgeDirection.DOWN;
+    public boolean canConnect(Direction dir) {
+        return dir == Direction.DOWN;
     }
 
     @Override

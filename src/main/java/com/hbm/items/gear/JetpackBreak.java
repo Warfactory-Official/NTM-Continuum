@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 /** Regular jetpack with the old automatic airborne hover assist. */
 public class JetpackBreak extends JetpackFueledBase {
 
-    public JetpackBreak(com.hbm.inventory.fluid.FluidType fuel, int maxFuel, Properties properties) {
+    public JetpackBreak(com.hbm.api.fluid.FluidType fuel, int maxFuel, Properties properties) {
         super(fuel, maxFuel, properties);
     }
 

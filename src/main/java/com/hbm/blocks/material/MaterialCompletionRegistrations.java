@@ -1,7 +1,7 @@
 package com.hbm.blocks.material;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.material.FuelAdditiveItems;
 import dev.golem.core.registry.DeferredRegister;

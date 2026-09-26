@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityFurnaceIron;
@@ -64,7 +65,7 @@ public class ContainerFurnaceIron extends AbstractContainerMenu {
     public @Nullable TileEntityFurnaceIron getFurnace() { return furnace; }
 
     @Override public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.furnace_iron.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.furnace_iron.get());
     }
 
     @Override public ItemStack quickMoveStack(Player player, int index) {

@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineOilWell;
 import net.minecraft.core.BlockPos;
@@ -47,12 +49,12 @@ public class MachineOilWell extends BlockMultiblockMachine implements IEnergyCon
 
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
-        return MultiblockHandlerXR.checkSpace(level, core, PLINTH, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.above(), TOWER, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.offset(1, 1, 1), LEG, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.offset(1, 1, -1), LEG, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.offset(-1, 1, 1), LEG, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.offset(-1, 1, -1), LEG, clicked, facing);
+        return MultiblockFootprint.checkSpace(level, core, PLINTH, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.above(), TOWER, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.offset(1, 1, 1), LEG, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.offset(1, 1, -1), LEG, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.offset(-1, 1, 1), LEG, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.offset(-1, 1, -1), LEG, clicked, facing);
     }
 
     /**
@@ -61,12 +63,12 @@ public class MachineOilWell extends BlockMultiblockMachine implements IEnergyCon
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
-        MultiblockHandlerXR.visitBox(core, PLINTH, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.above(), TOWER, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.offset(1, 1, 1), LEG, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.offset(1, 1, -1), LEG, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.offset(-1, 1, 1), LEG, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.offset(-1, 1, -1), LEG, facing, visitor);
+        MultiblockFootprint.visitBox(core, PLINTH, facing, visitor);
+        MultiblockFootprint.visitBox(core.above(), TOWER, facing, visitor);
+        MultiblockFootprint.visitBox(core.offset(1, 1, 1), LEG, facing, visitor);
+        MultiblockFootprint.visitBox(core.offset(1, 1, -1), LEG, facing, visitor);
+        MultiblockFootprint.visitBox(core.offset(-1, 1, 1), LEG, facing, visitor);
+        MultiblockFootprint.visitBox(core.offset(-1, 1, -1), LEG, facing, visitor);
     }
 
     /** The whole port surface is the core's own four horizontals. */

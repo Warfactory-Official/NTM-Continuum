@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.lib.Library;
 import com.hbm.inventory.container.ContainerPneumoStorageAccess;
 import com.hbm.inventory.container.ContainerPneumoStorageAccess.ClickOp;
@@ -168,12 +169,12 @@ public class GUIPneumoStorageAccess extends PneumaticScreenBase<ContainerPneumoS
         if (hover(7, 61, 18, 18, x, y)) { sort(3); return true; }
 
         if (hover(7, 79, 18, 18, x, y)) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             startFocussed = !startFocussed;
             return true;
         }
         if (hover(7, 97, 18, 18, x, y)) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             detailedSearch = !detailedSearch;
             menu.setFilter(searchFilter(search.getValue()));
             return true;
@@ -228,7 +229,7 @@ public class GUIPneumoStorageAccess extends PneumaticScreenBase<ContainerPneumoS
     }
 
     private void sort(int index) {
-        GuiUtil.playClickSound();
+        Gauges.click();
         sorting = index;
         menu.setSorter(sorterFor(index));
     }

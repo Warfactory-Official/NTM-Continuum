@@ -1,7 +1,7 @@
 package com.hbm.items.special;
 
 import com.hbm.config.WeaponConfig;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModSingularityItems;
@@ -36,8 +36,8 @@ public final class ItemCell extends CompatItem implements IFillableItem {
 
     public static FluidType getFluidType(ItemStack stack) {
         if (!(stack.getItem() instanceof ItemCell)) return null;
-        int id = ModDataComponents.fluidId(stack);
-        return id == 0 ? null : Fluids.fromID(id);
+        FluidType fluid = ModDataComponents.fluid(stack);
+        return fluid == Fluids.NONE ? null : fluid;
     }
 
     public static ItemStack getFullCell(FluidType fluid) {
@@ -54,14 +54,20 @@ public final class ItemCell extends CompatItem implements IFillableItem {
 
     private static void setFluid(ItemStack stack, FluidType fluid, int amount) {
         if (!isCellFluid(fluid) || amount <= 0) {
-            ModDataComponents.removeFluidId(stack);
+            ModDataComponents.removeFluid(stack);
             ModDataComponents.removeFluidAmount(stack);
             ModDataComponents.ITEM_VARIANT.remove(stack);
             return;
         }
-        ModDataComponents.fluidId(stack, fluid.getID());
+        ModDataComponents.fluid(stack, fluid);
         ModDataComponents.fluidAmount(stack, Math.min(CAPACITY, amount));
-        ModDataComponents.ITEM_VARIANT.set(stack, fluid.getID());
+        ModDataComponents.ITEM_VARIANT.set(stack, modelVariant(fluid));
+    }
+
+    /** {@code cell.json} cases: 1.7 cell metadata, not fluid indexes (UF6 = 28). */
+    private static int modelVariant(FluidType fluid) {
+        return fluid == Fluids.DEUTERIUM ? 8 : fluid == Fluids.TRITIUM ? 9 : fluid == Fluids.UF6 ? 28
+                : fluid == Fluids.PUF6 ? 29 : fluid == Fluids.SAS3 ? 30 : fluid == Fluids.AMAT ? 33 : 34;
     }
 
     private static boolean isCellFluid(FluidType fluid) {
@@ -120,16 +126,10 @@ public final class ItemCell extends CompatItem implements IFillableItem {
     public Component getName(ItemStack stack) {
         FluidType fluid = getFluidType(stack);
         if (fluid == null || fluid == Fluids.NONE) return Component.translatable("item.hbm.cell_empty");
-        return Component.translatable("item.hbm.cell_" + switch (fluid.getID()) {
-            case 8 -> "deuterium";
-            case 9 -> "tritium";
-            case 28 -> "uf6";
-            case 29 -> "puf6";
-            case 30 -> "sas3";
-            case 33 -> "antimatter";
-            case 34 -> "anti_schrabidium";
-            default -> "empty";
-        });
+        return Component.translatable("item.hbm.cell_" + (fluid == Fluids.DEUTERIUM ? "deuterium"
+                : fluid == Fluids.TRITIUM ? "tritium" : fluid == Fluids.UF6 ? "uf6" : fluid == Fluids.PUF6 ? "puf6"
+                : fluid == Fluids.SAS3 ? "sas3" : fluid == Fluids.AMAT ? "antimatter"
+                : fluid == Fluids.ASCHRAB ? "anti_schrabidium" : "empty"));
     }
 
     /** Preserves the old AMAT ground/burning trigger for the dependency used by Spark production. */

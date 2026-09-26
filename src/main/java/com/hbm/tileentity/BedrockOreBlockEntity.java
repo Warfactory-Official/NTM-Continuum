@@ -4,7 +4,7 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModItems;
@@ -111,7 +111,7 @@ public class BedrockOreBlockEntity extends CompatBlockEntity {
         resource = input.read("resource", ItemStack.CODEC)
                 .filter(stack -> !stack.isEmpty())
                 .orElseGet(() -> new ItemStack(ModItems.powder_iron.get()));
-        FluidType fluid = Fluids.fromNameCompat(input.getStringOr("fluid", "NONE"));
+        FluidType fluid = Fluids.fromName(input.getStringOr("fluid", "NONE"));
         acidRequirement = fluid == Fluids.NONE ? null : new FluidStack(fluid, input.getIntOr("amount", 0));
         tier = input.getIntOr("tier", 0);
         color = input.getIntOr("color", 0);

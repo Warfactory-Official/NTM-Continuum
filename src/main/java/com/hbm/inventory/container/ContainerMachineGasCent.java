@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.Library;
@@ -85,7 +86,7 @@ public class ContainerMachineGasCent extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player,
+        return Menus.stillValid(access, player,
                 com.hbm.blocks.machine.ModMachineBlocks.machine_gascent.get());
     }
 

@@ -8,7 +8,7 @@ import com.hbm.handler.neutron.NeutronStream;
 import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKType;
 import com.hbm.inventory.container.MenuRBMKOutgasser;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.OutgasserRecipes;
@@ -41,7 +41,7 @@ public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRB
         if (!canProcess()) return;
         lastUsedFlux = stream.fluxQuantity * Math.min(1D - stream.fluxRatio * .8D, 1D) * RBMKDials.getOutgasserMod(level);
         progress += lastUsedFlux;
-        if (progress > duration) { process(); markChanged(); }
+        if (progress > duration) { process(); setChanged(); }
     }
     public boolean canProcess() {
         ItemStack input = inventory.getStackInSlot(SLOT_INPUT);
@@ -76,7 +76,7 @@ public class BlockEntityRBMKOutgasser extends BlockEntityRBMKBase implements IRB
     public int[] getSlotsForFace(Direction side) { return new int[]{SLOT_INPUT, SLOT_OUTPUT}; }
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == SLOT_OUTPUT; }
     @Override public long getFluidAvailable(FluidType type, int pressure) { return type == gas.getTankType() && pressure == gas.getPressure() ? gas.getFill() : 0L; }
-    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (type == gas.getTankType() && pressure == gas.getPressure()) { gas.setFill(gas.getFill() - (int) Math.min(amount, gas.getFill())); markChanged(); } }
+    @Override public void useUpFluid(FluidType type, int pressure, long amount) { if (type == gas.getTankType() && pressure == gas.getPressure()) { gas.setFill(gas.getFill() - (int) Math.min(amount, gas.getFill())); setChanged(); } }
     @Override protected void saveData(DataOut output) { super.saveData(output); output.putDouble("progress", progress); gas.writeToNBT(output, "gas"); }
     @Override protected void loadData(DataIn input) { super.loadData(input); progress = input.getDoubleOr("progress", progress); gas.readFromNBT(input, "gas"); }
     @Override public void serialize(RegistryFriendlyByteBuf buffer) { super.serialize(buffer); gas.serialize(buffer); buffer.writeDouble(progress); }

@@ -1,7 +1,7 @@
 package com.hbm.modules.machine;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.ChemicalPlantRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipes;
@@ -13,7 +13,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipes;
  */
 public class ModuleMachineChemplant extends ModuleMachineBase {
 
-    public ModuleMachineChemplant(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {
+    public ModuleMachineChemplant(int index, IEnergyHandlerMK2 battery, ItemHandler inventory) {
         super(index, battery, inventory);
         this.inputSlots = new int[3];
         this.outputSlots = new int[3];

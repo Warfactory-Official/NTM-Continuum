@@ -4,11 +4,11 @@ import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.machine.BlockCargoElevator;
-import com.hbm.blocks.multiblock.MultiblockCoreIndex;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCoreIndex;
+import dev.golem.core.multiblock.MultiblockSurface;
 import net.minecraft.server.level.ServerLevel;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import java.util.List;
@@ -38,7 +38,7 @@ import net.minecraft.world.phys.AABB;
  * implementing only the function half of the interface, so nothing can read it. This port implements
  * the value half too rather than dropping the advertised name.
  */
-public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRORValueProvider, IRORInteractive {
+public class TileEntityCargoElevator extends SyncedBlockEntity implements IRORValueProvider, IRORInteractive {
 
     public static final double SPEED = 2D / 20D;
 
@@ -65,7 +65,7 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
         }
         lift.extension = Mth.clamp(lift.extension, 0D, lift.height);
 
-        lift.networkPackNT();
+        lift.syncState();
         lift.carryRiders(level, pos);
     }
 
@@ -103,7 +103,7 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
                 }
             }
         }
-        lower.markChanged();
+        lower.setChanged();
         return true;
     }
 
@@ -130,7 +130,7 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
 
     public void toggleElevator() {
         targetExtension = targetExtension == 0 ? height : 0;
-        markChanged();
+        setChanged();
     }
 
     @Override
@@ -182,7 +182,7 @@ public class TileEntityCargoElevator extends TileEntityLoadedBase implements IRO
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setextension").equals(name) && params.length > 0) {
             targetExtension = IRORInteractive.parseInt(params[0], 0, height);
-            markChanged();
+            setChanged();
         }
         return null;
     }

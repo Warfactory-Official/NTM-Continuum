@@ -1,9 +1,8 @@
 package com.hbm.api.fluidmk2;
 
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.api.fluid.FluidType;
+import com.hbm.api.fluid.FluidTank;
+import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -16,15 +15,13 @@ import org.jspecify.annotations.NonNull;
  */
 public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
 
-    default void tryProvide(FluidTankNTM tank, Level world, DirPos pos) { tryProvide(tank.getTankType(), tank.getPressure(), world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir()); }
-    default void tryProvide(FluidType type, Level world, DirPos pos) { tryProvide(type, 0, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir()); }
-    default void tryProvide(FluidType type, int pressure, Level world, DirPos pos) { tryProvide(type, pressure, world, pos.getPos().getX(), pos.getPos().getY(), pos.getPos().getZ(), pos.getDir()); }
+    default void tryProvide(FluidTank tank, Level world, int x, int y, int z, Direction dir) { tryProvide(tank.getTankType(), tank.getPressure(), world, x, y, z, dir); }
+    default void tryProvide(FluidTank tank, Level world, BlockPos pos, Direction dir) { tryProvide(tank.getTankType(), tank.getPressure(), world, pos.getX(), pos.getY(), pos.getZ(), dir); }
+    default void tryProvide(FluidType type, Level world, int x, int y, int z, Direction dir) { tryProvide(type, 0, world, x, y, z, dir); }
+    default void tryProvide(FluidType type, Level world, BlockPos pos, Direction dir) { tryProvide(type, 0, world, pos.getX(), pos.getY(), pos.getZ(), dir); }
+    default void tryProvide(FluidType type, int pressure, Level world, BlockPos pos, Direction dir) { tryProvide(type, pressure, world, pos.getX(), pos.getY(), pos.getZ(), dir); }
 
-    default void tryProvide(FluidTankNTM tank, Level world, int x, int y, int z, ForgeDirection dir) { tryProvide(tank.getTankType(), tank.getPressure(), world, x, y, z, dir); }
-    default void tryProvide(FluidTankNTM tank, Level world, BlockPos pos, ForgeDirection dir) { tryProvide(tank.getTankType(), tank.getPressure(), world, pos.getX(), pos.getY(), pos.getZ(), dir); }
-    default void tryProvide(FluidType type, Level world, int x, int y, int z, ForgeDirection dir) { tryProvide(type, 0, world, x, y, z, dir); }
-
-    default void tryProvide(FluidType type, int pressure, Level world, int x, int y, int z, ForgeDirection dir) {
+    default void tryProvide(FluidType type, int pressure, Level world, int x, int y, int z, Direction dir) {
 
         BlockEntity te = world.getBlockEntity(new BlockPos(x, y, z));
 
@@ -39,12 +36,12 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
         }
     }
 
-    @NonNull FluidTankNTM[] getSendingTanks();
+    @NonNull FluidTank[] getSendingTanks();
 
     @Override
     default long getFluidAvailable(FluidType type, int pressure) {
         long amount = 0;
-        for (FluidTankNTM tank : getSendingTanks()) {
+        for (FluidTank tank : getSendingTanks()) {
             if (tank.getTankType() == type && tank.getPressure() == pressure) amount += tank.getFill();
         }
         return amount;
@@ -53,12 +50,12 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
     @Override
     default void useUpFluid(FluidType type, int pressure, long amount) {
         int tanks = 0;
-        for (FluidTankNTM tank : getSendingTanks()) {
+        for (FluidTank tank : getSendingTanks()) {
             if (tank.getTankType() == type && tank.getPressure() == pressure) tanks++;
         }
         if (tanks > 1) {
             int firstRound = (int) Math.floor((double) amount / (double) tanks);
-            for (FluidTankNTM tank : getSendingTanks()) {
+            for (FluidTank tank : getSendingTanks()) {
                 if (tank.getTankType() == type && tank.getPressure() == pressure) {
                     int toRem = Math.min(firstRound, tank.getFill());
                     tank.setFill(tank.getFill() - toRem);
@@ -66,7 +63,7 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
                 }
             }
         }
-        if (amount > 0) for (FluidTankNTM tank : getSendingTanks()) {
+        if (amount > 0) for (FluidTank tank : getSendingTanks()) {
             if (tank.getTankType() == type && tank.getPressure() == pressure) {
                 int toRem = (int) Math.min(amount, tank.getFill());
                 tank.setFill(tank.getFill() - toRem);
@@ -80,7 +77,7 @@ public interface IFluidStandardSenderMK2 extends IFluidProviderMK2 {
         int lowest = HIGHEST_VALID_PRESSURE;
         int highest = 0;
 
-        for (FluidTankNTM tank : getSendingTanks()) {
+        for (FluidTank tank : getSendingTanks()) {
             if (tank.getTankType() == type) {
                 if (tank.getPressure() < lowest) lowest = tank.getPressure();
                 if (tank.getPressure() > highest) highest = tank.getPressure();

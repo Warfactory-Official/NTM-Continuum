@@ -6,12 +6,12 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
@@ -70,7 +70,7 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
             return;
         }
 
-        self.networkPackNT();
+        self.syncState();
 
         BlockPos below = pos.below();
 
@@ -131,7 +131,7 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
     }
 
     /** The variable-height slag pile. */
-    public static class TileEntitySlag extends TileEntityLoadedBase {
+    public static class TileEntitySlag extends SyncedBlockEntity {
 
         public @Nullable NTMMaterial mat;
         public int amount;
@@ -155,30 +155,28 @@ public class BlockDynamicSlag extends dev.golem.core.world.CompatBlock implement
         @Override
         public void serialize(RegistryFriendlyByteBuf buf) {
             super.serialize(buf);
-            buf.writeInt(mat == null ? -1 : mat.id);
+            buf.writeInt(mat == null ? -1 : mat.index);
             buf.writeInt(amount);
         }
 
         @Override
         public void deserialize(RegistryFriendlyByteBuf buf) {
             super.deserialize(buf);
-            int id = buf.readInt();
-            mat = id < 0 ? null : Mats.matById.get(id);
+            mat = Mats.byIndex(buf.readInt());
             amount = buf.readInt();
         }
 
         @Override
         protected void saveData(DataOut output) {
             super.saveData(output);
-            output.putInt("mat", mat == null ? -1 : mat.id);
+            if (mat != null) output.putString("mat", mat.id.toString());
             output.putInt("amount", amount);
         }
 
         @Override
         protected void loadData(DataIn input) {
             super.loadData(input);
-            int id = input.getIntOr("mat", -1);
-            mat = id < 0 ? null : Mats.matById.get(id);
+            mat = Mats.byId(input.getStringOr("mat", ""));
             amount = input.getIntOr("amount", 0);
         }
     }

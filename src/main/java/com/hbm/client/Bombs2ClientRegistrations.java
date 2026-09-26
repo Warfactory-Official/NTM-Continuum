@@ -20,7 +20,7 @@ public final class Bombs2ClientRegistrations {
 
     private Bombs2ClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModBombs2Menus.NUKE_CUSTOM.get(), GUINukeCustom::new);
         sink.register(ModBombs2Menus.NUKE_FLEIJA.get(), GUINukeFleija::new);
         sink.register(ModBombs2Menus.NUKE_SOLINIUM.get(), GUINukeSolinium::new);

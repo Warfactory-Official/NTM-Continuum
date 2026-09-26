@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;

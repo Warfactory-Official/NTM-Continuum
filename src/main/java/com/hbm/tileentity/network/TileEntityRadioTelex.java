@@ -3,7 +3,7 @@ package com.hbm.tileentity.network;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.radio.RadioTelexMenu;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -32,7 +32,7 @@ import java.util.List;
  * The complete server-side TELEX state machine, ported from 1.12.2's {@code TileEntityRadioTelex}.
  * Characters are broadcast one at a time; {@link RTTYSystem} supplies the old one-tick delivery band.
  */
-public final class TileEntityRadioTelex extends TileEntityLoadedBase implements IControlReceiver, MenuProvider {
+public final class TileEntityRadioTelex extends SyncedBlockEntity implements IControlReceiver, MenuProvider {
     public static final int LINE_WIDTH = 33;
     public static final int LINE_COUNT = 5;
     public static final int CHANNEL_LENGTH = 10;
@@ -132,7 +132,7 @@ public final class TileEntityRadioTelex extends TileEntityLoadedBase implements 
             }
         }
 
-        networkPackNT();
+        syncState();
     }
 
     @Override

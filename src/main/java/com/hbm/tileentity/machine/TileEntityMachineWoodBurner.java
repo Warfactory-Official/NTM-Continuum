@@ -1,12 +1,13 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.container.ContainerMachineWoodBurner;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ItemEnums.EnumAshType;
@@ -72,7 +73,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         te.power = Library.chargeItemsFromTE(te.inventory, 5, te.power, maxPower);
 
         for (DirPos connection : te.getConPos()) {
-            if (te.power > 0) te.tryProvide(level, connection.getPos(), connection.getDir());
+            if (te.power > 0) te.tryProvide(level, connection.getPos(), connection.getDir().toDirection());
         }
 
         if (!te.liquidBurn) {
@@ -110,7 +111,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
         }
 
         te.power = Math.min(maxPower, te.power + te.powerGen);
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineWoodBurner te) {
@@ -232,8 +233,12 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
     @Override public long getPower() { return power; }
     @Override public void setPower(long power) { this.power = power; }
     @Override public long getMaxPower() { return maxPower; }
-    @Override public boolean canConnect(ForgeDirection direction) { return direction == facing(getBlockState()).getOpposite(); }
-    @Override public boolean canConnect(FluidType type, ForgeDirection direction) { return canConnect(direction); }
+    @Override public boolean canConnect(Direction side) {
+    ForgeDirection direction = ForgeDirection.of(side);
+     return direction == facing(getBlockState()).getOpposite(); }
+    @Override public boolean canConnect(FluidType type, Direction side) {
+    ForgeDirection direction = ForgeDirection.of(side);
+     return canConnect(direction.toDirection()); }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 

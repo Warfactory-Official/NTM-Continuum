@@ -9,7 +9,6 @@ import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -55,7 +54,7 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpElectric pump) {
         for (DirPos connection : pump.getConPos()) {
-            if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection);
+            if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection.getPos(), connection.getDir().toDirection());
         }
 
         if (pump.groundCheckDelay > 0) pump.groundCheckDelay--;
@@ -68,7 +67,7 @@ public class TileEntityMachinePumpElectric extends TileEntityMachineBase
         }
 
         pump.setChanged();
-        pump.networkPackNT();
+        pump.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpElectric pump) {

@@ -95,7 +95,7 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
         }
 
         if (dirty) furnace.setChanged();
-        furnace.networkPackNT();
+        furnace.syncState();
     }
 
     private boolean loadFuel() {
@@ -134,7 +134,7 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
 
     private void sendSmoke(Level level, DirPos connection) {
         for (FluidTankNTM tank : getSendingTanks()) {
-            if (tank.getFill() > 0) tryProvide(tank, level, connection);
+            if (tank.getFill() > 0) tryProvide(tank, level, connection.getPos(), connection.getDir().toDirection());
         }
     }
 

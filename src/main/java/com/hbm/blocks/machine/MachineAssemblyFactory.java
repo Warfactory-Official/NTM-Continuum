@@ -1,15 +1,17 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.assemblyfactory.AssemblyFactoryPorts;
 import com.hbm.assemblyfactory.AssemblyFactoryRegistrations;
 import com.hbm.assemblyfactory.AssemblyFactorySidedContainer;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockMaskTable;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockMaskTable;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAssemblyFactory;
@@ -128,9 +130,10 @@ public final class MachineAssemblyFactory extends BlockMultiblockMachine
      * whole block.
      */
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         BlockPos cell = new BlockPos(x, y, z);
-        if (!super.canConnect(type, world, x, y, z, dir)) return false;
+        if (!super.canConnect(type, world, x, y, z, dir.toDirection())) return false;
         return type == com.hbm.inventory.fluid.Fluids.WATER
                 || type == com.hbm.inventory.fluid.Fluids.SPENTSTEAM
                 || !coolantAnchor(world, cell);

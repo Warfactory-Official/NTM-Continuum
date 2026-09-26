@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine.fusion;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystron;
 import net.minecraft.core.BlockPos;
@@ -41,14 +43,14 @@ public class MachineFusionKlystron extends BlockMultiblockMachine implements IEn
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, core, WAVEGUIDE, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, core, WAVEGUIDE, clicked, facing);
     }
 
     /** The waveguide mouth at the muzzle, and the power and air laterals one step out on each flank. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, WAVEGUIDE, facing, visitor);
+        MultiblockFootprint.visitBox(core, WAVEGUIDE, facing, visitor);
 
         Direction rot = facing.getClockWise();
         visitor.cell(core.offset(facing.getStepX() * 3, 2, facing.getStepZ() * 3), MASK_SOUTH);

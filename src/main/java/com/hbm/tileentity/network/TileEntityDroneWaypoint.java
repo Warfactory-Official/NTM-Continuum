@@ -3,7 +3,7 @@ package com.hbm.tileentity.network;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.item.EntityDeliveryDrone;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -23,7 +23,7 @@ import com.hbm.tileentity.ModDroneBlockEntities;
  * 1.7 {@code TileEntityDroneWaypoint}: a transport-drone relay. Drones arriving at its stand-off point (its
  * facing times {@link #height}) are sent on to the next link.
  */
-public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDroneLinkable {
+public class TileEntityDroneWaypoint extends SyncedBlockEntity implements IDroneLinkable {
 
     public int height = 5;
     public @Nullable BlockPos next;
@@ -48,7 +48,7 @@ public class TileEntityDroneWaypoint extends TileEntityLoadedBase implements IDr
             }
         }
 
-        networkPackNT();
+        syncState();
     }
 
     /** 1.7: a redstone dust marks the hover point and a blue line runs to the next link, every other tick. */

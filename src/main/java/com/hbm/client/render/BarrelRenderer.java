@@ -4,7 +4,7 @@ import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.generic.BlockBarrelDeco;
 import com.hbm.blocks.machine.BlockFluidBarrel;
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;

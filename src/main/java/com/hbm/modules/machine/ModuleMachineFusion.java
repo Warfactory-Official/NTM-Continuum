@@ -3,7 +3,7 @@ package com.hbm.modules.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
@@ -33,7 +33,7 @@ public class ModuleMachineFusion extends ModuleMachineBase {
     public double bonusSpeed = 0D;
     public double bonus;
 
-    public ModuleMachineFusion(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {
+    public ModuleMachineFusion(int index, IEnergyHandlerMK2 battery, ItemHandler inventory) {
         super(index, battery, inventory);
         this.inputSlots = new int[0];
         this.outputSlots = new int[1];

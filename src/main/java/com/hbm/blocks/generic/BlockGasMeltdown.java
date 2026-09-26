@@ -1,6 +1,7 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.capability.HbmLivingProps;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.potion.ModEffects;
 import dev.golem.core.world.Effects;
@@ -42,7 +43,7 @@ public class BlockGasMeltdown extends BlockGasBase {
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level.isClientSide() || !(entity instanceof LivingEntity living)) return;
         boolean filtered = ArmorRegistry.hasProtection(living, EquipmentSlot.HEAD,
-                ArmorRegistry.HazardClass.PARTICLE_FINE);
+                HazardClass.PARTICLE_FINE);
         if (filtered) {
             ArmorUtil.damageGasMaskFilter(living, 1);
         } else {

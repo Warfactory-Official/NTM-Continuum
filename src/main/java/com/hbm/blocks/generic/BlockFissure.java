@@ -1,11 +1,11 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.blocks.ModFluidNetBlocks;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.ForgeDirection;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -75,16 +75,15 @@ public class BlockFissure extends CompatBlock implements TickingBlock {
 
         public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFissure fissure) {
             fissure.lava.setFill(1_000);
-            fissure.tryProvide(fissure.lava, level, pos.above(), ForgeDirection.UP);
+            fissure.tryProvide(fissure.lava, level, pos.above(), Direction.UP);
         }
 
         @Override
-        public boolean canConnect(FluidType type, ForgeDirection dir) {
-            return dir == ForgeDirection.DOWN && type == Fluids.LAVA;
+        public boolean canConnect(FluidType type, Direction dir) {
+            return dir == Direction.DOWN && type == Fluids.LAVA;
         }
 
         @Override public @NonNull FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{lava}; }
         @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{lava}; }
-        @Override public boolean isLoaded() { return !isRemoved(); }
     }
 }

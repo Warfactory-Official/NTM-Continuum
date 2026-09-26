@@ -65,7 +65,7 @@ public final class TileEntityBatteryREDD extends TileEntityBatteryBase implement
         System.arraycopy(battery.log, 1, battery.log, 0, battery.log.length - 1);
         battery.log[battery.log.length - 1] = average;
         battery.setChanged();
-        battery.networkPackNT();
+        battery.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityBatteryREDD battery) {

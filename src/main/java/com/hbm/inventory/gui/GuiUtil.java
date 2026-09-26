@@ -6,12 +6,9 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,43 +17,6 @@ import java.util.List;
 public final class GuiUtil {
 
     private GuiUtil() {}
-
-    /**
-     * The rotating needle from 1.12.2's {@code GUIElements.drawSmoothGauge}: a dark triangle behind a
-     * coloured one, both swept from the seven-o'clock position clockwise through 270 degrees as
-     * {@code progress} runs 0 to 1. Upstream draws two coloured triangles directly; {@code fill} only
-     * takes rectangles, so the triangle is scanline-rasterised at {@link #GAUGE_SUPERSAMPLE} times size
-     * and the pose scales it back down, which keeps the rotated edges and the taper smooth.
-     */
-    public static void drawSmoothGauge(GuiGraphicsExtractor graphics, int cx, int cy, double progress,
-                                       double tipLength, double backLength, double backSide, int color) {
-        progress = Math.max(0.0, Math.min(1.0, progress));
-        float angle = (float) Math.toRadians(progress * 270.0 + 45.0);
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, cx, cy);
-        GuiDraw.rotate(graphics, angle);
-        GuiDraw.scale(graphics, 1.0F / GAUGE_SUPERSAMPLE, 1.0F / GAUGE_SUPERSAMPLE);
-        fillNeedle(graphics, tipLength * 1.5, backLength * 1.5, backSide * 1.5, 0xFF000000);
-        fillNeedle(graphics, tipLength, backLength, backSide, 0xFF000000 | (color & 0xFFFFFF));
-        GuiDraw.popMatrix(graphics);
-    }
-
-    /** Supersample factor the needle is rasterised at before the pose scales it back down. */
-    private static final int GAUGE_SUPERSAMPLE = 8;
-
-    private static void fillNeedle(GuiGraphicsExtractor graphics, double tipLength, double backLength,
-                                   double backSide, int color) {
-        double tip = tipLength * GAUGE_SUPERSAMPLE;
-        double back = backLength * GAUGE_SUPERSAMPLE;
-        double side = backSide * GAUGE_SUPERSAMPLE;
-        double total = tip + back;
-        int top = (int) Math.round(tip);
-        int bottom = (int) Math.round(-back);
-        for (int y = bottom; y < top; y++) {
-            int halfWidth = (int) Math.round(side * (tip - y) / total);
-            if (halfWidth > 0) graphics.fill(-halfWidth, y, halfWidth, y + 1, color);
-        }
-    }
 
     /**
      * The energy-bar hover tooltip, matching the 1.12.2 GUIs: one line {@code <power>HE/<max>HE} using
@@ -81,11 +41,6 @@ public final class GuiUtil {
             list.add(Component.literal("0HE/s").withStyle(ChatFormatting.YELLOW));
         }
         return list;
-    }
-
-    /** Plays the legacy master-channel UI click through the shared GUI helper. */
-    public static void playClickSound() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
     }
 
     /** The exact legacy fluid-tank tooltip: name, fill, optional pressure, then fluid metadata. */

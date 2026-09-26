@@ -2,7 +2,7 @@ package com.hbm.scripting;
 
 import com.hbm.Constants;
 import com.hbm.hazard.HazardRegistry;
-import com.hbm.hazard.type.IHazardType;
+import com.hbm.api.hazard.IHazardType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.LivingEntity;

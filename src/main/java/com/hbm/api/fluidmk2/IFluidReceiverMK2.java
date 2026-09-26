@@ -1,7 +1,7 @@
 package com.hbm.api.fluidmk2;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import org.jetbrains.annotations.Contract;
 
 /** A tile that draws fluid from a network. The network finds it; it never announces itself. */

@@ -67,7 +67,7 @@ public final class TileEntityMachineFunnel extends TileEntityMachineBase
                 te.inventory.extractItem(i, amount, false);
             }
         }
-        te.networkPackNT();
+        te.syncState();
     }
 
     private ItemStack from4(Level level, ItemStack ingredient) {

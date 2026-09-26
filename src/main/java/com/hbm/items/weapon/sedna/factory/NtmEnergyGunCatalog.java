@@ -1,7 +1,7 @@
 package com.hbm.items.weapon.sedna.factory;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.Crosshair;

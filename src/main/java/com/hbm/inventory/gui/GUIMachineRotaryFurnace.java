@@ -41,7 +41,7 @@ public final class GUIMachineRotaryFurnace extends CompatContainerScreen<Contain
         }
 
         if (furnace.output != null) {
-            int hex = furnace.output.material.moltenColor;
+            int hex = furnace.output.material.moltenColor();
             int amount = furnace.output.amount * 52 / TileEntityMachineRotaryFurnace.maxOutput;
             if (amount > 0) {
                 // The old pass drew the bar tinted with the molten colour, then a 30% white additive wash.

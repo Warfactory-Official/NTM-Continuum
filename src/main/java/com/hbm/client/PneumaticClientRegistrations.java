@@ -18,7 +18,7 @@ import com.hbm.inventory.gui.GUIPneumoTube;
 public final class PneumaticClientRegistrations {
     private PneumaticClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModPneumaticMenus.PNEUMATIC_TUBE.get(), GUIPneumoTube::new);
         sink.register(ModPneumaticMenus.PNEUMATIC_STORAGE_ACCESS.get(), GUIPneumoStorageAccess::new);
         sink.register(ModPneumaticMenus.PNEUMATIC_STORAGE_CLUTTER.get(), GUIPneumoStorageClutter::new);

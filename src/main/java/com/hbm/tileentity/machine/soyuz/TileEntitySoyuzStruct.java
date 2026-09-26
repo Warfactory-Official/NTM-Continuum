@@ -1,13 +1,12 @@
 package com.hbm.tileentity.machine.soyuz;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.soyuz.ModSoyuzBlocks;
 import com.hbm.blocks.machine.soyuz.SoyuzLauncher;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -25,7 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * thousand cells, the preview that pattern drives would draw a ghost for every one of them, and upstream
  * has no preview here either. The scan is upstream's, box for box.
  */
-public class TileEntitySoyuzStruct extends TileEntityLoadedBase {
+public class TileEntitySoyuzStruct extends SyncedBlockEntity {
 
     private int age;
 
@@ -78,9 +77,9 @@ public class TileEntitySoyuzStruct extends TileEntityLoadedBase {
         SoyuzLauncher launcher = ModSoyuzBlocks.soyuz_launcher.get();
         BlockPos core = pos.above(SoyuzLauncher.HEIGHT);
 
-        BlockMultiblockCore.withoutTeardown(() -> {
+        MultiblockCore.withoutTeardown(() -> {
             level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
-            MultiblockHandlerXR.placeAssembled(level, core, launcher, Direction.EAST);
+            MultiblockFootprint.placeAssembled(level, core, launcher, Direction.EAST);
         });
     }
 

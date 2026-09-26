@@ -4,13 +4,13 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.AutosawFeature;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.particle.helper.ParticleEffects;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -48,7 +48,7 @@ import com.hbm.sound.MachineAudio;
 import com.hbm.sound.ModSounds;
 
 /** The old autosaw machine logic, with modern block tags and API boundaries made explicit. */
-public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
+public class TileEntityMachineAutosaw extends SyncedBlockEntity implements IFluidStandardReceiverMK2 {
 
     private static final int MIN_DIST = 2;
     private static final int MAX_DIST = 9;
@@ -159,7 +159,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
             }
         }
 
-        saw.networkPackNT();
+        saw.syncState();
     }
 
     private AudioWrapper audio;
@@ -184,7 +184,7 @@ public class TileEntityMachineAutosaw extends TileEntityLoadedBase implements IF
 
         if (saw.audioPitch == 0F) saw.audioPitch = 1.0F + level.getRandom().nextFloat() * 0.1F;
         saw.audio = MachineAudio.tick(saw.audio, saw.isOn && !saw.isSuspended, com.hbm.sound.ModProductionSounds.ENGINE.get(),
-                SoundSource.BLOCKS, pos, saw.getVolume(1F), 10F, saw.audioPitch, 10);
+                SoundSource.BLOCKS, pos, 1F, 10F, saw.audioPitch, 10);
 
         saw.prevRotationYaw = saw.rotationYaw;
         saw.prevRotationPitch = saw.rotationPitch;

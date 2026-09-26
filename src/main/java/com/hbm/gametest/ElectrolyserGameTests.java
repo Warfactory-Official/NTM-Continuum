@@ -1,9 +1,9 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineElectrolyser;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
@@ -279,7 +279,7 @@ public final class ElectrolyserGameTests {
 
     private static void addExpectedVolume(Set<BlockPos> expected, BlockPos anchor, int[] dimensions,
                                           ForgeDirection facing) {
-        int[] rotated = MultiblockHandlerXR.rotate(dimensions, facing.toDirection());
+        int[] rotated = MultiblockFootprint.rotate(dimensions, facing.toDirection());
         for (int x = anchor.getX() - rotated[4]; x <= anchor.getX() + rotated[5]; x++) {
             for (int y = anchor.getY() - rotated[1]; y <= anchor.getY() + rotated[0]; y++) {
                 for (int z = anchor.getZ() - rotated[2]; z <= anchor.getZ() + rotated[3]; z++) {
@@ -316,10 +316,10 @@ public final class ElectrolyserGameTests {
         BlockPos cell = port.offset(-direction.offsetX, -direction.offsetY, -direction.offsetZ);
         helper.assertTrue(actual.getPos().equals(port) && actual.getDir() == direction,
                 "electrolyser port " + index + " is not at distance six");
-        helper.assertTrue(block.canConnect(helper.getLevel(), cell, direction)
-                        && block.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction),
+        helper.assertTrue(block.canConnect(helper.getLevel(), cell, direction.toDirection())
+                        && block.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction.toDirection()),
                 "electrolyser port " + index + " does not connect for its facing");
-        helper.assertFalse(block.canConnect(helper.getLevel(), cell, direction.getOpposite()),
+        helper.assertFalse(block.canConnect(helper.getLevel(), cell, direction.getOpposite().toDirection()),
                 "electrolyser exposed a false connection beside port " + index);
     }
 

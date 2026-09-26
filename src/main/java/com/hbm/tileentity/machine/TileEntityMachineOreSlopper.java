@@ -4,7 +4,7 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemFluidId;
@@ -117,7 +117,7 @@ public final class TileEntityMachineOreSlopper extends TileEntityMachineBase
         if (conversion != null) te.tanks[1].setTankType(conversion);
 
         for (DirPos con : te.getConPos()) {
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con);
+            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, con.getPos(), con.getDir().toDirection());
         }
 
         te.processing = false;
@@ -195,7 +195,7 @@ public final class TileEntityMachineOreSlopper extends TileEntityMachineBase
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineOreSlopper te) {

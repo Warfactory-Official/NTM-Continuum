@@ -1,9 +1,10 @@
 package com.hbm.hazard.type;
 
+import com.hbm.api.hazard.IHazardType;
 import java.util.List;
 
 import com.hbm.config.RadiationConfig;
-import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.api.hazard.IHazardModifier;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;

@@ -2,11 +2,11 @@ package com.hbm.scripting.fuels;
 
 import com.hbm.Constants;
 import com.hbm.blocks.ModPwrContent;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ModPwrItems;
 import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
-import com.hbm.lib.ItemIds;
+import com.hbm.api.ids.ItemIds;
 import com.hbm.scripting.ScriptSpecs;
 import com.hbm.scripting.ScriptedContent;
 import com.hbm.util.Function;

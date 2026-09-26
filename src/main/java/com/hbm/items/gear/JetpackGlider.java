@@ -3,7 +3,7 @@ package com.hbm.items.gear;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.handler.JetpackHandler;
 import com.hbm.handler.ArmorModHandler;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ModDataComponents;
@@ -27,7 +27,7 @@ public class JetpackGlider extends ItemArmorMod implements IFillableItem {
     }
 
     public FluidTankNTM getTank(ItemStack stack) {
-        FluidType type = Fluids.fromID(ModDataComponents.fluidId(stack));
+        FluidType type = ModDataComponents.fluid(stack);
         FluidTankNTM tank = new FluidTankNTM(type, capacity);
         tank.setFill(Math.max(0, Math.min(capacity, ModDataComponents.fluidAmount(stack))));
         return tank;
@@ -35,11 +35,11 @@ public class JetpackGlider extends ItemArmorMod implements IFillableItem {
 
     public void setTank(ItemStack stack, FluidTankNTM tank) {
         if (tank == null || tank.getFill() <= 0 || tank.getTankType() == null || tank.getTankType() == Fluids.NONE) {
-            ModDataComponents.removeFluidId(stack);
+            ModDataComponents.removeFluid(stack);
             ModDataComponents.removeFluidAmount(stack);
             return;
         }
-        ModDataComponents.fluidId(stack, tank.getTankType().getID());
+        ModDataComponents.fluid(stack, tank.getTankType());
         ModDataComponents.fluidAmount(stack, Math.min(capacity, Math.max(0, tank.getFill())));
     }
 

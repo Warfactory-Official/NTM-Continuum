@@ -5,7 +5,7 @@ import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModFuelItems;
@@ -121,7 +121,7 @@ public final class PyroOvenRecipes {
         recipes.add(new PyroOvenRecipe(60).in(new FluidStack(Fluids.GAS_COKER, 4_000)).out(new FluidStack(Fluids.REFORMGAS, 100)));
         // hydrogen and carbon from natgas
         recipes.add(new PyroOvenRecipe(60).in(new FluidStack(Fluids.GAS, 12_000)).out(new FluidStack(Fluids.HYDROGEN, 8_000)).out(new ItemStack(ModFuelItems.ingot_graphite.get(), 1)));
-        com.hbm.scripting.ScriptedRecipes.apply(PyroOvenRecipes.class);
+        dev.golem.core.content.Replay.apply(PyroOvenRecipes.class);
     }
 
     public static void addRecipe(PyroOvenRecipe recipe) {

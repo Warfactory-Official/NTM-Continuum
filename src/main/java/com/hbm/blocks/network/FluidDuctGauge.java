@@ -2,7 +2,7 @@ package com.hbm.blocks.network;
 
 import com.hbm.tileentity.network.TileEntityPipeGauge;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;

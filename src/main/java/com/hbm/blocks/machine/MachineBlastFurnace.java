@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockMaskTable;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockMaskTable;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineBlastFurnace;
 import net.minecraft.core.BlockPos;

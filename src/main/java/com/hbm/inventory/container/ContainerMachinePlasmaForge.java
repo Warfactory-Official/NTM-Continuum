@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.lib.Library;
@@ -94,7 +95,7 @@ public class ContainerMachinePlasmaForge extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, com.hbm.blocks.machine.ModMachineBlocks.fusion_plasma_forge.get());
+        return Menus.stillValid(access, player, com.hbm.blocks.machine.ModMachineBlocks.fusion_plasma_forge.get());
     }
 
     @Override

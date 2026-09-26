@@ -1,11 +1,10 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.BlockMultiblockCell;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockMaskTable;
-import com.hbm.capability.CapRole;
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.multiblock.MultiblockCell;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockMaskTable;
+import dev.golem.core.multiblock.CapRole;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -48,28 +47,28 @@ public final class FoldedGeometryGameTests {
     }
 
     private static MultiblockMaskTable bake(MultiblockMaskTable.CellSource cells,
-                                            MultiblockMaskTable.PassiveCellSource passive, int declaredCaps) {
-        return MultiblockMaskTable.bake(new MultiblockMaskTable.Geometry(BlockMultiblockCore.class, cells, passive,
-                BlockMultiblockCore.MASK_NONE, BlockMultiblockCore.MASK_ALL, 0), declaredCaps);
+                                            MultiblockMaskTable.PassiveCellSource passive) {
+        return MultiblockMaskTable.bake(new MultiblockMaskTable.Geometry(MultiblockCore.class, cells, passive,
+                MultiblockCore.MASK_NONE, MultiblockCore.MASK_ALL, 0));
     }
 
     /** A west port that takes power and an east port that vends fluid must not answer for each other. */
     public static void rolesSeparate(GameTestHelper helper) {
         MultiblockMaskTable table = bake((core, facing, visitor) -> {
-            visitor.cell(core.offset(-1, 0, 0), BlockMultiblockCore.MASK_WEST, BlockMultiblockCore.ROLE_POWER_IN);
-            visitor.cell(core.offset(1, 0, 0), BlockMultiblockCore.MASK_EAST, BlockMultiblockCore.ROLE_FLUID_OUT);
-        }, (core, facing, visitor) -> {}, MachineCaps.POWER_IN | MachineCaps.FLUID_OUT);
+            visitor.cell(core.offset(-1, 0, 0), MultiblockCore.MASK_WEST, MultiblockCore.ROLE_POWER_IN);
+            visitor.cell(core.offset(1, 0, 0), MultiblockCore.MASK_EAST, MultiblockCore.ROLE_FLUID_OUT);
+        }, (core, facing, visitor) -> {});
 
         helper.assertTrue(table.hasRolePlanes(), "A geometry that qualified two cells by role baked no role planes");
-        eq(helper, table.maskAtLocal(-1, 0, 0, CapRole.POWER_IN), BlockMultiblockCore.MASK_WEST,
+        eq(helper, table.maskAtLocal(-1, 0, 0, CapRole.POWER_IN), MultiblockCore.MASK_WEST,
                 "the power-in face of the west port");
         eq(helper, table.maskAtLocal(-1, 0, 0, CapRole.FLUID_OUT), 0,
                 "the fluid-out face of the west port, which takes power only");
-        eq(helper, table.maskAtLocal(1, 0, 0, CapRole.FLUID_OUT), BlockMultiblockCore.MASK_EAST,
+        eq(helper, table.maskAtLocal(1, 0, 0, CapRole.FLUID_OUT), MultiblockCore.MASK_EAST,
                 "the fluid-out face of the east port");
         eq(helper, table.maskAtLocal(1, 0, 0, CapRole.POWER_IN), 0,
                 "the power-in face of the east port, which vends fluid only");
-        eq(helper, table.maskAtLocal(-1, 0, 0), BlockMultiblockCore.MASK_WEST,
+        eq(helper, table.maskAtLocal(-1, 0, 0), MultiblockCore.MASK_WEST,
                 "the role-blind union at the west port");
         eq(helper, table.maskAtLocal(4, 0, 0), MultiblockMaskTable.NOT_A_CELL,
                 "an offset outside the footprint");
@@ -79,12 +78,12 @@ public final class FoldedGeometryGameTests {
     /** A machine that never names a role pays for no planes, and every role reads the one mask. */
     public static void rolesUnion(GameTestHelper helper) {
         MultiblockMaskTable table = bake((core, facing, visitor) ->
-                visitor.cell(core.offset(0, 1, 0), BlockMultiblockCore.MASK_UP),
-                (core, facing, visitor) -> {}, MachineCaps.POWER_IN);
+                visitor.cell(core.offset(0, 1, 0), MultiblockCore.MASK_UP),
+                (core, facing, visitor) -> {});
 
         helper.assertFalse(table.hasRolePlanes(), "A role-blind geometry allocated role planes it cannot use");
         for (CapRole role : CapRole.VALUES) {
-            eq(helper, table.maskAtLocal(0, 1, 0, role), BlockMultiblockCore.MASK_UP,
+            eq(helper, table.maskAtLocal(0, 1, 0, role), MultiblockCore.MASK_UP,
                     "the " + role + " face of a cell stated without a role");
         }
         helper.succeed();
@@ -96,15 +95,15 @@ public final class FoldedGeometryGameTests {
      */
     public static void passivePlane(GameTestHelper helper) {
         MultiblockMaskTable table = bake((core, facing, visitor) ->
-                visitor.cell(core.offset(0, 1, 0), BlockMultiblockCore.MASK_NONE),
-                (core, facing, visitor) -> visitor.passiveCell(core.offset(0, 1, 0), BlockMultiblockCore.MASK_UP,
-                        BlockMultiblockCore.PASSIVE_ITEMS), MachineCaps.ITEMS);
+                visitor.cell(core.offset(0, 1, 0), MultiblockCore.MASK_NONE),
+                (core, facing, visitor) -> visitor.passiveCell(core.offset(0, 1, 0), MultiblockCore.MASK_UP,
+                        MultiblockCore.PASSIVE_ITEMS));
 
-        eq(helper, table.maskAtLocal(0, 1, 0), BlockMultiblockCore.MASK_NONE,
+        eq(helper, table.maskAtLocal(0, 1, 0), MultiblockCore.MASK_NONE,
                 "the active mask of a cell that is only a proxy");
-        eq(helper, table.passiveMaskAtLocal(0, 1, 0, BlockMultiblockCore.PASSIVE_ITEMS),
-                BlockMultiblockCore.MASK_UP, "the item proxy's accept face");
-        eq(helper, table.passiveMaskAtLocal(0, 1, 0, BlockMultiblockCore.PASSIVE_POWER_IN), 0,
+        eq(helper, table.passiveMaskAtLocal(0, 1, 0, MultiblockCore.PASSIVE_ITEMS),
+                MultiblockCore.MASK_UP, "the item proxy's accept face");
+        eq(helper, table.passiveMaskAtLocal(0, 1, 0, MultiblockCore.PASSIVE_POWER_IN), 0,
                 "the power-in proxy face of a cell that proxies items only");
         helper.succeed();
     }
@@ -120,7 +119,7 @@ public final class FoldedGeometryGameTests {
     public static void pistonsRefused(GameTestHelper helper) {
         List<String> shearable = new ArrayList<>();
         for (Block block : BuiltInRegistries.BLOCK) {
-            if (!(block instanceof BlockMultiblockCore) && !(block instanceof BlockMultiblockCell)) continue;
+            if (!(block instanceof MultiblockCore) && !(block instanceof MultiblockCell)) continue;
             for (BlockState state : block.getStateDefinition().getPossibleStates()) {
                 if (state.hasBlockEntity() || state.getPistonPushReaction() == PushReaction.BLOCK) continue;
                 shearable.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(block)));

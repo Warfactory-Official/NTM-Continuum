@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineCompressor;
 import com.hbm.tileentity.machine.TileEntityMachineCompressorBase;
@@ -38,16 +40,16 @@ public class MachineCompressor extends BlockMultiblockMachine implements IEnergy
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, core, FAN_PLATFORM, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core, CHIMNEY, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, core, FAN_PLATFORM, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core, CHIMNEY, clicked, facing);
     }
 
     /** The body is three boxes, and three cells around the core's waist are the power and fluid surface. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, FAN_PLATFORM, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, CHIMNEY, facing, visitor);
+        MultiblockFootprint.visitBox(core, FAN_PLATFORM, facing, visitor);
+        MultiblockFootprint.visitBox(core, CHIMNEY, facing, visitor);
 
         Direction rot = facing.getClockWise();
         visitor.cell(core.offset(-facing.getStepX(), 0, -facing.getStepZ()), MASK_NORTH);

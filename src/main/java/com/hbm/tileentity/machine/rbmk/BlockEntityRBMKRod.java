@@ -79,10 +79,10 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
     @Override public RBMKColumnType getConsoleType() { return RBMKColumnType.FUEL; }
     @Override public RBMKColumn getConsoleData() { RBMKColumn.FuelColumn data = (RBMKColumn.FuelColumn) super.getConsoleData(); ItemStack fuel = inventory.getStackInSlot(0); if (fuel.getItem() instanceof ItemRBMKRod rod) { data.enrichment = ItemRBMKRod.getEnrichment(fuel); data.xenon = ItemRBMKRod.getPoison(fuel); data.c_heat = ItemRBMKRod.getHullHeat(fuel); data.c_coreHeat = ItemRBMKRod.getCoreHeat(fuel); data.c_maxHeat = rod.meltingPoint; } return data; }
     @Override public boolean canLoad(ItemStack stack) { return !stack.isEmpty() && inventory.getStackInSlot(0).isEmpty(); }
-    @Override public void load(ItemStack stack) { inventory.setStackInSlot(0, stack.copy()); markChanged(); }
+    @Override public void load(ItemStack stack) { inventory.setStackInSlot(0, stack.copy()); setChanged(); }
     @Override public boolean canUnload() { return !inventory.getStackInSlot(0).isEmpty(); }
     @Override public ItemStack provideNext() { return inventory.getStackInSlot(0); }
-    @Override public void unload() { inventory.setStackInSlot(0, ItemStack.EMPTY); markChanged(); }
+    @Override public void unload() { inventory.setStackInSlot(0, ItemStack.EMPTY); setChanged(); }
     @Override public Component getDisplayName() { return Component.translatable("container.rbmkRod"); }
     @Override public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) { return new MenuRBMKRod(id, inventory, this); }
     @Override protected void loadData(DataIn input) { super.loadData(input); fluxQuantity = input.getDoubleOr("fluxQuantity", fluxQuantity); fluxFastRatio = input.getDoubleOr("fluxMod", fluxFastRatio); hasRod = input.getBooleanOr("hasRod", hasRod); }

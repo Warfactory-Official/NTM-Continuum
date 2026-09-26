@@ -13,7 +13,7 @@ import com.hbm.entity.item.EntityMovingItem;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.ShredderRecipes;
@@ -164,7 +164,7 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
             te.targetDepth = 0;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineExcavator te) {
@@ -769,7 +769,7 @@ public final class TileEntityMachineExcavator extends TileEntityMachineBase
         if (data.contains("veinminer")) this.enableVeinMiner = !this.enableVeinMiner;
         if (data.contains("silktouch")) this.enableSilkTouch = !this.enableSilkTouch;
 
-        this.markChanged();
+        this.setChanged();
     }
 
     public @Nullable DrillBitType getInstalledDrill() {

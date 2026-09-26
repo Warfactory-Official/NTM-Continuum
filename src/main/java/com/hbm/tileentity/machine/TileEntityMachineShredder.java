@@ -108,7 +108,7 @@ public class TileEntityMachineShredder extends TileEntityMachineBase implements 
         }
 
         te.power = Library.chargeTEFromItems(te.inventory, SLOT_BATTERY, te.power, maxPower);
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** One damage per blade per completed cycle; blades with no durability (desh) never wear. */

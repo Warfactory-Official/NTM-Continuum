@@ -4,7 +4,7 @@ import com.hbm.Constants;
 import com.hbm.items.ModRtgContent;
 import com.hbm.items.machine.DepletedRTGMaterial;
 import com.hbm.items.machine.ItemRTGPellet;
-import com.hbm.lib.TagIds;
+import com.hbm.api.ids.TagIds;
 import com.hbm.scripting.ScriptSpecs;
 import com.hbm.scripting.ScriptedContent;
 import dev.golem.core.registry.RegistryObject;

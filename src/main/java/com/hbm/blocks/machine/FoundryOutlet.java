@@ -1,11 +1,13 @@
 package com.hbm.blocks.machine;
 
+import net.minecraft.core.Direction;
+import com.hbm.inventory.material.Mats;
 import com.hbm.api.block.ICrucibleAcceptor;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -101,7 +103,7 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements T
             if (!level.isClientSide()) {
                 TileEntityFoundryOutlet te = getTE(level, pos);
                 if (te != null) {
-                    te.filter = mats.material;
+                    te.filter = Mats.of(mats.material);
                     te.setChanged();
                 }
             }
@@ -131,19 +133,21 @@ public class FoundryOutlet extends dev.golem.core.world.CompatBlock implements T
     // --- ICrucibleAcceptor: delegate to the TE (flow only) ---
 
     @Override
-    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) { return false; }
+    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction side, MaterialStack stack) { return false; }
 
     @Override
-    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) { return stack; }
+    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction side, MaterialStack stack) { return stack; }
 
     @Override
-    public boolean canAcceptPartialFlow(Level world, BlockPos pos, ForgeDirection side, MaterialStack stack) {
+    public boolean canAcceptPartialFlow(Level world, BlockPos pos, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         TileEntityFoundryOutlet te = getTE(world, pos);
         return te != null && te.canAcceptPartialFlow(world, pos, side, stack);
     }
 
     @Override
-    public MaterialStack flow(Level world, BlockPos pos, ForgeDirection side, MaterialStack stack) {
+    public MaterialStack flow(Level world, BlockPos pos, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         TileEntityFoundryOutlet te = getTE(world, pos);
         return te == null ? stack : te.flow(world, pos, side, stack);
     }

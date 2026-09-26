@@ -6,7 +6,7 @@ import com.hbm.entity.logic.EntityNukeExplosionMK5;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.inventory.container.ContainerCore;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemCatalyst;
@@ -114,7 +114,7 @@ public class TileEntityCore extends TileEntityMachineBase implements MenuProvide
         }
 
         prevHeat = heat;
-        networkPackNT();
+        syncState();
         heat = 0;
 
         if (lastTickValid && field > 0) field -= 1;

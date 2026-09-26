@@ -1,6 +1,7 @@
 package com.hbm.blocks.bomb;
 
 import com.hbm.api.block.IFuckingExplode;
+import net.minecraft.world.entity.Entity;
 import com.hbm.api.block.IToolable;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.item.EntityTntNtm;
@@ -151,7 +152,7 @@ public abstract class BlockChargeBase extends CompatBlock implements TickingBloc
     }
 
     @Override
-    public void explodeEntity(Level level, double x, double y, double z, EntityTntNtm entity) {
+    public void explodeEntity(Level level, double x, double y, double z, Entity entity) {
         explode(level, BlockPos.containing(x, y, z), entity);
     }
 

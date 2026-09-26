@@ -1,6 +1,8 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.Mats;
 import com.hbm.tileentity.machine.TileEntityMachineElectrolyser;
@@ -60,13 +62,13 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
         }
     }
 
-    private void drawMaterial(GuiGraphicsExtractor graphics, Mats.@org.jspecify.annotations.Nullable MaterialStack material, int x) {
+    private void drawMaterial(GuiGraphicsExtractor graphics, @org.jspecify.annotations.Nullable MaterialStack material, int x) {
         if (material == null) return;
         int height = material.amount * 42 / TileEntityMachineElectrolyser.MAX_MATERIAL;
         if (height <= 0) return;
         GuiDraw.blit(graphics, METAL_TEXTURE, leftPos + x, topPos + 60 - height,
                 210F, 131F - height, 34, height, 256, 256,
-                0xFF000000 | (material.material.moltenColor & 0xFFFFFF));
+                0xFF000000 | (material.material.moltenColor() & 0xFFFFFF));
     }
 
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {
@@ -128,7 +130,7 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
     protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         Minecraft minecraft = Minecraft.getInstance();
         if (isHovering(8, 82, 54, 12, event.x(), event.y()) && minecraft.gameMode != null) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             minecraft.gameMode.handleInventoryButtonClick(menu.containerId,
                     menu.isMetal() ? ContainerMachineElectrolyser.MODE_FLUID : ContainerMachineElectrolyser.MODE_METAL);
             return true;
@@ -136,7 +138,7 @@ public final class GUIMachineElectrolyser extends dev.golem.core.gui.CompatConta
         return false;
     }
 
-    private void materialTooltip(GuiGraphicsExtractor graphics, Mats.@org.jspecify.annotations.Nullable MaterialStack stack, int x, int y) {
+    private void materialTooltip(GuiGraphicsExtractor graphics, @org.jspecify.annotations.Nullable MaterialStack stack, int x, int y) {
         GuiDraw.tooltip(graphics, font, stack == null ? List.of(Component.literal("Empty").withStyle(ChatFormatting.RED))
                 : List.of(Component.literal(stack.material.getDisplayName() + ": "
                         + Mats.formatAmount(stack.amount, Minecraft.getInstance().player != null

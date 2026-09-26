@@ -1,11 +1,12 @@
 package com.hbm.hazard;
 
+import com.hbm.api.hazard.HazardEntry;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.hbm.config.RadiationConfig;
-import com.hbm.hazard.type.HazardType;
-import com.hbm.hazard.type.IHazardType;
+import com.hbm.api.hazard.HazardType;
+import com.hbm.api.hazard.IHazardType;
 import org.jspecify.annotations.Nullable;
 
 /** A set of {@link HazardEntry} with override/mutex semantics, ported 1:1 from 1.12.2. */

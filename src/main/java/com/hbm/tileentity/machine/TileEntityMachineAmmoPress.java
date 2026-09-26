@@ -56,7 +56,7 @@ public class TileEntityMachineAmmoPress extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAmmoPress press) {
         if (press.playAnimation > 0) press.playAnimation--;
         press.performRecipe();
-        press.networkPackNT();
+        press.syncState();
     }
 
     /** Client-only animation state, matching the old remote branch and its 40-tick trigger. */

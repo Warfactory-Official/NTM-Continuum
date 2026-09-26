@@ -1,13 +1,13 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.interfaces.IClimbable;
 import com.hbm.inventory.container.ContainerMachineFluidTank;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -18,7 +18,7 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.EndpointRegistry;
+import dev.golem.core.graph.EndpointRegistry;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -87,11 +87,11 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
         if (level instanceof ServerLevel server) tank.updateCells(server, type);
         if (tank.mode == 2) {
-            for (DirPos dp : tank.getConPos()) tank.tryProvide(tank.tank, level, dp.getPos(), dp.getDir());
+            for (DirPos dp : tank.getConPos()) tank.tryProvide(tank.tank, level, dp.getPos(), dp.getDir().toDirection());
         }
 
         tank.setChanged();
-        tank.networkPackNT();
+        tank.syncState();
     }
 
     public void cycleMode() {

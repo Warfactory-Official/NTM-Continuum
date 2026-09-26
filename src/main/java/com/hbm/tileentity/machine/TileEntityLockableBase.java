@@ -6,7 +6,7 @@ import com.hbm.items.ModItems;
 import com.hbm.items.ModToolItems;
 import com.hbm.items.tool.ItemKey;
 import com.hbm.Constants;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Inventories;
@@ -39,7 +39,7 @@ import com.hbm.sound.ModDoorSounds;
  * The lock-picking success bonus the original granted to the {@code jackt} jackets is registered
  * through {@link #LOCKPICK_JACKETS} by whoever ports them.
  */
-public abstract class TileEntityLockableBase extends TileEntityLoadedBase {
+public abstract class TileEntityLockableBase extends SyncedBlockEntity {
 
     /** A key item that carries a pin code. */
     public interface KeyPins {

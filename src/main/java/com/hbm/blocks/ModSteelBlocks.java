@@ -3,7 +3,7 @@ package com.hbm.blocks;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockGrate;
 import com.hbm.blocks.generic.BlockScaffold;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ModDataComponents;
 import com.hbm.sound.ModSounds;

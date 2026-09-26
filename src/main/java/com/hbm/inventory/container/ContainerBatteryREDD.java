@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
@@ -75,7 +76,7 @@ public final class ContainerBatteryREDD extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModBatteryBlocks.machine_battery_redd.get());
+        return Menus.stillValid(access, player, ModBatteryBlocks.machine_battery_redd.get());
     }
 
     @Override

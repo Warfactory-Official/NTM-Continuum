@@ -13,8 +13,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.api.fluidmk2.FluidNetwork;
-import com.hbm.lib.ForgeDirection;
+import com.hbm.network.fluid.FluidNetwork;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModItems;
 import com.hbm.items.ModSingularityItems;
@@ -84,7 +83,7 @@ public final class SingularityGameTests {
         helper.assertTrue(ItemCell.isEmptyCell(empty), "new cell is not empty");
         helper.assertTrue(ItemCell.isFullCell(antimatter, Fluids.AMAT)
                         && ModDataComponents.fluidAmount(antimatter) == ItemCell.CAPACITY
-                        && ModDataComponents.fluidId(antimatter) == Fluids.AMAT.getID(),
+                        && ModDataComponents.fluid(antimatter) == Fluids.AMAT,
                 "AMAT cell did not retain its legacy fluid id");
         helper.assertTrue(ItemCell.remainder(antimatter).is(ModSingularityItems.cell.get()),
                 "full AMAT cell did not return an empty cell");
@@ -101,7 +100,7 @@ public final class SingularityGameTests {
         helper.assertTrue(deuterium.is(ModSingularityItems.cell.get()) && deuterium.getCount() == 8
                         && ItemCell.isFullCell(deuterium, Fluids.DEUTERIUM)
                         && ModDataComponents.fluidAmount(deuterium) == ItemCell.CAPACITY
-                        && ModDataComponents.ITEM_VARIANT.getOr(deuterium, -1) == Fluids.DEUTERIUM.getID(),
+                        && ModDataComponents.ITEM_VARIANT.getOr(deuterium, -1) == 8,
                 "empty-cell recipe did not produce a model-selecting full deuterium cell");
         deuteriumGrid.set(0, antimatter.copyWithCount(1));
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, deuteriumGrid).isEmpty(),
@@ -132,15 +131,15 @@ public final class SingularityGameTests {
                 "cell allowed a partial drain");
         helper.assertTrue(cell.tryEmpty(Fluids.AMAT, 1_250, full) == ItemCell.CAPACITY
                         && ItemCell.isEmptyCell(full)
-                        && ModDataComponents.fluidId(full) == 0
+                        && ModDataComponents.fluid(full) == Fluids.NONE
                         && ModDataComponents.fluidAmount(full) == 0
                         && !ModDataComponents.ITEM_VARIANT.has(full),
                 "whole-cell drain did not clear fluid components");
 
         ItemStack partial = new ItemStack(ModSingularityItems.cell.get());
-        ModDataComponents.fluidId(partial, Fluids.AMAT.getID());
+        ModDataComponents.fluid(partial, Fluids.AMAT);
         ModDataComponents.fluidAmount(partial, 1);
-        ModDataComponents.ITEM_VARIANT.set(partial, Fluids.AMAT.getID());
+        ModDataComponents.ITEM_VARIANT.set(partial, 33);
         helper.assertTrue(!ItemCell.isFullCell(partial, Fluids.AMAT)
                         && !cell.providesFluid(Fluids.AMAT, partial)
                         && cell.tryFill(Fluids.AMAT, ItemCell.CAPACITY, partial) == ItemCell.CAPACITY

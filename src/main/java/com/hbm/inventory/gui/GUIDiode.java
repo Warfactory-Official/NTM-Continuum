@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.tileentity.network.TileEntityDiode;
 import com.hbm.packet.ControlEventPayload;
@@ -8,13 +9,10 @@ import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 
 /**
  * 1.7's {@code GUIDiode}: a throughput field and a priority button over the dimmed world; closing it
@@ -63,7 +61,7 @@ public final class GUIDiode extends CompatScreen {
         if (event.x() >= buttonX && event.x() < buttonX + 90 && event.y() >= buttonY && event.y() < buttonY + 20) {
             priority++;
             if (priority >= ConnectionPriority.VALUES.length) priority = 0;
-            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            Gauges.click();
             return true;
         }
         return false;

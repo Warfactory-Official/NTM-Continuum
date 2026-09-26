@@ -2,7 +2,7 @@ package com.hbm.hazard.transformer;
 
 import java.util.List;
 
-import com.hbm.hazard.HazardEntry;
+import com.hbm.api.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.items.ModDataComponents;
 import net.minecraft.world.item.ItemStack;

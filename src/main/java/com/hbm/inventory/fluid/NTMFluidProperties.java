@@ -1,5 +1,6 @@
 package com.hbm.inventory.fluid;
 
+import com.hbm.api.fluid.FluidType;
 /** Trait lookup for HBM's native {@link FluidType} registry. */
 public final class NTMFluidProperties {
     private NTMFluidProperties() {}

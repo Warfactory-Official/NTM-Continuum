@@ -5,7 +5,7 @@ import com.hbm.blocks.ModSteelBlocks;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.MaterialStack;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.inventory.material.MaterialShapes;
@@ -71,7 +71,7 @@ public class AssemblyMachineRecipes extends GenericRecipes {
     }
 
     /** A full fluid barrel as a recipe input; the barrel itself comes back. */
-    private static ComparableStack barrel(com.hbm.inventory.fluid.FluidType fluid) {
+    private static ComparableStack barrel(com.hbm.api.fluid.FluidType fluid) {
         return new ComparableStack(com.hbm.items.ModFluidItems.fluid_barrel.get().make(fluid, 16_000));
     }
 

@@ -25,7 +25,7 @@ public class HeaterLoopSound extends AbstractTickableSoundInstance {
         this.z = pos.getZ() + 0.5;
         this.looping = true;
         this.delay = 0;
-        this.volume = te.getVolume(0.25F);
+        this.volume = 0.25F;
     }
 
     @Override
@@ -34,6 +34,6 @@ public class HeaterLoopSound extends AbstractTickableSoundInstance {
             this.stop();
             return;
         }
-        this.volume = te.getVolume(0.25F);
+        this.volume = 0.25F;
     }
 }

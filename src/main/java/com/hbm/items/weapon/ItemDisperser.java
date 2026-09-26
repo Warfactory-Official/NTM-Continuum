@@ -1,7 +1,7 @@
 package com.hbm.items.weapon;
 
 import com.hbm.entity.grenade.EntityDisperserCanister;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemFluidTank;
 import net.minecraft.network.chat.Component;

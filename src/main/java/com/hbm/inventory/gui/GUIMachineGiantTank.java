@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerMachineGiantTank;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
@@ -83,7 +84,7 @@ public class GUIMachineGiantTank extends dev.golem.core.gui.CompatContainerScree
     @Override
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         if (isHovering(MODE_X, MODE_Y, MODE_SIZE, MODE_SIZE, event.x(), event.y())) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             Minecraft mc = Minecraft.getInstance();
             if (mc.gameMode != null) {
                 mc.gameMode.handleInventoryButtonClick(menu.containerId, 0);

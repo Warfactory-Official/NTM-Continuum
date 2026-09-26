@@ -1,6 +1,6 @@
 package com.hbm.api.item;
 
-import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.api.hazard.HazardClass;
 import java.util.List;
 import net.minecraft.world.item.ItemStack;
 

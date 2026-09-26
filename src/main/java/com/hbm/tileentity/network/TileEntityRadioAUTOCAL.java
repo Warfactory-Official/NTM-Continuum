@@ -9,7 +9,7 @@ import com.hbm.modules.IParse.ParseContext;
 import com.hbm.modules.ParseMSES1Ext1;
 import com.hbm.radio.RadioAutocalMenu;
 import com.hbm.radio.ModRadioBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /** Server-side MS-ES1 execution state and client display state for AUTOCAL. */
-public final class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
+public final class TileEntityRadioAUTOCAL extends SyncedBlockEntity
         implements IControlReceiver, MenuProvider {
     public boolean isOn;
     public boolean ignoreError;
@@ -48,7 +48,7 @@ public final class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
 
     public void serverTick() {
         if (level == null || level.isClientSide()) return;
-        if (TickPhase.every(this, 60L)) markChanged();
+        if (TickPhase.every(this, 60L)) setChanged();
 
         ensureContext();
         if (!isOn && autoReboot) isOn = true;
@@ -101,7 +101,7 @@ public final class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
             }
         }
 
-        networkPackNT();
+        syncState();
     }
 
     private void ensureContext() {
@@ -188,7 +188,7 @@ public final class TileEntityRadioAUTOCAL extends TileEntityLoadedBase
         if (data.contains("ignore")) ignoreError = !ignoreError;
         if (data.contains("auto")) autoReboot = !autoReboot;
         if (data.contains("payload")) loadScript(Tags.getStringOr(data, "payload", ""));
-        markChanged();
+        setChanged();
         dataChanged();
     }
 

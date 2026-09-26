@@ -1,6 +1,6 @@
 package com.hbm.tileentity.bomb;
 
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.container.ContainerNukeN2;
 import com.hbm.items.ModBombItems;
 import com.hbm.tileentity.ModBlockEntities;
@@ -19,8 +19,8 @@ public class TileEntityNukeN2 extends TileEntityNukeBomb {
     }
 
     @Override
-    protected NTMItemHandler createInventory(int slotCount) {
-        return new NTMItemHandler(slotCount, 1) {
+    protected ItemHandler createInventory(int slotCount) {
+        return new ItemHandler(slotCount, 1) {
             @Override
             public boolean isItemValid(int slot, ItemStack stack) {
                 return TileEntityNukeN2.this.isItemValidForSlot(slot, stack);

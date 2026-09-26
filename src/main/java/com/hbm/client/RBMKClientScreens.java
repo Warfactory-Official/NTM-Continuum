@@ -6,7 +6,7 @@ import com.hbm.inventory.gui.*;
 /** RBMK client registrations stay with the RBMK feature instead of growing the global registry. */
 public final class RBMKClientScreens {
     private RBMKClientScreens() {}
-    public static void register(HbmClientRegistrations.ScreenSink sink) {
+    public static void register(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModRBMKMenus.RBMK_ROD.get(), ScreenRBMKRod::new);
         sink.register(ModRBMKMenus.RBMK_CONTROL.get(), ScreenRBMKControl::new);
         sink.register(ModRBMKMenus.RBMK_CONTROL_AUTO.get(), ScreenRBMKControlAuto::new);

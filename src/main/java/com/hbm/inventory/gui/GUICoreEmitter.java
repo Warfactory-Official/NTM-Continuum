@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerCoreEmitter;
 import com.hbm.lib.Library;
 import com.hbm.packet.ControlEventPayload;
@@ -129,7 +130,7 @@ public class GUICoreEmitter extends GUIDFCBase<ContainerCoreEmitter> {
     private void send(TileEntityCoreEmitter emitter, CompoundTag data) {
         GolemNetwork.sendToServer(ControlEventPayload.CODEC,
                 new ControlEventPayload(emitter.getBlockPos(), data));
-        GuiUtil.playClickSound();
+        Gauges.click();
     }
 
     @Override

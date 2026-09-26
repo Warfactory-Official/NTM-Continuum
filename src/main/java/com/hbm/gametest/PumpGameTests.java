@@ -2,9 +2,9 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachinePump;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
-import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.network.fluid.DuctData;
+import com.hbm.network.fluid.FluidGraph;
+import com.hbm.network.fluid.FluidNetwork;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.lib.DirPos;
@@ -12,9 +12,9 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachinePumpElectric;
 import com.hbm.tileentity.machine.TileEntityMachinePumpSteam;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.graph.GraphNode;
-import com.hbm.uninos.graph.LevelNodeGraph;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.GraphNode;
+import dev.golem.core.graph.LevelNodeGraph;
+import dev.golem.core.graph.NodeNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -49,7 +49,7 @@ public final class PumpGameTests {
         assertPort(helper, ports[1], core.west(2), ForgeDirection.WEST);
         assertPort(helper, ports[2], core.south(2), ForgeDirection.SOUTH);
         assertPort(helper, ports[3], core.north(2), ForgeDirection.NORTH);
-        helper.assertTrue(ModMachineBlocks.machine_pump_electric.get().canConnect(helper.getLevel(), core.east(), ForgeDirection.EAST),
+        helper.assertTrue(ModMachineBlocks.machine_pump_electric.get().canConnect(helper.getLevel(), core.east(), Direction.EAST),
                 "Pump must expose its east cable port");
         helper.succeed();
     }
@@ -98,12 +98,12 @@ public final class PumpGameTests {
         MachinePump block = ModMachineBlocks.machine_pump_steam.get();
 
         helper.assertTrue(block.canConnect(Fluids.STEAM, helper.getLevel(), port.getX(), port.getY(), port.getZ(),
-                        ForgeDirection.EAST), "Steam pump must accept steam at its east port");
+                        Direction.EAST), "Steam pump must accept steam at its east port");
         helper.assertTrue(block.canConnect(Fluids.SPENTSTEAM, helper.getLevel(), port.getX(), port.getY(), port.getZ(),
-                        ForgeDirection.EAST), "Steam pump must expose spent-steam output");
+                        Direction.EAST), "Steam pump must expose spent-steam output");
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), port.getX(), port.getY(), port.getZ(),
-                        ForgeDirection.EAST), "Steam pump must expose water output");
-        helper.assertTrue(!block.canConnect(helper.getLevel(), port, ForgeDirection.EAST),
+                        Direction.EAST), "Steam pump must expose water output");
+        helper.assertTrue(!block.canConnect(helper.getLevel(), port, Direction.EAST),
                 "Steam pump must not expose an energy port");
         helper.succeed();
     }

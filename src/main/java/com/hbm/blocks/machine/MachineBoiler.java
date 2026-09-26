@@ -1,6 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.inventory.material.MaterialShapes;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemScraps;
 import dev.golem.core.world.Compat;
@@ -84,7 +85,7 @@ public final class MachineBoiler extends CompatBlock {
         if (level.isClientSide() || playerPreventsBlockDrops(player)) return;
         int count = 3 + level.getRandom().nextInt(4);
         for (int i = 0; i < count; i++) {
-            Block.popResource(level, pos, ItemScraps.create(new Mats.MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity)));
+            Block.popResource(level, pos, ItemScraps.create(new MaterialStack(Mats.MAT_STEEL, MaterialShapes.INGOT.quantity)));
         }
     }
 

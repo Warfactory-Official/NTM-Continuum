@@ -7,7 +7,7 @@ import com.hbm.blocks.generic.BlockGasAsbestos;
 import com.hbm.blocks.generic.BlockGasMonoxide;
 import com.hbm.blocks.generic.BlockGasRadonTomb;
 import com.hbm.blocks.generic.BlockOutgas;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;

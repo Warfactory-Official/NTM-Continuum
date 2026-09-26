@@ -2,9 +2,8 @@ package com.hbm.blocks.network;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -83,7 +82,7 @@ public class CableDiode extends CompatBlock implements TickingBlock, IEnergyConn
 
     /** 1.7 answers true on every face for the cable's sake; the tile refuses the output side itself. */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction dir) {
         return true;
     }
 

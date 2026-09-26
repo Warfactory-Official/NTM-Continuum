@@ -1,7 +1,6 @@
 package com.hbm.blocks.machine.pile;
 
 import com.hbm.api.block.IBlowable;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.blocks.ModNuclearMiscBlocks;
 import com.hbm.items.ModNuclearMiscItems;
 import net.minecraft.ChatFormatting;
@@ -76,7 +75,7 @@ public class BlockGraphiteFuel extends BlockGraphiteDrilledTE implements IBlowab
     }
 
     @Override
-    public void applyFan(Level level, BlockPos pos, ForgeDirection direction, int distance) {
+    public void applyFan(Level level, BlockPos pos, Direction direction, int distance) {
         if (level.getBlockEntity(pos) instanceof TileEntityPileFuel pile) pile.heat -= pile.heat * 0.025;
     }
 }

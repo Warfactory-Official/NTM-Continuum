@@ -455,14 +455,14 @@ public final class JetpackHandler {
         return jetpack.stack() == null ? 0 : getMaxFuel(jetpack.stack());
     }
 
-    public static com.hbm.inventory.fluid.FluidType getFuelType(net.minecraft.world.item.ItemStack stack) {
+    public static com.hbm.api.fluid.FluidType getFuelType(net.minecraft.world.item.ItemStack stack) {
         if (stack == null || stack.isEmpty()) return null;
         if (stack.getItem() instanceof JetpackFueledBase jetpack) return jetpack.fuel;
         if (stack.getItem() instanceof JetpackGlider glider) return glider.getFirstFluidType(stack);
         return null;
     }
 
-    public static com.hbm.inventory.fluid.FluidType getFuelType(Player player) {
+    public static com.hbm.api.fluid.FluidType getFuelType(Player player) {
         ItemStackAccess jetpack = findJetpack(player);
         return jetpack.stack() == null ? null : getFuelType(jetpack.stack());
     }
@@ -480,7 +480,7 @@ public final class JetpackHandler {
         if (glider.outer() != null) ArmorModHandler.applyMod(glider.outer(), glider.stack());
     }
 
-    public static float getSpeed(com.hbm.inventory.fluid.FluidType type) {
+    public static float getSpeed(com.hbm.api.fluid.FluidType type) {
         if (type == null) return 0F;
         if (type == com.hbm.inventory.fluid.Fluids.KEROSENE) return 0.3F;
         if (type == com.hbm.inventory.fluid.Fluids.KEROSENE_REFORM) return 0.4F;
@@ -490,7 +490,7 @@ public final class JetpackHandler {
     }
 
     /** Drain is intentionally one for every supported fuel; thrust provides the scaling. */
-    public static int getDrain(com.hbm.inventory.fluid.FluidType type) {
+    public static int getDrain(com.hbm.api.fluid.FluidType type) {
         return type == com.hbm.inventory.fluid.Fluids.KEROSENE
                 || type == com.hbm.inventory.fluid.Fluids.KEROSENE_REFORM
                 || type == com.hbm.inventory.fluid.Fluids.NITAN
@@ -726,7 +726,7 @@ public final class JetpackHandler {
 
     private static void drainGlider(ItemStackAccess found, int amount) {
         JetpackGlider glider = (JetpackGlider) found.stack().getItem();
-        com.hbm.inventory.fluid.FluidType type = glider.getFirstFluidType(found.stack());
+        com.hbm.api.fluid.FluidType type = glider.getFirstFluidType(found.stack());
         int drained = glider.tryEmpty(type, amount, found.stack());
         if (drained > 0 && found.outer() != null) ArmorModHandler.applyMod(found.outer(), found.stack());
     }

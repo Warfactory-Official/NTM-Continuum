@@ -6,7 +6,6 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -68,11 +67,11 @@ public class TileEntityStirling extends TileEntityMachineBase implements IEnergy
         }
 
         stirling.syncHeat = stirling.heat;
-        stirling.networkPackNT();
+        stirling.syncState();
         if (stirling.hasCog) {
             for (DirPos connection : stirling.getConPos()) {
                 stirling.tryProvide(level, connection.getPos().getX(), connection.getPos().getY(),
-                        connection.getPos().getZ(), connection.getDir());
+                        connection.getPos().getZ(), connection.getDir().toDirection());
             }
         } else if (stirling.powerBuffer > 0) {
             stirling.powerBuffer--;

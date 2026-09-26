@@ -1,7 +1,7 @@
 package com.hbm.items.armor;
 
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatTooltipContext;
 import java.util.List;

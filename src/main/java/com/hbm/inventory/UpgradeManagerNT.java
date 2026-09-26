@@ -1,5 +1,7 @@
 package com.hbm.inventory;
 
+import dev.golem.core.machine.ItemHandler;
+
 import java.util.HashMap;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
@@ -28,7 +30,7 @@ public class UpgradeManagerNT {
     }
 
     /** Scans inventory slots {@code start..end} (inclusive) for upgrades. */
-    public void checkSlots(NTMItemHandler inventory, int start, int end) {
+    public void checkSlots(ItemHandler inventory, int start, int end) {
         if (!(owner instanceof IUpgradeInfoProvider upgradable)) return;
 
         ItemStack[] slots = new ItemStack[end - start + 1];

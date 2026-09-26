@@ -1,5 +1,7 @@
 package com.hbm.tileentity;
 
+import dev.golem.core.machine.SyncedBlockEntity;
+
 import com.hbm.blocks.ModRailBlocks;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -8,7 +10,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The switch-state block entity every folded rail carries (ntm-next's BlockEntityRail on this port's sync base). */
-public class BlockEntityRail extends TileEntityLoadedBase {
+public class BlockEntityRail extends SyncedBlockEntity {
 
     /** 1.7 TileEntityRailSwitch; only the switch reads it, every rail carries the BE so one renderer can serve the family */
     public boolean isSwitched = false;
@@ -20,7 +22,7 @@ public class BlockEntityRail extends TileEntityLoadedBase {
     public void toggleSwitch() {
         isSwitched = !isSwitched;
         setChanged();
-        if (level != null && !level.isClientSide()) networkPackNT();
+        if (level != null && !level.isClientSide()) syncState();
     }
 
     @Override

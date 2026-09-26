@@ -8,7 +8,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockHazard;
 import com.hbm.blocks.generic.BlockHazard.DisplayEffect;
 import com.hbm.blocks.generic.BlockRadResistant;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardSystem;
 import dev.golem.core.registry.DeferredRegister;

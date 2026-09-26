@@ -1,6 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.inventory.material.Mats;
 import com.hbm.lib.ForgeDirection;
@@ -85,8 +86,8 @@ public class CrucibleRenderer extends GemBER<TileEntityCrucible, CrucibleRenderS
         };
 
         int totalMass = 0;
-        for (Mats.MaterialStack stack : be.recipeStack) totalMass += stack.amount;
-        for (Mats.MaterialStack stack : be.wasteStack) totalMass += stack.amount;
+        for (MaterialStack stack : be.recipeStack) totalMass += stack.amount;
+        for (MaterialStack stack : be.wasteStack) totalMass += stack.amount;
         int totalCap = TileEntityCrucible.recipeZCapacity + TileEntityCrucible.wasteZCapacity;
         state.poolLevel = totalMass <= 0 ? 0F : (float) ((double) totalMass / (double) totalCap * 0.875D);
 

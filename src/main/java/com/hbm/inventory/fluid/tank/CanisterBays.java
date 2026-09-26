@@ -1,10 +1,10 @@
 package com.hbm.inventory.fluid.tank;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.items.machine.ItemFluidBucket;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -31,7 +31,7 @@ public final class CanisterBays {
         void accept(FluidType before);
     }
 
-    public static void process(NTMItemHandler inventory, FluidTankNTM tank, int inSlot, int outSlot,
+    public static void process(ItemHandler inventory, FluidTankNTM tank, int inSlot, int outSlot,
                                TypeChanged onTypeChange) {
         ItemStack in = inventory.getStackInSlot(inSlot);
         if (in.isEmpty()) return;
@@ -104,11 +104,11 @@ public final class CanisterBays {
         return copy;
     }
 
-    private static boolean fits(NTMItemHandler inventory, int outSlot, ItemStack stack) {
+    private static boolean fits(ItemHandler inventory, int outSlot, ItemStack stack) {
         return inventory.insertItem(outSlot, stack.copy(), true).isEmpty();
     }
 
-    private static void moveToOut(NTMItemHandler inventory, int inSlot, int outSlot, ItemStack result) {
+    private static void moveToOut(ItemHandler inventory, int inSlot, int outSlot, ItemStack result) {
         inventory.extractItem(inSlot, 1, false);
         inventory.insertItem(outSlot, result, false);
     }

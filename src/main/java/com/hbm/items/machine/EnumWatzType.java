@@ -24,6 +24,10 @@ import java.util.Locale;
 public final class EnumWatzType {
 
     private static final List<EnumWatzType> VALUES = new ArrayList<>();
+
+    static {
+        dev.golem.core.content.SyncedIndex.register("hbm:watz", () -> VALUES.stream().map(EnumWatzType::name).toList());
+    }
     private static final List<EnumWatzType> VIEW = Collections.unmodifiableList(VALUES);
 
     public static final EnumWatzType SCHRABIDIUM = create("SCHRABIDIUM", 0x32FFFF, 0x005C5C, 2_000, 20D, 0.01D,   new FunctionLinear(1.5D),  new FunctionSqrtFalling(10D), null);

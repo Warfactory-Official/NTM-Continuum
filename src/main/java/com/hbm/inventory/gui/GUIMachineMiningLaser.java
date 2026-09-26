@@ -1,16 +1,15 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachineMiningLaser;
 import com.hbm.packet.ControlEventPayload;
 import dev.golem.core.net.GolemNetwork;
 import com.hbm.tileentity.machine.TileEntityMachineMiningLaser;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 
 import java.util.List;
@@ -125,7 +124,7 @@ public class GUIMachineMiningLaser extends dev.golem.core.gui.CompatContainerScr
     protected boolean mouseClicked(dev.golem.core.gui.MouseInput event, boolean doubleClick) {
         TileEntityMachineMiningLaser te = this.menu.getLaser();
         if (te != null && this.isHovering(BTN_X, BTN_Y, BTN_W, BTN_H, event.x(), event.y())) {
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             data.putBoolean("toggle", true);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(te.getBlockPos(), data));

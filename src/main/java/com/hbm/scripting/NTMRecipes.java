@@ -1,7 +1,8 @@
 package com.hbm.scripting;
 
-import com.hbm.scripting.recipes.RecipeView;
-import com.hbm.scripting.recipes.TableHandler;
+import com.hbm.api.content.RecipesEvent;
+import com.hbm.api.content.recipes.RecipeView;
+import com.hbm.api.content.recipes.TableHandler;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public final class NTMRecipes {
 
     public static final NTMRecipes INSTANCE = new NTMRecipes();
 
-    private final Map<String, TableHandler> tables = new RecipesEvent().tables();
+    private final Map<String, TableHandler> tables = RecipesEvent.handlers();
 
     private NTMRecipes() {}
 

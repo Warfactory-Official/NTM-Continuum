@@ -134,7 +134,7 @@ public class TileEntityMachinePress extends TileEntityMachineBase implements Men
             te.setChanged();
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     private void craftItem() {

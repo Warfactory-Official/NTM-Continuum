@@ -285,7 +285,7 @@ public class TileEntityTurretArty extends TileEntityTurretBaseArtillery {
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, getMaxPower());
 
         setChanged();
-        networkPackNT();
+        syncState();
 
         didJustShoot = false;
     }

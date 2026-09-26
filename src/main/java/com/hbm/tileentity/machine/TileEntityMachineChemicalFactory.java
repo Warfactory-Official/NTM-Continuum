@@ -134,12 +134,12 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
         for (DirPos port : te.getConPos()) {
             for (FluidTankNTM tank : te.outputTanks) {
-                if (tank.getFill() > 0) te.tryProvide(tank, level, port);
+                if (tank.getFill() > 0) te.tryProvide(tank, level, port.getPos(), port.getDir().toDirection());
             }
         }
 
         for (DirPos port : te.getCoolPos()) {
-            te.coolantDelegate.tryProvide(te.lps, level, port);
+            te.coolantDelegate.tryProvide(te.lps, level, port.getPos(), port.getDir().toDirection());
         }
 
         if (te.maxPower <= 0) te.maxPower = 10_000_000L;
@@ -191,7 +191,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
         }
 
         if (dirty) te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalFactory te) {
@@ -359,7 +359,7 @@ public class TileEntityMachineChemicalFactory extends TileEntityMachineBase
         int index = Tags.getIntOr(data, "index", -1);
         if (index >= 0 && index < LANES) {
             chemplantModule[index].setRecipe(Tags.getStringOr(data, "selection", "null"), false);
-            markChanged();
+            setChanged();
         }
     }
 

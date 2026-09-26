@@ -1,7 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import dev.golem.core.Ids;
@@ -119,11 +119,11 @@ public final class RBMKCraneConsoleRenderer extends GemBER<BlockEntityCraneConso
     @Override public State createRenderState() { return new State(); }
     /** Folded cells own block entities of the same type; only the core draws the desk and crane. */
     @Override public boolean shouldRender(BlockEntityCraneConsole be, Vec3 camera) {
-        return !(be.getBlockState().getBlock() instanceof BlockMultiblockCore core && core.isCellOf(be.getBlockState()))
+        return !(be.getBlockState().getBlock() instanceof MultiblockCore core && core.isCellOf(be.getBlockState()))
                 && super.shouldRender(be, camera);
     }
     @Override public void extract(BlockEntityCraneConsole be, State state, float partial, Vec3 camera) {
-        state.yaw = yaw(be.getBlockState().getValue(BlockMultiblockCore.FACING));
+        state.yaw = yaw(be.getBlockState().getValue(MultiblockCore.FACING));
         state.tiltFront = (float) Mth.lerp(partial, be.lastTiltFront, be.tiltFront);
         state.tiltLeft = (float) Mth.lerp(partial, be.lastTiltLeft, be.tiltLeft);
         state.heat = be.loadedHeat; state.enrichment = be.loadedEnrichment; state.active = be.setUpCrane;

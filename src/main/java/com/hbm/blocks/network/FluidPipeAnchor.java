@@ -1,7 +1,7 @@
 package com.hbm.blocks.network;
 
 import com.hbm.tileentity.network.TileEntityPipeAnchor;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;

@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine.soyuz;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
 import com.hbm.items.special.ItemSoyuz;

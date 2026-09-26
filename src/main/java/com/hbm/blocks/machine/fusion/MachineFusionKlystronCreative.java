@@ -1,7 +1,9 @@
 package com.hbm.blocks.machine.fusion;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionKlystronCreative;
 import net.minecraft.core.BlockPos;
@@ -37,12 +39,12 @@ public class MachineFusionKlystronCreative extends BlockMultiblockMachine {
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, core, WAVEGUIDE, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, core, WAVEGUIDE, clicked, facing);
     }
 
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, WAVEGUIDE, facing, visitor);
+        MultiblockFootprint.visitBox(core, WAVEGUIDE, facing, visitor);
     }
 }

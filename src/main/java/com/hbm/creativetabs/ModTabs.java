@@ -1,5 +1,6 @@
 package com.hbm.creativetabs;
 
+import com.hbm.api.tab.HbmTab;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -8,6 +9,7 @@ import java.util.Map;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.registry.Tabs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
@@ -21,11 +23,8 @@ import java.util.function.Supplier;
 /**
  * Registers the HBM creative tabs (one per {@link HbmTab}) and tracks their contents.
  *
- * <p>Tabs are built with the vanilla {@link CreativeModeTab} builder (cross-loader). Contents can't
- * be filled from common because {@code CreativeModeTab.Output} is protected, so {@link #CONTENTS}
- * maps each tab to its item list and the loader bootstraps fill the tabs through their own public
- * API (NeoForge {@code BuildCreativeModeTabContentsEvent}, Fabric {@code CreativeModeTabEvents}).
- * Content classes call {@link #addTo(HbmTab, RegistryObject)} during registration.
+ * <p>Content classes call {@link #addTo(HbmTab, RegistryObject)} during registration; {@link #install} fills the
+ * tabs through Golem Core's {@code Tabs}.
  */
 public final class ModTabs {
 
@@ -36,11 +35,11 @@ public final class ModTabs {
     private static final EnumMap<HbmTab, List<RegistryObject<? extends Item>>> LISTS = new EnumMap<>(HbmTab.class);
     private static final EnumMap<HbmTab, RegistryObject<CreativeModeTab>> TAB_OBJECTS = new EnumMap<>(HbmTab.class);
 
-    /** Tab key -> ordered contents, consumed by the loader bootstraps. */
+    /** Tab key -> ordered contents. */
     public static final Map<ResourceKey<CreativeModeTab>, List<RegistryObject<? extends Item>>> CONTENTS = new LinkedHashMap<>();
 
     private static final EnumMap<HbmTab, List<Supplier<List<ItemStack>>>> STACK_LISTS = new EnumMap<>(HbmTab.class);
-    /** Tab key -> custom display stacks (e.g. one fluid bucket per fluid), consumed by the loader bootstraps. */
+    /** Tab key -> custom display stacks (e.g. one fluid bucket per fluid). */
     public static final Map<ResourceKey<CreativeModeTab>, List<Supplier<List<ItemStack>>>> STACK_CONTENTS = new LinkedHashMap<>();
 
     static {
@@ -88,7 +87,17 @@ public final class ModTabs {
         return TAB_OBJECTS.get(tab);
     }
 
-    /** Applies upstream's weapon-quality rule at the shared tab boundary, for every loader. */
+    public static void install() {
+        CONTENTS.forEach((tab, contents) -> Tabs.modifyEntries(tab, output -> {
+            contents.forEach(item -> {
+                Item resolved = item.get();
+                if (shouldDisplay(tab, resolved)) output.accept(new ItemStack(resolved));
+            });
+            STACK_CONTENTS.get(tab).forEach(stacks -> stacks.get().forEach(output::accept));
+        }));
+    }
+
+    /** Upstream's weapon-quality rule. */
     public static boolean shouldDisplay(ResourceKey<CreativeModeTab> tab, Item item) {
         if (!get(HbmTab.WEAPONS).getKey().equals(tab)) return true;
         return !(item instanceof com.hbm.items.weapon.sedna.ItemGunBaseNT gun)

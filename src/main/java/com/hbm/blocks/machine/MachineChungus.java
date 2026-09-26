@@ -1,12 +1,14 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.lib.ForgeDirection;
@@ -70,8 +72,8 @@ public class MachineChungus extends BlockMultiblockMachine
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
-        if (!MultiblockHandlerXR.checkSpace(level, core, DUCT, clicked, facing)) return false;
-        if (!MultiblockHandlerXR.checkSpace(level, core, TAIL, clicked, facing)) return false;
+        if (!MultiblockFootprint.checkSpace(level, core, DUCT, clicked, facing)) return false;
+        if (!MultiblockFootprint.checkSpace(level, core, TAIL, clicked, facing)) return false;
         BlockPos front = core.relative(facing, 4).above(2);
         return level.getBlockState(front).canBeReplaced();
     }
@@ -84,9 +86,9 @@ public class MachineChungus extends BlockMultiblockMachine
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, CROWN, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, DUCT, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, TAIL, facing, visitor);
+        MultiblockFootprint.visitBox(core, CROWN, facing, visitor);
+        MultiblockFootprint.visitBox(core, DUCT, facing, visitor);
+        MultiblockFootprint.visitBox(core, TAIL, facing, visitor);
 
         Direction rot = facing.getClockWise();
         visitor.cell(core.relative(facing, 4).above(2), MASK_SOUTH, ROLE_FLUID);
@@ -167,9 +169,10 @@ public class MachineChungus extends BlockMultiblockMachine
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityChungus turbine
-                && IEnergyConnectorBlock.isPort(turbine.getPowerPos(), pos, dir);
+                && com.hbm.lib.Ports.isPort(turbine.getPowerPos(), pos, dir.toDirection());
     }
 
     /** A coolant with a cooling recipe, or the spent steam it returns. */

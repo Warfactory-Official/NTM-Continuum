@@ -4,10 +4,10 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
  * {@link #amount} quanta) and provides the standard accept/add logic used by pour and flow. The
  * {@link ICrucibleAcceptor} contract lives on the <b>Block</b>, which delegates here.
  */
-public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
+public abstract class TileEntityFoundryBase extends SyncedBlockEntity {
 
     public @Nullable NTMMaterial type;
     public int amount;
@@ -47,7 +47,7 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
      * leftover (null = fully added).
      */
     public @Nullable MaterialStack standardAdd(Level world, BlockPos p, ForgeDirection side, MaterialStack stack) {
-        this.type = stack.material;
+        this.type = Mats.of(stack.material);
 
         if (stack.amount + this.amount <= this.getCapacity()) {
             this.amount += stack.amount;
@@ -100,30 +100,28 @@ public abstract class TileEntityFoundryBase extends TileEntityLoadedBase {
     @Override
     public void serialize(RegistryFriendlyByteBuf buf) {
         super.serialize(buf);
-        buf.writeInt(this.type == null ? -1 : this.type.id);
+        buf.writeInt(this.type == null ? -1 : this.type.index);
         buf.writeInt(this.amount);
     }
 
     @Override
     public void deserialize(RegistryFriendlyByteBuf buf) {
         super.deserialize(buf);
-        int id = buf.readInt();
-        this.type = id < 0 ? null : Mats.matById.get(id);
+        this.type = Mats.byIndex(buf.readInt());
         this.amount = buf.readInt();
     }
 
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("type", this.type == null ? -1 : this.type.id);
+        if (this.type != null) output.putString("type", this.type.id.toString());
         output.putInt("amount", this.amount);
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        int id = input.getIntOr("type", -1);
-        this.type = id < 0 ? null : Mats.matById.get(id);
+        this.type = Mats.byId(input.getStringOr("type", ""));
         this.amount = input.getIntOr("amount", 0);
     }
 }

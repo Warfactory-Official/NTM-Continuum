@@ -1,11 +1,11 @@
 package com.hbm.tileentity.network.pneumatic;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.inventory.StackCache.CacheSlot;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -94,11 +94,11 @@ public abstract class TileEntityPneumaticStorageBase extends TileEntityMachineBa
         }
 
         this.updateMonitors();
-        this.networkPackNT();
+        this.syncState();
     }
 
     public boolean isAvailable() {
-        return this.isLoaded && !this.isRemoved() && this.compair.getFill() > 0;
+        return !this.isRemoved() && this.compair.getFill() > 0;
     }
 
     @Override
@@ -152,8 +152,8 @@ public abstract class TileEntityPneumaticStorageBase extends TileEntityMachineBa
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && type == Fluids.AIR;
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir != null && type == Fluids.AIR;
     }
 
     @Override

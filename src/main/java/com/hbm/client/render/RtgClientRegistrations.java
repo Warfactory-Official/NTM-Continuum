@@ -9,7 +9,7 @@ import com.hbm.tileentity.ModRtgBlockEntities;
 public final class RtgClientRegistrations {
     private RtgClientRegistrations() {}
 
-    public static void registerScreen(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreen(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModRtgMenus.MACHINE_RTG.get(), GUIMachineRTG::new);
     }
 

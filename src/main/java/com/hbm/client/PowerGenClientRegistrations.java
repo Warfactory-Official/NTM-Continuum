@@ -16,7 +16,7 @@ import com.hbm.inventory.gui.GUIMachineSiren;
 public final class PowerGenClientRegistrations {
     private PowerGenClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModPowerGenMenus.SIREN.get(), GUIMachineSiren::new);
     }
 

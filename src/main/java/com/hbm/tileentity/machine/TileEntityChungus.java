@@ -3,7 +3,7 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
@@ -13,7 +13,7 @@ import com.hbm.sound.AudioSystem;
 import com.hbm.sound.AudioWrapper;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.MachineCore;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -33,7 +33,7 @@ import com.hbm.tileentity.ModPowerGenBlockEntities;
  * and never resizes its billion-mB tanks on a lever pull. The turbine-base loop (cooling step, power buffer
  * reset, port provision) is inlined here exactly as the industrial turbine port did it.
  */
-public class TileEntityChungus extends TileEntityLoadedBase
+public class TileEntityChungus extends SyncedBlockEntity
         implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider {
 
     // Configurable values (1.7 IConfigurableMachine "steamturbineLeviathan"; the config file itself is not ported)
@@ -92,12 +92,12 @@ public class TileEntityChungus extends TileEntityLoadedBase
 
         if (!valid) turbine.tanks[1].setTankType(Fluids.NONE);
         for (DirPos connection : turbine.getPowerPos()) {
-            turbine.tryProvide(level, connection.getPos(), connection.getDir());
+            turbine.tryProvide(level, connection.getPos(), connection.getDir().toDirection());
         }
         for (DirPos connection : turbine.getConPos()) {
-            turbine.tryProvide(turbine.tanks[1], level, connection);
+            turbine.tryProvide(turbine.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
-        turbine.networkPackNT();
+        turbine.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityChungus turbine) {
@@ -149,7 +149,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
 
             float turbineSpeed = this.fanAcceleration / 25F;
             if (audio != null) {
-                audio.updateVolume(getVolume(0.5F * turbineSpeed));
+                audio.updateVolume(0.5F * turbineSpeed);
                 audio.updatePitch(0.25F + 0.75F * turbineSpeed);
                 audio.keepAlive();
             }
@@ -159,7 +159,7 @@ public class TileEntityChungus extends TileEntityLoadedBase
             if (audio != null) {
                 if (this.fanAcceleration > 0) {
                     float turbineSpeed = this.fanAcceleration / 25F;
-                    audio.updateVolume(getVolume(0.5F * turbineSpeed));
+                    audio.updateVolume(0.5F * turbineSpeed);
                     audio.updatePitch(0.25F + 0.75F * turbineSpeed);
                 } else {
                     audio.stopSound();

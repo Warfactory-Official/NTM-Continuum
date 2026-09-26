@@ -1,6 +1,8 @@
 package com.hbm.blocks.generic;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
+import dev.golem.core.multiblock.MultiblockMachine;
 import com.hbm.tileentity.deco.TileEntityLantern;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;

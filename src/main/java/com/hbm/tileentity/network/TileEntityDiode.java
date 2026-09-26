@@ -1,9 +1,10 @@
 package com.hbm.tileentity.network;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -23,7 +24,7 @@ import com.hbm.util.EnergyPush;
  * per-tick transfer counter -- what it accepts it hands straight through its output face, up to
  * {@link #limit} a tick, and never back. The two nets on either side never meet.
  */
-public class TileEntityDiode extends TileEntityLoadedBase implements IEnergyReceiverMK2, IControlReceiver {
+public class TileEntityDiode extends SyncedBlockEntity implements IEnergyReceiverMK2, IControlReceiver {
 
     public static final long MAX_LIMIT = 10_000_000_000L;
 
@@ -46,11 +47,12 @@ public class TileEntityDiode extends TileEntityLoadedBase implements IEnergyRece
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityDiode diode) {
         diode.pulses = 0;
         diode.setPower(0); // tick is over, reset our allowed transfer
-        diode.networkPackNT();
+        diode.syncState();
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
+    public boolean canConnect(Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return dir != getDir();
     }
 

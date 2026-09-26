@@ -13,7 +13,7 @@ import com.hbm.blocks.generic.BlockResourceStone;
 import com.hbm.blocks.generic.BlockSmolder;
 import com.hbm.blocks.generic.BlockStalagmite;
 import com.hbm.blocks.generic.OreDrops;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemBedrockOreBase;

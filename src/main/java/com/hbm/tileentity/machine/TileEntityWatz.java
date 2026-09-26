@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
@@ -170,7 +170,7 @@ public class TileEntityWatz extends TileEntityMachineBase
             segment.sharedTanks = te.sharedTanks;
             segment.isOn = turnedOn;
             segment.setChanged();
-            segment.networkPackNT();
+            segment.syncState();
             segment.heat *= 0.99; // cool 1% per tick
         }
 
@@ -317,8 +317,8 @@ public class TileEntityWatz extends TileEntityMachineBase
 
     private void sendOutBottom(Level level) {
         for (DirPos port : bottomPorts()) {
-            if (tanks[1].getFill() > 0) tryProvide(tanks[1], level, port);
-            if (tanks[2].getFill() > 0) tryProvide(tanks[2], level, port);
+            if (tanks[1].getFill() > 0) tryProvide(tanks[1], level, port.getPos(), port.getDir().toDirection());
+            if (tanks[2].getFill() > 0) tryProvide(tanks[2], level, port.getPos(), port.getDir().toDirection());
         }
     }
 
@@ -378,7 +378,7 @@ public class TileEntityWatz extends TileEntityMachineBase
     private void disassemble(Level level, BlockPos pos) {
         // The reactor is being destroyed, not mined: no component drop.
         Watz.drop = false;
-        BlockMultiblockCore.withoutTeardown(() -> {
+        MultiblockCore.withoutTeardown(() -> {
             Block mud = com.hbm.blocks.ModHazardBlocks.mud_block.get();
             for (int i = 0; i < 3; i++) level.setBlock(pos.above(i), mud.defaultBlockState(), 3);
 
@@ -509,7 +509,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         output.putDouble("lastFluxR", fluxLastReaction);
         output.putBoolean("isLocked", isLocked);
         for (int i = 0; i < SLOTS; i++) {
-            output.putInt("lock" + i, locks[i] == null ? -1 : locks[i].index);
+            if (locks[i] != null) output.putString("lock" + i, locks[i].name());
         }
     }
 
@@ -522,8 +522,7 @@ public class TileEntityWatz extends TileEntityMachineBase
         fluxLastReaction = input.getDoubleOr("lastFluxR", 0D);
         isLocked = input.getBooleanOr("isLocked", false);
         for (int i = 0; i < SLOTS; i++) {
-            int index = input.getIntOr("lock" + i, -1);
-            locks[i] = index >= 0 && index < EnumWatzType.values().size() ? EnumWatzType.values().get(index) : null;
+            locks[i] = EnumWatzType.byName(input.getStringOr("lock" + i, ""));
         }
         resetSharedTanks();
     }

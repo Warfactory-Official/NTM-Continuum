@@ -6,7 +6,7 @@ import com.hbm.saveddata.satellites.Satellite;
 import com.hbm.saveddata.satellites.SatelliteRayScan;
 import com.hbm.saveddata.SatelliteSavedData;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -28,7 +28,7 @@ import org.jspecify.annotations.Nullable;
  * something outside the world: {@code FUN:tx} splits its payload back into a command and hands it to the
  * satellite, whose reply is left in {@code VAL:rx}.
  */
-public class TileEntityMachineSatLink extends TileEntityLoadedBase
+public class TileEntityMachineSatLink extends SyncedBlockEntity
         implements IRORValueProvider, IRORInteractive {
 
     /** How far the mast rises above the core cell, which is what the dish has to see past. */
@@ -62,7 +62,7 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         }
 
         link.updateInfo(level);
-        link.networkPackNT();
+        link.syncState();
     }
 
     /**

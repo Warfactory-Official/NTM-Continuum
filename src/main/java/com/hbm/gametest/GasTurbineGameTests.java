@@ -43,12 +43,12 @@ public final class GasTurbineGameTests {
         assertPort(helper, turbine.getSteamPos(), -3, 2, 3, ForgeDirection.WEST);
 
         BlockPos powerCell = helper.absolutePos(core.offset(4, 1, 0));
-        helper.assertTrue(block.canConnect(helper.getLevel(), powerCell, ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), powerCell, Direction.EAST),
                 "Gas turbine must expose its power port");
         BlockPos fuelCell = helper.absolutePos(new BlockPos(4, 1, 4));
-        helper.assertTrue(block.canConnect(Fluids.GAS, helper.getLevel(), fuelCell.getX(), fuelCell.getY(), fuelCell.getZ(), ForgeDirection.SOUTH),
+        helper.assertTrue(block.canConnect(Fluids.GAS, helper.getLevel(), fuelCell.getX(), fuelCell.getY(), fuelCell.getZ(), Direction.SOUTH),
                 "Gas turbine must expose its gas port");
-        helper.assertFalse(block.canConnect(helper.getLevel(), helper.absolutePos(core), ForgeDirection.EAST),
+        helper.assertFalse(block.canConnect(helper.getLevel(), helper.absolutePos(core), Direction.EAST),
                 "Gas turbine core must not expose a false cable port");
         helper.succeed();
     }

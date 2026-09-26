@@ -122,7 +122,7 @@ public final class PressRecipes {
                 makeRecipe(StampType.WIRE, mat.ingot(), new ItemStack(wire, 8));
             }
         }
-        com.hbm.scripting.ScriptedRecipes.apply(PressRecipes.class);
+        dev.golem.core.content.Replay.apply(PressRecipes.class);
     }
 
     public static void addRecipe(StampType type, AStack in, ItemStack out) {

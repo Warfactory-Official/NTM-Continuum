@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.handler.neutron.NeutronHandler;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.inventory.recipes.RBMKFuelDisassemblyRecipe;

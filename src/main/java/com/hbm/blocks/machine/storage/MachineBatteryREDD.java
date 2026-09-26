@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine.storage;
 
-import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.items.ModDataComponents;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.items.ModDataComponents;
+import dev.golem.core.multiblock.MultiblockMachine;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.storage.TileEntityBatteryREDD;
 import net.minecraft.core.BlockPos;
@@ -56,7 +58,7 @@ public final class MachineBatteryREDD extends BlockMultiblockMachine implements 
             battery.power = ModDataComponents.batteryReddPower(stack);
             battery.muffled = ModDataComponents.batteryReddMuffled(stack);
             battery.setChanged();
-            battery.networkPackNT();
+            battery.syncState();
         }
     }
 

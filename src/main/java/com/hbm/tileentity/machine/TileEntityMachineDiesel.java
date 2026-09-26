@@ -5,7 +5,7 @@ import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.container.ContainerMachineDiesel;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -84,7 +84,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineDiesel te) {
         te.wasOn = false;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+            te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir.toDirection());
         }
 
         te.setTypeFromFluidId();
@@ -94,7 +94,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
 
         te.power = Library.chargeItemsFromTE(te.inventory, 2, te.power, te.powerCap);
         te.generate(level);
-        te.networkPackNT();
+        te.syncState();
     }
 
     public boolean hasAcceptableFuel() {

@@ -102,7 +102,7 @@ public class TileEntityBlastDoor extends TileEntityLockableBase {
             }
         }
 
-        this.networkPackNT();
+        this.syncState();
     }
 
     @Override

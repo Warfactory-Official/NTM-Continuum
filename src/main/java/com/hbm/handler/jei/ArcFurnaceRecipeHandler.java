@@ -3,6 +3,8 @@ package com.hbm.handler.jei;
 //? if jei {
 
 import com.hbm.foundry.ArcFurnaceRecipes;
+import com.hbm.api.material.MaterialStack;
+import com.hbm.api.material.SmeltingBehavior;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
@@ -34,9 +36,9 @@ public final class ArcFurnaceRecipeHandler extends JEIUniversalHandler<ArcFurnac
         // The old JEI map also exposed the special scrap -> molten-material lookup.
         if (liquid) {
             for (NTMMaterial material : Mats.orderedList) {
-                if (material.smeltable != NTMMaterial.SmeltingBehavior.SMELTABLE) continue;
+                if (material.smeltable != SmeltingBehavior.SMELTABLE) continue;
                 ItemStack scrap = ItemScraps.create(
-                        new Mats.MaterialStack(material, MaterialShapes.INGOT.quantity));
+                        new MaterialStack(material, MaterialShapes.INGOT.quantity));
                 ArcFurnaceRecipes.ArcFurnaceRecipe recipe = ArcFurnaceRecipes.getOutput(scrap, true);
                 if (recipe != null) recipes.add(recipe);
             }
@@ -57,7 +59,7 @@ public final class ArcFurnaceRecipeHandler extends JEIUniversalHandler<ArcFurnac
                 outputs.add(List.of(recipe.solidOutput.copy()));
             }
         } else {
-            for (Mats.MaterialStack material : recipe.fluidOutput) {
+            for (MaterialStack material : recipe.fluidOutput) {
                 ItemStack scrap = ItemScraps.create(material, true);
                 if (!scrap.isEmpty()) outputs.add(List.of(scrap));
             }

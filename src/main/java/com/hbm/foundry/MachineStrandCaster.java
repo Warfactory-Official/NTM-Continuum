@@ -1,11 +1,14 @@
 package com.hbm.foundry;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.block.IToolable;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemMold;
@@ -57,23 +60,25 @@ public class MachineStrandCaster extends BlockMultiblockMachine
 
     @Override
     public boolean canAcceptPartialPour(Level level, BlockPos pos, double dX, double dY, double dZ,
-                                        ForgeDirection side, Mats.MaterialStack stack) {
+                                        Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineStrandCaster caster
                 && caster.canAcceptPartialPour(level, pos, dX, dY, dZ, side, stack);
     }
 
     @Override
-    public Mats.MaterialStack pour(Level level, BlockPos pos, double dX, double dY, double dZ,
-                                   ForgeDirection side, Mats.MaterialStack stack) {
+    public MaterialStack pour(Level level, BlockPos pos, double dX, double dY, double dZ,
+                                   Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityMachineStrandCaster caster
                 ? caster.pour(level, pos, dX, dY, dZ, side, stack) : stack;
     }
 
-    @Override public boolean canAcceptPartialFlow(Level level, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) {
+    @Override public boolean canAcceptPartialFlow(Level level, BlockPos pos, Direction side, MaterialStack stack) {
         return false;
     }
 
-    @Override public Mats.MaterialStack flow(Level level, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) {
+    @Override public MaterialStack flow(Level level, BlockPos pos, Direction side, MaterialStack stack) {
         return stack;
     }
 
@@ -96,7 +101,7 @@ public class MachineStrandCaster extends BlockMultiblockMachine
 
         if (stack.is(ItemTags.SHOVELS)) {
             if (!level.isClientSide() && caster.amount > 0 && caster.type != null) {
-                ItemStack scraps = ItemScraps.create(new Mats.MaterialStack(caster.type, caster.amount));
+                ItemStack scraps = ItemScraps.create(new MaterialStack(caster.type, caster.amount));
                 if (!player.getInventory().add(scraps)) {
                     level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 1D,
                             pos.getZ() + 0.5D, scraps));
@@ -155,14 +160,14 @@ public class MachineStrandCaster extends BlockMultiblockMachine
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, core, TABLE, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, core, TABLE, clicked, facing);
     }
 
     /** A water inlet and a steam outlet at each end of the strand, on opposite flanks. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, TABLE, facing, visitor);
+        MultiblockFootprint.visitBox(core, TABLE, facing, visitor);
 
         Direction rot = facing.getClockWise();
         for (int along : new int[]{-1, -5}) {

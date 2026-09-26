@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.container.ContainerMachineAmmoPress;
 import com.hbm.inventory.recipes.AmmoPressRecipes;
@@ -160,12 +161,12 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
         int y = (int) event.y();
 
         if (isOver(x, y, 7, 17, 9, 54)) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             if (page > 0) page--;
             return true;
         }
         if (isOver(x, y, 88, 17, 9, 54)) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             if (page < pageCount) page++;
             return true;
         }
@@ -179,7 +180,7 @@ public class GUIMachineAmmoPress extends CompatContainerScreen<ContainerMachineA
             data.putInt("selection", selection);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC,
                     new ControlEventPayload(menu.getPress().getBlockPos(), data));
-            GuiUtil.playClickSound();
+            Gauges.click();
             return true;
         }
         return false;

@@ -1,10 +1,10 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardData;
-import com.hbm.hazard.HazardEntry;
+import com.hbm.api.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.hazard.modifier.HazardModifierRTGRadiation;

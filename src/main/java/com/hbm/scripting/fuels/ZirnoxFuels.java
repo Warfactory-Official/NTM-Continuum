@@ -4,7 +4,7 @@ import com.hbm.Constants;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.items.ModZirnoxItems;
 import com.hbm.items.machine.ZirnoxFuel;
-import com.hbm.lib.ItemIds;
+import com.hbm.api.ids.ItemIds;
 import com.hbm.scripting.ScriptSpecs;
 import com.hbm.scripting.ScriptedContent;
 import dev.golem.core.registry.DeferredRegister;

@@ -1,12 +1,13 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.blocks.ModBlocks;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
@@ -130,7 +131,7 @@ public final class CrystallizerRecipes {
         add(item(Items.BONE),          stack(Items.SLIME_BALL, 16), mixingTime, 0F, Fluids.SULFURIC_ACID, 1_000);
         add(item(ModItems.scrap_oil.get()).count(16), stack(ModItems.nugget_arsenic.get()), utilityTime, 0.30F, Fluids.RADIOSOLVENT, 100);
         add(MALACHITE.ingot(),
-                ItemScraps.create(new Mats.MaterialStack(Mats.MAT_COPPER, MaterialShapes.INGOT.quantity)),
+                ItemScraps.create(new MaterialStack(Mats.MAT_COPPER, MaterialShapes.INGOT.quantity)),
                 300, 0.10F, Fluids.SULFURIC_ACID, 250);
         add(item(ModIngredientItems.ash(EnumAshType.FULLERENE)).count(4), stack(ModItems.ingot_cft.get()),
                 baseTime, 0.10F, Fluids.XYLENE, 1_000);
@@ -179,7 +180,7 @@ public final class CrystallizerRecipes {
             add(CO.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.BLUE), 4),
                     mixingTime, 0.15F, oil, 100);
         }
-        com.hbm.scripting.ScriptedRecipes.apply(CrystallizerRecipes.class);
+        dev.golem.core.content.Replay.apply(CrystallizerRecipes.class);
     }
 
     public static void put(AStack input, ItemStack output, int duration, float productivity, FluidType fluid, int acidAmount) {

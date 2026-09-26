@@ -112,7 +112,7 @@ public class TileEntityFurnaceBrick extends TileEntityMachineBase implements Men
             dirty = true;
         }
         if (dirty) furnace.setChanged();
-        furnace.networkPackNT();
+        furnace.syncState();
     }
 
     public int getBurnSpeed() {

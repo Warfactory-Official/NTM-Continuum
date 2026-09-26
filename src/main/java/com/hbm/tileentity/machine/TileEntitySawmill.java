@@ -3,7 +3,7 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.tile.IHeatSource;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.recipes.SawmillRecipes;
 import com.hbm.entity.projectile.EntitySawblade;
 import com.hbm.particle.helper.ParticleEffects;
@@ -56,8 +56,8 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
     }
 
     @Override
-    protected NTMItemHandler createInventory(int slotCount) {
-        return new NTMItemHandler(slotCount) {
+    protected ItemHandler createInventory(int slotCount) {
+        return new ItemHandler(slotCount) {
             @Override
             public int getSlotLimit(int slot) {
                 return slot == 0 ? 1 : super.getSlotLimit(slot);
@@ -146,7 +146,7 @@ public class TileEntitySawmill extends TileEntityMachineBase implements WorldlyC
         }
 
         sawmill.syncHeat = sawmill.heat;
-        sawmill.networkPackNT();
+        sawmill.syncState();
         sawmill.heat = 0;
     }
 

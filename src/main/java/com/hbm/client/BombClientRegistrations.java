@@ -15,7 +15,7 @@ public final class BombClientRegistrations {
 
     private BombClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModMenus.NUKE_MIKE.get(), GUINukeMike::new);
     }
 

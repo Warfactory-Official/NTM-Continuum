@@ -1,6 +1,7 @@
 package com.hbm.util;
 
 import dev.golem.core.world.Compat;
+import com.hbm.api.hazard.HazardClass;
 import java.util.List;
 
 import com.hbm.capability.HbmLivingProps;
@@ -294,7 +295,7 @@ public class ContaminationUtil {
         if (e instanceof Player && e.tickCount < 200)
             return;
 
-        if (ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD, ArmorRegistry.HazardClass.PARTICLE_FINE)) {
+        if (ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD, HazardClass.PARTICLE_FINE)) {
             if (chance > 1) {
                 if (entity.getRandom().nextInt(chance) == 0) {
                     ArmorUtil.damageGasMaskFilter(entity, 1);
@@ -319,7 +320,7 @@ public class ContaminationUtil {
         if (e instanceof Player && e.tickCount < 200)
             return;
 
-        if (ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD, ArmorRegistry.HazardClass.PARTICLE_COARSE)) {
+        if (ArmorRegistry.hasProtection(entity, EquipmentSlot.HEAD, HazardClass.PARTICLE_COARSE)) {
             if (chance > 1) {
                 if (entity.getRandom().nextInt(chance) == 0) {
                     ArmorUtil.damageGasMaskFilter(entity, 1);

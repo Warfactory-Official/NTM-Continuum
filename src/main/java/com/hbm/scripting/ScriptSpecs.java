@@ -1,10 +1,12 @@
 package com.hbm.scripting;
 
+import com.hbm.api.content.Spec;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
@@ -112,9 +114,11 @@ public final class ScriptSpecs {
     public static FluidType fluidType(Object spec) {
         if (spec instanceof Spec wrapped) spec = wrapped.raw;
         if (spec instanceof FluidType type) return type;
-        String name = String.valueOf(spec).trim().toUpperCase(Locale.US);
-        FluidType type = Fluids.fromName(name);
-        if (type == Fluids.NONE && !name.equals("NONE")) throw new IllegalArgumentException("Unknown fluid " + spec);
+        String raw = String.valueOf(spec).trim();
+        boolean namespaced = raw.indexOf(':') >= 0;
+        FluidType type = namespaced ? Fluids.byId(raw.toLowerCase(Locale.US)) : Fluids.fromName(raw.toUpperCase(Locale.US));
+        if (type == Fluids.NONE && !namespaced) type = Fluids.byId("kubejs:" + raw.toLowerCase(Locale.US));
+        if (type == Fluids.NONE && !raw.equalsIgnoreCase("NONE")) throw new IllegalArgumentException("Unknown fluid " + spec);
         return type;
     }
 
@@ -139,20 +143,20 @@ public final class ScriptSpecs {
     }
 
     public static NTMMaterial material(String name) {
-        NTMMaterial material = Mats.matByName.get(name);
+        NTMMaterial material = name.indexOf(':') >= 0 ? Mats.byId(name) : Mats.matByName.get(name);
         if (material == null) throw new IllegalArgumentException("Unknown material " + name);
         return material;
     }
 
-    public static Mats.MaterialStack molten(Object spec) {
+    public static MaterialStack molten(Object spec) {
         if (spec instanceof Spec wrapped) spec = wrapped.raw;
-        if (spec instanceof Mats.MaterialStack stack) return stack.copy();
+        if (spec instanceof MaterialStack stack) return stack.copy();
         Counted c = counted(String.valueOf(spec));
-        return new Mats.MaterialStack(material(c.id()), c.count());
+        return new MaterialStack(material(c.id()), c.count());
     }
 
-    public static Mats.MaterialStack[] molten(Object[] specs) {
-        Mats.MaterialStack[] out = new Mats.MaterialStack[specs.length];
+    public static MaterialStack[] molten(Object[] specs) {
+        MaterialStack[] out = new MaterialStack[specs.length];
         for (int i = 0; i < specs.length; i++) out[i] = molten(specs[i]);
         return out;
     }

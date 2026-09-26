@@ -13,7 +13,7 @@ import com.hbm.blocks.rail.RailStandardStraight;
 import com.hbm.blocks.rail.RailStandardStraightShort;
 import com.hbm.blocks.rail.RailStandardSwitch;
 import com.hbm.blocks.rail.RailStandardSwitchFlipped;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.tileentity.BlockEntityRail;
 import dev.golem.core.registry.BlockEntities;

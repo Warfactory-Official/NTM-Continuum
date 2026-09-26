@@ -7,7 +7,7 @@ import com.hbm.blocks.machine.dfc.CoreComponent;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.interfaces.ILaserable;
 import com.hbm.inventory.container.ContainerCoreEmitter;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
@@ -108,7 +108,7 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase
         }
 
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     /** Walks the beam outward, then burns everything standing in the length it reached. */
@@ -185,8 +185,8 @@ public class TileEntityCoreEmitter extends TileEntityMachineBase
     @Override public void setPower(long i) { this.power = i; }
     @Override public long getMaxPower() { return maxPower; }
 
-    @Override public boolean canConnect(ForgeDirection dir) { return dir != ForgeDirection.UNKNOWN; }
-    @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return type == tank.getTankType(); }
+    @Override public boolean canConnect(Direction dir) { return dir != null; }
+    @Override public boolean canConnect(FluidType type, Direction dir) { return type == tank.getTankType(); }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }

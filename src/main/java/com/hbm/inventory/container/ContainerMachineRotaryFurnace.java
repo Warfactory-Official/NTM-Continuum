@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.items.machine.IItemFluidId;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
@@ -71,7 +72,7 @@ public final class ContainerMachineRotaryFurnace extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return com.hbm.inventory.container.Containers.stillValidMultiblock(access, player,
+        return dev.golem.core.gui.Menus.stillValid(access, player,
                 ModProductionBlocks.MACHINE_ROTARY_FURNACE.get());
     }
 

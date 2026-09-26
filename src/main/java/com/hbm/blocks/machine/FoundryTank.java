@@ -2,7 +2,7 @@ package com.hbm.blocks.machine;
 
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.tileentity.machine.TileEntityFoundryTank;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
 import dev.golem.core.registry.TickingBlock;
@@ -145,18 +145,20 @@ public class FoundryTank extends dev.golem.core.world.CompatBlock implements Tic
     // --- ICrucibleAcceptor: pour only, delegated to the tile ---
 
     @Override
-    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
+    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         return world.getBlockEntity(pos) instanceof TileEntityFoundryTank te && te.canAcceptPartialPour(world, pos, dX, dY, dZ, side, stack);
     }
 
     @Override
-    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
+    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         if (!(world.getBlockEntity(pos) instanceof TileEntityFoundryTank te)) return stack;
         return te.pour(world, pos, dX, dY, dZ, side, stack);
     }
 
-    @Override public boolean canAcceptPartialFlow(Level world, BlockPos pos, ForgeDirection side, MaterialStack stack) { return false; }
-    @Override public MaterialStack flow(Level world, BlockPos pos, ForgeDirection side, MaterialStack stack) { return stack; }
+    @Override public boolean canAcceptPartialFlow(Level world, BlockPos pos, Direction side, MaterialStack stack) { return false; }
+    @Override public MaterialStack flow(Level world, BlockPos pos, Direction side, MaterialStack stack) { return stack; }
 
     /** A shovel scoops the pool out as scraps (into the inventory, else dropped on the rim). */
     @Override

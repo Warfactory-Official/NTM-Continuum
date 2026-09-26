@@ -146,8 +146,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements Container {
         super.loadData(input);
         this.slots.clear();
         dev.golem.core.data.Inventories.load(input, this.slots);
-        // the carried fluid: this port's FluidStack has no codec, so it rides as type id + amount
-        this.fluid = input.child("fluid").map(tag -> new FluidStack(Fluids.fromID(tag.getIntOr("type", 0)),
+                this.fluid = input.child("fluid").map(tag -> new FluidStack(Fluids.byId(tag.getStringOr("type", "")),
                 tag.getIntOr("amount", 0), tag.getIntOr("pressure", 0))).orElse(null);
         setExpress(input.getBooleanOr("express", false));
         this.chunkLoading = input.getBooleanOr("chunkLoading", false);
@@ -159,7 +158,7 @@ public class EntityDeliveryDrone extends EntityDroneBase implements Container {
         dev.golem.core.data.Inventories.save(output, this.slots, true);
         if (this.fluid != null) {
             DataOut tag = output.child("fluid");
-            tag.putInt("type", this.fluid.type.getID());
+            tag.putString("type", this.fluid.type.id().toString());
             tag.putInt("amount", this.fluid.fill);
             tag.putInt("pressure", this.fluid.pressure);
         }

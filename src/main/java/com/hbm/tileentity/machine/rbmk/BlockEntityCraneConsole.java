@@ -3,8 +3,8 @@ package com.hbm.tileentity.machine.rbmk;
 import dev.golem.core.data.Tags;
 
 import com.hbm.blocks.machine.rbmk.RBMKBase;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.extprop.HbmPlayerProps;
 import com.hbm.handler.EnumCraneKey;
 import com.hbm.tileentity.ModRBMKBlockEntities;
@@ -108,7 +108,7 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
 
         readControls(false);
         updateLoadedReadout();
-        networkPackNT();
+        syncState();
     }
 
     /** Tilt and motion come from the nearest player standing at the console. */
@@ -253,7 +253,7 @@ public class BlockEntityCraneConsole extends TileEntityMachineBase implements IR
     }
 
     private Direction coreDir() {
-        return getBlockState().getValue(BlockMultiblockCore.FACING);
+        return getBlockState().getValue(MultiblockCore.FACING);
     }
 
     public void cycleCraneRotation() {

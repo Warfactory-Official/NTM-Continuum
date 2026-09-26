@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;

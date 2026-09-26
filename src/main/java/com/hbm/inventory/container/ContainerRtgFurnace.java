@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.Compat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -61,7 +62,7 @@ public final class ContainerRtgFurnace extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return com.hbm.inventory.container.Containers.stillValidMultiblock(access, player,
+        return dev.golem.core.gui.Menus.stillValid(access, player,
                 ModProduction2Blocks.MACHINE_RTG_FURNACE.get());
     }
 

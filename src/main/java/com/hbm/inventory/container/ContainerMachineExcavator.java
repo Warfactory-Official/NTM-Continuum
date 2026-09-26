@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemDrillbit;
 import com.hbm.lib.Library;
@@ -84,7 +85,7 @@ public final class ContainerMachineExcavator extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return com.hbm.inventory.container.Containers.stillValidMultiblock(access, player,
+        return dev.golem.core.gui.Menus.stillValid(access, player,
                 ModProduction2Blocks.MACHINE_EXCAVATOR.get());
     }
 

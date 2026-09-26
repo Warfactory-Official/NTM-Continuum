@@ -6,7 +6,7 @@ import com.hbm.inventory.recipes.BreederRecipes;
 import com.hbm.items.ModNuclearMiscItems;
 import com.hbm.items.machine.ItemBreedingRod.BreedingRodType;
 import com.hbm.items.machine.ItemBreedingRod.RodSize;
-import com.hbm.lib.ItemIds;
+import com.hbm.api.ids.ItemIds;
 import com.hbm.scripting.ScriptedContent;
 
 import java.util.Map;

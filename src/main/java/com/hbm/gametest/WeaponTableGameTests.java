@@ -391,7 +391,7 @@ public final class WeaponTableGameTests {
     }
 
     private static void weaponsTabHasNoDuplicateEntries(GameTestHelper helper) {
-        var weapons = com.hbm.creativetabs.ModTabs.get(com.hbm.creativetabs.HbmTab.WEAPONS).getKey();
+        var weapons = com.hbm.creativetabs.ModTabs.get(com.hbm.api.tab.HbmTab.WEAPONS).getKey();
         List<?> contents = com.hbm.creativetabs.ModTabs.CONTENTS.get(weapons);
         helper.assertTrue(contents.size() == contents.stream().distinct().count(),
                 "Weapons tab registry entries must not be emitted more than once");

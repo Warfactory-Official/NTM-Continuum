@@ -1,6 +1,6 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 
 import java.util.Collections;
@@ -74,7 +74,7 @@ public final class HeatRecipes {
         BOILER.put(Fluids.CRACKOIL_DS, new HeatStep(10, 1, Fluids.HOTCRACKOIL_DS, 1));
 
         REACTOR.put(Fluids.COOLANT, new HeatStep(300, 1, Fluids.COOLANT_HOT, 1));
-        com.hbm.scripting.ScriptedRecipes.apply(HeatRecipes.class);
+        dev.golem.core.content.Replay.apply(HeatRecipes.class);
     }
 
     public static void putBoiler(FluidType input, HeatStep step) {

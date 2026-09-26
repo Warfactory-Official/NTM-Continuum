@@ -1,5 +1,6 @@
 package com.hbm.radio.client;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.Constants;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.radio.RadioAutocalMenu;
@@ -112,7 +113,7 @@ public final class RadioAutocalScreen extends CompatContainerScreen<RadioAutocal
         if (over(x, y, 84, 36, 18, 18)) data = uploadProgram();
 
         if (data != null && menu.autocal() != null) {
-            RadioScreenUtil.click();
+            Gauges.click();
             GolemNetwork.sendToServer(ControlEventPayload.CODEC,
                     new ControlEventPayload(menu.autocal().getBlockPos(), data));
             return true;

@@ -1,17 +1,17 @@
 package com.hbm.tileentity.network;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.DuctData;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
 import com.hbm.api.tile.ILoadedTile;
-import com.hbm.capability.MachineCaps;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.graph.Domains;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.data.CompatBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -30,7 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * <p>Like the 1.12.2 {@code fluid_duct_mk2}, a duct defaults to {@code Fluids.NONE} and the player sets
  * its type by right-clicking with a {@code fluid_identifier} — it then forms a network with adjacent
  * ducts and machines of that one fluid only, which on the graph is
- * {@link com.hbm.api.fluidmk2.FluidGraphProvider#dataCompatible}. The carried type is synced to the
+ * {@link com.hbm.network.fluid.FluidGraphProvider#dataCompatible}. The carried type is synced to the
  * client so the renderer can tint the duct's overlay.
  *
  * <p>The block entity is authoritative for the type and the graph follows it: {@link #clearRemoved}
@@ -49,7 +49,6 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
             BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
-
 
     public FluidType getFluidType() {
         return this.type;
@@ -80,7 +79,7 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
         LevelNodeGraph<DuctData> graph = FluidGraph.get(server);
         long key = getBlockPos().asLong();
         if (graph.containsCell(key)) graph.replaceNodeData(key, ductData());
-        else graph.addNode(key, ductData(), MachineCaps.FACE_MASK_ALL);
+        else graph.addNode(key, ductData(), Domains.FACES_ALL);
     }
 
     @Override
@@ -94,8 +93,8 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && type == this.type;
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir != null && type == this.type;
     }
 
     @Override
@@ -107,17 +106,13 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("type", this.type.getID());
+        output.putString("type", this.type.id().toString());
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        this.type = Fluids.fromID(input.getIntOr("type", Fluids.NONE.getID()));
+        this.type = Fluids.byId(input.getStringOr("type", ""));
     }
 
-    @Override
-    public boolean isLoaded() {
-        return !isRemoved();
-    }
 }

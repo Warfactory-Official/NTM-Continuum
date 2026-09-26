@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCombustionEngine;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -129,7 +130,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
         if (mc.gameMode != null
                 && this.leftPos + 89 <= mx && mx < this.leftPos + 89 + 16
                 && this.topPos + 13 < my && my <= this.topPos + 13 + 14) {
-            playClickSound();
+            Gauges.click();
             mc.gameMode.handleInventoryButtonClick(this.menu.containerId, 0);
             return true;
         }
@@ -137,7 +138,7 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
         // Throttle grab — old region x [79, 79+36), y (38, 38+8].
         if (this.leftPos + 79 <= mx && mx < this.leftPos + 79 + 36
                 && this.topPos + 38 < my && my <= this.topPos + 38 + 8) {
-            playClickSound();
+            Gauges.click();
             this.isMouseLocked = true;
             applyThrottle(mx);
             return true;
@@ -167,8 +168,4 @@ public class GUICombustionEngine extends dev.golem.core.gui.CompatContainerScree
         }
     }
 
-    private void playClickSound() {
-        Minecraft.getInstance().getSoundManager().play(
-                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
-    }
 }

@@ -1,7 +1,7 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.api.energymk2.IEnergyConductorMK2;
-import com.hbm.api.energymk2.PowerGraph;
+import com.hbm.network.power.PowerGraph;
 import com.hbm.api.tile.ILoadedTile;
 import net.minecraft.core.BlockPos;
 import dev.golem.core.data.CompatBlockEntity;
@@ -29,8 +29,4 @@ public class TileEntityCableClassic extends CompatBlockEntity implements IEnergy
         PowerGraph.dropCells(this, getBlockPos());
     }
 
-    @Override
-    public boolean isLoaded() {
-        return !isRemoved();
-    }
 }

@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -20,14 +20,14 @@ public final class FoldedTestSupport {
     private FoldedTestSupport() {}
 
     /** Build {@code block} cored at a plot-relative position, facing north. Returns the absolute core. */
-    public static BlockPos assemble(GameTestHelper helper, BlockMultiblockCore block, BlockPos relativeCore) {
+    public static BlockPos assemble(GameTestHelper helper, MultiblockCore block, BlockPos relativeCore) {
         return assemble(helper, block, relativeCore, Direction.NORTH);
     }
 
-    public static BlockPos assemble(GameTestHelper helper, BlockMultiblockCore block, BlockPos relativeCore,
+    public static BlockPos assemble(GameTestHelper helper, MultiblockCore block, BlockPos relativeCore,
                                     Direction facing) {
         BlockPos core = helper.absolutePos(relativeCore);
-        helper.setBlock(relativeCore, block.defaultBlockState().setValue(BlockMultiblockCore.FACING, facing));
+        helper.setBlock(relativeCore, block.defaultBlockState().setValue(MultiblockCore.FACING, facing));
         block.fillSpace(helper.getLevel(), core, facing);
         return core;
     }
@@ -41,7 +41,7 @@ public final class FoldedTestSupport {
         assertCell(helper, core, cell);
         BlockPos absoluteCore = helper.absolutePos(core);
         BlockPos absoluteCell = helper.absolutePos(cell);
-        BlockMultiblockCore.FoldedOwner owner = MultiblockSurface.ownerOf(helper.getLevel(), absoluteCell);
+        MultiblockCore.FoldedOwner owner = MultiblockSurface.ownerOf(helper.getLevel(), absoluteCell);
         helper.assertTrue(owner != null, "No folded owner for the cell at " + cell);
         boolean open = false;
         for (Direction side : Direction.values()) {

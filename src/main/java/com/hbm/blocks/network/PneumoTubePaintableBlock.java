@@ -2,9 +2,9 @@ package com.hbm.blocks.network;
 
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatBlock;
@@ -129,8 +129,9 @@ public class PneumoTubePaintableBlock extends CompatBlock
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityPneumoTube tube
-                && tube.canConnect(type, dir);
+                && tube.canConnect(type, dir.toDirection());
     }
 }

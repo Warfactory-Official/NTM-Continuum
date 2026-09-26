@@ -95,7 +95,7 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
             loader.delay--;
         } else if (loader.loading) {
             if (loader.travel == 0D) {
-                level.playSound(null, pos, ModGunSounds.BOLT_OPEN.get(), SoundSource.BLOCKS, loader.getVolume(1F), 1F);
+                level.playSound(null, pos, ModGunSounds.BOLT_OPEN.get(), SoundSource.BLOCKS, 1F, 1F);
             }
             loader.travel += SPEED;
             if (loader.travel >= 1D) {
@@ -105,7 +105,7 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
             }
         } else {
             if (loader.travel == 1D) {
-                level.playSound(null, pos, ModGunSounds.BOLT_OPEN.get(), SoundSource.BLOCKS, loader.getVolume(1F), 0.75F);
+                level.playSound(null, pos, ModGunSounds.BOLT_OPEN.get(), SoundSource.BLOCKS, 1F, 0.75F);
                 if (fuelChannel != null) {
                     fuelChannel.loadItem(loader.stack);
                     loader.setItem(0, ItemStack.EMPTY);
@@ -116,7 +116,7 @@ public class TileEntityPileLoader extends TileEntityPileDeviceBase implements Wo
             }
         }
 
-        loader.networkPackNT();
+        loader.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityPileLoader loader) {

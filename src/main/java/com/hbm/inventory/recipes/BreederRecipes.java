@@ -64,7 +64,7 @@ public final class BreederRecipes {
         setRecipe(BreedingRodType.URANIUM, BreedingRodType.RGP, 200);
         setRecipe(BreedingRodType.RGP, BreedingRodType.WASTE, 200);
         for (RodBreeding row : ROD_TYPES) setRecipe(rodType(row.input()), rodType(row.output()), row.flux());
-        com.hbm.scripting.ScriptedRecipes.apply(BreederRecipes.class);
+        dev.golem.core.content.Replay.apply(BreederRecipes.class);
     }
 
     /** Every size of {@code input} breeds into the same size of {@code output}; types resolve by name at table build. */

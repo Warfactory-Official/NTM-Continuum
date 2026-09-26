@@ -15,7 +15,7 @@ import com.hbm.tileentity.machine.struct.TileEntityWatzStruct;
 import com.hbm.blocks.network.BlockCable;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.blocks.network.FluidValve;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.blocks.bomb.LaunchPad;
 import dev.golem.core.registry.DeferredRegister;

@@ -39,7 +39,7 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityDeuteriumExtractor extractor) {
         for (DirPos connection : extractor.getConPos()) {
-            if (extractor.tanks[1].getFill() > 0) extractor.tryProvide(extractor.tanks[1], level, connection);
+            if (extractor.tanks[1].getFill() > 0) extractor.tryProvide(extractor.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
 
         if (extractor.hasPower() && extractor.hasEnoughWater()
@@ -52,7 +52,7 @@ public class TileEntityDeuteriumExtractor extends TileEntityMachineBase
         }
 
         extractor.setChanged();
-        extractor.networkPackNT();
+        extractor.syncState();
     }
 
     protected boolean hasPower() {

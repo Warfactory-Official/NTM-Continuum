@@ -1,8 +1,9 @@
 package com.hbm.util;
 
 import com.hbm.api.block.ICrucibleAcceptor;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.NTMMaterial.SmeltingBehavior;
+import com.hbm.api.material.SmeltingBehavior;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -29,8 +30,8 @@ public final class CrucibleUtil {
      * Pours from a single stack, up to {@code quanta} per call. Mutates {@code stack}; returns the
      * (possibly reduced) original stack, matching the old contract.
      */
-    public static Mats.MaterialStack pourSingleStack(Level world, double x, double y, double z, double range,
-                                                     boolean safe, Mats.MaterialStack stack, int quanta, Vec3 @Nullable [] impactHolder) {
+    public static MaterialStack pourSingleStack(Level world, double x, double y, double z, double range,
+                                                     boolean safe, MaterialStack stack, int quanta, Vec3 @Nullable [] impactHolder) {
         Vec3 start = new Vec3(x, y, z);
         Vec3 end = new Vec3(x, y - range, z);
 
@@ -43,7 +44,7 @@ public final class CrucibleUtil {
             return stack;
         }
 
-        Mats.MaterialStack ret = tryPourStack(world, acc, mop, stack, impactHolder);
+        MaterialStack ret = tryPourStack(world, acc, mop, stack, impactHolder);
         if (ret != null) return ret;
 
         spill(mop, safe, stack, quanta, impactHolder);
@@ -52,10 +53,10 @@ public final class CrucibleUtil {
 
     /**
      * Pours from a stack list (first pourable stack wins), up to {@code quanta} per call. Mutates the
-     * list's stacks in place; returns the {@link Mats.MaterialStack} that was removed (or null).
+     * list's stacks in place; returns the {@link MaterialStack} that was removed (or null).
      */
-    public static Mats.@Nullable MaterialStack pourFullStack(Level world, double x, double y, double z, double range,
-                                                             boolean safe, List<Mats.MaterialStack> stacks, int quanta, Vec3 @Nullable [] impactHolder) {
+    public static @Nullable MaterialStack pourFullStack(Level world, double x, double y, double z, double range,
+                                                             boolean safe, List<MaterialStack> stacks, int quanta, Vec3 @Nullable [] impactHolder) {
         if (stacks.isEmpty()) return null;
 
         Vec3 start = new Vec3(x, y, z);
@@ -69,16 +70,16 @@ public final class CrucibleUtil {
             return spill(mop, safe, stacks, quanta, impactHolder);
         }
 
-        for (Mats.MaterialStack stack : stacks) {
+        for (MaterialStack stack : stacks) {
             if (stack.material == null) continue;
 
             int amountToPour = Math.min(stack.amount, quanta);
-            Mats.MaterialStack toPour = new Mats.MaterialStack(stack.material, amountToPour);
-            Mats.MaterialStack left = tryPourStack(world, acc, mop, toPour, impactHolder);
+            MaterialStack toPour = new MaterialStack(stack.material, amountToPour);
+            MaterialStack left = tryPourStack(world, acc, mop, toPour, impactHolder);
 
             if (left != null) {
                 stack.amount -= (amountToPour - left.amount);
-                return new Mats.MaterialStack(stack.material, stack.amount - left.amount);
+                return new MaterialStack(stack.material, stack.amount - left.amount);
             }
         }
 
@@ -89,19 +90,19 @@ public final class CrucibleUtil {
      * Tries to pour the stack onto the acceptor. Only {@code SMELTABLE} materials pour. Returns the
      * leftover (never null on success — 0-amount stack when fully accepted) or null when rejected.
      */
-    public static Mats.@Nullable MaterialStack tryPourStack(Level world, ICrucibleAcceptor acc, BlockHitResult mop,
-                                                            Mats.MaterialStack stack, Vec3 @Nullable [] impactHolder) {
+    public static @Nullable MaterialStack tryPourStack(Level world, ICrucibleAcceptor acc, BlockHitResult mop,
+                                                            MaterialStack stack, Vec3 @Nullable [] impactHolder) {
         Vec3 hit = mop.getLocation();
 
-        if (stack.material.smeltable != SmeltingBehavior.SMELTABLE) {
+        if (stack.material.smeltable() != SmeltingBehavior.SMELTABLE) {
             return null;
         }
 
         com.hbm.lib.ForgeDirection side = com.hbm.lib.ForgeDirection.getOrientation(mop.getDirection().get3DDataValue());
-        if (acc.canAcceptPartialPour(world, mop.getBlockPos(), hit.x, hit.y, hit.z, side, stack)) {
-            Mats.MaterialStack left = acc.pour(world, mop.getBlockPos(), hit.x, hit.y, hit.z, side, stack);
+        if (acc.canAcceptPartialPour(world, mop.getBlockPos(), hit.x, hit.y, hit.z, side.toDirection(), stack)) {
+            MaterialStack left = acc.pour(world, mop.getBlockPos(), hit.x, hit.y, hit.z, side.toDirection(), stack);
             if (left == null) {
-                left = new Mats.MaterialStack(stack.material, 0);
+                left = new MaterialStack(stack.material, 0);
             }
             if (impactHolder != null) impactHolder[0] = hit;
             return left;
@@ -127,10 +128,10 @@ public final class CrucibleUtil {
     }
 
     /** Spill from a stack list — uses the first stack, then prunes emptied stacks. */
-    public static Mats.@Nullable MaterialStack spill(@Nullable BlockHitResult mop, boolean safe, List<Mats.MaterialStack> stacks,
+    public static @Nullable MaterialStack spill(@Nullable BlockHitResult mop, boolean safe, List<MaterialStack> stacks,
                                                      int quanta, Vec3 @Nullable [] impactHolder) {
-        Mats.MaterialStack top = stacks.get(0);
-        Mats.MaterialStack ret = spill(mop, safe, top, quanta, impactHolder);
+        MaterialStack top = stacks.get(0);
+        MaterialStack ret = spill(mop, safe, top, quanta, impactHolder);
         stacks.removeIf(o -> o.amount <= 0);
         return ret;
     }
@@ -139,11 +140,11 @@ public final class CrucibleUtil {
      * No valid acceptor: NOP in safe mode, otherwise up to {@code quanta} of the stack is destroyed
      * (returned as the lost amount, so callers can still render the stream).
      */
-    public static Mats.@Nullable MaterialStack spill(@Nullable BlockHitResult mop, boolean safe, Mats.MaterialStack stack,
+    public static @Nullable MaterialStack spill(@Nullable BlockHitResult mop, boolean safe, MaterialStack stack,
                                                      int quanta, Vec3 @Nullable [] impactHolder) {
         if (safe) return null;
 
-        Mats.MaterialStack toWaste = new Mats.MaterialStack(stack.material, Math.min(stack.amount, quanta));
+        MaterialStack toWaste = new MaterialStack(stack.material, Math.min(stack.amount, quanta));
         stack.amount -= toWaste.amount;
 
         if (impactHolder != null && mop != null) {

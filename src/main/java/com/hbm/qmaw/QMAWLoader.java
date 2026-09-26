@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hbm.Constants;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
@@ -125,7 +125,7 @@ public final class QMAWLoader {
         // every other flattened item family.
         if (trigger.getItem() == ModFluidItems.fluid_icon.get()
                 || trigger.getItem() == ModMachineItems.fluid_identifier.get()) {
-            return ModDataComponents.fluidId(trigger) == ModDataComponents.fluidId(candidate);
+            return ModDataComponents.fluid(trigger) == ModDataComponents.fluid(candidate);
         }
         return ItemStacks.sameItemAndData(trigger, candidate);
     }
@@ -236,13 +236,13 @@ public final class QMAWLoader {
 
         if (oldLocation.equals(Ids.of("hbm", "fluid_icon"))) {
             if (wildcard) return stack(Ids.of("hbm", "fluid_icon"), count);
-            FluidType fluid = Fluids.fromID(metadata);
+            FluidType fluid = Fluids.byLegacyId(metadata);
             if (fluid == Fluids.NONE && metadata != 0) return null;
             return ItemStacks.copyWithCount(ItemFluidIcon.make(fluid), count);
         }
         if (oldLocation.equals(Ids.of("hbm", "fluid_identifier_multi"))) {
             if (wildcard) return stack(Ids.of("hbm", "fluid_identifier"), count);
-            FluidType fluid = Fluids.fromID(metadata);
+            FluidType fluid = Fluids.byLegacyId(metadata);
             if (fluid == Fluids.NONE && metadata != 0) return null;
             return ItemStacks.copyWithCount(ItemFluidId.make(fluid), count);
         }

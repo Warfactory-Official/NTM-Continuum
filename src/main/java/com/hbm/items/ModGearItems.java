@@ -1,14 +1,14 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.handler.HazmatRegistry;
 import com.hbm.items.gear.ItemGasMask;
 import com.hbm.items.machine.ItemGear;
 import com.hbm.util.ArmorRegistry;
-import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.api.hazard.HazardClass;
 import java.util.List;
 import java.util.stream.IntStream;
 import com.hbm.items.tool.ItemDosimeter;

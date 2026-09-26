@@ -1,6 +1,6 @@
 package com.hbm.client.render;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.render.CompatRenderState;
 

@@ -1,7 +1,7 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.gear.ArmorFSB;
 import com.hbm.items.gear.ArmorFSBPowered;
@@ -20,7 +20,7 @@ import com.hbm.items.gear.JetpackGlider;
 import com.hbm.items.gear.IArmorDisableModel.EnumPlayerPart;
 import com.hbm.sound.ModSounds;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.api.hazard.HazardClass;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.ArmorSlot;

@@ -1,9 +1,10 @@
 package com.hbm.tileentity.machine.pile;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.pile.BlockPile;
 import com.hbm.blocks.machine.pile.ModPileBlocks;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
@@ -38,7 +39,8 @@ public class TileEntityPileVent extends TileEntityPileDeviceBase implements IFlu
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{compair}; }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return type == compair.getTankType() && dir == getOrientation();
     }
 
@@ -66,7 +68,7 @@ public class TileEntityPileVent extends TileEntityPileDeviceBase implements IFlu
             }
         }
 
-        vent.networkPackNT();
+        vent.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityPileVent vent) {

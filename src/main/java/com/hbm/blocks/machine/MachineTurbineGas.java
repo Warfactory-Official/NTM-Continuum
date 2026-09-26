@@ -1,11 +1,13 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineTurbineGas;
@@ -40,13 +42,15 @@ public class MachineTurbineGas extends BlockMultiblockMachine
     @Override public int getOffset() { return 1; }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachineTurbineGas turbine
-                && IEnergyConnectorBlock.isPort(new com.hbm.lib.DirPos[]{turbine.getPowerPos()}, pos, dir);
+                && com.hbm.lib.Ports.isPort(new com.hbm.lib.DirPos[]{turbine.getPowerPos()}, pos, dir.toDirection());
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         BlockPos pos = new BlockPos(x, y, z);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachineTurbineGas turbine
                 && turbine.isFluidPort(pos, dir);

@@ -1,9 +1,10 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.foundry.ArcFurnaceRecipes;
 import com.hbm.foundry.FoundryExpansion;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
@@ -73,7 +74,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     public int approachNum;
     public float syncLid;
     public final byte[] electrodes = new byte[3];
-    public List<Mats.MaterialStack> liquids = new ArrayList<>();
+    public List<MaterialStack> liquids = new ArrayList<>();
 
     /** Synced stream state; the server timer is deliberately not persisted. */
     public int pourColor = -1;
@@ -89,8 +90,8 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
     }
 
     @Override
-    protected NTMItemHandler createInventory(int slotCount) {
-        return new NTMItemHandler(slotCount) {
+    protected ItemHandler createInventory(int slotCount) {
+        return new ItemHandler(slotCount) {
             @Override public int getSlotLimit(int slot) { return slot < 5 ? 1 : super.getSlotLimit(slot); }
             @Override public boolean isItemValid(int slot, ItemStack stack) {
                 return TileEntityMachineArcFurnaceLarge.this.isItemValidForSlot(slot, stack);
@@ -156,10 +157,10 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
             double sx = pos.getX() + 0.5D + dir.offsetX * 2.875D;
             double sy = pos.getY() + 1.25D;
             double sz = pos.getZ() + 0.5D + dir.offsetZ * 2.875D;
-            Mats.MaterialStack poured = com.hbm.util.CrucibleUtil.pourFullStack(level, sx, sy, sz, 6D, true,
+            MaterialStack poured = com.hbm.util.CrucibleUtil.pourFullStack(level, sx, sy, sz, 6D, true,
                     furnace.liquids, MaterialShapes.INGOT.quantity, impact);
             if (poured != null && impact[0] != null) {
-                furnace.pourColor = poured.material.moltenColor;
+                furnace.pourColor = poured.material.moltenColor();
                 furnace.pourLen = Math.max(1F, pos.getY() + 1F - (float) (Math.ceil(impact[0].y) - 0.875D));
                 furnace.pourTimer = STREAM_LIFETIME;
             }
@@ -168,7 +169,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         furnace.liquids.removeIf(stack -> stack.amount <= 0);
         if (furnace.pourTimer > 0) furnace.pourTimer--;
         else furnace.pourColor = -1;
-        furnace.networkPackNT();
+        furnace.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state,
@@ -284,7 +285,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
                     int addition = getStackAmount(recipe.fluidOutput);
                     if (current + addition > MAX_LIQUID) break;
                     inventory.extractItem(slot, 1, false);
-                    for (Mats.MaterialStack output : recipe.fluidOutput) addToStack(output);
+                    for (MaterialStack output : recipe.fluidOutput) addToStack(output);
                 }
             }
         }
@@ -324,8 +325,8 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         };
     }
 
-    public void addToStack(Mats.MaterialStack addition) {
-        for (Mats.MaterialStack stack : liquids) {
+    public void addToStack(MaterialStack addition) {
+        for (MaterialStack stack : liquids) {
             if (stack.material == addition.material) {
                 stack.amount += addition.amount;
                 return;
@@ -334,15 +335,15 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         liquids.add(addition.copy());
     }
 
-    public static int getStackAmount(List<Mats.MaterialStack> stack) {
+    public static int getStackAmount(List<MaterialStack> stack) {
         int amount = 0;
-        for (Mats.MaterialStack material : stack) amount += material.amount;
+        for (MaterialStack material : stack) amount += material.amount;
         return amount;
     }
 
-    public static int getStackAmount(Mats.MaterialStack[] stack) {
+    public static int getStackAmount(MaterialStack[] stack) {
         int amount = 0;
-        for (Mats.MaterialStack material : stack) amount += material.amount;
+        for (MaterialStack material : stack) amount += material.amount;
         return amount;
     }
 
@@ -441,8 +442,8 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         buf.writeBoolean(hasMaterial);
         for (byte electrode : electrodes) buf.writeByte(electrode);
         buf.writeShort(liquids.size());
-        for (Mats.MaterialStack liquid : liquids) {
-            buf.writeInt(liquid.material.id);
+        for (MaterialStack liquid : liquids) {
+            buf.writeInt(liquid.material.index());
             buf.writeInt(liquid.amount);
         }
         buf.writeInt(pourColor);
@@ -460,11 +461,11 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         hasMaterial = buf.readBoolean();
         for (int i = 0; i < electrodes.length; i++) electrodes[i] = buf.readByte();
         int count = buf.readShort() & 0xFFFF;
-        List<Mats.MaterialStack> synced = new ArrayList<>(count);
+        List<MaterialStack> synced = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            NTMMaterial material = Mats.matById.get(buf.readInt());
+            NTMMaterial material = Mats.byIndex(buf.readInt());
             int amount = buf.readInt();
-            if (material != null) synced.add(new Mats.MaterialStack(material, amount));
+            if (material != null) synced.add(new MaterialStack(material, amount));
         }
         liquids = synced;
         pourColor = buf.readInt();
@@ -480,11 +481,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         output.putFloat("progress", progress);
         output.putFloat("lid", lid);
         output.putInt("delay", delay);
-        output.putInt("count", liquids.size());
-        for (int i = 0; i < liquids.size(); i++) {
-            output.putInt("m" + i, liquids.get(i).material.id);
-            output.putInt("a" + i, liquids.get(i).amount);
-        }
+        Mats.saveStacks(output, "liquids", liquids);
     }
 
     @Override
@@ -496,18 +493,14 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
         lid = input.getFloatOr("lid", 0F);
         delay = input.getIntOr("delay", 0);
         liquids.clear();
-        int count = input.getIntOr("count", 0);
-        for (int i = 0; i < count; i++) {
-            NTMMaterial material = Mats.matById.get(input.getIntOr("m" + i, -1));
-            if (material != null) liquids.add(new Mats.MaterialStack(material, input.getIntOr("a" + i, 0)));
-        }
+        liquids.addAll(Mats.loadStacks(input, "liquids"));
     }
 
     /** Molten contents leave as scraps, then the slots spill (1.7 {@code BlockDummyable.breakBlock}). */
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (level != null) {
-            for (Mats.MaterialStack liquid : liquids) {
+            for (MaterialStack liquid : liquids) {
                 com.hbm.items.machine.ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
                         liquid.copy());
             }

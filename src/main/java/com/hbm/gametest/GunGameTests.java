@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.HbmKeybinds.EnumKeybind;

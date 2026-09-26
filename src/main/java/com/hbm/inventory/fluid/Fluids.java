@@ -1,5 +1,6 @@
 package com.hbm.inventory.fluid;
 
+import com.hbm.api.fluid.FluidType;
 import com.hbm.Constants;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
@@ -8,27 +9,26 @@ import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
 import com.hbm.inventory.fluid.trait.FT_PWRModerator;
 
+import net.minecraft.resources.Identifier;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 /**
- * The fluid registry: HBM's own list of {@link FluidType}s, keyed by a stable numeric ID and by name.
- * NOT a vanilla/Forge registry — it's a plain static map populated by {@link #init()}.
- *
- * <p>26.1 slim port: the 1.12.2 original carried a full trait/pollution/potion subsystem plus Forge-fluid
- * compat on each type. This port keeps the registry mechanics ({@code registerSelf}/{@code fromID}/
- * {@code fromName}) and the identity (name/color/temperature) of <b>the full base set</b> — every fluid
- * the 1.12.2 {@code Fluids.init()} hardcodes, in the same order so the IDs match 1:1 (the JSON-dump
- * custom-fluid demo is dropped). The declarations are generated; thermal traits are maintained below.
+ * HBM's fluid registry (not vanilla's). Persisted by {@link FluidType#id()}; {@link FluidType#index()} is session-local,
+ * hash-checked against the server on join ({@code hbm:fluids}). Built-ins: 1.12.2's full set in 1.12.2 order.
  *
  * @author hbm, mlbv
  */
 public class Fluids {
 
-    private static final HashMap<Integer, FluidType> idMapping = new HashMap<>();
+    private static final java.util.List<Runnable> REGISTERED = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    private static final HashMap<Identifier, FluidType> idMapping = new HashMap<>();
     private static final HashMap<String, FluidType> nameMapping = new HashMap<>();
     private static final List<FluidType> registerOrder = new ArrayList<>();
+    private static int builtIns;
     private static boolean initialized = false;
 
     public static FluidType NONE;
@@ -197,7 +197,7 @@ public class Fluids {
         if (initialized) return;
         initialized = true;
 
-        // ALWAYS append new fluids at the bottom — IDs are positional and used to save tank state.
+        // Append only: built-in index = 1.7 fluid id (manual metadata, steam-tier renderers).
         NONE = new FluidType("NONE", 0x888888);
         WATER = new FluidType("WATER", 0x3333FF);
         STEAM = new FluidType("STEAM", 0xe5e5e5).setTemp(100);
@@ -352,12 +352,15 @@ public class Fluids {
         ALUMINA = new FluidType("ALUMINA", 0xDDFFFF);
         AIR = new FluidType("AIR", 0xE7EAEB);
         CONCRETE = new FluidType("CONCRETE", 0xA2A2A2);
-        DHC = new FluidType(154, "DHC", 0xD2AFFF);
+        DHC = new FluidType("DHC", 0xD2AFFF);
         AIRBLAST = new FluidType("AIRBLAST", 0xFFDADA);
         FLUE = new FluidType("FLUE", 0x131313);
 
         registerHeatableTraits();
         registerCoolableTraits();
+        builtIns = registerOrder.size();
+        dev.golem.core.content.SyncedIndex.register("hbm:fluids",
+                () -> registerOrder.stream().map(fluid -> fluid.id().toString()).toList());
 
         Constants.LOG.info("[HBM] Registered {} fluids", idMapping.size());
     }
@@ -453,38 +456,46 @@ public class Fluids {
                 .setEff(CoolingType.HEATEXCHANGER, 1.0D));
     }
 
-    /** Registers a fluid, assigning it the next sequential ID. Called from the {@link FluidType} ctor. */
-    static int registerSelf(FluidType fluid) {
-        int id = idMapping.size();
-        idMapping.put(id, fluid);
+    /** Runs after every later fluid registration. */
+    public static void onRegistered(Runnable listener) {
+        REGISTERED.add(listener);
+    }
+
+    /** {@link FluidType}'s constructor only: the fluid's session index. */
+    public static int register(FluidType fluid) {
+        if (idMapping.containsKey(fluid.id())) throw new IllegalStateException("Fluid " + fluid.id() + " is already registered");
+        int index = registerOrder.size();
+        idMapping.put(fluid.id(), fluid);
         nameMapping.put(fluid.getName(), fluid);
         registerOrder.add(fluid);
-        return id;
+        REGISTERED.forEach(Runnable::run);
+        return index;
     }
 
-    /** Registers a fluid with a forced ID (custom/foreign fluids). */
-    static void register(FluidType fluid, int id) {
-        if (idMapping.containsKey(id)) throw new IllegalStateException("Fluid ID " + id + " is taken by " + idMapping.get(id));
-        if (nameMapping.containsKey(fluid.getName())) throw new IllegalStateException("Fluid " + fluid.getName() + " is already registered");
-        idMapping.put(id, fluid);
-        nameMapping.put(fluid.getName(), fluid);
-        registerOrder.add(fluid);
-        fluid.setID(id);
+    /** Session index (network buffers, synched entity data); NONE when out of range. */
+    public static FluidType byIndex(int index) {
+        return index >= 0 && index < registerOrder.size() ? registerOrder.get(index) : NONE;
     }
 
-    public static FluidType fromID(int id) {
-        FluidType fluid = idMapping.get(id);
-        return fluid == null ? NONE : fluid;
+    public static FluidType byId(Identifier id) {
+        return idMapping.getOrDefault(id, NONE);
     }
 
+    /** A saved id string; NONE when unknown or malformed (a removed addon's fluid). */
+    public static FluidType byId(String id) {
+        Identifier parsed = dev.golem.core.Ids.tryParse(id);
+        return parsed == null ? NONE : byId(parsed);
+    }
+
+    /** {@code WATER} (built-in name) or an id string. */
     public static FluidType fromName(String name) {
         FluidType fluid = nameMapping.get(name);
-        return fluid == null ? NONE : fluid;
+        return fluid != null ? fluid : byId(name);
     }
 
-    /** For old worlds with types saved as name. No rename table yet, so this is just {@link #fromName}. */
-    public static FluidType fromNameCompat(String name) {
-        return fromName(name);
+    /** A 1.7 fluid id: the built-ins keep 1.7's declaration order. */
+    public static FluidType byLegacyId(int id) {
+        return id >= 0 && id < builtIns ? registerOrder.get(id) : NONE;
     }
 
     public static FluidType[] getAll() {

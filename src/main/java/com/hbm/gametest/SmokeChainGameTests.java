@@ -1,5 +1,6 @@
 package com.hbm.gametest;
 
+import net.minecraft.core.Direction;
 import com.hbm.blocks.machine.MachineAshpit;
 import com.hbm.blocks.machine.MachineChimneyBrick;
 import com.hbm.blocks.machine.MachineChimneyIndustrial;
@@ -65,15 +66,15 @@ public final class SmokeChainGameTests {
 
         for (BlockPos cell : new BlockPos[]{core.east(), core.west(), core.south(), core.north()}) {
             ForgeDirection direction = directionFrom(core, cell);
-            helper.assertTrue(brick.canConnect(Fluids.SMOKE, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction),
+            helper.assertTrue(brick.canConnect(Fluids.SMOKE, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction.toDirection()),
                     "Brick chimney rejected SMOKE at " + cell);
-            helper.assertTrue(brick.canConnect(Fluids.SMOKE_LEADED, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction),
+            helper.assertTrue(brick.canConnect(Fluids.SMOKE_LEADED, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction.toDirection()),
                     "Brick chimney rejected SMOKE_LEADED at " + cell);
-            helper.assertTrue(brick.canConnect(Fluids.SMOKE_POISON, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction),
+            helper.assertTrue(brick.canConnect(Fluids.SMOKE_POISON, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction.toDirection()),
                     "Brick chimney rejected SMOKE_POISON at " + cell);
-            helper.assertFalse(brick.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction),
+            helper.assertFalse(brick.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), direction.toDirection()),
                     "Brick chimney accepted a non-smoke fluid");
-            helper.assertFalse(brick.canConnect(Fluids.SMOKE, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), ForgeDirection.UP),
+            helper.assertFalse(brick.canConnect(Fluids.SMOKE, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(), Direction.UP),
                     "Brick chimney exposed a vertical smoke port");
         }
 

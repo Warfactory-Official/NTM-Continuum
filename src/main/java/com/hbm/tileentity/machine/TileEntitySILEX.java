@@ -4,9 +4,9 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.inventory.container.ContainerSILEX;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.SILEXRecipes;
@@ -99,7 +99,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
 
         if (te.currentFill <= 0) te.current = null;
 
-        te.networkPackNT();
+        te.syncState();
 
         // The laser link is re-asserted from the FEL's own tick; without one, the chamber goes dark.
         te.mode = EnumWavelengths.NULL;
@@ -296,7 +296,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
      */
     public DirPos[] getConPos() {
         ForgeDirection dir = ForgeDirection.getOrientation(
-                getBlockState().getValue(BlockMultiblockCore.FACING)).getRotation(ForgeDirection.UP);
+                getBlockState().getValue(MultiblockCore.FACING)).getRotation(ForgeDirection.UP);
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
         return new DirPos[]{
                 new DirPos(x + dir.offsetX * 2, y + 1, z + dir.offsetZ * 2, dir),
@@ -381,7 +381,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         buf.writeBoolean(hasCurrent);
         if (hasCurrent) {
             buf.writeUtf(BuiltInRegistries.ITEM.getKey(current.getItem()).toString());
-            buf.writeInt(current.getItem() instanceof ItemFluidIcon ? ItemFluidIcon.getFluid(current).getID() : -1);
+            buf.writeInt(current.getItem() instanceof ItemFluidIcon ? ItemFluidIcon.getFluid(current).index() : -1);
         }
     }
 
@@ -398,7 +398,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
     private static @Nullable ItemStack readSubstance(String itemId, int fluidId) {
         Item item = BuiltInRegistries.ITEM.getOptional(dev.golem.core.Ids.parse(itemId)).orElse(null);
         if (item == null) return null;
-        return fluidId >= 0 ? ItemFluidIcon.make(Fluids.fromID(fluidId)) : new ItemStack(item);
+        return fluidId >= 0 ? ItemFluidIcon.make(Fluids.byIndex(fluidId)) : new ItemStack(item);
     }
 
     @Override
@@ -410,7 +410,7 @@ public class TileEntitySILEX extends TileEntityMachineBase
         if (current != null && !current.isEmpty()) {
             output.putString("item", BuiltInRegistries.ITEM.getKey(current.getItem()).toString());
             output.putInt("meta", current.getItem() instanceof ItemFluidIcon
-                    ? ItemFluidIcon.getFluid(current).getID() : -1);
+                    ? ItemFluidIcon.getFluid(current).index() : -1);
         }
     }
 

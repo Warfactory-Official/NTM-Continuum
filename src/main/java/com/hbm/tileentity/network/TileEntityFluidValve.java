@@ -1,18 +1,18 @@
 package com.hbm.tileentity.network;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.DuctData;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
 import com.hbm.api.tile.ILoadedTile;
 import com.hbm.blocks.network.FluidValve;
-import com.hbm.capability.MachineCaps;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.graph.Domains;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.data.CompatBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -42,7 +42,6 @@ public class TileEntityFluidValve extends CompatBlockEntity implements IFluidPip
             BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
-
 
     public void updateState() {
         syncCell();
@@ -85,13 +84,13 @@ public class TileEntityFluidValve extends CompatBlockEntity implements IFluidPip
         } else if (graph.containsCell(key)) {
             graph.replaceNodeData(key, DuctData.of(type));
         } else {
-            graph.addNode(key, DuctData.of(type), MachineCaps.FACE_MASK_ALL);
+            graph.addNode(key, DuctData.of(type), Domains.FACES_ALL);
         }
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return isOpen() && this.type != Fluids.NONE && dir != ForgeDirection.UNKNOWN && this.type == type;
+    public boolean canConnect(FluidType type, Direction dir) {
+        return isOpen() && this.type != Fluids.NONE && dir != null && this.type == type;
     }
 
     @Override
@@ -113,17 +112,13 @@ public class TileEntityFluidValve extends CompatBlockEntity implements IFluidPip
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("type", type.getID());
+        output.putString("type", type.id().toString());
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        type = Fluids.fromID(input.getIntOr("type", Fluids.NONE.getID()));
+        type = Fluids.byId(input.getStringOr("type", ""));
     }
 
-    @Override
-    public boolean isLoaded() {
-        return !isRemoved();
-    }
 }

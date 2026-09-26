@@ -4,7 +4,7 @@ import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockDepth;
 import com.hbm.blocks.generic.BlockFallingBase;
 import com.hbm.blocks.generic.HbmStairBlock;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.registry.DeferredRegister;

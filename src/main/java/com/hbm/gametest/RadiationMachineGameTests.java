@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineRadGen;
+import net.minecraft.core.Direction;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModItems;
 import com.hbm.lib.DirPos;
@@ -69,7 +70,7 @@ public final class RadiationMachineGameTests {
                         && port.getDir() == ForgeDirection.SOUTH,
                 "RadGen rear port must be four blocks behind the core and face outward");
         helper.assertTrue(block.canConnect(helper.getLevel(), helper.absolutePos(core.offset(0, 0, 3)),
-                        ForgeDirection.SOUTH), "RadGen rear dummy must expose its cable port");
+                        Direction.SOUTH), "RadGen rear dummy must expose its cable port");
 
         generator.inventory.setStackInSlot(0, new ItemStack(ModItems.scrap_nuclear.get()));
         TileEntityMachineRadGen.serverTick(helper.getLevel(), absoluteCore, generator.getBlockState(), generator);

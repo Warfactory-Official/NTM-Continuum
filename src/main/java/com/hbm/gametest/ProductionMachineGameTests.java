@@ -144,7 +144,7 @@ public final class ProductionMachineGameTests {
         for (int i = 0; i < 10; i++) TileEntityConveyorPress.serverTick(helper.getLevel(), core, state, press);
         helper.assertTrue(press.press == 0 && press.power == TileEntityConveyorPress.maxPower,
                 "conveyor press must not stroke or draw power without an item on the belt");
-        helper.assertTrue(press.canConnect(com.hbm.lib.ForgeDirection.NORTH) && !press.canConnect(com.hbm.lib.ForgeDirection.DOWN),
+        helper.assertTrue(press.canConnect(net.minecraft.core.Direction.NORTH) && !press.canConnect(net.minecraft.core.Direction.DOWN),
                 "conveyor press must connect on every side but the bottom");
         helper.succeed();
     }

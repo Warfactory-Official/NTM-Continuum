@@ -1,9 +1,10 @@
 package com.hbm.tileentity.machine.dfc;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.blocks.machine.dfc.CoreComponent;
 import com.hbm.inventory.container.ContainerCoreInjector;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -78,7 +79,7 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
         }
 
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     private void fill(TileEntityCore core, int t) {
@@ -120,7 +121,7 @@ public class TileEntityCoreInjector extends TileEntityMachineBase
         return (slot == 0 || slot == 2) && stack.getItem() instanceof IItemFluidId;
     }
 
-    @Override public boolean canConnect(FluidType type, ForgeDirection dir) {
+    @Override public boolean canConnect(FluidType type, Direction dir) {
         return type == tanks[0].getTankType() || type == tanks[1].getTankType();
     }
 

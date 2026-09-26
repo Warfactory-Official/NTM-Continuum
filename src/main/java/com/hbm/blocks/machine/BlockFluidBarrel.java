@@ -2,7 +2,7 @@ package com.hbm.blocks.machine;
 
 import com.hbm.tileentity.machine.storage.TileEntityBarrel;
 import com.hbm.tileentity.network.TileEntityBarrelDeco;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import dev.golem.core.registry.TickingBlock;
 import net.minecraft.ChatFormatting;
@@ -73,7 +73,7 @@ public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock implement
                 barrel.tank.setTankType(type);
                 barrel.setChanged();
                 level.updateNeighborsAt(pos, this);
-                if (level instanceof ServerLevel server) com.hbm.uninos.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
+                if (level instanceof ServerLevel server) dev.golem.core.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
                 player.sendSystemMessage(Component.literal("Changed type to ").withStyle(ChatFormatting.YELLOW)
                         .append(type.getDisplayName()).append(Component.literal("!")));
             }
@@ -96,7 +96,7 @@ public class BlockFluidBarrel extends dev.golem.core.world.CompatBlock implement
     @Override
     protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock, boolean movedByPiston) {
         super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
-        if (level instanceof ServerLevel server) com.hbm.uninos.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
+        if (level instanceof ServerLevel server) dev.golem.core.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
     }
 
     @Override

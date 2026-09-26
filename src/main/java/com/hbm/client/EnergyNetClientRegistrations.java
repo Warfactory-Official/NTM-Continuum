@@ -21,7 +21,7 @@ public final class EnergyNetClientRegistrations {
 
     private EnergyNetClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         CableDiode.OPEN_SCREEN = diode -> Minecraft.getInstance().setScreen(new GUIDiode(diode));
     }
 

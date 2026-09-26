@@ -4,7 +4,7 @@ import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.inventory.material.MaterialShapes;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -64,8 +64,8 @@ public class TileEntityFoundryTank extends TileEntityFoundryBase {
                     BlockPos at = pos.offset(dir.offsetX, 0, dir.offsetZ);
                     Block b = level.getBlockState(at).getBlock();
                     if (b instanceof ICrucibleAcceptor acc && b != ModMachineBlocks.foundry_channel.get()) {
-                        if (acc.canAcceptPartialFlow(level, at, dir.getOpposite(), new MaterialStack(tank.type, tank.amount))) {
-                            MaterialStack left = acc.flow(level, at, dir.getOpposite(), new MaterialStack(tank.type, tank.amount));
+                        if (acc.canAcceptPartialFlow(level, at, dir.getOpposite().toDirection(), new MaterialStack(tank.type, tank.amount))) {
+                            MaterialStack left = acc.flow(level, at, dir.getOpposite().toDirection(), new MaterialStack(tank.type, tank.amount));
                             if (left == null) {
                                 tank.type = null;
                                 tank.amount = 0;
@@ -107,6 +107,6 @@ public class TileEntityFoundryTank extends TileEntityFoundryBase {
             }
             tank.setChanged();
         }
-        tank.networkPackNT();
+        tank.syncState();
     }
 }

@@ -7,7 +7,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineGasFlare;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -79,7 +79,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineGasFlare te) {
         for (DirPos dp : te.getConPos()) {
-            te.tryProvide(level, dp.getPos(), dp.getDir());
+            te.tryProvide(level, dp.getPos(), dp.getDir().toDirection());
         }
 
         te.setTypeFromFluidId();
@@ -132,7 +132,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         }
 
         te.power = Library.chargeItemsFromTE(te.inventory, 0, te.power, maxPower);
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Client: vanilla-particle stand-ins for the old custom gas-tower / flame particles (§20). */

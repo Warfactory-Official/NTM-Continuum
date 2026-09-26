@@ -105,7 +105,7 @@ public class TileEntityTurretRichard extends TileEntityTurretBaseNT {
         if (getFirstConfigLoaded() == null) loaded = 0;
 
         rackPacket = true;
-        networkPackNT();
+        syncState();
         rackPacket = false;
     }
 

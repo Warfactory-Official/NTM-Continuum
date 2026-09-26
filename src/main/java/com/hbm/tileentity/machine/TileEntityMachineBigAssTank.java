@@ -27,12 +27,12 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
     }
 
     @Override
-    public long getReceiverSpeed(com.hbm.inventory.fluid.FluidType type, int pressure) {
+    public long getReceiverSpeed(com.hbm.api.fluid.FluidType type, int pressure) {
         return Math.max(50_000L, (tankNew.getMaxFill() - tankNew.getFill()) / 100L);
     }
 
     @Override
-    public long getProviderSpeed(com.hbm.inventory.fluid.FluidType type, int pressure) {
+    public long getProviderSpeed(com.hbm.api.fluid.FluidType type, int pressure) {
         return Math.max(50_000L, tankNew.getFill() / 100L);
     }
 
@@ -41,7 +41,7 @@ public class TileEntityMachineBigAssTank extends TileEntityMachineGiantTank {
         TileEntityMachineGiantTank.serverTick(level, pos, state, tank);
     }
 
-    /** Unavoidable heavy-machine gravity check, matching TileEntityLoadedBase's 95% support threshold. */
+    /** Unavoidable heavy-machine gravity check, matching SyncedBlockEntity's 95% support threshold. */
     private int tiltBlocksChecked;
     private int tiltBlocksValid;
 

@@ -1,7 +1,7 @@
 package com.hbm.client;
 
 import com.hbm.entity.projectile.EntityChemical;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import dev.golem.core.render.Particles;
 import java.awt.Color;
 import net.minecraft.client.multiplayer.ClientLevel;

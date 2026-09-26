@@ -6,7 +6,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.ModOreBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.container.ContainerBlastFurnace;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.BlastFurnaceRecipesNT;
@@ -72,7 +72,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {
         for (DirPos connection : furnace.getConPos()) {
-            if (furnace.tanks[1].getFill() > 0) furnace.tryProvide(furnace.tanks[1], level, connection);
+            if (furnace.tanks[1].getFill() > 0) furnace.tryProvide(furnace.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
 
         ItemStack fuelStack = furnace.inventory.getStackInSlot(0);
@@ -111,7 +111,7 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
         }
 
         if (furnace.tanks[0].getFill() > 0) furnace.tanks[0].setFill((int) (furnace.tanks[0].getFill() * 0.95F));
-        furnace.networkPackNT();
+        furnace.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineBlastFurnace furnace) {

@@ -54,6 +54,11 @@ public enum ForgeDirection {
         return VALID_DIRECTIONS[e.ordinal()];
     }
 
+    /** {@code null} (a network pseudo-face) = {@link #UNKNOWN}. */
+    public static ForgeDirection of(Direction direction) {
+        return direction == null ? UNKNOWN : VALID_DIRECTIONS[direction.ordinal()];
+    }
+
     public static ForgeDirection getOrientation(int id) {
         if (id >= 0 && id < VALID_DIRECTIONS.length) {
             return VALID_DIRECTIONS[id];

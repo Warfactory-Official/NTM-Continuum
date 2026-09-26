@@ -64,10 +64,10 @@ public class RenderCableDiode extends GemBER<TileEntityDiode, CableRenderState> 
         BlockPos neighbour = pos.relative(dir);
         ForgeDirection side = ForgeDirection.getOrientation(dir.getOpposite());
         if (level.getBlockState(neighbour).getBlock() instanceof IEnergyConnectorBlock block
-                && block.canConnect(level, neighbour, side)) {
+                && block.canConnect(level, neighbour, side.toDirection())) {
             return true;
         }
         BlockEntity be = level.getBlockEntity(neighbour);
-        return be instanceof IEnergyConnectorMK2 connector && connector.canConnect(side);
+        return be instanceof IEnergyConnectorMK2 connector && connector.canConnect(side.toDirection());
     }
 }

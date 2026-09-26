@@ -3,8 +3,8 @@ package com.hbm.tileentity.machine.rbmk;
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardSenderMK2;
 import com.hbm.blocks.machine.rbmk.RBMKBase;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.ModRBMKBlockEntities;
@@ -29,9 +29,9 @@ public class BlockEntityRBMKOutlet extends TileEntityMachineBase implements IFlu
             BlockPos core = MultiblockSurface.coreOfCell(level, adjacent);
             if (core == null || !(level.getBlockEntity(core) instanceof BlockEntityRBMKBase column)) continue;
             int moved = Math.min(steam.getMaxFill() - steam.getFill(), column.reasimSteam);
-            if (moved > 0) { column.reasimSteam -= moved; steam.setFill(steam.getFill() + moved); column.markChanged(); markChanged(); }
+            if (moved > 0) { column.reasimSteam -= moved; steam.setFill(steam.getFill() + moved); column.setChanged(); setChanged(); }
         }
-        if (steam.getFill() > 0) for (Direction direction : Direction.values()) tryProvide(steam, level, worldPosition.relative(direction), ForgeDirection.getOrientation(direction));
+        if (steam.getFill() > 0) for (Direction direction : Direction.values()) tryProvide(steam, level, worldPosition.relative(direction), ForgeDirection.getOrientation(direction).toDirection());
     }
     @Override public long getFluidAvailable(FluidType type, int pressure) { return type == steam.getTankType() && pressure == steam.getPressure() ? steam.getFill() : 0; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{steam}; }

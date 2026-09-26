@@ -3,7 +3,7 @@ package com.hbm.tileentity.bomb;
 import dev.golem.core.data.Tags;
 
 import com.hbm.sound.ModSounds;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import com.hbm.blocks.bomb.BlockChargeBase;
 import com.hbm.tileentity.ModExplosivesBlockEntities;
 
 /** 1.7 {@code TileEntityCharge}: the timer behind every {@link BlockChargeBase}; pings once a second while armed. */
-public class TileEntityCharge extends TileEntityLoadedBase {
+public class TileEntityCharge extends SyncedBlockEntity {
 
     public boolean started;
     public int timer;
@@ -40,7 +40,7 @@ public class TileEntityCharge extends TileEntityLoadedBase {
             }
         }
 
-        charge.networkPackNT();
+        charge.syncState();
     }
 
     @Override

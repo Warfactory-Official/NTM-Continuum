@@ -2,12 +2,12 @@ package com.hbm.tileentity.network;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.api.energymk2.CableData;
+import com.hbm.network.power.CableData;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
-import com.hbm.tileentity.TileEntityLoadedBase;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerGraphProvider;
+import dev.golem.core.machine.SyncedBlockEntity;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -30,7 +30,7 @@ import com.hbm.blocks.network.PylonDyes;
  * {@code PowerNode.addConnection(DirPos UNKNOWN)} became. A pylon with several cells (the substation's
  * corners) links them to its core cell the way the battery socket ties its ports together.
  */
-public abstract class TileEntityPylonBase extends TileEntityLoadedBase implements IEnergyConductorMK2 {
+public abstract class TileEntityPylonBase extends SyncedBlockEntity implements IEnergyConductorMK2 {
 
     protected final List<BlockPos> connected = new ArrayList<>();
     public int color;

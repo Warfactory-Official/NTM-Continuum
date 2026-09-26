@@ -10,7 +10,7 @@ import com.hbm.inventory.gui.GUIMachineKeyForge;
 public final class SecurityClientRegistrations {
     private SecurityClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModSecurityMenus.MACHINE_KEYFORGE.get(), GUIMachineKeyForge::new);
     }
 

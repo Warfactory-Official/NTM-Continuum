@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.DuctData;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.blocks.machine.MachineDrain;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.network.BlockFluidDuct;
@@ -12,7 +12,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineDrain;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.tileentity.network.TileEntityFluidValve;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -35,7 +35,7 @@ public final class FluidValveDrainGameTests {
 
         valve.setFluidType(Fluids.WATER);
         helper.assertFalse(graph.containsCell(key), "Closed valve must not conduct");
-        helper.assertTrue(!block.canConnect(Fluids.WATER, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
+        helper.assertTrue(!block.canConnect(Fluids.WATER, level, pos.getX(), pos.getY(), pos.getZ(), Direction.NORTH),
                 "Closed valve must not expose a fluid connection");
 
         level.setBlock(pos, level.getBlockState(pos).setValue(FluidValve.OPEN, true), 3);
@@ -43,9 +43,9 @@ public final class FluidValveDrainGameTests {
         helper.assertTrue(graph.containsCell(key), "Open typed valve must conduct");
         helper.assertTrue(FluidGraph.typeAt(graph, key) == Fluids.WATER,
                 "An open valve conducts whatever it was typed to, not " + FluidGraph.typeAt(graph, key));
-        helper.assertTrue(block.canConnect(Fluids.WATER, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
+        helper.assertTrue(block.canConnect(Fluids.WATER, level, pos.getX(), pos.getY(), pos.getZ(), Direction.NORTH),
                 "Open valve must accept its configured fluid");
-        helper.assertTrue(!block.canConnect(Fluids.STEAM, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
+        helper.assertTrue(!block.canConnect(Fluids.STEAM, level, pos.getX(), pos.getY(), pos.getZ(), Direction.NORTH),
                 "Valve must reject a different fluid type");
 
         level.setBlock(pos, level.getBlockState(pos).setValue(FluidValve.OPEN, false), 3);
@@ -55,7 +55,7 @@ public final class FluidValveDrainGameTests {
         level.setBlock(pos, level.getBlockState(pos).setValue(FluidValve.OPEN, true), 3);
         valve.setFluidType(Fluids.NONE);
         helper.assertFalse(graph.containsCell(key), "An untyped valve carries nothing, so it must not conduct");
-        helper.assertFalse(block.canConnect(Fluids.NONE, level, pos.getX(), pos.getY(), pos.getZ(), ForgeDirection.NORTH),
+        helper.assertFalse(block.canConnect(Fluids.NONE, level, pos.getX(), pos.getY(), pos.getZ(), Direction.NORTH),
                 "A NONE valve must not expose a fluid connection");
         helper.succeed();
     }
@@ -97,10 +97,10 @@ public final class FluidValveDrainGameTests {
 
         MachineDrain block = ModMachineBlocks.machine_drain.get();
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        ForgeDirection.NORTH),
+                        Direction.NORTH),
                 "Drain must expose its north port");
         helper.assertTrue(!block.canConnect(Fluids.WATER, helper.getLevel(), core.getX(), core.getY(), core.getZ(),
-                        ForgeDirection.UP),
+                        Direction.UP),
                 "Drain must not expose a vertical port");
         helper.succeed();
     }

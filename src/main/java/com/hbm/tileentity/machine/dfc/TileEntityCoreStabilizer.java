@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine.dfc;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -85,7 +86,7 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase
             }
         }
 
-        networkPackNT();
+        syncState();
     }
 
     private ItemStack lens() {
@@ -120,7 +121,7 @@ public class TileEntityCoreStabilizer extends TileEntityMachineBase
     @Override public long getPower() { return power; }
     @Override public void setPower(long i) { this.power = i; }
     @Override public long getMaxPower() { return maxPower; }
-    @Override public boolean canConnect(ForgeDirection dir) { return dir != ForgeDirection.UNKNOWN; }
+    @Override public boolean canConnect(Direction dir) { return dir != null; }
 
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {

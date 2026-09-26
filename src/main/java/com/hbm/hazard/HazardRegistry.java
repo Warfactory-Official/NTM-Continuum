@@ -1,5 +1,6 @@
 package com.hbm.hazard;
 
+import com.hbm.api.hazard.HazardEntry;
 import static com.hbm.inventory.OreDictManager.*;
 
 import com.hbm.hazard.type.HazardTypeAsbestos;
@@ -13,7 +14,7 @@ import com.hbm.hazard.type.HazardTypeHot;
 import com.hbm.hazard.type.HazardTypeHydroactive;
 import com.hbm.hazard.type.HazardTypeRadiation;
 import com.hbm.hazard.type.HazardTypeToxic;
-import com.hbm.hazard.type.IHazardType;
+import com.hbm.api.hazard.IHazardType;
 import com.hbm.hazard.transformer.HazardTransformerCustom;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.hazard.transformer.HazardTransformerZirnox;

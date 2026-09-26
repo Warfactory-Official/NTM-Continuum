@@ -12,7 +12,7 @@ import com.hbm.hazard.HazardSystem;
 import com.hbm.scripting.NTMServerEvents;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKRod;
 import com.hbm.util.ArmorRegistry;
-import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.util.ContaminationUtil;
 import com.hbm.util.DamageResistanceHandler;
 import dev.golem.core.gametest.GameTests;

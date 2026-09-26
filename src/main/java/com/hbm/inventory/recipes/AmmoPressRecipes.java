@@ -4,7 +4,7 @@ import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.MaterialStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums.EnumCasingType;
 import com.hbm.items.machine.ItemFluidTank;
@@ -200,7 +200,7 @@ public final class AmmoPressRecipes {
 
         add(standard("ct_hook"), 16, null, steel, null, null, pipe, null, null, smokeless, null);
         add(standard("ct_mortar"), 4, null, count(highExplosive, 4), null, null, pipe, null, null, smokeless, null);
-        com.hbm.scripting.ScriptedRecipes.apply(AmmoPressRecipes.class);
+        dev.golem.core.content.Replay.apply(AmmoPressRecipes.class);
     }
 
     public static void put(ItemStack output, AStack[] input) {

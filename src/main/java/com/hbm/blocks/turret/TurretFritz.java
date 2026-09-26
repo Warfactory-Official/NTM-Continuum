@@ -1,7 +1,8 @@
 package com.hbm.blocks.turret;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.turret.TileEntityTurretFritz;
@@ -25,7 +26,8 @@ public class TurretFritz extends TurretBaseNT implements IFluidConnectorBlockMK2
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return padConnects(world, new BlockPos(x, y, z), dir);
     }
 

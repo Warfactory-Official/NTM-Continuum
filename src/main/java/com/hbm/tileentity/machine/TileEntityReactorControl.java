@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.items.machine.ItemReactorSensor;
 import com.hbm.tileentity.TileEntityMachineBase;
@@ -75,7 +75,7 @@ public final class TileEntityReactorControl extends TileEntityMachineBase implem
             if (level != te.level) te.reactor.setTarget(level);
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     private boolean establishLink(Level world) {

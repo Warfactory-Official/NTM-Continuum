@@ -1,14 +1,14 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.FluidContainers;
 import com.hbm.items.machine.ItemFluidContainerNT;
 import com.hbm.items.machine.ItemFluidSiphon;
 import com.hbm.items.machine.ItemInfiniteFluid;
 import com.hbm.items.tool.ItemModBucket;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.blocks.ModHazardBlocks;
 import dev.golem.core.registry.DeferredRegister;

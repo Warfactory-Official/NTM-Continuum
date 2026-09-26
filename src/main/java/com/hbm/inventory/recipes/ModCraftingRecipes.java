@@ -1,8 +1,8 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.lib.ItemIds;
-import com.hbm.lib.TagIds;
-import com.hbm.lib.VanillaIds;
+import com.hbm.api.ids.ItemIds;
+import com.hbm.api.ids.TagIds;
+import com.hbm.api.ids.VanillaIds;
 
 import static dev.golem.core.dejson.Crafting.compress;
 import static dev.golem.core.dejson.Crafting.decompress;

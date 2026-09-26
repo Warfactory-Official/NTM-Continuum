@@ -14,7 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -51,12 +51,12 @@ public class EntityDisperserCanister extends EntityGrenadeBase {
     }
 
     public FluidType getFluid() {
-        FluidType fluid = Fluids.fromID(entityData.get(FLUID));
+        FluidType fluid = Fluids.byIndex(entityData.get(FLUID));
         return fluid == null ? Fluids.NONE : fluid;
     }
 
     public EntityDisperserCanister setFluid(FluidType fluid) {
-        entityData.set(FLUID, fluid == null ? 0 : fluid.getID());
+        entityData.set(FLUID, fluid == null ? 0 : fluid.index());
         return this;
     }
 
@@ -88,14 +88,14 @@ public class EntityDisperserCanister extends EntityGrenadeBase {
     @Override
     protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("fluid", entityData.get(FLUID));
+        output.putString("fluid", Fluids.byIndex(entityData.get(FLUID)).id().toString());
         output.store("item", dev.golem.core.world.ItemStacks.optionalCodec(), entityData.get(TYPE));
     }
 
     @Override
     protected void loadData(DataIn input) {
         super.loadData(input);
-        entityData.set(FLUID, input.getIntOr("fluid", 0));
+        entityData.set(FLUID, Fluids.byId(input.getStringOr("fluid", "")).index());
         input.read("item", dev.golem.core.world.ItemStacks.optionalCodec()).ifPresent(stack -> entityData.set(TYPE, stack));
     }
 }

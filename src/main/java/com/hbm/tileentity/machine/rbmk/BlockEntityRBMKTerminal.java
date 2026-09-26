@@ -7,7 +7,7 @@ import com.hbm.explosion.vanillant.standard.ExplosionEffectWeapon;
 import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.tileentity.ModRBMKBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.tileentity.network.RTTYSystem;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -31,7 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * another terminal. {@code set<line#>} is parsed out of the function name rather than a parameter,
  * matching the fork.
  */
-public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
+public class BlockEntityRBMKTerminal extends SyncedBlockEntity
         implements IControlReceiver, IRORInteractive {
 
     public static final int HISTORY = 17;
@@ -52,7 +52,7 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
         if (!channel.isEmpty() && !repeatCmd.isEmpty()) {
             RTTYSystem.broadcast(level, channel, repeatCmd);
         }
-        networkPackNT();
+        syncState();
     }
 
     public void eval(String cmd) {
@@ -64,28 +64,28 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
         if (cmd.startsWith("chan ")) {
             channel = cmd.substring(5);
             push("Set channel to " + (channel.isEmpty() ? "<none>" : channel));
-            markChanged();
+            setChanged();
             return;
         }
 
         if (cmd.equals("chan")) {
             channel = "";
             push("Set channel to <none>");
-            markChanged();
+            setChanged();
             return;
         }
 
         if (cmd.startsWith("start ")) {
             repeatCmd = cmd.substring(6);
             push("Repeating signal on " + channel);
-            markChanged();
+            setChanged();
             return;
         }
 
         if (cmd.equals("stop")) {
             repeatCmd = "";
             push("Stopping repeat signal");
-            markChanged();
+            setChanged();
             return;
         }
 
@@ -126,7 +126,7 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
     public void push(String msg) {
         System.arraycopy(history, 0, history, 1, history.length - 1);
         history[0] = msg;
-        markChanged();
+        setChanged();
     }
 
     @Override
@@ -169,7 +169,7 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
     public void receiveControl(CompoundTag data) {
         if (data.contains("cmd")) {
             eval(Tags.getStringOr(data, "cmd", ""));
-            markChanged();
+            setChanged();
         }
     }
 
@@ -186,7 +186,7 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "clear").equals(name)) {
             Arrays.fill(history, "");
-            markChanged();
+            setChanged();
             return null;
         }
 
@@ -194,14 +194,14 @@ public class BlockEntityRBMKTerminal extends TileEntityLoadedBase
 
         if ((PREFIX_FUNCTION + "write").equals(name)) {
             push(allParams);
-            markChanged();
+            setChanged();
             return null;
         }
 
         if (name.startsWith(PREFIX_FUNCTION + "set")) {
             int line = IRORInteractive.parseInt(name.substring(PREFIX_FUNCTION.length() + 3), 1, history.length) - 1;
             history[line] = allParams;
-            markChanged();
+            setChanged();
             return null;
         }
 

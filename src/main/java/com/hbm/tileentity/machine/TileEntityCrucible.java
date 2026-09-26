@@ -1,5 +1,8 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
+import com.hbm.api.material.Material;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.tileentity.MachineCore;
 import dev.golem.core.data.Tags;
 import com.hbm.api.block.ICrucibleAcceptor;
@@ -55,8 +58,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
     public String recipe = "null";
 
-    public List<Mats.MaterialStack> recipeStack = new ArrayList<>();
-    public List<Mats.MaterialStack> wasteStack = new ArrayList<>();
+    public List<MaterialStack> recipeStack = new ArrayList<>();
+    public List<MaterialStack> wasteStack = new ArrayList<>();
 
     /* CONSTANTS (1.12.2 defaults) */
     public static final int recipeZCapacity = MaterialShapes.BLOCK.quantity * 16;
@@ -122,8 +125,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         /* burn entities standing in the molten pool */
         int totalCap = recipeZCapacity + wasteZCapacity;
         int totalMass = 0;
-        for (Mats.MaterialStack stack : te.recipeStack) totalMass += stack.amount;
-        for (Mats.MaterialStack stack : te.wasteStack) totalMass += stack.amount;
+        for (MaterialStack stack : te.recipeStack) totalMass += stack.amount;
+        for (MaterialStack stack : te.wasteStack) totalMass += stack.amount;
 
         double poolLevel = ((double) totalMass / (double) totalCap) * 0.875D;
         if (poolLevel > 0) {
@@ -154,10 +157,10 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
             double sx = pos.getX() + 0.5D + dir.offsetX * 1.875D;
             double sy = pos.getY() + 0.25D;
             double sz = pos.getZ() + 0.5D + dir.offsetZ * 1.875D;
-            Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(level, sx, sy, sz, 6, true, te.wasteStack, MaterialShapes.NUGGET.quantity * 3, impact);
+            MaterialStack didPour = CrucibleUtil.pourFullStack(level, sx, sy, sz, 6, true, te.wasteStack, MaterialShapes.NUGGET.quantity * 3, impact);
 
             if (didPour != null && impact[0] != null) {
-                te.wastePourColor = didPour.material.moltenColor;
+                te.wastePourColor = didPour.material.moltenColor();
                 te.wastePourLen = Math.max(1F, pos.getY() - (float) (Math.ceil(impact[0].y) - 0.875));
                 te.wastePourTimer = STREAM_LIFETIME;
             }
@@ -166,15 +169,15 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         /* pour recipe stack (out the front) */
         if (!te.recipeStack.isEmpty()) {
             ForgeDirection dir = MachineCore.facing(state);
-            List<Mats.MaterialStack> toCast = new ArrayList<>();
+            List<MaterialStack> toCast = new ArrayList<>();
 
             CrucibleRecipe recipe = te.getLoadedRecipe();
             // if no recipe is loaded, everything from the recipe stack is drainable
             if (recipe == null) {
                 toCast.addAll(te.recipeStack);
             } else {
-                for (Mats.MaterialStack stack : te.recipeStack) {
-                    for (Mats.MaterialStack output : recipe.output) {
+                for (MaterialStack stack : te.recipeStack) {
+                    for (MaterialStack output : recipe.output) {
                         if (stack.material == output.material) {
                             toCast.add(stack);
                             break;
@@ -187,10 +190,10 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
             double sx = pos.getX() + 0.5D + dir.offsetX * 1.875D;
             double sy = pos.getY() + 0.25D;
             double sz = pos.getZ() + 0.5D + dir.offsetZ * 1.875D;
-            Mats.MaterialStack didPour = CrucibleUtil.pourFullStack(level, sx, sy, sz, 6, true, toCast, MaterialShapes.NUGGET.quantity * 3, impact);
+            MaterialStack didPour = CrucibleUtil.pourFullStack(level, sx, sy, sz, 6, true, toCast, MaterialShapes.NUGGET.quantity * 3, impact);
 
             if (didPour != null && impact[0] != null) {
-                te.recipePourColor = didPour.material.moltenColor;
+                te.recipePourColor = didPour.material.moltenColor();
                 te.recipePourLen = Math.max(1F, pos.getY() - (float) (Math.ceil(impact[0].y) - 0.875));
                 te.recipePourTimer = STREAM_LIFETIME;
             }
@@ -200,7 +203,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         te.recipeStack.removeIf(o -> o.amount <= 0);
         te.wasteStack.removeIf(x -> x.amount <= 0);
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     protected void tryPullHeat(Level level, BlockPos pos) {
@@ -242,10 +245,10 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         if (this.progress >= processTime) {
             this.progress = 0;
 
-            List<Mats.MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(inventory.getStackInSlot(slot));
+            List<MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(inventory.getStackInSlot(slot));
             CrucibleRecipe recipe = getLoadedRecipe();
 
-            for (Mats.MaterialStack material : materials) {
+            for (MaterialStack material : materials) {
                 boolean recipeMaterial = recipe != null && (getQuantaFromType(recipe.input, material.material) > 0 || getQuantaFromType(recipe.output, material.material) > 0);
 
                 // modern (non-legacy) rules hardcoded: with no recipe, everything goes to the recipe stack
@@ -269,17 +272,17 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         if (recipe == null) return;
         if (!TickPhase.every(level, worldPosition, recipe.frequency)) return;
 
-        for (Mats.MaterialStack stack : recipe.input) {
+        for (MaterialStack stack : recipe.input) {
             if (getQuantaFromType(this.recipeStack, stack.material) < stack.amount) return;
         }
 
-        for (Mats.MaterialStack stack : this.recipeStack) {
+        for (MaterialStack stack : this.recipeStack) {
             stack.amount -= getQuantaFromType(recipe.input, stack.material);
         }
 
         outer:
-        for (Mats.MaterialStack out : recipe.output) {
-            for (Mats.MaterialStack stack : this.recipeStack) {
+        for (MaterialStack out : recipe.output) {
+            for (MaterialStack stack : this.recipeStack) {
                 if (stack.material == out.material) {
                     stack.amount += out.amount;
                     continue outer;
@@ -305,7 +308,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     }
 
     public boolean isItemSmeltable(ItemStack stack) {
-        List<Mats.MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(stack);
+        List<MaterialStack> materials = Mats.getSmeltingMaterialsFromItem(stack);
 
         // if there's no materials in there at all, don't smelt
         if (materials.isEmpty()) return false;
@@ -318,7 +321,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         int recipeAmount = getQuantaFromType(this.recipeStack, null);
         int wasteAmount = getQuantaFromType(this.wasteStack, null);
 
-        for (Mats.MaterialStack mat : materials) {
+        for (MaterialStack mat : materials) {
             int recipeInputRequired = recipe != null ? getQuantaFromType(recipe.input, mat.material) : 0;
 
             // this allows pouring the output material back into the crucible
@@ -351,8 +354,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         return recipeAmount <= recipeZCapacity && wasteAmount <= wasteZCapacity && matchesRecipe;
     }
 
-    public void addToStack(List<Mats.MaterialStack> stack, Mats.MaterialStack matStack) {
-        for (Mats.MaterialStack mat : stack) {
+    public void addToStack(List<MaterialStack> stack, MaterialStack matStack) {
+        for (MaterialStack mat : stack) {
             if (mat.material == matStack.material) {
                 mat.amount += matStack.amount;
                 return;
@@ -365,8 +368,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         return CrucibleRecipes.INSTANCE.recipeNameMap.get(recipe) instanceof CrucibleRecipe rec ? rec : null;
     }
 
-    public int getQuantaFromType(Mats.MaterialStack[] stacks, NTMMaterial mat) {
-        for (Mats.MaterialStack stack : stacks) {
+    public int getQuantaFromType(MaterialStack[] stacks, Material mat) {
+        for (MaterialStack stack : stacks) {
             if (mat == null || stack.material == mat) {
                 return stack.amount;
             }
@@ -374,9 +377,9 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         return 0;
     }
 
-    public int getQuantaFromType(List<Mats.MaterialStack> stacks, NTMMaterial mat) {
+    public int getQuantaFromType(List<MaterialStack> stacks, Material mat) {
         int sum = 0;
-        for (Mats.MaterialStack stack : stacks) {
+        for (MaterialStack stack : stacks) {
             if (stack.material == mat) {
                 return stack.amount;
             }
@@ -395,7 +398,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     // --- ICrucibleAcceptor (the crucible itself can be poured into from the top) ---
 
     @Override
-    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
+    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction side, MaterialStack stack) {
         CrucibleRecipe recipe = getLoadedRecipe();
 
         if (recipe == null) {
@@ -411,7 +414,7 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     }
 
     @Override
-    public Mats.MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
+    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction side, MaterialStack stack) {
         CrucibleRecipe recipe = getLoadedRecipe();
 
         if (recipe == null) {
@@ -422,8 +425,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
                 return null;
             } else {
                 int toAdd = wasteZCapacity - amount;
-                this.addToStack(this.wasteStack, new Mats.MaterialStack(stack.material, toAdd));
-                return new Mats.MaterialStack(stack.material, stack.amount - toAdd);
+                this.addToStack(this.wasteStack, new MaterialStack(stack.material, toAdd));
+                return new MaterialStack(stack.material, stack.amount - toAdd);
             }
         }
 
@@ -439,15 +442,15 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
 
         int toAdd = matMaximum - stack.amount;
         toAdd = Math.min(toAdd, recipeZCapacity - getQuantaFromType(this.recipeStack, null));
-        this.addToStack(this.recipeStack, new Mats.MaterialStack(stack.material, toAdd));
-        return new Mats.MaterialStack(stack.material, stack.amount - toAdd);
+        this.addToStack(this.recipeStack, new MaterialStack(stack.material, toAdd));
+        return new MaterialStack(stack.material, stack.amount - toAdd);
     }
 
     @Override
-    public boolean canAcceptPartialFlow(Level world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return false; }
+    public boolean canAcceptPartialFlow(Level world, BlockPos pos, Direction side, MaterialStack stack) { return false; }
 
     @Override
-    public Mats.MaterialStack flow(Level world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return null; }
+    public MaterialStack flow(Level world, BlockPos pos, Direction side, MaterialStack stack) { return null; }
 
     // --- IControlReceiver (recipe selector) ---
 
@@ -474,12 +477,12 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         super.preRemoveSideEffects(pos, state);
         if (level == null || level.isClientSide()) return;
-        List<Mats.MaterialStack> stacks = new ArrayList<>();
+        List<MaterialStack> stacks = new ArrayList<>();
         stacks.addAll(recipeStack);
         stacks.addAll(wasteStack);
-        for (Mats.MaterialStack stack : stacks) {
+        for (MaterialStack stack : stacks) {
             com.hbm.items.machine.ItemScraps.spawnMats(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
-                    new Mats.MaterialStack(stack.material, stack.amount));
+                    new MaterialStack(stack.material, stack.amount));
         }
         recipeStack.clear();
         wasteStack.clear();
@@ -506,14 +509,14 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         buf.writeUtf(recipe);
 
         buf.writeShort(recipeStack.size());
-        for (Mats.MaterialStack sta : recipeStack) {
-            buf.writeInt(sta.material == null ? -1 : sta.material.id);
+        for (MaterialStack sta : recipeStack) {
+            buf.writeInt(sta.material == null ? -1 : sta.material.index());
             buf.writeInt(sta.amount);
         }
 
         buf.writeShort(wasteStack.size());
-        for (Mats.MaterialStack sta : wasteStack) {
-            buf.writeInt(sta.material == null ? -1 : sta.material.id);
+        for (MaterialStack sta : wasteStack) {
+            buf.writeInt(sta.material == null ? -1 : sta.material.index());
             buf.writeInt(sta.amount);
         }
 
@@ -531,18 +534,18 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         recipe = buf.readUtf();
 
         int rLen = buf.readShort() & 0xFFFF;
-        List<Mats.MaterialStack> newRecipe = new ArrayList<>(rLen);
+        List<MaterialStack> newRecipe = new ArrayList<>(rLen);
         for (int i = 0; i < rLen; i++) {
             int id = buf.readInt();
             int amt = buf.readInt();
-            if (id >= 0) newRecipe.add(new Mats.MaterialStack(Mats.matById.get(id), amt));
+            if (id >= 0) newRecipe.add(new MaterialStack(Mats.byIndex(id), amt));
         }
         int wLen = buf.readShort() & 0xFFFF;
-        List<Mats.MaterialStack> newWaste = new ArrayList<>(wLen);
+        List<MaterialStack> newWaste = new ArrayList<>(wLen);
         for (int i = 0; i < wLen; i++) {
             int id = buf.readInt();
             int amt = buf.readInt();
-            if (id >= 0) newWaste.add(new Mats.MaterialStack(Mats.matById.get(id), amt));
+            if (id >= 0) newWaste.add(new MaterialStack(Mats.byIndex(id), amt));
         }
         this.recipeStack = newRecipe;
         this.wasteStack = newWaste;
@@ -558,12 +561,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         super.saveData(output);
         output.putString("recipe", this.recipe);
 
-        int[] rec = new int[recipeStack.size() * 2];
-        int[] was = new int[wasteStack.size() * 2];
-        for (int i = 0; i < recipeStack.size(); i++) { Mats.MaterialStack sta = recipeStack.get(i); rec[i * 2] = sta.material.id; rec[i * 2 + 1] = sta.amount; }
-        for (int i = 0; i < wasteStack.size(); i++) { Mats.MaterialStack sta = wasteStack.get(i); was[i * 2] = sta.material.id; was[i * 2 + 1] = sta.amount; }
-        output.putIntArray("rec", rec);
-        output.putIntArray("was", was);
+        Mats.saveStacks(output, "rec", recipeStack);
+        Mats.saveStacks(output, "was", wasteStack);
         output.putInt("progress", progress);
         output.putInt("heat", heat);
     }
@@ -576,17 +575,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
         this.recipeStack.clear();
         this.wasteStack.clear();
 
-        int[] rec = input.getIntArray("rec").orElse(new int[0]);
-        for (int i = 0; i < rec.length / 2; i++) {
-            NTMMaterial mat = Mats.matById.get(rec[i * 2]);
-            if (mat != null) recipeStack.add(new Mats.MaterialStack(mat, rec[i * 2 + 1]));
-        }
-
-        int[] was = input.getIntArray("was").orElse(new int[0]);
-        for (int i = 0; i < was.length / 2; i++) {
-            NTMMaterial mat = Mats.matById.get(was[i * 2]);
-            if (mat != null) wasteStack.add(new Mats.MaterialStack(mat, was[i * 2 + 1]));
-        }
+        recipeStack.addAll(Mats.loadStacks(input, "rec"));
+        wasteStack.addAll(Mats.loadStacks(input, "was"));
 
         this.progress = input.getIntOr("progress", 0);
         this.heat = input.getIntOr("heat", 0);

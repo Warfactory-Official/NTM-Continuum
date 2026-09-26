@@ -53,7 +53,7 @@ public final class ParticleAcceleratorRecipes {
                 new ItemStack(ModRBMKItems.particle_digamma.get()), null);
         add(exact(ModIntermediateItems.expensive(EnumExpensiveType.GOLD_DUST)), SBD.ingot(), 10_000,
                 ModIntermediateItems.expensive(EnumExpensiveType.DEGENERATE_MATTER, 1), null);
-        com.hbm.scripting.ScriptedRecipes.apply(ParticleAcceleratorRecipes.class);
+        dev.golem.core.content.Replay.apply(ParticleAcceleratorRecipes.class);
     }
 
     public static void addRecipe(AStack in1, AStack in2, int momentum, ItemStack out1, @Nullable ItemStack out2) {

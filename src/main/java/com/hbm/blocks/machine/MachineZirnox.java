@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityReactorZirnox;
 import net.minecraft.core.BlockPos;
@@ -59,7 +61,7 @@ public class MachineZirnox extends BlockMultiblockMachine implements IFluidConne
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
         for (int[] box : DRUM) {
-            if (!MultiblockHandlerXR.checkSpace(level, core, box, clicked, facing)) return false;
+            if (!MultiblockFootprint.checkSpace(level, core, box, clicked, facing)) return false;
         }
         return true;
     }
@@ -68,7 +70,7 @@ public class MachineZirnox extends BlockMultiblockMachine implements IFluidConne
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int[] box : DRUM) MultiblockHandlerXR.visitBox(core, box, facing, visitor);
+        for (int[] box : DRUM) MultiblockFootprint.visitBox(core, box, facing, visitor);
 
         Direction rot = facing.getClockWise();
         int rx = rot.getStepX(), rz = rot.getStepZ();

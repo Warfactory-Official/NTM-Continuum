@@ -116,7 +116,7 @@ public class TileEntityMachineEPress extends TileEntityMachineBase implements Me
             te.isRetracting = true;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     private boolean canProcess() {

@@ -49,7 +49,7 @@ public final class StorageDrumRecipes {
         add(new ItemStack(ModItems.ingot_au198.get()), new ItemStack(ModItems.bottle_mercury.get()),
                 (int) (decayChance * 0.01), 500, 500);
         // Deferred faithfully: the old nugget_au198 -> ingot_mercury recipe needs the unported item.
-        com.hbm.scripting.ScriptedRecipes.apply(StorageDrumRecipes.class);
+        dev.golem.core.content.Replay.apply(StorageDrumRecipes.class);
     }
 
     public static void addRecipe(ItemStack input, ItemStack output, int chance, int liquid, int gas) {

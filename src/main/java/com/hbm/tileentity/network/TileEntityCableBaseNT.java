@@ -1,7 +1,7 @@
 package com.hbm.tileentity.network;
 
 import com.hbm.api.energymk2.IEnergyConductorMK2;
-import com.hbm.api.energymk2.PowerGraph;
+import com.hbm.network.power.PowerGraph;
 import com.hbm.api.tile.ILoadedTile;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -26,8 +26,4 @@ public class TileEntityCableBaseNT extends BlockEntity implements IEnergyConduct
         PowerGraph.dropCells(this, getBlockPos());
     }
 
-    @Override
-    public boolean isLoaded() {
-        return !isRemoved();
-    }
 }

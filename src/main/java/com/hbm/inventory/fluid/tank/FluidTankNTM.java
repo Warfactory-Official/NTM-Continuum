@@ -3,7 +3,7 @@ package com.hbm.inventory.fluid.tank;
 import dev.golem.core.data.Tags;
 
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.util.Mth;
@@ -24,7 +24,7 @@ import org.jspecify.annotations.NonNull;
  *
  * @author hbm, mlbv
  */
-public class FluidTankNTM implements Cloneable {
+public class FluidTankNTM implements com.hbm.api.fluid.FluidTank, Cloneable {
 
     @NonNull
     private FluidType type;
@@ -119,7 +119,7 @@ public class FluidTankNTM implements Cloneable {
     public void writeToNBT(DataOut nbt, String s) {
         nbt.putInt(s, fluid);
         nbt.putInt(s + "_max", maxFluid);
-        nbt.putInt(s + "_type", type.getID());
+        nbt.putString(s + "_type", type.id().toString());
         nbt.putShort(s + "_p", (short) pressure);
     }
 
@@ -128,7 +128,7 @@ public class FluidTankNTM implements Cloneable {
         int max = nbt.getIntOr(s + "_max", 0);
         if (max > 0) maxFluid = max;
         fluid = Mth.clamp(fluid, 0, maxFluid);
-        type = Fluids.fromID(nbt.getIntOr(s + "_type", 0));
+        type = Fluids.byId(nbt.getStringOr(s + "_type", ""));
         this.pressure = nbt.getShortOr(s + "_p", (short) 0);
     }
 
@@ -142,14 +142,14 @@ public class FluidTankNTM implements Cloneable {
     public void serialize(RegistryFriendlyByteBuf buf, int fill) {
         buf.writeInt(fill);
         buf.writeInt(maxFluid);
-        buf.writeInt(type.getID());
+        buf.writeInt(type.index());
         buf.writeShort(pressure);
     }
 
     public void deserialize(RegistryFriendlyByteBuf buf) {
         fluid = buf.readInt();
         maxFluid = buf.readInt();
-        type = Fluids.fromID(buf.readInt());
+        type = Fluids.byIndex(buf.readInt());
         pressure = buf.readShort();
     }
 

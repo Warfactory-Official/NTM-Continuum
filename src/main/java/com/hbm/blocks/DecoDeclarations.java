@@ -102,7 +102,7 @@ public final class DecoDeclarations {
                 .register();
         Drops.nothing(NS, "spotlight_beam");
         // Lantern: a folded five-tall post drawn entirely by LanternRenderer, so the blockstate exists
-        // only because vanilla demands one. FACING x CELL is BlockMultiblockMachine's state space.
+        // only because vanilla demands one. FACING x CELL is MultiblockMachine's state space.
         Dejson.block(NS, "lantern").rendered(DUMMY)
                 .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
                         Variants.uniform("cell", "false", "true"))).register();

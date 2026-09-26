@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.tileentity.network.TileEntityFluidPump;
 import com.hbm.packet.ControlEventPayload;
@@ -7,13 +8,10 @@ import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.MouseInput;
 import dev.golem.core.net.GolemNetwork;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 
 /**
  * The 1.7 {@code GUIPump}: a plain screen (not a container) with a throughput text box and two cycling
@@ -72,21 +70,18 @@ public final class GUIPump extends CompatScreen {
         if (x >= this.width / 2 - 50 && x < this.width / 2 + 40 && y >= 100 && y < 120) {
             pressure++;
             if (pressure > 5) pressure = 0;
-            click();
+            Gauges.click();
             return true;
         }
         if (x >= this.width / 2 + 50 && x < this.width / 2 + 140 && y >= 100 && y < 120) {
             priority++;
             if (priority >= ConnectionPriority.values().length) priority = 0;
-            click();
+            Gauges.click();
             return true;
         }
         return false;
     }
 
-    private static void click() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-    }
 
     @Override
     public void onClose() {

@@ -69,7 +69,7 @@ public class TileEntityPADetector extends TileEntityCooledBase
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.getMaxPower());
         te.exchangeCoolant(level);
         te.updateCooling();
-        te.networkPackNT();
+        te.syncState();
     }
 
     private ForgeDirection getBeamDir() {

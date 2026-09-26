@@ -1,9 +1,11 @@
 package com.hbm.blocks.generic;
 
-import com.hbm.api.block.IToolable;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.block.IToolable;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.IBomb;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
@@ -77,7 +79,7 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
         if (type.getExtraDimensions() != null) for (int[] dims : type.getExtraDimensions()) {
-            if (!MultiblockHandlerXR.checkSpace(level, core, dims, clicked, facing)) return false;
+            if (!MultiblockFootprint.checkSpace(level, core, dims, clicked, facing)) return false;
         }
         return true;
     }
@@ -86,7 +88,7 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
         if (type.getExtraDimensions() != null) for (int[] dims : type.getExtraDimensions()) {
-            MultiblockHandlerXR.visitBox(core, dims, facing, visitor);
+            MultiblockFootprint.visitBox(core, dims, facing, visitor);
         }
     }
 
@@ -147,7 +149,7 @@ public class BlockDoorGeneric extends BlockMultiblockMachine implements IBomb, I
         if (door == null || door.getDoorType() == null || !door.getDoorType().hasSkins()) return false;
         if (level.isClientSide()) return true;
         door.cycleSkinIndex();
-        door.networkPackNT();
+        door.syncState();
         return true;
     }
 

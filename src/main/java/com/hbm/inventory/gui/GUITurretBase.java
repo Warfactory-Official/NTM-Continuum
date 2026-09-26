@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerTurretBase;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.turret.TileEntityTurretArty;
@@ -315,19 +316,19 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
         if (count > 0) {
             if (isHovering(PREV_X, LIST_Y, LIST_SIZE, LIST_SIZE, x, y)) {
                 index = (index - 1 + count) % count;
-                GuiUtil.playClickSound();
+                Gauges.click();
                 return true;
             }
             if (isHovering(NEXT_X, LIST_Y, LIST_SIZE, LIST_SIZE, x, y)) {
                 index = (index + 1) % count;
-                GuiUtil.playClickSound();
+                Gauges.click();
                 return true;
             }
         }
 
         if (isHovering(PREV_X, NAME_Y, LIST_SIZE, LIST_SIZE, x, y)) {
             if (this.field.getValue().isEmpty()) return true;
-            GuiUtil.playClickSound();
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             data.putString("name", this.field.getValue());
             send(turret, data);
@@ -336,7 +337,7 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
         }
 
         if (isHovering(NEXT_X, NAME_Y, LIST_SIZE, LIST_SIZE, x, y)) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             data.putInt("del", this.index);
             send(turret, data);
@@ -347,7 +348,7 @@ public final class GUITurretBase extends CompatContainerScreen<ContainerTurretBa
     }
 
     private boolean toggle(TileEntityTurretBaseNT turret, int button) {
-        GuiUtil.playClickSound();
+        Gauges.click();
         CompoundTag data = new CompoundTag();
         data.putInt("toggle", button);
         send(turret, data);

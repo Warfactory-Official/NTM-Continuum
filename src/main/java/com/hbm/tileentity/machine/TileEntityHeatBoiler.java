@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -14,7 +14,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.level.Level;
@@ -41,7 +41,7 @@ import com.hbm.sound.AudioWrapper;
  * IPersistentNBT/IConfigurableMachine/IFluidCopiable. Port seam: heat is polled through a
  * multiblock cell below by resolving its core (old used proxy TEs).
  */
-public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
+public class TileEntityHeatBoiler extends SyncedBlockEntity implements IFluidStandardTransceiverMK2, IRORValueProvider {
 
     public static final int maxHeat = 12_800_000;
     public static final double diffusion = 0.1D;
@@ -71,18 +71,18 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
 
             if (te.tanks[1].getFill() > 0) {
                 for (DirPos dp : te.getConPos()) {
-                    te.tryProvide(te.tanks[1], level, dp);
+                    te.tryProvide(te.tanks[1], level, dp.getPos(), dp.getDir().toDirection());
                 }
             }
         }
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityHeatBoiler te) {
         if (te.isOn) te.audioTime = 20;
         if (te.audioTime > 0) te.audioTime--;
         te.audio = MachineAudio.tick(te.audio, te.audioTime > 0 && !te.hasExploded, ModSounds.BOILER.get(),
-                SoundSource.BLOCKS, pos, te.getVolume(0.125F), 10F, 1.0F, 20);
+                SoundSource.BLOCKS, pos, 0.125F, 10F, 1.0F, 20);
     }
 
     public DirPos[] getConPos() {
@@ -134,7 +134,7 @@ public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluid
         if (outputOps == 0 && canExplode) {
             this.hasExploded = true;
             BlockPos base = this.worldPosition;
-            BlockMultiblockCore.withoutTeardown(() -> {
+            MultiblockCore.withoutTeardown(() -> {
                 for (int x = base.getX() - 1; x <= base.getX() + 1; x++) {
                     for (int y = base.getY() + 2; y <= base.getY() + 3; y++) {
                         for (int z = base.getZ() - 1; z <= base.getZ() + 1; z++) {

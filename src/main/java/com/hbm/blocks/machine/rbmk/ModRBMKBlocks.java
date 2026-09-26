@@ -1,7 +1,7 @@
 package com.hbm.blocks.machine.rbmk;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.blocks.generic.BlockLayering;
 import dev.golem.core.registry.DeferredRegister;

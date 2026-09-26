@@ -2,6 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.blocks.network.PneumoTube;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
+import dev.golem.core.render.gem.Quads;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Geometry;
@@ -49,21 +50,21 @@ public class PneumoTubeRenderer extends GemBER<TileEntityPneumoTube, PneumoTubeR
         Surface straight = Surface.cutout(STRAIGHT);
 
         // the seamless straight forms: sides only, the ends open onto the neighbouring tube
-        model.part(TubeBoxes.box("pneumo_tube_straight_x", 0, LOWER, LOWER, 1, UPPER, UPPER,
+        model.part(Quads.box("pneumo_tube_straight_x", 0, LOWER, LOWER, 1, UPPER, UPPER,
                         TubeBoxes.lateral(Direction.Axis.X), 0), straight)
                 .visibleIf(s -> !s.hasConnections && s.arms == X_STRAIGHT);
         // 1.7: uvRotateTop = 2, uvRotateBottom = 1 - the sprite's tube axis turned onto Z
-        model.part(TubeBoxes.box("pneumo_tube_straight_z", LOWER, LOWER, 0, UPPER, UPPER, 1,
+        model.part(Quads.box("pneumo_tube_straight_z", LOWER, LOWER, 0, UPPER, UPPER, 1,
                         TubeBoxes.lateral(Direction.Axis.Z), TubeBoxes.mask(Direction.UP, Direction.DOWN)), straight)
                 .visibleIf(s -> !s.hasConnections && s.arms == Z_STRAIGHT);
         // 1.7: uvRotate N/S/E/W = 2 - the sprite's tube axis turned upright
-        model.part(TubeBoxes.box("pneumo_tube_straight_y", LOWER, 0, LOWER, UPPER, 1, UPPER,
+        model.part(Quads.box("pneumo_tube_straight_y", LOWER, 0, LOWER, UPPER, 1, UPPER,
                         TubeBoxes.lateral(Direction.Axis.Y), TubeBoxes.lateral(Direction.Axis.Y)), straight)
                 .visibleIf(s -> !s.hasConnections && s.arms == Y_STRAIGHT);
 
         // the core: one face per direction, hidden where an arm attaches
         for (Direction dir : Direction.values()) {
-            model.part(TubeBoxes.box("pneumo_tube_core_" + dir.getName(), LOWER, LOWER, LOWER, UPPER, UPPER, UPPER,
+            model.part(Quads.box("pneumo_tube_core_" + dir.getName(), LOWER, LOWER, LOWER, UPPER, UPPER, UPPER,
                             1 << dir.ordinal(), 0), base)
                     .visibleIf(s -> !straight(s) && !has(s.arms, dir));
         }
@@ -71,7 +72,7 @@ public class PneumoTubeRenderer extends GemBER<TileEntityPneumoTube, PneumoTubeR
         // the arms: lateral faces only, the end opens onto the neighbour
         for (Direction dir : Direction.values()) {
             double[] b = armBounds(dir, LOWER, UPPER, 0, 1);
-            model.part(TubeBoxes.box("pneumo_tube_arm_" + dir.getName(), b[0], b[1], b[2], b[3], b[4], b[5],
+            model.part(Quads.box("pneumo_tube_arm_" + dir.getName(), b[0], b[1], b[2], b[3], b[4], b[5],
                             TubeBoxes.lateral(dir.getAxis()), 0), base)
                     .visibleIf(s -> !straight(s) && has(s.arms, dir));
         }
@@ -80,12 +81,12 @@ public class PneumoTubeRenderer extends GemBER<TileEntityPneumoTube, PneumoTubeR
         for (Direction dir : Direction.values()) {
             double[] collar = armBounds(dir, LOWER, UPPER, UPPER, C_UPPER);
             double[] head = armBounds(dir, C_LOWER, C_UPPER, C_UPPER, 1);
-            Geometry collarBox = TubeBoxes.box("pneumo_tube_collar_" + dir.getName(),
+            Geometry collarBox = Quads.box("pneumo_tube_collar_" + dir.getName(),
                     collar[0], collar[1], collar[2], collar[3], collar[4], collar[5],
                     TubeBoxes.lateral(dir.getAxis()), 0);
             model.part(collarBox, base).visibleIf(s -> nozzle(s, dir));
 
-            Geometry headBox = TubeBoxes.box("pneumo_tube_head_" + dir.getName(),
+            Geometry headBox = Quads.box("pneumo_tube_head_" + dir.getName(),
                     head[0], head[1], head[2], head[3], head[4], head[5], TubeBoxes.ALL, 0);
             int ordinal = dir.ordinal();
             model.part(headBox, Surface.cutout(IN)).visibleIf(s -> s.insertion == ordinal);

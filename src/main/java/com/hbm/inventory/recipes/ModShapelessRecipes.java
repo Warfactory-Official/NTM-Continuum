@@ -1,9 +1,9 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.lib.ComponentIds;
-import com.hbm.lib.ItemIds;
-import com.hbm.lib.TagIds;
-import com.hbm.lib.VanillaIds;
+import com.hbm.api.ids.ComponentIds;
+import com.hbm.api.ids.ItemIds;
+import com.hbm.api.ids.TagIds;
+import com.hbm.api.ids.VanillaIds;
 
 import static dev.golem.core.dejson.Crafting.shapeless;
 import static dev.golem.core.dejson.Crafting.stack;

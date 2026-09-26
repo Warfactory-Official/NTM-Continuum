@@ -1,9 +1,9 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
-import com.hbm.api.fluidmk2.FluidNetwork;
+import com.hbm.network.fluid.DuctData;
+import com.hbm.network.fluid.FluidGraph;
+import com.hbm.network.fluid.FluidNetwork;
 import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.blocks.ModFluidNetBlocks;
@@ -13,8 +13,8 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
-import com.hbm.uninos.graph.LevelNodeGraph;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.LevelNodeGraph;
+import dev.golem.core.graph.NodeNetwork;
 import dev.golem.core.gametest.GameTests;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -219,7 +219,7 @@ public final class FluidNetworkGameTests {
     private static void identifierTint(GameTestHelper helper) {
         net.minecraft.world.item.ItemStack bare = new net.minecraft.world.item.ItemStack(
                 com.hbm.items.ModMachineItems.fluid_identifier.get());
-        com.hbm.items.ModDataComponents.fluidId(bare, Fluids.KEROSENE.getID());
+        com.hbm.items.ModDataComponents.fluid(bare, Fluids.KEROSENE);
         helper.assertTrue(dev.golem.core.data.ModelData.color(bare, -1) == -1, "a bare identifier starts without a colour");
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         ((com.hbm.items.machine.ItemFluidId) bare.getItem()).tickInventoryCompat(bare, helper.getLevel(), player,

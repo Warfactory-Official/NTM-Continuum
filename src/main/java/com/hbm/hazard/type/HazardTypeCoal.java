@@ -1,13 +1,14 @@
 package com.hbm.hazard.type;
 
+import com.hbm.api.hazard.IHazardType;
 import java.util.List;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.config.RadiationConfig;
 import com.hbm.handler.ArmorUtil;
-import com.hbm.hazard.modifier.IHazardModifier;
+import com.hbm.api.hazard.IHazardModifier;
 import com.hbm.util.ArmorRegistry;
-import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.api.hazard.HazardClass;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;

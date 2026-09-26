@@ -81,7 +81,7 @@ public final class CombinationRecipes {
 
         add(new ComparableStack(Items.SUGAR_CANE), new ItemStack(Items.SUGAR, 2), fluid(Fluids.ETHANOL, 50));
         add(new ComparableStack(Blocks.CLAY.asItem()), new ItemStack(Blocks.BRICKS.asItem()), null);
-        com.hbm.scripting.ScriptedRecipes.apply(CombinationRecipes.class);
+        dev.golem.core.content.Replay.apply(CombinationRecipes.class);
     }
 
     public static void putFirst(CombinationRecipe recipe) {
@@ -103,7 +103,7 @@ public final class CombinationRecipes {
         RECIPES.add(new CombinationRecipe(input, itemOutput, fluidOutput));
     }
 
-    private static FluidStack fluid(com.hbm.inventory.fluid.FluidType type, int amount) {
+    private static FluidStack fluid(com.hbm.api.fluid.FluidType type, int amount) {
         return new FluidStack(type, amount);
     }
 

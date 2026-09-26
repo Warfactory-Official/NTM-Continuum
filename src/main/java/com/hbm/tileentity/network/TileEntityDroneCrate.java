@@ -4,11 +4,10 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.entity.item.EntityDeliveryDrone;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -103,7 +102,7 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
             DroneLinePayload.send(server, pos, next, 1D, 0x00ffff);
         }
 
-        networkPackNT();
+        syncState();
     }
 
     protected void loadItems(ServerLevel server, EntityDeliveryDrone drone) {
@@ -207,11 +206,11 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
     public void receiveControl(CompoundTag data) {
         if (Tags.contains(data, "mode")) {
             sendingMode = !sendingMode;
-            markChanged();
+            setChanged();
         }
         if (Tags.contains(data, "type")) {
             itemType = !itemType;
-            markChanged();
+            setChanged();
         }
     }
 
@@ -241,9 +240,9 @@ public class TileEntityDroneCrate extends TileEntityMachineBase
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction dir) {
         // 1.7 never overrode this: the IFluidConnectorMK2 default, every side, fluid or item mode.
-        return dir != ForgeDirection.UNKNOWN;
+        return dir != null;
     }
 
     @Override

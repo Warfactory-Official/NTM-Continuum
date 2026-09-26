@@ -2,7 +2,7 @@ package com.hbm.assemblyfactory;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.MachineAssemblyFactory;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerMachineAssemblyFactory;
 import dev.golem.core.registry.BlockEntities;

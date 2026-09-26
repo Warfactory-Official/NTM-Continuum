@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.packet.HbmPackets;
 import com.hbm.radio.ModRadioBlocks;
 import com.hbm.tileentity.network.RTTYSystem;
@@ -225,7 +225,7 @@ public final class TelexGameTests {
 
     private static TileEntityRadioTelex place(GameTestHelper helper, BlockPos relative) {
         helper.setBlock(relative, ModRadioBlocks.RADIO_TELEX.get().defaultBlockState()
-                .setValue(BlockMultiblockCore.FACING, Direction.NORTH));
+                .setValue(MultiblockCore.FACING, Direction.NORTH));
         return GameTestHelpers.blockEntity(helper, relative, TileEntityRadioTelex.class);
     }
 

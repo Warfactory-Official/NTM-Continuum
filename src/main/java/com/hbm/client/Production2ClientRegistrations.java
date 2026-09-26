@@ -16,7 +16,7 @@ import com.hbm.inventory.gui.GUIRtgFurnace;
 public final class Production2ClientRegistrations {
     private Production2ClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModProduction2Menus.EXCAVATOR.get(), GUIMachineExcavator::new);
         sink.register(ModProduction2Menus.ORE_SLOPPER.get(), GUIOreSlopper::new);
         sink.register(ModProduction2Menus.ANNIHILATOR.get(), GUIMachineAnnihilator::new);

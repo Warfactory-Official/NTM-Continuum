@@ -9,7 +9,7 @@ public final class FoundryExpansionScreens {
 
     private FoundryExpansionScreens() {}
 
-    public static void register(HbmClientRegistrations.ScreenSink sink) {
+    public static void register(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(FoundryExpansion.STRAND_CASTER_MENU.get(), GUIMachineStrandCaster::new);
         sink.register(FoundryExpansion.ARC_FURNACE_MENU.get(), GUIMachineArcFurnaceLarge::new);
     }

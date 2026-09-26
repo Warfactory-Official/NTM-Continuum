@@ -1,8 +1,10 @@
 package com.hbm.blocks.turret;
 
-import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.TileEntityMachineBase;
 import com.hbm.tileentity.turret.TileEntityTurretBaseNT;
@@ -100,11 +102,12 @@ public abstract class TurretBaseNT extends BlockMultiblockCore implements IEnerg
         if (!(world instanceof Level level) || dir == ForgeDirection.UNKNOWN) return false;
         BlockPos core = MultiblockSurface.coreOfAny(level, pos);
         return core != null && level.getBlockEntity(core) instanceof TileEntityTurretBaseNT turret
-                && IEnergyConnectorBlock.isPort(turret.getConPos(), pos, dir);
+                && com.hbm.lib.Ports.isPort(turret.getConPos(), pos, dir.toDirection());
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return padConnects(world, pos, dir);
     }
 

@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.ModAutogenItems;
@@ -28,7 +30,7 @@ import org.jspecify.annotations.Nullable;
  * axis, three blocks tall. Segments stack every three blocks; the bottom one runs the simulation for
  * the whole column (see {@link TileEntityWatz}).
  *
- * <p>The footprint is not a box, so it is built from five overlapping {@link MultiblockHandlerXR}
+ * <p>The footprint is not a box, so it is built from five overlapping {@link MultiblockFootprint}
  * passes — the base dimensions plus four with negative extents that carve the arms — exactly as
  * upstream. Nine cells are promoted to ports: the four arm tips at core level and at +2, plus the
  * centre-top cell.
@@ -99,7 +101,7 @@ public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlock
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int[] arm : ARMS) MultiblockHandlerXR.visitBox(core, arm, facing, visitor);
+        for (int[] arm : ARMS) MultiblockFootprint.visitBox(core, arm, facing, visitor);
 
         for (int[] arm : new int[][]{{2, 0}, {-2, 0}, {0, 2}, {0, -2}}) {
             visitor.cell(core.offset(arm[0], 0, arm[1]), MASK_DOWN);

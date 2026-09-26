@@ -73,11 +73,11 @@ public class TileEntityMachineSteamEngine extends TileEntityMachineBase
         }
 
         for (DirPos connection : engine.getConPos()) {
-            if (engine.powerBuffer > 0) engine.tryProvide(level, connection.getPos(), connection.getDir());
-            engine.tryProvide(engine.tanks[1], level, connection);
+            if (engine.powerBuffer > 0) engine.tryProvide(level, connection.getPos(), connection.getDir().toDirection());
+            engine.tryProvide(engine.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
         engine.setChanged();
-        engine.networkPackNT();
+        engine.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineSteamEngine engine) {

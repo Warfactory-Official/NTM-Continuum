@@ -4,7 +4,7 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineTurbine;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
@@ -59,7 +59,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbine te) {
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            te.tryProvide(level, pos.relative(direction.toDirection()), direction);
+            te.tryProvide(level, pos.relative(direction.toDirection()), direction.toDirection());
         }
 
         te.updateTypeFromFluidId();
@@ -70,11 +70,11 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
 
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             if (te.output.getTankType() != Fluids.NONE) {
-                te.tryProvide(te.output, level, pos.relative(direction.toDirection()), direction);
+                te.tryProvide(te.output, level, pos.relative(direction.toDirection()), direction.toDirection());
             }
         }
         te.processCanister(te.output, 5, 6);
-        te.networkPackNT();
+        te.syncState();
     }
 
     private void convert() {
@@ -211,7 +211,7 @@ public class TileEntityMachineTurbine extends TileEntityMachineBase
     /**
      * Slot roles: 0/1 identifier in/out, 2/5 canister bays, 4 battery. Slots 3 and 6 are the bays' result
      * outputs and must return {@code true}: the machine places the emptied/filled container there through
-     * {@link com.hbm.inventory.NTMItemHandler#insertItem}, which validates against this method — player
+     * {@link dev.golem.core.machine.ItemHandler#insertItem}, which validates against this method — player
      * insertion is blocked by the take-only slots in {@link ContainerMachineTurbine} instead.
      */
     @Override

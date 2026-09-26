@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockCoreIndex;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockCoreIndex;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityCargoElevator;
 import java.util.ArrayList;
@@ -165,7 +167,7 @@ public class BlockCargoElevator extends BlockMultiblockMachine {
             }
         }
         lift.height++;
-        lift.markChanged();
+        lift.setChanged();
         if (!player.isCreative()) stack.shrink(1);
     }
 

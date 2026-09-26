@@ -8,7 +8,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMixer;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.MixerRecipes;
@@ -108,9 +108,9 @@ public class TileEntityMachineMixer extends TileEntityMachineBase implements Men
         }
 
         for (DirPos dp : te.getConPos()) {
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, dp);
+            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, dp.getPos(), dp.getDir().toDirection());
         }
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMixer te) {

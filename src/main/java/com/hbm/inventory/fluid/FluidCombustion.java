@@ -1,5 +1,6 @@
 package com.hbm.inventory.fluid;
 
+import com.hbm.api.fluid.FluidType;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

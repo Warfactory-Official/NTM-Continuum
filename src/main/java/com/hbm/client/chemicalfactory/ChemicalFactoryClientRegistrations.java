@@ -10,7 +10,7 @@ public final class ChemicalFactoryClientRegistrations {
 
     private ChemicalFactoryClientRegistrations() {}
 
-    public static void registerScreen(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreen(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY_MENU.get(),
                 GUIMachineChemicalFactory::new);
     }

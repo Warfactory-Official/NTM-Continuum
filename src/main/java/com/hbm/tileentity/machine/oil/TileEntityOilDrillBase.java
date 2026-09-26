@@ -6,7 +6,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModOilBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemFluidBucket;
@@ -91,8 +91,8 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, te.getMaxPower());
 
         for (DirPos dp : te.getConPos()) {
-            if (te.tanks[0].getFill() > 0) te.tryProvide(te.tanks[0], level, dp);
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
+            if (te.tanks[0].getFill() > 0) te.tryProvide(te.tanks[0], level, dp.getPos(), dp.getDir().toDirection());
+            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp.getPos(), dp.getDir().toDirection());
         }
 
         if (te.power >= te.getPowerReqEff()
@@ -118,7 +118,7 @@ public abstract class TileEntityOilDrillBase extends TileEntityMachineBase
             te.indicator = 2;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Fills a fluid container in {@code loadSlot} FROM {@code tanks[tank]}, result → {@code outSlot}

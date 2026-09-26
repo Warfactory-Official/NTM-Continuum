@@ -1,7 +1,8 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import net.minecraft.core.Direction;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.blocks.machine.ModMachineBlocks;
@@ -1537,9 +1538,9 @@ public final class HbmGameTestFunctions {
 
         helper.assertTrue(purex.getConPos().length == 20, "PUREX must expose 20 network ports");
         var eastEdge = helper.absolutePos(core.offset(2, 0, 0));
-        helper.assertTrue(block.canConnect(helper.getLevel(), eastEdge, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), eastEdge, net.minecraft.core.Direction.EAST),
                 "The east edge cell must accept a connection outward");
-        helper.assertFalse(block.canConnect(helper.getLevel(), eastEdge, com.hbm.lib.ForgeDirection.WEST),
+        helper.assertFalse(block.canConnect(helper.getLevel(), eastEdge, net.minecraft.core.Direction.WEST),
                 "An edge cell must not connect back into the machine");
         helper.succeed();
     }
@@ -1618,7 +1619,7 @@ public final class HbmGameTestFunctions {
      *
      * <p>Two places have to agree on that id and neither can see the other: {@link com.hbm.client.FluidSprites}
      * mints it while the atlas is stitched, by handing the remap the fluid's key as a permutation name,
-     * and a screen asks {@link com.hbm.inventory.fluid.FluidType#getIconSprite()} for it at draw time.
+     * and a screen asks {@link com.hbm.api.fluid.FluidType#getIconSprite()} for it at draw time.
      * Change the shape on one side and the other keeps minting the old one — every lookup then quietly
      * returns the missing-texture sprite, on a client, with nothing logged. The client class itself
      * cannot be named from here (loading it on a dedicated server pulls in {@code GuiGraphicsExtractor}), so what
@@ -1652,10 +1653,10 @@ public final class HbmGameTestFunctions {
 
     private static void fluidDropletSprites(GameTestHelper helper) {
         java.util.Map<String, String> bySprite = new java.util.HashMap<>();
-        for (com.hbm.inventory.fluid.FluidType fluid : com.hbm.inventory.fluid.Fluids.getAll()) {
+        for (com.hbm.api.fluid.FluidType fluid : com.hbm.inventory.fluid.Fluids.getAll()) {
             String sprite = fluid.getIconSprite().toString();
             String expected = com.hbm.Constants.MOD_ID + ":"
-                    + com.hbm.inventory.fluid.FluidType.ICON_ART + "_" + fluid.getKey();
+                    + com.hbm.api.fluid.FluidType.ICON_ART + "_" + fluid.getKey();
             helper.assertTrue(sprite.equals(expected),
                     "Fluid " + fluid.getName() + " must name the droplet " + expected + ", names " + sprite);
             String clash = bySprite.put(sprite, fluid.getName());
@@ -1669,7 +1670,7 @@ public final class HbmGameTestFunctions {
     }
 
     private static void fluidDisplayNames(GameTestHelper helper) {
-        for (com.hbm.inventory.fluid.FluidType type : com.hbm.inventory.fluid.Fluids.getAll()) {
+        for (com.hbm.api.fluid.FluidType type : com.hbm.inventory.fluid.Fluids.getAll()) {
             String key = type.getTranslationKey();
             String shown = type.getDisplayNameString();
             helper.assertTrue(!shown.equals(key),
@@ -1679,7 +1680,7 @@ public final class HbmGameTestFunctions {
 
         // Fluids whose real name is not a title-cased id. If a call site ever falls back to the id
         // again, these are the ones that catch it.
-        record Named(com.hbm.inventory.fluid.FluidType type, String expected) {}
+        record Named(com.hbm.api.fluid.FluidType type, String expected) {}
         Named[] cases = {
                 new Named(com.hbm.inventory.fluid.Fluids.OIL, "Crude Oil"),
                 new Named(com.hbm.inventory.fluid.Fluids.HEAVYOIL, "Heavy Oil"),
@@ -1790,11 +1791,11 @@ public final class HbmGameTestFunctions {
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, net.minecraft.world.level.GameType.SURVIVAL);
         var absCore = helper.absolutePos(core);
         player.setPos(absCore.getX() + 8.5D, absCore.getY(), absCore.getZ() + 0.5D);
-        helper.assertTrue(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
+        helper.assertTrue(MultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
                 "A player at the torus's edge must be able to use it");
 
         player.setPos(absCore.getX() + 64.5D, absCore.getY(), absCore.getZ() + 0.5D);
-        helper.assertFalse(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
+        helper.assertFalse(MultiblockCore.isWithinInteractionRange(helper.getLevel(), absCore, player),
                 "The range must still cut off at distance");
 
         // The fracking tower is the case a dimensions-derived radius cannot cover: getDimensions says
@@ -1809,12 +1810,12 @@ public final class HbmGameTestFunctions {
 
         // Standing at the crown, 20 blocks up the derrick.
         player.setPos(absTower.getX() + 0.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
-        helper.assertTrue(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
+        helper.assertTrue(MultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "A player on top of the fracking tower must be able to use it");
 
         // But standing 20 blocks up in open air well to the side must not count.
         player.setPos(absTower.getX() + 40.5D, absTower.getY() + 20D, absTower.getZ() + 0.5D);
-        helper.assertFalse(BlockMultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
+        helper.assertFalse(MultiblockCore.isWithinInteractionRange(helper.getLevel(), absTower, player),
                 "Being high up near nothing must not grant access");
         helper.succeed();
     }
@@ -2225,7 +2226,7 @@ public final class HbmGameTestFunctions {
                                    java.util.function.Function<net.minecraft.world.level.block.entity.BlockEntity,
                                            java.util.List<com.hbm.lib.DirPos>> ports) {
         String name = block.getName().getString();
-        FoldedTestSupport.assemble(helper, (BlockMultiblockCore) block, core);
+        FoldedTestSupport.assemble(helper, (MultiblockCore) block, core);
         var te = helper.getLevel().getBlockEntity(helper.absolutePos(core));
         helper.assertTrue(te != null, name + " controller setup failed");
 
@@ -2246,11 +2247,11 @@ public final class HbmGameTestFunctions {
 
             if (block instanceof com.hbm.api.fluidmk2.IFluidConnectorBlockMK2 fluid) {
                 helper.assertTrue(fluid.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
-                                cell.getX(), cell.getY(), cell.getZ(), dir),
+                                cell.getX(), cell.getY(), cell.getZ(), dir.toDirection()),
                         name + " refuses a fluid connection at its own port " + port.getPos());
             }
             if (block instanceof com.hbm.api.energymk2.IEnergyConnectorBlock energy) {
-                helper.assertTrue(energy.canConnect(helper.getLevel(), cell, dir),
+                helper.assertTrue(energy.canConnect(helper.getLevel(), cell, dir.toDirection()),
                         name + " refuses an energy connection at its own port " + port.getPos());
             }
         }
@@ -2318,7 +2319,7 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.fusion_torus.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Torus struct core did not become a fusion reactor");
-            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
+            helper.assertBlockProperty(seed, dev.golem.core.multiblock.MultiblockCore.FACING,
                     net.minecraft.core.Direction.NORTH);
             helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
                     com.hbm.tileentity.machine.fusion.TileEntityFusionTorus.class) != null,
@@ -2387,7 +2388,7 @@ public final class HbmGameTestFunctions {
             var block = ModMachineBlocks.watz.get();
             helper.assertTrue(helper.getBlockState(seed).getBlock() == block,
                     "Struct core did not become a Watz reactor");
-            helper.assertBlockProperty(seed, com.hbm.blocks.multiblock.BlockMultiblockCore.FACING,
+            helper.assertBlockProperty(seed, dev.golem.core.multiblock.MultiblockCore.FACING,
                     net.minecraft.core.Direction.NORTH);
             helper.assertTrue(dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, seed,
                     com.hbm.tileentity.machine.TileEntityWatz.class) != null, "Assembled Watz has no controller");
@@ -2439,7 +2440,7 @@ public final class HbmGameTestFunctions {
         FoldedTestSupport.assertPort(helper, core, core.offset(-2, 1, 0));
         FoldedTestSupport.assertPort(helper, core, core.offset(-2, 3, 0));
         FoldedTestSupport.assertProxy(helper, core, core.above(4),
-                com.hbm.blocks.multiblock.BlockMultiblockCore.PASSIVE_ITEMS);
+                dev.golem.core.multiblock.MultiblockCore.PASSIVE_ITEMS);
 
         TileEntityReactorZirnox reactor = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, core, TileEntityReactorZirnox.class);
         var ports = reactor.getConPos();
@@ -2454,9 +2455,9 @@ public final class HbmGameTestFunctions {
                         && p.getDir() == com.hbm.lib.ForgeDirection.WEST), "Missing upper west port");
         var lowerEastCell = helper.absolutePos(core.offset(2, 1, 0));
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), lowerEastCell.getX(), lowerEastCell.getY(),
-                lowerEastCell.getZ(), com.hbm.lib.ForgeDirection.EAST), "Lower east shell must connect to its external duct");
+                lowerEastCell.getZ(), net.minecraft.core.Direction.EAST), "Lower east shell must connect to its external duct");
         helper.assertFalse(block.canConnect(Fluids.WATER, helper.getLevel(), lowerEastCell.getX(), lowerEastCell.getY(),
-                lowerEastCell.getZ(), com.hbm.lib.ForgeDirection.NORTH), "Port must not connect through the wrong shell face");
+                lowerEastCell.getZ(), net.minecraft.core.Direction.NORTH), "Port must not connect through the wrong shell face");
         helper.succeed();
     }
 
@@ -2495,7 +2496,7 @@ public final class HbmGameTestFunctions {
 
         var tankCore = core.offset(6, 1, 1);
         helper.setBlock(tankCore, ModMachineBlocks.machine_fluidtank.get().defaultBlockState()
-                .setValue(BlockMultiblockCore.FACING, net.minecraft.core.Direction.SOUTH));
+                .setValue(MultiblockCore.FACING, net.minecraft.core.Direction.SOUTH));
         var tank = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankCore, com.hbm.tileentity.machine.TileEntityMachineFluidTank.class);
         helper.assertTrue(tank != null, "Fluid tank controller setup failed");
         tank.mode = 1; // Buffer mode owns the network node at its physical port cells.
@@ -2605,8 +2606,8 @@ public final class HbmGameTestFunctions {
         helper.succeed();
     }
 
-    private static void check(GameTestHelper helper, com.hbm.inventory.fluid.FluidType input, int inputAmount,
-                              com.hbm.inventory.fluid.FluidType output, int outputAmount, int heat) {
+    private static void check(GameTestHelper helper, com.hbm.api.fluid.FluidType input, int inputAmount,
+                              com.hbm.api.fluid.FluidType output, int outputAmount, int heat) {
         CoolingRecipes.CoolingRecipe recipe = CoolingRecipes.get(input);
         helper.assertTrue(recipe != null, "Missing cooling recipe for " + input.getName());
         helper.assertTrue(recipe.inputAmount() == inputAmount && recipe.output() == output

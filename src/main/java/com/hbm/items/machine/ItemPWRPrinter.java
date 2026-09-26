@@ -140,7 +140,7 @@ public class ItemPWRPrinter extends CompatItem {
         }
 
         pwr.isPrinting = true;
-        pwr.networkPackNT();
+        pwr.syncState();
     }
 
     public void findBounds(Level level, TileEntityPWRController pwr) {

@@ -5,8 +5,8 @@ import dev.golem.core.registry.LivingAttributes;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Compat;
-import com.hbm.blocks.multiblock.BlockMultiblockCell;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCell;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.entity.mob.glyphid.GlyphidStats.StatBundle;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.lib.Library;
@@ -168,7 +168,7 @@ public class EntityGlyphidDigger extends EntityGlyphid {
 
                 // 1.7: one BlockDummyable covered the whole footprint, which the port splits into siblings
                 if (k < concreteResistance() && dev.golem.core.world.Compat.isSolidRender(state)
-                        && !(b instanceof BlockMultiblockCore) && !(b instanceof BlockMultiblockCell)
+                        && !(b instanceof MultiblockCore) && !(b instanceof MultiblockCell)
                         && level().getBlockEntity(pos) == null && level() instanceof ServerLevel server
                         && Compat.canEntityDestroyBlock(server, pos, state, this)) {
 

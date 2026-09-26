@@ -1,7 +1,8 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.inventory.NTMItemHandler;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import dev.golem.core.machine.ItemHandler;
+import com.hbm.inventory.material.Mats;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.items.machine.ItemMold;
 import com.hbm.items.machine.ItemMold.Mold;
 import com.hbm.items.machine.ItemScraps;
@@ -29,7 +30,7 @@ import java.util.List;
 public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase implements net.minecraft.world.WorldlyContainer {
 
     /** 0 = mold input, 1 = item output. */
-    public final NTMItemHandler inventory;
+    public final ItemHandler inventory;
     public int cooloff = 100;
 
     // Client copies of the two slots, synced via the BufPacket for the renderer.
@@ -42,7 +43,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
     protected TileEntityFoundryCastingBase(BlockEntityType<?> type, BlockPos pos, BlockState state, int slotCount) {
         super(type, pos, state);
-        this.inventory = new NTMItemHandler(slotCount) {
+        this.inventory = new ItemHandler(slotCount) {
             @Override
             protected void onContentsChanged(int slot) {
                 TileEntityFoundryCastingBase.this.setChanged();
@@ -86,7 +87,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
 
         te.syncMold = te.inventory.getStackInSlot(0);
         te.syncOutput = te.inventory.getStackInSlot(1);
-        te.networkPackNT();
+        te.syncState();
     }
 
     /**
@@ -118,7 +119,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
         if (!inventory.getStackInSlot(1).isEmpty()) return false;
         Mold mold = this.getInstalledMold();
         if (mold == null) return false;
-        return !mold.getOutput(stack.material).isEmpty();
+        return !mold.getOutput(Mats.of(stack.material)).isEmpty();
     }
 
     /** 0 = small mold caster, 1 = basin. */
@@ -177,7 +178,7 @@ public abstract class TileEntityFoundryCastingBase extends TileEntityFoundryBase
         return slot == 1;
     }
 
-    // --- Container (delegates to the handler, like TileEntityInventoryBase) ---
+    // --- Container (delegates to the handler, like InventoryBlockEntity) ---
 
     @Override public int getContainerSize() { return inventory.getSlots(); }
 

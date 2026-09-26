@@ -1,5 +1,6 @@
 package com.hbm.radio.client;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.radio.RadioTorchMenu;
 import com.hbm.tileentity.network.TileEntityRadioTorchBase;
@@ -102,7 +103,7 @@ public final class RadioTorchScreen extends CompatContainerScreen<RadioTorchMenu
     @Override
     protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         if (hover(137, 17, 18, 18, event.x(), event.y())) {
-            RadioScreenUtil.click();
+            Gauges.click();
             customMap = !customMap;
             for (EditBox field : mapping) field.visible = customMap;
             if (!customMap) {
@@ -116,13 +117,13 @@ public final class RadioTorchScreen extends CompatContainerScreen<RadioTorchMenu
             return true;
         }
         if (hover(173, 17, 18, 18, event.x(), event.y())) {
-            RadioScreenUtil.click();
+            Gauges.click();
             polling = !polling;
             sendToggle("isPolling", polling);
             return true;
         }
         if (hover(209, 17, 18, 18, event.x(), event.y())) {
-            RadioScreenUtil.click();
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             data.putString("channel", frequency.getValue());
             for (int i = 0; i < mapping.length; i++) data.putString("mapping" + i, mapping[i].getValue());

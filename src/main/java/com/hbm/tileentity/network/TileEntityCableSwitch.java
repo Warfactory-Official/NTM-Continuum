@@ -1,13 +1,13 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.api.energymk2.CableData;
+import net.minecraft.core.Direction;
+import com.hbm.network.power.CableData;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerGraphProvider;
 import com.hbm.api.tile.ILoadedTile;
-import com.hbm.capability.MachineCaps;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.Domains;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.data.CompatBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -48,13 +48,13 @@ public class TileEntityCableSwitch extends CompatBlockEntity implements IEnergyC
         if (!isOn()) {
             if (graph.containsCell(key)) graph.removeNode(key);
         } else if (!graph.containsCell(key)) {
-            graph.addNode(key, PowerGraphProvider.INSTANCE.createData(getBlockState()), MachineCaps.FACE_MASK_ALL);
+            graph.addNode(key, PowerGraphProvider.INSTANCE.createData(getBlockState()), Domains.FACES_ALL);
         }
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN;
+    public boolean canConnect(Direction dir) {
+        return dir != null;
     }
 
     @Override
@@ -63,8 +63,4 @@ public class TileEntityCableSwitch extends CompatBlockEntity implements IEnergyC
         PowerGraph.dropCells(this, getBlockPos());
     }
 
-    @Override
-    public boolean isLoaded() {
-        return !isRemoved();
-    }
 }

@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.foundry.FoundryExpansion;
 import com.hbm.items.machine.ItemMold;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
@@ -61,7 +62,7 @@ public class ContainerMachineStrandCaster extends AbstractContainerMenu {
     public @Nullable TileEntityMachineStrandCaster getCaster() { return caster; }
 
     @Override public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, FoundryExpansion.STRAND_CASTER.get());
+        return Menus.stillValid(access, player, FoundryExpansion.STRAND_CASTER.get());
     }
 
     @Override

@@ -95,7 +95,7 @@ public class TileEntityMachineCentrifuge extends TileEntityMachineBase
             te.progress = 0;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCentrifuge te) {

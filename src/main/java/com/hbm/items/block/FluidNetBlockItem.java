@@ -37,9 +37,9 @@ public final class FluidNetBlockItem extends CompatBlockItem {
             int fill = ItemStacks.carriedInt(stack, "fill");
             if (fill > 0) {
                 int max = ItemStacks.carriedInt(stack, "max");
-                int type = ItemStacks.carriedInt(stack, "type");
+                String type = ItemStacks.carriedString(stack, "type");
                 tooltip.add(Component.literal(fill + "/" + max + "mB ").withStyle(ChatFormatting.YELLOW)
-                        .append(Fluids.fromID(type).getDisplayName()));
+                        .append(Fluids.byId(type).getDisplayName()));
             }
             if (barrel == ModFluidNetBlocks.barrel_plastic.get()) {
                 tooltip.add(Component.literal("Capacity: 12,000mB").withStyle(ChatFormatting.AQUA));

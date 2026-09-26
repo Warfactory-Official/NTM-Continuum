@@ -15,7 +15,7 @@ import net.minecraft.world.level.Level;
 /** Regular jetpack: simple upward momentum, five-tick fuel cadence. */
 public class JetpackRegular extends JetpackFueledBase {
 
-    public JetpackRegular(com.hbm.inventory.fluid.FluidType fuel, int maxFuel, Properties properties) {
+    public JetpackRegular(com.hbm.api.fluid.FluidType fuel, int maxFuel, Properties properties) {
         super(fuel, maxFuel, properties);
     }
 

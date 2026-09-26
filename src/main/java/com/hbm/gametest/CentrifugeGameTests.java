@@ -3,7 +3,7 @@ package com.hbm.gametest;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.machine.MachineCentrifuge;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.inventory.container.ContainerCentrifuge;
 import com.hbm.inventory.recipes.AssemblyMachineRecipes;
 import com.hbm.inventory.recipes.CentrifugeRecipes;
@@ -49,9 +49,9 @@ public final class CentrifugeGameTests {
                 "centrifuge core block entity was not created");
         helper.assertTrue(absolute.equals(MultiblockSurface.coreOfCell(helper.getLevel(), absolute.above())),
                 "centrifuge tower dummy did not resolve to the core");
-        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, net.minecraft.core.Direction.EAST),
                 "centrifuge east power port did not connect");
-        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, com.hbm.lib.ForgeDirection.WEST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), absolute, net.minecraft.core.Direction.WEST),
                 "centrifuge west power port did not connect");
         helper.succeed();
     }

@@ -129,7 +129,7 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         te.didProcess = te.assemblerModule.didProcess;
 
         if (te.assemblerModule.markDirty) te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Power connection points around the 3×3 footprint (one block out from each edge cell). */

@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.inventory.material.MaterialShapes;
@@ -42,7 +43,7 @@ public final class ScriptingMaterialsGameTests {
 
     public static void items(GameTestHelper helper) {
         NTMMaterial mat = Mats.matByName.get("gt_mithril");
-        helper.assertTrue(mat != null && mat.id == 990100, "scripted material");
+        helper.assertTrue(mat != null && mat.id.toString().equals("hbm:gt_mithril"), "scripted material");
         for (String id : new String[] {"ingot_gt_mithril", "nugget_gt_mithril", "powder_gt_mithril", "plate_gt_mithril",
                 "billet_gt_mithril", "block_gt_mithril", "ore_gt_mithril", "ore_deepslate_gt_mithril", "gem_gt_cinder",
                 "ore_gt_cinder"}) {
@@ -57,18 +58,18 @@ public final class ScriptingMaterialsGameTests {
 
     public static void smelting(GameTestHelper helper) {
         NTMMaterial mat = Mats.matByName.get("gt_mithril");
-        assertMelts(helper, new ItemStack(Items.ANCIENT_DEBRIS), List.of(new Mats.MaterialStack(mat, 72),
-                new Mats.MaterialStack(Mats.MAT_IRON, 8)), "explicit smelting entry");
-        assertMelts(helper, stack("ingot_gt_mithril"), List.of(new Mats.MaterialStack(mat, MaterialShapes.INGOT.quantity)), "minted ingot");
-        assertMelts(helper, stack("block_gt_mithril"), List.of(new Mats.MaterialStack(mat, MaterialShapes.BLOCK.quantity)), "minted block");
-        assertMelts(helper, stack("ore_deepslate_gt_mithril"), List.of(new Mats.MaterialStack(mat, 144),
-                new Mats.MaterialStack(Mats.MAT_STONE, 18)), "minted ore");
+        assertMelts(helper, new ItemStack(Items.ANCIENT_DEBRIS), List.of(new MaterialStack(mat, 72),
+                new MaterialStack(Mats.MAT_IRON, 8)), "explicit smelting entry");
+        assertMelts(helper, stack("ingot_gt_mithril"), List.of(new MaterialStack(mat, MaterialShapes.INGOT.quantity)), "minted ingot");
+        assertMelts(helper, stack("block_gt_mithril"), List.of(new MaterialStack(mat, MaterialShapes.BLOCK.quantity)), "minted block");
+        assertMelts(helper, stack("ore_deepslate_gt_mithril"), List.of(new MaterialStack(mat, 144),
+                new MaterialStack(Mats.MAT_STONE, 18)), "minted ore");
         helper.assertTrue(Mats.getMaterialsFromItem(stack("gem_gt_cinder")).isEmpty(), "non-smeltable material");
         helper.succeed();
     }
 
-    private static void assertMelts(GameTestHelper helper, ItemStack stack, List<Mats.MaterialStack> expected, String what) {
-        List<Mats.MaterialStack> melted = Mats.getMaterialsFromItem(stack);
+    private static void assertMelts(GameTestHelper helper, ItemStack stack, List<MaterialStack> expected, String what) {
+        List<MaterialStack> melted = Mats.getMaterialsFromItem(stack);
         boolean same = melted.size() == expected.size();
         for (int i = 0; same && i < melted.size(); i++) {
             same = melted.get(i).material == expected.get(i).material && melted.get(i).amount == expected.get(i).amount;

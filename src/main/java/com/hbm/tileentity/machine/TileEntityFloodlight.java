@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -25,7 +25,7 @@ import com.hbm.tileentity.ModDecoBlockEntities;
  * dropping a {@link FloodlightBeam} light block at the last transparent cell of each ray. Losing power
  * puts the lights out and waits 60 ticks before it may relight.
  */
-public class TileEntityFloodlight extends TileEntityLoadedBase implements IEnergyReceiverMK2 {
+public class TileEntityFloodlight extends SyncedBlockEntity implements IEnergyReceiverMK2 {
 
     public float rotation;
     protected final BlockPos[] lightPos = new BlockPos[15];
@@ -68,7 +68,7 @@ public class TileEntityFloodlight extends TileEntityLoadedBase implements IEnerg
                 dataChanged();
             }
         }
-        networkPackMK2();
+        syncStateIfChanged();
     }
 
     private int meta() {
@@ -200,7 +200,8 @@ public class TileEntityFloodlight extends TileEntityLoadedBase implements IEnerg
 
     /** Power only from behind the fixture (1.7 subscribed to the block opposite its facing). */
     @Override
-    public boolean canConnect(ForgeDirection dir) {
+    public boolean canConnect(Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         Direction facing = getBlockState().getValue(Floodlight.FACING);
         return dir != ForgeDirection.UNKNOWN && dir.toDirection() == facing.getOpposite();
     }

@@ -6,7 +6,7 @@ import com.hbm.capability.HbmLivingProps;
 import com.hbm.client.ChemicalClientEffects;
 import com.hbm.entity.ModEntities;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.lib.ModDamageSources;
@@ -59,15 +59,15 @@ public class EntityChemical extends EntityThrowableNT {
     }
 
     public EntityChemical setFluid(FluidType fluid) {
-        entityData.set(FLUID_TYPE, fluid == null ? Fluids.NONE.getID() : fluid.getID());
+        entityData.set(FLUID_TYPE, fluid == null ? Fluids.NONE.index() : fluid.index());
         return this;
     }
 
-    public FluidType getFluid() { return Fluids.fromID(entityData.get(FLUID_TYPE)); }
+    public FluidType getFluid() { return Fluids.byIndex(entityData.get(FLUID_TYPE)); }
 
     @Override protected void defineData(SynchedData data) {
         super.defineData(data);
-        data.define(FLUID_TYPE, Fluids.NONE.getID());
+        data.define(FLUID_TYPE, Fluids.NONE.index());
     }
 
     @Override public int selfDamageDelay() { return 2; }
@@ -229,12 +229,12 @@ public class EntityChemical extends EntityThrowableNT {
 
     @Override protected void saveData(DataOut output) {
         super.saveData(output);
-        output.putInt("fluid", entityData.get(FLUID_TYPE));
+        output.putString("fluid", Fluids.byIndex(entityData.get(FLUID_TYPE)).id().toString());
     }
 
     @Override protected void loadData(DataIn input) {
         super.loadData(input);
-        entityData.set(FLUID_TYPE, input.getIntOr("fluid", Fluids.NONE.getID()));
+        entityData.set(FLUID_TYPE, Fluids.byId(input.getStringOr("fluid", "")).index());
     }
 
     public enum ChemicalStyle { AMAT, LIGHTNING, LIQUID, GAS, GASFLAME, BURNING, NULL }

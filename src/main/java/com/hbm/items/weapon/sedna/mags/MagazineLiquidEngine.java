@@ -2,7 +2,7 @@ package com.hbm.items.weapon.sedna.mags;
 
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import java.util.function.Supplier;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;

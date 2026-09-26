@@ -7,7 +7,7 @@ import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -81,14 +81,14 @@ public final class TileEntityMachineAnnihilator extends TileEntityMachineBase
                 te.onDestroy(trash);
                 te.tryAddPayout(data.pushToPool(te.pool, trash, false));
                 te.inventory.setStackInSlot(0, ItemStack.EMPTY);
-                te.markChanged();
+                te.setChanged();
                 didSomething = true;
             }
             if (te.tank.getFill() > 0) {
                 // 1.7: FT_Polluting.pollute(..., FluidReleaseType.BURN, fill * 2) - the pollution system is not ported.
                 te.tryAddPayout(data.pushToPool(te.pool, te.tank.getTankType(), te.tank.getFill(), false));
                 te.tank.setFill(0);
-                te.markChanged();
+                te.setChanged();
                 didSomething = true;
             }
 
@@ -133,7 +133,7 @@ public final class TileEntityMachineAnnihilator extends TileEntityMachineBase
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** 1.7 {@code FluidTank.setType(slot, slots)}: a fluid identifier in the slot retypes the tank. */
@@ -255,7 +255,7 @@ public final class TileEntityMachineAnnihilator extends TileEntityMachineBase
             String pool = dev.golem.core.data.Tags.getStringOr(data, "pool", "");
             if (pool != null && !pool.isEmpty()) {
                 this.pool = pool;
-                this.markChanged();
+                this.setChanged();
             }
         }
     }

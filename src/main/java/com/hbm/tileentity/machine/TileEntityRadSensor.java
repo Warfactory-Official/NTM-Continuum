@@ -4,7 +4,7 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.RedStoneWireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Stores the smoothed chunk dose and exposes the old exponential redstone ladders. */
-public class TileEntityRadSensor extends TileEntityLoadedBase {
+public class TileEntityRadSensor extends SyncedBlockEntity {
 
     public double chunkRads;
     public double recievedDose;
@@ -96,7 +96,7 @@ public class TileEntityRadSensor extends TileEntityLoadedBase {
         sensor.lastRedstoneOutput = sensor.redstoneOutput;
         sensor.lastComparatorOutput = sensor.comparatorOutput;
         sensor.setChanged();
-        sensor.networkPackNT();
+        sensor.syncState();
     }
 
     @Override

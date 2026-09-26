@@ -45,7 +45,7 @@ import com.hbm.inventory.recipes.PrecAssRecipes;
 import com.hbm.inventory.recipes.PUREXRecipes;
 import com.hbm.inventory.recipes.PlasmaForgeRecipes;
 import com.hbm.inventory.recipes.SolderingRecipes;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
@@ -137,15 +137,15 @@ public final class HbmJeiPluginCommon {
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, com.hbm.items.ModMachineItems.blueprints.get(),
                 ModDataComponents.BLUEPRINT_POOL);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_tank.get(),
-                ModDataComponents.FLUID_ID, ModDataComponents.FLUID_AMOUNT);
+                ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_barrel.get(),
-                ModDataComponents.FLUID_ID, ModDataComponents.FLUID_AMOUNT);
+                ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, com.hbm.items.ModMachineItems.fluid_identifier.get(),
-                ModDataComponents.FLUID_ID);
+                ModDataComponents.FLUID);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_bucket.get(),
-                ModDataComponents.FLUID_ID);
+                ModDataComponents.FLUID);
         dev.golem.core.jei.Jei.registerFromDataComponentTypes(reg, ModFluidItems.fluid_icon.get(),
-                ModDataComponents.FLUID_ID, ModDataComponents.FLUID_AMOUNT, ModDataComponents.FLUID_PRESSURE);
+                ModDataComponents.FLUID, ModDataComponents.FLUID_AMOUNT, ModDataComponents.FLUID_PRESSURE);
         dev.golem.core.jei.Jei.registerSubtypeInterpreter(reg, com.hbm.items.ModMachineItems.scraps.get(), stack ->
                 ModDataComponents.MATERIAL.get(stack).orElse("") + "|"
                         + ModDataComponents.MAT_AMOUNT.get(stack).map(String::valueOf).orElse("") + "|"

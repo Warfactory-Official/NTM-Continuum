@@ -183,7 +183,7 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
         setPower(getPower() - demand);
 
         shot = true;
-        networkPackNT();
+        syncState();
         shot = false;
     }
 

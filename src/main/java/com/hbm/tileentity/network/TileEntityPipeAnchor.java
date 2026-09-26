@@ -1,12 +1,12 @@
 package com.hbm.tileentity.network;
 
-import com.hbm.api.fluidmk2.DuctData;
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.DuctData;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.blocks.network.FluidPipeAnchor;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -46,7 +46,8 @@ public class TileEntityPipeAnchor extends TileEntityFluidDuctVariant {
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return dir == openSide() && type == this.type;
     }
 }

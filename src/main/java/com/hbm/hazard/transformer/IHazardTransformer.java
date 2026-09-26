@@ -3,7 +3,7 @@ package com.hbm.hazard.transformer;
 import java.util.List;
 import java.util.function.BiConsumer;
 
-import com.hbm.hazard.HazardEntry;
+import com.hbm.api.hazard.HazardEntry;
 import net.minecraft.world.item.ItemStack;
 
 /**

@@ -7,7 +7,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerCompressor;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CompressorRecipes;
@@ -114,9 +114,9 @@ public abstract class TileEntityMachineCompressorBase extends TileEntityMachineB
             te.isOn = false;
         }
 
-        for (DirPos dp : te.getConPos()) te.tryProvide(te.tanks[1], level, dp);
+        for (DirPos dp : te.getConPos()) te.tryProvide(te.tanks[1], level, dp.getPos(), dp.getDir().toDirection());
 
-        te.networkPackNT();
+        te.syncState();
     }
 
 

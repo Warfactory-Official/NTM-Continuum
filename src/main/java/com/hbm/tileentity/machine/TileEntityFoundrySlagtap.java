@@ -1,9 +1,10 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.blocks.generic.BlockDynamicSlag;
+import com.hbm.inventory.material.Mats;
 import com.hbm.blocks.generic.BlockDynamicSlag.TileEntitySlag;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -74,7 +75,7 @@ public class TileEntityFoundrySlagtap extends TileEntityFoundryOutlet {
         } else if (world.getBlockState(hitPos).canBeReplaced()) {
             world.setBlockAndUpdate(hitPos, slag.defaultBlockState());
             if (world.getBlockEntity(hitPos) instanceof TileEntitySlag tile) {
-                tile.mat = stack.material;
+                tile.mat = Mats.of(stack.material);
                 int transfer = Math.min(TileEntitySlag.maxAmount, stack.amount);
                 tile.amount += transfer;
                 stack.amount -= transfer;
@@ -88,7 +89,7 @@ public class TileEntityFoundrySlagtap extends TileEntityFoundryOutlet {
         if (stack.amount > 0 && world.getBlockState(above).canBeReplaced()) {
             world.setBlockAndUpdate(above, slag.defaultBlockState());
             if (world.getBlockEntity(above) instanceof TileEntitySlag tile) {
-                tile.mat = stack.material;
+                tile.mat = Mats.of(stack.material);
                 int transfer = Math.min(TileEntitySlag.maxAmount, stack.amount);
                 tile.amount += transfer;
                 stack.amount -= transfer;
@@ -99,7 +100,7 @@ public class TileEntityFoundrySlagtap extends TileEntityFoundryOutlet {
         }
 
         if (didFlow) {
-            this.pourColor = stack.material.moltenColor;
+            this.pourColor = stack.material.moltenColor();
             this.pourLen = Math.max(1F, p.getY() - (float) Math.ceil(hitPos.getY()));
             this.lastPourTime = world.getGameTime();
         }

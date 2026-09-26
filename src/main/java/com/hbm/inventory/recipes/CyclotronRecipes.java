@@ -92,7 +92,7 @@ public final class CyclotronRecipes {
 
         // Omitted rather than remapped: two dustPhosphorus inputs have no c:dusts/phosphorus tag, one
         // recipe consumes the absent ingot_mercury, and one recipe produces it.
-        com.hbm.scripting.ScriptedRecipes.apply(CyclotronRecipes.class);
+        dev.golem.core.content.Replay.apply(CyclotronRecipes.class);
     }
 
     public static void putFirst(Item particle, AStack input, ItemStack output, int antimatter) {

@@ -1,11 +1,13 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.lib.ComponentIds;
+import com.hbm.api.ids.ComponentIds;
+import com.hbm.api.ids.FluidIds;
+import com.hbm.api.ids.MaterialIds;
 import com.hbm.lib.IdConstants;
-import com.hbm.lib.ItemIds;
-import com.hbm.lib.TagIds;
-import com.hbm.lib.VanillaIds;
+import com.hbm.api.ids.ItemIds;
+import com.hbm.api.ids.TagIds;
+import com.hbm.api.ids.VanillaIds;
 import net.minecraft.gametest.framework.GameTestHelper;
 
 import java.lang.reflect.Field;
@@ -49,7 +51,9 @@ public final class IdGameTests {
             "ItemIds", ItemIds.class,
             "VanillaIds", VanillaIds.class,
             "TagIds", TagIds.class,
-            "ComponentIds", ComponentIds.class);
+            "ComponentIds", ComponentIds.class,
+            "FluidIds", FluidIds.class,
+            "MaterialIds", MaterialIds.class);
 
     private IdGameTests() {}
 

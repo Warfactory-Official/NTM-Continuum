@@ -1,11 +1,12 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
+import com.hbm.api.material.SmeltingBehavior;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
-import com.hbm.hazard.type.IHazardType;
+import com.hbm.api.hazard.IHazardType;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.inventory.material.MaterialShapes;
@@ -49,15 +50,15 @@ public final class ScriptingGameTests {
         MaterialShapes gear = MaterialShapes.byName("GAMETEST_GEAR");
         NTMMaterial mat = Mats.matByName.get("gametestium");
         helper.assertTrue(gear != null && gear.quantity == 144 && "gt_gears".equals(gear.tagPlural), "scripted shape");
-        helper.assertTrue(mat != null && mat.id == 990001 && mat.solidColorLight == 0xE0E0FF
-                && mat.smeltable == NTMMaterial.SmeltingBehavior.SMELTABLE && "Gametestium".equals(mat.getDisplayName()),
+        helper.assertTrue(mat != null && mat.id.toString().equals("hbm:gametestium") && mat.solidColorLight == 0xE0E0FF
+                && mat.smeltable == SmeltingBehavior.SMELTABLE && "Gametestium".equals(mat.getDisplayName()),
                 "scripted material");
         assertAutogen(helper, gear, mat, "gt_gear_gametestium", "Gametestium Test Gear");
         assertAutogen(helper, MaterialShapes.CASTPLATE, mat, "plate_cast_gametestium", "Cast Gametestium Plate");
         assertAutogen(helper, gear, Mats.MAT_IRON, "gt_gear_iron", "Iron Test Gear");
 
-        FluidType fluid = Fluids.fromName("GAMETEST_FLUID");
-        helper.assertTrue(fluid.getID() == 1000 && Fluids.fromID(1000) == fluid, "scripted fluid id");
+        FluidType fluid = Fluids.byId("kubejs:gametest_fluid");
+        helper.assertTrue(fluid != Fluids.NONE && Fluids.byIndex(fluid.index()) == fluid, "scripted fluid id");
         helper.assertTrue(fluid.temperature == 321 && fluid.getColor() == 0x40A040
                 && fluid.getTexture().equals(Ids.of(Constants.MOD_ID, "textures/gui/fluids/custom_toxin.png")),
                 "scripted fluid identity");
@@ -89,7 +90,7 @@ public final class ScriptingGameTests {
 
         ChemicalPlantRecipes.INSTANCE.registerRecipes();
         GenericRecipe chem = ChemicalPlantRecipes.INSTANCE.getRecipe("gametest.chem");
-        helper.assertTrue(chem != null && chem.inputFluid[0].type == Fluids.fromName("GAMETEST_FLUID")
+        helper.assertTrue(chem != null && chem.inputFluid[0].type == Fluids.byId("kubejs:gametest_fluid")
                 && chem.inputFluid[0].fill == 100 && chem.outputFluid[0].type == Fluids.WATER, "scripted chemical plant recipe");
 
         ItemStack shredded = ShredderRecipes.getShredderResult(new ItemStack(Items.DEAD_BUSH));
@@ -99,7 +100,7 @@ public final class ScriptingGameTests {
         helper.assertTrue(centrifuged != null && centrifuged[0].is(Items.EMERALD)
                 && centrifuged[1].is(Items.GOLD_NUGGET) && centrifuged[1].getCount() == 2, "scripted centrifuge recipe");
 
-        CrackingRecipes.CrackingRecipe cracked = CrackingRecipes.getCracking(Fluids.fromName("GAMETEST_FLUID"));
+        CrackingRecipes.CrackingRecipe cracked = CrackingRecipes.getCracking(Fluids.byId("kubejs:gametest_fluid"));
         helper.assertTrue(cracked != null && cracked.left().type == Fluids.WATER && cracked.left().fill == 50
                 && cracked.right().type == Fluids.STEAM && cracked.right().fill == 10, "scripted cracking recipe");
         helper.succeed();

@@ -51,7 +51,8 @@ public class MachineCapacitorBus extends CompatBlock implements IEnergyConnector
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return dir == ForgeDirection.getOrientation(world.getBlockState(pos).getValue(FACING));
     }
 }

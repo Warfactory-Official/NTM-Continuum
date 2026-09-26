@@ -109,7 +109,7 @@ public final class SolderingRecipes {
         addSecondUpgrade(ModUpgradeItems.upgrade_power_2.get(), ModUpgradeItems.upgrade_power_3.get());
         addFirstUpgrade(ModUpgradeItems.upgrade_fortune_1.get(), ModUpgradeItems.upgrade_fortune_2.get());
         addSecondUpgrade(ModUpgradeItems.upgrade_fortune_2.get(), ModUpgradeItems.upgrade_fortune_3.get());
-        com.hbm.scripting.ScriptedRecipes.apply(SolderingRecipes.class);
+        dev.golem.core.content.Replay.apply(SolderingRecipes.class);
     }
 
     public static void addRecipe(ItemStack output, int duration, long consumption, FluidStack fluid,

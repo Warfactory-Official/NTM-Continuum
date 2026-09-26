@@ -1,7 +1,7 @@
 package com.hbm.api.fluidmk2;
 
-import com.hbm.inventory.fluid.FluidType;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.api.fluid.FluidType;
+import com.hbm.api.fluid.FluidTank;
 import org.jspecify.annotations.NonNull;
 
 /**
@@ -10,12 +10,12 @@ import org.jspecify.annotations.NonNull;
  */
 public interface IFluidStandardReceiverMK2 extends IFluidReceiverMK2 {
 
-    @NonNull FluidTankNTM[] getReceivingTanks();
+    @NonNull FluidTank[] getReceivingTanks();
 
     @Override
     default long getDemand(FluidType type, int pressure) {
         long amount = 0;
-        for (FluidTankNTM tank : getReceivingTanks()) {
+        for (FluidTank tank : getReceivingTanks()) {
             if (tank.getTankType() == type && tank.getPressure() == pressure) amount += (tank.getMaxFill() - tank.getFill());
         }
         return amount;
@@ -24,12 +24,12 @@ public interface IFluidStandardReceiverMK2 extends IFluidReceiverMK2 {
     @Override
     default long transferFluid(FluidType type, int pressure, long amount) {
         int tanks = 0;
-        for (FluidTankNTM tank : getReceivingTanks()) {
+        for (FluidTank tank : getReceivingTanks()) {
             if (tank.getTankType() == type && tank.getPressure() == pressure) tanks++;
         }
         if (tanks > 1) {
             int firstRound = (int) Math.floor((double) amount / (double) tanks);
-            for (FluidTankNTM tank : getReceivingTanks()) {
+            for (FluidTank tank : getReceivingTanks()) {
                 if (tank.getTankType() == type && tank.getPressure() == pressure) {
                     int toAdd = Math.min(firstRound, tank.getMaxFill() - tank.getFill());
                     tank.setFill(tank.getFill() + toAdd);
@@ -37,7 +37,7 @@ public interface IFluidStandardReceiverMK2 extends IFluidReceiverMK2 {
                 }
             }
         }
-        if (amount > 0) for (FluidTankNTM tank : getReceivingTanks()) {
+        if (amount > 0) for (FluidTank tank : getReceivingTanks()) {
             if (tank.getTankType() == type && tank.getPressure() == pressure) {
                 int toAdd = (int) Math.min(amount, tank.getMaxFill() - tank.getFill());
                 tank.setFill(tank.getFill() + toAdd);
@@ -52,7 +52,7 @@ public interface IFluidStandardReceiverMK2 extends IFluidReceiverMK2 {
         int lowest = HIGHEST_VALID_PRESSURE;
         int highest = 0;
 
-        for (FluidTankNTM tank : getReceivingTanks()) {
+        for (FluidTank tank : getReceivingTanks()) {
             if (tank.getTankType() == type) {
                 if (tank.getPressure() < lowest) lowest = tank.getPressure();
                 if (tank.getPressure() > highest) highest = tank.getPressure();

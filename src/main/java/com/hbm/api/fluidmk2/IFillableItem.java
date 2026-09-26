@@ -1,6 +1,6 @@
 package com.hbm.api.fluidmk2;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import net.minecraft.world.item.ItemStack;
 
 /** An item stack that can hold/transfer HBM fluids (canisters, barrels, etc.). */

@@ -3,7 +3,7 @@ package com.hbm.items;
 import java.util.function.UnaryOperator;
 import com.hbm.Constants;
 import com.hbm.blocks.ModBlocks;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemPACoil;
 import com.hbm.items.special.ItemCustomLore;

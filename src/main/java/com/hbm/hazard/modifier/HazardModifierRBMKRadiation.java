@@ -1,4 +1,5 @@
 package com.hbm.hazard.modifier;
+import com.hbm.api.hazard.IHazardModifier;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.items.machine.ItemRBMKPellet;
 import com.hbm.items.machine.ItemRBMKRod;

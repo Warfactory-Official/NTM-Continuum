@@ -97,7 +97,7 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
             te.burnHeat = 0;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Client: the door swing + flame particles at the fire door while burning (the old client update). */

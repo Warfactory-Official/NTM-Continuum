@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerBatteryREDD;
 import com.hbm.lib.Library;
 import dev.golem.core.gui.GuiDraw;
@@ -98,7 +99,7 @@ public final class GUIBatteryREDD extends dev.golem.core.gui.CompatContainerScre
         else if (isHovering(133, 52, 18, 18, event.x(), event.y())) button = 1;
         else if (isHovering(152, 35, 16, 16, event.x(), event.y())) button = 2;
         if (button >= 0 && Minecraft.getInstance().gameMode != null) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             Minecraft.getInstance().gameMode.handleInventoryButtonClick(menu.containerId, button);
             return true;
         }

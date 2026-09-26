@@ -1,7 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import net.minecraft.world.item.ItemStack;
@@ -134,7 +134,7 @@ public final class GasCentrifugeRecipes {
         add(Fluids.WATZ, 1000, new ItemStack[]{new ItemStack(ModItems.powder_iron.get()),
                 new ItemStack(ModItems.powder_lead.get()), new ItemStack(ModItems.nuclear_waste_tiny.get()),
                 new ItemStack(ModItems.dust.get(), 2)}, false, 2);
-        com.hbm.scripting.ScriptedRecipes.apply(GasCentrifugeRecipes.class);
+        dev.golem.core.content.Replay.apply(GasCentrifugeRecipes.class);
     }
 
     public static synchronized PseudoFluidType defineStage(String name, int fluidConsumed, int fluidProduced,

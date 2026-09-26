@@ -109,10 +109,10 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         // Power from the TOP arm; crude oil out the 4 side arms (old sendFluid coords kept verbatim,
         // including the odd y±2 Z-direction pair).
 
-        te.tryProvide(te.tank, level, pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X);
-        te.tryProvide(te.tank, level, pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X);
-        te.tryProvide(te.tank, level, pos.getX(), pos.getY() + 2, pos.getZ(), Library.POS_Z);
-        te.tryProvide(te.tank, level, pos.getX(), pos.getY() - 2, pos.getZ(), Library.NEG_Z);
+        te.tryProvide(te.tank, level, pos.getX() + 2, pos.getY(), pos.getZ(), Library.POS_X.toDirection());
+        te.tryProvide(te.tank, level, pos.getX() - 2, pos.getY(), pos.getZ(), Library.NEG_X.toDirection());
+        te.tryProvide(te.tank, level, pos.getX(), pos.getY() + 2, pos.getZ(), Library.POS_Z.toDirection());
+        te.tryProvide(te.tank, level, pos.getX(), pos.getY() - 2, pos.getZ(), Library.NEG_Z.toDirection());
 
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
 
@@ -196,7 +196,7 @@ public class TileEntityMachineMiningLaser extends TileEntityMachineBase
         te.tryFillContainer(pos.getX(), pos.getY(), pos.getZ() + 2);
         te.tryFillContainer(pos.getX(), pos.getY(), pos.getZ() - 2);
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Row-major layer scan (old scan()): lock onto the first breakable block, else descend a layer. */

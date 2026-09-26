@@ -6,7 +6,7 @@ import com.hbm.api.energymk2.IEnergyConnectorMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.render.gem.Gem;
 import dev.golem.core.render.gem.GemBER;
 import dev.golem.core.render.gem.Surface;
@@ -17,7 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 /** Legacy RTG body plus the directional connector geometry from RenderRTG. */
-public final class RTGRenderer<T extends TileEntityLoadedBase> extends GemBER<T, RTGRenderState> {
+public final class RTGRenderer<T extends SyncedBlockEntity> extends GemBER<T, RTGRenderState> {
 
     private final WavefrontObj body = WavefrontObj.load(
             dev.golem.core.Ids.of(Constants.MOD_ID, "models/machines/rtg.obj"));
@@ -82,10 +82,10 @@ public final class RTGRenderer<T extends TileEntityLoadedBase> extends GemBER<T,
         ForgeDirection neighbourSide = ForgeDirection.getOrientation(direction.getOpposite());
         BlockState neighbourState = level.getBlockState(neighbour);
         if (neighbourState.getBlock() instanceof IEnergyConnectorBlock connectorBlock
-                && connectorBlock.canConnect(level, neighbour, neighbourSide)) {
+                && connectorBlock.canConnect(level, neighbour, neighbourSide.toDirection())) {
             return true;
         }
         return level.getBlockEntity(neighbour) instanceof IEnergyConnectorMK2 connector
-                && connector.canConnect(neighbourSide);
+                && connector.canConnect(neighbourSide.toDirection());
     }
 }

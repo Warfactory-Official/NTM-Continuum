@@ -21,7 +21,7 @@ public final class IntakeLoopSound extends AbstractTickableSoundInstance {
         z = pos.getZ() + 0.5D;
         looping = true;
         delay = 0;
-        volume = intake.getVolume(0.25F);
+        volume = 0.25F;
         pitch = 1.0F;
     }
 
@@ -31,7 +31,7 @@ public final class IntakeLoopSound extends AbstractTickableSoundInstance {
             stop();
             return;
         }
-        volume = intake.getVolume(0.25F);
+        volume = 0.25F;
     }
 
     public void stopLoop() {

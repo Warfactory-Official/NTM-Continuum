@@ -1,6 +1,6 @@
 package com.hbm;
 
-import com.hbm.api.energymk2.PowerNetwork;
+import com.hbm.network.power.PowerNetwork;
 import com.hbm.main.MainRegistry;
 
 public class CommonClass {
@@ -14,11 +14,10 @@ public class CommonClass {
         // The power graph's per-tick round, and the channels that make a parked conductor face live again.
         PowerNetwork.init();
         // The fluid graph's round. Its chunk and level hooks are the ones PowerNetwork already installed.
-        com.hbm.api.fluidmk2.FluidNetwork.init();
+        com.hbm.network.fluid.FluidNetwork.init();
 
         // Only a run started with -Dhbm.generateIds does anything here; see IdConstants.
         com.hbm.lib.IdConstants.install();
 
-        com.hbm.scripting.ScriptedContent.bootstrapDone();
     }
 }

@@ -1,6 +1,6 @@
 package com.hbm.api.block;
 
-import com.hbm.lib.ForgeDirection;
+import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
@@ -8,5 +8,5 @@ import net.minecraft.world.level.Level;
 public interface IBlowable {
 
     /** Called server-side once per fan tick while this block is in the fan's line of effect. */
-    void applyFan(Level level, BlockPos pos, ForgeDirection direction, int distance);
+    void applyFan(Level level, BlockPos pos, Direction direction, int distance);
 }

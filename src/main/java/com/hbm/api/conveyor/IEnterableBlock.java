@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
-// 1.7 api.hbm.conveyor.IEnterableBlock; ForgeDirection.UNKNOWN has no constant here, so a diagonal entry is null.
+/** A diagonal entry has no side: {@code dir} null. */
 public interface IEnterableBlock {
 
     /**

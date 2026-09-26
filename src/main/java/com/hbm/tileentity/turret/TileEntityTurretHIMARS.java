@@ -259,7 +259,7 @@ public class TileEntityTurretHIMARS extends TileEntityTurretBaseArtillery {
         power = Library.chargeTEFromItems(inventory, SLOT_BATTERY, power, getMaxPower());
 
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     @Override

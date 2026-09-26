@@ -2,7 +2,7 @@ package com.hbm.tileentity.bomb;
 
 import com.hbm.Constants;
 import com.hbm.explosion.ExplosionNukeCustom;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import com.hbm.items.special.ItemCell;
@@ -116,7 +116,7 @@ public class TileEntityNukeCustom extends TileEntityNukeBomb {
         this.schrab = schrab;
         this.euph = euph;
         // 1.7 clients recomputed this themselves from the synced slots; here the server ships the result.
-        if (changed) networkPackNT();
+        if (changed) syncState();
     }
 
     public float getNukeAdj() {

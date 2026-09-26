@@ -105,7 +105,7 @@ public class TileEntityCraneBoxer extends TileEntityCraneBase implements IContro
             }
         }
 
-        networkPackNT();
+        syncState();
     }
 
     private IConveyorBelt beltAtOutput() {

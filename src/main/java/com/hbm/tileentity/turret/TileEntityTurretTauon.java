@@ -135,7 +135,7 @@ public class TileEntityTurretTauon extends TileEntityTurretBaseNT {
                 0.9F + level.getRandom().nextFloat() * 0.3F);
 
         shot = true;
-        networkPackNT();
+        syncState();
         shot = false;
     }
 

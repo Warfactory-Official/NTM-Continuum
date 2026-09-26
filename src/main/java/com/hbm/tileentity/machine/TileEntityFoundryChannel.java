@@ -6,7 +6,7 @@ import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.blocks.machine.FoundryChannel;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
@@ -75,8 +75,8 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
                 Block b = level.getBlockState(target).getBlock();
 
                 if (b instanceof ICrucibleAcceptor acc && !(b instanceof FoundryChannel)) {
-                    if (acc.canAcceptPartialFlow(level, target, dir.getOpposite(), new MaterialStack(te.type, te.amount))) {
-                        MaterialStack left = acc.flow(level, target, dir.getOpposite(), new MaterialStack(te.type, te.amount));
+                    if (acc.canAcceptPartialFlow(level, target, dir.getOpposite().toDirection(), new MaterialStack(te.type, te.amount))) {
+                        MaterialStack left = acc.flow(level, target, dir.getOpposite().toDirection(), new MaterialStack(te.type, te.amount));
                         if (left == null) {
                             te.type = null;
                             te.amount = 0;
@@ -117,7 +117,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
                             }
                             te.setChanged();
                             acc.setChanged();
-                            acc.networkPackNT();
+                            acc.syncState();
                         }
                     }
                 }
@@ -138,7 +138,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
             te.unpropagateTime = 0;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     @Override
@@ -159,7 +159,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
     /** Upon pouring, propagate the material type along contiguous channels. */
     @Override
     public @Nullable MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, MaterialStack stack) {
-        propagateMaterial(stack.material);
+        propagateMaterial(Mats.of(stack.material));
         return super.pour(world, pos, dX, dY, dZ, side, stack);
     }
 
@@ -222,7 +222,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
     protected void saveData(DataOut output) {
         super.saveData(output);
         output.putInt("flow", this.lastFlow);
-        output.putInt("nType", this.neighborType != null ? this.neighborType.id : -1);
+        if (this.neighborType != null) output.putString("nType", this.neighborType.id.toString());
         output.putBoolean("init", hasCheckedNeighbors);
     }
 
@@ -230,8 +230,7 @@ public class TileEntityFoundryChannel extends TileEntityFoundryBase {
     protected void loadData(DataIn input) {
         super.loadData(input);
         this.lastFlow = input.getIntOr("flow", 0);
-        int nType = input.getIntOr("nType", -1);
-        this.neighborType = nType < 0 ? null : Mats.matById.get(nType);
+        this.neighborType = Mats.byId(input.getStringOr("nType", ""));
         this.hasCheckedNeighbors = input.getBooleanOr("init", false);
     }
 }

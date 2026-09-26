@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -11,7 +11,7 @@ import com.hbm.blocks.machine.PowerDetector;
 import com.hbm.tileentity.ModEnergyNetBlockEntities;
 
 /** 1.7's {@code TileEntityMachineDetector}: a 5 HE receiver that lights while it is being fed. */
-public class TileEntityMachineDetector extends TileEntityLoadedBase implements IEnergyReceiverMK2 {
+public class TileEntityMachineDetector extends SyncedBlockEntity implements IEnergyReceiverMK2 {
 
     long power;
 

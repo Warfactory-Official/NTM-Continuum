@@ -4,11 +4,11 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HeatRecipes;
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -31,7 +31,7 @@ import net.minecraft.sounds.SoundSource;
  * <p>All the work happens in {@link #receiveFusionPower}, which the torus calls; the tick only keeps
  * the node alive and moves fluid.
  */
-public class TileEntityFusionBoiler extends TileEntityLoadedBase
+public class TileEntityFusionBoiler extends SyncedBlockEntity
         implements IFluidStandardTransceiverMK2, IFusionPowerReceiver {
 
     public final FluidTankNTM[] tanks = {
@@ -53,13 +53,13 @@ public class TileEntityFusionBoiler extends TileEntityLoadedBase
         te.plasmaEnergy = 0;
 
         for (DirPos port : te.getConPos()) {
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, port);
+            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, port.getPos(), port.getDir().toDirection());
         }
 
         ForgeDirection dir = FusionNodes.facing(state).getOpposite();
-        FusionLink.claim(level, te, plasmaCell(pos, dir), MachineCaps.PLASMA_IN);
+        FusionLink.claim(level, te, plasmaCell(pos, dir), FusionLink.PLASMA_IN);
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public List<DirPos> getConPos() {

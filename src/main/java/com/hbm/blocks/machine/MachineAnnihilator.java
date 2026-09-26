@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.WorldlyContainer;
@@ -46,13 +48,13 @@ public final class MachineAnnihilator extends BlockMultiblockMachine
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, chimney(core, facing), CHIMNEY, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, chimney(core, facing), CHIMNEY, clicked, facing);
     }
 
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(chimney(core, facing), CHIMNEY, facing, visitor);
+        MultiblockFootprint.visitBox(chimney(core, facing), CHIMNEY, facing, visitor);
 
         Direction rot = facing.getClockWise(); // 1.7 dir.getRotation(UP); +rot is local WEST
         visitor.cell(core.relative(facing, 4), MASK_SOUTH);

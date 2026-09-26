@@ -92,7 +92,7 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePUREX te) {
         for (DirPos port : te.getConPos()) {
-            for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, port);
+            for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, port.getPos(), port.getDir().toDirection());
         }
 
         te.updateMaxPower();
@@ -112,7 +112,7 @@ public final class TileEntityMachinePUREX extends TileEntityMachineBase
         if (te.purexModule.markDirty) te.setChanged();
 
         if (TickPhase.every(level, pos, 20)) te.frame = !level.getBlockState(pos.above(5)).isAir();
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Client ticker: advance the animation counter, gated by the synced {@code didProcess}. */

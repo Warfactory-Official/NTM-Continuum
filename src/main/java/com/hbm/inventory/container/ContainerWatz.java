@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.machine.ItemWatzPellet;
@@ -86,7 +87,7 @@ public class ContainerWatz extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.watz.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.watz.get());
     }
 
     @Override

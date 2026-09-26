@@ -32,7 +32,7 @@ public final class TurbofanGameTests {
         assertPort(helper, ports[0], 3, 1, 1, ForgeDirection.NORTH);
         assertPort(helper, ports[2], 3, 1, 5, ForgeDirection.SOUTH);
         BlockPos portCell = helper.absolutePos(new BlockPos(3, 1, 2));
-        helper.assertTrue(block.canConnect(helper.getLevel(), portCell, ForgeDirection.NORTH),
+        helper.assertTrue(block.canConnect(helper.getLevel(), portCell, Direction.NORTH),
                 "Turbofan must expose a cable/fluid port");
 
         fan.tank.setTankType(Fluids.KEROSENE);

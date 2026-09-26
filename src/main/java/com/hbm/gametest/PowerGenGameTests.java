@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.ItemCassette;

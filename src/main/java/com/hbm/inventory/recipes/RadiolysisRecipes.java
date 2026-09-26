@@ -1,7 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 
 import java.util.Collections;
@@ -48,7 +48,7 @@ public final class RadiolysisRecipes {
         for (Map.Entry<FluidType, CrackingRecipes.CrackingRecipe> recipe : cracking.entrySet()) {
             radiolysis.put(recipe.getKey(), new RadiolysisRecipe(recipe.getValue().left(), recipe.getValue().right()));
         }
-        com.hbm.scripting.ScriptedRecipes.apply(RadiolysisRecipes.class);
+        dev.golem.core.content.Replay.apply(RadiolysisRecipes.class);
     }
 
     public static void put(FluidType input, RadiolysisRecipe recipe) {

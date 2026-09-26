@@ -6,7 +6,7 @@ import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.items.ModWatzItems;
 import com.hbm.items.machine.EnumWatzType;
-import com.hbm.lib.TagIds;
+import com.hbm.api.ids.TagIds;
 import com.hbm.scripting.ScriptedContent;
 import com.hbm.util.Function;
 import dev.golem.core.registry.DeferredRegister;

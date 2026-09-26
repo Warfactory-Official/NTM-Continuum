@@ -85,7 +85,7 @@ public final class RtgGameTests {
         ItemRTGPellet lead = ModRtgContent.PELLET_RTG_LEAD.get();
         ItemStack terminal = new ItemStack(lead);
         lead.setLifespan(terminal, 1L);
-        com.hbm.inventory.NTMItemHandler inventory = new com.hbm.inventory.NTMItemHandler(1);
+        dev.golem.core.machine.ItemHandler inventory = new dev.golem.core.machine.ItemHandler(1);
         inventory.setStackInSlot(0, terminal);
         helper.assertTrue(RTGUtil.updateRTGs(inventory, new int[]{0}) == 10
                         && inventory.getStackInSlot(0).is(lead)

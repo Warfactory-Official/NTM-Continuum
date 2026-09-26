@@ -1,12 +1,13 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.client.sound.IndustrialTurbineSoundHandler;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
@@ -14,7 +15,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -28,7 +29,7 @@ import java.util.Random;
  * Industrial steam turbine, ported from the 1.12.2 turbine base without the old Forge fluid/GUI layer.
  * It consumes 20% of the available input steam per tick and turns the released heat into HE.
  */
-public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
+public class TileEntityMachineIndustrialTurbine extends SyncedBlockEntity
         implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider {
 
     public static int inputTankSize = 750_000;
@@ -86,12 +87,12 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
 
         if (!valid) turbine.tanks[1].setTankType(Fluids.NONE);
         for (DirPos connection : turbine.getPowerPos()) {
-            turbine.tryProvide(level, connection.getPos(), connection.getDir());
+            turbine.tryProvide(level, connection.getPos(), connection.getDir().toDirection());
         }
         for (DirPos connection : turbine.getConPos()) {
-            turbine.tryProvide(turbine.tanks[1], level, connection);
+            turbine.tryProvide(turbine.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
-        turbine.networkPackNT();
+        turbine.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state,
@@ -172,7 +173,8 @@ public class TileEntityMachineIndustrialTurbine extends TileEntityLoadedBase
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return (CoolingRecipes.get(type) != null || type == Fluids.SPENTSTEAM)
                 && dir != getFacing() && dir != getFacing().getOpposite();
     }

@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine.albion;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.albion.TileEntityPASource;
@@ -82,16 +84,18 @@ public class BlockPASource extends BlockMultiblockMachine
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPASource te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+                && com.hbm.lib.Ports.isPort(te.getConPos(), pos, dir.toDirection());
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         BlockPos pos = new BlockPos(x, y, z);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityPASource te
-                && IEnergyConnectorBlock.isPort(te.getConPos(), pos, dir);
+                && com.hbm.lib.Ports.isPort(te.getConPos(), pos, dir.toDirection());
     }
 
     @Override

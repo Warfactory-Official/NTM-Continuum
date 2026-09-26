@@ -2,7 +2,7 @@ package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineSawmill;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.inventory.recipes.anvil.AnvilRecipes;
 import com.hbm.inventory.recipes.SawmillRecipes;
 import com.hbm.items.ModDataComponents;

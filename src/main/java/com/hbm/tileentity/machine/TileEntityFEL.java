@@ -114,7 +114,7 @@ public class TileEntityFEL extends TileEntityMachineBase implements MenuProvider
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Everything living between the emitter and the beam's end takes the wavelength's effect. */

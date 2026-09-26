@@ -1,9 +1,10 @@
 package com.hbm.blocks.network;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
@@ -90,7 +91,7 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
                                      boolean movedByPiston) {
         super.onNeighborChanged(state, level, pos, neighbourBlock, movedByPiston);
         if (level instanceof net.minecraft.server.level.ServerLevel server) {
-            com.hbm.uninos.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
+            dev.golem.core.graph.LevelNodeGraph.invalidateEndpointsAt(server, pos);
         }
     }
 
@@ -111,11 +112,12 @@ public class FluidValve extends dev.golem.core.world.CompatBlock
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return world.getBlockState(new BlockPos(x, y, z)).getValue(OPEN)
                 && world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityFluidValve valve
                 && valve.getFluidType() != com.hbm.inventory.fluid.Fluids.NONE
-                && valve.canConnect(type, dir);
+                && valve.canConnect(type, dir.toDirection());
     }
 
     @Override

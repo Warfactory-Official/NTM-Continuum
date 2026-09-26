@@ -1,5 +1,6 @@
 package com.hbm.tileentity.network;
 
+import net.minecraft.core.Direction;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,7 +37,8 @@ public class TileEntityPylonMedium extends TileEntityPylonBase {
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
+    public boolean canConnect(Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return hasTransformer() && ForgeDirection.getOrientation(facingMeta()).getOpposite() == dir;
     }
 

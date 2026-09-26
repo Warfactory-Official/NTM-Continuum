@@ -14,7 +14,7 @@ import com.hbm.inventory.container.ContainerMachineChemicalPlant;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import net.minecraft.ChatFormatting;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.ItemBlueprints;
@@ -97,7 +97,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineChemicalPlant te) {
         // Fluid network: subscribe input tanks to matching nets, push output tanks out, plus bucket I/O.
         for (DirPos dp : te.getConPos()) {
-            for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp);
+            for (FluidTankNTM tank : te.outputTanks) if (tank.getFill() > 0) te.tryProvide(tank, level, dp.getPos(), dp.getDir().toDirection());
         }
         te.fillInputTanks();
         te.unloadOutputTanks();
@@ -117,7 +117,7 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         te.didProcess = te.chemplantModule.didProcess;
 
         if (te.chemplantModule.markDirty) te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Client ticker: advance the animation counter (gated by the synced {@code didProcess}) + the sound loop. */

@@ -54,11 +54,11 @@ public final class LiquefactionRecipes {
         return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", path));
     }
 
-    private static void item(Item in, int fill, com.hbm.inventory.fluid.FluidType type) {
+    private static void item(Item in, int fill, com.hbm.api.fluid.FluidType type) {
         if (in != null && in != Items.AIR) byItem.putIfAbsent(in, new FluidStack(type, fill));
     }
 
-    private static void tag(String path, int fill, com.hbm.inventory.fluid.FluidType type) {
+    private static void tag(String path, int fill, com.hbm.api.fluid.FluidType type) {
         byTag.putIfAbsent(c(path), new FluidStack(type, fill));
     }
 
@@ -97,7 +97,7 @@ public final class LiquefactionRecipes {
         byTag.putIfAbsent(ItemTags.FISHES, new FluidStack(Fluids.FISHOIL, 100));
         item(byName("hbm", "biomass"), 125, Fluids.BIOGAS);
         item(com.hbm.blocks.ModFallingBlocks.ore_oil_sand.get().asItem(), 100, Fluids.BITUMEN);
-        com.hbm.scripting.ScriptedRecipes.apply(LiquefactionRecipes.class);
+        dev.golem.core.content.Replay.apply(LiquefactionRecipes.class);
     }
 
     public static void put(Item in, FluidStack out) {

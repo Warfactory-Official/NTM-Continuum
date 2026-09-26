@@ -5,7 +5,7 @@ import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -14,7 +14,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The small and polonium RTGs share the old one-cell generator implementation. */
-public class TileEntityMachineMiniRTG extends TileEntityLoadedBase
+public class TileEntityMachineMiniRTG extends SyncedBlockEntity
         implements IEnergyProviderMK2, IEnergyConnectorMK2 {
 
     public long power;
@@ -38,11 +38,11 @@ public class TileEntityMachineMiniRTG extends TileEntityLoadedBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineMiniRTG generator) {
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            generator.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+            generator.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir.toDirection());
         }
         generator.power = Math.min(generator.power + generator.getGeneration(), generator.getMaxPower());
         generator.setChanged();
-        generator.networkPackNT();
+        generator.syncState();
     }
 
     @Override public long getPower() { return power; }

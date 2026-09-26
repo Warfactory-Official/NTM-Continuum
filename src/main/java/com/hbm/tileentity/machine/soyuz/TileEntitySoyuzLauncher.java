@@ -1,11 +1,12 @@
 package com.hbm.tileentity.machine.soyuz;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.missile.EntitySoyuz;
 import com.hbm.inventory.container.ContainerSoyuzLauncher;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.ISatChip;
@@ -99,7 +100,7 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
             liftOff(level);
         }
 
-        networkPackNT();
+        syncState();
     }
 
     /** The ring of ports around the apron's edge, at pad level and one below it. */
@@ -198,10 +199,10 @@ public class TileEntitySoyuzLauncher extends TileEntityMachineBase
     @Override public long getPower() { return power; }
     @Override public void setPower(long i) { this.power = i; }
     @Override public long getMaxPower() { return maxPower; }
-    @Override public boolean canConnect(ForgeDirection dir) { return dir != ForgeDirection.UNKNOWN; }
+    @Override public boolean canConnect(Direction dir) { return dir != null; }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction dir) {
         return type == tanks[0].getTankType() || type == tanks[1].getTankType();
     }
 

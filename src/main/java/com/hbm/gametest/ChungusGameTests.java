@@ -1,12 +1,13 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineChungus;
+import net.minecraft.core.Direction;
 import com.hbm.blocks.ModPowerGenBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityChungus;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 
@@ -55,18 +56,18 @@ public final class ChungusGameTests {
         assertPort(helper, power[0], 3, 1, 17, ForgeDirection.SOUTH);
 
         helper.assertTrue(block.canConnect(helper.getLevel(), helper.absolutePos(new BlockPos(3, 1, 16)),
-                        ForgeDirection.SOUTH),
+                        Direction.SOUTH),
                 "Leviathan turbine generator does not accept a cable at its power port");
         helper.assertTrue(!block.canConnect(helper.getLevel(), helper.absolutePos(new BlockPos(3, 1, 15)),
-                        ForgeDirection.EAST),
+                        Direction.EAST),
                 "Leviathan turbine accepted a cable away from its power port");
 
         BlockPos intake = helper.absolutePos(new BlockPos(3, 3, 2));
         helper.assertTrue(block.canConnect(Fluids.STEAM, helper.getLevel(), intake.getX(), intake.getY(),
-                        intake.getZ(), ForgeDirection.NORTH),
+                        intake.getZ(), Direction.NORTH),
                 "Leviathan turbine does not accept steam at its intake port");
         helper.assertTrue(!block.canConnect(Fluids.WATER, helper.getLevel(), intake.getX(), intake.getY(),
-                        intake.getZ(), ForgeDirection.NORTH),
+                        intake.getZ(), Direction.NORTH),
                 "Leviathan turbine accepted a fluid it cannot cool");
         helper.succeed();
     }

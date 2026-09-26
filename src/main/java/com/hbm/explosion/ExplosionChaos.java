@@ -6,7 +6,7 @@ import com.hbm.entity.particle.EntityOrangeFX;
 import com.hbm.entity.particle.EntityPinkCloudFX;
 import com.hbm.entity.projectile.EntityBulletBaseMK4;
 import com.hbm.handler.ArmorUtil;
-import com.hbm.util.ArmorRegistry.HazardClass;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.util.ArmorRegistry;

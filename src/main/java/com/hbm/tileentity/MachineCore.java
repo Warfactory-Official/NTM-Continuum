@@ -1,7 +1,7 @@
 package com.hbm.tileentity;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.lib.ForgeDirection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -29,8 +29,8 @@ public final class MachineCore {
      * here rather than reading the property is what kept a machine's migration invisible to its tile.
      */
     public static ForgeDirection facing(BlockState state) {
-        if (state.hasProperty(BlockMultiblockCore.FACING)) {
-            return ForgeDirection.getOrientation(state.getValue(BlockMultiblockCore.FACING));
+        if (state.hasProperty(MultiblockCore.FACING)) {
+            return ForgeDirection.getOrientation(state.getValue(MultiblockCore.FACING));
         }
         return ForgeDirection.UNKNOWN;
     }

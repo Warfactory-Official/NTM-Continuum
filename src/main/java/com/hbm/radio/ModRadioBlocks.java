@@ -9,7 +9,7 @@ import com.hbm.blocks.network.RadioTorchReceiver;
 import com.hbm.blocks.network.RadioTorchReader;
 import com.hbm.blocks.network.RadioTorchLogic;
 import com.hbm.blocks.network.RadioTorchSender;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;

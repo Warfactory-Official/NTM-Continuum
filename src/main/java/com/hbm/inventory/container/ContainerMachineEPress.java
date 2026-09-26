@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityMachineEPress;
@@ -69,7 +70,7 @@ public class ContainerMachineEPress extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_epress.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.machine_epress.get());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.tileentity.machine.rbmk.BlockEntityRBMKConsole;
 import com.hbm.tileentity.machine.rbmk.RBMKColumn;
@@ -35,11 +35,11 @@ public final class RBMKConsoleRenderer extends GemBER<BlockEntityRBMKConsole, RB
     @Override public State createRenderState() { return new State(); }
     /** Folded cells own block entities of the same type; only the core draws the desk. */
     @Override public boolean shouldRender(BlockEntityRBMKConsole be, Vec3 camera) {
-        return !(be.getBlockState().getBlock() instanceof BlockMultiblockCore core && core.isCellOf(be.getBlockState()))
+        return !(be.getBlockState().getBlock() instanceof MultiblockCore core && core.isCellOf(be.getBlockState()))
                 && super.shouldRender(be, camera);
     }
     @Override public void extract(BlockEntityRBMKConsole be, State state, float partial, Vec3 camera) {
-        state.yaw = yaw(be.getBlockState().getValue(BlockMultiblockCore.FACING));
+        state.yaw = yaw(be.getBlockState().getValue(MultiblockCore.FACING));
         state.columns = be.columns.clone();
         for (int i = 0; i < 6; i++) {
             String display = be.screens[i].display;

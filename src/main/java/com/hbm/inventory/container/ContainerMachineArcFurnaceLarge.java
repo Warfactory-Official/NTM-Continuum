@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.foundry.FoundryExpansion;
 import com.hbm.items.machine.ItemArcElectrode;
 import com.hbm.items.machine.ItemMachineUpgrade;
@@ -86,7 +87,7 @@ public class ContainerMachineArcFurnaceLarge extends AbstractContainerMenu {
     public @Nullable TileEntityMachineArcFurnaceLarge getFurnace() { return furnace; }
 
     @Override public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, FoundryExpansion.ARC_FURNACE.get());
+        return Menus.stillValid(access, player, FoundryExpansion.ARC_FURNACE.get());
     }
 
     @Override

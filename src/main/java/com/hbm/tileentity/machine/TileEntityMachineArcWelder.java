@@ -8,7 +8,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineArcWelder;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.ArcWelderRecipes;
@@ -117,7 +117,7 @@ public class TileEntityMachineArcWelder extends TileEntityMachineBase
 
         te.display = te.recipe == null ? ItemStack.EMPTY : te.recipe.output;
         te.maxPower = Math.max(intendedMaxPower, te.power);
-        te.networkPackNT();
+        te.syncState();
     }
 
     private void updateTankType() {

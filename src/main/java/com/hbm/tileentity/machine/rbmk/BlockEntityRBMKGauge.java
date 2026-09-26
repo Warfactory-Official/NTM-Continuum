@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine.rbmk;
 
 import com.hbm.interfaces.IControlReceiver;
 import com.hbm.tileentity.ModRBMKBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.tileentity.network.RTTYSystem;
 import com.hbm.tileentity.network.RTTYSystem.RTTYChannel;
 import dev.golem.core.data.DataIn;
@@ -16,11 +16,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Four independent RTTY gauges. A non-polling gauge retains its last received value when a signal goes stale. */
-public class BlockEntityRBMKGauge extends TileEntityLoadedBase implements IControlReceiver, IRBMKTicking {
+public class BlockEntityRBMKGauge extends SyncedBlockEntity implements IControlReceiver, IRBMKTicking {
     public static final int GAUGES = 4;
     public final GaugeUnit[] gauges = {new GaugeUnit(0), new GaugeUnit(1), new GaugeUnit(2), new GaugeUnit(3)};
     public BlockEntityRBMKGauge(BlockPos pos, BlockState state) { super(ModRBMKBlockEntities.RBMK_GAUGE.get(), pos, state); }
-    @Override public void tickServer() { for (GaugeUnit gauge : gauges) gauge.update(level); networkPackNT(); }
+    @Override public void tickServer() { for (GaugeUnit gauge : gauges) gauge.update(level); syncState(); }
     @Override public void tickClient() { for (GaugeUnit gauge : gauges) gauge.updateClient(); }
     public void setValue(int channel, long value) { if (channel >= 0 && channel < GAUGES) { gauges[channel].value = value; dataChanged(); } }
     @Override public void receiveControl(CompoundTag data) {

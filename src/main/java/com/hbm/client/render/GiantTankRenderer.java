@@ -2,7 +2,7 @@ package com.hbm.client.render;
 
 import com.hbm.Constants;
 import com.hbm.client.model.WavefrontObj;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineGiantTank;
 import com.mojang.blaze3d.vertex.PoseStack;

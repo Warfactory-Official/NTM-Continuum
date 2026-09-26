@@ -1,7 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModItems;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public final class ElectrolyserFluidRecipes {
         add(Fluids.POTASSIUM_CHLORIDE, 250, new FluidStack(Fluids.CHLORINE, 125), new FluidStack(Fluids.NONE, 0), 20,
                 new net.minecraft.world.item.ItemStack(ModItems.dust.get()));
         add(Fluids.CALCIUM_CHLORIDE, 250, new FluidStack(Fluids.CHLORINE, 125), new FluidStack(Fluids.CALCIUM_SOLUTION, 125));
-        com.hbm.scripting.ScriptedRecipes.apply(ElectrolyserFluidRecipes.class);
+        dev.golem.core.content.Replay.apply(ElectrolyserFluidRecipes.class);
     }
 
     public static void put(FluidType input, int amount, FluidStack output1, FluidStack output2, int duration,

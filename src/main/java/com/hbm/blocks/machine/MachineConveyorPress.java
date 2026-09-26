@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.block.IToolable;
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.machine.ItemStamp;
 import com.hbm.sound.ModSounds;
@@ -71,7 +73,7 @@ public final class MachineConveyorPress extends BlockMultiblockMachine
         stack.shrink(1);
         level.playSound(null, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, ModSounds.UPGRADE_PLUG.get(),
                 SoundSource.BLOCKS, 1.0F, 1.0F);
-        press.markChanged();
+        press.setChanged();
         return InteractionResult.SUCCESS;
     }
 
@@ -96,7 +98,7 @@ public final class MachineConveyorPress extends BlockMultiblockMachine
         }
 
         press.inventory.setStackInSlot(0, ItemStack.EMPTY);
-        press.markChanged();
+        press.setChanged();
         return true;
     }
 

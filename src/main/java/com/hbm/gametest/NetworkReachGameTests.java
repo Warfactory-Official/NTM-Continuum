@@ -6,9 +6,9 @@ import com.hbm.api.energymk2.IEnergyHandlerMK2;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.api.fluidmk2.IFluidPipeMK2;
 import com.hbm.api.fluidmk2.IFluidUserMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockCell;
+import dev.golem.core.multiblock.MultiblockCell;
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.dejson.BlockStates;
 import net.minecraft.core.BlockPos;
@@ -53,7 +53,7 @@ public final class NetworkReachGameTests {
 
         for (Block block : BlockStates.blocksIn(Constants.MOD_ID)) {
             if (!(block instanceof EntityBlock entityBlock)) continue;
-            boolean spread = block instanceof BlockMultiblockCore || block instanceof BlockMultiblockCell;
+            boolean spread = block instanceof MultiblockCore || block instanceof MultiblockCell;
             if (!spread || portless(block)) continue;
 
             BlockEntity be;

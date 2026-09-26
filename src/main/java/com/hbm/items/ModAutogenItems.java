@@ -1,7 +1,7 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
@@ -26,6 +26,8 @@ import java.util.Map;
  * {@code ItemAutogen} entries.
  */
 public final class ModAutogenItems {
+
+    private static final List<Runnable> REGISTERED = new java.util.concurrent.CopyOnWriteArrayList<>();
 
     private ModAutogenItems() {}
 
@@ -80,7 +82,14 @@ public final class ModAutogenItems {
                 p -> new ItemAutogen(p, shape, mat), p -> p.stacksTo(64));
         BY_KEY.put(key(shape, mat.name), item);
         ModTabs.addTo(HbmTab.MATERIALS, item);
+        REGISTERED.forEach(Runnable::run);
         return item;
+    }
+
+
+    /** Runs after every later autogen item registration. */
+    public static void onRegistered(Runnable listener) {
+        REGISTERED.add(listener);
     }
 
     /** Makes {@code shape} an autogen shape; {@code art} is the full sprite id of its greyscale source. */

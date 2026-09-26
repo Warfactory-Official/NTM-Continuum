@@ -1,9 +1,10 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.client.sound.LargeTurbineSoundHandler;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CoolingRecipes;
@@ -61,9 +62,9 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
 
         ForgeDirection dir = turbine.getFacing();
         BlockPos powerPos = turbine.getBlockPos().offset(-dir.offsetX * 4, 0, -dir.offsetZ * 4);
-        turbine.tryProvide(level, powerPos, dir.getOpposite());
+        turbine.tryProvide(level, powerPos, dir.getOpposite().toDirection());
         for (DirPos connection : turbine.getConPos()) {
-            turbine.tryProvide(turbine.tanks[1], level, connection);
+            turbine.tryProvide(turbine.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
 
         turbine.updateTypeFromFluidId();
@@ -72,7 +73,7 @@ public class TileEntityMachineLargeTurbine extends TileEntityMachineBase
         turbine.convert();
         if (turbine.power > MAX_POWER) turbine.power = MAX_POWER;
         turbine.processCanister(turbine.tanks[1], 5, 6);
-        turbine.networkPackNT();
+        turbine.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineLargeTurbine turbine) {

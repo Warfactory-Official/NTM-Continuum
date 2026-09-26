@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.foundry.FoundryExpansion;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemMold;
@@ -52,7 +53,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
         if (caster.type != null && caster.amount > caster.getCapacity()) {
             int excess = caster.amount - caster.getCapacity();
             ItemScraps.spawnMats(level, pos.getX() + 0.5D, pos.getY() + 2D, pos.getZ() + 0.5D,
-                    new Mats.MaterialStack(caster.type, excess));
+                    new MaterialStack(caster.type, excess));
             caster.amount = caster.getCapacity();
         }
 
@@ -104,12 +105,12 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
             caster.syncOutputs[i] = caster.inventory.getStackInSlot(i + 1).copy();
         }
         caster.syncOutput = caster.syncOutputs[0];
-        caster.networkPackNT();
+        caster.syncState();
     }
 
     private void updateConnections(Level level) {
         for (DirPos port : getFluidConPos()) {
-            tryProvide(steam, level, port);
+            tryProvide(steam, level, port.getPos(), port.getDir().toDirection());
         }
     }
 
@@ -152,7 +153,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
 
     @Override
     public boolean canAcceptPartialPour(Level level, BlockPos pos, double dX, double dY, double dZ,
-                                        ForgeDirection side, Mats.MaterialStack stack) {
+                                        ForgeDirection side, MaterialStack stack) {
         if (side != ForgeDirection.UP) return false;
         for (int[] pour : getMetalPourPos()) {
             if (pour[0] == pos.getX() && pour[1] == pos.getY() && pour[2] == pos.getZ()) {
@@ -163,7 +164,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
     }
 
     @Override
-    public boolean standardCheck(Level level, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) {
+    public boolean standardCheck(Level level, BlockPos pos, ForgeDirection side, MaterialStack stack) {
         if (type != null && type != stack.material) return false;
         ItemMold.Mold mold = getInstalledMold();
         int limit = mold == null ? getCapacity() : mold.getCost() * 9;
@@ -171,9 +172,9 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
     }
 
     @Override
-    public Mats.@Nullable MaterialStack standardAdd(Level level, BlockPos pos, ForgeDirection side,
-                                                     Mats.MaterialStack stack) {
-        type = stack.material;
+    public @Nullable MaterialStack standardAdd(Level level, BlockPos pos, ForgeDirection side,
+                                                     MaterialStack stack) {
+        type = Mats.of(stack.material);
         ItemMold.Mold mold = getInstalledMold();
         int limit = mold == null ? getCapacity() : mold.getCost() * 9;
         if (stack.amount + amount <= limit) {
@@ -240,7 +241,7 @@ public class TileEntityMachineStrandCaster extends TileEntityFoundryCastingBase
 
     @Override public boolean stillValid(Player player) {
         return level != null && level.getBlockEntity(worldPosition) == this
-                && com.hbm.inventory.container.Containers.inRangeOfMultiblock(level, worldPosition, player);
+                && dev.golem.core.multiblock.MultiblockCore.isWithinInteractionRange(level, worldPosition, player);
     }
 
     @Override

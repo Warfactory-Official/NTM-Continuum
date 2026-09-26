@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerCompressor;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
@@ -118,8 +119,7 @@ public class GUICompressor extends dev.golem.core.gui.CompatContainerScreen<Cont
             if (mc.gameMode != null
                     && this.leftPos + 43 + j * 11 <= mx && mx < this.leftPos + 43 + 8 + j * 11
                     && this.topPos + 46 < my && my <= this.topPos + 46 + 14) {
-                mc.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                        net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0F));
+                Gauges.click();
                 mc.gameMode.handleInventoryButtonClick(this.menu.containerId, j);
                 return true;
             }

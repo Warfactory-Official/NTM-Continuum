@@ -94,10 +94,10 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
         }
 
         for (DirPos connection : te.getConPos()) {
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
+            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
+            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection.getPos(), connection.getDir().toDirection());
         }
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineCyclotron te) {}
@@ -249,7 +249,7 @@ public class TileEntityMachineCyclotron extends TileEntityMachineBase
 
     public void fillFluidInit(FluidTankNTM tank) {
         if (level == null) return;
-        for (DirPos connection : getConPos()) tryProvide(tank, level, connection);
+        for (DirPos connection : getConPos()) tryProvide(tank, level, connection.getPos(), connection.getDir().toDirection());
     }
 
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2]}; }

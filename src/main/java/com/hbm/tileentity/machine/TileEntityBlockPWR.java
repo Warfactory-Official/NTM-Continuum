@@ -1,15 +1,15 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidProviderMK2;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -30,9 +30,9 @@ import com.hbm.tileentity.ModPwrBlockEntities;
  *
  * <p>The link survives save/load: the original block's registry id and the controller position are written
  * with the entity. The 1.7 entity was a plain {@code TileEntity}; here it sits on
- * {@link TileEntityLoadedBase} so the fluid net's loaded check and the chunk-load tag sync apply.
+ * {@link SyncedBlockEntity} so the fluid net's loaded check and the chunk-load tag sync apply.
  */
-public class TileEntityBlockPWR extends TileEntityLoadedBase
+public class TileEntityBlockPWR extends SyncedBlockEntity
         implements IFluidReceiverMK2, IFluidProviderMK2, IRORValueProvider, IRORInteractive {
 
     private static final FluidTankNTM[] NO_TANKS = new FluidTankNTM[0];
@@ -138,7 +138,7 @@ public class TileEntityBlockPWR extends TileEntityLoadedBase
     // --- fluid: only a port cell talks to the net, and it answers with the controller's tanks ---
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction dir) {
         return isPort();
     }
 

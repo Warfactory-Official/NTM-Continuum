@@ -1,7 +1,7 @@
 package com.hbm.items.machine;
 
 import com.hbm.blocks.machine.rbmk.RBMKBase;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.handler.neutron.NeutronNodeWorld;
 import com.hbm.handler.neutron.RBMKNeutronHandler.RBMKNeutronNode;
 import net.minecraft.core.BlockPos;

@@ -1,12 +1,12 @@
 package com.hbm.blocks.network;
 
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.Mirror;
 import dev.golem.core.registry.TickingBlock;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.lib.ForgeDirection;

@@ -1,11 +1,12 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ISatChip;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineSatLink;

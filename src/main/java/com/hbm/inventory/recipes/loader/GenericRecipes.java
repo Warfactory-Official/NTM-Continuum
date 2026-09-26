@@ -38,7 +38,7 @@ public abstract class GenericRecipes {
         if (registered) clear();
         registered = true;
         populate();
-        com.hbm.scripting.ScriptedRecipes.apply(this);
+        dev.golem.core.content.Replay.apply(this);
     }
 
     /** Empties the set; the next {@link #registerRecipes} rebuilds it and re-applies script edits. */

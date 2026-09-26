@@ -4,7 +4,7 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.block.IInsertable;
 import com.hbm.sound.ModSounds;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.ItemStacks;
@@ -19,7 +19,7 @@ import com.hbm.blocks.machine.PistonInserter;
 import com.hbm.tileentity.ModConveyorBlockEntities;
 
 /** 1.7 {@code PistonInserter.TileEntityPistonInserter}: average coding session involving tile entities. */
-public class TileEntityPistonInserter extends TileEntityLoadedBase {
+public class TileEntityPistonInserter extends SyncedBlockEntity {
 
     public ItemStack slot = ItemStack.EMPTY;
 
@@ -80,7 +80,7 @@ public class TileEntityPistonInserter extends TileEntityLoadedBase {
             delay--;
         }
 
-        networkPackNT();
+        syncState();
     }
 
     public void clientTick() {

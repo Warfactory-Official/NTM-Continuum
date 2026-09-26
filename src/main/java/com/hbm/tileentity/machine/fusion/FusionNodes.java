@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import net.minecraft.core.BlockPos;
@@ -41,7 +41,7 @@ public final class FusionNodes {
      *         light, and it is the only feedback a player gets that the beam is landing.
      */
     public static boolean provideKyU(Level level, BlockPos pos, ForgeDirection facing, long output) {
-        BlockEntity landed = FusionLink.at(level, emitterBeam(pos, facing), MachineCaps.KLYSTRON_IN);
+        BlockEntity landed = FusionLink.at(level, emitterBeam(pos, facing), FusionLink.KLYSTRON_IN);
         if (!(landed instanceof TileEntityFusionTorus torus) || torus.isRemoved() || !torus.isLoaded()) {
             return false;
         }

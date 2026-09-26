@@ -142,7 +142,7 @@ public class TileEntityCraneExtractor extends TileEntityCraneBase implements ICo
             }
         }
 
-        networkPackNT();
+        syncState();
     }
 
     private void sendItem(ItemStack stack, IConveyorBelt belt, Direction outputSide) {

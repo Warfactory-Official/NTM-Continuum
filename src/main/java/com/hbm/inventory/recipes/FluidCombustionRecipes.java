@@ -1,6 +1,6 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 
 import java.util.Collections;
@@ -73,7 +73,7 @@ public final class FluidCombustionRecipes {
         add(Fluids.UNSATURATEDS, 1_000);
         add(Fluids.NITAN, 2_000);
         add(Fluids.BALEFIRE, 10_000);
-        com.hbm.scripting.ScriptedRecipes.apply(FluidCombustionRecipes.class);
+        dev.golem.core.content.Replay.apply(FluidCombustionRecipes.class);
     }
 
     public static void put(FluidType fluid, int heatPerMilliBucket) {

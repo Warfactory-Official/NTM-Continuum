@@ -2,7 +2,7 @@ package com.hbm.blocks.machine.storage;
 
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.block.ItemBlockStorageCrate;
 import dev.golem.core.registry.DeferredRegister;

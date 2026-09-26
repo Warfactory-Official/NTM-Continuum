@@ -1,9 +1,10 @@
 package com.hbm.tileentity.network;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
@@ -23,7 +24,7 @@ import com.hbm.util.EnergyPush;
  * <p>The graph sees it as a receiver only: 1.7 subscribed it to the input net and delivered by hand, so a
  * provider speed of zero towards the net keeps the input net from drawing it back down.
  */
-public class TileEntityCapacitor extends TileEntityLoadedBase implements IEnergyReceiverMK2, IRORValueProvider {
+public class TileEntityCapacitor extends SyncedBlockEntity implements IEnergyReceiverMK2, IRORValueProvider {
 
     public long power;
     protected long maxPower;
@@ -69,7 +70,7 @@ public class TileEntityCapacitor extends TileEntityLoadedBase implements IEnergy
             if (accepted > 0) capacitor.usePower(accepted);
         }
 
-        capacitor.networkPackNT();
+        capacitor.syncState();
         capacitor.lastPowerSent = capacitor.powerSent;
         capacitor.lastPowerReceived = capacitor.powerReceived;
         capacitor.powerSent = 0;
@@ -125,7 +126,8 @@ public class TileEntityCapacitor extends TileEntityLoadedBase implements IEnergy
     @Override public void setPower(long power) { this.power = power; }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
+    public boolean canConnect(Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return dir == inputSide();
     }
 

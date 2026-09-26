@@ -14,7 +14,7 @@ import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
 import net.minecraft.ChatFormatting;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.CrystallizerRecipes;
@@ -120,7 +120,7 @@ public class TileEntityMachineCrystallizer extends TileEntityMachineBase
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     /** Client ticker: advance the spinner (gated by the synced {@code isOn}) + the looping sound. */

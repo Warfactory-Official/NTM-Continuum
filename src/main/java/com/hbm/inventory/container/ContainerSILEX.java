@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
@@ -90,7 +91,7 @@ public class ContainerSILEX extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_silex.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.machine_silex.get());
     }
 
     /** The GUI's single "void contents" button, routed through the vanilla button path. */

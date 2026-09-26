@@ -1,6 +1,6 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.NTMMaterial;
 import com.hbm.items.machine.IItemFluidId;
@@ -51,7 +51,7 @@ public final class AnnihilatorRecipes {
         registered = true;
 
         // 1.7 registers its fifteen 528 milestone payouts inside if(GeneralConfig.enable528); config-gated content is not ported.
-        com.hbm.scripting.ScriptedRecipes.apply(AnnihilatorRecipes.class);
+        dev.golem.core.content.Replay.apply(AnnihilatorRecipes.class);
     }
 
     public static void addMilestone(Object key, Milestone milestone) {

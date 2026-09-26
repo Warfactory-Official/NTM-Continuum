@@ -8,7 +8,6 @@ import com.hbm.blocks.ModFallingBlocks;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
@@ -58,11 +57,11 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
 
         // The legacy steam subtype sends spent steam before the base sends water.
         for (DirPos connection : pump.getConPos()) {
-            if (pump.lps.getFill() > 0) pump.tryProvide(pump.lps, level, connection);
+            if (pump.lps.getFill() > 0) pump.tryProvide(pump.lps, level, connection.getPos(), connection.getDir().toDirection());
         }
 
         for (DirPos connection : pump.getConPos()) {
-            if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection);
+            if (pump.water.getFill() > 0) pump.tryProvide(pump.water, level, connection.getPos(), connection.getDir().toDirection());
         }
 
         if (pump.groundCheckDelay > 0) pump.groundCheckDelay--;
@@ -75,7 +74,7 @@ public class TileEntityMachinePumpSteam extends TileEntityMachineBase
         }
 
         pump.setChanged();
-        pump.networkPackNT();
+        pump.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachinePumpSteam pump) {

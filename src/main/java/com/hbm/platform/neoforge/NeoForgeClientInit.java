@@ -3,93 +3,25 @@ package com.hbm.platform.neoforge;
 //? if neoforge {
 
 import com.hbm.client.HbmClientRegistrations;
-import com.hbm.packet.HbmPackets;
 //? if >=26.1 {
 import com.hbm.client.render.MachineItemModelRenderer;
-//?}
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-//? if >=26.1 {
 import net.neoforged.neoforge.client.event.RegisterSpecialModelRendererEvent;
 //?}
-import net.minecraft.resources.Identifier;
+import net.neoforged.bus.api.IEventBus;
 
-/**
- * Client-only NeoForge setup. Isolated in its own class so it is never loaded on a dedicated server
- * (it references client-only screen/renderer classes). Wired from the mod constructor behind a
- * Dist.CLIENT guard.
- */
+/** NeoForge-only client hooks; shared client setup is {@code HbmClient}. Never loaded on a dedicated server. */
 public final class NeoForgeClientInit {
 
     private NeoForgeClientInit() {}
 
     public static void init(IEventBus modBus) {
-        HbmPackets.registerClientHandlers();
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
                 (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
                         com.hbm.handler.JetpackHandler.clearClientState());
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(
                 (net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut event) ->
                         com.hbm.client.gun.GunSmokeClient.onDisconnect());
-        // The vendored 26.1 engine is a library and must be subscribed from the constructor: two of
-        // its listeners are mod-bus registry events. No-op where the engine is a mod, or absent.
-        com.hbm.client.render.flywheel.FlywheelCompat.startEngine();
-        com.hbm.client.particle.HbmParticleHandlers.register();
-        com.hbm.client.particle.SingularityParticleHandlers.register();
-        // Item tint colours (fluid icons, scraps, ...). 26.1 declares these in the item definitions and
-        // the engine applies them; below it Golem Core wires the loader's colour registry to the same
-        // stored colour. One call, every version, both loaders.
-        com.hbm.client.ClientGameTime.install();
-        // The material-shape sprites are computed onto the atlas, not shipped; this has to be declared
-        // before the first resource load. The fluid droplets are the same, one per registered fluid.
-        com.hbm.client.AutogenSprites.install();
-        com.hbm.client.FluidSprites.install();
         HbmClientRegistrations.installDebugLines();
-        HbmClientRegistrations.installTints();
-        HbmClientRegistrations.installItemModelProperties();
-        HbmClientRegistrations.installKeybinds();
-        HbmClientRegistrations.installGunAnimations();
-        HbmClientRegistrations.installEntityEffects();
-        HbmClientRegistrations.installArmorLayers();
-
-        // Look-overlay HUD (battery charge / duct type / ...) — a GUI layer drawn above the vanilla HUD,
-        // so its text is extracted/submitted in the same pass (mirrors Fabric's HudElementRegistry).
-        modBus.addListener((RegisterGuiLayersEvent event) -> {
-            HbmClientRegistrations.registerHud((id, renderer) -> event.registerAboveAll(
-                    dev.golem.core.Ids.of("hbm", id),
-                    (graphics, deltaTracker) -> renderer.accept(graphics)));
-        });
-
-        modBus.addListener((RegisterMenuScreensEvent event) -> {
-            HbmClientRegistrations.registerScreens(event::register);
-        });
-
-        modBus.addListener((EntityRenderersEvent.RegisterRenderers event) -> {
-            HbmClientRegistrations.registerRenderers(new com.hbm.client.render.HbmBlockEntityRenderers.Sink() {
-                @Override
-                public <T extends BlockEntity, S extends dev.golem.core.render.CompatRenderState> void register(
-                    BlockEntityType<? extends T> type, dev.golem.core.render.CompatBERProvider<T, S> provider) {
-                    event.registerBlockEntityRenderer(type, dev.golem.core.render.Renderers.toVanilla(provider));
-                }
-            }, new com.hbm.client.render.HbmEntityRenderers.Sink() {
-                @Override
-                public <T extends Entity> void register(EntityType<? extends T> type, EntityRendererProvider<T> provider) {
-                    event.registerEntityRenderer(type, provider);
-                }
-            });
-        });
-        // Block tint sources (sellafite shade tint) — Golem picks the era's colour API and the moment
-        // this loader allows registering one.
-        HbmClientRegistrations.registerBlockColors();
 
         // OBJ machine item models. 26.1 has a special-model system and registers a codec for them; below
         // it the equivalent hook is a BEWLR hung off the item's client extensions, fed by the same item

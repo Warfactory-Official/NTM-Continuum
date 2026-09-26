@@ -49,7 +49,7 @@ public class TileEntityCraneRouter extends TileEntityMachineBase implements ICon
     }
 
     public void serverTick() {
-        networkPackNT();
+        syncState();
     }
 
     /** 1.7: every slot is a ghost filter; breaking the block drops nothing. */

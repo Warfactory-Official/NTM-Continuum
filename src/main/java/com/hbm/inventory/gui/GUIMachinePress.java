@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import dev.golem.core.gui.GuiDraw;
 import com.hbm.inventory.container.ContainerMachinePress;
 import com.hbm.tileentity.machine.TileEntityMachinePress;
@@ -42,8 +43,8 @@ public class GUIMachinePress extends dev.golem.core.gui.CompatContainerScreen<Co
             GuiDraw.blit(graphics, TEXTURE, this.leftPos + 79, this.topPos + 35, 14.0F, 202.0F, 18, progress, 256, 256);
         }
 
-        GuiUtil.drawSmoothGauge(graphics, this.leftPos + 34, this.topPos + 25,
-                press.speed / (double) TileEntityMachinePress.maxSpeed, 5, 2, 1, 0x7F0000);
+        Gauges.needle(graphics, this.leftPos + 34, this.topPos + 25,
+                press.speed / (double) TileEntityMachinePress.maxSpeed, 0x7F0000);
     }
 
     @Override

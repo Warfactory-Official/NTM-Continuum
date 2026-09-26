@@ -1,12 +1,12 @@
 package com.hbm.blocks.machine;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.block.IToolable;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineAutosaw;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -95,8 +95,8 @@ public class MachineAutosaw extends dev.golem.core.world.CompatBlock
     }
 
     @Override
-    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, Direction dir) {
+        return dir != null
                 && TileEntityMachineAutosaw.acceptedFuels.contains(type)
                 && world.getBlockEntity(new BlockPos(x, y, z)) instanceof TileEntityMachineAutosaw;
     }

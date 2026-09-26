@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import com.hbm.lib.Library;
 import com.hbm.items.machine.ItemBlueprints;
@@ -89,7 +90,7 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player,
+        return Menus.stillValid(access, player,
                 ChemicalFactoryRegistrations.MACHINE_CHEMICAL_FACTORY.get());
     }
 

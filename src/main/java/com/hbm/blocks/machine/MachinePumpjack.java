@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachinePumpjack;
 import net.minecraft.core.BlockPos;
@@ -48,8 +50,8 @@ public class MachinePumpjack extends BlockMultiblockMachine implements IEnergyCo
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, core, new int[]{0, 0, -1, 1, -2, 4}, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core, new int[]{0, 0, 1, -1, -1, 5}, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, core, new int[]{0, 0, -1, 1, -2, 4}, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core, new int[]{0, 0, 1, -1, -1, 5}, clicked, facing);
     }
 
     /**
@@ -62,8 +64,8 @@ public class MachinePumpjack extends BlockMultiblockMachine implements IEnergyCo
         super.visitCells(core, facing, visitor);
 
         BlockPos head = wellHead(core, facing);
-        MultiblockHandlerXR.visitBox(head, RAIL_NEAR, facing, visitor);
-        MultiblockHandlerXR.visitBox(head, RAIL_FAR, facing, visitor);
+        MultiblockFootprint.visitBox(head, RAIL_NEAR, facing, visitor);
+        MultiblockFootprint.visitBox(head, RAIL_FAR, facing, visitor);
 
         visitor.cell(head.offset(1, 0, 1), MASK_SOUTH);
         visitor.cell(head.offset(1, 0, -1), MASK_NORTH);

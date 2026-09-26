@@ -1,13 +1,14 @@
 package com.hbm.blocks.machine.storage;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockMaskTable;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockMaskTable;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.ILookOverlay;
 import com.hbm.items.ModDataComponents;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.storage.TileEntityMachineFENSU;
@@ -95,7 +96,7 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
                     IEnergyReceiverMK2.ConnectionPriority.HIGHEST.ordinal()));
             fensu.priority = IEnergyReceiverMK2.ConnectionPriority.VALUES[priority];
             fensu.setChanged();
-            fensu.networkPackNT();
+            fensu.syncState();
         }
     }
 
@@ -153,7 +154,7 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
                 if (!level.isClientSide()) {
                     fensu.color = dyeColor;
                     fensu.setChanged();
-                    fensu.networkPackNT();
+                    fensu.syncState();
                     if (!player.isCreative()) stack.shrink(1);
                 }
                 return net.minecraft.world.InteractionResult.SUCCESS;

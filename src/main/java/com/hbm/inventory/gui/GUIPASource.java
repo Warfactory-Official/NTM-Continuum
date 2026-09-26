@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerPASource;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
@@ -110,7 +111,7 @@ public class GUIPASource extends GUIPABase<ContainerPASource> {
         int x = (int) event.x() - leftPos;
         int y = (int) event.y() - topPos;
         if (x >= 105 && x < 115 && y >= 30 && y < 40) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             data.putBoolean("cancel", true);
             GolemNetwork.sendToServer(ControlEventPayload.CODEC,

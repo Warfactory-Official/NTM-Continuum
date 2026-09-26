@@ -1,6 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
+import com.hbm.api.material.MaterialStack;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
@@ -8,7 +9,7 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
 import com.hbm.inventory.container.ContainerMachineElectrolyser;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.Mats;
@@ -74,8 +75,8 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
     public int progressMetal;
     public int fluidDuration = BASE_FLUID_DURATION;
     public int metalDuration = BASE_METAL_DURATION;
-    public Mats.@Nullable MaterialStack leftStack;
-    public Mats.@Nullable MaterialStack rightStack;
+    public @Nullable MaterialStack leftStack;
+    public @Nullable MaterialStack rightStack;
     public int lastSelectedGUI;
 
     public final FluidTankNTM[] tanks = {
@@ -100,8 +101,8 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
         for (DirPos connection : te.getConPos()) {
-            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection);
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection);
+            if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, connection.getPos(), connection.getDir().toDirection());
+            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, connection.getPos(), connection.getDir().toDirection());
         }
 
         te.selectInputFluid();
@@ -140,7 +141,7 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
         }
 
         te.pourMaterial(level, true, true);
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineElectrolyser te) {
@@ -251,8 +252,8 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
         if (right && rightStack != null) rightStack = pour(level, rightStack, facing);
     }
 
-    private Mats.@Nullable MaterialStack pour(Level level, Mats.MaterialStack stack, ForgeDirection direction) {
-        List<Mats.MaterialStack> stacks = new java.util.ArrayList<>(List.of(stack));
+    private @Nullable MaterialStack pour(Level level, MaterialStack stack, ForgeDirection direction) {
+        List<MaterialStack> stacks = new java.util.ArrayList<>(List.of(stack));
         CrucibleUtil.pourFullStack(level, worldPosition.getX() + 0.5D + direction.offsetX * 5.875D,
                 worldPosition.getY() + 2D, worldPosition.getZ() + 0.5D + direction.offsetZ * 5.875D,
                 6D, true, stacks, getPourQuanta(), new Vec3[1]);
@@ -282,12 +283,12 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
         return Math.min(1 + upgradeManager.getLevel(UpgradeType.OVERDRIVE) * 2, 7);
     }
 
-    private boolean canFitMaterial(Mats.@Nullable MaterialStack current, Mats.@Nullable MaterialStack output) {
+    private boolean canFitMaterial(@Nullable MaterialStack current, @Nullable MaterialStack output) {
         if (output == null) return true;
         return current == null || (current.material == output.material && current.amount + output.amount <= MAX_MATERIAL);
     }
 
-    private static Mats.@Nullable MaterialStack addMaterial(Mats.@Nullable MaterialStack current, Mats.@Nullable MaterialStack output) {
+    private static @Nullable MaterialStack addMaterial(@Nullable MaterialStack current, @Nullable MaterialStack output) {
         if (output == null) return current;
         if (current == null) return output.copy();
         current.amount += output.amount;
@@ -416,11 +417,11 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
         usageFluid = buf.readInt(); usageMetal = buf.readInt(); lastSelectedGUI = buf.readInt();
         leftStack = readMaterial(buf); rightStack = readMaterial(buf);
     }
-    private static void writeMaterial(RegistryFriendlyByteBuf buf, Mats.@Nullable MaterialStack stack) {
-        buf.writeBoolean(stack != null); if (stack != null) { buf.writeInt(stack.material.id); buf.writeInt(stack.amount); }
+    private static void writeMaterial(RegistryFriendlyByteBuf buf, @Nullable MaterialStack stack) {
+        buf.writeBoolean(stack != null); if (stack != null) { buf.writeInt(stack.material.index()); buf.writeInt(stack.amount); }
     }
-    private static Mats.@Nullable MaterialStack readMaterial(RegistryFriendlyByteBuf buf) {
-        return buf.readBoolean() ? new Mats.MaterialStack(Mats.matById.get(buf.readInt()), buf.readInt()) : null;
+    private static @Nullable MaterialStack readMaterial(RegistryFriendlyByteBuf buf) {
+        return buf.readBoolean() ? new MaterialStack(Mats.byIndex(buf.readInt()), buf.readInt()) : null;
     }
     @Override protected void saveData(DataOut output) {
         super.saveData(output);
@@ -434,11 +435,11 @@ public final class TileEntityMachineElectrolyser extends TileEntityMachineBase
         power = input.getLongOr("power", 0L); progressFluid = input.getIntOr("progressFluid", 0); progressMetal = input.getIntOr("progressMetal", 0);
         lastSelectedGUI = input.getIntOr("lastSelectedGUI", 0); leftStack = loadMaterial(input, "left"); rightStack = loadMaterial(input, "right");
     }
-    private static void saveMaterial(DataOut out, String key, Mats.@Nullable MaterialStack stack) {
-        if (stack != null) { out.putInt(key + "Type", stack.material.id); out.putInt(key + "Amount", stack.amount); }
+    private static void saveMaterial(DataOut out, String key, @Nullable MaterialStack stack) {
+        if (stack != null) { out.putString(key + "Type", stack.material.id().toString()); out.putInt(key + "Amount", stack.amount); }
     }
-    private static Mats.@Nullable MaterialStack loadMaterial(DataIn in, String key) {
-        int id = in.getIntOr(key + "Type", -1);
-        return id < 0 ? null : new Mats.MaterialStack(Mats.matById.get(id), in.getIntOr(key + "Amount", 0));
+    private static @Nullable MaterialStack loadMaterial(DataIn in, String key) {
+        var material = Mats.byId(in.getStringOr(key + "Type", ""));
+        return material == null ? null : new MaterialStack(material, in.getIntOr(key + "Amount", 0));
     }
 }

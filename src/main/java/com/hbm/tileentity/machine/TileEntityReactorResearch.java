@@ -151,7 +151,7 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
         }
 
         te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     private boolean isWater(BlockPos pos) {

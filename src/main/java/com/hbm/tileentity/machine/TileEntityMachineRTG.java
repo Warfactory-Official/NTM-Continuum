@@ -8,7 +8,7 @@ import com.hbm.inventory.container.ContainerMachineRTG;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModRtgBlockEntities;
-import com.hbm.tileentity.TileEntityInventoryBase;
+import dev.golem.core.machine.InventoryBlockEntity;
 import com.hbm.util.RTGUtil;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -24,7 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The legacy grey RTG's 15 fuel cells, 6,000-heat cap, and one-MHE output buffer. */
-public class TileEntityMachineRTG extends TileEntityInventoryBase
+public class TileEntityMachineRTG extends InventoryBlockEntity
         implements MenuProvider, IEnergyProviderMK2, IEnergyConnectorMK2 {
     public static final int SLOT_COUNT = 15;
     public static final int HEAT_MAX = 6_000;
@@ -40,12 +40,12 @@ public class TileEntityMachineRTG extends TileEntityInventoryBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRTG rtg) {
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
-            rtg.tryProvide(level, pos.offset(direction.offsetX, direction.offsetY, direction.offsetZ), direction);
+            rtg.tryProvide(level, pos.offset(direction.offsetX, direction.offsetY, direction.offsetZ), direction.toDirection());
         }
         rtg.heat = Math.min(RTGUtil.updateRTGs(rtg.inventory, FUEL_SLOTS), HEAT_MAX);
         rtg.power = Math.min(rtg.power + rtg.heat * 5L, MAX_POWER);
         rtg.setChanged();
-        rtg.networkPackNT();
+        rtg.syncState();
     }
 
     @Override

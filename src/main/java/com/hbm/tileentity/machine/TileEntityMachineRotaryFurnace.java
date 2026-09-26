@@ -6,12 +6,12 @@ import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.RecipesCommon.AStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
-import com.hbm.inventory.material.Mats.MaterialStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes;
 import com.hbm.inventory.recipes.RotaryFurnaceRecipes.RotaryFurnaceRecipe;
 import com.hbm.items.machine.IItemFluidId;
@@ -115,11 +115,11 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         te.setTankType(3);
 
         for (DirPos con : te.getSteamPos()) {
-            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con);
+            if (te.tanks[2].getFill() > 0) te.tryProvide(te.tanks[2], level, con.getPos(), con.getDir().toDirection());
         }
 
         if (te.smoke.getFill() > 0) {
-            for (DirPos con : te.getSmokePos()) te.tryProvide(te.smoke, level, con);
+            for (DirPos con : te.getSmokePos()) te.tryProvide(te.smoke, level, con.getPos(), con.getDir().toDirection());
         }
 
         if (te.pourTimer > 0) te.pourTimer--; else te.pourColor = -1;
@@ -134,7 +134,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
             te.output = leftover;
 
             if (prev != te.output.amount) {
-                te.pourColor = leftover.material.moltenColor;
+                te.pourColor = leftover.material.moltenColor();
                 double impactY = impact[0] != null ? impact[0].y : pos.getY() - 5D;
                 te.pourLen = Math.max(1F, pos.getY() + 1 - (float) (Math.ceil(impactY) - 1.125));
                 te.pourTimer = STREAM_LIFETIME;
@@ -153,7 +153,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
                 te.burnHeat = burnModule.getHeatMod(fuel);
                 te.maxBurnTime = te.burnTime = burnModule.getBurnTime(level, fuel) / 2;
                 te.inventory.extractItem(4, 1, false);
-                te.markChanged();
+                te.setChanged();
             }
 
             float processSpeed = Math.max((float) te.burnHeat, 1);
@@ -203,7 +203,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         // particle below never fires. Kept exactly so; the flag still records the overflow server-side.
         te.isVenting = false;
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRotaryFurnace te) {
@@ -366,7 +366,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
     @Override
     public boolean stillValid(Player player) {
         return level != null && level.getBlockEntity(worldPosition) == this
-                && com.hbm.inventory.container.Containers.inRangeOfMultiblock(level, worldPosition, player);
+                && dev.golem.core.multiblock.MultiblockCore.isWithinInteractionRange(level, worldPosition, player);
     }
 
     @Override
@@ -383,7 +383,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
 
         if (this.output != null) {
             buf.writeBoolean(true);
-            buf.writeInt(this.output.material.id);
+            buf.writeInt(this.output.material.index());
             buf.writeInt(this.output.amount);
         } else {
             buf.writeBoolean(false);
@@ -405,7 +405,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         maxBurnTime = buf.readInt();
 
         if (buf.readBoolean()) {
-            this.output = new MaterialStack(Mats.matById.get(buf.readInt()), buf.readInt());
+            this.output = new MaterialStack(Mats.byIndex(buf.readInt()), buf.readInt());
         } else {
             this.output = null;
         }
@@ -426,9 +426,9 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         this.burnTime = input.getIntOr("burn", 0);
         this.burnHeat = input.getDoubleOr("heat", 1D);
         this.maxBurnTime = input.getIntOr("maxBurn", 0);
-        int outType = input.getIntOr("outType", -1);
-        if (outType >= 0 && Mats.matById.get(outType) != null) {
-            this.output = new MaterialStack(Mats.matById.get(outType), input.getIntOr("outAmount", 0));
+        var outType = Mats.byId(input.getStringOr("outType", ""));
+        if (outType != null) {
+            this.output = new MaterialStack(outType, input.getIntOr("outAmount", 0));
         } else {
             this.output = null;
         }
@@ -448,7 +448,7 @@ public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase
         output.putDouble("heat", burnHeat);
         output.putInt("maxBurn", maxBurnTime);
         if (this.output != null) {
-            output.putInt("outType", this.output.material.id);
+            output.putString("outType", this.output.material.id().toString());
             output.putInt("outAmount", this.output.amount);
         }
     }

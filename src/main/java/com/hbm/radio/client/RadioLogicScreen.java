@@ -1,5 +1,6 @@
 package com.hbm.radio.client;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.radio.RadioLogicMenu;
 import com.hbm.tileentity.network.TileEntityRadioTorchLogic;
@@ -67,10 +68,10 @@ public final class RadioLogicScreen extends CompatContainerScreen<RadioLogicMenu
         GuiDraw.tooltip(graphics, font, List.of(Component.literal(text)), Optional.empty(), x, y);
     }
     @Override protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
-        if (over(event, 137, 17, 18, 18)) { RadioScreenUtil.click(); descending = !descending; toggle("descending", descending); return true; }
-        if (over(event, 173, 17, 18, 18)) { RadioScreenUtil.click(); polling = !polling; toggle("polling", polling); return true; }
-        if (over(event, 209, 17, 18, 18)) { RadioScreenUtil.click(); save(); return true; }
-        for (int i = 0; i < conditions.length; i++) if (conditionOver(event.x(), event.y(), i)) { RadioScreenUtil.click(); conditions[i] = (conditions[i] + 1) % 10; return true; }
+        if (over(event, 137, 17, 18, 18)) { Gauges.click(); descending = !descending; toggle("descending", descending); return true; }
+        if (over(event, 173, 17, 18, 18)) { Gauges.click(); polling = !polling; toggle("polling", polling); return true; }
+        if (over(event, 209, 17, 18, 18)) { Gauges.click(); save(); return true; }
+        for (int i = 0; i < conditions.length; i++) if (conditionOver(event.x(), event.y(), i)) { Gauges.click(); conditions[i] = (conditions[i] + 1) % 10; return true; }
         return false;
     }
     @Override protected boolean mouseScrolledCompat(double mouseX, double mouseY, double scrollX, double scrollY) {

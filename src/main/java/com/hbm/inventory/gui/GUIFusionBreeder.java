@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerFusionBreeder;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.tileentity.machine.fusion.TileEntityFusionBreeder;
@@ -38,7 +39,7 @@ public class GUIFusionBreeder extends dev.golem.core.gui.CompatContainerScreen<C
         if (progress > 0) GuiDraw.blit(graphics, TEXTURE, x + 67, y + 48, 176F, 0F, progress, 10, 256, 256);
 
         double gauge = 1D - Math.exp(-breeder.neutronEnergy * 10D / TileEntityFusionBreeder.CAPACITY);
-        drawNeedle(graphics, x + 88, y + 32, gauge);
+        Gauges.needle(graphics, x + 88, y + 32, gauge, 0xA00000);
 
         drawTank(graphics, breeder.tanks[0], x + 26, y + 18);
         drawTank(graphics, breeder.tanks[1], x + 134, y + 18);
@@ -60,28 +61,6 @@ public class GUIFusionBreeder extends dev.golem.core.gui.CompatContainerScreen<C
             graphics.disableScissor();
         } else {
             graphics.fill(x, top, x + 16, bottom, 0xFF000000 | (tank.getTankType().getColor() & 0xFFFFFF));
-        }
-    }
-
-    private static void drawNeedle(GuiGraphicsExtractor graphics, int x, int y, double progress) {
-        progress = Math.max(0D, Math.min(1D, progress));
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, x, y);
-        GuiDraw.rotate(graphics, (float) Math.toRadians(progress * 270D + 45D));
-        GuiDraw.scale(graphics, 1F / 8F, 1F / 8F);
-        fillNeedle(graphics, 1.5D, 0xFF000000);
-        fillNeedle(graphics, 1D, 0xFFA00000);
-        GuiDraw.popMatrix(graphics);
-    }
-
-    private static void fillNeedle(GuiGraphicsExtractor graphics, double multiplier, int color) {
-        double tip = 5D * multiplier * 8D;
-        double back = 2D * multiplier * 8D;
-        double side = multiplier * 8D;
-        double total = tip + back;
-        for (int row = (int) Math.round(-back); row < (int) Math.round(tip); row++) {
-            int halfWidth = (int) Math.round(side * (tip - row) / total);
-            if (halfWidth > 0) graphics.fill(-halfWidth, row, halfWidth, row + 1, color);
         }
     }
 

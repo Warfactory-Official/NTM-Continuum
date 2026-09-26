@@ -1,7 +1,7 @@
 package com.hbm.items.weapon.sedna.mods;
 
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.weapon.sedna.ItemGunBaseNT;
 import com.hbm.items.weapon.sedna.Receiver;
 import com.hbm.items.weapon.sedna.mags.IMagazine;

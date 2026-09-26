@@ -4,7 +4,7 @@ import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineHydrotreater;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.HydrotreatingRecipes;
@@ -74,11 +74,11 @@ public class TileEntityMachineHydrotreater extends TileEntityMachineBase
 
         for (DirPos dp : te.getConPos()) {
             for (int i = 2; i < 4; i++) {
-                if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp);
+                if (te.tanks[i].getFill() > 0) te.tryProvide(te.tanks[i], level, dp.getPos(), dp.getDir().toDirection());
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
 

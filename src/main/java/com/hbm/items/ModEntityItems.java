@@ -1,7 +1,7 @@
 package com.hbm.items;
 
 import com.hbm.Constants;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.entity.ModNtmEntities;
 import com.hbm.entity.mob.EntityUFO;

@@ -1,6 +1,8 @@
 package com.hbm.items.machine;
 
 import dev.golem.core.data.ModelData;
+import com.hbm.api.material.MaterialStack;
+import com.hbm.api.material.SmeltingBehavior;
 import com.hbm.inventory.material.MaterialShapes;
 import com.hbm.inventory.material.Mats;
 import com.hbm.inventory.material.NTMMaterial;
@@ -33,17 +35,17 @@ public class ItemScraps extends CompatItem {
     }
 
     /** The contained material+amount, or null if the components are missing/unknown. */
-    public static Mats.@Nullable MaterialStack getMats(ItemStack stack) {
+    public static @Nullable MaterialStack getMats(ItemStack stack) {
         if (!(stack.getItem() instanceof ItemScraps)) return null;
         String name = ModDataComponents.material(stack);
         if (name == null) return null;
         NTMMaterial mat = Mats.byName(name);
         if (mat == null) return null;
         int amount = ModDataComponents.materialAmount(stack, MaterialShapes.INGOT.quantity);
-        return new Mats.MaterialStack(mat, amount);
+        return new MaterialStack(mat, amount);
     }
 
-    public static ItemStack create(Mats.MaterialStack mats) {
+    public static ItemStack create(MaterialStack mats) {
         return create(mats, false);
     }
 
@@ -52,12 +54,12 @@ public class ItemScraps extends CompatItem {
      * custom_model_data flag 0): the {@code scraps_liquid} sprite and the bare material name — what the
      * old crucible JEI screen shows, not an obtainable solid item.
      */
-    public static ItemStack create(Mats.MaterialStack mats, boolean liquid) {
+    public static ItemStack create(MaterialStack mats, boolean liquid) {
         if (mats.material == null) return ItemStack.EMPTY;
         ItemStack scrap = new ItemStack(ModMachineItems.scraps.get());
-        ModDataComponents.material(scrap, mats.material.name);
+        ModDataComponents.material(scrap, mats.material.name());
         ModDataComponents.setMaterialAmount(scrap, mats.amount);
-        ModelData.setColorAndFlag(scrap, mats.material.solidColorLight, liquid);
+        ModelData.setColorAndFlag(scrap, mats.material.solidColorLight(), liquid);
         return scrap;
     }
 
@@ -67,7 +69,7 @@ public class ItemScraps extends CompatItem {
     }
 
     /** Spawns the material as scrap item entities at the given position (old world-spill behaviour). */
-    public static void spawnMats(Level level, double x, double y, double z, Mats.MaterialStack mats) {
+    public static void spawnMats(Level level, double x, double y, double z, MaterialStack mats) {
         if (level.isClientSide() || mats.material == null || mats.amount <= 0) return;
         ItemStack stack = create(mats);
         if (stack.isEmpty()) return;
@@ -77,7 +79,7 @@ public class ItemScraps extends CompatItem {
 
     @Override
     public Component getName(ItemStack stack) {
-        Mats.MaterialStack contents = getMats(stack);
+        MaterialStack contents = getMats(stack);
         if (contents == null) return Component.literal("Foundry Scraps");
         // Molten form: the bare material name, like the old getItemStackDisplayName's liquid branch.
         if (isLiquid(stack)) return Component.literal(contents.material.getDisplayName());
@@ -87,11 +89,11 @@ public class ItemScraps extends CompatItem {
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        Mats.MaterialStack contents = getMats(stack);
+        MaterialStack contents = getMats(stack);
         if (contents != null) {
             tooltip.add(Component.literal(Mats.formatAmount(contents.amount, false)).withStyle(ChatFormatting.GRAY));
             tooltip.add(Component.literal(Mats.formatAmount(contents.amount, true)).withStyle(ChatFormatting.DARK_GRAY));
-            if (isLiquid(stack) && contents.material.smeltable == NTMMaterial.SmeltingBehavior.ADDITIVE) {
+            if (isLiquid(stack) && contents.material.smeltable() == SmeltingBehavior.ADDITIVE) {
                 tooltip.add(Component.literal("Additive, not castable!").withStyle(ChatFormatting.DARK_RED));
             }
         }

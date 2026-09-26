@@ -11,7 +11,7 @@ import com.hbm.lib.ModDamageSources;
 import com.hbm.particle.helper.ParticleEffects;
 import com.hbm.sound.AudioSystem;
 import com.hbm.sound.AudioWrapper;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -56,7 +56,7 @@ import com.hbm.tileentity.ModProductionBlockEntities;
  * <p>1.7's {@code BlockTallPlant} (hemp, mustard willow) is not in this tree, so that branch has no block
  * to name; vanilla's two-block plants take its place under the double-plant rule.
  */
-public class TileEntityMachineThresher extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
+public class TileEntityMachineThresher extends SyncedBlockEntity implements IFluidStandardReceiverMK2 {
 
     public final FluidTankNTM tank = new FluidTankNTM(Fluids.WOODOIL, 100);
 
@@ -197,7 +197,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState blockState, TileEntityMachineThresher te) {
@@ -246,7 +246,7 @@ public class TileEntityMachineThresher extends TileEntityLoadedBase implements I
             }
             if (audio != null) {
                 audio.keepAlive();
-                audio.updateVolume(this.getVolume(1F));
+                audio.updateVolume(1F);
             }
         } else if (audio != null) {
             audio.stopSound();

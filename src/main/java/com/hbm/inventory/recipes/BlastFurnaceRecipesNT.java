@@ -1,6 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.RecipesCommon.AStack;
+import com.hbm.api.material.MaterialStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
 import com.hbm.inventory.RecipesCommon.TagStack;
 import com.hbm.inventory.material.MaterialShapes;
@@ -89,7 +90,7 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
     }
 
     private static ItemStack slag(int count) {
-        ItemStack stack = ItemScraps.create(new Mats.MaterialStack(Mats.MAT_SLAG, MaterialShapes.INGOT.quantity));
+        ItemStack stack = ItemScraps.create(new MaterialStack(Mats.MAT_SLAG, MaterialShapes.INGOT.quantity));
         stack.setCount(count);
         return stack;
     }
@@ -98,7 +99,7 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
         return new AStack() {
             @Override
             public boolean matchesRecipe(ItemStack stack, boolean ignoreSize) {
-                Mats.MaterialStack contents = ItemScraps.getMats(stack);
+                MaterialStack contents = ItemScraps.getMats(stack);
                 return contents != null && contents.material == Mats.MAT_REDSTONE
                         && (ignoreSize || contents.amount >= MaterialShapes.INGOT.quantity);
             }
@@ -106,7 +107,7 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
             @Override
             public java.util.List<ItemStack> getDisplayStacks() {
                 return java.util.List.of(ItemScraps.create(
-                        new Mats.MaterialStack(Mats.MAT_REDSTONE, MaterialShapes.INGOT.quantity)));
+                        new MaterialStack(Mats.MAT_REDSTONE, MaterialShapes.INGOT.quantity)));
             }
         };
     }

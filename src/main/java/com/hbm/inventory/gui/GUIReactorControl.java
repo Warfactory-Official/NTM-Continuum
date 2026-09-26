@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerReactorControl;
 import com.hbm.tileentity.machine.TileEntityReactorControl;
 import com.hbm.packet.ControlEventPayload;
@@ -93,7 +94,7 @@ public final class GUIReactorControl extends dev.golem.core.gui.CompatContainerS
         double x = event.x(), y = event.y();
 
         if (leftPos + 33 <= x && leftPos + 33 + 58 > x && topPos + 59 < y && topPos + 59 + 10 >= y) {
-            GuiUtil.playClickSound();
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             double[] vals = {0D, 0D, 0D, 0D};
 
@@ -120,7 +121,7 @@ public final class GUIReactorControl extends dev.golem.core.gui.CompatContainerS
 
         for (int k = 0; k < 3; k++) {
             if (leftPos + 7 <= x && leftPos + 7 + 22 > x && topPos + 37 + k * 11 < y && topPos + 37 + 10 + k * 11 >= y) {
-                GuiUtil.playClickSound();
+                Gauges.click();
                 CompoundTag data = new CompoundTag();
                 data.putInt("function", k);
                 GolemNetwork.sendToServer(ControlEventPayload.CODEC, new ControlEventPayload(control.getBlockPos(), data));

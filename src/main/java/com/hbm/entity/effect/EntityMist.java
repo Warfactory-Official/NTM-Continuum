@@ -6,7 +6,7 @@ import com.hbm.capability.HbmLivingProps;
 import com.hbm.entity.ModEntities;
 import com.hbm.handler.ArmorUtil;
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
 import com.hbm.lib.ModDamageSources;
@@ -81,12 +81,12 @@ public class EntityMist extends CompatEntity {
     }
 
     public EntityMist setType(FluidType fluid) {
-        this.entityData.set(TYPE, fluid.getID());
+        this.entityData.set(TYPE, fluid.index());
         return this;
     }
 
     public FluidType getFluid() {
-        return Fluids.fromID(this.entityData.get(TYPE));
+        return Fluids.byIndex(this.entityData.get(TYPE));
     }
 
     public int getMaxAge() {
@@ -210,14 +210,14 @@ public class EntityMist extends CompatEntity {
 
     @Override
     protected void saveData(DataOut output) {
-        output.putInt("type", this.entityData.get(TYPE));
+        output.putString("type", Fluids.byIndex(this.entityData.get(TYPE)).id().toString());
         output.putFloat("width", this.entityData.get(WIDTH));
         output.putFloat("height", this.entityData.get(HEIGHT));
     }
 
     @Override
     protected void loadData(DataIn input) {
-        this.entityData.set(TYPE, input.getIntOr("type", 0));
+        this.entityData.set(TYPE, Fluids.byId(input.getStringOr("type", "")).index());
         setArea(input.getFloatOr("width", 0F), input.getFloatOr("height", 0F));
     }
 }

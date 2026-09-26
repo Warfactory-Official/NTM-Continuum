@@ -4,7 +4,7 @@ import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.sound.ModSounds;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * the player holding a counter may not. The sampled reading is what the comparator and the
  * redstone-over-radio {@code rad} value both report, so all three agree on one number per sample.
  */
-public class TileEntityGeiger extends TileEntityLoadedBase implements IRORValueProvider {
+public class TileEntityGeiger extends SyncedBlockEntity implements IRORValueProvider {
 
     public int timer;
     public double ticker;

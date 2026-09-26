@@ -1,8 +1,10 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineCentrifuge;
 import net.minecraft.core.BlockPos;

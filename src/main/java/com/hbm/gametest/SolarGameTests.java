@@ -180,15 +180,15 @@ public final class SolarGameTests {
             BlockPos cell = port.getPos().offset(-port.getDir().offsetX, -port.getDir().offsetY,
                     -port.getDir().offsetZ);
             helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
-                            cell.getX(), cell.getY(), cell.getZ(), port.getDir()),
+                            cell.getX(), cell.getY(), cell.getZ(), port.getDir().toDirection()),
                     "Declared solar port is not exposed at " + port.getPos());
         }
         helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
-                        core.getX(), core.getY(), core.getZ(), ForgeDirection.UP),
+                        core.getX(), core.getY(), core.getZ(), Direction.UP),
                 "Solar boiler must not expose a middle/top-interior port");
 
         // serialize/deserialize is the cross-target packet contract; disk persistence uses the same fields
-        // through TileEntityLoadedBase's DataIn/DataOut bridge.
+        // through SyncedBlockEntity's DataIn/DataOut bridge.
         boiler.heatInput = 1234;
         TileEntitySolarBoiler.serverTick(helper.getLevel(), core, boiler.getBlockState(), boiler);
         var boilerBuffer = dev.golem.core.net.GolemBuffers.wrap(Unpooled.buffer(), helper.getLevel());

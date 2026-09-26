@@ -1,16 +1,15 @@
 package com.hbm.qmaw;
 
+import dev.golem.core.gui.Gauges;
 import dev.golem.core.Ids;
 import dev.golem.core.gui.CompatScreen;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.gui.KeyInput;
 import dev.golem.core.gui.MouseInput;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
@@ -298,7 +297,7 @@ public final class GuiQMAW extends CompatScreen {
     private void openLink(String target) {
         QuickManualAndWiki page = QMAWLoader.qmaw.get(target);
         if (page == null) return;
-        clickSound();
+        Gauges.click();
         GuiQMAW screen = new GuiQMAW(page);
         screen.backHistory.addAll(backHistory);
         screen.backHistory.add(qmawId);
@@ -310,7 +309,7 @@ public final class GuiQMAW extends CompatScreen {
         String previous = backHistory.get(backHistory.size() - 1);
         QuickManualAndWiki page = QMAWLoader.qmaw.get(previous);
         if (page == null) return;
-        clickSound();
+        Gauges.click();
         GuiQMAW screen = new GuiQMAW(page);
         screen.backHistory.addAll(backHistory.subList(0, backHistory.size() - 1));
         screen.forwardHistory.addAll(forwardHistory);
@@ -323,7 +322,7 @@ public final class GuiQMAW extends CompatScreen {
         String next = forwardHistory.get(forwardHistory.size() - 1);
         QuickManualAndWiki page = QMAWLoader.qmaw.get(next);
         if (page == null) return;
-        clickSound();
+        Gauges.click();
         GuiQMAW screen = new GuiQMAW(page);
         screen.backHistory.addAll(backHistory);
         screen.backHistory.add(qmawId);
@@ -331,9 +330,6 @@ public final class GuiQMAW extends CompatScreen {
         Minecraft.getInstance().setScreen(screen);
     }
 
-    private static void clickSound() {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-    }
 
     @Override
     protected boolean keyPressedCompat(KeyInput event) {

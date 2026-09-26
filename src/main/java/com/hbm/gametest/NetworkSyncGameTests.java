@@ -1,9 +1,9 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.ModMachineBlocks;
-import com.hbm.packet.BlockEntitySyncPayload;
+import dev.golem.core.machine.StateSyncPayload;
 import com.hbm.packet.NetworkProbePayload;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
 import dev.golem.core.net.GolemSync;
@@ -41,7 +41,7 @@ public final class NetworkSyncGameTests {
 
     private NetworkSyncGameTests() {}
 
-    private static final String SYNC_CHANNEL = "hbm:be_sync";
+    private static final String SYNC_CHANNEL = StateSyncPayload.CODEC.id().toString();
 
     public static final GameTests.Suite TESTS = GameTests.suite(com.hbm.Constants.MOD_ID);
 
@@ -146,7 +146,7 @@ public final class NetworkSyncGameTests {
     }
 
     /**
-     * That {@code networkPackNT} is actually on the engine: shut gate means nothing serialised, open
+     * That {@code syncState} is actually on the engine: shut gate means nothing serialised, open
      * gate means one packet on the wire, and an unchanged payload still reaches a newcomer.
      */
     public static void machineWiring(GameTestHelper helper) {
@@ -167,26 +167,26 @@ public final class NetworkSyncGameTests {
             helper.assertTrue(GolemSync.isWatched(level, pos) == tracked,
                     "The per-tick memo must not change the answer on a second ask" + on(backend));
 
-            TileEntityLoadedBase machine = placeBattery(helper, pos);
+            SyncedBlockEntity machine = placeBattery(helper, pos);
 
             GolemSync.stateWatchers(level, pos, List.of());
-            machine.networkPackNT();
+            machine.syncState();
             helper.assertFalse(GolemSync.isPublished(level, pos),
                     "An unwatched machine must not publish, so it never serialised either" + on(backend));
 
             GolemSync.stateWatchers(level, pos, List.of(watcher.player()));
             drain(watcher, newcomer);
-            machine.networkPackNT();
+            machine.syncState();
             helper.assertTrue(GolemSync.isPublished(level, pos),
                     "A watched machine must leave its wire in the table" + on(backend));
             helper.assertTrue(sent(watcher) == 1,
                     "One publish must put exactly one sync packet on the watcher's wire" + on(backend));
 
-            machine.networkPackNT();
+            machine.syncState();
             helper.assertTrue(sent(watcher) == 0, "An unchanged payload must not go out twice" + on(backend));
 
             GolemSync.stateWatchers(level, pos, List.of(watcher.player(), newcomer.player()));
-            machine.networkPackNT();
+            machine.syncState();
             GolemSync.pumpNow();
             helper.assertTrue(sent(newcomer) == 1,
                     "State that stopped changing must still reach a player who arrives later" + on(backend));
@@ -210,14 +210,14 @@ public final class NetworkSyncGameTests {
     public static void backendsDeliverTheSamePayload(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos pos = helper.absolutePos(BlockPos.ZERO).offset(3 << 16, 0, 3 << 16);
-        BlockEntitySyncPayload sent = new BlockEntitySyncPayload(pos, new byte[] {7, 11, -3, 0, 42});
+        StateSyncPayload sent = new StateSyncPayload(pos, new byte[] {7, 11, -3, 0, 42});
         GolemTransport.Backend before = GolemTransport.requested();
         try (GameTestHelpers.MockServerPlayer watcher = GameTestHelpers.mockServerPlayer(helper)) {
             GolemSync.stateWatchers(level, pos, List.of(watcher.player()));
 
             GolemTransport.requested(GolemTransport.Backend.SAFE);
             drain(watcher);
-            GolemSync.publish(level, pos, BlockEntitySyncPayload.CODEC, sent);
+            GolemSync.publish(level, pos, StateSyncPayload.CODEC, sent);
             GameTestHelpers.Outbound safe = watcher.drainOutbound();
             helper.assertTrue(GameTestHelpers.golemPayloads(safe, SYNC_CHANNEL) == 1,
                     "The safe backend must put exactly one payload on the wire");
@@ -227,15 +227,15 @@ public final class NetworkSyncGameTests {
             helper.assertTrue(GolemTransport.effective() == GolemTransport.Backend.ACCELERATED,
                     "This node must be able to accelerate, or this comparison proves nothing");
             drain(watcher);
-            GolemSync.publish(level, pos, BlockEntitySyncPayload.CODEC, sent);
+            GolemSync.publish(level, pos, StateSyncPayload.CODEC, sent);
             GameTestHelpers.Outbound fast = watcher.drainOutbound();
             helper.assertTrue(GameTestHelpers.golemPayloads(fast, SYNC_CHANNEL) == 1,
                     "The accelerated backend must put exactly one payload on the wire");
             helper.assertTrue(fast.wires().size() == 1,
                     "The accelerated backend must write finished bytes, not an encoded packet");
 
-            BlockEntitySyncPayload decoded =
-                    GameTestHelpers.decodeWire(fast.wires().get(0), BlockEntitySyncPayload.CODEC);
+            StateSyncPayload decoded =
+                    GameTestHelpers.decodeWire(fast.wires().get(0), StateSyncPayload.CODEC);
             helper.assertTrue(decoded.pos().equals(sent.pos()),
                     "The accelerated frame must decode to the position that was sent");
             helper.assertTrue(java.util.Arrays.equals(decoded.data(), sent.data()),
@@ -340,7 +340,7 @@ public final class NetworkSyncGameTests {
     public static void offThreadHandlerContract(GameTestHelper helper) {
         helper.assertTrue(GolemNetwork.offThread(NetworkProbePayload.CODEC),
                 "The probe channel must be marked off-thread");
-        helper.assertFalse(GolemNetwork.offThread(BlockEntitySyncPayload.CODEC),
+        helper.assertFalse(GolemNetwork.offThread(StateSyncPayload.CODEC),
                 "Block entity sync touches the level and must stay on the game thread");
 
         long nonce = System.nanoTime();
@@ -383,7 +383,7 @@ public final class NetworkSyncGameTests {
 
         boolean refusedTheOtherWay = false;
         try {
-            GolemNetwork.registerPlayToClientOffThread(BlockEntitySyncPayload.CODEC, payload -> {});
+            GolemNetwork.registerPlayToClientOffThread(StateSyncPayload.CODEC, payload -> {});
         } catch (IllegalArgumentException expected) {
             refusedTheOtherWay = true;
         }
@@ -397,14 +397,14 @@ public final class NetworkSyncGameTests {
     }
 
     private static void publish(ServerLevel level, BlockPos pos, byte marker) {
-        GolemSync.publish(level, pos, BlockEntitySyncPayload.CODEC,
-                new BlockEntitySyncPayload(pos, new byte[] {marker}));
+        GolemSync.publish(level, pos, StateSyncPayload.CODEC,
+                new StateSyncPayload(pos, new byte[] {marker}));
     }
 
-    private static TileEntityLoadedBase placeBattery(GameTestHelper helper, BlockPos pos) {
+    private static SyncedBlockEntity placeBattery(GameTestHelper helper, BlockPos pos) {
         helper.getLevel().setBlockAndUpdate(pos,
                 ModMachineBlocks.machine_battery.get().defaultBlockState());
-        if (!(helper.getLevel().getBlockEntity(pos) instanceof TileEntityLoadedBase machine)) {
+        if (!(helper.getLevel().getBlockEntity(pos) instanceof SyncedBlockEntity machine)) {
             throw new IllegalStateException("machine_battery placed no block entity at " + pos);
         }
         return machine;

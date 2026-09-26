@@ -3,13 +3,12 @@ package com.hbm.tileentity.machine;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.ModMenus;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerMachineF6Tank;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.TileEntityMachineBase;
 import dev.golem.core.data.DataIn;
@@ -46,7 +45,7 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineF6Tank tank) {
         for (DirPos connection : tank.getConPos()) {
-            if (tank.tank.getFill() > 0) tank.tryProvide(tank.tank, level, connection);
+            if (tank.tank.getFill() > 0) tank.tryProvide(tank.tank, level, connection.getPos(), connection.getDir().toDirection());
         }
 
         tank.loadTank(0, 1);
@@ -59,7 +58,7 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
         }
 
         tank.setChanged();
-        tank.networkPackNT();
+        tank.syncState();
     }
 
     private void loadTank(int inSlot, int outSlot) {
@@ -151,8 +150,8 @@ public abstract class TileEntityMachineF6Tank extends TileEntityMachineBase
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return dir != ForgeDirection.UNKNOWN && type == tank.getTankType();
+    public boolean canConnect(FluidType type, Direction dir) {
+        return dir != null && type == tank.getTankType();
     }
 
     @Override

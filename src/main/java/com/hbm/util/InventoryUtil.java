@@ -22,7 +22,7 @@ public final class InventoryUtil {
      * existing stacks first, then empty slots. Returns the remainder ({@link ItemStack#EMPTY} when fully
      * absorbed) — the 1.12.2 {@code tryAddItemToInventory} (which returned null for "absorbed").
      */
-    public static ItemStack tryAddItemToInventory(com.hbm.inventory.NTMItemHandler inventory, int start, int end, ItemStack stack) {
+    public static ItemStack tryAddItemToInventory(dev.golem.core.machine.ItemHandler inventory, int start, int end, ItemStack stack) {
         ItemStack rest = stack;
         for (int i = start; i <= end && !rest.isEmpty(); i++) {
             rest = inventory.insertItem(i, rest, false);

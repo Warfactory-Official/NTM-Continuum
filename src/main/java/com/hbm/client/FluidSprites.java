@@ -3,7 +3,7 @@ package com.hbm.client;
 import java.util.HashSet;
 import java.util.Set;
 import com.hbm.Constants;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.gui.GuiDraw;
 import dev.golem.core.render.Sprites;
@@ -50,6 +50,7 @@ public final class FluidSprites {
         Fluids.init();
         installed = true;
         sync();
+        Fluids.onRegistered(FluidSprites::sync);
     }
 
     /** Declares the droplets of fluids added since {@link #install}; a no-op before it. */

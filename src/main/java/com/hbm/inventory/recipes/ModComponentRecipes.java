@@ -1,9 +1,10 @@
 package com.hbm.inventory.recipes;
 
-import com.hbm.lib.ComponentIds;
-import com.hbm.lib.ItemIds;
-import com.hbm.lib.TagIds;
-import com.hbm.lib.VanillaIds;
+import com.hbm.api.ids.ComponentIds;
+import com.hbm.api.ids.FluidIds;
+import com.hbm.api.ids.ItemIds;
+import com.hbm.api.ids.TagIds;
+import com.hbm.api.ids.VanillaIds;
 
 import static dev.golem.core.dejson.Crafting.componentShaped;
 import static dev.golem.core.dejson.Crafting.componentSmelt;
@@ -64,11 +65,11 @@ public final class ModComponentRecipes {
                 key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
         componentShaped(NS, "ams_core_eyeofharmony", stack(ItemIds.ams_core_eyeofharmony), rows("ALA", "LSL", "ALA"),
                 key("A", item(ItemIds.plate_dalekanium)),
-                key("L", item(ItemIds.fluid_barrel).with(ComponentIds.fluid_id, 7).with(ComponentIds.fluid_amount, 16000).remainder(ItemIds.fluid_barrel)),
+                key("L", item(ItemIds.fluid_barrel).with(ComponentIds.fluid, FluidIds.lava).with(ComponentIds.fluid_amount, 16000).remainder(ItemIds.fluid_barrel)),
                 key("S", item(ItemIds.black_hole)));
         componentShaped(NS, "ams_core_sing", stack(ItemIds.ams_core_sing), rows("EAE", "ASA", "EAE"),
                 key("E", item(ItemIds.plate_euphemium)),
-                key("A", item(ItemIds.cell).with(ComponentIds.fluid_id, 33).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)),
+                key("A", item(ItemIds.cell).with(ComponentIds.fluid, FluidIds.amat).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)),
                 key("S", item(ItemIds.singularity)));
         componentShaped(NS, "ams_core_wormhole", stack(ItemIds.ams_core_wormhole), rows("DPD", "PSP", "DPD"),
                 key("D", item(ItemIds.plate_dineutronium)), key("P", item(ItemIds.powder_spark_mix)),
@@ -78,16 +79,16 @@ public final class ModComponentRecipes {
                 key("D", item(VanillaIds.diamond_block)));
         componentShaped(NS, "barbed_wire_acid", stack(ItemIds.barbed_wire_acid, 8), rows("BBB", "BIB", "BBB"),
                 key("B", item(ItemIds.barbed_wire)),
-                key("I", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 35).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
+                key("I", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.peroxide).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
         componentShaped(NS, "bj_plate_jetpack", stack(ItemIds.bj_plate_jetpack), rows("NFN", "TPT", "ICI"),
                 key("N", item(ItemIds.plate_armor_lunar)), key("F", item(ItemIds.fins_quad_titanium)),
-                key("T", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 40).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
+                key("T", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.xenon).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
                 key("P", item(ItemIds.bj_plate)), key("I", item(ItemIds.mp_thruster_10_xenon)),
                 key("C", item(ItemIds.crystal_phosphorus)));
         componentShaped(NS, "cell_1",
-                stack(ItemIds.cell, 8).with(ComponentIds.fluid_id, 8).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 8),
+                stack(ItemIds.cell, 8).with(ComponentIds.fluid, FluidIds.deuterium).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 8),
                 rows("DDD", "DTD", "DDD"),
-                key("D", item(ItemIds.cell).without(ComponentIds.fluid_id, ComponentIds.fluid_amount, ComponentIds.item_variant)),
+                key("D", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)),
                 key("T", item(ItemIds.mike_deut)));
         componentShaped(NS, "concrete_colored_ext_stairs_bronze_from_block",
                 stack(ItemIds.concrete_colored_ext_stairs_bronze, 8), rows("#  ", "## ", "###"),
@@ -196,29 +197,29 @@ public final class ModComponentRecipes {
                 key("#", item(ItemIds.concrete_colored).with(ComponentIds.item_variant, 4)));
         componentShaped(NS, "conveyor_wand_express", stack(ItemIds.conveyor_wand_express, 8), rows("CCC", "CLC", "CCC"),
                 key("C", item(ItemIds.conveyor_wand_regular)),
-                key("L", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 18).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
+                key("L", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.lubricant).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
         componentShaped(NS, "flame_conspiracy", stack(ItemIds.flame_conspiracy), rows(" S ", "STS", " S "),
-                key("S", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 22).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
+                key("S", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.kerosene).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
                 key("T", item(ItemIds.ingot_steel)));
         componentShaped(NS, "jetpack_tank", stack(ItemIds.jetpack_tank), rows(" S ", "BKB", " S "),
                 key("S", item(ItemIds.plate_steel)), key("B", item(ItemIds.bolt_steel)),
-                key("K", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 22).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
+                key("K", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.kerosene).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
         componentShaped(NS, "lamp_tritium_blue_off", stack(ItemIds.lamp_tritium_blue_off), rows("GP", "TD"),
                 key("G", item(VanillaIds.glass)), key("P", item(ItemIds.powder_fire)),
-                key("T", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 9).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
+                key("T", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.tritium).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
                 key("D", item(ItemIds.powder_aluminium)));
         componentShaped(NS, "lamp_tritium_green_off", stack(ItemIds.lamp_tritium_green_off), rows("GP", "TD"),
                 key("G", item(VanillaIds.glass)), key("P", item(ItemIds.powder_fire)),
-                key("T", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 9).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
+                key("T", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.tritium).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
                 key("D", item(ItemIds.sulfur)));
         componentShaped(NS, "laser_crystal_cmb", stack(ItemIds.laser_crystal_cmb), rows("QBQ", "CSC", "QBQ"),
                 key("Q", item(ItemIds.glass_quartz)), key("B", item(ItemIds.ingot_combine_steel)),
                 key("C", item(ItemIds.ingot_schrabidate)),
-                key("S", item(ItemIds.cell).with(ComponentIds.fluid_id, 33).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)));
+                key("S", item(ItemIds.cell).with(ComponentIds.fluid, FluidIds.amat).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)));
         componentShaped(NS, "laser_crystal_co2", stack(ItemIds.laser_crystal_co2), rows("QDQ", "NCN", "QDQ"),
                 key("Q", item(ItemIds.glass_quartz)), key("D", item(ItemIds.ingot_desh)),
                 key("N", item(ItemIds.ingot_niobium)),
-                key("C", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 55).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
+                key("C", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.carbondioxide).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
         componentShaped(NS, "lightstone_bricks", stack(ItemIds.lightstone, 4).with(ComponentIds.item_variant, 2),
                 rows("CC", "CC"),
                 key("C", item(ItemIds.lightstone).with(ComponentIds.item_variant, 1)));
@@ -240,31 +241,31 @@ public final class ModComponentRecipes {
         componentShaped(NS, "part_generic_piston_hydraulic", stack(ItemIds.part_generic_piston_hydraulic, 4),
                 rows(" I ", "CPC", " I "),
                 key("I", item(ItemIds.ingot_steel)), key("C", item(ItemIds.ingot_titanium)),
-                key("P", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 18).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
+                key("P", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.lubricant).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)));
         componentShaped(NS, "pellet_antimatter", stack(ItemIds.pellet_antimatter), rows("###", "###", "###"),
-                key("#", item(ItemIds.cell).with(ComponentIds.fluid_id, 33).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)));
+                key("#", item(ItemIds.cell).with(ComponentIds.fluid, FluidIds.amat).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)));
         componentShaped(NS, "press_preheater", stack(ItemIds.press_preheater), rows("CCC", "SLS", "TST"),
                 key("C", item(ItemIds.plate_copper)), key("S", item(VanillaIds.stone)),
-                key("L", item(ItemIds.fluid_tank).with(ComponentIds.fluid_id, 7).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
+                key("L", item(ItemIds.fluid_tank).with(ComponentIds.fluid, FluidIds.lava).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.fluid_tank)),
                 key("T", item(ItemIds.ingot_tungsten)));
         componentShaped(NS, "rod_dual_tritium_unload",
-                stack(ItemIds.cell, 2).with(ComponentIds.fluid_id, 9).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 9),
+                stack(ItemIds.cell, 2).with(ComponentIds.fluid, FluidIds.tritium).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 9),
                 rows("RCC"),
                 key("R", item(ItemIds.rod_dual_tritium)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid_id, ComponentIds.fluid_amount, ComponentIds.item_variant)));
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)));
         componentShaped(NS, "rod_quad_tritium_unload",
-                stack(ItemIds.cell, 4).with(ComponentIds.fluid_id, 9).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 9),
+                stack(ItemIds.cell, 4).with(ComponentIds.fluid, FluidIds.tritium).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 9),
                 rows("RCC", "CC "),
                 key("R", item(ItemIds.rod_quad_tritium)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid_id, ComponentIds.fluid_amount, ComponentIds.item_variant)));
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)));
         componentShaped(NS, "rod_tritium_unload",
-                stack(ItemIds.cell).with(ComponentIds.fluid_id, 9).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 9),
+                stack(ItemIds.cell).with(ComponentIds.fluid, FluidIds.tritium).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.item_variant, 9),
                 rows("RC"),
                 key("R", item(ItemIds.rod_tritium)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid_id, ComponentIds.fluid_amount, ComponentIds.item_variant)));
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)));
         componentShaped(NS, "singularity", stack(ItemIds.singularity), rows("ESE", "SBS", "ESE"),
                 key("E", item(ItemIds.nugget_euphemium)),
-                key("S", item(ItemIds.cell).with(ComponentIds.fluid_id, 33).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)),
+                key("S", item(ItemIds.cell).with(ComponentIds.fluid, FluidIds.amat).with(ComponentIds.fluid_amount, 1000).remainder(ItemIds.cell)),
                 key("B", item(ItemIds.block_schrabidium)));
         componentShaped(NS, "struct_soyuz_core", stack(ItemIds.struct_soyuz_core), rows("CUC", "TST", "TBT"),
                 key("C", item(ItemIds.circuit_advanced)), key("U", item(ItemIds.upgrade_power_3)),
@@ -272,7 +273,7 @@ public final class ModComponentRecipes {
                 key("B", item(ItemIds.battery_lithium)));
         componentShaped(NS, "syringe_empty", stack(ItemIds.syringe_empty, 6), rows("P", "C", "B"),
                 key("B", item(VanillaIds.iron_bars)),
-                key("C", item(ItemIds.cell).without(ComponentIds.fluid_id, ComponentIds.fluid_amount, ComponentIds.item_variant)),
+                key("C", item(ItemIds.cell).without(ComponentIds.fluid, ComponentIds.fluid_amount, ComponentIds.item_variant)),
                 key("P", item(ItemIds.plate_iron)));
     }
 

@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMachineExposureChamber;
 
@@ -59,11 +61,11 @@ public class MachineExposureChamber extends BlockMultiblockMachine implements IE
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
         BlockPos head = head(core, facing);
-        return MultiblockHandlerXR.checkSpace(level, core, SPINE, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.above(2), SHOULDER_LEFT, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.above(2), SHOULDER_RIGHT, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, head, HEAD_LEFT, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, head, HEAD_RIGHT, clicked, facing);
+        return MultiblockFootprint.checkSpace(level, core, SPINE, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.above(2), SHOULDER_LEFT, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.above(2), SHOULDER_RIGHT, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, head, HEAD_LEFT, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, head, HEAD_RIGHT, clicked, facing);
     }
 
     /** Four cable ports either side of the emitter head, and one straight off its nose. */
@@ -71,11 +73,11 @@ public class MachineExposureChamber extends BlockMultiblockMachine implements IE
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
         BlockPos head = head(core, facing);
-        MultiblockHandlerXR.visitBox(core, SPINE, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.above(2), SHOULDER_LEFT, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.above(2), SHOULDER_RIGHT, facing, visitor);
-        MultiblockHandlerXR.visitBox(head, HEAD_LEFT, facing, visitor);
-        MultiblockHandlerXR.visitBox(head, HEAD_RIGHT, facing, visitor);
+        MultiblockFootprint.visitBox(core, SPINE, facing, visitor);
+        MultiblockFootprint.visitBox(core.above(2), SHOULDER_LEFT, facing, visitor);
+        MultiblockFootprint.visitBox(core.above(2), SHOULDER_RIGHT, facing, visitor);
+        MultiblockFootprint.visitBox(head, HEAD_LEFT, facing, visitor);
+        MultiblockFootprint.visitBox(head, HEAD_RIGHT, facing, visitor);
 
         Direction rot = facing.getCounterClockWise();
         visitor.cell(head.relative(facing), MASK_SOUTH);

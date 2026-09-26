@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerPneumoStorageClutter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoStorageClutter;
 import com.hbm.tileentity.network.pneumatic.TileEntityPneumoTube;
@@ -27,7 +28,7 @@ public class GUIPneumoStorageClutter extends PneumaticScreenBase<ContainerPneumo
         TileEntityPneumoStorageClutter storage = menu.tile();
         if (storage == null) return;
         GuiDraw.blit(graphics, TEXTURE, leftPos + 174 + 4 * (storage.compair.getPressure() - 1), topPos + 36, 200, 0, 4, 8, 256, 256);
-        drawSmoothGauge(graphics, leftPos + 184, topPos + 25,
+        Gauges.needle(graphics, leftPos + 184, topPos + 25,
                 (double) storage.compair.getFill() / (double) storage.compair.getMaxFill(), 5, 2, 1, 0xCA6C43, 0xAB4223);
     }
 

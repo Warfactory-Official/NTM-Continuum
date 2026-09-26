@@ -1,5 +1,6 @@
 package com.hbm.radio.client;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.modules.ModulePatternMatcher;
 import com.hbm.packet.ControlEventPayload;
 import com.hbm.radio.RadioCounterMenu;
@@ -105,7 +106,7 @@ public final class RadioCounterScreen extends CompatContainerScreen<RadioCounter
     @Override
     protected boolean mouseClicked(MouseInput event, boolean doubleClick) {
         if (hover(193, 8, 18, 18, event.x(), event.y())) {
-            RadioScreenUtil.click();
+            Gauges.click();
             polling = !polling;
             CompoundTag data = new CompoundTag();
             data.putBoolean("polling", true);
@@ -113,7 +114,7 @@ public final class RadioCounterScreen extends CompatContainerScreen<RadioCounter
             return true;
         }
         if (hover(193, 30, 18, 18, event.x(), event.y())) {
-            RadioScreenUtil.click();
+            Gauges.click();
             CompoundTag data = new CompoundTag();
             for (int i = 0; i < frequency.length; i++) data.putString("channel" + i, frequency[i].getValue());
             send(data);

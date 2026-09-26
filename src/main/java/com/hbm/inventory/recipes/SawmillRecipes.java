@@ -50,7 +50,7 @@ public final class SawmillRecipes {
     private static synchronized void init() {
         if (initialized) return;
         initialized = true;
-        com.hbm.scripting.ScriptedRecipes.apply(SawmillRecipes.class);
+        dev.golem.core.content.Replay.apply(SawmillRecipes.class);
     }
 
     public static List<SawmillRecipe> getRecipes() {

@@ -2,7 +2,7 @@ package com.hbm.tileentity.machine;
 
 import dev.golem.core.data.Tags;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
@@ -11,7 +11,7 @@ import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.entity.projectile.EntityZirnoxDebris;
 import com.hbm.entity.projectile.EntityZirnoxDebris.DebrisType;
 import com.hbm.explosion.ExplosionNukeGeneric;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.container.ContainerReactorZirnox;
@@ -95,7 +95,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             return;
         }
         setChanged();
-        networkPackNT();
+        syncState();
     }
 
     public void setRedstonePowered(boolean powered) {
@@ -113,7 +113,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         return false;
     }
 
-    private static boolean providesFluid(net.minecraft.world.item.ItemStack stack, com.hbm.inventory.fluid.FluidType fluid) {
+    private static boolean providesFluid(net.minecraft.world.item.ItemStack stack, com.hbm.api.fluid.FluidType fluid) {
         return stack.getItem() instanceof IFillableItem fillable && fillable.providesFluid(fluid, stack)
                 || stack.getItem() instanceof ItemFluidBucket && ItemFluidBucket.getFluid(stack) == fluid;
     }
@@ -140,14 +140,14 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             }
         }
         for (DirPos port : te.getConPos()) {
-            te.tryProvide(te.steam, level, port);
+            te.tryProvide(te.steam, level, port.getPos(), port.getDir().toDirection());
         }
         if (te.heat > MAX_HEAT || te.pressure > MAX_PRESSURE) {
             te.meltdown(level, pos, state);
             return;
         }
         te.setChanged();
-        te.networkPackNT();
+        te.syncState();
     }
 
     private void loadTank(int inputSlot, int outputSlot, FluidTankNTM tank, FluidType expected) {
@@ -207,7 +207,7 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
         }
 
         // Remove the upper live shell and core before forming the two-block-tall wreck.
-        BlockMultiblockCore.withoutTeardown(() -> {
+        MultiblockCore.withoutTeardown(() -> {
             for (int dx = -2; dx <= 2; dx++) {
                 for (int dy = 2; dy <= 5; dy++) {
                     for (int dz = -2; dz <= 2; dz++) {

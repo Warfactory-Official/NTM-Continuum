@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.MachineChemicalFactory;
 import com.hbm.chemicalfactory.ChemicalFactoryRegistrations;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
@@ -12,7 +12,6 @@ import com.hbm.items.ModToolItems;
 import com.hbm.items.machine.ItemBlueprints;
 import com.hbm.items.tool.ItemBlowtorch;
 import com.hbm.lib.DirPos;
-import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;
 import dev.golem.core.gametest.GameTestHelpers;
 import dev.golem.core.gametest.GameTests;
@@ -67,10 +66,10 @@ public final class ChemicalFactoryGameTests {
                 "Chemical Factory port cell is not part of the structure: " + cell);
         helper.assertTrue(core.equals(MultiblockSurface.coreOfAny(helper.getLevel(), cell)),
                 "Chemical Factory port cell does not resolve to the core: " + cell);
-        helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir()),
+        helper.assertTrue(block.canConnect(helper.getLevel(), cell, port.getDir().toDirection()),
                 "Chemical Factory power port does not connect: " + port.getPos());
         helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(),
-                        port.getDir()),
+                        port.getDir().toDirection()),
                 "Chemical Factory fluid port does not connect: " + port.getPos());
     }
 

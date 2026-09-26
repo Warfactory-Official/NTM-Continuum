@@ -4,7 +4,7 @@ import com.hbm.api.block.IBlowable;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.api.block.IToolable;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
@@ -99,7 +99,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
         if (tool == ToolType.HAND_DRILL) {
             if (level.getBlockEntity(pos) instanceof TileEntityFan fan) {
                 fan.falloff = !fan.falloff;
-                fan.markChanged();
+                fan.setChanged();
                 if (!level.isClientSide()) {
                     player.sendSystemMessage(Component.translatable(
                             "tile.fan." + (fan.falloff ? "falloffOn" : "falloffOff")));
@@ -112,7 +112,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
         if (tool == ToolType.DEFUSER) {
             if (level.getBlockEntity(pos) instanceof TileEntityFan fan) {
                 fan.suck = !fan.suck;
-                fan.markChanged();
+                fan.setChanged();
                 if (!level.isClientSide()) {
                     player.sendSystemMessage(Component.translatable(
                             "tile.fan." + (fan.suck ? "suckOn" : "suckOff")));
@@ -126,7 +126,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
     }
 
     /** Legacy nested type retained so the old block/entity relationship stays visible to integrations. */
-    public static class TileEntityFan extends TileEntityLoadedBase {
+    public static class TileEntityFan extends SyncedBlockEntity {
 
         public float spin;
         public float prevSpin;
@@ -164,7 +164,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
                     if (Compat.isSolidRender(targetState, level, targetPos) || blowable) {
                         if (!level.isClientSide() && blowable) {
                             ((IBlowable) targetState.getBlock()).applyFan(level, targetPos,
-                                    ForgeDirection.getOrientation(direction), distance);
+                                    ForgeDirection.getOrientation(direction).toDirection(), distance);
                         }
                         break;
                     }
@@ -201,7 +201,7 @@ public class MachineFan extends dev.golem.core.world.CompatBlock implements Tick
                 fan.spin -= 360F;
             }
 
-            if (!level.isClientSide()) fan.networkPackNT();
+            if (!level.isClientSide()) fan.syncState();
         }
 
         @Override

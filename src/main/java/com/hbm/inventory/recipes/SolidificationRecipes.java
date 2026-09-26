@@ -1,7 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidCombustion;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums.EnumTarType;
 import com.hbm.items.ModFuelItems;
@@ -116,7 +116,7 @@ public final class SolidificationRecipes {
         registerSFAuto(Fluids.REFORMATE);
         registerSFAuto(Fluids.XYLENE);
         registerSFAuto(Fluids.BALEFIRE, 24_000_000L, ModItems.solid_fuel_bf.get());
-        com.hbm.scripting.ScriptedRecipes.apply(SolidificationRecipes.class);
+        dev.golem.core.content.Replay.apply(SolidificationRecipes.class);
     }
 
     public static void put(FluidType type, SolidRecipe recipe) {

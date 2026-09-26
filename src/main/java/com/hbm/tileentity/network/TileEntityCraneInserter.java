@@ -40,7 +40,7 @@ public class TileEntityCraneInserter extends TileEntityCraneBase implements ICon
     public void serverTick() {
         if (level == null) return;
         if (!level.hasNeighborSignal(worldPosition)) push();
-        networkPackNT();
+        syncState();
     }
 
     private void push() {

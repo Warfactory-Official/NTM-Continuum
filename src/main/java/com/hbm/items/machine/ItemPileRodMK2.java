@@ -25,11 +25,15 @@ public class ItemPileRodMK2 extends dev.golem.core.world.CompatItem {
         super(properties);
     }
 
-    /** Persisted as {@code ITEM_VARIANT} = {@link #ordinal()}: built-ins first, scripted after in declaration order. */
+    /** Persisted by name ({@code PILE_ROD}); {@link #ordinal()} = model index ({@code ITEM_VARIANT}), built-ins first. */
     public static final class EnumPileRod {
 
         private static final List<EnumPileRod> VALUES = new ArrayList<>();
         private static final List<EnumPileRod> VIEW = Collections.unmodifiableList(VALUES);
+
+        static {
+            dev.golem.core.content.SyncedIndex.register("hbm:pile_rods", () -> VALUES.stream().map(EnumPileRod::name).toList());
+        }
 
         public static final EnumPileRod RA226BE = source("RA226BE", 1D, "");
         public static final EnumPileRod PO210BE = source("PO210BE", 1D, "_po210be");
@@ -122,6 +126,7 @@ public class ItemPileRodMK2 extends dev.golem.core.world.CompatItem {
 
     public ItemStack of(EnumPileRod type, int count) {
         ItemStack stack = new ItemStack(this, count);
+        ModDataComponents.PILE_ROD.set(stack, type.name());
         ModDataComponents.ITEM_VARIANT.set(stack, type.ordinal());
         return stack;
     }
@@ -138,7 +143,7 @@ public class ItemPileRodMK2 extends dev.golem.core.world.CompatItem {
 
     public static EnumPileRod typeOf(ItemStack stack) {
         if (stack.isEmpty() || !(stack.getItem() instanceof ItemPileRodMK2)) return null;
-        return EnumPileRod.byOrdinal(ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
+        return EnumPileRod.byName(ModDataComponents.PILE_ROD.getOr(stack, EnumPileRod.RA226BE.name()));
     }
 
     @Override

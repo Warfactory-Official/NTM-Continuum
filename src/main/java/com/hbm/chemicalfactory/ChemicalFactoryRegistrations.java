@@ -2,7 +2,7 @@ package com.hbm.chemicalfactory;
 
 import com.hbm.Constants;
 import com.hbm.blocks.machine.MachineChemicalFactory;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.inventory.container.ContainerMachineChemicalFactory;
 import com.hbm.tileentity.machine.TileEntityMachineChemicalFactory;

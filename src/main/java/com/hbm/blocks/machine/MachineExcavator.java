@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -43,14 +45,14 @@ public final class MachineExcavator extends BlockMultiblockMachine implements IE
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         if (!super.checkRequirement(level, core, facing, clicked)) return false;
-        for (int[] leg : LEGS) if (!MultiblockHandlerXR.checkSpace(level, core, leg, clicked, facing)) return false;
+        for (int[] leg : LEGS) if (!MultiblockFootprint.checkSpace(level, core, leg, clicked, facing)) return false;
         return true;
     }
 
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        for (int[] leg : LEGS) MultiblockHandlerXR.visitBox(core, leg, facing, visitor);
+        for (int[] leg : LEGS) MultiblockFootprint.visitBox(core, leg, facing, visitor);
 
         Direction rot = facing.getClockWise(); // 1.7 dir.getRotation(UP)
         BlockPos front = core.relative(facing, 3).above();

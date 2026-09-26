@@ -129,7 +129,7 @@ public class TileEntityMachineSolderingStation extends TileEntityMachineBase
             intendedMaxPower = 2_000;
         }
         te.maxPower = Math.max(intendedMaxPower, te.power);
-        te.networkPackNT();
+        te.syncState();
     }
 
     public boolean canProcess(SolderingRecipe recipe) {

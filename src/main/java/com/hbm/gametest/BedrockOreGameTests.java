@@ -263,7 +263,7 @@ public final class BedrockOreGameTests {
         return dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, relative, BedrockOreBlockEntity.class);
     }
 
-    private static FluidTankNTM tank(com.hbm.inventory.fluid.FluidType type, int amount) {
+    private static FluidTankNTM tank(com.hbm.api.fluid.FluidType type, int amount) {
         FluidTankNTM tank = new FluidTankNTM(type, 16_000);
         tank.setFill(amount);
         return tank;

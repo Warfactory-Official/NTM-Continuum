@@ -136,7 +136,7 @@ public class TileEntityMachineExposureChamber extends TileEntityMachineBase impl
         }
 
         if (te.savedParticles <= 0) te.inventory.setStackInSlot(1, ItemStack.EMPTY);
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineExposureChamber te) {

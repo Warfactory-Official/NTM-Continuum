@@ -1,6 +1,6 @@
 package com.hbm.util;
 
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.items.machine.ItemRTGPellet;
 import net.minecraft.world.item.ItemStack;
 
@@ -12,14 +12,14 @@ public final class RTGUtil {
         return ItemRTGPellet.getScaledPower(fuel, stack);
     }
 
-    public static boolean hasHeat(NTMItemHandler inventory) {
+    public static boolean hasHeat(ItemHandler inventory) {
         for (int slot = 0; slot < inventory.getSlots(); slot++) {
             if (inventory.getStackInSlot(slot).getItem() instanceof ItemRTGPellet) return true;
         }
         return false;
     }
 
-    public static int updateRTGs(NTMItemHandler inventory, int[] slots) {
+    public static int updateRTGs(ItemHandler inventory, int[] slots) {
         int heat = 0;
         for (int slot : slots) {
             ItemStack stack = inventory.getStackInSlot(slot);

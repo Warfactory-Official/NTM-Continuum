@@ -7,7 +7,7 @@ import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** The sunlight-fed 1.12.2 solar boiler, including its intentionally lossy heat conversion. */
-public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2 {
+public class TileEntitySolarBoiler extends SyncedBlockEntity implements IFluidStandardTransceiverMK2 {
 
     public static final int maxHeat = 320_000;
     /** Retained legacy constant; the old solar boiler declared it but did not use diffusion in its tick. */
@@ -46,7 +46,7 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
         if (te.heat > maxHeat) te.heat = maxHeat;
         te.heatSync = te.heat;
         te.heatInputSync = te.heatInput;
-        if (TickPhase.every(level, pos, 25L)) te.networkPackNT();
+        if (TickPhase.every(level, pos, 25L)) te.syncState();
 
         // This is compound-assignment integer truncation, matching old TileEntitySolarBoiler.update().
         te.heat *= 0.999D;
@@ -57,7 +57,7 @@ public class TileEntitySolarBoiler extends TileEntityLoadedBase implements IFlui
 
     private void sendFluid(Level level) {
         for (DirPos connection : getConPos()) {
-            tryProvide(tanks[1], level, connection);
+            tryProvide(tanks[1], level, connection.getPos(), connection.getDir().toDirection());
         }
     }
 

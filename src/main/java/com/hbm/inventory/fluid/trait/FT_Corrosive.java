@@ -6,7 +6,7 @@ import java.util.List;
 
 /**
  * How badly a fluid eats what it touches, 0–100. Above fifty it goes through iron; below, only
- * plastics. Carried by a {@link com.hbm.inventory.fluid.FluidType} the same way the thermal traits
+ * plastics. Carried by a {@link com.hbm.api.fluid.FluidType} the same way the thermal traits
  * are — a plain object in the type's trait map, with no {@code FluidTrait} base class, because this
  * port's traits are looked up by their own class rather than through a registry.
  */

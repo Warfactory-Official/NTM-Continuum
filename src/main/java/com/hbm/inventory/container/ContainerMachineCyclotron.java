@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.inventory.recipes.CyclotronRecipes;
@@ -86,7 +87,7 @@ public class ContainerMachineCyclotron extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_cyclotron.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.machine_cyclotron.get());
     }
 
     @Override

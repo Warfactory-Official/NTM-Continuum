@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.items.machine.IItemFluidId;
@@ -80,7 +81,7 @@ public class ContainerMachineArcWelder extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_arc_welder.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.machine_arc_welder.get());
     }
 
     @Override

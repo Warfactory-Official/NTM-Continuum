@@ -5,8 +5,8 @@ import dev.golem.core.data.Tags;
 import com.hbm.entity.ModNtmEntities;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.data.CompatEntity;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.interfaces.StoredItems;
 import com.hbm.items.special.CarriedBlockItems;
 import com.mojang.serialization.Codec;
@@ -122,7 +122,7 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
         if (be != null) entity.carriedBe = dev.golem.core.registry.BlockEntities.saveWithoutMetadata(be, level.registryAccess());
 
         // relocation, not a break: teardown suppressed, BE effects off
-        BlockMultiblockCore.withoutTeardown(() -> {
+        MultiblockCore.withoutTeardown(() -> {
             BlockState air = Blocks.AIR.defaultBlockState();
             for (BlockPos member : blocks) {
                 level.setBlock(member, air, Block.UPDATE_ALL | dev.golem.core.world.Compat.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS);
@@ -211,7 +211,7 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
             states[i] = Block.BLOCK_STATE_REGISTRY.byId((int) (members[i] >>> 32));
         }
 
-        BlockMultiblockCore.withoutTeardown(() -> {
+        MultiblockCore.withoutTeardown(() -> {
             for (int i = 0; i < members.length; i++) {
                 level.setBlock(memberAt(members[i], committedDrop), states[i], Block.UPDATE_ALL);
             }
@@ -224,7 +224,7 @@ public class EntityFallingMultiblock extends CompatEntity implements StoredItems
             be.setChanged();
         }
 
-        BlockMultiblockCore block = MultiblockSurface.foldedCore(level.getBlockState(newCore));
+        MultiblockCore block = MultiblockSurface.foldedCore(level.getBlockState(newCore));
         if (block != null) block.reindexLoadedCells(level, newCore);
     }
 

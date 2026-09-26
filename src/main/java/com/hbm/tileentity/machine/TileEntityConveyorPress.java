@@ -1,5 +1,6 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
@@ -91,7 +92,7 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IE
             te.delay--;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityConveyorPress te) {
@@ -213,8 +214,8 @@ public class TileEntityConveyorPress extends TileEntityMachineBase implements IE
     @Override public void setPower(long power) { this.power = power; }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
-        return dir != ForgeDirection.DOWN;
+    public boolean canConnect(Direction dir) {
+        return dir != Direction.DOWN;
     }
 
     @Override

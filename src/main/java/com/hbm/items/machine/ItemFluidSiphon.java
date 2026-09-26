@@ -2,10 +2,9 @@ package com.hbm.items.machine;
 
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
-import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import dev.golem.core.world.CompatItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
@@ -45,7 +44,7 @@ public class ItemFluidSiphon extends CompatItem {
         // tank, so we can handle fluids that can only go into certain containers
         // After we successfully siphon any fluid from a tank, we stop
         // further processing, multiple fluid types require multiple clicks
-        for (FluidTankNTM tank : receiver.getReceivingTanks()) {
+        for (com.hbm.api.fluid.FluidTank tank : receiver.getReceivingTanks()) {
             if (tank.getFill() <= 0) continue;
             FluidType tankType = tank.getTankType();
             if (tankType == Fluids.NONE) continue;

@@ -1,6 +1,6 @@
 package com.hbm.tileentity.machine.fusion;
 
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.inventory.recipes.FusionRecipes;
 import com.hbm.lib.DirPos;
 import com.hbm.tileentity.ModBlockEntities;
@@ -42,10 +42,10 @@ public class TileEntityFusionKlystronCreative extends TileEntityFusionKlystron {
         // maxInput is only known once the cycles are loaded; registration is idempotent.
         FusionRecipes.INSTANCE.registerRecipes();
         FusionLink.claim(level, te, FusionNodes.emitter(pos, FusionNodes.facing(state)),
-                MachineCaps.KLYSTRON_OUT);
+                FusionLink.KLYSTRON_OUT);
         te.isConnected = FusionNodes.provideKyU(level, pos, FusionNodes.facing(state),
                 FusionRecipes.INSTANCE.maxInput);
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityFusionKlystronCreative te) {

@@ -1,7 +1,7 @@
 package com.hbm.modules.machine;
 
 import com.hbm.api.energymk2.IEnergyHandlerMK2;
-import com.hbm.inventory.NTMItemHandler;
+import dev.golem.core.machine.ItemHandler;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.PlasmaForgeRecipes;
@@ -11,7 +11,7 @@ import com.hbm.inventory.recipes.loader.GenericRecipes;
 /** Plasma forge processing module: twelve item inputs, one output, and one dynamic fluid input. */
 public class ModuleMachinePlasma extends ModuleMachineBase {
 
-    public ModuleMachinePlasma(int index, IEnergyHandlerMK2 battery, NTMItemHandler inventory) {
+    public ModuleMachinePlasma(int index, IEnergyHandlerMK2 battery, ItemHandler inventory) {
         super(index, battery, inventory);
         this.inputSlots = new int[12];
         this.outputSlots = new int[1];

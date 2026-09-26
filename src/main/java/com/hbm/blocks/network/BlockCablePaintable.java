@@ -2,11 +2,10 @@ package com.hbm.blocks.network;
 
 import com.hbm.api.block.IToolable;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
-import com.hbm.capability.MachineCaps;
-import com.hbm.lib.ForgeDirection;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerGraphProvider;
+import dev.golem.core.graph.Domains;
+import dev.golem.core.graph.LevelNodeGraph;
 import dev.golem.core.registry.TickingBlock;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
@@ -58,7 +57,7 @@ public class BlockCablePaintable extends CompatBlock implements TickingBlock, IT
 
     /** A full-cube cable, like 1.7's: every face takes a cable. */
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction dir) {
         return true;
     }
 
@@ -67,7 +66,7 @@ public class BlockCablePaintable extends CompatBlock implements TickingBlock, IT
         super.onPlace(state, level, pos, oldState, movedByPiston);
         if (level instanceof ServerLevel server && !oldState.is(this)) {
             PowerGraph.get(server).addNode(pos.asLong(), PowerGraphProvider.INSTANCE.createData(state),
-                    MachineCaps.FACE_MASK_ALL);
+                    Domains.FACES_ALL);
         }
     }
 

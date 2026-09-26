@@ -1,10 +1,10 @@
 package com.hbm.uninos.networkproviders;
 
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.EdgeFaces;
-import com.hbm.uninos.graph.GraphNode;
-import com.hbm.uninos.graph.LevelNodeGraph;
-import com.hbm.uninos.graph.NodeNetwork;
+import dev.golem.core.graph.EdgeFaces;
+import dev.golem.core.graph.GraphNode;
+import dev.golem.core.graph.LevelNodeGraph;
+import dev.golem.core.graph.NodeNetwork;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.platform.Lifecycle;
 import dev.golem.core.world.ItemStacks;

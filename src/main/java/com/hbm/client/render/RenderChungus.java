@@ -53,7 +53,7 @@ public final class RenderChungus extends GemBER<TileEntityChungus, ChungusRender
             default -> 0F;
         };
         // 1.7: FluidType.ordinal() is its id, and STEAM is id 2.
-        state.lever = 15F - (be.tanks[0].getTankType().getID() - Fluids.STEAM.getID()) * 10F;
+        state.lever = 15F - (be.tanks[0].getTankType().index() - Fluids.STEAM.index()) * 10F;
         state.rotor = be.getRotor(partialTicks);
     }
 }

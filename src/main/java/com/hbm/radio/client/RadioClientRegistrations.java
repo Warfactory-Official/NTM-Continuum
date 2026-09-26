@@ -11,7 +11,7 @@ import com.hbm.radio.ModRadioMenus;
 public final class RadioClientRegistrations {
     private RadioClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModRadioMenus.RADIO_TORCH.get(), RadioTorchScreen::new);
         sink.register(ModRadioMenus.RADIO_READER.get(), RadioReaderScreen::new);
         sink.register(ModRadioMenus.RADIO_LOGIC.get(), RadioLogicScreen::new);

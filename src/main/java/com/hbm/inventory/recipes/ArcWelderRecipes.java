@@ -162,7 +162,7 @@ public final class ArcWelderRecipes {
 
         // The spy, radar and death-ray satellites stay deferred with their satellite classes, so that
         // nothing craftable here can be launched into a registry slot that is still empty.
-        com.hbm.scripting.ScriptedRecipes.apply(ArcWelderRecipes.class);
+        dev.golem.core.content.Replay.apply(ArcWelderRecipes.class);
     }
 
     public static void put(ArcWelderRecipe recipe) {

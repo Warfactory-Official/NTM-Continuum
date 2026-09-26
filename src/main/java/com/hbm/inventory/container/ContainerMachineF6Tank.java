@@ -73,7 +73,7 @@ public class ContainerMachineF6Tank extends AbstractContainerMenu {
     public boolean stillValid(Player player) {
         return access.evaluate((level, pos) ->
                 level.getBlockEntity(pos) instanceof TileEntityMachineF6Tank
-                        && Containers.inRangeOfMultiblock(level, pos, player), true);
+                        && dev.golem.core.multiblock.MultiblockCore.isWithinInteractionRange(level, pos, player), true);
     }
 
     @Override

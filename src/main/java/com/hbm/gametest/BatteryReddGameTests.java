@@ -1,8 +1,9 @@
 package com.hbm.gametest;
 
+import net.minecraft.core.Direction;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.machine.storage.MachineBatteryREDD;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
 import com.hbm.inventory.container.ContainerBatteryREDD;
@@ -49,7 +50,7 @@ public final class BatteryReddGameTests {
             if (helper.getLevel().getBlockState(cell).getBlock() != block) continue;
             cells++;
             if (MultiblockSurface.carriesPassive(helper.getLevel(), cell,
-                    com.hbm.blocks.multiblock.BlockMultiblockCore.PASSIVE_POWER_IN)) extras++;
+                    dev.golem.core.multiblock.MultiblockCore.PASSIVE_POWER_IN)) extras++;
         }
         helper.assertTrue(cells == 45 && extras == 6, "FEnSU occupancy or six extra port cells changed");
         helper.assertTrue(java.util.Arrays.equals(block.getDimensions(), new int[]{9, 0, 2, 2, 4, 4})
@@ -66,10 +67,10 @@ public final class BatteryReddGameTests {
         for (DirPos connection : connections) {
             BlockPos cell = connection.getPos().offset(-connection.getDir().offsetX,
                     -connection.getDir().offsetY, -connection.getDir().offsetZ);
-            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
+            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir().toDirection()),
                     "FEnSU connection is not exposed at its anchor");
         }
-        helper.assertFalse(block.canConnect(helper.getLevel(), core, ForgeDirection.NORTH),
+        helper.assertFalse(block.canConnect(helper.getLevel(), core, Direction.NORTH),
                 "FEnSU exposed a non-port side");
         helper.succeed();
     }

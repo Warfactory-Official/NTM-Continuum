@@ -2,9 +2,9 @@ package com.hbm.blocks.network;
 
 import com.hbm.tileentity.network.TileEntityFluidPump;
 import com.hbm.interfaces.ILookOverlay;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.items.machine.IItemFluidId;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import com.hbm.util.BobMathUtil;
 import dev.golem.core.registry.TickingBlock;
 import net.minecraft.ChatFormatting;

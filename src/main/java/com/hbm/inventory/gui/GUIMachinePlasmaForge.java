@@ -1,5 +1,6 @@
 package com.hbm.inventory.gui;
 
+import dev.golem.core.gui.Gauges;
 import com.hbm.inventory.container.ContainerMachinePlasmaForge;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.PlasmaForgeRecipe;
@@ -81,38 +82,16 @@ public class GUIMachinePlasmaForge extends dev.golem.core.gui.CompatContainerScr
     private void drawGauge(GuiGraphicsExtractor graphics, int x, int y, PlasmaForgeRecipe recipe) {
         double progress = recipe == null || recipe.ignitionTemp <= 0 ? 0D
                 : Math.min((double) forgeEnergy() / recipe.ignitionTemp, 1.5D) / 1.5D;
-        drawNeedle(graphics, x, y, progress, 0xFFA00000);
+        Gauges.needle(graphics, x, y, progress, 0xA00000);
     }
 
     private void drawGauge(GuiGraphicsExtractor graphics, int x, int y, int value, int max) {
-        drawNeedle(graphics, x, y, max <= 0 ? 0D : (double) value / max, 0xFFA00000);
+        Gauges.needle(graphics, x, y, max <= 0 ? 0D : (double) value / max, 0xA00000);
     }
 
     private long forgeEnergy() {
         TileEntityFusionPlasmaForge forge = menu.getForge();
         return forge == null ? 0L : forge.plasmaEnergySync;
-    }
-
-    private static void drawNeedle(GuiGraphicsExtractor graphics, int x, int y, double progress, int color) {
-        progress = Math.max(0D, Math.min(1D, progress));
-        GuiDraw.pushMatrix(graphics);
-        GuiDraw.translate(graphics, x, y);
-        GuiDraw.rotate(graphics, (float) Math.toRadians(progress * 270D + 45D));
-        GuiDraw.scale(graphics, 1F / 8F, 1F / 8F);
-        fillNeedle(graphics, 1.5D, 0xFF000000);
-        fillNeedle(graphics, 1D, color);
-        GuiDraw.popMatrix(graphics);
-    }
-
-    private static void fillNeedle(GuiGraphicsExtractor graphics, double multiplier, int color) {
-        double tip = 5D * multiplier * 8D;
-        double back = 2D * multiplier * 8D;
-        double side = multiplier * 8D;
-        double total = tip + back;
-        for (int row = (int) Math.round(-back); row < (int) Math.round(tip); row++) {
-            int halfWidth = (int) Math.round(side * (tip - row) / total);
-            if (halfWidth > 0) graphics.fill(-halfWidth, row, halfWidth, row + 1, color);
-        }
     }
 
     private void drawTank(GuiGraphicsExtractor graphics, FluidTankNTM tank, int x, int y) {

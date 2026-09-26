@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
-import com.hbm.inventory.fluid.FluidType;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.lib.ForgeDirection;
@@ -54,9 +56,10 @@ public class MachineLargeTurbine extends BlockMultiblockMachine
     }
 
     @Override
-    public boolean canConnect(BlockGetter world, BlockPos pos, ForgeDirection dir) {
+    public boolean canConnect(BlockGetter world, BlockPos pos, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityMachineLargeTurbine turbine
-                && IEnergyConnectorBlock.isPort(turbine.getPowerPos(), pos, dir);
+                && com.hbm.lib.Ports.isPort(turbine.getPowerPos(), pos, dir.toDirection());
     }
 
     /**

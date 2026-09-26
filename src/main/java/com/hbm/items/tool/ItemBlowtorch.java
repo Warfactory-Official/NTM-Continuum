@@ -2,7 +2,7 @@ package com.hbm.items.tool;
 
 import com.hbm.api.block.IToolable;
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatItem;

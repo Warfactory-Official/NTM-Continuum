@@ -3,7 +3,7 @@ NTMEvents.shapes(e => {
 })
 
 NTMEvents.materials(e => {
-    e.create(990001, 'gametestium')
+    e.create('gametestium')
         .colors(0xE0E0FF, 0x303060, 0xA0A0FF)
         .displayName('Gametestium')
         .smelting('SMELTABLE')
@@ -12,7 +12,7 @@ NTMEvents.materials(e => {
 })
 
 NTMEvents.fluids(e => {
-    e.create(1000, 'GAMETEST_FLUID', 0x40A040, 'custom_toxin')
+    e.create('gametest_fluid', 0x40A040, 'custom_toxin')
         .displayName('Gametest Fluid')
         .temperature(321)
         .corrosive(33)

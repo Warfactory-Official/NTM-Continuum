@@ -1,7 +1,9 @@
 package com.hbm.blocks.machine.rbmk;
 
 import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockMaskTable;
+
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockMaskTable;
 import com.hbm.tileentity.ModRBMKBlockEntities;
 import com.hbm.tileentity.machine.rbmk.BlockEntityCraneConsole;
 import net.minecraft.core.BlockPos;

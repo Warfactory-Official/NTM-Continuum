@@ -1,7 +1,7 @@
 package com.hbm.client.render;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.blocks.rail.RailNarrowCurve;
 import com.hbm.blocks.rail.RailNarrowStraight;
 import com.hbm.blocks.rail.RailStandardBuffer;
@@ -192,8 +192,8 @@ public final class RailRenderer extends GemBER<BlockEntityRail, RailRenderer.Sta
     public void extract(BlockEntityRail blockEntity, State state, float partialTicks, Vec3 cameraPosition) {
         BlockState blockState = blockEntity.getBlockState();
         state.kind = kindOf(blockState.getBlock());
-        state.facing = blockState.hasProperty(BlockMultiblockCore.FACING)
-                ? blockState.getValue(BlockMultiblockCore.FACING) : Direction.NORTH;
+        state.facing = blockState.hasProperty(MultiblockCore.FACING)
+                ? blockState.getValue(MultiblockCore.FACING) : Direction.NORTH;
         state.switched = blockEntity.isSwitched;
     }
 

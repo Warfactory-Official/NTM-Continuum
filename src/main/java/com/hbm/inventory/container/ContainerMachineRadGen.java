@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.TileEntityMachineRadGen;
@@ -85,7 +86,7 @@ public class ContainerMachineRadGen extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.machine_radgen.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.machine_radgen.get());
     }
 
     @Override

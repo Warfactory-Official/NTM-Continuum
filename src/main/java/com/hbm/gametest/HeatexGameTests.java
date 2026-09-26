@@ -1,9 +1,10 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.HeaterHeatex;
+import net.minecraft.core.Direction;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerHeaterHeatex;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.trait.FT_Coolable;
 import com.hbm.inventory.recipes.CoolingRecipes;
@@ -77,9 +78,9 @@ public final class HeatexGameTests {
 
         BlockPos portCell = helper.absolutePos(new BlockPos(4, 1, 2));
         helper.assertTrue(block.canConnect(Fluids.COOLANT_HOT, helper.getLevel(), portCell.getX(), portCell.getY(),
-                        portCell.getZ(), ForgeDirection.NORTH), "Heatex input port is not connectable");
+                        portCell.getZ(), Direction.NORTH), "Heatex input port is not connectable");
         helper.assertFalse(block.canConnect(Fluids.COOLANT_HOT, helper.getLevel(), portCell.getX(), portCell.getY(),
-                        portCell.getZ(), ForgeDirection.EAST), "Heatex exposed a false side port");
+                        portCell.getZ(), Direction.EAST), "Heatex exposed a false side port");
         helper.succeed();
     }
 

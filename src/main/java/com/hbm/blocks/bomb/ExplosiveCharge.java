@@ -95,7 +95,7 @@ public class ExplosiveCharge extends CompatBlock implements IBomb, IDetConnectib
     }
 
     @Override
-    public void explodeEntity(Level level, double x, double y, double z, EntityTntNtm entity) {
+    public void explodeEntity(Level level, double x, double y, double z, Entity entity) {
         explode(level, BlockPos.containing(x, y, z), entity);
     }
 }

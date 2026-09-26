@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine.fusion;
 
-import com.hbm.capability.MachineCaps;
-import com.hbm.uninos.graph.EndpointRegistry;
+import dev.golem.core.graph.Domains;
+import dev.golem.core.graph.EndpointRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -24,6 +24,11 @@ import org.jspecify.annotations.Nullable;
  */
 public final class FusionLink {
 
+    public static final int PLASMA_IN = Domains.FIRST_FREE;
+    public static final int PLASMA_OUT = Domains.FIRST_FREE << 1;
+    public static final int KLYSTRON_IN = Domains.FIRST_FREE << 2;
+    public static final int KLYSTRON_OUT = Domains.FIRST_FREE << 3;
+
     private FusionLink() {}
 
     /**
@@ -33,7 +38,7 @@ public final class FusionLink {
      */
     public static void claim(@Nullable Level level, BlockEntity owner, BlockPos at, int domains) {
         if (!(level instanceof ServerLevel server)) return;
-        EndpointRegistry.ofBeams(server).declare(at, owner.getBlockPos(), MachineCaps.FACE_MASK_ALL, domains);
+        EndpointRegistry.ofBeams(server).declare(at, owner.getBlockPos(), Domains.FACES_ALL, domains);
     }
 
     /** The machine that claimed {@code at} on any of {@code domains}, or null where the beam lands on nothing. */

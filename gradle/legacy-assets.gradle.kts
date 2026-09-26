@@ -1148,7 +1148,7 @@ fun needsLegacyItemAssets(mcVersion: String): Boolean {
     }
 }
 
-if (needsLegacyItemAssets(extra.properties["mc_version"] as String)) {
+if (needsLegacyItemAssets(project.name.substringBefore('-'))) {
     applyLegacyItemAssets()
 }
 

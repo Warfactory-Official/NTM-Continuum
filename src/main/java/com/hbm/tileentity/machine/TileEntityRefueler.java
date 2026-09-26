@@ -8,7 +8,7 @@ import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -32,7 +32,7 @@ import java.util.List;
  * standing on it (AABB expanded ±0.5), playing the extinguish sound every 20 op-ticks. Fluid enters via
  * a pipe on the side opposite the facing.
  */
-public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidStandardReceiverMK2 {
+public class TileEntityRefueler extends SyncedBlockEntity implements IFluidStandardReceiverMK2 {
 
     public double fillLevel;
     public double prevFillLevel;
@@ -102,7 +102,7 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
             te.operatingTime = 0;
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityRefueler te) {
@@ -140,7 +140,7 @@ public class TileEntityRefueler extends TileEntityLoadedBase implements IFluidSt
         return false;
     }
 
-    public void setTankType(com.hbm.inventory.fluid.FluidType type) {
+    public void setTankType(com.hbm.api.fluid.FluidType type) {
         tank.setTankType(type);
         setChanged();
     }

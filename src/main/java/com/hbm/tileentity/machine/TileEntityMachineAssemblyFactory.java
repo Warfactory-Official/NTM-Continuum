@@ -177,11 +177,11 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
 
         for (DirPos connection : factory.getConPos()) {
             for (FluidTankNTM tank : factory.outputTanks) {
-                if (tank.getFill() > 0) factory.tryProvide(tank, level, connection);
+                if (tank.getFill() > 0) factory.tryProvide(tank, level, connection.getPos(), connection.getDir().toDirection());
             }
         }
         for (DirPos connection : factory.getCoolPos()) {
-            factory.coolantDelegate.tryProvide(factory.lps, level, connection);
+            factory.coolantDelegate.tryProvide(factory.lps, level, connection.getPos(), connection.getDir().toDirection());
         }
 
         int speedLevel = Math.min(factory.upgradeManager.getLevel(UpgradeType.SPEED), 3);
@@ -204,7 +204,7 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
         }
 
         if (dirty) factory.setChanged();
-        factory.networkPackNT();
+        factory.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityMachineAssemblyFactory factory) {
@@ -329,7 +329,7 @@ public final class TileEntityMachineAssemblyFactory extends TileEntityMachineBas
         int index = dev.golem.core.data.Tags.getIntOr(data, "index", -1);
         if (index < 0 || index >= LANES) return;
         assemblerModule[index].setRecipe(dev.golem.core.data.Tags.getStringOr(data, "selection", "null"), false);
-        markChanged();
+        setChanged();
     }
 
     @Override

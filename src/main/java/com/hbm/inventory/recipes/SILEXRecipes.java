@@ -3,7 +3,7 @@ package com.hbm.inventory.recipes;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.inventory.RecipesCommon.AStack;
 import com.hbm.inventory.RecipesCommon.ComparableStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.items.ModIngredientItems;
@@ -222,7 +222,7 @@ public final class SILEXRecipes {
 
         add(fluidIcon(Fluids.FULLERENE), 1_000, 1_000, EnumWavelengths.VISIBLE)
                 .out(ModIngredientItems.ash(EnumAshType.FULLERENE), 1);
-        com.hbm.scripting.ScriptedRecipes.apply(SILEXRecipes.class);
+        dev.golem.core.content.Replay.apply(SILEXRecipes.class);
     }
 
     public static void addRecipe(AStack input, int produced, int consumed, EnumWavelengths strength, List<WeightedOutput> outputs) {
@@ -270,7 +270,7 @@ public final class SILEXRecipes {
      *
      * <p>Needs its own {@link AStack} because {@link ComparableStack} matches on the {@link Item}
      * alone, and every fluid shares the one {@code fluid_icon} item — in 1.12.2 they were separated by
-     * metadata, here by the {@code FLUID_ID} data component. A plain ComparableStack would make UF6,
+     * metadata, here by the {@code FLUID} data component. A plain ComparableStack would make UF6,
      * PUF6, DEATH, VITRIOL and REDMUD all resolve to whichever recipe was registered first.
      */
     public static final class FluidIconStack extends AStack {

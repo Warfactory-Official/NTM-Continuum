@@ -1,6 +1,6 @@
 package com.hbm.gametest;
 
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.blocks.generic.BlockDoorGeneric;
 import com.hbm.tileentity.DoorDecl;
 import com.hbm.blocks.ModDoorBlocks;
@@ -27,7 +27,7 @@ public final class DoorGameTests {
         BlockDoorGeneric block = ModDoorBlocks.FIRE_DOOR.get();
         BlockPos core = helper.absolutePos(new BlockPos(6, 1, 6));
         Direction facing = Direction.NORTH;
-        MultiblockHandlerXR.placeAssembled(helper.getLevel(), core, block, facing);
+        MultiblockFootprint.placeAssembled(helper.getLevel(), core, block, facing);
 
         TileEntityDoorGeneric door = (TileEntityDoorGeneric) helper.getLevel().getBlockEntity(core);
         helper.assertTrue(door != null, "fire door core has no block entity");

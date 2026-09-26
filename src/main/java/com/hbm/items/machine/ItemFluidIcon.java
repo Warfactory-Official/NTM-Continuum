@@ -2,7 +2,7 @@ package com.hbm.items.machine;
 
 import dev.golem.core.data.ModelData;
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.ModFluidItems;
@@ -20,7 +20,7 @@ import java.util.List;
  * display icon for fluid inputs/outputs (e.g. {@link com.hbm.inventory.recipes.loader.GenericRecipe
  * #getIcon} falls back to it for a fluid-output recipe, and the recipe selector shows it).
  *
- * <p>Like {@link ItemFluidBucket} it carries the fluid in the {@link ModDataComponents#FLUID_ID}
+ * <p>Like {@link ItemFluidBucket} it carries the fluid in the {@link ModDataComponents#FLUID}
  * component, and stacks made from a {@link FluidStack} retain their amount in
  * {@link ModDataComponents#FLUID_AMOUNT}. It tints the grayscale {@code fluid_icon.png} droplet by the fluid colour via the vanilla
  * {@code custom_model_data} colour list (read by the model's {@code minecraft:custom_model_data} tint
@@ -37,10 +37,10 @@ public class ItemFluidIcon extends CompatItem {
         super(properties);
     }
 
-    /** Builds a droplet icon for {@code fluid} (FLUID_ID for identity + the tint colour for rendering). */
+    /** Builds a droplet icon for {@code fluid} (FLUID for identity + the tint colour for rendering). */
     public static ItemStack make(FluidType fluid) {
         ItemStack stack = new ItemStack(ModFluidItems.fluid_icon.get());
-        ModDataComponents.fluidId(stack, fluid.getID());
+        ModDataComponents.fluid(stack, fluid);
         ModelData.setColor(stack, fluid.getColor());
         return stack;
     }
@@ -54,7 +54,7 @@ public class ItemFluidIcon extends CompatItem {
     }
 
     public static FluidType getFluid(ItemStack stack) {
-        return Fluids.fromID(ModDataComponents.fluidId(stack));
+        return ModDataComponents.fluid(stack);
     }
 
     @Override

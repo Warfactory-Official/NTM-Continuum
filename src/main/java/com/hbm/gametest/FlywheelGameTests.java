@@ -1,7 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
+import dev.golem.core.multiblock.MultiblockCore;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.client.render.flywheel.FlywheelCompat;
 import com.hbm.entity.ModEntities;
@@ -93,7 +93,7 @@ public final class FlywheelGameTests {
 
     /** A folded multiblock's cells carry no block entity, so the hook has to walk them to the core. */
     public static void crumblingCoreFolded(GameTestHelper helper) {
-        BlockMultiblockCore block = ModTurretBlocks.turret_chekhov.get();
+        MultiblockCore block = ModTurretBlocks.turret_chekhov.get();
         BlockPos clicked = helper.absolutePos(new BlockPos(2, 1, 2));
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);

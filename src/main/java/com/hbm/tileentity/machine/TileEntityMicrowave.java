@@ -83,7 +83,7 @@ public class TileEntityMicrowave extends TileEntityMachineBase
             }
         }
 
-        te.networkPackNT();
+        te.syncState();
     }
 
     @Override

@@ -1,15 +1,16 @@
 package com.hbm.tileentity.network;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.energymk2.IEnergyHandlerMK2.ConnectionPriority;
 import com.hbm.api.fluidmk2.IFluidDirectionalMK2;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 import com.hbm.interfaces.IControlReceiver;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.data.Tags;
@@ -29,7 +30,7 @@ import com.hbm.blocks.network.FluidPump;
  * buffer to the net on its right side, so at most {@code bufferSize} mB/t passes. Redstone stops the
  * outlet. The buffer size, output pressure and priority are set in its screen ({@link #receiveControl}).
  */
-public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IFluidDirectionalMK2, IControlReceiver {
+public class TileEntityFluidPump extends SyncedBlockEntity implements IFluidStandardTransceiverMK2, IFluidDirectionalMK2, IControlReceiver {
 
     public int bufferSize = 100;
     public final FluidTankNTM[] tank;
@@ -68,16 +69,21 @@ public class TileEntityFluidPump extends TileEntityLoadedBase implements IFluidS
             pump.redstone = powered;
             pump.setChanged();
         }
-        pump.networkPackNT(); // 1.7 packed every 15 ticks; the port's pack skips unchanged payloads
+        pump.syncState(); // 1.7 packed every 15 ticks; the port's pack skips unchanged payloads
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
+    public boolean canConnect(FluidType type, Direction side) {
+        ForgeDirection dir = ForgeDirection.of(side);
         return (dir == inSide() || dir == outSide()) && type == tank[0].getTankType();
     }
 
-    @Override public boolean providesOn(ForgeDirection side) { return side == outSide(); }
-    @Override public boolean receivesOn(ForgeDirection side) { return side == inSide(); }
+    @Override public boolean providesOn(Direction face) {
+    ForgeDirection side = ForgeDirection.of(face);
+     return side == outSide(); }
+    @Override public boolean receivesOn(Direction face) {
+        ForgeDirection side = ForgeDirection.of(face);
+         return side == inSide(); }
 
     @Override public ConnectionPriority getFluidPriority() { return priority; }
     @Override public FluidTankNTM[] getSendingTanks() { return redstone ? new FluidTankNTM[0] : tank; }

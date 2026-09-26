@@ -2,7 +2,7 @@ package com.hbm.tileentity.network.pneumatic;
 
 import com.hbm.tileentity.IControlReceiverFilter;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.lib.ForgeDirection;
@@ -156,7 +156,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase
             }
         }
 
-        this.networkPackNT();
+        this.syncState();
     }
 
     /** 1.7 {@code PneumoTube.canConnectToAir}, recomputed against the world into the synced mask. */
@@ -185,8 +185,7 @@ public class TileEntityPneumoTube extends TileEntityMachineBase
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        Direction side = dir.toDirection();
+    public boolean canConnect(FluidType type, Direction side) {
         return side != null && side != this.insertionDir && side != this.ejectionDir && type == Fluids.AIR
                 && this.isCompressor();
     }

@@ -72,7 +72,7 @@ public final class TileEntityAshpit extends TileEntityMachineBase implements Men
             if (!ashpit.inventory.getStackInSlot(i).isEmpty()) ashpit.isFull = true;
         }
 
-        ashpit.networkPackNT();
+        ashpit.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, net.minecraft.world.level.block.state.BlockState state,

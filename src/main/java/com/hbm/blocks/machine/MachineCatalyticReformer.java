@@ -1,10 +1,12 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineCatalyticReformer;
 import net.minecraft.core.BlockPos;
@@ -48,16 +50,16 @@ public class MachineCatalyticReformer extends BlockMultiblockMachine implements 
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, core, WING1, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core, WING2, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, core, WING1, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core, WING2, clicked, facing);
     }
 
     /** Two wings off the body, four corner ports and two out on the rotation axis. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, WING1, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, WING2, facing, visitor);
+        MultiblockFootprint.visitBox(core, WING1, facing, visitor);
+        MultiblockFootprint.visitBox(core, WING2, facing, visitor);
 
         Direction rot = facing.getClockWise();
         visitor.cell(core.offset(1, 0, 1), MASK_SOUTH);

@@ -1,6 +1,7 @@
 package com.hbm.blocks.gas;
 
 import com.hbm.blocks.generic.BlockGasBase;
+import com.hbm.api.hazard.HazardClass;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.util.ArmorRegistry;
 import net.minecraft.core.BlockPos;
@@ -34,7 +35,7 @@ public class BlockGasCoal extends BlockGasBase {
     @Override
     protected void onEntityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         if (level.isClientSide() || !(entity instanceof LivingEntity living)) return;
-        if (!ArmorRegistry.hasProtection(living, EquipmentSlot.HEAD, ArmorRegistry.HazardClass.PARTICLE_COARSE)) {
+        if (!ArmorRegistry.hasProtection(living, EquipmentSlot.HEAD, HazardClass.PARTICLE_COARSE)) {
             HbmLivingProps.incrementBlackLung(living, 10);
         }
     }

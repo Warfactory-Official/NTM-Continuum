@@ -1,8 +1,8 @@
 package com.hbm.gametest;
 
 import com.hbm.Constants;
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.blocks.turret.ModTurretBlocks;
 import com.hbm.config.WeaponConfig;
 import com.hbm.entity.missile.EntityMissileTier1;
@@ -54,7 +54,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * Behavioural contracts for the turret pad, its menu and the target loop. The turret is the first
- * user of {@link com.hbm.blocks.multiblock.BlockMultiblockCell}, so the folded 2x2 pad is asserted
+ * user of {@link dev.golem.core.multiblock.MultiblockCell}, so the folded 2x2 pad is asserted
  * here rather than assumed.
  */
 public final class TurretGameTests {
@@ -116,7 +116,7 @@ public final class TurretGameTests {
     public static void init() {}
 
     /** Places a turret the way a player does, and hands back the core position. */
-    private static BlockPos place(GameTestHelper helper, BlockPos relative, BlockMultiblockCore block) {
+    private static BlockPos place(GameTestHelper helper, BlockPos relative, MultiblockCore block) {
         BlockPos clicked = helper.absolutePos(relative);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setYRot(0F);
@@ -132,7 +132,7 @@ public final class TurretGameTests {
 
         helper.assertTrue(coreState.getBlock() == ModTurretBlocks.turret_chekhov.get(),
                 "The clicked cell must become the turret core");
-        helper.assertTrue(coreState.getValue(BlockMultiblockCore.FACING) == Direction.NORTH,
+        helper.assertTrue(coreState.getValue(MultiblockCore.FACING) == Direction.NORTH,
                 "A turret placed at yaw 0 must face north");
         helper.assertTrue(helper.getLevel().getBlockEntity(core) instanceof TileEntityTurretChekhov,
                 "The core must carry the turret block entity");
@@ -413,7 +413,7 @@ public final class TurretGameTests {
         DirPos[] ports = sentry.getConPos();
         helper.assertTrue(ports.length == 1 && ports[0].getPos().equals(pos.below()),
                 "1.12.2's sentry subscribes the block beneath it and nothing else");
-        helper.assertTrue(sentry.canConnect(ForgeDirection.DOWN) && !sentry.canConnect(ForgeDirection.NORTH),
+        helper.assertTrue(sentry.canConnect(Direction.DOWN) && !sentry.canConnect(Direction.NORTH),
                 "The sentry takes power from below only");
         helper.assertTrue(!Library.canConnect(helper.getLevel(), pos, ForgeDirection.NORTH),
                 "A cable beside the sentry must not connect");
@@ -801,7 +801,7 @@ public final class TurretGameTests {
 
         helper.assertTrue(coreState.getBlock() == ModTurretBlocks.turret_himars.get(),
                 "The core must land one block back from the clicked cell; found " + coreState.getBlock());
-        helper.assertTrue(coreState.getValue(BlockMultiblockCore.FACING) == Direction.NORTH,
+        helper.assertTrue(coreState.getValue(MultiblockCore.FACING) == Direction.NORTH,
                 "A gun placed at yaw 0 must face north");
         helper.assertTrue(helper.getLevel().getBlockEntity(core) instanceof TileEntityTurretHIMARS,
                 "The core must carry the HIMARS block entity");

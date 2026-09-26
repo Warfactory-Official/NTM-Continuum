@@ -1,6 +1,7 @@
 package com.hbm.gametest;
 
 import com.hbm.blocks.machine.MachineCyclotron;
+import net.minecraft.core.Direction;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.container.ContainerMachineCyclotron;
 import com.hbm.inventory.fluid.Fluids;
@@ -48,13 +49,13 @@ public final class CyclotronGameTests {
         for (com.hbm.lib.DirPos connection : cyclotron.getConPos()) {
             BlockPos cell = connection.getPos().offset(-connection.getDir().offsetX,
                     -connection.getDir().offsetY, -connection.getDir().offsetZ);
-            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir()),
+            helper.assertTrue(block.canConnect(helper.getLevel(), cell, connection.getDir().toDirection()),
                     "cyclotron power port did not connect at " + connection.getPos());
             helper.assertTrue(block.canConnect(Fluids.WATER, helper.getLevel(), cell.getX(), cell.getY(), cell.getZ(),
-                            connection.getDir()),
+                            connection.getDir().toDirection()),
                     "cyclotron fluid port did not connect at " + connection.getPos());
         }
-        helper.assertFalse(block.canConnect(helper.getLevel(), core.offset(2, 0, 0), com.hbm.lib.ForgeDirection.EAST),
+        helper.assertFalse(block.canConnect(helper.getLevel(), core.offset(2, 0, 0), net.minecraft.core.Direction.EAST),
                 "cyclotron connected a non-port perimeter face");
 
         WorldlyContainer corner = block.getContainer(helper.getLevel().getBlockState(core.offset(2, 0, 1)),

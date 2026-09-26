@@ -1,13 +1,14 @@
 package com.hbm.tileentity.machine;
 
+import net.minecraft.core.Direction;
 import com.hbm.api.fluidmk2.IFluidReceiverMK2;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.handler.pollution.PollutionHandler;
 import com.hbm.handler.pollution.PollutionType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 /** Common smoke reception, capture counters, sync and Tower-particle behavior. */
-public abstract class TileEntityChimneyBase extends TileEntityLoadedBase implements IFluidReceiverMK2 {
+public abstract class TileEntityChimneyBase extends SyncedBlockEntity implements IFluidReceiverMK2 {
 
     public long ashTick;
     public long sootTick;
@@ -41,7 +42,7 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
         }
 
         // The legacy packet was sent before the visible 20-tick countdown.
-        chimney.networkPackNT();
+        chimney.syncState();
         if (chimney.onTicks > 0) chimney.onTicks--;
     }
 
@@ -89,9 +90,9 @@ public abstract class TileEntityChimneyBase extends TileEntityLoadedBase impleme
     }
 
     @Override
-    public boolean canConnect(FluidType type, ForgeDirection dir) {
-        return isSmoke(type) && (dir == ForgeDirection.NORTH || dir == ForgeDirection.SOUTH
-                || dir == ForgeDirection.EAST || dir == ForgeDirection.WEST);
+    public boolean canConnect(FluidType type, Direction dir) {
+        return isSmoke(type) && (dir == Direction.NORTH || dir == Direction.SOUTH
+                || dir == Direction.EAST || dir == Direction.WEST);
     }
 
     @Override

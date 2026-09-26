@@ -1,7 +1,7 @@
 package com.hbm.inventory.recipes;
 
 import com.hbm.inventory.fluid.FluidStack;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ItemEnums.EnumTarType;
 import com.hbm.items.ModItems;
@@ -131,7 +131,7 @@ public final class RefineryRecipes {
                 new FluidStack(Fluids.LIGHTOIL_VACUUM, vac_frac_light),
                 new FluidStack(Fluids.REFORMGAS, vac_frac_sour)
         ));
-        com.hbm.scripting.ScriptedRecipes.apply(RefineryRecipes.class);
+        dev.golem.core.content.Replay.apply(RefineryRecipes.class);
     }
 
     public static void putRefinery(FluidType oil, RefineryRecipe recipe) {

@@ -5,7 +5,7 @@ import com.google.gson.JsonParser;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
 import com.hbm.blocks.machine.storage.MachineFENSU;
 import com.hbm.blocks.machine.storage.ModBatteryBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.items.ModDataComponents;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
@@ -82,9 +82,9 @@ public final class FensuGameTests {
         helper.assertTrue(connections.length == 1 && connections[0].getPos().equals(core.below())
                         && connections[0].getDir() == ForgeDirection.DOWN,
                 "FEnSU must have exactly one bottom connection");
-        helper.assertTrue(block.canConnect(helper.getLevel(), core, ForgeDirection.DOWN),
+        helper.assertTrue(block.canConnect(helper.getLevel(), core, Direction.DOWN),
                 "FEnSU bottom cable port is missing");
-        helper.assertFalse(block.canConnect(helper.getLevel(), core, ForgeDirection.NORTH),
+        helper.assertFalse(block.canConnect(helper.getLevel(), core, Direction.NORTH),
                 "FEnSU exposed a non-bottom cable port");
 
         var shape = block.getShape(helper.getLevel().getBlockState(core), helper.getLevel(), core,

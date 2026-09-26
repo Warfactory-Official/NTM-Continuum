@@ -77,7 +77,7 @@ public class TileEntityPileControl extends TileEntityPileDeviceBase implements I
         if (!redstone && control.wasRedstone) control.setTarget(0D);
         control.wasRedstone = redstone;
 
-        control.networkPackNT();
+        control.syncState();
     }
 
     public static void clientTick(Level level, BlockPos pos, BlockState state, TileEntityPileControl control) {
@@ -137,14 +137,14 @@ public class TileEntityPileControl extends TileEntityPileDeviceBase implements I
     public String runRORFunction(String name, String[] params) {
         if ((PREFIX_FUNCTION + "setrods").equals(name) && params.length > 0) {
             setTarget(IRORInteractive.parseInt(params[0], 0, 100) / 100D);
-            markChanged();
+            setChanged();
             return null;
         }
 
         if ((PREFIX_FUNCTION + "extendrods").equals(name) && params.length > 0) {
             int percent = IRORInteractive.parseInt(params[0], -100, 100);
             setTarget(Mth.clamp(this.targetExtraction + percent / 100D, 0D, 1D));
-            markChanged();
+            setChanged();
             return null;
         }
 

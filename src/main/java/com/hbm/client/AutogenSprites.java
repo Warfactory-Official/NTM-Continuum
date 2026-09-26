@@ -47,6 +47,7 @@ public final class AutogenSprites {
     public static synchronized void install() {
         installed = true;
         sync();
+        ModAutogenItems.onRegistered(AutogenSprites::sync);
     }
 
     /** Declares the pairs added since {@link #install}; a no-op before it. */

@@ -1,7 +1,7 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
+import dev.golem.core.machine.SyncedBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * because the OBJ renderer hangs off it. The reactor detects the pump by looking up this block, not
  * the other way round.
  */
-public class TileEntityWatzPump extends TileEntityLoadedBase {
+public class TileEntityWatzPump extends SyncedBlockEntity {
 
     public TileEntityWatzPump(BlockPos pos, BlockState state) {
         super(ModBlockEntities.WATZ_PUMP.get(), pos, state);

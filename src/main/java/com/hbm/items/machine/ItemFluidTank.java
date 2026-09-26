@@ -2,7 +2,7 @@ package com.hbm.items.machine;
 
 import dev.golem.core.data.ModelData;
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.world.CompatItem;
@@ -14,7 +14,7 @@ import net.minecraft.world.item.TooltipFlag;
 
 /**
  * A portable universal fluid container — the 1.12.2 {@code ItemFluidTankV2}. One registered item holds
- * any single {@link FluidType} up to {@link #capacity} mB; the fluid id rides {@link ModDataComponents#FLUID_ID}
+ * any single {@link FluidType} up to {@link #capacity} mB; the fluid id rides {@link ModDataComponents#FLUID}
  * and the amount rides {@link ModDataComponents#FLUID_AMOUNT}. Used for the <b>universal fluid tank</b>
  * (1000&nbsp;mB) and the <b>fluid barrel</b> (16000&nbsp;mB).
  *
@@ -38,7 +38,7 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
     // --- component access ---
 
     public static FluidType getType(ItemStack stack) {
-        return Fluids.fromID(ModDataComponents.fluidId(stack));
+        return ModDataComponents.fluid(stack);
     }
 
     @Override
@@ -50,12 +50,12 @@ public class ItemFluidTank extends CompatItem implements IFillableItem {
      * components are removed so an emptied container is identical to (and stacks with) a pristine one. */
     public void setFluid(ItemStack stack, FluidType type, int amount) {
         if (type == null || type == Fluids.NONE || amount <= 0) {
-            ModDataComponents.removeFluidId(stack);
+            ModDataComponents.removeFluid(stack);
             ModDataComponents.removeFluidAmount(stack);
             ModDataComponents.removeCustomModelData(stack);
             return;
         }
-        ModDataComponents.fluidId(stack, type.getID());
+        ModDataComponents.fluid(stack, type);
         ModDataComponents.fluidAmount(stack, amount);
         ModelData.setColor(stack, type.getColor());
     }

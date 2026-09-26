@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.lib.Library;
@@ -78,7 +79,7 @@ public class ContainerFusionTorus extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModMachineBlocks.fusion_torus.get());
+        return Menus.stillValid(access, player, ModMachineBlocks.fusion_torus.get());
     }
 
     @Override

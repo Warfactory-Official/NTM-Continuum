@@ -1,7 +1,7 @@
 package com.hbm.api.energymk2;
 
 import com.hbm.api.tile.ILoadedTile;
-import com.hbm.uninos.IBufferedEndpoint;
+import com.hbm.api.tile.IBufferedEndpoint;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
 

@@ -22,7 +22,7 @@ public class TileEntityCreativeGenerator extends BlockEntity implements IEnergyP
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityCreativeGenerator gen) {
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-            gen.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+            gen.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir.toDirection());
         }
     }
 
@@ -47,8 +47,4 @@ public class TileEntityCreativeGenerator extends BlockEntity implements IEnergyP
         return 100_000_000L;
     }
 
-    @Override
-    public boolean isLoaded() {
-        return !isRemoved();
-    }
 }

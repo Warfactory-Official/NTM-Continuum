@@ -1,6 +1,6 @@
 package com.hbm.items.machine;
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import dev.golem.core.data.ModelData;
 import net.minecraft.world.item.ItemStack;
@@ -12,7 +12,7 @@ import com.hbm.inventory.FluidContainers;
 /**
  * The 1.7 metadata fluid containers ({@code canister_full}, {@code gas_full}, {@code fluid_pack_full},
  * {@code fluid_tank_lead_full}) in the port's component-backed form: one item, the fluid on the
- * {@code FLUID_ID} component, {@link #capacity} mB (1,000 for all but the 32,000 mB pack). Each
+ * {@code FLUID} component, {@link #capacity} mB (1,000 for all but the 32,000 mB pack). Each
  * container names which fluids it may hold — 1.7 registered a canister/gas-tank container per fluid and
  * marked the lead-only and container-less ones with traits ({@link FluidContainers}) — and how its
  * overlay is tinted (the canister's own colour rather than the fluid's, for the canister and gas tank).

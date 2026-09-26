@@ -1,8 +1,11 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.block.ICrucibleAcceptor;
+import com.hbm.api.material.MaterialStack;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.inventory.material.Mats;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.lib.ForgeDirection;
@@ -67,12 +70,12 @@ public class MachineCrucible extends BlockMultiblockMachine implements ICrucible
         if (!stack.isEmpty() && stack.is(ItemTags.SHOVELS)) {
             if (!level.isClientSide() && !player.isShiftKeyDown()) {
                 if (MultiblockSurface.coreEntity(level, pos) instanceof TileEntityCrucible crucible) {
-                    List<Mats.MaterialStack> stacks = new ArrayList<>();
+                    List<MaterialStack> stacks = new ArrayList<>();
                     stacks.addAll(crucible.recipeStack);
                     stacks.addAll(crucible.wasteStack);
 
-                    for (Mats.MaterialStack matStack : stacks) {
-                        ItemStack scrap = ItemScraps.create(new Mats.MaterialStack(matStack.material, matStack.amount));
+                    for (MaterialStack matStack : stacks) {
+                        ItemStack scrap = ItemScraps.create(new MaterialStack(matStack.material, matStack.amount));
                         if (!player.getInventory().add(scrap)) {
                             level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, scrap));
                         }
@@ -91,22 +94,24 @@ public class MachineCrucible extends BlockMultiblockMachine implements ICrucible
     // --- ICrucibleAcceptor: delegate to the core (pour from the top only) ---
 
     @Override
-    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
+    public boolean canAcceptPartialPour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         return MultiblockSurface.coreEntity(world, pos) instanceof TileEntityCrucible crucible
-                && crucible.canAcceptPartialPour(world, pos, dX, dY, dZ, side, stack);
+                && crucible.canAcceptPartialPour(world, pos, dX, dY, dZ, side.toDirection(), stack);
     }
 
     @Override
-    public Mats.MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, ForgeDirection side, Mats.MaterialStack stack) {
+    public MaterialStack pour(Level world, BlockPos pos, double dX, double dY, double dZ, Direction face, MaterialStack stack) {
+        ForgeDirection side = ForgeDirection.of(face);
         if (!(MultiblockSurface.coreEntity(world, pos) instanceof TileEntityCrucible crucible)) return stack;
-        return crucible.pour(world, pos, dX, dY, dZ, side, stack);
+        return crucible.pour(world, pos, dX, dY, dZ, side.toDirection(), stack);
     }
 
     @Override
-    public boolean canAcceptPartialFlow(Level world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return false; }
+    public boolean canAcceptPartialFlow(Level world, BlockPos pos, Direction side, MaterialStack stack) { return false; }
 
     @Override
-    public Mats.MaterialStack flow(Level world, BlockPos pos, ForgeDirection side, Mats.MaterialStack stack) { return null; }
+    public MaterialStack flow(Level world, BlockPos pos, Direction side, MaterialStack stack) { return null; }
 
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {

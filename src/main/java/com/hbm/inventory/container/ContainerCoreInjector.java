@@ -1,5 +1,6 @@
 package com.hbm.inventory.container;
 
+import dev.golem.core.gui.Menus;
 import com.hbm.blocks.machine.dfc.ModDFCBlocks;
 import com.hbm.inventory.ModMenus;
 import com.hbm.tileentity.machine.dfc.TileEntityCoreInjector;
@@ -74,7 +75,7 @@ public class ContainerCoreInjector extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return Containers.stillValidMultiblock(access, player, ModDFCBlocks.dfc_injector.get());
+        return Menus.stillValid(access, player, ModDFCBlocks.dfc_injector.get());
     }
 
     @Override

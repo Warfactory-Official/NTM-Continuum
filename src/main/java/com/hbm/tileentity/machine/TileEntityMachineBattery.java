@@ -1,19 +1,20 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.energymk2.CableData;
+import net.minecraft.core.Direction;
+import com.hbm.network.power.CableData;
 import com.hbm.api.energymk2.IEnergyConductorMK2;
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
-import com.hbm.api.energymk2.PowerGraph;
-import com.hbm.api.energymk2.PowerGraphProvider;
+import com.hbm.network.power.PowerGraph;
+import com.hbm.network.power.PowerGraphProvider;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.inventory.container.ContainerMachineBattery;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.LevelNodeGraph;
+import dev.golem.core.graph.LevelNodeGraph;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -109,7 +110,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
 
         if (mode == MODE_OUTPUT) {
             for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
-                battery.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir);
+                battery.tryProvide(level, pos.offset(dir.offsetX, dir.offsetY, dir.offsetZ), dir.toDirection());
             }
         }
 
@@ -120,7 +121,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
             battery.deltaTimer = 0;
         }
         battery.setChanged();
-        battery.networkPackNT(); // broadcast power/mode/priority to tracking clients (deduped when unchanged)
+        battery.syncState(); // broadcast power/mode/priority to tracking clients (deduped when unchanged)
     }
 
     /**
@@ -138,7 +139,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
             return;
         }
         if (!graph.containsCell(key)) {
-            graph.addNode(key, PowerGraphProvider.INSTANCE.createData(state), MachineCaps.FACE_MASK_ALL);
+            graph.addNode(key, PowerGraphProvider.INSTANCE.createData(state), Domains.FACES_ALL);
         }
         graph.setSelfEndpoint(key, true);
     }
@@ -167,7 +168,7 @@ public class TileEntityMachineBattery extends TileEntityMachineBase implements M
     }
 
     @Override
-    public boolean canConnect(ForgeDirection dir) {
+    public boolean canConnect(Direction dir) {
         return true;
     }
 

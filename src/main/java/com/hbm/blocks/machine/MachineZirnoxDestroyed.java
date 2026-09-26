@@ -1,11 +1,13 @@
 package com.hbm.blocks.machine;
 
-import com.hbm.blocks.multiblock.BlockMultiblockCore;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+
+import dev.golem.core.multiblock.MultiblockCore;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.ModNuclearBlocks;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.TileEntityZirnoxDestroyed;
 import net.minecraft.core.BlockPos;
@@ -44,8 +46,8 @@ public class MachineZirnoxDestroyed extends BlockMultiblockMachine {
 
     /** Builds the wreck after the blast, so the blast cannot remove the replacement multiblock. */
     public void formWreck(Level level, BlockPos pos, Direction facing) {
-        BlockMultiblockCore.withoutTeardown(() ->
-                MultiblockHandlerXR.placeAssembled(level, pos, this, facing));
+        MultiblockCore.withoutTeardown(() ->
+                MultiblockFootprint.placeAssembled(level, pos, this, facing));
     }
 
     @Override

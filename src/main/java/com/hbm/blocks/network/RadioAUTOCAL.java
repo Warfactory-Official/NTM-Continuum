@@ -1,6 +1,8 @@
 package com.hbm.blocks.network;
 
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
+import dev.golem.core.multiblock.MultiblockMachine;
 import com.hbm.radio.ModRadioBlockEntities;
 import com.hbm.tileentity.network.TileEntityRadioAUTOCAL;
 import net.minecraft.core.BlockPos;

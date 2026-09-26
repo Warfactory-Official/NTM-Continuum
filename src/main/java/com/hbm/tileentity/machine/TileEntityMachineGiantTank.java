@@ -1,10 +1,10 @@
 package com.hbm.tileentity.machine;
 
-import com.hbm.api.fluidmk2.FluidGraph;
+import com.hbm.network.fluid.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineGiantTank;
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.items.machine.IItemFluidId;
@@ -13,7 +13,7 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.TileEntityMachineBase;
-import com.hbm.uninos.graph.EndpointRegistry;
+import dev.golem.core.graph.EndpointRegistry;
 import net.minecraft.server.level.ServerLevel;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -69,7 +69,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
 
         tank.updateNetwork(level);
         if (tank.tankNew.getFill() > 0 && tank.checkFluidInteraction(level)) return;
-        tank.networkPackNT();
+        tank.syncState();
         tank.setChanged();
     }
 
@@ -85,7 +85,7 @@ public abstract class TileEntityMachineGiantTank extends TileEntityMachineBase
                 ? FluidGraph.hold(server, this, type, getConPos())
                 : FluidGraph.release(server, cells);
         if (mode != 2 || isTilted()) return;
-        for (DirPos connection : getConPos()) tryProvide(tankNew, level, connection);
+        for (DirPos connection : getConPos()) tryProvide(tankNew, level, connection.getPos(), connection.getDir().toDirection());
     }
 
     private void updateTypeFromIdentifier() {

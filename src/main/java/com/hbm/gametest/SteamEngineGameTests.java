@@ -46,19 +46,19 @@ public final class SteamEngineGameTests {
         assertPort(helper, ports[2], 5, 2, 4, ForgeDirection.EAST);
 
         BlockPos portCell = helper.absolutePos(core.offset(1, 1, 0));
-        helper.assertTrue(block.canConnect(helper.getLevel(), portCell, ForgeDirection.EAST),
+        helper.assertTrue(block.canConnect(helper.getLevel(), portCell, Direction.EAST),
                 "Steam engine must expose a cable port");
         helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.STEAM, helper.getLevel(),
-                        portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
+                        portCell.getX(), portCell.getY(), portCell.getZ(), Direction.EAST),
                 "Steam engine must accept steam at its port");
         helper.assertTrue(block.canConnect(com.hbm.inventory.fluid.Fluids.SPENTSTEAM, helper.getLevel(),
-                        portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
+                        portCell.getX(), portCell.getY(), portCell.getZ(), Direction.EAST),
                 "Steam engine must expose spent steam at its port");
         helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.HOTSTEAM, helper.getLevel(),
-                        portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
+                        portCell.getX(), portCell.getY(), portCell.getZ(), Direction.EAST),
                 "Steam engine must reject fluids not present in its tanks");
         helper.assertFalse(block.canConnect(com.hbm.inventory.fluid.Fluids.WATER, helper.getLevel(),
-                        portCell.getX(), portCell.getY(), portCell.getZ(), ForgeDirection.EAST),
+                        portCell.getX(), portCell.getY(), portCell.getZ(), Direction.EAST),
                 "Steam engine must reject non-cooling fluids");
         helper.succeed();
     }

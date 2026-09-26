@@ -15,7 +15,7 @@ import com.hbm.inventory.gui.GUIReactorResearch;
 public final class NuclearMiscClientRegistrations {
     private NuclearMiscClientRegistrations() {}
 
-    public static void registerScreens(HbmClientRegistrations.ScreenSink sink) {
+    public static void registerScreens(dev.golem.core.client.ClientRegistry.ScreenSink sink) {
         sink.register(ModNuclearMiscMenus.RADIOLYSIS.get(), GUIRadiolysis::new);
         sink.register(ModNuclearMiscMenus.REACTOR_BREEDING.get(), GUIMachineReactorBreeding::new);
         sink.register(ModNuclearMiscMenus.REACTOR_RESEARCH.get(), GUIReactorResearch::new);

@@ -3,7 +3,7 @@ package com.hbm.scripting.fuels;
 import com.hbm.Constants;
 import com.hbm.blocks.ModPwrBlocks;
 import com.hbm.blocks.PwrParts;
-import com.hbm.creativetabs.HbmTab;
+import com.hbm.api.tab.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.block.DescBlockItem;
 import com.hbm.scripting.ScriptedContent;

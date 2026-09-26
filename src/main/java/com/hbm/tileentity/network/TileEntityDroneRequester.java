@@ -55,7 +55,7 @@ public class TileEntityDroneRequester extends TileEntityRequestNetwork
     @Override
     public void serverTick() {
         super.serverTick();
-        networkPackNT();
+        syncState();
     }
 
     /**

@@ -1,9 +1,11 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.blocks.multiblock.BlockMultiblockMachine;
+
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower;
 import com.hbm.tileentity.machine.oil.TileEntityOilDrillBase;
@@ -51,17 +53,17 @@ public class MachineFrackingTower extends BlockMultiblockMachine implements IEne
 
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
-        return MultiblockHandlerXR.checkSpace(level, core.above(2), PLATFORM, clicked, facing)
+        return MultiblockFootprint.checkSpace(level, core.above(2), PLATFORM, clicked, facing)
                 && legsFree(level, core, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core, SHAFT_UPPER, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core, SHAFT_LOWER, clicked, facing)
-                && MultiblockHandlerXR.checkSpace(level, core.above(15), CROWN, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core, SHAFT_UPPER, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core, SHAFT_LOWER, clicked, facing)
+                && MultiblockFootprint.checkSpace(level, core.above(15), CROWN, clicked, facing)
                 && super.checkRequirement(level, core, facing, clicked);
     }
 
     private static boolean legsFree(Level level, BlockPos core, BlockPos clicked, Direction facing) {
         for (BlockPos leg : legs(core)) {
-            if (!MultiblockHandlerXR.checkSpace(level, leg, LEG, clicked, Direction.NORTH)) return false;
+            if (!MultiblockFootprint.checkSpace(level, leg, LEG, clicked, Direction.NORTH)) return false;
         }
         return true;
     }
@@ -72,12 +74,12 @@ public class MachineFrackingTower extends BlockMultiblockMachine implements IEne
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
-        MultiblockHandlerXR.visitBox(core, getDimensions(), facing, visitor);
-        MultiblockHandlerXR.visitBox(core.above(2), PLATFORM, facing, visitor);
-        for (BlockPos leg : legs(core)) MultiblockHandlerXR.visitBox(leg, LEG, Direction.NORTH, visitor);
-        MultiblockHandlerXR.visitBox(core, SHAFT_UPPER, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, SHAFT_LOWER, facing, visitor);
-        MultiblockHandlerXR.visitBox(core.above(15), CROWN, Direction.WEST, visitor);
+        MultiblockFootprint.visitBox(core, getDimensions(), facing, visitor);
+        MultiblockFootprint.visitBox(core.above(2), PLATFORM, facing, visitor);
+        for (BlockPos leg : legs(core)) MultiblockFootprint.visitBox(leg, LEG, Direction.NORTH, visitor);
+        MultiblockFootprint.visitBox(core, SHAFT_UPPER, facing, visitor);
+        MultiblockFootprint.visitBox(core, SHAFT_LOWER, facing, visitor);
+        MultiblockFootprint.visitBox(core.above(15), CROWN, Direction.WEST, visitor);
     }
 
     private static BlockPos[] legs(BlockPos core) {

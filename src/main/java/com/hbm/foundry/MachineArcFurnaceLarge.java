@@ -1,9 +1,11 @@
 package com.hbm.foundry;
 
-import com.hbm.api.energymk2.IEnergyConnectorBlock;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockHandlerXR;
-import com.hbm.blocks.multiblock.MultiblockSurface;
+
+import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockFootprint;
+import dev.golem.core.multiblock.MultiblockSurface;
 import com.hbm.items.machine.ItemScraps;
 import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import net.minecraft.core.BlockPos;
@@ -65,7 +67,7 @@ public class MachineArcFurnaceLarge extends BlockMultiblockMachine implements IE
 
         if (stack.is(ItemTags.SHOVELS)) {
             if (!level.isClientSide()) {
-                for (com.hbm.inventory.material.Mats.MaterialStack liquid : furnace.liquids) {
+                for (com.hbm.api.material.MaterialStack liquid : furnace.liquids) {
                     ItemStack scraps = ItemScraps.create(liquid.copy());
                     if (!player.getInventory().add(scraps)) {
                         level.addFreshEntity(new ItemEntity(level, hit.getLocation().x, hit.getLocation().y,
@@ -91,14 +93,14 @@ public class MachineArcFurnaceLarge extends BlockMultiblockMachine implements IE
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
         return super.checkRequirement(level, core, facing, clicked)
-                && MultiblockHandlerXR.checkSpace(level, core, GANTRY, clicked, facing);
+                && MultiblockFootprint.checkSpace(level, core, GANTRY, clicked, facing);
     }
 
     /** Two cable anchors across the nose and two on each flank. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
         super.visitCells(core, facing, visitor);
-        MultiblockHandlerXR.visitBox(core, GANTRY, facing, visitor);
+        MultiblockFootprint.visitBox(core, GANTRY, facing, visitor);
 
         Direction rot = facing.getClockWise();
         visitor.cell(core.relative(facing, 2).relative(rot), MASK_SOUTH);

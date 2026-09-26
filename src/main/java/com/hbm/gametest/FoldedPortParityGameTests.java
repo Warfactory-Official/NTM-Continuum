@@ -2,8 +2,8 @@ package com.hbm.gametest;
 
 import com.hbm.Constants;
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
-import com.hbm.blocks.multiblock.BlockMultiblockMachine;
-import com.hbm.blocks.multiblock.MultiblockMaskTable;
+import dev.golem.core.multiblock.MultiblockMachine;
+import dev.golem.core.multiblock.MultiblockMaskTable;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import dev.golem.core.gametest.GameTests;
@@ -51,7 +51,7 @@ public final class FoldedPortParityGameTests {
         List<String> failures = new ArrayList<>();
         int covered = 0;
         for (Block block : BuiltInRegistries.BLOCK) {
-            if (!(block instanceof BlockMultiblockMachine machine)) continue;
+            if (!(block instanceof MultiblockMachine machine)) continue;
             boolean any = false;
             for (Direction facing : Direction.values()) {
                 if (facing.getAxis().isVertical()) continue;
@@ -78,9 +78,9 @@ public final class FoldedPortParityGameTests {
      * only {@code getConPos} would make every one of those look like a port the table invented, so the
      * comparison takes the union of all of them.
      */
-    private static DirPos @org.jspecify.annotations.Nullable [] conPos(BlockMultiblockMachine machine,
+    private static DirPos @org.jspecify.annotations.Nullable [] conPos(MultiblockMachine machine,
                                                                       Direction facing) {
-        BlockState state = machine.defaultBlockState().setValue(BlockMultiblockMachine.FACING, facing);
+        BlockState state = machine.defaultBlockState().setValue(MultiblockMachine.FACING, facing);
         BlockEntity core;
         try {
             core = machine.newBlockEntity(ORIGIN, state);
@@ -119,7 +119,7 @@ public final class FoldedPortParityGameTests {
                 && DirPos.class.equals(parameterized.getActualTypeArguments()[0]);
     }
 
-    private static void compare(BlockMultiblockMachine machine, Direction facing, DirPos[] declared,
+    private static void compare(MultiblockMachine machine, Direction facing, DirPos[] declared,
                                 List<String> failures) {
         String id = BuiltInRegistries.BLOCK.getKey(machine) + "/" + facing.getName();
         MultiblockMaskTable table = machine.maskTable();
@@ -130,7 +130,7 @@ public final class FoldedPortParityGameTests {
             for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
                 Direction side = dir.toDirection();
                 if (buried(table, facing, dx + side.getStepX(), ly + side.getStepY(), dz + side.getStepZ())) continue;
-                boolean was = IEnergyConnectorBlock.isPort(declared, cell, dir);
+                boolean was = com.hbm.lib.Ports.isPort(declared, cell, dir.toDirection());
                 boolean now = machine.isOpenAt(facing, dx, ly, dz, side);
                 if (was == now) continue;
                 failures.add(id + " at " + dx + "," + ly + "," + dz + " face " + dir

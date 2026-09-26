@@ -9,13 +9,12 @@ import com.hbm.inventory.container.ContainerFusionTorus;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.FusionRecipe;
-import com.hbm.capability.MachineCaps;
+import dev.golem.core.graph.Domains;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.modules.machine.ModuleMachineFusion;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityLoadedBase;
 import com.hbm.tileentity.machine.albion.TileEntityCooledBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -120,14 +119,14 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFusionTorus te) {
         for (int i = 0; i < 4; i++) {
             FusionLink.claim(level, te, te.nodePos(ForgeDirection.getOrientation(i + 2)),
-                    MachineCaps.PLASMA_OUT | MachineCaps.KLYSTRON_IN);
+                    FusionLink.PLASMA_OUT | FusionLink.KLYSTRON_IN);
         }
 
         te.updateCooling();
 
         for (DirPos port : te.getConPos()) {
-            if (te.coolantTanks[1].getFill() > 0) te.tryProvide(te.coolantTanks[1], level, port);
-            if (te.tanks[3].getFill() > 0) te.tryProvide(te.tanks[3], level, port);
+            if (te.coolantTanks[1].getFill() > 0) te.tryProvide(te.coolantTanks[1], level, port.getPos(), port.getDir().toDirection());
+            if (te.tanks[3].getFill() > 0) te.tryProvide(te.tanks[3], level, port.getPos(), port.getDir().toDirection());
         }
 
         te.power = Library.chargeTEFromItems(te.inventory, SLOT_BATTERY, te.power, te.getMaxPower());
@@ -137,13 +136,12 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         int collectors = 0;
         for (int i = 0; i < 4; i++) {
             BlockPos beam = te.linkPos(ForgeDirection.getOrientation(i + 2));
-            BlockEntity consumer = FusionLink.at(level, beam, MachineCaps.PLASMA_IN);
+            BlockEntity consumer = FusionLink.at(level, beam, FusionLink.PLASMA_IN);
             te.connections[i] = consumer != null
-                    || FusionLink.at(level, beam, MachineCaps.KLYSTRON_OUT) != null;
+                    || FusionLink.at(level, beam, FusionLink.KLYSTRON_OUT) != null;
 
             // Upstream counts one receiver per arm, which a claim per position gives for nothing.
             if (!(consumer instanceof IFusionPowerReceiver receiver) || consumer.isRemoved()) continue;
-            if (consumer instanceof TileEntityLoadedBase loaded && !loaded.isLoaded()) continue;
             if (receiver.receivesFusionPower()) receiverCount++;
             if (receiver.providesCollectorBonus()) collectors++;
         }
@@ -180,7 +178,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
 
             for (int i = 0; i < 4; i++) {
                 if (FusionLink.at(level, te.linkPos(ForgeDirection.getOrientation(i + 2)),
-                        MachineCaps.PLASMA_IN) instanceof IFusionPowerReceiver receiver) {
+                        FusionLink.PLASMA_IN) instanceof IFusionPowerReceiver receiver) {
                     receiver.receiveFusionPower(share, flux, r, g, b);
                 }
             }
@@ -188,7 +186,7 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
 
         te.klystronEnergySync = te.klystronEnergy;
         te.setChanged();
-        te.networkPackNT();
+        te.syncState();
         te.klystronEnergy = 0;
     }
 

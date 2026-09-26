@@ -2,7 +2,7 @@ package com.hbm.handler.jei;
 
 //? if jei {
 
-import com.hbm.inventory.fluid.FluidType;
+import com.hbm.api.fluid.FluidType;
 import com.hbm.inventory.recipes.CoolingRecipes;
 import com.hbm.items.machine.ItemFluidIcon;
 import mezz.jei.api.helpers.IGuiHelper;
