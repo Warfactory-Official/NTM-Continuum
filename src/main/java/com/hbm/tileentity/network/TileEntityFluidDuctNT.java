@@ -37,7 +37,8 @@ import net.minecraft.world.level.block.state.BlockState;
  * reconciles the cell on every chunk load, which is also what gives a duct placed before the fluid
  * graph existed a cell at all.
  */
-public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPipeMK2, ILoadedTile {
+public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPipeMK2, ILoadedTile,
+        com.hbm.tileentity.IFluidCopiable {
 
     protected FluidType type = Fluids.NONE;
 
@@ -119,5 +120,30 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
     @Override
     public boolean isLoaded() {
         return !isRemoved();
+    }
+
+    // 1.7 TileEntityPipeBaseNT's IFluidCopiable: the settings tool copies the duct's one type and pastes a type
+    // into it; with the copy tool's Ctrl key held the paste retypes the whole run of the duct's old type (64).
+
+    @Override
+    public int[] getFluidIDToCopy() {
+        return new int[]{type.getID()};
+    }
+
+    @Override
+    public com.hbm.inventory.fluid.tank.@org.jspecify.annotations.Nullable FluidTankNTM getTankToPaste() {
+        return null;
+    }
+
+    @Override
+    public void pasteSettings(net.minecraft.nbt.CompoundTag nbt, int index, net.minecraft.world.level.Level level,
+                              net.minecraft.world.entity.player.Player player, BlockPos pos) {
+        int[] ids = dev.golem.core.data.Tags.getIntArrayOr(nbt, "fluidID", new int[0]);
+        if (ids.length == 0) return;
+        FluidType fluid = Fluids.fromID(index < ids.length ? ids[index] : 0);
+        boolean ctrl = com.hbm.handler.ToolKeybinds.getKeyPressed(player,
+                com.hbm.handler.ToolKeybinds.EnumToolKey.TOOL_CTRL);
+        // spreadType also refreshes the retyped ducts' connections, which a bare setFluidType would not.
+        com.hbm.blocks.network.BlockFluidDuct.spreadType(level, pos, fluid, getFluidType(), ctrl ? 64 : 1);
     }
 }

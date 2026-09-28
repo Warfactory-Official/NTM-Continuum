@@ -10,13 +10,13 @@ public final class GeneralConfig {
     public static boolean enableBomberShortMode = false;
     /** 1.12.2 {@code 1.18_enableExtendedLogging}: logs detonator use, nuclear explosions, launches, grenades. */
     public static boolean enableExtendedLogging = false;
-    /** 1.12.2 {@code taintTrails} (ServerConfig in ntm-next): tainted creepers leave taint behind them. */
-    public static boolean taintTrails = false;
 
     private GeneralConfig() {}
 
     /** GENERAL SWITCH: enables the radiation system. */
     public static boolean enableRads = true;
+    /** 1.7 {@code 1.06_enableRadHotspotSpawn}: lets the Sellafield crater ("radiation hotspot") generate. */
+    public static boolean enableRad = true;
 
     /** Enables the advanced (pocket-based) chunk radiation system. This fork has no simple fallback. */
     public static boolean advancedRadiation = true;

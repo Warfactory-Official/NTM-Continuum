@@ -58,8 +58,8 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
                 addSlot(validated(TileEntityMachineChemicalFactory.inputStart(lane) + i, 10 + i * 18, rowY));
             }
             for (int i = 0; i < 3; i++) {
-                addSlot(takeOnly(TileEntityMachineChemicalFactory.outputStart(lane) + i,
-                        139 + i * 18, rowY));
+                addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, TileEntityMachineChemicalFactory.outputStart(lane) + i,
+                        139 + i * 18, rowY)); // 1.7 addOutputSlots
             }
         }
 
@@ -133,6 +133,7 @@ public class ContainerMachineChemicalFactory extends AbstractContainerMenu {
 
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();
+            slot.onTake(player, result); // 1.7 transferStackInSlot: slot.onPickupFromSlot (SlotCraftingOutput)
         }
         return result;
     }

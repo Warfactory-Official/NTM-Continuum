@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "hbm:items/ammo_standard_r762_fmj"
-  }
-}

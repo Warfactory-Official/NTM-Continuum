@@ -69,9 +69,11 @@ import org.jspecify.annotations.Nullable;
  * target rather than by two different mechanisms: {@link #PITCH} holds it, and the renderer and the
  * contrail read it through {@link #getMissilePitch}.
  *
- * <p><b>Deferred vs 1.12.2:</b> the radar interfaces, which arrive with the radar itself.
+ * <p>Radar: every missile is seen, blips by its item's tier and names itself after it, answers only a radar
+ * that scans for missiles, and in smart mode drives the redstone only once it is coming down.
  */
-public abstract class EntityMissileBaseNT extends CompatEntity implements IChunkLoader, IMissilePitch {
+public abstract class EntityMissileBaseNT extends CompatEntity implements IChunkLoader, IMissilePitch,
+        com.hbm.api.entity.IRadarDetectableNT {
 
     public int startX;
     public int startZ;
@@ -145,6 +147,53 @@ public abstract class EntityMissileBaseNT extends CompatEntity implements IChunk
 
     /** The item this missile came from. Everything a radar wants to say about it is read off that. */
     public abstract ItemStack getMissileItemForInfo();
+
+    // --- 1.7 IRadarDetectableNT ---
+
+    @Override
+    public boolean canBeSeenBy(Object radar) {
+        return true;
+    }
+
+    @Override
+    public boolean paramsApplicable(RadarScanParams params) {
+        return params.scanMissiles;
+    }
+
+    @Override
+    public boolean suppliesRedstone(RadarScanParams params) {
+        return !(params.smartMode && this.getDeltaMovement().y >= 0);
+    }
+
+    @Override
+    public String getRadarName() {
+        ItemStack item = this.getMissileItemForInfo();
+        if (item != null && item.getItem() instanceof com.hbm.items.weapon.ItemMissileStandard missile) {
+            return switch (missile.tier) {
+                case TIER0 -> "radar.target.tier0";
+                case TIER1 -> "radar.target.tier1";
+                case TIER2 -> "radar.target.tier2";
+                case TIER3 -> "radar.target.tier3";
+                case TIER4 -> "radar.target.tier4";
+            };
+        }
+        return "Unknown";
+    }
+
+    @Override
+    public int getBlipLevel() {
+        ItemStack item = this.getMissileItemForInfo();
+        if (item != null && item.getItem() instanceof com.hbm.items.weapon.ItemMissileStandard missile) {
+            return switch (missile.tier) {
+                case TIER0 -> TIER0;
+                case TIER1 -> TIER1;
+                case TIER2 -> TIER2;
+                case TIER3 -> TIER3;
+                case TIER4 -> TIER4;
+            };
+        }
+        return SPECIAL;
+    }
 
     public abstract void onMissileImpact(HitResult hit);
 

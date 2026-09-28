@@ -4,9 +4,10 @@ import net.minecraft.world.entity.Entity;
 
 /**
  * A block entity a radar or designator can hand a fire mission to. Ported from 1.12.2's
- * {@code tileentity.IRadarCommandReceiver}; nothing issues commands yet, because neither the radar nor
- * the artillery designator is ported — the artillery turrets implement it so that wiring is a
- * registration away rather than a refactor.
+ * {@code tileentity.IRadarCommandReceiver}.
+ * <p>The radar issues them: a radar linker in one of its eight link slots names the receiver, and a digit
+ * typed over the radar map fires at the blip under the cursor or at the map position. Launch pads and the
+ * artillery turrets implement it.
  */
 public interface IRadarCommandReceiver {
 

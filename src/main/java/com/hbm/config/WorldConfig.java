@@ -38,12 +38,20 @@ public final class WorldConfig {
     public static boolean enableMeteorTails = true;
     /** {@code 5.03_meteorStrikeChance}: one meteor every n ticks on average. */
     public static int meteorStrikeChance = 20 * 60 * 60 * 5;
+    /** 1.7 {@code 5.04_meteorShowerChance}: one meteor every n ticks on average while a shower lasts. */
+    public static int meteorShowerChance = 20 * 60 * 15;
+    /** 1.7 {@code 5.05_meteorShowerDuration}: the longest a shower lasts, in ticks (it runs 75..100 % of this). */
+    public static int meteorShowerDuration = 20 * 60 * 30;
 
     // ---------------------------------------------------------------- overworld veins (count/chunk)
     // Field names mirror upstream's CompatibilityConfig keys (thoriumSpawn = 01.11_thoriumSpawnrate);
     // only the ones that do something extra carry a note.
 
-    /** Vein attempts per chunk, plain stone host. Old {@code 01.01_uraniumSpawnrate}. */
+    // 2026-09-25 (§19ec-worldfeatures): original-hbm (1.7) wins where 1.7 and 1.12 disagree. The values below are
+    // 1.7's config defaults (WorldConfig.loadFromConfig, what a 1.7 game generated with); the key named on a field
+    // is the 1.7 key. Differences from the 1.12 CompatibilityConfig values this class used to carry are noted.
+
+    /** Vein attempts per chunk, plain stone host. 1.7 {@code 2.00_uraniumSpawnrate}. */
     public static int uraniumSpawn = 7;
     public static int thoriumSpawn = 7;
     public static int titaniumSpawn = 8;
@@ -55,10 +63,10 @@ public final class WorldConfig {
     public static int tungstenSpawn = 10;
     public static int leadSpawn = 6;
     public static int berylliumSpawn = 6;
-    /** Old {@code 01.15_rareEarthSpawnRate}. Also drives the gneiss "rare" slot — see the feature. */
+    /** 1.7 {@code 2.14_rareEarthSpawnRate}. Also the count of the gneiss rare-earth veins ({@code ore_gneiss_rare}). */
     public static int rareSpawn = 6;
     public static int ligniteSpawn = 2;
-    /** Old {@code 01.13_asbestosSpawnRate}. Multiplied by 3 for the gneiss variant. */
+    /** 1.7 {@code 2.12_asbestosSpawnRate}. Multiplied by 3 for the gneiss variant. */
     public static int asbestosSpawn = 2;
     public static int cinnabarSpawn = 1;
     public static int cobaltSpawn = 2;
@@ -76,25 +84,40 @@ public final class WorldConfig {
      * Old {@code 01.24_copperClusterSpawn}. Note upstream's own two config classes disagreed here
      * (CompatibilityConfig 3, WorldConfig 4); CompatibilityConfig is what generation actually read.
      */
-    public static int copperClusterSpawn = 3;
+    public static int copperClusterSpawn = 4; // 1.7 2.C03_copperClusterSpawn (1.12 CompatibilityConfig had 3)
 
     // ---------------------------------------------------------------- chance-gated (1 per N chunks)
 
-    /** One flammable-gas bubble per N chunks. Old {@code 01.19_gasBubbleSpawnRate}. */
-    public static int gasBubbleChance = 40;
-    /** One explosive-gas bubble per N chunks. Old {@code 01.18_explosiveBubbleSpawnRate}. */
-    public static int explosiveBubbleChance = 80;
+    /** One flammable-gas bubble per N chunks. 1.7 {@code 2.17_gasBubbleSpawnRate} (1.12 had 40). */
+    public static int gasBubbleChance = 12;
+    /** One explosive-gas bubble per N chunks; 0 = never. 1.7 {@code 2.19_explosiveBubbleSpawnRate} (1.12 had 80). */
+    public static int explosiveBubbleChance = 0;
     /** One alexandrite vein per N chunks. Old {@code 01.32_alexandriteSpawnRate}. */
     public static int alexandriteChance = 100;
 
     // ---------------------------------------------------------------- resource stone (WorldConfig-read)
 
     /**
-     * Limestone vein attempts per chunk. This one really was read off the old {@code WorldConfig}, and
-     * because that field was a plain int rather than a per-dimension map, <b>limestone generated in
-     * every dimension</b>. Preserved verbatim.
+     * Limestone vein attempts per chunk, 1.7 {@code 2.L02_limestoneSpawn}: overworld only, size 16, y 25..54. (1.12
+     * read it in every dimension with size 6 at y 15..34; 1.7 wins.)
      */
     public static int limestoneSpawn = 1;
+
+    // ---------------------------------------------------------------- 1.7 terrain + surface features
+
+    /** 1.7 {@code 2.21_oilSpawnRate}: one oil bubble origin per N chunks (MapGenBubble). */
+    public static int oilSpawn = 100;
+    /** 1.7 {@code 2.22_bedrockOilSpawnRate}: one bedrock oil origin per N chunks (MapGenBedrockOil). */
+    public static int bedrockOilSpawn = 200;
+    /**
+     * 1.7 {@code 2.23_meteoriteSpawnRate}: one fallen meteorite per N chunks. The config default is 200; the field
+     * initialiser in 1.7's class said 500, but every 1.7 game read the config, so 200 is what generated.
+     */
+    public static int meteoriteSpawn = 200;
+    /** 1.7 {@code 4.15_radHotspotSpawn}: one Sellafield crater origin per N chunks (desert only). */
+    public static int radfreq = 5000;
+    /** 1.7 {@code 4.18_geyserChlorineSpawn}: one chlorine geyser per N plains chunks. */
+    public static int geyserChlorine = 3000;
 
     /** Old {@code WorldConfig.enableSulfurCave} — the sulfur cave-wall Perlin feature. */
     public static boolean enableSulfurCave = true;
@@ -116,7 +139,7 @@ public final class WorldConfig {
     public static int netherSulfurSpawn = 26;
     /** Old {@code 02.N03_phosphorusSpawnrate} — places {@code ore_nether_fire}. */
     public static int netherPhosphorusSpawn = 24;
-    public static int netherCoalSpawn = 24;
+    public static int netherCoalSpawn = 8; // 1.7 2.N04_coalSpawnrate (1.12 had 24)
     /** Old {@code 02.N06_cobaltSpawnrate}. Generates near the nether ROOF — see the feature. */
     public static int netherCobaltSpawn = 2;
     /** Old {@code 02.N05_plutoniumSpawnrate}. Gated off by {@link GeneralConfig#enablePlutoniumOre}. */

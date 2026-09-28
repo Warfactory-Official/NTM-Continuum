@@ -27,7 +27,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
  *   fill y in [30 - range, 30 + range] where the block is a solid rock cube
  * </pre>
  *
- * <p><b>This must run before the gneiss ores</b> — {@link OverworldOreFeature}'s gneiss veins target
+ * <p><b>This must run before the gneiss ores</b> — the gneiss {@code hbm:legacy_ore} veins target
  * {@code stone_gneiss} exactly and find nothing if the band is not down yet. That ordering is why this
  * feature is injected at the {@code UNDERGROUND_DECORATION} step while the ores sit at
  * {@code UNDERGROUND_ORES}.

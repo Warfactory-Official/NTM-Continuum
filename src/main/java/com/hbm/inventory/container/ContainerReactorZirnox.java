@@ -60,7 +60,8 @@ public class ContainerReactorZirnox extends AbstractContainerMenu {
                 {26, 124}, {62, 124}, {98, 124}
         };
         for (int slot = 0; slot < ROD_SLOTS; slot++) {
-            this.addSlot(validated(slot, rodPositions[slot][0], rodPositions[slot][1]));
+            // 1.7 ContainerReactorZirnox: plain Slots - a rod slot takes anything by hand (the bred meteorite sword)
+            this.addSlot(new Slot(this.machine, slot, rodPositions[slot][0], rodPositions[slot][1]));
         }
 
         this.addSlot(validated(24, 143, 124)); // carbon dioxide container in

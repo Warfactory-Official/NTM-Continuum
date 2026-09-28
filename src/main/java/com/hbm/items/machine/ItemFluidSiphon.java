@@ -21,8 +21,9 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * can fill. 1.7 matched containers through its {@code FluidContainerRegistry}; here a container is any
  * {@link IFillableItem} that accepts the tank's fluid and is filled to the brim by it.
  *
- * <p>Not ported: the pipette top-up (there is no pipette item) and the {@code FT_Unsiphonable} trait
- * (no fluid carries it in the port).
+ * <p>A tank's remainder under 1,000 mB tops up the first pipette in the inventory that would not fizzle on
+ * it (laboratory pipettes are skipped, as in 1.7); pipettes are never filled as whole containers. Not ported:
+ * the {@code FT_Unsiphonable} trait (no fluid carries it in the port).
  */
 public class ItemFluidSiphon extends CompatItem {
 
@@ -50,9 +51,18 @@ public class ItemFluidSiphon extends CompatItem {
             FluidType tankType = tank.getTankType();
             if (tankType == Fluids.NONE) continue;
             boolean hasDrainedTank = false;
+            ItemStack availablePipette = null;
 
             for (int j = 0; j < player.getInventory().getContainerSize(); j++) {
                 ItemStack inventoryStack = player.getInventory().getItem(j);
+                if (availablePipette == null && inventoryStack.getItem() instanceof com.hbm.items.tool.ItemPipette pipette) {
+                    if (!pipette.willFizzle(tankType)
+                            && pipette != com.hbm.items.ModUtilityToolItems.pipette_laboratory.get()) { // Ignoring laboratory pipettes for now
+                        availablePipette = inventoryStack;
+                    }
+                }
+                // 1.7 matched containers through FluidContainerRegistry, which never held a pipette.
+                if (inventoryStack.getItem() instanceof com.hbm.items.tool.ItemPipette) continue;
                 if (inventoryStack.isEmpty() || !(inventoryStack.getItem() instanceof IFillableItem fillable)) continue;
                 if (fillable.getFill(inventoryStack) != 0 || !fillable.acceptsFluid(tankType, inventoryStack)) continue;
 
@@ -68,6 +78,15 @@ public class ItemFluidSiphon extends CompatItem {
                     if (inventoryStack.isEmpty()) player.getInventory().setItem(j, ItemStack.EMPTY);
                     tank.setFill(remainder);
                     if (!player.getInventory().add(filled)) player.drop(filled, false);
+                }
+            }
+            // If the remainder of the tank can only fit into a pipette, fill a pipette with the remainder.
+            // Will not auto-fill fizzlable pipettes, there is no feedback for the fizzle in this case.
+            if (availablePipette != null && tank.getFill() < 1000) {
+                com.hbm.items.tool.ItemPipette pipette = (com.hbm.items.tool.ItemPipette) availablePipette.getItem();
+                if (pipette.acceptsFluid(tankType, availablePipette)) {
+                    hasDrainedTank = true;
+                    tank.setFill(pipette.tryFill(tankType, tank.getFill(), availablePipette));
                 }
             }
             if (hasDrainedTank) {

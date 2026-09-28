@@ -16,9 +16,8 @@ import java.util.Set;
  * to no OBJ; the dials are {@code gauge.obj} parts the block-entity renderer adds and belong to no block
  * model. The old icon drew both, which is why this states both.
  *
- * <p>The panel faces south here rather than east. That is the orientation the old inventory render
- * produced — its base turned the slab a quarter turn one way and the gauge pass turned the dials the
- * other — and it is a quarter turn from where the placed block at {@code facing=east} holds them.
+ * <p>The panel faces north here rather than east: the old inventory render turned the slab a quarter turn
+ * one way and the dials the other, and its GUI frame then mirrored z (see {@link #ICON_YAW}).
  *
  * <p>The slab carries the {@code Panel} surface, which is not an OBJ part name: the item definition has
  * one texture field and this icon needs three, so the panel's sheet rides in with the needle's.
@@ -32,11 +31,16 @@ final class RBMKGaugeIcon {
     private static final int NEEDLE_TINT = 0xFF800000;
     /** Every needle rests at the bottom of its scale, which is the placed gauge's angle of zero. */
     private static final float NEEDLE_REST = 85F;
-    /** A quarter turn, putting the dials on the face the old inventory render showed. */
-    private static final float ICON_YAW = -90F;
-    private static final float PANEL_DEPTH = .75F;
+    /**
+     * A quarter turn, putting the dials on the face the old inventory render showed. 1.7's inventory block
+     * frame ends in {@code scale(1, 1, -1)}, so the face it turned to its viewer is the one a modern
+     * {@code block/block} GUI pose shows on the left (north), not the south face the two quarter turns land
+     * on before that mirror; {@code -90} put the dials on the hidden side.
+     */
+    static final float ICON_YAW = 90F;
+    static final float PANEL_DEPTH = .75F;
 
-    private static final Geometry SLAB =
+    static final Geometry SLAB =
             box(Quads.named("hbm:rbmk_gauge_panel"), 0F, 0F, 0F, PANEL_DEPTH, 1F, 1F).build();
 
     private RBMKGaugeIcon() {}
@@ -68,39 +72,47 @@ final class RBMKGaugeIcon {
     /**
      * A cuboid wearing one texture, with the UVs vanilla gives an element of these bounds: a face
      * narrower than a block shows that much of the sheet rather than the whole of it squeezed.
+     *
+     * <p>Every face is wound counter-clockwise seen from outside, which {@link #face} enforces from its
+     * normal. Four of the six used to be wound the other way: below 26.1 the culled cutout then drew only
+     * the far, inside walls, and 26.1's unculled pipeline drew the near walls but lit them as back faces
+     * (with the negated normal), which is why the icon came out dark there and inside out here.
      */
-    private static Quads.Builder box(Quads.Builder faces, float x0, float y0, float z0,
+    static Quads.Builder box(Quads.Builder faces, float x0, float y0, float z0,
                                      float x1, float y1, float z1) {
-        faces.normal(0F, 0F, -1F)
-                .vertex(x1, y0, z0, 1F - x1, 1F - y0)
-                .vertex(x0, y0, z0, 1F - x0, 1F - y0)
-                .vertex(x0, y1, z0, 1F - x0, 1F - y1)
-                .vertex(x1, y1, z0, 1F - x1, 1F - y1);
-        faces.normal(0F, 0F, 1F)
-                .vertex(x0, y0, z1, x0, 1F - y0)
-                .vertex(x1, y0, z1, x1, 1F - y0)
-                .vertex(x1, y1, z1, x1, 1F - y1)
-                .vertex(x0, y1, z1, x0, 1F - y1);
-        faces.normal(-1F, 0F, 0F)
-                .vertex(x0, y0, z0, z0, 1F - y0)
-                .vertex(x0, y0, z1, z1, 1F - y0)
-                .vertex(x0, y1, z1, z1, 1F - y1)
-                .vertex(x0, y1, z0, z0, 1F - y1);
-        faces.normal(1F, 0F, 0F)
-                .vertex(x1, y0, z1, 1F - z1, 1F - y0)
-                .vertex(x1, y0, z0, 1F - z0, 1F - y0)
-                .vertex(x1, y1, z0, 1F - z0, 1F - y1)
-                .vertex(x1, y1, z1, 1F - z1, 1F - y1);
-        faces.normal(0F, 1F, 0F)
-                .vertex(x0, y1, z0, x0, z0)
-                .vertex(x1, y1, z0, x1, z0)
-                .vertex(x1, y1, z1, x1, z1)
-                .vertex(x0, y1, z1, x0, z1);
-        faces.normal(0F, -1F, 0F)
-                .vertex(x1, y0, z1, x1, 1F - z1)
-                .vertex(x1, y0, z0, x1, 1F - z0)
-                .vertex(x0, y0, z0, x0, 1F - z0)
-                .vertex(x0, y0, z1, x0, 1F - z1);
+        face(faces, 0F, 0F, -1F,
+                x1, y0, z0, 1F - x1, 1F - y0, x0, y0, z0, 1F - x0, 1F - y0,
+                x0, y1, z0, 1F - x0, 1F - y1, x1, y1, z0, 1F - x1, 1F - y1);
+        face(faces, 0F, 0F, 1F,
+                x0, y0, z1, x0, 1F - y0, x1, y0, z1, x1, 1F - y0,
+                x1, y1, z1, x1, 1F - y1, x0, y1, z1, x0, 1F - y1);
+        face(faces, -1F, 0F, 0F,
+                x0, y0, z0, z0, 1F - y0, x0, y0, z1, z1, 1F - y0,
+                x0, y1, z1, z1, 1F - y1, x0, y1, z0, z0, 1F - y1);
+        face(faces, 1F, 0F, 0F,
+                x1, y0, z1, 1F - z1, 1F - y0, x1, y0, z0, 1F - z0, 1F - y0,
+                x1, y1, z0, 1F - z0, 1F - y1, x1, y1, z1, 1F - z1, 1F - y1);
+        face(faces, 0F, 1F, 0F,
+                x0, y1, z0, x0, z0, x1, y1, z0, x1, z0,
+                x1, y1, z1, x1, z1, x0, y1, z1, x0, z1);
+        face(faces, 0F, -1F, 0F,
+                x1, y0, z1, x1, 1F - z1, x1, y0, z0, x1, 1F - z0,
+                x0, y0, z0, x0, 1F - z0, x0, y0, z1, x0, 1F - z1);
         return faces;
+    }
+
+    /**
+     * One quad of four {@code (x, y, z, u, v)} corners, emitted in the given order if that is
+     * counter-clockwise about the normal and reversed if it is not.
+     */
+    private static void face(Quads.Builder faces, float nx, float ny, float nz, float... c) {
+        float ax = c[5] - c[0], ay = c[6] - c[1], az = c[7] - c[2];
+        float bx = c[10] - c[0], by = c[11] - c[1], bz = c[12] - c[2];
+        float winding = (ay * bz - az * by) * nx + (az * bx - ax * bz) * ny + (ax * by - ay * bx) * nz;
+        faces.normal(nx, ny, nz);
+        for (int i = 0; i < 4; i++) {
+            int o = (winding >= 0F ? i : 3 - i) * 5;
+            faces.vertex(c[o], c[o + 1], c[o + 2], c[o + 3], c[o + 4]);
+        }
     }
 }

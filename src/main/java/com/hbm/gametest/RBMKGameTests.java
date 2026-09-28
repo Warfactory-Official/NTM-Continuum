@@ -169,6 +169,75 @@ public final class RBMKGameTests {
         helper.succeed();
     }
 
+    /**
+     * The RoR console panels against their 1.7 contracts: a non-polling key broadcasts its command once,
+     * a lever takes ten ticks to throw and then sends its ON command, the indicator window inverts when
+     * max < min, the graph shifts its 30 samples left, and a steam connector two blocks under a column
+     * opens its four sides and underside to the column's output.
+     */
+    public static void rorPanels(GameTestHelper helper) {
+        var level = helper.getLevel();
+        BlockPos keyPos = new BlockPos(1, 1, 1);
+        helper.setBlock(keyPos, ModRBMKBlocks.rbmk_key_pad.get().defaultBlockState());
+        var keypad = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, keyPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKKeyPad.class);
+        helper.assertTrue(keypad != null, "The keypad must create its block entity");
+        String keyChannel = "gt_rbmk_kp_" + level.getGameTime();
+        keypad.keys[0].active = true;
+        keypad.keys[0].rtty = keyChannel;
+        keypad.keys[0].command = "42";
+        keypad.keys[0].click();
+        var keyKey = new com.hbm.tileentity.network.RTTYSystem.ChannelKey(level.dimension(), keyChannel);
+        helper.assertTrue("42".equals(String.valueOf(com.hbm.tileentity.network.RTTYSystem.newMessages.get(keyKey)))
+                        && keypad.keys[0].isPressed && keypad.keys[0].clickTimer == 7,
+                "A non-polling key must broadcast its command and hold down for seven ticks");
+        com.hbm.tileentity.network.RTTYSystem.clearChannel(level, keyChannel);
+
+        BlockPos leverPos = new BlockPos(2, 1, 1);
+        helper.setBlock(leverPos, ModRBMKBlocks.rbmk_lever.get().defaultBlockState());
+        var lever = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, leverPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKLever.class);
+        String leverChannel = "gt_rbmk_lv_" + level.getGameTime();
+        lever.levers[1].active = true;
+        lever.levers[1].rtty = leverChannel;
+        lever.levers[1].commandOn = "7";
+        lever.levers[1].click();
+        for (int i = 0; i < 9; i++) lever.tickServer();
+        helper.assertTrue(lever.levers[1].flipProgress < 1F, "The lever must still be moving after nine ticks");
+        lever.tickServer();
+        var leverKey = new com.hbm.tileentity.network.RTTYSystem.ChannelKey(level.dimension(), leverChannel);
+        helper.assertTrue(lever.levers[1].flipProgress == 1F
+                        && "7".equals(String.valueOf(com.hbm.tileentity.network.RTTYSystem.newMessages.get(leverKey))),
+                "A non-polling lever must reach the bottom on the tenth tick and send its ON command once");
+        com.hbm.tileentity.network.RTTYSystem.clearChannel(level, leverChannel);
+
+        BlockPos lampPos = new BlockPos(3, 1, 1);
+        helper.setBlock(lampPos, ModRBMKBlocks.rbmk_indicator.get().defaultBlockState());
+        var lamp = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, lampPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKIndicator.class).indicators[0];
+        lamp.min = 10; lamp.max = 20;
+        lamp.decideLight(15); boolean inside = lamp.light;
+        lamp.decideLight(25); boolean outside = lamp.light;
+        lamp.min = 20; lamp.max = 10;
+        lamp.decideLight(25); boolean invertedOutside = lamp.light;
+        lamp.decideLight(15); boolean invertedInside = lamp.light;
+        helper.assertTrue(inside && !outside && invertedOutside && !invertedInside,
+                "The indicator lights inside [min, max] and outside it once max < min");
+
+        BlockPos graphPos = new BlockPos(4, 1, 1);
+        helper.setBlock(graphPos, ModRBMKBlocks.rbmk_graph.get().defaultBlockState());
+        var graph = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, graphPos, com.hbm.tileentity.machine.rbmk.BlockEntityRBMKGraph.class).graphs[0];
+        graph.pushValue(5); graph.pushValue(9);
+        helper.assertTrue(graph.values[29] == 9 && graph.values[28] == 5 && graph.values[27] == 0,
+                "Graph samples must shift left with the newest at the end");
+
+        BlockPos core = new BlockPos(1, 3, 3);
+        helper.setBlock(core.below(2), ModRBMKBlocks.rbmk_loader.get().defaultBlockState());
+        var positions = com.hbm.blocks.machine.rbmk.RBMKLoader.outputPositions(level, helper.absolutePos(core), false);
+        helper.assertTrue(positions.length == 6 && positions[5].getPos().equals(helper.absolutePos(core.below(3))),
+                "A connector two blocks below the core must add its four sides and underside to the outputs");
+        helper.assertTrue(com.hbm.blocks.machine.rbmk.RBMKLoader.outputPositions(level, helper.absolutePos(new BlockPos(5, 3, 5)), false).length == 1,
+                "Without a connector only the column top is an output");
+        helper.succeed();
+    }
+
     private static void checkId(GameTestHelper helper, Object entry, String path) {
         Identifier expected = dev.golem.core.Ids.of("hbm", path);
         if (entry instanceof net.minecraft.world.level.block.Block block) {

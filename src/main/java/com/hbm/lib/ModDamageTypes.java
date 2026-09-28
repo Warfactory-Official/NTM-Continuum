@@ -53,9 +53,11 @@ public final class ModDamageTypes {
                 type("blackhole").tags(BYPASSES_ARMOR),
                 type("blacklung").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("blender").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("broadcast").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("boil").tags(IS_FIRE),
                 type("digamma").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
                 type("electricity").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("enervation").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("euthanized_self").message("euthanizedSelf").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("euthanized_self2").message("euthanizedSelf2").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("hard_landing").scaling(BY_LIVING_NON_PLAYER).tags(BYPASSES_ARMOR),
@@ -63,6 +65,7 @@ public final class ModDamageTypes {
                 type("lead").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("lunar").tags(BYPASSES_ARMOR),
                 type("microwave").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("mku").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("monoxide").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("overdose").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("radiation").tags(BYPASSES_ARMOR),
@@ -86,6 +89,9 @@ public final class ModDamageTypes {
                 type("revolver_bullet").message("revolverBullet").exhaustion(0.1).tags(IS_PROJECTILE),
                 type("subatomic").exhaustion(0.1),
                 type("tau").tags(BYPASSES_ARMOR, IS_PROJECTILE),
+                // 1.7 ItemBoltgun: DamageSource.causePlayerDamage(player).setDamageBypassesArmor(), so vanilla's
+                // "was slain by" player message
+                type("boltgun").message("player").tags(BYPASSES_ARMOR),
 
                 type("cloud").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("pink_cloud").message("pc").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),

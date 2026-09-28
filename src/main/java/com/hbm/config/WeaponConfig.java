@@ -12,4 +12,7 @@ public final class WeaponConfig {
 
     /** Old {@code 10.00_dropCell}: dropped antimatter cells explode. */
     public static boolean dropCell = true;
+
+    /** Old {@code 10.02_dropStar}: rigged star blaster cells explode when dropped. */
+    public static boolean dropStar = true;
 }

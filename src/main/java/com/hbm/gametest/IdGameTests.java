@@ -100,7 +100,10 @@ public final class IdGameTests {
 
     /** Whether this node having the id means a constant has to name it. */
     private static boolean required(String family, String id, Set<String> backed) {
-        return owned(id) || "VanillaIds".equals(family) || backed.contains(id);
+        // A retired vanilla tag (1.20.1's minecraft:tools, which nests minecraft:swords) is backed on an old
+        // node but has no counterpart the 26.1-generated constants could carry.
+        return owned(id) || "VanillaIds".equals(family)
+                || backed.contains(id) && !dev.golem.core.Ids.isRetiredVanillaItemTag(id.substring(1));
     }
 
     /** Whether the id is this mod's own, and so the same on every node. */

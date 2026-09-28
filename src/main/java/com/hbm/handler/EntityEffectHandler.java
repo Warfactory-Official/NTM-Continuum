@@ -50,7 +50,7 @@ import net.minecraft.world.level.Level;
  * injection — the cross-loader stand-in for Forge's {@code LivingUpdateEvent} (runs on both sides).
  *
  * <p>Deferred vs the original: all particle effects (vomit/sweat/radiation-flash — the HBM particle
- * system isn't ported), the crater-biome ambient radiation, contagion/oil/pollution/temperature
+ * system isn't ported), the crater-biome ambient radiation, oil/pollution/temperature
  * handlers (fields persist but the loops are stubbed), and the un-ported mob transforms (nuclear
  * creeper / quackos / RAD beast).
  */
@@ -59,6 +59,9 @@ public class EntityEffectHandler {
     private static final int SYNC_INTERVAL = 5;
 
     public static void onUpdate(LivingEntity entity) {
+
+        // 1.7 ran the armor-module loop in the same living update, just before EntityEffectHandler.
+        ArmorModEvents.onLivingUpdate(entity);
 
         // Placed first to prevent picking up transient radiation from the handlers below.
         handleRadiationEffect(entity);
@@ -80,6 +83,7 @@ public class EntityEffectHandler {
             handleRadiation(entity);
             handleDigamma(entity);
             handleLungDisease(entity);
+            handleContagion(entity);
             handleFire(entity);
 
             if (entity instanceof ServerPlayer player && entity.tickCount % SYNC_INTERVAL == 0) {
@@ -120,6 +124,8 @@ public class EntityEffectHandler {
             }
         }
         ArmorDNT.updateSprintSpeed(player);
+        com.hbm.items.ModArmorSetBItems.tickPlayer(player); // steam/diesel modifiers, mining helmet, beta
+        ArmorDashHandler.tick(player); // 1.7 handleDashing: bismuth suit / dash modules
         if (player instanceof ServerPlayer serverPlayer) JetpackHandler.serverTick(serverPlayer);
     }
 
@@ -246,6 +252,8 @@ public class EntityEffectHandler {
                 entity.setHealth(0);
                 entity.die(radiation);
             }
+            // 1.7 achRadDeath
+            if (entity instanceof net.minecraft.server.level.ServerPlayer player) com.hbm.advancement.HbmCriteria.RADIATION.fire(player, "death");
         } else if (eRad >= 800) {
             if (rng % 300 == 0) Effects.add(entity, MobEffects.NAUSEA, 5 * 30, 0);
             if (rng % 300 == 50) Effects.add(entity, MobEffects.SLOWNESS, 10 * 20, 2);
@@ -272,6 +280,8 @@ public class EntityEffectHandler {
             if (rng % 500 == 0) Effects.add(entity, MobEffects.WEAKNESS, 5 * 20, 0);
             if (rng % 700 == 0) Effects.add(entity, MobEffects.HUNGER, 3 * 20, 2);
             if (rng % 800 == 0) Effects.add(entity, MobEffects.MINING_FATIGUE, 4 * 20, 0);
+            // 1.7 achRadPoison: only the 200-400 band grants it, exactly as 1.7's else-if chain did
+            if (entity instanceof net.minecraft.server.level.ServerPlayer player) com.hbm.advancement.HbmCriteria.RADIATION.fire(player, "poison");
         }
     }
 
@@ -288,6 +298,96 @@ public class EntityEffectHandler {
         double digamma = HbmLivingProps.getDigamma(entity);
         if (digamma < 0.01F) return;
         // Sweat particle burst deferred (needs the HBM particle system).
+    }
+
+    /**
+     * 1.7 {@code handleContagion}, the MKU infection, only while {@code /ntmserver ENABLE_MKU} is on: an infected player
+     * marks a random unstackable item (1 in 100 an armour piece) {@code ntm_contagion}, a healthy one holding a marked
+     * item catches it (3 hours) unless wearing hazmat 2 with a bacteria-proof helmet; from 2:55 left the infected
+     * spread it once a second to every living within 2 blocks (16 when wet) and mark dropped items; from 2:00 rare
+     * nausea, from 1:00 nausea and weakness V, from 0:30 1 damage (1 in 400), from 0:05 2 damage (1 in 100), and at
+     * 0 a 1000-damage death. The blood vomit particle waits for the particle system; its sound plays.
+     */
+    private static void handleContagion(LivingEntity entity) {
+        if (!com.hbm.config.ServerConfig.ENABLE_MKU.get()) return;
+        if (!(entity.level() instanceof ServerLevel level)) return;
+
+        net.minecraft.util.RandomSource rand = entity.getRandom();
+        int minute = 60 * 20;
+        int hour = 60 * minute;
+        int contagion = HbmLivingProps.getContagion(entity);
+
+        if (entity instanceof Player player) {
+            int randSlot = rand.nextInt(36);
+            ItemStack stack = player.getInventory().getItem(randSlot);
+            if (rand.nextInt(100) == 0) {
+                stack = player.getItemBySlot(MKU_ARMOR_SLOTS[rand.nextInt(4)]);
+            }
+            // only affect unstackables (e.g. tools and armor) so that the NBT tag's stack restrictions isn't noticeable
+            if (!stack.isEmpty() && stack.getMaxStackSize() == 1) {
+                if (contagion > 0) {
+                    com.hbm.tileentity.machine.TileEntityMachineRadiolysis.CONTAGION.set(stack, true);
+                } else if (com.hbm.tileentity.machine.TileEntityMachineRadiolysis.CONTAGION.getOr(stack, false)) {
+                    if (!mkuProof(player)) HbmLivingProps.setContagion(player, 3 * hour);
+                }
+            }
+        }
+
+        if (contagion > 0) {
+            HbmLivingProps.setContagion(entity, contagion - 1);
+
+            // aerial transmission only happens once a second 5 minutes into the contagion
+            if (contagion < (2 * hour + 55 * minute) && contagion % 20 == 0) {
+                double range = entity.isInWaterOrRain() ? 16D : 2D; // avoid rain, just avoid it
+                for (net.minecraft.world.entity.Entity ent : level.getEntities(entity, entity.getBoundingBox().inflate(range))) {
+                    if (ent instanceof LivingEntity living) {
+                        if (HbmLivingProps.getContagion(living) <= 0 && !mkuProof(living)) {
+                            HbmLivingProps.setContagion(living, 3 * hour);
+                        }
+                    }
+                    if (ent instanceof net.minecraft.world.entity.item.ItemEntity item) {
+                        ItemStack stack = item.getItem().copy();
+                        com.hbm.tileentity.machine.TileEntityMachineRadiolysis.CONTAGION.set(stack, true);
+                        item.setItem(stack);
+                    }
+                }
+            }
+
+            // one hour in, add rare and subtle screen fuckery
+            if (contagion < 2 * hour && rand.nextInt(1000) == 0) {
+                Effects.add(entity, MobEffects.NAUSEA, 20, 0);
+            }
+            // two hours in, give 'em the full blast
+            if (contagion < hour && rand.nextInt(100) == 0) {
+                Effects.add(entity, MobEffects.NAUSEA, 60, 0);
+                Effects.add(entity, MobEffects.WEAKNESS, 300, 4);
+            }
+            // T-30 minutes, take damage every 20 seconds
+            if (contagion < 30 * minute && rand.nextInt(400) == 0) {
+                Compat.hurt(entity, level, ModDamageSources.mku(level), 1F);
+            }
+            // T-5 minutes, take damage every 5 seconds
+            if (contagion < 5 * minute && rand.nextInt(100) == 0) {
+                Compat.hurt(entity, level, ModDamageSources.mku(level), 2F);
+            }
+            if (contagion < 30 * minute && (contagion + entity.getId()) % 200 == 19 && canVomit(entity)) {
+                level.playSound(null, entity.blockPosition(), ModSounds.VOMIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
+            }
+            // end of contagion, drop dead
+            if (contagion == 0) {
+                Compat.hurt(entity, level, ModDamageSources.mku(level), 1000F);
+            }
+        }
+    }
+
+    private static final net.minecraft.world.entity.EquipmentSlot[] MKU_ARMOR_SLOTS = {
+            net.minecraft.world.entity.EquipmentSlot.FEET, net.minecraft.world.entity.EquipmentSlot.LEGS,
+            net.minecraft.world.entity.EquipmentSlot.CHEST, net.minecraft.world.entity.EquipmentSlot.HEAD};
+
+    /** 1.7: hazmat 2 and a bacteria-proof helmet keep the MKU out ("liable to change to hazmat 1 at bob's pleasure"). */
+    private static boolean mkuProof(LivingEntity living) {
+        return ArmorUtil.checkForHaz2(living) && com.hbm.util.ArmorRegistry.hasProtection(living,
+                net.minecraft.world.entity.EquipmentSlot.HEAD, com.hbm.util.ArmorRegistry.HazardClass.BACTERIA);
     }
 
     private static void handleLungDisease(LivingEntity entity) {

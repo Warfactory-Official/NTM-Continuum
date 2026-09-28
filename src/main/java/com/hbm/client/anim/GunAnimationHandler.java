@@ -70,6 +70,14 @@ public final class GunAnimationHandler {
                 config.getAnimation(stack);
         BusAnimation animation = configured == null ? null : configured.apply(stack, cue);
         if (animation == null) animation = GunAnimations.get(stack, cue, index);
-        if (animation != null) HbmAnimations.start(stack.getItem(), animation, hand, index);
+        // 1.7 HbmAnimationPacket: a Trenchmaster's reload animations play at double speed. Resource-loaded
+        // animations are cached and shared, and setTimeMult scales from the original durations, so a reload
+        // without the suit explicitly restores 1x rather than inheriting the last Trenchmaster reload's speed.
+        boolean isReloadAnimation = cue == GunAnimation.RELOAD || cue == GunAnimation.RELOAD_CYCLE;
+        if (animation != null && isReloadAnimation) animation.setTimeMult(
+                com.hbm.items.armor.ArmorTrenchmaster.isTrenchMaster(minecraft.player) ? 0.5D : 1.0D);
+        // 1.7: a sequential reload holds its last frame until the next cycle replaces it; everything else expires.
+        if (animation != null) HbmAnimations.start(stack.getItem(), animation, hand, index,
+                isReloadAnimation && config.getReloadAnimSequential(stack));
     }
 }

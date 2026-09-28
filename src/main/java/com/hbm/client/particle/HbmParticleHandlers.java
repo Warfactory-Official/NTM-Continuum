@@ -59,6 +59,15 @@ public final class HbmParticleHandlers {
         HbmEffectNT.Jetpack_BJ.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 1));
         HbmEffectNT.Jetpack_DNS.setHandler((level, x, y, z, data) -> spawnJetpack(level, data, 2));
         HbmEffectNT.VanillaExt_BlockDust.setHandler(HbmParticleHandlers::spawnVanillaExtBlockDust);
+        HbmEffectNT.Hadron.setHandler((level, x, y, z, data) -> {
+            if (level instanceof ClientLevel clientLevel) dev.golem.core.render.Particles.add(new ParticleHadron(clientLevel, x, y, z));
+        });
+        HbmEffectNT.Bnuuy.setHandler((level, x, y, z, data) -> spawnBnuuy(level, data));
+        AmatFlashParticles.register();
+        HbmEffectNT.AmatFlash.setHandler((level, x, y, z, data) -> AmatFlashParticles.spawn(level, x, y, z,
+                Tags.getFloatOr(data, "scale", 1F)));
+        HbmEffectNT.ProperJolt.setHandler((level, x, y, z, data) -> properJolt(
+                Tags.getIntOr(data, "time", 0), Tags.getIntOr(data, "maxTime", 0)));
         HbmEffectNT.DeconAura.setHandler((level, x, y, z, data) -> {
             var particle = Minecraft.getInstance().particleEngine.createParticle(
                     ParticleTypes.MYCELIUM, x, y, z, 0, 0, 0);
@@ -67,6 +76,20 @@ public final class HbmParticleHandlers {
             Particles.color(particle, 0.8F * color, 0.9F * color, color);
             particle.setParticleSpeed(0, 0.04D, 0);
         });
+    }
+
+    /**
+     * 1.7 ClientProxy {@code properJolt}: {@code hurtTime = time; maxHurtTime = maxTime; attackedAtYaw = 0}. With a
+     * hurt time far beyond the duration the vanilla hurt-camera tilt keeps wobbling until the time runs out (the
+     * knife injector sends 10,000-20,000 ticks over a 10,000 duration, and 0/0 once the wearer is down to 2 HP).
+     * {@code animateHurt(0)} is the modern setter of the hurt direction, overwritten at once.
+     */
+    private static void properJolt(int time, int maxTime) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return;
+        player.animateHurt(0F);
+        player.hurtTime = time;
+        player.hurtDuration = maxTime;
     }
 
     /**
@@ -114,6 +137,38 @@ public final class HbmParticleHandlers {
                     random.nextGaussian() * 0.1D,
                     Blocks.REDSTONE_BLOCK.defaultBlockState(),
                     50 + random.nextInt(50)));
+        }
+    }
+
+    /**
+     * 1.7 ClientProxy "bnuuy": two small smoke puffs 0.6 behind the wearer's body, 0.275 either side, drifting
+     * backwards at 0.025. 1.7 raised them by 0.25 when the <i>viewing</i> player sneaked (it read {@code player},
+     * not the wearer); kept. {@code EntitySmokeFX}'s scale was forced to 0.5, against a default of about 1.125.
+     */
+    private static void spawnBnuuy(net.minecraft.world.level.Level level, CompoundTag data) {
+        if (!(level instanceof ClientLevel clientLevel)) return;
+        if (Particles.quality() == Particles.Quality.MINIMAL) return;
+        net.minecraft.world.entity.Entity entity = clientLevel.getEntity(Tags.getIntOr(data, "player", -1));
+        if (!(entity instanceof net.minecraft.world.entity.player.Player p)) return;
+
+        float angle = (float) -Math.toRadians(p.yBodyRot);
+        Vec3 vec = new Vec3(0, 0, -0.6).yRot(angle);
+        Vec3 offset = new Vec3(0.275, 0, 0).yRot(angle);
+
+        double ix = p.getX() + vec.x;
+        double iy = p.getY() + p.getEyeHeight() - 1 + 0.4;
+        double iz = p.getZ() + vec.z;
+        var viewer = Minecraft.getInstance().player;
+        if (viewer != null && viewer.isShiftKeyDown()) iy += 0.25;
+
+        vec = vec.normalize();
+        double mX = vec.x * 0.025D;
+        double mZ = vec.z * 0.025D;
+        for (int i = 0; i < 2; i++) {
+            double side = i == 0 ? -1 : 1;
+            var fx = Minecraft.getInstance().particleEngine.createParticle(ParticleTypes.SMOKE,
+                    ix + offset.x * side, iy, iz + offset.z * side, mX, 0, mZ);
+            if (fx != null) fx.scale(0.5F / 1.125F);
         }
     }
 

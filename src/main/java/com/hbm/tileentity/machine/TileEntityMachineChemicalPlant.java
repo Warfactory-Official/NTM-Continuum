@@ -115,6 +115,10 @@ public class TileEntityMachineChemicalPlant extends TileEntityMachineBase
         ItemStack blueprint = te.inventory.getStackInSlot(1);
         te.chemplantModule.update(speed, pow, true, blueprint);
         te.didProcess = te.chemplantModule.didProcess;
+        // 1.7: every working tick turns a machined meteorite sword in the battery slot into the treated one
+        if (te.didProcess && te.inventory.getStackInSlot(0).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_machined.get())) {
+            te.inventory.setStackInSlot(0, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_treated.get()));
+        }
 
         if (te.chemplantModule.markDirty) te.setChanged();
         te.networkPackNT();

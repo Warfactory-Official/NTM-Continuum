@@ -43,12 +43,19 @@ import dev.golem.core.data.DataOut;
  * tank and a {@code mode} flag (receive / both / send / off); the {@link #serverTick} wires it into the
  * fluid network according to that mode, exactly like the 1.12.2 tank.
  *
- * <p>Slim port: the 1.12.2 original's explosion/fire/corrosive/antimatter hazards, OpenComputers/control
- * panel hooks, repair, and canister item I/O are dropped — the demo needs the network behaviour, the GUI
- * fill readout, and (kept) the side ladder ({@link IClimbable}). The tank defaults to {@code NONE}; drop a
+ * <p>1.7's hazards are ported: an explosion (first hit), antimatter or a highly corrosive fluid tears it open
+ * ({@link #hasExploded}); it then leaves the network, leaks, burns if flammable, and is repaired with a blowtorch and
+ * six steel plates. OpenComputers/control panel hooks are dropped. The side ladder ({@link IClimbable}) is kept. The tank defaults to {@code NONE}; drop a
  * {@code fluid_identifier} in slot 0 to set its type (it then passes to slot 1), like the 1.12.2 tank.
  */
-public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable, IRORValueProvider, IRORInteractive {
+public class TileEntityMachineFluidTank extends TileEntityMachineBase implements MenuProvider, IFluidStandardTransceiverMK2, IClimbable, IRORValueProvider, IRORInteractive, com.hbm.interfaces.IRepairable {
+
+    /** 1.7 {@code hasExploded}: torn open by an explosion, antimatter or a highly corrosive fluid; leaks until repaired. */
+    public boolean hasExploded = false;
+    /** 1.7 {@code onFire}: a flammable tank that exploded burns while it leaks, until extinguished. */
+    public boolean onFire = false;
+    /** 1.7 {@code lastExplosion}: one explosion damages the tank once however many of its cells it reaches. */
+    public @org.jspecify.annotations.Nullable Object lastExplosion;
 
     public static final int CAPACITY = 256_000;
     /** 0 = receive-only, 1 = both (acts like a pipe), 2 = send-only, 3 = disabled. */
@@ -78,20 +85,143 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineFluidTank tank) {
         tank.ensureClimbRegistered();
-        tank.updateTypeFromFluidId();
-        if (tank.tank.getPressure() == 0) {
-            MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
-        }
-        MachineFluidContainerIO.unload(tank.tank, tank.inventory, 4, 5);
         FluidType type = tank.tank.getTankType();
-
-        if (level instanceof ServerLevel server) tank.updateCells(server, type);
-        if (tank.mode == 2) {
-            for (DirPos dp : tank.getConPos()) tank.tryProvide(tank.tank, level, dp.getPos(), dp.getDir());
+        if (!tank.hasExploded) {
+            tank.updateTypeFromFluidId();
+            if (tank.tank.getPressure() == 0) {
+                MachineFluidContainerIO.load(tank.tank, tank.inventory, 2, 3);
+            }
+            type = tank.tank.getTankType();
+            if (level instanceof ServerLevel server) tank.updateCells(server, type);
+            if (tank.mode == 2) {
+                for (DirPos dp : tank.getConPos()) tank.tryProvide(tank.tank, level, dp.getPos(), dp.getDir());
+            }
+        } else if (level instanceof ServerLevel server) {
+            tank.cells = FluidGraph.release(server, tank.cells); // 1.7: a torn tank leaves the network
         }
+
+        // 1.7: antimatter does not stay in a tank, a highly corrosive fluid eats through it
+        if (tank.tank.getFill() > 0) {
+            if (isAntimatter(type)) {
+                amatBlast(level, pos);
+                tank.explode();
+                tank.tank.setFill(0);
+            }
+            com.hbm.inventory.fluid.trait.FT_Corrosive corrosive = type.getTrait(com.hbm.inventory.fluid.trait.FT_Corrosive.class);
+            if (corrosive != null && corrosive.isHighlyCorrosive()) tank.explode();
+
+            if (tank.hasExploded) {
+                int leaking;
+                if (isAntimatter(type)) leaking = tank.tank.getFill();
+                else if (com.hbm.inventory.fluid.FluidCombustion.isGaseous(type)) leaking = Math.min(tank.tank.getFill(), tank.tank.getMaxFill() / 100);
+                else leaking = Math.min(tank.tank.getFill(), tank.tank.getMaxFill() / 10000);
+                tank.updateLeak(leaking);
+            }
+        }
+
+        MachineFluidContainerIO.unload(tank.tank, tank.inventory, 4, 5);
 
         tank.setChanged();
         tank.networkPackNT();
+    }
+
+    /** 1.7 {@code FT_Amat}: the two antimatter fluids. */
+    private static boolean isAntimatter(FluidType type) {
+        return type == Fluids.AMAT || type == Fluids.ASCHRAB;
+    }
+
+    /** 1.7 {@code new ExplosionVNT(world, x + 0.5, y + 1.5, z + 0.5, 5F).makeAmat().setBlockAllocator(null).setBlockProcessor(null).explode()}. */
+    private static void amatBlast(Level level, BlockPos pos) {
+        new com.hbm.explosion.vanillant.ExplosionVNT(level, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5, 5F)
+                .makeAmat().setBlockAllocator(null).setBlockProcessor(null).explode();
+    }
+
+    /** 1.7 {@code explode()}: called when the tank breaks from hazardous contents or external force. */
+    public void explode() {
+        this.hasExploded = true;
+        this.onFire = com.hbm.inventory.fluid.FluidCombustion.isFlammable(tank.getTankType());
+        this.setChanged();
+    }
+
+    /**
+     * 1.7 {@code updateLeak}: every tick after the explosion {@code amount} mB escape - antimatter all at once (each
+     * tick another antimatter blast), a burning flammable tank sets everything in the 4x5x4 box around it alight
+     * and throws gas flames, a gas rises as a coloured plume every 5 ticks. The pollution 1.7 also released waits
+     * for the pollution fluid traits (FT_Polluting), as everywhere else in the port.
+     */
+    public void updateLeak(int amount) {
+        if (!hasExploded || amount <= 0 || !(level instanceof ServerLevel server)) return;
+        tank.setFill(Math.max(0, tank.getFill() - amount));
+        FluidType type = tank.getTankType();
+        int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
+        net.minecraft.util.RandomSource rand = server.getRandom();
+
+        if (isAntimatter(type)) {
+            amatBlast(server, worldPosition);
+        } else if (com.hbm.inventory.fluid.FluidCombustion.isFlammable(type) && onFire) {
+            for (net.minecraft.world.entity.Entity e : server.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,
+                    new AABB(x - 1.5, y, z - 1.5, x + 2.5, y + 5, z + 2.5))) {
+                dev.golem.core.world.Effects.ignite(e, 5);
+            }
+            // 1.7 ParticleUtil.spawnGasFlame: no scale (the gas fire's default)
+            net.minecraft.nbt.CompoundTag flame = new net.minecraft.nbt.CompoundTag();
+            flame.putDouble("moX", rand.nextGaussian() * 0.2);
+            flame.putDouble("moY", 0.1);
+            flame.putDouble("moZ", rand.nextGaussian() * 0.2);
+            com.hbm.particle.helper.HbmEffectNT.GasFlame.send(server, x + rand.nextDouble(), y + 0.5 + rand.nextDouble(),
+                    z + rand.nextDouble(), flame, 150);
+        } else if (com.hbm.inventory.fluid.FluidCombustion.isGaseous(type)) {
+            if (server.getGameTime() % 5 == 0) {
+                net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
+                data.putString("type", "tower");
+                data.putFloat("lift", 1F);
+                data.putFloat("base", 1F);
+                data.putFloat("max", 5F);
+                data.putInt("life", 100 + rand.nextInt(20));
+                data.putInt("color", type.getColor());
+                com.hbm.particle.helper.HbmEffectNT.Tower.send(server, x + 0.5, y + 1, z + 0.5, data, 150);
+            }
+        }
+    }
+
+    /** 1.7 {@code tryExtinguish}: foam or CO2 put a burning tank out; water does too, unless it is a liquid fuel, which it blows up. */
+    @Override
+    public void tryExtinguish(Level world, BlockPos pos, EnumExtinguishType type) {
+        if (!this.hasExploded || !this.onFire) return;
+        if (type == EnumExtinguishType.WATER) {
+            // extinguishing oil with water is a terrible idea! (1.7 FT_Liquid; a burning fluid is a liquid or a gas)
+            if (!com.hbm.inventory.fluid.FluidCombustion.isGaseous(tank.getTankType())) {
+                world.explode(null, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5,
+                        5F, true, Level.ExplosionInteraction.BLOCK);
+            } else {
+                this.onFire = false;
+                this.setChanged();
+                return;
+            }
+        }
+        if (type == EnumExtinguishType.FOAM || type == EnumExtinguishType.CO2) {
+            this.onFire = false;
+            this.setChanged();
+        }
+    }
+
+    public boolean isDamaged() {
+        return this.hasExploded;
+    }
+
+    private final java.util.List<com.hbm.inventory.RecipesCommon.AStack> repair = new java.util.ArrayList<>();
+
+    /** 1.7 {@code getRepairMaterials}: six steel plates. */
+    public java.util.List<com.hbm.inventory.RecipesCommon.AStack> getRepairMaterials() {
+        if (!repair.isEmpty()) return repair;
+        repair.add(new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(
+                net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "plates/steel")), 6));
+        return repair;
+    }
+
+    public void repair() {
+        this.hasExploded = false;
+        this.setChanged();
     }
 
     public void cycleMode() {
@@ -239,11 +369,13 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
 
     @Override
     public FluidTankNTM[] getSendingTanks() {
+        if (hasExploded) return new FluidTankNTM[0];
         return (mode == 1 || mode == 2) ? new FluidTankNTM[]{tank} : new FluidTankNTM[0];
     }
 
     @Override
     public FluidTankNTM[] getReceivingTanks() {
+        if (hasExploded) return new FluidTankNTM[0];
         return (mode == 0 || mode == 1) ? new FluidTankNTM[]{tank} : new FluidTankNTM[0];
     }
 
@@ -266,6 +398,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         super.serialize(buf);
         buf.writeShort(mode);
         tank.serialize(buf);
+        buf.writeBoolean(hasExploded);
     }
 
     @Override
@@ -273,6 +406,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         super.deserialize(buf);
         mode = buf.readShort();
         tank.deserialize(buf);
+        hasExploded = buf.readBoolean();
     }
 
     @Override
@@ -280,6 +414,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         super.saveData(output);
         output.putShort("mode", mode);
         tank.writeToNBT(output, "tank");
+        output.putBoolean("exploded", hasExploded);
+        output.putBoolean("onFire", onFire);
     }
 
     @Override
@@ -287,6 +423,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         super.loadData(input);
         mode = (short) input.getShortOr("mode", (short) 0);
         tank.readFromNBT(input, "tank");
+        hasExploded = input.getBooleanOr("exploded", false);
+        onFire = input.getBooleanOr("onFire", false);
     }
 
     @Override

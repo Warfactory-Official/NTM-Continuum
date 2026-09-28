@@ -61,6 +61,8 @@ public final class MainRegistry {
         com.hbm.inventory.material.ModMaterialTags.declare();
         com.hbm.lib.ModDamageTypes.declare();
         com.hbm.world.gen.ModBiomeModifiers.declare();
+        com.hbm.world.gen.LegacyDungeonDeclarations.declare(); // WG-D: legacy dungeon structures + scattered-block features (before BiomeFeatures.install)
+        dev.golem.core.world.BiomeFeatures.install(); // Fabric: the same biome modifiers through BiomeModifications (no-op elsewhere)
         com.hbm.inventory.recipes.ModCraftingRecipes.declare();
         com.hbm.blocks.machine.ModArmorTableBlocks.init();
         com.hbm.blocks.machine.ModWeaponTableBlocks.init();
@@ -90,6 +92,7 @@ public final class MainRegistry {
         com.hbm.blocks.machine.dfc.ModDFCBlocks.init();
         com.hbm.blocks.NorwoodMachineDeclarations.declare();
         com.hbm.items.ModSatelliteItems.init();
+        com.hbm.blocks.ModSatelliteContent.init(); // satellites: ID manager, cargo pad, orbital laser, /ntmsatellites
         com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.init();
         com.hbm.foundry.FoundryExpansion.init();
         com.hbm.blocks.machine.DiFurnaceContent.init();
@@ -99,6 +102,16 @@ public final class MainRegistry {
         ModBombBlocks.init();      // bomb blocks (also precede block entities)
         com.hbm.blocks.ModBombs2Content.init(); // special bombs: custom nuke, F.L.E.I.J.A., Blue Rinse, Prototype, balefire bomb, thermo/EMP/float/flame war
         com.hbm.blocks.ModRailBlocks.init(); // the folded rails the ntm-next trains run on
+        com.hbm.blocks.ModCustomMissileContent.init(); // custom missile parts, assembly station, compact launcher, launch table, large/rusted pads
+        com.hbm.blocks.ModRadarUtilityContent.init(); // radars, radar screen/linker, forcefield, teleporter/anchor, orbus, silo hatch, Soyuz capsule
+        com.hbm.blocks.ModDecoCrateContent.init(); // storage crates, bobbleheads/plushies/snowglobes, radios, emitters, coils, cap blocks, absorbers, glyphid hive blocks
+        com.hbm.blocks.ModGapsBContent.init(); // G-B: crates opened from the hand (CRATE_OPEN_HELD menus)
+        com.hbm.items.ModRenderInputContent.init(); // G-C: tool animation cues, equip edge, rendering/input gap content
+        com.hbm.blocks.ModIcfContent.init(); // ICF reactor, seed, vessel components, laser controller/array, pellet maker, fuel pellet
+        com.hbm.config.MachineDynConfig.initialize(); // 1.7 hbmConfig/hbmMachines.json (icfLaser)
+        com.hbm.blocks.ModEnergyBedrockContent.init(); // boxcable, coated wire, charging station, HE/RF converters, bedrock ore grades
+        com.hbm.blocks.ModDungeonContent.init(); // dungeon/structure bricks, keyholes, pedestal, skeleton holder, loot pile, old lantern, action blocks, cart rails, rebar + placer
+        com.hbm.blocks.generic.ModStructureWandBlocks.init(); // structure wand blocks: wand_air/loot/jigsaw/logic/tandem/structure (NBTStructure editing)
         com.hbm.blocks.ModHazardBlocks.init(); // radioactive / rad-resistant blocks (radiation emitters)
         com.hbm.blocks.ModFalloutBlocks.init(); // fallout layer + waste/sellafite terrain (nuke aftermath)
         com.hbm.blocks.ModSteelBlocks.init();   // stateful steel grate + OBJ scaffold
@@ -121,13 +134,17 @@ public final class MainRegistry {
         com.hbm.items.ModEntityItems.init(); // spawn items, carts, drones, trains, grenades, dispersers (entity port)
         com.hbm.items.ModGunSupportItems.init(); // ammo container and stack-backed ammo/casing bags
         com.hbm.items.ModJetpackDependencyItems.init(); // hot steel and the functional xenon thruster part
+        com.hbm.items.ModAbilityToolItems.init(); // ability tools/weapons, tool sets, meteorite sword chain
+        com.hbm.items.ModMeleeKitItems.init(); // special melee weapons, novelty tools, starter kits, toolbox, loot, Bobmazon
         com.hbm.items.ModSingularityItems.init(); // dropped singularity capsules and Spark progression
         com.hbm.items.ModSelfchargerItems.init(); // deprecated powered-armour auxiliary batteries
+        com.hbm.items.ModBatterySCItems.init(); // 1.7 ItemBatterySC radiovoltaic batteries (battery_sc_<variant>)
         com.hbm.items.ModRtgContent.init(); // RTG pellet state, block entity, and menu registrations
         com.hbm.items.ModChemicalDyeItems.init(); // flattened chemical-dye and crayon variants
         com.hbm.items.ModStorageDrumItems.init();
         com.hbm.items.ModFoodItems.init();
         com.hbm.items.ModConsumableTailItems.init();
+        com.hbm.items.ModFinalConsumableItems.init(); // food, consumables, records, batteries, loose materials, 5G/muffler upgrades
         com.hbm.items.ModCatalystItems.init();
         ModMedicineItems.init();
         com.hbm.items.ModRBMKItems.init(); // RBMK rods/pellets and reactor tools
@@ -150,14 +167,26 @@ public final class MainRegistry {
         ModBombItems.init();       // hand-registered bomb components
         com.hbm.items.ModGearItems.init(); // radiation gear (geiger/dosimeter + hazmat armor)
         com.hbm.items.ModArmorItems.init(); // modelled power armour (T-51b)
+        com.hbm.items.ModArmorSetBContent.init(); // final armor B: remaining ModItemsArmor ids, IV bags, statue_elb_f
+        com.hbm.items.ModArmorSetContent.init(); // final armor sets A: alloy, cmb, bismuth, euphemium, zirconium, dnt, AJR/AJRO, HEV, Fau, trenchmaster
         com.hbm.items.ModArmorModules.init(); // complete armor modules (storage, cladding, inserts)
+        com.hbm.items.ModArmorModItems.init(); // remaining ItemMod* modules, PaA hazmat, liquidator, mask of infamy
+        com.hbm.blocks.ModUtilityToolContent.init(); // utility/diagnostic tools, pipettes, guide/lore books, holotapes, tablets, Lemegeton, legacy manual block
+        com.hbm.blocks.ModCustomMachineContent.init(); // custom machine system: controllers from hbmCustomMachines.json, cm_* components, anchor, structure wand
         com.hbm.blocks.ModNuclearMiscContent.init(); // radiolysis RTG, legacy breeder/research reactors + controller, legacy graphite pile, breeding/pile rods, spent plate fuel
         com.hbm.blocks.ModExplosivesContent.init(); // landmines, timed charges, det blocks, plastic explosive blocks, duds, multi purpose bomb, detonators
         // Ammo, factories, and gun suppliers must all be declared before any loader flushes ITEMs.
         com.hbm.items.weapon.sedna.factory.GunCatalogue.init();
         com.hbm.tileentity.machine.pile.TileEntityPileCore.initDebris();
         com.hbm.items.ModMissileItems.init(); // launchable missiles + the designators that aim them
-        com.hbm.world.gen.ModFeatures.init(); // worldgen features (oil bubble)
+        com.hbm.items.ModWandItems.init(); // creative wand_k / wand_s / wand_d
+        com.hbm.advancement.AdvancementCommandContent.init(); // 1.7 achievements as advancements (triggers, icons) + ntm* commands
+        com.hbm.world.gen.ModFeatures.init(); // worldgen feature types (1.7 ores, strata, MapGen terrain, surface features)
+        com.hbm.handler.BossSpawnHandler.init(); // 1.7 meteor strikes and showers, rolled every level tick
+        com.hbm.extprop.HbmPlayerProps.init(); // 1.7 onPlayerClone: reputation, shield, fbi/rad marks survive respawn
+        com.hbm.world.gen.NTMWorldGenerator.init(); // NBT structures: hbm:nbt structure type, piece type, 1.7 spawn registrations
+        com.hbm.world.gen.NTMComponentStructures.init(); // features/bunker/meteor_dungeon spawns + hardcoded piece types (WG-C)
+        com.hbm.world.gen.LegacyDungeonStructure.init(); // WG-D: 1.7 HbmWorldGen legacy dungeons (hbm:legacy_dungeon) + scattered-block feature types
         com.hbm.world.biome.ModBiomes.init(); // crater biome keys, backed by worldgen biome JSON
         ModBlockEntities.init();
         com.hbm.tileentity.ModRBMKBlockEntities.init();

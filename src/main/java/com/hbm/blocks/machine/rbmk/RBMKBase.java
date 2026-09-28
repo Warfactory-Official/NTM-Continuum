@@ -79,6 +79,7 @@ public abstract class RBMKBase extends BlockMultiblockCore implements IFluidConn
     public @Nullable BlockPos rigidStructureCore(Level level, BlockPos member) { BlockState state = level.getBlockState(member); return state.getBlock() instanceof RBMKBase ? coreOf(level, member, state) : null; }
     @Override protected int onAnalogOutputSignal(BlockState state, Level level, BlockPos pos) { BlockPos core = coreOf(level, pos, state); return core == null ? 0 : super.onAnalogOutputSignal(level.getBlockState(core), level, core); }
     @Override protected InteractionResult onUseWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (this instanceof RBMKRod || this instanceof RBMKStorage) com.hbm.handler.BossSpawnHandler.markFBI(player); // 1.7: rods and storage mark on any use
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         BlockPos core = coreOf(level, pos, state); if (core == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
         BlockState coreState = level.getBlockState(core);

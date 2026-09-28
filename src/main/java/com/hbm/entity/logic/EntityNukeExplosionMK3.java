@@ -125,6 +125,8 @@ public class EntityNukeExplosionMK3 extends EntityExplosionChunkloading {
                         getX(), getY(), getZ(), destructionRange);
 
             initExplosion();
+            com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_HIGH,
+                    com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
             this.did = true;
         }
 

@@ -261,7 +261,8 @@ public final class ModBlockEntities {
 
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher>> SOYUZ_LAUNCHER =
             BLOCK_ENTITIES.register("soyuz_launcher",
-                    () -> BlockEntities.serverTicking(com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher::new,
+                    () -> BlockEntities.ticking(com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher::new,
+                            com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher::clientTick,
                             com.hbm.tileentity.machine.soyuz.TileEntitySoyuzLauncher::serverTick,
                             com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.soyuz_launcher.get()));
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct>> STRUCT_SOYUZ_CORE =

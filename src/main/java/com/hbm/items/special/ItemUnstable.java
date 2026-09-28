@@ -19,7 +19,9 @@ import java.util.List;
 
 /**
  * The metastable U-238M2 ingot: it counts down while carried and then detonates as a nuke on the carrier.
- * The three "ELEMENTS / ARSENIC / VAULT" metadata easter eggs of the old item (magic recipes) are not ported.
+ * The three "ELEMENTS / ARSENIC / VAULT" metadata easter eggs of the old item (the Brittle Spade's loot, and
+ * the Book of Boxcars recipe that fuses them back into a live ingot) are {@code item_variant} 1..3: inert,
+ * untimed and renamed, exactly as 1.7 skipped every metadata other than zero.
  */
 public class ItemUnstable extends CompatItem {
 
@@ -36,11 +38,13 @@ public class ItemUnstable extends CompatItem {
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        if (variant(stack) != 0) return;
         tooltip.add(Component.literal("Decay: " + (getTimer(stack) * 100 / timer) + "%"));
     }
 
     @Override
     protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity entity, EquipmentSlot slot, boolean held) {
+        if (variant(stack) != 0) return;
         setTimer(stack, getTimer(stack) + 1);
 
         if (getTimer(stack) == timer) {
@@ -50,6 +54,20 @@ public class ItemUnstable extends CompatItem {
             Compat.hurt(entity, level, ModDamageSources.source(level, ModDamageSources.NUCLEAR_BLAST), 10000);
             stack.setCount(0);
         }
+    }
+
+    private static int variant(ItemStack stack) {
+        return com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(stack, 0);
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        return switch (variant(stack)) {
+            case 1 -> Component.literal("ELEMENTS");
+            case 2 -> Component.literal("ARSENIC");
+            case 3 -> Component.literal("VAULT");
+            default -> super.getName(stack);
+        };
     }
 
     private static void setTimer(ItemStack stack, int time) {

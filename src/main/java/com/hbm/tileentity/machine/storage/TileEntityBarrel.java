@@ -66,6 +66,13 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         this.tank = new FluidTankNTM(Fluids.NONE, capacityOf(state.getBlock()));
     }
 
+    /** For 1.7's subclasses that pass their own capacity to {@code TileEntityBarrel(int)} (the orbus). */
+    protected TileEntityBarrel(net.minecraft.world.level.block.entity.BlockEntityType<?> type, BlockPos pos,
+                               BlockState state, int capacity) {
+        super(type, pos, state, 6);
+        this.tank = new FluidTankNTM(Fluids.NONE, capacity);
+    }
+
     /** The barrel's capacity is a property of its block (12/6/16/24/16 thousand mB). */
     public static int capacityOf(Block block) {
         return block instanceof com.hbm.blocks.machine.BlockFluidBarrel barrel ? barrel.capacity : 0;

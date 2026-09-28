@@ -28,8 +28,7 @@ import java.util.List;
  * input → an optional fluid + optional item output, over {@code duration} ticks. The {@code registerSFAuto}
  * "solid fuel" auto-computation replicates the old math (1_440_000 TU per SF, ×0.5 bonus, magnitude-round).
  *
- * <p>Deviations (IMPLEMENTATION.md §20): the bedrock-ore roast loops are skipped ({@code ItemBedrockOreNew}
- * unported). The {@code ANY_COKE} and {@code ANY_TAR} ingredients resolve to the {@code c:cokes} and
+ * <p>The bedrock-ore roast loops come from {@link BedrockOreChainRecipes}. The {@code ANY_COKE} and {@code ANY_TAR} ingredients resolve to the {@code c:cokes} and
  * {@code c:tars} tags respectively.
  */
 public final class PyroOvenRecipes {
@@ -96,7 +95,7 @@ public final class PyroOvenRecipes {
         registerSFAuto(Fluids.XYLENE);
         registerSFAuto(Fluids.BALEFIRE, 24_000_000L, ModItems.solid_fuel_bf.get());
 
-        // bedrock-ore roast loops: skipped (ItemBedrockOreNew unported) — §20
+        BedrockOreChainRecipes.pyroOven(recipes); // bedrock-ore roast loops
 
         // syngas from coal
         recipes.add(new PyroOvenRecipe(100).in(new FluidStack(Fluids.STEAM, 500)).in(Mats.MAT_COAL.gem()).out(new FluidStack(Fluids.SYNGAS, 1_000)));

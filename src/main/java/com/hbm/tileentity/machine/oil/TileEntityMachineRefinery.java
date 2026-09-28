@@ -45,12 +45,20 @@ import net.minecraft.sounds.SoundSource;
  * {@code tank0 ≥ 100} and all four outputs to fit; each op drains 100 mB + 5 HE and produces the
  * fractions, and every 100 ops emits one byproduct item. maxPower 1000.
  *
- * <p>Deferred (§20): the overpressure/fire/explosion mechanic (IOverpressurable/IRepairable, nothing
- * produces pressure and ExplosionVNT/extinguishers are unported), pollution/soot, the audio loop, the
- * meta&lt;12 self-heal branch and checkTilt.
+ * <p>1.7's explosion damage is ported ({@link #hasExploded}: the first explosion that reaches it blows it open, it
+ * burns off its tanks until extinguished and is repaired with a blowtorch, eight steel plates and four duct tape).
+ * Deferred (§20): pollution/soot, the meta&lt;12 self-heal branch and checkTilt.
  */
 public class TileEntityMachineRefinery extends TileEntityMachineBase
-        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer {
+        implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer,
+        com.hbm.interfaces.IRepairable {
+
+    /** 1.7 {@code hasExploded}: blown open by an explosion; stops refining and burns off its tanks until repaired. */
+    public boolean hasExploded = false;
+    /** 1.7 {@code onFire}: always set by the explosion, cleared by foam or CO2. */
+    public boolean onFire = false;
+    /** 1.7 {@code lastExplosion}: one explosion damages the refinery once. */
+    public @org.jspecify.annotations.Nullable Object lastExplosion;
 
     public static final int maxSulfur = 100;
     public static final long maxPower = 1000;
@@ -89,6 +97,12 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineRefinery te) {
         te.isOn = false;
 
+        if (te.hasExploded) {
+            if (te.onFire) te.burn(level, pos);
+            te.networkPackNT();
+            return;
+        }
+
         te.power = Library.chargeTEFromItems(te.inventory, 0, te.power, maxPower);
         te.setTypeFromFluidId();
         te.loadInput();
@@ -109,6 +123,82 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         te.networkPackNT();
     }
 
+
+    /**
+     * 1.7's burning refinery: 10 mB a tick off every tank that still holds something; while there is fuel,
+     * everything in the 4x8x4 box is set alight and gas flames rise from the tower. (1.7 also added soot every
+     * second; the pollution system is not ported.)
+     */
+    private void burn(Level level, BlockPos pos) {
+        boolean hasFuel = false;
+        for (int i = 0; i < 5; i++) {
+            if (tanks[i].getFill() > 0) {
+                tanks[i].setFill(Math.max(tanks[i].getFill() - 10, 0));
+                hasFuel = true;
+            }
+        }
+        if (!hasFuel || !(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        for (net.minecraft.world.entity.Entity e : server.getEntitiesOfClass(net.minecraft.world.entity.Entity.class,
+                new net.minecraft.world.phys.AABB(x - 1.5, y, z - 1.5, x + 2.5, y + 8, z + 2.5))) {
+            dev.golem.core.world.Effects.ignite(e, 5);
+        }
+        net.minecraft.util.RandomSource rand = server.getRandom();
+        net.minecraft.nbt.CompoundTag flame = new net.minecraft.nbt.CompoundTag();
+        flame.putDouble("moX", rand.nextGaussian() * 0.05);
+        flame.putDouble("moY", 0.1);
+        flame.putDouble("moZ", rand.nextGaussian() * 0.05);
+        com.hbm.particle.helper.HbmEffectNT.GasFlame.send(server, x + rand.nextDouble(), y + 1.5 + rand.nextDouble() * 3,
+                z + rand.nextDouble(), flame, 150);
+    }
+
+    /** 1.7 {@code explode}: once, and always on fire. */
+    public void explode() {
+        if (this.hasExploded) return;
+        this.hasExploded = true;
+        this.onFire = true;
+        this.setChanged();
+    }
+
+    /** 1.7 {@code tryExtinguish}: foam and CO2 put it out; water on a refinery that still holds fluid blows it up. */
+    @Override
+    public void tryExtinguish(Level world, BlockPos pos, EnumExtinguishType type) {
+        if (!this.hasExploded || !this.onFire) return;
+        if (type == EnumExtinguishType.FOAM || type == EnumExtinguishType.CO2) {
+            this.onFire = false;
+            this.setChanged();
+            return;
+        }
+        if (type == EnumExtinguishType.WATER) {
+            for (FluidTankNTM tank : tanks) {
+                if (tank.getFill() > 0) {
+                    world.explode(null, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5,
+                            5F, true, Level.ExplosionInteraction.BLOCK);
+                    return;
+                }
+            }
+        }
+    }
+
+    public boolean isDamaged() {
+        return this.hasExploded;
+    }
+
+    private final java.util.List<com.hbm.inventory.RecipesCommon.AStack> repair = new java.util.ArrayList<>();
+
+    /** 1.7 {@code getRepairMaterials}: eight steel plates and four duct tape. */
+    public java.util.List<com.hbm.inventory.RecipesCommon.AStack> getRepairMaterials() {
+        if (!repair.isEmpty()) return repair;
+        repair.add(new com.hbm.inventory.RecipesCommon.TagStack(net.minecraft.tags.TagKey.create(
+                net.minecraft.core.registries.Registries.ITEM, dev.golem.core.Ids.of("c", "plates/steel")), 8));
+        repair.add(new com.hbm.inventory.RecipesCommon.ComparableStack(com.hbm.items.ModItems.ducttape.get(), 4));
+        return repair;
+    }
+
+    public void repair() {
+        this.hasExploded = false;
+        this.setChanged();
+    }
 
     public DirPos[] getConPos() {
         int x = worldPosition.getX(), y = worldPosition.getY(), z = worldPosition.getZ();
@@ -266,8 +356,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
     @Override public void setPower(long i) { power = i; }
     @Override public long getMaxPower() { return maxPower; }
 
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], tanks[2], tanks[3], tanks[4]}; }
-    @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return hasExploded ? new FluidTankNTM[0] : new FluidTankNTM[]{tanks[1], tanks[2], tanks[3], tanks[4]}; }
+    @Override public FluidTankNTM[] getReceivingTanks() { return hasExploded ? new FluidTankNTM[0] : new FluidTankNTM[]{tanks[0]}; }
     @Override public FluidTankNTM[] getAllTanks() { return tanks; }
 
     @Override
@@ -286,6 +376,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         buf.writeLong(this.power);
         for (FluidTankNTM tank : tanks) tank.serialize(buf);
         buf.writeBoolean(isOn);
+        buf.writeBoolean(hasExploded);
     }
 
     @Override
@@ -294,6 +385,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         this.power = buf.readLong();
         for (FluidTankNTM tank : tanks) tank.deserialize(buf);
         this.isOn = buf.readBoolean();
+        this.hasExploded = buf.readBoolean();
     }
 
     @Override
@@ -306,6 +398,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         tanks[2].writeToNBT(output, "naphtha");
         tanks[3].writeToNBT(output, "light");
         tanks[4].writeToNBT(output, "petroleum");
+        output.putBoolean("exploded", hasExploded);
+        output.putBoolean("onFire", onFire);
     }
 
     @Override
@@ -318,5 +412,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         tanks[2].readFromNBT(input, "naphtha");
         tanks[3].readFromNBT(input, "light");
         tanks[4].readFromNBT(input, "petroleum");
+        hasExploded = input.getBooleanOr("exploded", false);
+        onFire = input.getBooleanOr("onFire", false);
     }
 }

@@ -74,15 +74,16 @@ public class EntitySoyuzCapsule extends CompatThrowableProjectile implements Sto
 
             if (!level().isClientSide()) {
                 BlockPos above = pos.above();
-                // 1.7 places the soyuz_capsule block above the landing spot and writes the payload and the
-                // rocket item into its inventory. Neither the capsule block nor the soyuz item family is
-                // registered in this port yet (entity port manifest), so the payload is dropped where the
-                // capsule would have stood - nothing carried is lost.
-                for (ItemStack stack : payload) {
-                    if (stack == null || stack.isEmpty()) continue;
-                    net.minecraft.world.entity.item.ItemEntity drop = new net.minecraft.world.entity.item.ItemEntity(
-                            level(), above.getX() + 0.5D, above.getY() + 0.5D, above.getZ() + 0.5D, stack.copy());
-                    level().addFreshEntity(drop);
+                // 1.7: the soyuz_capsule block above the landing spot, the payload in slots 0-17 and the spent
+                // rocket (skin = this.soyuz) in slot 18
+                level().setBlockAndUpdate(above, com.hbm.blocks.ModRadarUtilityBlocks.soyuz_capsule.get().defaultBlockState());
+                if (level().getBlockEntity(above) instanceof com.hbm.tileentity.machine.storage.TileEntitySoyuzCapsule capsule) {
+                    for (int i = 0; i < payload.length; i++) {
+                        capsule.setItem(i, payload[i] == null ? ItemStack.EMPTY : payload[i]);
+                    }
+                    com.hbm.items.ItemEnums.SoyuzSkinType[] skins = com.hbm.items.ItemEnums.SoyuzSkinType.VALUES;
+                    capsule.setItem(18, com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.get()
+                            .of(skins[Math.floorMod(soyuz, skins.length)]));
                 }
             }
         }

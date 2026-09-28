@@ -84,8 +84,39 @@ public enum HbmEffectNT {
      * {@code targets} list of {@code x/y/z} doubles; the client hands them to the crab it names.
      */
     TeslaArc,
+    /** The ICF's fusion flash (1.7 {@code hadron}): a growing, fading additive quad, every reacting tick. */
+    Hadron,
     /** Original decontaminator's recoloured town-aura particle, emitted once per client tick. */
-    DeconAura;
+    DeconAura,
+    /** 1.7 {@code bnuuy}: the diesel suit legs' twin smoke puffs behind the wearer. Tag: {@code player}. */
+    Bnuuy,
+    /** 1.7 {@code amat}: {@code ParticleAmatFlash}, a ten-tick white starburst. Tag: {@code scale} (explosion size). */
+    AmatFlash,
+    /**
+     * 1.7 {@code properJolt}, sent to one player: sets its hurt time and hurt duration directly (hurt direction 0),
+     * so the hurt-camera tilt lingers for {@code time} ticks. Tag: {@code time}, {@code maxTime}.
+     */
+    ProperJolt,
+    /**
+     * 1.7 {@code tau} (G-C): {@code count} white line sparks plus one hadron flash, both halved/shortened when
+     * {@code small} - the RBMK lever's contact arc. Tag: {@code count} (byte), {@code small}.
+     */
+    Tau,
+    /**
+     * 1.7 {@code marker} (G-C): a {@code RenderOverhead} marker, a see-through outline of the block at the position
+     * with an optional label. Tag: {@code color}, {@code label}, {@code expires} (ms, 0 = never), {@code dist}.
+     */
+    Marker,
+    /** 1.7 {@code debug} (G-C): {@code ParticleText}, floating text. Tag: {@code text}, {@code color}, {@code scale}. */
+    DebugText,
+    /** 1.7 {@code launchSmoke} (G-C): one {@code ParticleSmokePlume}, played client-side by a launcher. Tag: {@code moX/moY/moZ}. */
+    LaunchSmoke;
+
+    /** 1.7 {@code createSendToThreadedPacket}: this effect for one player only. */
+    public void sendTo(ServerPlayer player, double x, double y, double z, @Nullable CompoundTag data) {
+        GolemNetwork.sendToPlayer(player, ParticlePayload.CODEC,
+                new ParticlePayload(this.name(), x, y, z, data == null ? new CompoundTag() : data));
+    }
 
     /**
      * The client handler for this effect, or null on a server (and on a client before

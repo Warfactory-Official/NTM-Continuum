@@ -15,5 +15,12 @@ public final class RBMKClientScreens {
         sink.register(ModRBMKMenus.RBMK_HEATER.get(), ScreenRBMKHeater::new);
         sink.register(ModRBMKMenus.RBMK_OUTGASSER.get(), ScreenRBMKOutgasser::new);
         sink.register(ModRBMKMenus.RBMK_CONSOLE.get(), ScreenRBMKConsole::new);
+        sink.register(ModRBMKMenus.RBMK_AUTOLOADER.get(), ScreenRBMKAutoloader::new);
+        // The ROR panels are screwdriver-opened client screens, not menus.
+        com.hbm.blocks.machine.rbmk.RBMKKeyPad.OPEN_SCREEN = panel -> net.minecraft.client.Minecraft.getInstance().setScreen(new ScreenRBMKKeyPad(panel));
+        com.hbm.blocks.machine.rbmk.RBMKLever.OPEN_SCREEN = panel -> net.minecraft.client.Minecraft.getInstance().setScreen(new ScreenRBMKLever(panel));
+        com.hbm.blocks.machine.rbmk.RBMKNumitron.OPEN_SCREEN = panel -> net.minecraft.client.Minecraft.getInstance().setScreen(new ScreenRBMKNumitron(panel));
+        com.hbm.blocks.machine.rbmk.RBMKGraph.OPEN_SCREEN = panel -> net.minecraft.client.Minecraft.getInstance().setScreen(new ScreenRBMKGraph(panel));
+        com.hbm.blocks.machine.rbmk.RBMKIndicator.OPEN_SCREEN = panel -> net.minecraft.client.Minecraft.getInstance().setScreen(new ScreenRBMKIndicator(panel));
     }
 }

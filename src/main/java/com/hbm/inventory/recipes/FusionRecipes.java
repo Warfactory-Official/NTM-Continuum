@@ -47,7 +47,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.dd").setInputEnergy(750_000).setOutputEnergy(1_000_000)
                 .setOutputFlux(breederCapacity / 200)
                 .setRGB(1F, 0.2F, 0.2F) // extra red
-                .setIcon(gas(Fluids.DEUTERIUM))
+                .setNamed().setIcon(gas(Fluids.DEUTERIUM))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.DEUTERIUM, 20))
                 .outputFluids(new FluidStack(Fluids.HELIUM4, 1_000))); // should be helium-3, muh realisme
@@ -55,7 +55,7 @@ public final class FusionRecipes extends GenericRecipes {
         // Early fuel. 5 MHE/s in, 20 MHE/s out.
         register(new FusionRecipe("fus.do").setInputEnergy(250_000).setOutputEnergy(1_250_000)
                 .setOutputFlux(breederCapacity / 200)
-                .setIcon(gas(Fluids.OXYGEN))
+                .setNamed().setIcon(gas(Fluids.OXYGEN))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.DEUTERIUM, 10), new FluidStack(Fluids.OXYGEN, 10))
                 .outputItems(new ItemStack(ModItems.pellet_charged.get())));
@@ -63,7 +63,7 @@ public final class FusionRecipes extends GenericRecipes {
         // Medium fuel. 15 MHE/s in, 75 MHE/s out.
         register(new FusionRecipe("fus.dt").setInputEnergy(750_000).setOutputEnergy(3_750_000)
                 .setOutputFlux(breederCapacity / 100)
-                .setIcon(gas(Fluids.HELIUM4))
+                .setNamed().setIcon(gas(Fluids.HELIUM4))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.DEUTERIUM, 10), new FluidStack(Fluids.TRITIUM, 10))
                 .outputFluids(new FluidStack(Fluids.HELIUM4, 1_000)));
@@ -72,7 +72,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.tcl").setInputEnergy(2_500_000).setOutputEnergy(6_250_000)
                 .setOutputFlux(breederCapacity / 20)
                 .setRGB(0.8F, 0.6F, 0.4F) // everything chlorine is piss yellow
-                .setIcon(new ItemStack(ModItems.powder_chlorophyte.get()))
+                .setNamed().setIcon(new ItemStack(ModItems.powder_chlorophyte.get()))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.TRITIUM, 10), new FluidStack(Fluids.CHLORINE, 10))
                 .outputItems(new ItemStack(ModItems.powder_chlorophyte.get())));
@@ -81,7 +81,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.h3").setInputEnergy(500_000).setOutputEnergy(3_750_000)
                 .setOutputFlux(0)
                 .setRGB(0.2F, 0.2F, 1F) // helium blue
-                .setIcon(gas(Fluids.HELIUM3))
+                .setNamed().setIcon(gas(Fluids.HELIUM3))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.HELIUM3, 20))
                 .outputFluids(new FluidStack(Fluids.HELIUM4, 1_000)));
@@ -90,7 +90,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.th4").setInputEnergy(875_000).setOutputEnergy(4_000_000)
                 .setOutputFlux(breederCapacity / 20)
                 .setRGB(0.2F, 0.2F, 1F)
-                .setIcon(gas(Fluids.TRITIUM))
+                .setNamed().setIcon(gas(Fluids.TRITIUM))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.TRITIUM, 10), new FluidStack(Fluids.HELIUM4, 10))
                 .outputItems(new ItemStack(ModItems.pellet_charged.get())));
@@ -100,7 +100,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.cl").setInputEnergy(3_750_000).setOutputEnergy(10_000_000)
                 .setOutputFlux(breederCapacity / 10)
                 .setRGB(1F, 0.6F, 0.2F) // even more yellow
-                .setIcon(new ItemStack(ModItems.powder_chlorophyte.get()))
+                .setNamed().setIcon(new ItemStack(ModItems.powder_chlorophyte.get()))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.CHLORINE, 20))
                 .outputItems(new ItemStack(ModItems.powder_chlorophyte.get())));
@@ -109,7 +109,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.dhc").setInputEnergy(10_000_000).setOutputEnergy(25_000_000)
                 .setOutputFlux(breederCapacity / 5)
                 .setRGB(0.2F, 0.8F, 0.8F) // cyan
-                .setIcon(icon(Fluids.DHC))
+                .setNamed().setIcon(icon(Fluids.DHC))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.DHC, 20))
                 .outputItems(new ItemStack(ModItems.powder_chlorophyte.get())));
@@ -118,7 +118,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.bf").setInputEnergy(1_000_000).setOutputEnergy(12_500_000)
                 .setOutputFlux(breederCapacity / 5)
                 .setRGB(0.2F, 1F, 0.2F) // what do you think?
-                .setIcon(icon(Fluids.BALEFIRE))
+                .setNamed().setIcon(icon(Fluids.BALEFIRE))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.BALEFIRE, 15), new FluidStack(Fluids.AMAT, 5))
                 .outputItems(new ItemStack(ModItems.powder_balefire.get())));
@@ -127,7 +127,7 @@ public final class FusionRecipes extends GenericRecipes {
         register(new FusionRecipe("fus.stellar").setInputEnergy(10_000_000).setOutputEnergy(50_000_000)
                 .setOutputFlux(breederCapacity)
                 .setRGB(1F, 0.4F, 0.1F) // brilliant orange, like looking into a furnace
-                .setIcon(icon(Fluids.STELLAR_FLUX))
+                .setNamed().setIcon(icon(Fluids.STELLAR_FLUX))
                 .setup(100, solenoid)
                 .inputFluids(new FluidStack(Fluids.STELLAR_FLUX, 10))
                 .outputItems(new ItemStack(ModItems.powder_gold.get()))); // eough

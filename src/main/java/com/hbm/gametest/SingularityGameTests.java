@@ -5,13 +5,11 @@ import com.hbm.entity.ModEntities;
 import com.hbm.entity.effect.EntityRagingVortex;
 import com.hbm.entity.projectile.EntityRubble;
 import com.hbm.blocks.machine.MachineCyclotron;
-import com.hbm.blocks.machine.MachineFluidTank;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.items.ModBombItems;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.machine.TileEntityMachineCyclotron;
-import com.hbm.tileentity.machine.TileEntityMachineFluidTank;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import com.hbm.api.fluidmk2.FluidNetwork;
 import com.hbm.lib.ForgeDirection;
@@ -101,7 +99,7 @@ public final class SingularityGameTests {
         helper.assertTrue(deuterium.is(ModSingularityItems.cell.get()) && deuterium.getCount() == 8
                         && ItemCell.isFullCell(deuterium, Fluids.DEUTERIUM)
                         && ModDataComponents.fluidAmount(deuterium) == ItemCell.CAPACITY
-                        && ModDataComponents.ITEM_VARIANT.getOr(deuterium, -1) == Fluids.DEUTERIUM.getID(),
+                        && ModDataComponents.ITEM_VARIANT.getOr(deuterium, -1) == com.hbm.items.special.CellVariants.DEUTERIUM,
                 "empty-cell recipe did not produce a model-selecting full deuterium cell");
         deuteriumGrid.set(0, antimatter.copyWithCount(1));
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, deuteriumGrid).isEmpty(),
@@ -149,6 +147,13 @@ public final class SingularityGameTests {
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, singularityGrid(partial))
                         .orElse(ItemStack.EMPTY).isEmpty(),
                 "component singularity recipe matched a partial AMAT cell");
+        ItemStack partialAschrab = new ItemStack(ModSingularityItems.cell.get());
+        ModDataComponents.fluidId(partialAschrab, Fluids.ASCHRAB.getID());
+        ModDataComponents.fluidAmount(partialAschrab, 1);
+        ModDataComponents.ITEM_VARIANT.set(partialAschrab, com.hbm.items.special.CellVariants.ANTI_SCHRABIDIUM);
+        helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, singularityGrid(partialAschrab))
+                        .orElse(ItemStack.EMPTY).isEmpty(),
+                "component singularity recipe matched a partial anti-schrabidium cell");
         helper.assertTrue(Recipes.craftingResult(helper.getLevel(), 3, 3, pelletGrid(partial))
                         .orElse(ItemStack.EMPTY).isEmpty(),
                 "component antimatter-pellet recipe matched a partial AMAT cell");
@@ -231,11 +236,17 @@ public final class SingularityGameTests {
         helper.succeed();
     }
 
-    /** A real cyclotron output is networked through typed ducts into a tank before the recipe consumes it. */
+    /**
+     * A real cyclotron output is networked through typed ducts into an antimatter barrel, which fills cells. 1.7
+     * {@code TileEntityMachineFluidTank} tears open on antimatter ("antimatter does not stay in a tank") and a
+     * matter barrel explodes on it, so {@code barrel_antimatter} is the one 1.7 container this route can end in.
+     */
     public static void fluidProduction(GameTestHelper helper) {
         Fluids.init();
         TileEntityMachineCyclotron cyclotron = placeCyclotron(helper, new BlockPos(3, 1, 3));
-        TileEntityMachineFluidTank tank = placeFluidTank(helper, new BlockPos(10, 1, 4));
+        helper.setBlock(new BlockPos(8, 1, 4), com.hbm.blocks.ModFluidNetBlocks.barrel_antimatter.get().defaultBlockState());
+        com.hbm.tileentity.machine.storage.TileEntityBarrel tank = (com.hbm.tileentity.machine.storage.TileEntityBarrel)
+                helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(8, 1, 4)));
         for (BlockPos ductPos : new BlockPos[] {new BlockPos(6, 1, 4), new BlockPos(7, 1, 4),
                 new BlockPos(7, 1, 3)}) {
             helper.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState());
@@ -245,7 +256,8 @@ public final class SingularityGameTests {
         }
         tank.tank.setTankType(Fluids.AMAT);
         tank.mode = 1;
-        TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
+        com.hbm.tileentity.machine.storage.TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
+                tank.getBlockState(), tank);
         FluidNetwork.distributeAll(helper.getLevel());
 
         cyclotron.power = TileEntityMachineCyclotron.MAX_POWER;
@@ -257,36 +269,39 @@ public final class SingularityGameTests {
             cyclotron.tanks[1].setFill(0);
             TileEntityMachineCyclotron.serverTick(helper.getLevel(), cyclotron.getBlockPos(),
                     cyclotron.getBlockState(), cyclotron);
-            TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
+            com.hbm.tileentity.machine.storage.TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
+                    tank.getBlockState(), tank);
             FluidNetwork.distributeAll(helper.getLevel());
         }
-        helper.assertTrue(tank.tank.getTankType() == Fluids.AMAT && tank.tank.getFill() == 4_000,
-                "cyclotron AMAT did not cross the duct network into the ordinary tank: output="
-                        + cyclotron.tanks[2].getFill() + ", tank=" + tank.tank.getFill());
+        helper.assertTrue(helper.getLevel().getBlockEntity(tank.getBlockPos()) == tank
+                        && tank.tank.getTankType() == Fluids.AMAT && tank.tank.getFill() == 4_000,
+                "cyclotron AMAT did not cross the duct network into the antimatter barrel: output="
+                        + cyclotron.tanks[2].getFill() + ", barrel=" + tank.tank.getFill());
 
         tank.inventory.setStackInSlot(4, new ItemStack(ModSingularityItems.cell.get(), 4));
         for (int i = 0; i < 4; i++) {
-            TileEntityMachineFluidTank.serverTick(helper.getLevel(), tank.getBlockPos(), tank.getBlockState(), tank);
+            com.hbm.tileentity.machine.storage.TileEntityBarrel.serverTick(helper.getLevel(), tank.getBlockPos(),
+                    tank.getBlockState(), tank);
         }
         ItemStack cells = tank.inventory.getStackInSlot(5);
         helper.assertTrue(cells.getItem() == ModSingularityItems.cell.get() && cells.getCount() == 4
                         && ItemCell.getFluidType(cells) == Fluids.AMAT
                         && ModSingularityItems.cell.get().getFill(cells) == 1_000,
-                "tank did not fill component-backed cells from networked AMAT");
+                "antimatter barrel did not fill component-backed cells from networked AMAT");
 
-        ItemStack one = cells.copyWithCount(1);
-        java.util.List<ItemStack> grid = new java.util.ArrayList<>();
-        for (int i = 0; i < 9; i++) grid.add(ItemStack.EMPTY);
-        for (int slot : new int[] {1, 3, 5, 7}) grid.set(slot, one.copy());
-        for (int slot : new int[] {0, 2, 6, 8}) grid.set(slot, new ItemStack(ModItems.nugget_euphemium.get()));
-        grid.set(4, new ItemStack(com.hbm.blocks.ModHazardBlocks.block_schrabidium.get().asItem()));
+        // 1.7 CraftingManager:325 builds the singularity from anti-schrabidium cells, not antimatter
+        // (§19ed-gaps-a): network AMAT cells must be refused, component ASCHRAB cells accepted.
+        ItemStack amatResult = Recipes.craftingResult(helper.getLevel(), 3, 3,
+                singularityGrid(cells.copyWithCount(1))).orElse(ItemStack.EMPTY);
+        helper.assertTrue(amatResult.isEmpty(), "antimatter cells must not assemble the singularity (1.7 uses ASCHRAB)");
+        java.util.List<ItemStack> grid = singularityGrid(ItemCell.getFullCell(Fluids.ASCHRAB, 1));
         ItemStack result = Recipes.craftingResult(helper.getLevel(), 3, 3, grid).orElse(ItemStack.EMPTY);
         java.util.List<ItemStack> remainders = Recipes.craftingRemainders(helper.getLevel(), 3, 3, grid)
                 .orElse(java.util.List.of());
         helper.assertTrue(result.is(ModSingularityItems.singularity.get()) && remainders.size() == 9
                         && remainders.get(1).is(ModSingularityItems.cell.get())
                         && ItemCell.isEmptyCell(remainders.get(1)),
-                "network-produced AMAT cells did not assemble the component singularity recipe");
+                "component anti-schrabidium cells did not assemble the singularity recipe");
         helper.succeed();
     }
 
@@ -316,14 +331,6 @@ public final class SingularityGameTests {
         MachineCyclotron block = ModMachineBlocks.machine_cyclotron.get();
         BlockPos absolute = FoldedTestSupport.assemble(helper, block, relative);
         return (TileEntityMachineCyclotron) helper.getLevel().getBlockEntity(absolute);
-    }
-
-    private static TileEntityMachineFluidTank placeFluidTank(GameTestHelper helper, BlockPos relative) {
-        MachineFluidTank block = ModMachineBlocks.machine_fluidtank.get();
-        BlockPos absolute = helper.absolutePos(relative);
-        helper.setBlock(relative, block.defaultBlockState());
-        block.fillSpace(helper.getLevel(), absolute, Direction.NORTH);
-        return (TileEntityMachineFluidTank) helper.getLevel().getBlockEntity(absolute);
     }
 
     private static java.util.List<ItemStack> singularityGrid(ItemStack cell) {

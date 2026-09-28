@@ -57,7 +57,7 @@ public class ContainerMachinePUREX extends AbstractContainerMenu {
 
         for (int i = 0; i < 3; i++) this.addSlot(validated(4 + i, 8 + i * 18, 90)); // item inputs
         for (int row = 0; row < 3; row++) {                                          // outputs, 2 per row
-            for (int col = 0; col < 2; col++) this.addSlot(takeOnly(7 + row * 2 + col, 80 + col * 18, 36 + row * 18));
+            for (int col = 0; col < 2; col++) this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 7 + row * 2 + col, 80 + col * 18, 36 + row * 18)); // 1.7 addOutputSlots
         }
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
@@ -112,6 +112,7 @@ public class ContainerMachinePUREX extends AbstractContainerMenu {
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();
+            slot.onTake(player, result); // 1.7 transferStackInSlot: slot.onPickupFromSlot (SlotCraftingOutput)
         }
         return result;
     }

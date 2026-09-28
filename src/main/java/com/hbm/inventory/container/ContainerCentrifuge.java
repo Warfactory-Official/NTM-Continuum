@@ -44,10 +44,10 @@ public class ContainerCentrifuge extends AbstractContainerMenu {
 
         this.addSlot(validated(0, 36, 50));
         this.addSlot(validated(1, 9, 50));
-        this.addSlot(takeOnly(2, 63, 50));
-        this.addSlot(takeOnly(3, 83, 50));
-        this.addSlot(takeOnly(4, 103, 50));
-        this.addSlot(takeOnly(5, 123, 50));
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 2, 63, 50)); // 1.7 SlotCraftingOutput
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 3, 83, 50)); // 1.7 SlotCraftingOutput
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 103, 50)); // 1.7 SlotCraftingOutput
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 5, 123, 50)); // 1.7 SlotCraftingOutput
         this.addSlot(validated(6, 149, 22));
         this.addSlot(validated(7, 149, 40));
 
@@ -97,6 +97,7 @@ public class ContainerCentrifuge extends AbstractContainerMenu {
             int invEnd = MACHINE_SLOTS + 36;
             if (index < invStart) {
                 if (!this.moveItemStackTo(stack, invStart, invEnd, true)) return ItemStack.EMPTY;
+                slot.onQuickCraft(stack, result); // 1.7 slot.onSlotChange: SlotCraftingOutput counts the shift-click
             } else if (!this.moveItemStackTo(stack, 0, MACHINE_SLOTS, false)) {
                 return ItemStack.EMPTY;
             }

@@ -91,6 +91,9 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
     }
 
     public boolean canProcessSolid() {
+        // 1.7: the irradiated meteorite sword is fused before any outgasser recipe is looked up
+        if (inventory.getStackInSlot(1).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get())
+                && inventory.getStackInSlot(2).isEmpty()) return true;
         GenericRecipe recipe = OutgasserRecipes.INSTANCE.getRecipeForFusion(inventory.getStackInSlot(1));
         if (recipe == null) return false;
 
@@ -121,6 +124,12 @@ public class TileEntityFusionBreeder extends TileEntityMachineBase
     }
 
     private void processSolid() {
+        if (inventory.getStackInSlot(1).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get())) {
+            inventory.extractItem(1, 1, false);
+            inventory.setStackInSlot(2, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_fused.get()));
+            this.progress = 0;
+            return;
+        }
         GenericRecipe recipe = OutgasserRecipes.INSTANCE.getRecipeForFusion(inventory.getStackInSlot(1));
         if (recipe == null) return;
 

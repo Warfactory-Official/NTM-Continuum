@@ -12,8 +12,8 @@ import java.util.Map;
 
 /**
  * Breeding reactor recipes — 1:1 port of the 1.7 {@code BreederRecipes.registerDefaults}. Each rod type
- * is registered for the single, dual (flux x2) and quad (flux x3) rods. The etched meteorite sword entry
- * waits on the meteorite swords.
+ * is registered for the single, dual (flux x2) and quad (flux x3) rods. The etched meteorite sword breeds
+ * into the bred sword (flux 1000).
  */
 public final class BreederRecipes {
 
@@ -58,5 +58,6 @@ public final class BreederRecipes {
         setRecipe(BreedingRodType.U238, BreedingRodType.RGP, 300);
         setRecipe(BreedingRodType.URANIUM, BreedingRodType.RGP, 200);
         setRecipe(BreedingRodType.RGP, BreedingRodType.WASTE, 200);
+        recipes.put(com.hbm.items.ModAbilityToolItems.meteorite_sword_etched.get(), new BreederRecipe(new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_bred.get()), 1000));
     }
 }

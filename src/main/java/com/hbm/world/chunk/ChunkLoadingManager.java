@@ -47,6 +47,13 @@ public final class ChunkLoadingManager {
 
     private static final class LevelState {
         final Long2IntOpenHashMap refCounts = new Long2IntOpenHashMap();
+        /**
+         * Chunks that were already in the level's forced set when HBM first claimed them. The set is one flag
+         * per chunk, not a refcount (1.7's ForgeChunkManager gave every mod its own tickets instead), so HBM
+         * leaves the flag alone for these when its last claim goes: clearing it would unload a chunk someone
+         * else forced — a /forceload, or a GameTest plot whose test had not started yet and then never did.
+         */
+        final it.unimi.dsi.fastutil.longs.LongOpenHashSet borrowed = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
         final Set<ChunkLoaderTicket> tickets = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
         ChunkLoaderTicket restoreTicket;
         long restoreExpiresAt = -1L;
@@ -98,7 +105,12 @@ public final class ChunkLoadingManager {
             // full chunk generation on the server thread per chunk before any work starts. A real Fat
             // Man measured 20.6 s of server thread on 1,057 such chunks (§19z-j). Claiming is a
             // registration; callers here all poll for the chunk anyway.
-            dev.golem.core.world.Compat.updateChunkForced(level, ChunkPos.getX(packed), ChunkPos.getZ(packed), true);
+            int chunkX = ChunkPos.getX(packed), chunkZ = ChunkPos.getZ(packed);
+            // A chunk still in HBM's own save record is HBM's from before a restart, not someone else's.
+            boolean external = dev.golem.core.world.Compat.isChunkForced(level, chunkX, chunkZ)
+                    && !ForcedChunkData.get(level).chunks().contains(packed);
+            if (external) state.borrowed.add(packed);
+            else dev.golem.core.world.Compat.updateChunkForced(level, chunkX, chunkZ, true);
             ForcedChunkData.get(level).add(packed);
         }
     }
@@ -109,7 +121,9 @@ public final class ChunkLoadingManager {
         int remaining = state.refCounts.addTo(packed, -1) - 1;
         if (remaining <= 0) {
             state.refCounts.remove(packed);
-            dev.golem.core.world.Compat.updateChunkForced(level, ChunkPos.getX(packed), ChunkPos.getZ(packed), false);
+            if (!state.borrowed.remove(packed)) {
+                dev.golem.core.world.Compat.updateChunkForced(level, ChunkPos.getX(packed), ChunkPos.getZ(packed), false);
+            }
             ForcedChunkData.get(level).remove(packed);
         }
     }

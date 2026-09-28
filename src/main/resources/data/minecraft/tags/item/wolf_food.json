@@ -1,8 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    "hbm:ingot_semtex",
-    "hbm:glyphid_meat",
-    "hbm:glyphid_meat_grilled"
-  ]
-}

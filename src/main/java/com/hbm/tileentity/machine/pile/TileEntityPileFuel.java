@@ -26,8 +26,8 @@ public class TileEntityPileFuel extends TileEntityPileBase implements IPileNeutr
     public int neutrons;
     public int lastNeutrons;
     public int progress;
-    /** 1.7 {@code GeneralConfig.enable528 ? 75000 : 50000}; the port has no 528 mode. */
-    public static final int maxProgress = 50000;
+    /** 1.7 {@code GeneralConfig.enable528 ? 75000 : 50000}, fixed when the class loads, as in 1.7. */
+    public static final int maxProgress = com.hbm.config.GeneralConfig.enable528 ? 75000 : 50000;
 
     public TileEntityPileFuel(BlockPos pos, BlockState state) {
         super(ModNuclearMiscBlockEntities.PILE_FUEL.get(), pos, state);

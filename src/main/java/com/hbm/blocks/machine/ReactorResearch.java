@@ -61,4 +61,13 @@ public final class ReactorResearch extends BlockMultiblockMachine implements Wor
             level.addParticle(ParticleTypes.BUBBLE, ix, iy, iz, 0.0, 0.2, 0.0);
         }
     }
+
+    /** 1.7 {@code onBlockActivated}: {@code BossSpawnHandler.markFBI} on every non-sneaking use. */
+    @Override
+    protected net.minecraft.world.InteractionResult useAtCore(net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.level.Level level, net.minecraft.core.BlockPos core, net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.phys.BlockHitResult hit) {
+        if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
+        return super.useAtCore(state, level, core, player, hit);
+    }
 }

@@ -29,7 +29,11 @@ public class HbmKeybinds {
         /** General backpack enable/disable toggle (C). */
         TOGGLE_JETPACK,
         /** General HUD enable/disable toggle (V). */
-        TOGGLE_HEAD;
+        TOGGLE_HEAD,
+        /** 1.7 {@code DASH} (left Shift): the bismuth suit's dash. */
+        DASH,
+        /** 1.7 {@code TOGGLE_MAGNET} (Z): the lodestone/magnet armour modules on and off. */
+        TOGGLE_MAGNET;
 
         public static final EnumKeybind[] VALUES = values();
 

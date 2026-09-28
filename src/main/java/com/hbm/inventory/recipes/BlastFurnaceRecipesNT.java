@@ -76,6 +76,7 @@ public final class BlastFurnaceRecipesNT extends GenericRecipes {
                 .inputItems(new ComparableStack(ModOreBlocks.stone_resource_limestone.get().asItem()),
                         new ComparableStack(Items.CLAY_BALL, 6))
                 .outputItems(new ItemStack(ModItems.ingot_firebrick.get(), 8)));
+        AbilityToolMachineRecipes.blastFurnace(this); // meteor sword, meteorite ingot, starmetal
     }
 
     /** Matches either furnace ingredient order, as the old two-slot machine did. */

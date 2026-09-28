@@ -55,13 +55,13 @@ public class ContainerSILEX extends AbstractContainerMenu {
         this.addSlot(validated(1, 8, 24));     // fluid identifier
         this.addSlot(validated(2, 26, 24));    // fluid-container in
         this.addSlot(takeOnly(3, 44, 24));     // emptied-container out
-        this.addSlot(takeOnly(4, 116, 90));    // staging output
-        this.addSlot(takeOnly(5, 134, 72));    // queue
-        this.addSlot(takeOnly(6, 152, 72));
-        this.addSlot(takeOnly(7, 134, 90));
-        this.addSlot(takeOnly(8, 152, 90));
-        this.addSlot(takeOnly(9, 134, 108));
-        this.addSlot(takeOnly(10, 152, 108));
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 116, 90));    // staging output
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 5, 134, 72));    // queue
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 6, 152, 72));
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 7, 134, 90));
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 8, 152, 90));
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 9, 134, 108));
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 10, 152, 108));
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 140);
     }
@@ -117,6 +117,7 @@ public class ContainerSILEX extends AbstractContainerMenu {
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();
+            slot.onTake(player, result); // 1.7 transferStackInSlot: slot.onPickupFromSlot (SlotCraftingOutput)
         }
         return result;
     }

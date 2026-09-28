@@ -34,6 +34,7 @@ public final class ModArmorModules {
     public static final RegistryObject<ItemModInsert> insert_ghiorsium = insert("insert_ghiorsium", 2000, .8F, .75F, .35F, .9F);
     public static final RegistryObject<ItemModInsert> insert_yharonite = insert("insert_yharonite", 9999, .01F, 1F, 1F, 1F);
     public static final RegistryObject<ItemModInsert> insert_doxium = insert("insert_doxium", 9999, 5F, 1F, 1F, 1F);
+    public static final RegistryObject<ItemModInsert> insert_era = insert("insert_era", 25, 0.5F, 1F, 0.25F, 1F);
 
     public static final RegistryObject<ItemModBattery> armor_battery = battery("armor_battery", 1.25D);
     public static final RegistryObject<ItemModBattery> armor_battery_mk2 = battery("armor_battery_mk2", 1.5D);

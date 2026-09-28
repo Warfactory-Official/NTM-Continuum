@@ -48,6 +48,37 @@ public class EntityHbmProps {
     /** Persistent general backpack/HUD toggles formerly carried by HbmCapability. */
     private boolean enableBackpack = true;
     private boolean enableHUD = true;
+    /** 1.7 HbmPlayerProps shield: absorbed before armor modules; raised by ItemModShield. Synced for the HUD bar (G-C). */
+    public float shield = 0;
+    public float maxShield = 0;
+    /** Tick of the last hurt event, for the shield's 60-tick regeneration delay. Not persisted, as in 1.7. */
+    public int lastDamage = 0;
+    /** 1.7 HbmPlayerProps.reputation: the dungeon karma, -25..25 (old lanterns repaired / destroyed). Persisted, synced, kept on death. */
+    public int reputation = 0;
+    /** 1.7 HbmPlayerProps.enableMagnet (G-C): whether magnet armour modules pull items. Persisted, synced, kept on death. */
+    public boolean enableMagnet = true;
+    /** 1.7 HbmPlayerProps.maskManTimer: seconds the mask man's conditions held. Persisted, reset on death (1.7 did not copy it). */
+    public int maskManTimer = 0;
+    /** 1.7 player PERSISTED_NBT_TAG "fbiMark": the world time until which BossSpawnHandler's raid skips the player. Kept on death. */
+    public long fbiMark = 0;
+    /** 1.7 player PERSISTED_NBT_TAG "radMark": set by a reactor meltdown nearby, consumed by the radiation beasts. Kept on death. */
+    public boolean radMark = false;
+
+    /**
+     * 1.7 {@code ModEventHandler.onPlayerClone}: the respawned (or End-returned) player gets the old one's
+     * HbmPlayerProps ({@code serialize}/{@code deserialize}: shield, max shield, backpack, HUD, reputation) and its
+     * PERSISTED_NBT_TAG (fbiMark, radMark); everything HbmLivingProps held starts over.
+     */
+    public void copyPlayerPropsFrom(EntityHbmProps old) {
+        this.shield = old.shield;
+        this.maxShield = old.maxShield;
+        this.enableBackpack = old.enableBackpack;
+        this.enableHUD = old.enableHUD;
+        this.reputation = old.reputation;
+        this.enableMagnet = old.enableMagnet;
+        this.fbiMark = old.fbiMark;
+        this.radMark = old.radMark;
+    }
 
     public double getRads() { return rads; }
     /** Clamped to [0, 2500] exactly like the old capability setter. */
@@ -119,6 +150,13 @@ public class EntityHbmProps {
         out.putInt("balefire", balefire);
         out.putBoolean("enableBackpack", enableBackpack);
         out.putBoolean("enableHUD", enableHUD);
+        out.putFloat("shield", shield);
+        out.putFloat("maxShield", maxShield);
+        out.putInt("reputation", reputation);
+        out.putBoolean("enableMagnet", enableMagnet);
+        out.putInt("maskManTimer", maskManTimer);
+        out.putLong("fbiMark", fbiMark);
+        out.putBoolean("radMark", radMark);
         DataOut.ChildList list = out.childrenList("cont");
         for (ContaminationEffect effect : contamination) effect.save(list.addChild());
     }
@@ -139,6 +177,13 @@ public class EntityHbmProps {
         this.balefire = in.getIntOr("balefire", 0);
         this.enableBackpack = in.getBooleanOr("enableBackpack", true);
         this.enableHUD = in.getBooleanOr("enableHUD", true);
+        this.shield = in.getFloatOr("shield", 0F);
+        this.maxShield = in.getFloatOr("maxShield", 0F);
+        this.reputation = in.getIntOr("reputation", 0);
+        this.enableMagnet = in.getBooleanOr("enableMagnet", true);
+        this.maskManTimer = in.getIntOr("maskManTimer", 0);
+        this.fbiMark = in.getLongOr("fbiMark", 0L);
+        this.radMark = in.getBooleanOr("radMark", false);
         contamination.clear();
         for (DataIn child : in.childrenListOrEmpty("cont")) {
             contamination.add(ContaminationEffect.load(child));
@@ -166,6 +211,11 @@ public class EntityHbmProps {
         buf.writeBoolean(enableHUD);
         buf.writeInt(contamination.size());
         for (ContaminationEffect e : contamination) e.writeTo(buf);
+        buf.writeInt(reputation); // 1.7 HbmPlayerProps.serialize carried it to the client
+        // G-C: 1.7 HbmPlayerProps.serialize also carried the shield (for the HUD bar) and the magnet toggle
+        buf.writeFloat(shield);
+        buf.writeFloat(maxShield);
+        buf.writeBoolean(enableMagnet);
     }
 
     public void deserialize(ByteBuf buf) {
@@ -190,6 +240,12 @@ public class EntityHbmProps {
         contamination.clear();
         int size = buf.readInt();
         for (int i = 0; i < size; i++) contamination.add(ContaminationEffect.readFrom(buf));
+        if (buf.readableBytes() >= 4) this.reputation = buf.readInt();
+        if (buf.readableBytes() >= 9) {
+            this.shield = buf.readFloat();
+            this.maxShield = buf.readFloat();
+            this.enableMagnet = buf.readBoolean();
+        }
     }
 
     /**

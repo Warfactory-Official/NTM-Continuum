@@ -18,7 +18,6 @@ import com.hbm.util.ChunkUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.items.ISatChip;
 import com.hbm.saveddata.satellites.Satellite;
-import com.hbm.saveddata.satellites.SatelliteType;
 import com.hbm.items.ModItems;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -155,18 +154,24 @@ public class EntitySoyuz extends CompatEntity implements StoredItems {
 
                 if (load.is(ModItems.flame_pony.get())) {
                     ExplosionLarge.spawnTracers(level(), getX(), getY(), getZ(), 25);
+                    // 1.7 achSpace, awarded to every player in the world; the trigger keys on the rocket
+                    ItemStack rocket = new ItemStack(com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.missile_soyuz.get());
+                    for (Player p : level().players()) {
+                        if (p instanceof ServerPlayer serverPlayer) HbmCriteria.orbit(serverPlayer, rocket);
+                    }
+                }
+
+                // 1.7:109-113 achFOEQ for the legacy FOEQ probe. sat_foeq launches no satellite (it was never
+                // registered in XSatelliteRegistry), so this is its only effect.
+                if (load.is(com.hbm.items.ModSatelliteItems.sat_foeq.get())) {
                     for (Player p : level().players()) {
                         if (p instanceof ServerPlayer serverPlayer) HbmCriteria.orbit(serverPlayer, load);
                     }
                 }
 
-                // 1.7:109-113 awards achFOEQ a second time here; SatelliteRelay.onOrbit below is the same
-                // award on the same tick, so the port fires it once.
-
-                // 1.7:115-120 - every satellite reaches orbit here, and nowhere else
-                SatelliteType type = SatelliteType.fromStack(load);
-                if (type != null && level() instanceof ServerLevel orbitLevel) {
-                    Satellite.orbit(orbitLevel, type, ISatChip.getFreqS(load), getX(), getY(), getZ());
+                // 1.7:115-118 - every ISatChip reaches orbit here, and nowhere else
+                if (load.getItem() instanceof ISatChip && level() instanceof ServerLevel orbitLevel) {
+                    Satellite.orbit(orbitLevel, load, ISatChip.getFreqS(load), getX(), getY(), getZ());
                 }
             }
         }

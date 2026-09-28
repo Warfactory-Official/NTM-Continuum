@@ -41,6 +41,22 @@ public class ItemBlockStorageCrate extends CompatBlockItem {
         lines.add(Component.literal(used + "/" + total + " Slots used (" + percent + "%)").withStyle(color));
     }
 
+    public CrateType crateType() {
+        return crateType;
+    }
+
+    @Override
+    protected net.minecraft.world.@org.jspecify.annotations.Nullable InteractionResult compatBeforePlace(
+            net.minecraft.world.item.context.UseOnContext context) {
+        return CrateHeldOpening.beforePlace(context);
+    }
+
+    @Override
+    protected net.minecraft.world.InteractionResult compatUse(net.minecraft.world.level.Level level,
+            net.minecraft.world.entity.player.Player player, net.minecraft.world.InteractionHand hand) {
+        return CrateHeldOpening.use(level, player, hand);
+    }
+
     private int contents(ItemStack stack) {
         return Compat.containerItemCount(stack, crateType.slots);
     }

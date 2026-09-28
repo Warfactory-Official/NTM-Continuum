@@ -50,7 +50,7 @@ public final class ContainerMachinePrecAss extends AbstractContainerMenu {
         for (int row = 0; row < 3; row++) for (int col = 0; col < 3; col++)
             addSlot(validated(4 + row * 3 + col, 8 + col * 18, 27 + row * 18));
         for (int row = 0; row < 3; row++) for (int col = 0; col < 3; col++)
-            addSlot(takeOnly(13 + row * 3 + col, 80 + col * 18, 27 + row * 18));
+            addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 13 + row * 3 + col, 80 + col * 18, 27 + row * 18)); // 1.7 addOutputSlots
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
     }
 
@@ -104,6 +104,7 @@ public final class ContainerMachinePrecAss extends AbstractContainerMenu {
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();
+            slot.onTake(player, result); // 1.7 transferStackInSlot: slot.onPickupFromSlot (SlotCraftingOutput)
         }
         return result;
     }

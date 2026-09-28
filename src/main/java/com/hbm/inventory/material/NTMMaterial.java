@@ -120,14 +120,25 @@ public final class NTMMaterial {
 
     // --- HBM autogen shapes (one item per shape, matched by the material data component) ---
 
-    public AStack plateCast()   { return new MaterialStack(this, MaterialShapes.CASTPLATE); }
-    public AStack plateWelded() { return new MaterialStack(this, MaterialShapes.WELDEDPLATE); }
-    public AStack shell()       { return new MaterialStack(this, MaterialShapes.SHELL); }
-    public AStack pipe()        { return new MaterialStack(this, MaterialShapes.PIPE); }
-    public AStack wire()        { return new MaterialStack(this, MaterialShapes.WIRE); }
-    public AStack wireDense()   { return new MaterialStack(this, MaterialShapes.DENSEWIRE); }
-    public AStack bolt()        { return new MaterialStack(this, MaterialShapes.BOLT); }
-    public AStack heavyComp()   { return new MaterialStack(this, MaterialShapes.HEAVY_COMPONENT); }
+    public AStack plateCast()   { return autogenStack(MaterialShapes.CASTPLATE); }
+    public AStack plateWelded() { return autogenStack(MaterialShapes.WELDEDPLATE); }
+    public AStack shell()       { return autogenStack(MaterialShapes.SHELL); }
+    public AStack pipe()        { return autogenStack(MaterialShapes.PIPE); }
+    public AStack wire()        { return autogenStack(MaterialShapes.WIRE); }
+    public AStack wireDense()   { return autogenStack(MaterialShapes.DENSEWIRE); }
+    public AStack bolt()        { return autogenStack(MaterialShapes.BOLT); }
+    public AStack heavyComp()   { return autogenStack(MaterialShapes.HEAVY_COMPONENT); }
+
+    /**
+     * An autogen shape of this material. The 1.7 {@code DictGroup}s ({@code ANY_RESISTANTALLOY},
+     * {@code ANY_BISMOIDBRONZE}: id -1, name {@code any_*}) own no autogen item, so a {@link MaterialStack} of one
+     * could never match (the 1.7 {@code plateWeldedAnyResistantAlloy} ore name took any member's plate); they
+     * resolve to their {@code c:<plural>/any_*} aggregate tag, which lists the members' shape tags.
+     */
+    private AStack autogenStack(MaterialShapes shape) {
+        if (id == -1 && name.startsWith("any_")) return new TagStack(tag(shape));
+        return new MaterialStack(this, shape);
+    }
 
     @Override
     public String toString() {

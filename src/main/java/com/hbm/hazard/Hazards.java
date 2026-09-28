@@ -23,6 +23,9 @@ public final class Hazards {
         com.hbm.blocks.ModPwrContent.registerHazards();   // PWR fuel rods (fresh / hot / depleted)
         com.hbm.items.ModGearItems.registerHazards(); // hazmat resistance coefficients + full-set membership
         com.hbm.items.ModArmorItems.configure();      // power-armour set bonuses, rad resistance, hazard classes
+        com.hbm.items.ModArmorModItems.configure();   // PaA/liquidator suits, gas-mask attachment hazard class
+        com.hbm.items.ModArmorSetBItems.configure();  // final armor B: steam/diesel/env suits, masks, jackets
+        com.hbm.items.ModArmorSetItems.configure();   // final armor sets A: alloy, cmb, bismuth, euphemium, AJR/AJRO, HEV, Fau, trenchmaster
         com.hbm.util.DamageResistanceHandler.init();  // threshold/resistance profiles + damage event seam
         com.hbm.blocks.ModHazardBlocks.initHazards(); // block radiation values (reads block-item RADIATION hazard)
         com.hbm.hazard.TerrainHazards.register(); // nuclear waste blocks, yellowcake/fallout blocks, hot sellafite

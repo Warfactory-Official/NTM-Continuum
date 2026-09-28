@@ -16,6 +16,15 @@ public interface IControlReceiver {
     void receiveControl(CompoundTag data);
 
     /**
+     * 1.7's two-argument {@code receiveControl(EntityPlayer, NBTTagCompound)}: the same event, with the
+     * player who sent it, for receivers whose reaction involves them (opening a second menu, a sound played
+     * at the player). The packet handler always calls this one; the default forwards to the tag-only form.
+     */
+    default void receiveControl(Player player, CompoundTag data) {
+        receiveControl(data);
+    }
+
+    /**
      * Whether {@code player} is allowed to control this tile. Receivers that are controlled through a
      * menu must explicitly verify that the player's current menu owns this receiver. Receivers with an
      * intentional remote-control policy may provide their own server-side check.

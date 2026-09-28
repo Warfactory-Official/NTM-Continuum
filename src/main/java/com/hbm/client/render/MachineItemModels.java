@@ -87,6 +87,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         // One reload listener drives both parsers: guns read the same item definitions for the weapon
         // renderer they name.
         com.hbm.client.render.weapon.GunLegacyModels.reload(resources);
+        reloadCustom(resources);
         Map<Identifier, MachineItemModel> built = new HashMap<>();
         Map<Identifier, Map<Integer, MachineItemModel>> builtVariants = new HashMap<>();
         Map<Identifier, RBMKColumnItemModel> columns = new HashMap<>();
@@ -425,6 +426,103 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         List<Float> out = new ArrayList<>();
         e.getAsJsonArray().forEach(v -> out.add(v.getAsFloat()));
         return List.copyOf(out);
+    }
+
+    // ---- hbm:custom_item: the ported 1.7 item renderers (MachineItemModelRenderer.CustomItem on 26.1) ----
+    // The same definitions, read here because nothing below 1.21.4 reads them. The item's own model is generated as
+    // a builtin/entity marker wearing the frame's display{} (<frame>_obj_context_legacy, <frame>_obj_flat_legacy
+    // when the inventory is the sprite, <generated|handheld>_sprite_legacy for a sprite the renderer draws on), so
+    // vanilla applies the frame exactly as 26.1 does; a declined slot is drawn from the definition's sprite.
+
+    /^* {@code spriteFrame}: a declined slot is the extruded sprite rather than the inventory square. ^/
+    private record CustomEntry(com.hbm.client.render.item.CustomItemRenderer renderer, Identifier sprite, boolean oversized,
+                         boolean spriteFrame) {}
+
+    private static Map<Identifier, CustomEntry> customModels = Map.of();
+
+    
+    /^* Re-reads every {@code assets/<ns>/items/<name>.json} and records the custom-rendered items among them. ^/
+    static void reloadCustom(ResourceManager resources) {
+        Map<Identifier, CustomEntry> parsed = new HashMap<>();
+        for (Map.Entry<Identifier, Resource> entry : resources.listResources(
+                "items", id -> id.getPath().endsWith(".json")).entrySet()) {
+            Identifier file = entry.getKey();
+            try (BufferedReader reader = entry.getValue().openAsReader()) {
+                JsonElement root = JsonParser.parseReader(reader);
+                if (!root.isJsonObject()) continue;
+                JsonElement model = root.getAsJsonObject().get("model");
+                if (model == null || !model.isJsonObject()) continue;
+                JsonObject custom = model.getAsJsonObject();
+                if (!"hbm:custom_item".equals(customString(custom, "type"))) continue;
+                String renderer = customString(custom, "renderer");
+                if (renderer == null || !com.hbm.client.render.item.CustomItemRenderers.exists(renderer)) {
+                    Constants.LOG.warn("Unknown hbm:custom_item renderer '{}' in {}", renderer, file);
+                    continue;
+                }
+                String sprite = customString(custom, "sprite");
+                String frame = customString(custom, "frame");
+                boolean spriteFrame = sprite != null && ("generated".equals(frame) || "handheld".equals(frame));
+                Identifier texture = sprite == null ? null : customTexture(dev.golem.core.Ids.parse(sprite));
+                JsonElement oversized = root.getAsJsonObject().get("oversized_in_gui");
+                String path = file.getPath();
+                String name = path.substring("items/".length(), path.length() - ".json".length());
+                parsed.put(dev.golem.core.Ids.of(file.getNamespace(), name),
+                        new CustomEntry(com.hbm.client.render.item.CustomItemRenderers.byName(renderer), texture,
+                                oversized != null && oversized.getAsBoolean(), spriteFrame));
+            } catch (Exception e) {
+                Constants.LOG.warn("Skipping custom item model {}: {}", file, e.toString());
+            }
+        }
+        customModels = Map.copyOf(parsed);
+        dev.golem.core.render.ItemSprites.clear();
+        // The count is the positive signal: an empty map leaves every one of these items invisible, silently.
+        Constants.LOG.info("Loaded {} custom item renderer model(s)", customModels.size());
+    }
+
+    private static Identifier customTexture(Identifier sprite) {
+        return dev.golem.core.Ids.of(sprite.getNamespace(), "textures/" + sprite.getPath() + ".png");
+    }
+
+    private static String customString(JsonObject json, String key) {
+        JsonElement e = json.get(key);
+        return e != null && e.isJsonPrimitive() ? e.getAsString() : null;
+    }
+
+    /^* Draws {@code stack} if its definition names a custom renderer; returns whether it did. ^/
+    public static boolean renderCustom(ItemStack stack, net.minecraft.world.item.ItemDisplayContext context, com.mojang.blaze3d.vertex.PoseStack poseStack,
+                                 net.minecraft.client.renderer.MultiBufferSource buffers, int light, int overlay) {
+        if (customModels.isEmpty()) return false;
+        CustomEntry entry = customModels.get(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()));
+        if (entry == null) return false;
+
+        // No slot clip, unlike the machines: every renderer here that draws the inventory is oversized (1.7 clipped
+        // nothing), and a declined inventory slot is the sprite's own square. The machines' clip also assumes a
+        // block-centred model space, which the weapon frame's pixel slot is not.
+        com.hbm.client.render.item.CustomItemRenderer.Type type = com.hbm.client.render.item.CustomItemRenderer.Type.of(context);
+        dev.golem.core.render.RecordingSubmitSink sink = new dev.golem.core.render.RecordingSubmitSink();
+        if (entry.renderer().handles(stack, type)) {
+            entry.renderer().render(stack, type, poseStack, sink, light, overlay, dev.golem.core.render.ItemRenderContext.owner());
+        } else if (entry.sprite() != null && entry.spriteFrame()) {
+            dev.golem.core.render.ItemSprites.submit(poseStack, sink, entry.sprite(), light, overlay);
+        } else if (entry.sprite() != null) {
+            customSprite(poseStack, sink, entry.sprite(), light, overlay);
+        }
+        // The bobblehead and plushie hand props are item sub-draws, which need the level.
+        sink.flush(buffers, net.minecraft.client.Minecraft.getInstance().level);
+        return true;
+    }
+
+    /^*
+     * The sprite over the slot's sixteen pixels, facing the viewer. The weapon frame's inventory space runs y
+     * down from the slot's corner, so pixel {@code (0, 0)} takes the texture's top left.
+     ^/
+    private static void customSprite(com.mojang.blaze3d.vertex.PoseStack pose, dev.golem.core.render.SubmitSink sink, Identifier texture, int light, int overlay) {
+        sink.submitCustomGeometry(pose, dev.golem.core.render.CompatRenderTypes.entityCutoutNoCull(texture), (p, buffer) -> {
+            dev.golem.core.render.Vertexes.vertex(buffer, p, 0F, 0F, 0F, 0xFFFFFFFF, 0F, 0F, overlay, light, 0F, 0F, 1F);
+            dev.golem.core.render.Vertexes.vertex(buffer, p, 0F, 16F, 0F, 0xFFFFFFFF, 0F, 1F, overlay, light, 0F, 0F, 1F);
+            dev.golem.core.render.Vertexes.vertex(buffer, p, 16F, 16F, 0F, 0xFFFFFFFF, 1F, 1F, overlay, light, 0F, 0F, 1F);
+            dev.golem.core.render.Vertexes.vertex(buffer, p, 16F, 0F, 0F, 0xFFFFFFFF, 1F, 0F, overlay, light, 0F, 0F, 1F);
+        });
     }
 }
 *///?}

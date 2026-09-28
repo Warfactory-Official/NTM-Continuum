@@ -29,7 +29,8 @@ public final class BombAssemblyRecipes {
                 .inputItems(new ComparableStack(ModItems.sphere_steel.get()), AL.shell().count(4),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 8),
                         new ComparableStack(Items.LIGHT_GRAY_DYE, 16))
-                .outputItems(new ItemStack(ModBombBlocks.nuke_mike.get())));
+                .outputItems(new ItemStack(ModBombBlocks.nuke_mike.get()))
+                .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.mikecore").setup(1_200, 100)
                 .inputItems(U238.nugget().count(24), PB.plate().count(6))
                 .outputItems(new ItemStack(ModBombItems.mike_core.get())));

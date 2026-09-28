@@ -35,9 +35,8 @@ import org.jspecify.annotations.Nullable;
  * only. {@link #FACING} is the face it was placed against (1.7 metadata = clicked side); the open side is
  * its opposite. The block itself is a plain cube-model block (1.7 render type -1, {@code block_steel}).
  *
- * <p><b>Deferred:</b> 1.7's anchor also linked to another anchor up to 10 m away along its axis (the
- * "Connection Range: 10m" the tooltip still advertises, faithfully) — a wireless pipeline the graph has no
- * remote-link authoring for at the block level yet. This anchor conducts through its open face only.
+ * <p>Linked with the pipe wrench to other anchors up to 10 m away ({@link TileEntityPipeAnchor}), drawn by
+ * {@code RenderPipeAnchor}.
  */
 public class FluidPipeAnchor extends BlockFluidDuct {
 
@@ -56,7 +55,8 @@ public class FluidPipeAnchor extends BlockFluidDuct {
 
     @Override
     public net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
-        return net.minecraft.world.level.block.RenderShape.MODEL;
+        // 1.7 render type -1: RenderPipeAnchor draws the OBJ anchor and its pipelines
+        return net.minecraft.world.level.block.RenderShape.INVISIBLE;
     }
 
     @Override
@@ -103,6 +103,12 @@ public class FluidPipeAnchor extends BlockFluidDuct {
                     BlockPos next = pos.offset(open.offsetX, open.offsetY, open.offsetZ);
                     if (level.getBlockEntity(next) instanceof TileEntityFluidDuctNT) {
                         BlockFluidDuct.spreadType(level, next, type, prev, 63);
+                    }
+                    // 1.7 changeTypeRecursively also followed every linked pipeline
+                    for (BlockPos linked : java.util.List.copyOf(anchor.getConnected())) {
+                        if (level.getBlockEntity(linked) instanceof TileEntityPipeAnchor other && other.getFluidType() == prev) {
+                            BlockFluidDuct.spreadType(level, linked, type, prev, 63);
+                        }
                     }
                 }
                 player.sendSystemMessage(Component.literal("Duct fluid: ").append(type.getDisplayName())

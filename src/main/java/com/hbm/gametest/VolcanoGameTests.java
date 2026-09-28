@@ -81,21 +81,21 @@ public final class VolcanoGameTests {
         helper.assertTrue(preLit.isEmpty(), "instrument: the shell was not empty before the core ticked (" + preLit + ")");
 
         // 1.7 surroundLava: every tenth tick the 3x3x3 around the core is volcanic lava
-        helper.runAfterDelay(TileEntityVolcanoCore.CYCLE + 2, () -> {
+        helper.runAfterDelay(TileEntityVolcanoCore.CYCLE + 2, () -> extinguishOnFailure(helper, level, () -> {
             List<BlockPos> dry = unflooded(helper, level, CORE);
             helper.assertTrue(dry.isEmpty(), "1.7 surroundLava: the 3x3x3 shell must be volcanic lava after the first cycle; dry at " + dry);
             helper.assertTrue(level.getBlockState(helper.absolutePos(CORE)).is(growing),
                     "the core must survive its own channel blast (resistance 10,000)");
-        });
+        }));
 
         // not one tick early: the core is still where it was planted shortly before the climb
-        helper.runAfterDelay(STILL_THERE, () -> {
+        helper.runAfterDelay(STILL_THERE, () -> extinguishOnFailure(helper, level, () -> {
             helper.assertTrue(level.getBlockState(helper.absolutePos(CORE)).is(growing),
                     "1.7 grows only when volcanoTimer reaches " + TileEntityVolcanoCore.GROWING_UPDATE_RATE
                             + "; the core had already left " + CORE + " at tick " + STILL_THERE);
             helper.assertTrue(isLava(helper, level, CORE.above()),
                     "the cell the core will climb into must be shell lava, not another core, before the climb");
-        });
+        }));
 
         // 1.7: setBlock(y + 1, same block + meta) then setBlock(y, lava)
         poll(helper, STILL_THERE + 2, GROWTH_DEADLINE,
@@ -256,19 +256,48 @@ public final class VolcanoGameTests {
     private static void pollStep(GameTestHelper helper, int ticksLeft, BooleanSupplier condition,
                                  Supplier<String> stuck, Runnable then) {
         if (condition.getAsBoolean()) {
-            then.run();
+            extinguishOnFailure(helper, helper.getLevel(), then);
             return;
         }
         if (ticksLeft <= 0) {
-            helper.fail(stuck.get());
+            String message = stuck.get();
+            extinguish(helper, helper.getLevel(), CORE);
+            helper.fail(message);
             return;
         }
         helper.runAfterDelay(1, () -> pollStep(helper, ticksLeft - 1, condition, stuck, then));
     }
 
     private static void cleanup(GameTestHelper helper, ServerLevel level, BlockPos core) {
+        extinguish(helper, level, core);
+    }
+
+    /**
+     * Puts the eruption out: every volcano core in the column the growing core climbs is removed, and its blobs
+     * with it. A core left behind keeps erupting in the shared GameTest world after its test has finished —
+     * channel blasts every ten ticks, a climb every 288, lava blobs landing on other plots — and on 2026-09-24
+     * that starved the rest of the suite (the server thread sat in its blasts for minutes, and the later
+     * batches never got their chunks ticking).
+     */
+    private static void extinguish(GameTestHelper helper, ServerLevel level, BlockPos core) {
+        for (int dy = -1; dy <= 8; dy++) {
+            BlockPos at = helper.absolutePos(core.above(dy));
+            if (level.getBlockEntity(at) instanceof TileEntityVolcanoCore) {
+                level.setBlock(at, Blocks.AIR.defaultBlockState(), 3);
+            }
+        }
         level.getEntitiesOfClass(EntityShrapnel.class, new AABB(helper.absolutePos(core)).inflate(64))
                 .forEach(Entity::discard);
+    }
+
+    /** Runs a delayed check; a failing check still puts the eruption out before the test is marked failed. */
+    private static void extinguishOnFailure(GameTestHelper helper, ServerLevel level, Runnable check) {
+        try {
+            check.run();
+        } catch (RuntimeException | Error failure) {
+            extinguish(helper, level, CORE);
+            throw failure;
+        }
     }
 
     private static void releaseSimulationChunks(ServerLevel level, int centerChunkX, int centerChunkZ,

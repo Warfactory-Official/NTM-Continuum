@@ -60,8 +60,25 @@ public final class MedicineGameTests {
         Effects.removeRegistered(player, ModEffects.POTION_SICKNESS.get());
 
         ModMedicineItems.radx.get().finishUsingItem(new ItemStack(ModMedicineItems.radx.get()), player.level(), player);
-        assertEffect(helper, player, ModEffects.RADX.get(), 3 * 60 * 20, 3, "Rad-X");
-        assertEffect(helper, player, ModEffects.POTION_SICKNESS.get(), 5 * 20, 0, "pill sickness");
+        assertEffect(helper, player, ModEffects.RADX.get(), 3 * 60 * 20, 0, "Rad-X");
+        // 1.7 PotionConfig.potionSickness defaults OFF: pills, syringes and the canteen apply none
+        helper.assertTrue(com.hbm.config.PotionConfig.potionSickness == 0, "potion sickness defaults off, as 1.7");
+        helper.assertTrue(!Effects.hasRegistered(player, ModEffects.POTION_SICKNESS.get()),
+                "a pill applies no potion sickness at the 1.7 default");
+        ItemStack stim = new ItemStack(ModMedicineItems.syringe_metal_stimpak.get());
+        player.setItemInHand(InteractionHand.MAIN_HAND, stim);
+        ModMedicineItems.syringe_metal_stimpak.get().use(player.level(), player, InteractionHand.MAIN_HAND);
+        helper.assertTrue(!Effects.hasRegistered(player, ModEffects.POTION_SICKNESS.get()),
+                "a syringe applies no potion sickness at the 1.7 default");
+        // "NORMAL" routes the same call through VersatileConfig: five seconds
+        com.hbm.config.PotionConfig.potionSickness = 1;
+        try {
+            ModMedicineItems.radx.get().finishUsingItem(new ItemStack(ModMedicineItems.radx.get()), player.level(), player);
+            assertEffect(helper, player, ModEffects.POTION_SICKNESS.get(), 5 * 20, 0, "pill sickness when enabled");
+        } finally {
+            com.hbm.config.PotionConfig.potionSickness = 0;
+        }
+        Effects.removeRegistered(player, ModEffects.POTION_SICKNESS.get());
 
         player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModMedicineItems.radaway.get()));
         ModMedicineItems.radaway.get().use(player.level(), player, InteractionHand.MAIN_HAND);

@@ -39,6 +39,8 @@ public final class ModDataComponents {
     public static final GolemComponent<net.minecraft.nbt.CompoundTag> PERSISTENT_DATA =
             GolemComponent.compound(Constants.MOD_ID, "persistent_data");
     public static final GolemComponent<Integer> ITEM_VARIANT = GolemComponent.integer(Constants.MOD_ID, "item_variant");
+    /** PotatOS voice-line countdown (1.7 NBT {@code timer} on {@code battery_potatos}). */
+    public static final GolemComponent<Integer> POTATOS_TIMER = GolemComponent.integer(Constants.MOD_ID, "potatos_timer");
     public static final GolemComponent<Double> PILE_ROD_DEPLETION =
             GolemComponent.of(Constants.MOD_ID, "pile_rod_depletion", Codec.DOUBLE);
     /** How far a stabiliser lens has been burned through; upstream keeps it in the stack's NBT. */

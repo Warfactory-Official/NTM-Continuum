@@ -162,6 +162,7 @@ public final class CentrifugeRecipes {
                 item(ModItems.powder_quartz, 1), item(ModItems.fluorite, 1));
         add(exact(ModItems.crystal_cobalt), item(ModItems.powder_cobalt, 2), item(ModItems.powder_iron, 3),
                 item(ModItems.powder_copper, 3), item(ModItems.powder_lithium_tiny, 1));
+        BedrockOreChainRecipes.centrifuge(CentrifugeRecipes::add); // 1.7 ItemBedrockOreNew grade chain
     }
 
     public static ItemStack[] getOutput(ItemStack stack) {

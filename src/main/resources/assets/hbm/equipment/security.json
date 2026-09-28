@@ -1,6 +1,0 @@
-{
-  "layers": {
-    "humanoid": [{"texture": "hbm:security"}],
-    "humanoid_leggings": [{"texture": "hbm:security"}]
-  }
-}

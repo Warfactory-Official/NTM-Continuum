@@ -10,9 +10,7 @@ import com.hbm.tileentity.TileEntityLoadedBase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import net.minecraft.core.BlockPos;
-import dev.golem.core.net.GolemBuffers;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,6 +25,10 @@ import org.jspecify.annotations.Nullable;
  * <p>The fourteenth machine with a redstone-over-radio surface, and the only one whose function forwards to
  * something outside the world: {@code FUN:tx} splits its payload back into a command and hands it to the
  * satellite, whose reply is left in {@code VAL:rx}.
+ *
+ * <p>1.7 {@code provideRORValue} compares against {@code PREFIX_VALUE + connected} - the boolean field, not the
+ * string - so it only ever matches "VAL:true" or "VAL:false", and the advertised {@code VAL:connected} answers
+ * nothing. Ported as found.
  */
 public class TileEntityMachineSatLink extends TileEntityLoadedBase
         implements IRORValueProvider, IRORInteractive {
@@ -48,8 +50,6 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
     public float lift = INACTIVE_LIFT;
     public float prevLift = INACTIVE_LIFT;
 
-    public Component[] info = new Component[0];
-
     public TileEntityMachineSatLink(BlockPos pos, BlockState state) {
         super(ModBlockEntities.MACHINE_SATLINK.get(), pos, state);
     }
@@ -61,7 +61,6 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
             link.connected = SatelliteSavedData.get(server).isFreqTaken(link.freq);
         }
 
-        link.updateInfo(level);
         link.networkPackNT();
     }
 
@@ -91,16 +90,6 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         return value < target ? value + SPEED : value - SPEED;
     }
 
-    private void updateInfo(Level level) {
-        if (!connected) {
-            if (this.info.length > 0) this.info = new Component[0];
-            return;
-        }
-
-        Satellite sat = satellite(level);
-        if (sat != null) this.info = sat.getInfo(level);
-    }
-
     private @Nullable Satellite satellite(Level level) {
         if (!(level instanceof ServerLevel server)) return null;
         return SatelliteSavedData.get(server).getSatFromFreq(freq);
@@ -113,10 +102,6 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         super.serialize(buf);
         buf.writeBoolean(connected);
         buf.writeInt(freq);
-        buf.writeInt(info.length);
-        for (Component component : info) {
-            GolemBuffers.writeComponent(buf, component);
-        }
     }
 
     @Override
@@ -124,10 +109,6 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
         super.deserialize(buf);
         this.connected = buf.readBoolean();
         this.freq = buf.readInt();
-        this.info = new Component[buf.readInt()];
-        for (int i = 0; i < info.length; i++) {
-            this.info[i] = GolemBuffers.readComponent(buf);
-        }
     }
 
     @Override
@@ -147,20 +128,15 @@ public class TileEntityMachineSatLink extends TileEntityLoadedBase
     @Override
     public String[] getFunctionInfo() {
         return new String[]{
-                PREFIX_VALUE + "connected", PREFIX_VALUE + "freq", PREFIX_VALUE + "rx", PREFIX_VALUE + "type",
+                PREFIX_VALUE + "connected", PREFIX_VALUE + "freq", PREFIX_VALUE + "rx",
                 PREFIX_FUNCTION + "setfreq" + NAME_SEPARATOR + "freq",
                 PREFIX_FUNCTION + "tx" + NAME_SEPARATOR + "payload"};
     }
 
     @Override
     public String provideRORValue(String name) {
-        if ((PREFIX_VALUE + "connected").equals(name)) return this.connected ? "TRUE" : "FALSE";
+        if ((PREFIX_VALUE + connected).equals(name)) return this.connected ? "TRUE" : "FALSE";
         if ((PREFIX_VALUE + "freq").equals(name)) return "" + this.freq;
-
-        if ((PREFIX_VALUE + "type").equals(name)) {
-            Satellite sat = satellite(level);
-            return sat != null ? sat.getType() : "";
-        }
 
         if ((PREFIX_VALUE + "rx").equals(name)) {
             Satellite sat = satellite(level);

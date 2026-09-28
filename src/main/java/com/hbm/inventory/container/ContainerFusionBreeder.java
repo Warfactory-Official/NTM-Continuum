@@ -86,6 +86,14 @@ public class ContainerFusionBreeder extends AbstractContainerMenu {
             if (!moveItemStackTo(stack, PLAYER_INV_START, PLAYER_INV_END, true)) return ItemStack.EMPTY;
         } else if (stack.getItem() instanceof IItemFluidId) {
             if (!moveItemStackTo(stack, 0, 1, false)) return ItemStack.EMPTY;
+        } else if (stack.is(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get())) {
+            // 1.7 transferStackInSlot sent every non-identifier to slot 1 through mergeItemStack, which never asked
+            // isItemValid: shift-click was the only way the irradiated sword (no outgasser recipe) got in.
+            if (!this.slots.get(1).hasItem()) {
+                this.slots.get(1).set(stack.split(1));
+            } else {
+                return ItemStack.EMPTY;
+            }
         } else if (this.machine.canPlaceItem(1, stack)) {
             if (!moveItemStackTo(stack, 1, 2, false)) return ItemStack.EMPTY;
         } else if (index < PLAYER_INV_START + 27) {

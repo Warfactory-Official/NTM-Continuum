@@ -117,13 +117,13 @@ public class XFactoryDrill {
         if (world.isEmptyBlock(pos) || !(playerEntity instanceof ServerPlayer player)) return;
         BlockState state = world.getBlockState(pos);
 
-        // The source also rejects stone_keyhole; that block is not registered in this port.
         ItemStack tool = callbackStack.isEmpty() ? player.getItemInHand(callbackHand) : callbackStack;
         // Keep the source canHarvestBlock gate separate from the server tryHarvestBlock equivalent.
         boolean canHarvest = tool.getItem() instanceof ItemGunDrill drill
                 && drill.canHarvestBlock(state);
         if (!canHarvest || (state.getDestroySpeed(world, pos) == -1.0F
-                && state.getDestroyProgress(player, world, pos) == 0.0F)) {
+                && state.getDestroyProgress(player, world, pos) == 0.0F)
+                || state.is(com.hbm.blocks.ModDungeonBlocks.stone_keyhole.get())) {
             if (!didPlink) {
                 world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.STONE_BREAK,
                         SoundSource.PLAYERS, 0.5F, 0.8F + world.getRandom().nextFloat() * 0.6F);

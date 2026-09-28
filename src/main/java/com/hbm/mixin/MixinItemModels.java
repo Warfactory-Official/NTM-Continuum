@@ -38,6 +38,8 @@ public class MixinItemModels {
         ID_MAPPER.put(dev.golem.core.Ids.of("hbm", "gun"), GunItemModel.Unbaked.MAP_CODEC);
         ID_MAPPER.put(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC);
         ID_MAPPER.put(JetpackGliderItemModelRenderer.ID, JetpackGliderItemModelRenderer.Unbaked.MAP_CODEC);
+        ID_MAPPER.put(com.hbm.client.render.MachineItemModelRenderer.CustomItem.ID,
+                com.hbm.client.render.MachineItemModelRenderer.CustomItem.Unbaked.MAP_CODEC);
     }
 }
 *///?}

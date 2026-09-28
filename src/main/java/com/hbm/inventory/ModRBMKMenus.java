@@ -20,6 +20,7 @@ public final class ModRBMKMenus {
     public static final RegistryObject<MenuType<MenuRBMKHeater>> RBMK_HEATER = register("rbmk_heater", MenuRBMKHeater::new);
     public static final RegistryObject<MenuType<MenuRBMKOutgasser>> RBMK_OUTGASSER = register("rbmk_outgasser", MenuRBMKOutgasser::new);
     public static final RegistryObject<MenuType<MenuRBMKConsole>> RBMK_CONSOLE = register("rbmk_console", MenuRBMKConsole::new);
+    public static final RegistryObject<MenuType<ContainerRBMKAutoloader>> RBMK_AUTOLOADER = register("rbmk_autoloader", ContainerRBMKAutoloader::new);
 
     private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> RegistryObject<MenuType<T>> register(
             String id, dev.golem.core.gui.Menus.PosFactory<T> factory) {

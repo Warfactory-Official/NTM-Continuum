@@ -30,6 +30,7 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
             val renamed = if (needsLegacyDataDirectories(mcVersion)) renameLegacyDataDirectories(root) else 0
             val lootTables = if (needsLegacyItemStacks(mcVersion)) convertLegacyLootTables(root) else 0
             val advancements = if (needsLegacyItemStacks(mcVersion)) convertLegacyAdvancements(root) else 0
+            val advancementDisplays = convertPre26Advancements(root, needsLegacyItemStacks(mcVersion))
             // Before the ingredient rewrite, while tag references are still bare "#c:..." strings.
             val tags = if (conventionNamespace != "c") duplicateConventionTags(root, conventionNamespace) else 0
             val repointed = if (conventionNamespace != "c") repointConventionTagReferences(root, conventionNamespace) else 0
@@ -92,7 +93,8 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
                 }
             logger.lifecycle("legacyRecipeCompatibility: renamed $renamed data directory(s); converted " +
                     "$converted recipe(s), $lootTables loot table(s), and $advancements advancement(s) to the legacy shape; " +
-                    "copied $tags convention tag(s) to '$conventionNamespace' and repointed $repointed recipe(s) at them.")
+                    "copied $tags convention tag(s) to '$conventionNamespace' and repointed $repointed recipe(s) at them; " +
+                    "rewrote $advancementDisplays advancement display/predicate(s) to the pre-26.1 shape.")
         }
     }
 }
@@ -134,6 +136,19 @@ fun convertLegacyLootTables(root: File): Int {
                             val include = function["include"] as? List<*>
                             if (include?.contains("minecraft:custom_name") == true) {
                                 legacy += mapOf("function" to "minecraft:copy_name", "source" to "block_entity")
+                            }
+                            if (include?.contains("minecraft:custom_data") == true) {
+                                // Core CompatBlockEntity writes collectCarriedData() under "CarriedData" below
+                                // 1.20.5 and reads it back from the placed item's BlockEntityTag (barrels, orbus)
+                                legacy += mapOf(
+                                    "function" to "minecraft:copy_nbt",
+                                    "source" to "block_entity",
+                                    "ops" to listOf(mapOf(
+                                        "source" to "CarriedData",
+                                        "target" to "BlockEntityTag.CarriedData",
+                                        "op" to "replace",
+                                    )),
+                                )
                             }
                             if (include?.contains("minecraft:container") == true) {
                                 legacy += mapOf(
@@ -358,6 +373,88 @@ fun needsLegacyItemStacks(mcVersion: String): Boolean {
     val minor = parts.getOrElse(1) { 0 }
     val patch = parts.getOrElse(2) { 0 }
     return major < 26 && (minor < 20 || minor == 20 && patch < 5)
+}
+
+/**
+ * Advancement fields whose spelling changed at 26.1, taken back down for 1.21.1 and 1.20.1.
+ *
+ *  - `display.background`: 26.1 reads a client-asset id (`minecraft:gui/advancements/backgrounds/stone`)
+ *    and adds `textures/` and `.png` itself; before that the field was the full texture path. The old
+ *    parser accepts the short id too, so a missed rewrite shows up only as a missing-texture tab.
+ *  - icon components: 26.1 carries a model colour in `minecraft:custom_model_data.colors`; 1.21.1 has
+ *    no colour list and Golem Core's ModelData keeps the first colour in `minecraft:dyed_color`. 1.20.1
+ *    has no components at all: each becomes a root NBT key (Golem Core's `GolemComponent` spelling, the
+ *    component id itself) inside the icon's SNBT `nbt` string, and the colour becomes ModelData's
+ *    `GolemCoreModelColor` int.
+ *  - 1.20.1 only: a `type_specific` sub-predicate type is a bare name (`player`), not a registry id.
+ */
+fun convertPre26Advancements(root: File, legacyStacks: Boolean): Int {
+    var converted = 0
+    root.walkTopDown()
+        .filter { it.isFile && it.extension == "json" && it.parentFile.path.let { p ->
+            p.contains("${File.separator}advancement") } }
+        .forEach { file ->
+            @Suppress("UNCHECKED_CAST")
+            val json = JsonSlurper().parse(file) as? MutableMap<String, Any?> ?: return@forEach
+            var changed = false
+            @Suppress("UNCHECKED_CAST")
+            val display = json["display"] as? MutableMap<String, Any?>
+            val background = display?.get("background") as? String
+            if (background != null && !background.endsWith(".png")) {
+                val colon = background.indexOf(':')
+                val ns = if (colon < 0) "minecraft" else background.substring(0, colon)
+                display["background"] = "$ns:textures/${background.substring(colon + 1)}.png"
+                changed = true
+            }
+            @Suppress("UNCHECKED_CAST")
+            val icon = display?.get("icon") as? MutableMap<String, Any?>
+            @Suppress("UNCHECKED_CAST")
+            val components = icon?.get("components") as? MutableMap<String, Any?>
+            if (components != null) {
+                @Suppress("UNCHECKED_CAST")
+                val cmd = components.remove("minecraft:custom_model_data") as? Map<String, Any?>
+                val color = (cmd?.get("colors") as? List<*>)?.firstOrNull() as? Number
+                if (legacyStacks) {
+                    val tag = linkedMapOf<String, Any?>()
+                    tag.putAll(components)
+                    if (color != null) tag["GolemCoreModelColor"] = color.toInt()
+                    icon.remove("components")
+                    if (tag.isNotEmpty()) icon["nbt"] = tag.entries.joinToString(",", "{", "}") { (key, value) ->
+                        "\"$key\":" + (if (value is String) "\"$value\"" else value.toString())
+                    }
+                } else if (color != null) {
+                    components["minecraft:dyed_color"] = mapOf("rgb" to color.toInt(), "show_in_tooltip" to false)
+                }
+                changed = true
+            }
+            if (legacyStacks && stripSubPredicateNamespaces(json)) changed = true
+            if (changed) {
+                file.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(json)))
+                converted++
+            }
+        }
+    return converted
+}
+
+/** 1.20.1's `type_specific` lookup is keyed by bare names; `minecraft:player` would not resolve. */
+fun stripSubPredicateNamespaces(node: Any?): Boolean {
+    var changed = false
+    when (node) {
+        is MutableList<*> -> node.forEach { if (stripSubPredicateNamespaces(it)) changed = true }
+        is MutableMap<*, *> -> {
+            @Suppress("UNCHECKED_CAST")
+            val map = node as MutableMap<String, Any?>
+            @Suppress("UNCHECKED_CAST")
+            val specific = map["type_specific"] as? MutableMap<String, Any?>
+            val type = specific?.get("type") as? String
+            if (type != null && type.startsWith("minecraft:")) {
+                specific["type"] = type.removePrefix("minecraft:")
+                changed = true
+            }
+            map.values.toList().forEach { if (stripSubPredicateNamespaces(it)) changed = true }
+        }
+    }
+    return changed
 }
 
 // The applying buildscript passes its node's Minecraft version; it is the only place that knows it.

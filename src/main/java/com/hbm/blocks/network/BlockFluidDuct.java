@@ -60,7 +60,8 @@ import java.util.Map;
  * a {@code fluid_identifier}: the connection flags are then recomputed against that one fluid, so a typed
  * duct only links to neighbours carrying the same fluid.
  */
-public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements TickingBlock, SimpleWaterloggedBlock, ILookOverlay {
+public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements TickingBlock, SimpleWaterloggedBlock, ILookOverlay,
+        com.hbm.blocks.IAnalyzable {
 
     public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
     public static final BooleanProperty UP = BlockStateProperties.UP;
@@ -290,5 +291,22 @@ public class BlockFluidDuct extends dev.golem.core.world.CompatBlock implements 
     @Override
     public BlockState mirror(BlockState state, Mirror mirror) {
         return ConnectionRing.mirror(state, mirror, PROPERTY_BY_DIRECTION);
+    }
+
+    /** 1.7 {@code FluidDuctBase.getDebugInfo}: the analysis tool's readout of the duct's fluid net. */
+    @Override
+    public java.util.@Nullable List<String> getDebugInfo(net.minecraft.server.level.ServerLevel level, BlockPos pos) {
+        if (!(level.getBlockEntity(pos) instanceof TileEntityFluidDuctNT)) return null;
+        com.hbm.uninos.graph.NodeNetwork<com.hbm.api.fluidmk2.DuctData> net =
+                com.hbm.api.fluidmk2.FluidGraph.get(level).networkAt(pos.asLong());
+        if (net == null) return null;
+        java.util.List<String> debug = new java.util.ArrayList<>();
+        debug.add("Links: " + net.size());
+        debug.add("Subscribers: " + com.hbm.util.NetworkDiagnostics.countEndpoints(level, net,
+                be -> be instanceof com.hbm.api.fluidmk2.IFluidReceiverMK2));
+        debug.add("Providers: " + com.hbm.util.NetworkDiagnostics.countEndpoints(level, net,
+                be -> be instanceof com.hbm.api.fluidmk2.IFluidProviderMK2));
+        debug.add("Transfer: " + net.tracker);
+        return debug;
     }
 }

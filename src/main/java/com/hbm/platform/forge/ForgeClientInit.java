@@ -74,9 +74,13 @@ final class ForgeClientInit {
                 }
             });
         });
+        // Core's Hud.draw owns the per-layer composition rule: on 1.20.1 each layer must start on a clear
+        // depth buffer, or the chat's z-50 lines hide every HBM overlay drawn where they are (the
+        // power-armour charge bars vanished that way while 26.1 drew them).
         modBus.addListener((RegisterGuiOverlaysEvent event) -> {
             HbmClientRegistrations.registerHud((id, renderer) ->
-                    event.registerAboveAll(id, (gui, graphics, partialTick, width, height) -> renderer.accept(graphics)));
+                    event.registerAboveAll(id, (gui, graphics, partialTick, width, height) ->
+                            dev.golem.core.client.Hud.draw(graphics, renderer::accept)));
         });
     }
 }

@@ -1,6 +1,7 @@
 package com.hbm.items;
 
 import com.google.gson.JsonObject;
+import dev.golem.core.dejson.Atlases;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Slots;
@@ -125,6 +126,9 @@ public final class ModItemModels {
         funnelModel();
         ContentItemModels.declare();
         entityItems();
+        // 1.7 names item sprites textures/items/*, outside the item/ directory vanilla stitches. Below 1.21.4
+        // there is no items atlas; legacy-assets folds this source into blocks.json.
+        Atlases.directories("minecraft", "items", "items", "items/");
     }
 
     /**
@@ -189,6 +193,22 @@ public final class ModItemModels {
         selectedSprites("ammo_arty", "", "_classic", "_he", "_mini_nuke", "_nuke", "_phosphorus",
                 "_mini_nuke_multi", "_phosphorus_multi", "_cargo", "_chlorine", "_phosgene",
                 "_mustard_gas");
+
+        cells();
+    }
+
+    /**
+     * The fluid cell: case <i>n</i> is {@code CellVariants} <i>n</i>, the 1.7 cell item of that
+     * declaration order (empty, uf6, puf6, antimatter, deuterium, tritium, sas3, anti_schrabidium). The
+     * variant is the cell's own index, never the fluid id — see {@link com.hbm.items.special.CellVariants}.
+     */
+    private static void cells() {
+        Models.Group models = Models.group();
+        String[] names = com.hbm.items.special.CellVariants.NAMES;
+        for (int i = 0; i < names.length; i++) {
+            models = models.and(i == 0 ? "" : "_" + names[i], Models.generated(NS + ":items/cell_" + names[i]));
+        }
+        Dejson.item(NS, "cell").models(models).selects(NS + ":item_variant").register();
     }
 
     private static void selectedSprites(String item, String... suffixes) {
@@ -506,6 +526,10 @@ public final class ModItemModels {
         for (String name : SPRITE_ITEMS_3) {
             Dejson.item(NS, name).models(Models.generated("hbm:items/" + name)).register();
         }
+        // 1.7 ItemRendererHot: the heat glow over the inventory icon
+        for (String name : new String[]{"ingot_steel_dusted", "ingot_chainsteel"}) {
+            ItemRendererDeclarations.overSprite(name, name, "hot", "generated");
+        }
     }
 
     /**
@@ -555,14 +579,6 @@ public final class ModItemModels {
         Dejson.item(NS, "casing_large_steel").models(Models.generated("hbm:items/casing.large_steel")).register();
         Dejson.item(NS, "casing_small").models(Models.generated("hbm:items/casing.small")).register();
         Dejson.item(NS, "casing_small_steel").models(Models.generated("hbm:items/casing.small_steel")).register();
-        Dejson.item(NS, "cell_0").models(Models.generated("hbm:items/cell_empty")).register();
-        Dejson.item(NS, "cell_28").models(Models.generated("hbm:items/cell_uf6")).register();
-        Dejson.item(NS, "cell_29").models(Models.generated("hbm:items/cell_puf6")).register();
-        Dejson.item(NS, "cell_30").models(Models.generated("hbm:items/cell_sas3")).register();
-        Dejson.item(NS, "cell_33").models(Models.generated("hbm:items/cell_antimatter")).register();
-        Dejson.item(NS, "cell_34").models(Models.generated("hbm:items/cell_anti_schrabidium")).register();
-        Dejson.item(NS, "cell_8").models(Models.generated("hbm:items/cell_deuterium")).register();
-        Dejson.item(NS, "cell_9").models(Models.generated("hbm:items/cell_tritium")).register();
         Dejson.item(NS, "cheese_quesadilla").models(Models.generated("hbm:items/quesadilla")).register();
         Dejson.item(NS, "chunk_ore_cryolite").models(Models.generated("hbm:items/chunk_ore.cryolite")).register();
         Dejson.item(NS, "chunk_ore_malachite").models(Models.generated("hbm:items/chunk_ore.malachite")).register();
@@ -629,7 +645,6 @@ public final class ModItemModels {
 
     private static void renamed1() {
         Dejson.item(NS, "missile_soyuz_lander").models(Models.generated("hbm:items/soyuz_lander")).register();
-        Dejson.item(NS, "mp_thruster_10_xenon").models(Models.generated("hbm:items/mp_thruster")).register();
         Dejson.item(NS, "part_generic_glass_polarized").models(Models.generated("hbm:items/part_generic.glass_polarized")).register();
         Dejson.item(NS, "part_generic_hde").models(Models.generated("hbm:items/part_generic.hde")).register();
         Dejson.item(NS, "part_generic_lde").models(Models.generated("hbm:items/part_generic.lde")).register();
@@ -1070,7 +1085,73 @@ public final class ModItemModels {
     private static void machineFrames() {
         machineFrame("machine", Pose17.Klass.ITEM_RENDER_BASE);
         machineFrame("missile", Pose17.Klass.ITEM_RENDER_MISSILE);
+        machineFrame("weapon", Pose17.Klass.ITEM_RENDER_WEAPON);
+        weaponFlatFrame();
+        spriteFrames();
         gunFrame();
+    }
+
+    /**
+     * {@code item/generated} and {@code item/handheld}'s own {@code display{}} on a {@code builtin/entity} marker,
+     * for an {@code hbm:custom_item} that only adds to a sprite (the hot ingots' glow, the meteorite swords' glint).
+     * Below 1.21.4 the item's model must be that marker for the renderer to be reached at all, so the sprite is
+     * drawn by the renderer's hook too, in the same frame vanilla would have given it. The numbers are vanilla's
+     * files, composed the way {@code ItemTransform.apply} composes them (left hands with the negation it applies)
+     * about the block centre, which is where a {@code Pose17} frame puts vanilla's display.
+     */
+    private static void spriteFrames() {
+        Map<DisplaySlot, Matrix4f> generated = new java.util.EnumMap<>(DisplaySlot.class);
+        generated.put(DisplaySlot.GUI, new Matrix4f());
+        generated.put(DisplaySlot.GROUND, vanillaPose(DisplaySlot.GROUND, 0, 0, 0, 0, 2, 0, 0.5F));
+        generated.put(DisplaySlot.HEAD, vanillaPose(DisplaySlot.HEAD, 0, 180, 0, 0, 13, 7, 1F));
+        generated.put(DisplaySlot.FIXED, vanillaPose(DisplaySlot.FIXED, 0, 180, 0, 0, 0, 0, 1F));
+        for (DisplaySlot slot : new DisplaySlot[]{DisplaySlot.THIRD_PERSON_RIGHT_HAND, DisplaySlot.THIRD_PERSON_LEFT_HAND}) {
+            generated.put(slot, vanillaPose(slot, 0, 0, 0, 0, 3, 1, 0.55F));
+        }
+        for (DisplaySlot slot : new DisplaySlot[]{DisplaySlot.FIRST_PERSON_RIGHT_HAND, DisplaySlot.FIRST_PERSON_LEFT_HAND}) {
+            generated.put(slot, vanillaPose(slot, 0, -90, 25, 1.13F, 3.2F, 1.13F, 0.68F));
+        }
+        Map<DisplaySlot, Matrix4f> handheld = new java.util.EnumMap<>(generated);
+        handheld.put(DisplaySlot.THIRD_PERSON_RIGHT_HAND,
+                vanillaPose(DisplaySlot.THIRD_PERSON_RIGHT_HAND, 0, -90, 55, 0, 4, 0.5F, 0.85F));
+        handheld.put(DisplaySlot.THIRD_PERSON_LEFT_HAND,
+                vanillaPose(DisplaySlot.THIRD_PERSON_LEFT_HAND, 0, 90, -55, 0, 4, 0.5F, 0.85F));
+        handheld.put(DisplaySlot.FIRST_PERSON_LEFT_HAND,
+                vanillaPose(DisplaySlot.FIRST_PERSON_LEFT_HAND, 0, 90, -25, 1.13F, 3.2F, 1.13F, 0.68F));
+        for (Map.Entry<String, Map<DisplaySlot, Matrix4f>> frame : Map.of("generated", generated, "handheld", handheld).entrySet()) {
+            Dejson.item(NS, frame.getKey() + "_sprite_legacy")
+                    .models(Models.guiLight("front", Models.display(frame.getValue(),
+                            Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
+                    .register();
+        }
+    }
+
+    /** One {@code display{}} entry as {@code ItemTransform.apply} poses it: translate, rotate X then Y then Z, scale. */
+    private static Matrix4f vanillaPose(DisplaySlot slot, float rx, float ry, float rz, float tx, float ty, float tz,
+                                        float scale) {
+        boolean left = slot.leftHand();
+        return new Matrix4f()
+                // a frame lives in block space, corner at the origin; vanilla applies display{} about the centre
+                .translate(0.5F, 0.5F, 0.5F)
+                .translate((left ? -tx : tx) / 16F, ty / 16F, tz / 16F)
+                .rotateXYZ((float) Math.toRadians(rx), (float) Math.toRadians(left ? -ry : ry),
+                        (float) Math.toRadians(left ? -rz : rz))
+                .scale(scale)
+                .translate(-0.5F, -0.5F, -0.5F);
+    }
+
+    /**
+     * The weapon frame for an {@code hbm:custom_item} whose inventory slot is the sprite (the held weapons whose
+     * 1.7 {@code IItemRenderer} declined {@code INVENTORY}). Below 1.21.4 the item is one {@code builtin/entity}
+     * model in every slot, so the slot the renderer declines is drawn by the same hook; {@code front} GUI light is
+     * what the sprite's own {@code item/handheld} model asks for, and is the only difference from
+     * {@code weapon_obj_context_legacy}. 26.1 resolves the sprite model itself and never reads this.
+     */
+    private static void weaponFlatFrame() {
+        Dejson.item(NS, "weapon_obj_flat_legacy")
+                .models(Models.guiLight("front", Models.display(Pose17.frames(Pose17.Klass.ITEM_RENDER_WEAPON),
+                        Models.parented("minecraft:builtin/entity", Slots.EMPTY))))
+                .register();
     }
 
     /**

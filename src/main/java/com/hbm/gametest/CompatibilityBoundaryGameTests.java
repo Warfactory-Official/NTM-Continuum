@@ -98,6 +98,8 @@ public final class CompatibilityBoundaryGameTests {
         helper.getLevel().setBlock(support, Blocks.STONE.defaultBlockState(), 3);
         var player = dev.golem.core.gametest.GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
         player.setItemInHand(InteractionHand.MAIN_HAND, carried);
+        // 1.7 ItemBlockStorageCrate.onItemUse: with CRATE_OPEN_HELD (default on) a crate is placed only while sneaking
+        player.setShiftKeyDown(true);
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(support), Direction.UP, support, false);
         carried.getItem().useOn(new UseOnContext(helper.getLevel(), player, InteractionHand.MAIN_HAND, carried, hit));
         helper.assertTrue(helper.getLevel().getBlockEntity(support.above()) instanceof TileEntityCrate,

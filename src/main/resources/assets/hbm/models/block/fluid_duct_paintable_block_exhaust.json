@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "hbm:blocks/fluid_duct_paintable_block_exhaust"
-  }
-}

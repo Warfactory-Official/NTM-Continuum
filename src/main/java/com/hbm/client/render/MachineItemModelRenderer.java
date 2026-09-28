@@ -3,6 +3,18 @@ package com.hbm.client.render;
 //? if >=26.1 {
 
 import dev.golem.core.render.VanillaSubmitSink;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.golem.core.render.CompatBlockEntityRenderState;
+import dev.golem.core.render.CompatBlockRenderState;
+import dev.golem.core.render.CompatItemRenderState;
+import dev.golem.core.render.CompatMovingBlock;
+import dev.golem.core.render.SubmitSink;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.item.CuboidItemModelWrapper;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.resources.model.ResolvableModel;
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.world.entity.LivingEntity;
 import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import com.hbm.client.model.WavefrontObj;
@@ -398,6 +410,189 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
 
     private static Surface cutout(Identifier texture, boolean noCull) {
         return noCull ? Surface.cutoutNoCull(texture.toString()) : Surface.cutout(texture.toString());
+    }
+
+    /**
+     * {@code {"type": "hbm:custom_item", "renderer": ..., "frame": ..., "flat": ...}}: a ported 1.7 item renderer.
+     *
+     * <p>An item model rather than a special model, for the reason {@code GunItemModel} is one: only
+     * {@link #update} is handed the display context, and 1.7's renderers branched on it. The frame (the engine's
+     * pose for the slot) is the {@code display{}} of {@code <frame>_obj_context_base}; the body is the renderer.
+     * A slot the renderer declines resolves the {@code flat} model instead, which is how a weapon is its sprite in
+     * the inventory and its OBJ in the hand.
+     *
+     * <p>Below 26.1 {@code MachineItemModels} reads the same definition and draws the same renderer from the
+     * loader's item-renderer hook.
+     */
+    public static final class CustomItem implements ItemModel {
+
+        public static final Identifier ID = dev.golem.core.Ids.of("hbm", "custom_item");
+
+        private final com.hbm.client.render.item.CustomItemRenderer renderer;
+        private final ModelRenderProperties properties;
+        private final @Nullable ItemModel flat;
+        private final Body body = new Body();
+
+        private CustomItem(com.hbm.client.render.item.CustomItemRenderer renderer, ModelRenderProperties properties, @Nullable ItemModel flat) {
+            this.renderer = renderer;
+            this.properties = properties;
+            this.flat = flat;
+        }
+
+        @Override
+        public void update(ItemStackRenderState output, ItemStack item, ItemModelResolver resolver,
+                           ItemDisplayContext displayContext, @Nullable ClientLevel level, @Nullable ItemOwner owner,
+                           int seed) {
+            com.hbm.client.render.item.CustomItemRenderer.Type type = com.hbm.client.render.item.CustomItemRenderer.Type.of(displayContext);
+            if (!renderer.handles(item, type)) {
+                if (flat != null) flat.update(output, item, resolver, displayContext, level, owner, seed);
+                return;
+            }
+            output.appendModelIdentityElement(this);
+            // Charge, fuel, variant and missile parts all change the drawing; the picture-in-picture cache keys on this.
+            output.appendModelIdentityElement(item.getComponentsPatch());
+            if (renderer.animated(item, type)) output.setAnimated();
+
+            LivingEntity living = owner == null ? null : owner.asLivingEntity();
+            ItemStackRenderState.LayerRenderState layer = output.newLayer();
+            layer.setExtents(() -> extents(item, type, living));
+            layer.setupSpecialModel(body, new Argument(item, type, living));
+            properties.applyToLayer(layer, displayContext);
+        }
+
+        /**
+         * The drawn geometry's corners in body space. Measured by running the renderer into a sink that only records
+         * positions: a renderer's body is code, so there is no declared box to read.
+         */
+        private Vector3fc[] extents(ItemStack item, com.hbm.client.render.item.CustomItemRenderer.Type type, @Nullable LivingEntity owner) {
+            Bounds bounds = new Bounds();
+            renderer.render(item, type, new PoseStack(), bounds, 0xF000F0, 0, owner);
+            return bounds.corners();
+        }
+
+        public record Argument(ItemStack stack, com.hbm.client.render.item.CustomItemRenderer.Type type, @Nullable LivingEntity owner) {}
+
+        private final class Body implements SpecialModelRenderer<Argument> {
+            @Override
+            public void submit(@Nullable Argument argument, PoseStack pose, SubmitNodeCollector collector,
+                               int lightCoords, int overlayCoords, boolean hasFoil, int outlineColor) {
+                if (argument == null) return;
+                renderer.render(argument.stack(), argument.type(), pose, new VanillaSubmitSink(collector),
+                        lightCoords, overlayCoords, argument.owner());
+            }
+
+            @Override
+            public void getExtents(Consumer<Vector3fc> output) {}
+
+            @Override
+            public @Nullable Argument extractArgument(ItemStack stack) {
+                return null;
+            }
+        }
+
+        /** A sink that keeps the axis-aligned box of every vertex written to it and draws nothing. */
+        private static final class Bounds implements SubmitSink, VertexConsumer {
+            private float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
+            private float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
+
+            Vector3fc[] corners() {
+                if (minX > maxX) return new Vector3fc[0];
+                List<Vector3fc> out = new ArrayList<>(8);
+                for (int i = 0; i < 8; i++) {
+                    out.add(new Vector3f((i & 1) == 0 ? minX : maxX, (i & 2) == 0 ? minY : maxY,
+                            (i & 4) == 0 ? minZ : maxZ));
+                }
+                return out.toArray(Vector3fc[]::new);
+            }
+
+            @Override
+            public void submitCustomGeometry(PoseStack poseStack, RenderType renderType, CustomGeometry geometry) {
+                geometry.render(poseStack.last(), this);
+            }
+
+            @Override
+            public SubmitSink order(int order) {
+                return this;
+            }
+
+            @Override
+            public void submitItem(PoseStack poseStack, CompatItemRenderState item, int light, int overlay, int seed) {}
+
+            @Override
+            public void submitBlock(PoseStack poseStack, CompatBlockRenderState block, int light, int overlay) {}
+
+            @Override
+            public void submitMovingBlock(PoseStack poseStack, CompatMovingBlock block) {}
+
+            @Override
+            public void submitBlockEntity(PoseStack poseStack, CompatBlockEntityRenderState blockEntity) {}
+
+            @Override
+            public void submitText(PoseStack poseStack, Font font, float x, float y, FormattedCharSequence text,
+                                   boolean shadow, Font.DisplayMode mode, int light, int color, int backgroundColor) {}
+
+            @Override
+            public VertexConsumer addVertex(float x, float y, float z) {
+                minX = Math.min(minX, x); minY = Math.min(minY, y); minZ = Math.min(minZ, z);
+                maxX = Math.max(maxX, x); maxY = Math.max(maxY, y); maxZ = Math.max(maxZ, z);
+                return this;
+            }
+
+            @Override public VertexConsumer setColor(int r, int g, int b, int a) { return this; }
+            @Override public VertexConsumer setColor(int color) { return this; }
+            @Override public VertexConsumer setUv(float u, float v) { return this; }
+            @Override public VertexConsumer setUv1(int u, int v) { return this; }
+            @Override public VertexConsumer setUv2(int u, int v) { return this; }
+            @Override public VertexConsumer setNormal(float x, float y, float z) { return this; }
+            @Override public VertexConsumer setLineWidth(float width) { return this; }
+        }
+
+        /**
+         * {@code renderer} names the ported 1.7 renderer; {@code frame} the shared engine pose it sits in
+         * ({@code weapon}: the bare slot an {@code IItemRenderer} got; {@code machine}: {@code ItemRenderBase}'s);
+         * {@code flat}, optional, the model shown in a slot the renderer declines. {@code generated} and
+         * {@code handheld} are sprite frames: the renderer is posed in {@code flat}'s own display, and draws the sprite
+         * itself before what it adds (see {@code ItemSprites} for why it cannot be vanilla's). {@code sprite} is read only by the pre-26.1 path, which has no
+         * baked flat model to fall back on.
+         */
+        public record Unbaked(String renderer, String frame, Optional<Identifier> flat) implements ItemModel.Unbaked {
+
+            public static final MapCodec<Unbaked> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                    Codec.STRING.fieldOf("renderer").forGetter(Unbaked::renderer),
+                    Codec.STRING.optionalFieldOf("frame", "weapon").forGetter(Unbaked::frame),
+                    Identifier.CODEC.optionalFieldOf("flat").forGetter(Unbaked::flat)
+            ).apply(i, Unbaked::new));
+
+            @Override
+            public MapCodec<? extends ItemModel.Unbaked> type() {
+                return MAP_CODEC;
+            }
+
+            private boolean spriteFrame() {
+                return flat.isPresent() && (frame.equals("generated") || frame.equals("handheld"));
+            }
+
+            private Identifier frameModel() {
+                return spriteFrame() ? flat.get() : dev.golem.core.Ids.of("hbm", "item/" + frame + "_obj_context_base");
+            }
+
+            @Override
+            public void resolveDependencies(ResolvableModel.Resolver resolver) {
+                resolver.markDependency(frameModel());
+                flat.ifPresent(resolver::markDependency);
+            }
+
+            @Override
+            public ItemModel bake(ItemModel.BakingContext context, Matrix4fc transformation) {
+                var baker = context.blockModelBaker();
+                var base = baker.getModel(frameModel());
+                ModelRenderProperties properties = ModelRenderProperties.fromResolvedModel(
+                        baker, base, base.getTopTextureSlots());
+                ItemModel flatModel = flat.map(id -> new CuboidItemModelWrapper.Unbaked(id, Optional.empty(), List.of())
+                        .bake(context, transformation)).orElse(null);
+                return new CustomItem(com.hbm.client.render.item.CustomItemRenderers.byName(renderer), properties, flatModel);
+            }
+        }
     }
 }
 //?}

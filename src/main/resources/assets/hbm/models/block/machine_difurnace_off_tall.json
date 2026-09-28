@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "top": "hbm:blocks/difurnace_top_off",
-    "front": "hbm:blocks/difurnace_front_off_tall",
-    "side": "hbm:blocks/difurnace_side_tall"
-  }
-}

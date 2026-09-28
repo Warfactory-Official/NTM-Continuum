@@ -50,6 +50,8 @@ public class EntitySpear extends CompatEntity {
                 for (net.minecraft.server.level.ServerPlayer player : server.players()) {
                     ContaminationUtil.contaminate(player, ContaminationUtil.HazardType.DIGAMMA,
                             ContaminationUtil.ContaminationType.DIGAMMA, 0.05D);
+                    // 1.7 digammaKauaiMoho, every player in the world on every blast
+                    com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.DIGAMMA_SPEAR);
                 }
             }
             if (level().getBlockState(new BlockPos(x, y - 3, z)).isAir()) ticksInGround = 0;

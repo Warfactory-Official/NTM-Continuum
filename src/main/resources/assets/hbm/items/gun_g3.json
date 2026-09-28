@@ -1,8 +1,0 @@
-{
-  "model": {
-    "type": "hbm:gun",
-    "base": "hbm:item/gun_obj_g3_base",
-    "weapon": "g3"
-  },
-  "oversized_in_gui": true
-}

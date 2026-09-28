@@ -207,6 +207,13 @@ public final class HbmClientRegistrations {
         com.hbm.foundry.FoundryExpansionScreens.register(sink);
         com.hbm.client.BombClientRegistrations.registerScreens(sink);
         com.hbm.client.Bombs2ClientRegistrations.registerScreens(sink);
+        com.hbm.client.CustomMissileClientRegistrations.registerScreens(sink);
+        com.hbm.client.RadarUtilityClientRegistrations.registerScreens(sink);
+        com.hbm.client.SatelliteClientRegistrations.registerScreens(sink);
+        com.hbm.client.DecoCrateClientRegistrations.registerScreens(sink);
+        com.hbm.client.GapsBClientRegistrations.registerScreens(sink); // G-B: held crates, wrench readout
+        com.hbm.client.IcfClientRegistrations.registerScreens(sink);
+        com.hbm.client.DungeonClientRegistrations.registerScreens(sink);
         com.hbm.client.render.RtgClientRegistrations.registerScreen(sink);
         com.hbm.radio.client.RadioClientRegistrations.registerScreens(sink);
         com.hbm.client.FluidNetClientRegistrations.registerScreens(sink);
@@ -221,12 +228,15 @@ public final class HbmClientRegistrations {
         com.hbm.client.PwrClientRegistrations.registerScreens(sink);
         com.hbm.client.PowerGenClientRegistrations.registerScreens(sink);
         com.hbm.client.ExplosivesClientRegistrations.registerScreens(sink);
+        com.hbm.client.MeleeKitClientRegistrations.registerScreens(sink);
+        com.hbm.client.UtilityToolClientRegistrations.registerScreens(sink);
+        com.hbm.client.CustomMachineClientRegistrations.registerScreens(sink);
         sink.register(com.hbm.blocks.machine.DiFurnaceContent.DI_FURNACE_MENU.get(),
                 com.hbm.inventory.gui.GUIDiFurnace::new);
         sink.register(ModMenus.MASS_STORAGE.get(), com.hbm.inventory.gui.GUIMassStorage::new);
         sink.register(ModMenus.CRATE_TEMPLATE.get(), com.hbm.inventory.gui.GUICrateTemplate::new);
         RBMKClientScreens.register(sink);
-        RBMKGauge.OPEN_SCREEN = com.hbm.inventory.gui.ScreenRBMKGauge::new;
+        RBMKGauge.OPEN_SCREEN = gauge -> net.minecraft.client.Minecraft.getInstance().setScreen(new com.hbm.inventory.gui.ScreenRBMKGauge(gauge));
         com.hbm.blocks.machine.rbmk.RBMKTerminal.OPEN_SCREEN = terminal ->
                 net.minecraft.client.Minecraft.getInstance().setScreen(
                         new com.hbm.inventory.gui.ScreenRBMKTerminal(terminal));
@@ -234,6 +244,8 @@ public final class HbmClientRegistrations {
 
     public static void registerHud(HudSink sink) {
         com.hbm.items.weapon.sedna.factory.GunFactoryClient.init();
+        // final armor B: goggles blur first, as Forge drew helmet overlays beneath the rest of the HUD
+        ArmorSetBClient.registerHud(sink);
         sink.register("look_overlay", HbmLookOverlay::render);
         sink.register("rad_counter", RadCounterOverlay::render);
         com.hbm.client.EnergyNetClientRegistrations.registerHud(sink);
@@ -241,7 +253,10 @@ public final class HbmClientRegistrations {
         sink.register("gun_hud", GunHudOverlay::render);
         sink.register("gun_scope", GunScopeOverlay::render);
         sink.register("armor_hud", ArmorHudOverlay::render);
+        ArmorSetClient.registerHud(sink); // final armor sets A: dash bar, HEV health/armour replacement
         sink.register("jetpack_hud", com.hbm.client.jetpack.JetpackHudOverlay::render);
+        AbilityToolClientRegistrations.registerHud(sink);
+        com.hbm.client.RenderInputClientRegistrations.registerHud(sink); // G-C: armour-mod shield bar
         if (System.getenv("HBM_JETPACK_SCREENSHOTS") != null && dev.golem.core.platform.Platform.isDevelopment())
             sink.register("jetpack_visual_check", com.hbm.client.jetpack.JetpackSmokeClient::render);
         if (com.hbm.client.gun.GunSmokeClient.enabled() && dev.golem.core.platform.Platform.isDevelopment())
@@ -270,7 +285,20 @@ public final class HbmClientRegistrations {
         com.hbm.client.DecoClientRegistrations.registerRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerBlockEntityRenderers(blockEntities);
         com.hbm.client.Bombs2ClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.CustomMissileClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.RadarUtilityClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.SatelliteClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.CustomMachineClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.DecoCrateClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.GapsBClientRegistrations.registerRenderers(blockEntities); // G-B: pipe anchor + pipelines
+        HbmBlockEntityRenderers.regGem(blockEntities, com.hbm.tileentity.ModArmorSetBBlockEntities.STATUE_ELB_F.get(),
+                com.hbm.client.render.RenderDecoBlockAlt::new); // final armor B: statue_elb_f
+        com.hbm.client.IcfClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.EnergyBedrockClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.DungeonClientRegistrations.registerRenderers(blockEntities);
+        com.hbm.client.StructureWandClientRegistrations.registerRenderers(blockEntities);
         com.hbm.client.BombClientRegistrations.registerEntityRenderers(entities);
+        com.hbm.client.SatelliteClientRegistrations.registerEntityRenderers(entities);
         com.hbm.client.render.RtgClientRegistrations.registerRenderer(blockEntities);
         HbmEntityRenderers.verifyCoverage(bound);
 
@@ -304,10 +332,12 @@ public final class HbmClientRegistrations {
 
     public static void installTints() {
         dev.golem.core.client.Tints.install(com.hbm.Constants.MOD_ID);
+        com.hbm.client.EnergyBedrockClientRegistrations.installSprites(); // computed bedrock ore grade art
     }
 
     /** The component-backed replacement for legacy item metadata in generated model selects. */
     public static void installItemModelProperties() {
+        com.hbm.client.UtilityToolClientRegistrations.installItemModelProperties();
         dev.golem.core.client.ItemModelProperties.register(com.hbm.Constants.MOD_ID, "item_variant",
                 stack -> com.hbm.items.ModDataComponents.ITEM_VARIANT.getOr(stack, 0));
     }
@@ -355,6 +385,15 @@ public final class HbmClientRegistrations {
                 com.hbm.client.render.armor.ArmorRenderLayer::new);
         dev.golem.core.render.HumanoidLayers.register(
                 com.hbm.client.jetpack.JetpackRenderLayer::new);
+        dev.golem.core.render.HumanoidLayers.register(com.hbm.client.render.armor.ArmorModRenderLayer::new);
+        dev.golem.core.render.HumanoidLayers.register(com.hbm.client.render.armor.WornModelRenderLayer::new); // final armor B: goggles, glasses, hat, no9
+        ArmorModHarnessQueries.register();
+        StructureHarnessQueries.register(); // harness query hbm_structure: NBT structure starts, placement score, loot state
+        WorldFeatureHarnessQueries.register(); // harness query hbm_worldgen: block counts/finds, biome, meteor scheduler
+        ComponentHarnessQueries.register(); // harness query hbm_wgc: features/bunker/meteor_dungeon starts, hardcoded piece builds (WG-C)
+        LegacyDungeonHarnessQueries.register(); // harness query hbm_wgd: legacy dungeon starts, placement score, loot/spawners (WG-D)
+        GapsAHarnessQueries.register(); // harness query hbm_gapsa: held stack/attack damage/cells, hurt jolt, amat flashes (G-A)
+        GapsBHarnessQueries.register(); // harness query hbm_gapsb: boss spawns, reputation, machine damage, structure tiles, radar (G-B)
     }
 
     /** Connects the client-owned visuals to the common JetpackHandler without making it import client APIs. */
@@ -390,10 +429,14 @@ public final class HbmClientRegistrations {
     /** Registers HBM's key mappings and starts the per-tick input poll that drives guns. */
     public static void installKeybinds() {
         HbmKeybindsClient.register();
+        ArmorSetClient.registerKeys(); // final armor sets A: bismuth dash key
         QMAWClient.register();
         ArmorModTooltips.register();
         com.hbm.client.anim.GunRecoil.register();
         CraneKeybindHandler.register();
+        com.hbm.client.UtilityToolClientRegistrations.installKeybinds();
+        AbilityToolClientRegistrations.registerKeys();
+        com.hbm.client.RenderInputClientRegistrations.installKeybinds(); // G-C: magnet toggle key
     }
 
     /**
@@ -406,6 +449,8 @@ public final class HbmClientRegistrations {
         com.hbm.client.ClientEffects.install();
         // 1.7 RenderOverhead.renderActionPreview: the conveyor wand's ghost run, drawn at world-frame end.
         com.hbm.client.render.ConveyorPreviewRenderer.init();
+        com.hbm.commands.HbmClientCommands.register(); // 1.7 client commands: /ntmclient, /ntmwikirender, /dumpthreadsandcrashgame
+        com.hbm.client.RenderInputClientRegistrations.install(); // G-C: overhead markers, HUD, world text, particles
     }
 
     /** Declares which animation each gun plays for each cue. Items resolve lazily, at render time. */

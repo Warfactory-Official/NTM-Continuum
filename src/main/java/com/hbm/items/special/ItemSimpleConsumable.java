@@ -21,7 +21,7 @@ import net.minecraft.world.level.Level;
 
 import java.util.List;
 
-/** Simple use-only consumables, currently the three RadAway doses. */
+/** Simple use-only consumables: the three RadAway doses and the four IV bags. */
 public final class ItemSimpleConsumable extends CompatItem {
 
     private final String id;
@@ -33,6 +33,9 @@ public final class ItemSimpleConsumable extends CompatItem {
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
+        if (level instanceof ServerLevel serverLevel && bloodBag(serverLevel, player, hand)) {
+            return InteractionResult.SUCCESS;
+        }
         if (level instanceof ServerLevel serverLevel) {
             int duration = switch (id) {
                 case "radaway" -> 200;
@@ -53,6 +56,51 @@ public final class ItemSimpleConsumable extends CompatItem {
             }
         }
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * 1.7 {@code ItemSimpleConsumable.init}, "BLOOD BAGS": the empty bag draws 5 health into a blood bag (dying of it
+     * if that was the last 5), the blood bag heals 5, the empty experience bag takes 100 experience when the player has
+     * at least that much, and the full one gives the 100 back. Returns whether {@link #id} is one of the four.
+     */
+    private boolean bloodBag(ServerLevel level, Player player, InteractionHand hand) {
+        switch (id) {
+            case "iv_empty" -> {
+                giveSoundAndDecrement(level, player, hand, ModSounds.SYRINGE.get(),
+                        com.hbm.items.ModArmorSetBItems.iv_blood.get());
+                player.setHealth(Math.max(player.getHealth() - 5F, 0F));
+                if (player.getHealth() <= 0) player.die(player.damageSources().magic());
+            }
+            case "iv_blood" -> {
+                giveSoundAndDecrement(level, player, hand, ModSounds.RADAWAY.get(), ModMedicineItems.iv_empty.get());
+                player.heal(5F);
+            }
+            case "iv_xp_empty" -> {
+                if (com.hbm.util.EnchantmentUtil.getTotalExperience(player) >= 100) {
+                    giveSoundAndDecrement(level, player, hand, ModSounds.SYRINGE.get(),
+                            com.hbm.items.ModArmorSetBItems.iv_xp.get());
+                    com.hbm.util.EnchantmentUtil.setExperience(player,
+                            com.hbm.util.EnchantmentUtil.getTotalExperience(player) - 100);
+                }
+            }
+            case "iv_xp" -> {
+                giveSoundAndDecrement(level, player, hand,
+                        dev.golem.core.world.Sounds.minecraft("entity.experience_orb.pickup"),
+                        com.hbm.items.ModArmorSetBItems.iv_xp_empty.get());
+                com.hbm.util.EnchantmentUtil.addExperience(player, 100, false);
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** 1.7 {@code giveSoundAndDecrement}: one fewer, the sound at the user, the container back. */
+    private static void giveSoundAndDecrement(ServerLevel level, Player player, InteractionHand hand,
+                                              net.minecraft.sounds.SoundEvent sound, Item container) {
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), sound, SoundSource.PLAYERS, 1.0F, 1.0F);
+        shrinkAndReplace(player, hand, container);
     }
 
     private static void addStacking(Player player, MobEffect effect, int duration, int amplifier) {

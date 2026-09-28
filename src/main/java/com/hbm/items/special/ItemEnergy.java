@@ -2,7 +2,6 @@ package com.hbm.items.special;
 
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.items.ModItems;
-import com.hbm.potion.ModEffects;
 import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import dev.golem.core.world.Effects;
@@ -49,7 +48,7 @@ public final class ItemEnergy extends CompatItem {
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
-        if (Effects.hasRegistered(player, ModEffects.POTION_SICKNESS.get())) return InteractionResult.TRY_WITH_EMPTY_HAND;
+        if (com.hbm.config.VersatileConfig.hasPotionSickness(player)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         if (container == Container.BOTTLE && !hasBottleOpener(player)) return InteractionResult.TRY_WITH_EMPTY_HAND;
         player.startUsingItem(hand);
         return InteractionResult.CONSUME;
@@ -59,7 +58,12 @@ public final class ItemEnergy extends CompatItem {
     public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
         if (!(level instanceof ServerLevel server) || !(entity instanceof Player player)) return stack;
         apply(server, player);
-        Effects.addRegistered(player, ModEffects.POTION_SICKNESS.get(), 5 * 20, 0);
+        // 1.7 achRadium fires inside coffee_radium's onEaten branch; the criterion names the coffee
+        if (id.equals("coffee_radium") && player instanceof net.minecraft.server.level.ServerPlayer drinker) {
+            com.hbm.advancement.HbmCriteria.CONSUMED.fire(drinker, stack.copyWithCount(1));
+        }
+        // 1.7 VersatileConfig.applyPotionSickness(player, 5): off at the default PotionConfig
+        com.hbm.config.VersatileConfig.applyPotionSickness(player, 5);
         if (player.getAbilities().instabuild) return stack;
 
         stack.shrink(1);
@@ -115,6 +119,8 @@ public final class ItemEnergy extends CompatItem {
             case "bottle2_fritz" -> { player.heal(6F); add(player, Effects.speed(), 30 * 20, 1); add(player, Effects.resistance(), 30 * 20, 2); add(player, Effects.jumpBoost(), 30 * 20, 2); }
             case "bottle_sparkle" -> { player.heal(10F); add(player, Effects.speed(), 120 * 20, 1); add(player, Effects.resistance(), 120 * 20, 2); add(player, Effects.strength(), 120 * 20, 2); add(player, Effects.haste(), 120 * 20, 1); HbmLivingProps.incrementRadiation(player, 5F); }
             case "bottle_rad" -> { player.heal(10F); add(player, Effects.speed(), 120 * 20, 1); add(player, Effects.resistance(), 120 * 20, 2); add(player, MobEffects.FIRE_RESISTANCE, 120 * 20, 0); add(player, Effects.strength(), 120 * 20, 4); add(player, Effects.haste(), 120 * 20, 1); HbmLivingProps.incrementRadiation(player, 15F); }
+            // 1.7: "Totally not made from nitroglycerine." A size-50 large explosion (cloud, no rubble/shrapnel).
+            case "chocolate_milk" -> com.hbm.explosion.ExplosionLarge.explode(level, player.getX(), player.getY(), player.getZ(), 50, true, false, false);
             case "coffee", "coffee_radium" -> { player.heal(10F); add(player, Effects.speed(), 60 * 20, 2); if (id.equals("coffee_radium")) HbmLivingProps.incrementRadiation(player, 500F); }
             default -> { }
         }
@@ -136,6 +142,10 @@ public final class ItemEnergy extends CompatItem {
             case "can_luna" -> tooltip.add(Component.literal("Contains actual selenium and star metal. Tastes like night."));
             case "can_bepis" -> tooltip.add(Component.literal("beppp"));
             case "can_breen" -> tooltip.add(Component.literal("Don't drink the water. They put something in it, to make you forget."));
+            case "chocolate_milk" -> {
+                tooltip.add(Component.literal("Regular chocolate milk. Safe to drink."));
+                tooltip.add(Component.literal("Totally not made from nitroglycerine."));
+            }
             case "bottle_nuka" -> tooltip.add(Component.literal("Contains about 210 kcal and 1500 mSv."));
             case "bottle_cherry" -> tooltip.add(Component.literal("Now with severe radiation poisoning in every seventh bottle!"));
             case "bottle_quantum" -> tooltip.add(Component.literal("Comes with a colorful mix of over 70 isotopes!"));

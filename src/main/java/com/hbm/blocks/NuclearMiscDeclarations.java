@@ -65,10 +65,17 @@ public final class NuclearMiscDeclarations {
 
         // Items.
         for (String rod : new String[]{"pile_rod_uranium", "pile_rod_pu239", "pile_rod_plutonium", "pile_rod_source",
-                "pile_rod_boron", "pile_rod_lithium", "pile_rod_detector", "ingot_u238m2", "demon_core_open",
+                "pile_rod_boron", "pile_rod_lithium", "pile_rod_detector", "demon_core_open",
                 "quartz_plutonium", "reactor_sensor"}) {
             Dejson.item(NS, rod).models(Models.generated("hbm:items/" + rod)).register();
         }
+        // 1.7 ItemUnstable metadata 1..3 (ELEMENTS / ARSENIC / VAULT), the Brittle Spade's inert easter eggs.
+        Dejson.item(NS, "ingot_u238m2").models(Models.group()
+                .and("", Models.generated("hbm:items/ingot_u238m2"))
+                .and("_elements", Models.generated("hbm:items/hs-elements"))
+                .and("_arsenic", Models.generated("hbm:items/hs-arsenic"))
+                .and("_vault", Models.generated("hbm:items/hs-vault")))
+                .selects(NS + ":item_variant").register();
         for (String size : new String[]{"rod", "rod_dual", "rod_quad"}) {
             for (String type : ROD_TYPES) {
                 Dejson.item(NS, size + "_" + type).models(Models.generated("hbm:items/" + size + "_" + type)).register();

@@ -238,8 +238,8 @@ public final class ModMachineBlocks {
             p -> p.strength(2.0F, 4.0F).sound(SoundType.METAL));
 
     public static final RegistryObject<MachineFluidTank> machine_fluidtank = BLOCKS.registerBlock(
-            "machine_fluidtank", MachineFluidTank::new,
-            p -> dummyable(p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+            "machine_fluidtank", MachineFluidTank::new, // resistance: 1.7 setResistance(20) = 60/5 = 12 against explosions
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     public static final RegistryObject<MachineUF6Tank> machine_uf6_tank = BLOCKS.registerBlock(
             "machine_uf6_tank", MachineUF6Tank::new,
@@ -359,8 +359,8 @@ public final class ModMachineBlocks {
 
     /** Refinery — fractionates HOT oils into 4 products; 3×3×9 tower. */
     public static final RegistryObject<MachineRefinery> machine_refinery = BLOCKS.registerBlock(
-            "machine_refinery", MachineRefinery::new,
-            p -> dummyable(p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
+            "machine_refinery", MachineRefinery::new, // resistance: 1.7 setResistance(20) = 60/5 = 12 against explosions
+            p -> dummyable(p.strength(5.0F, 12.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()));
 
     /** Heat Boiler (old id {@code heat_boiler}) — the OIL→HOTOIL / water→steam converter. */
     public static final RegistryObject<MachineHeatBoiler> machine_boiler = BLOCKS.registerBlock(

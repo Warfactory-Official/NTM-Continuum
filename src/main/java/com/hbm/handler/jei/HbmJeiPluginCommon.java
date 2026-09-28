@@ -297,7 +297,9 @@ public final class HbmJeiPluginCommon {
                  vacuum, reforming, cracking, hydrotreating, coker, pyrolysis, compressor, storageDrum,
                  arcWelder, arcFurnaceSolid, arcFurnaceFluid, diFurnace, rotaryFurnace);
         RTGJeiIntegration.registerCategory(reg);
+        SatelliteRecipeHandler.registerCategory(reg);
         com.hbm.handler.jei.NuclearMiscJeiIntegration.registerCategories(reg);
+        com.hbm.handler.jei.CustomMachineJeiIntegration.registerCategories(reg);
     }
 
     public static void registerRecipes(IRecipeRegistration reg) {
@@ -370,7 +372,9 @@ public final class HbmJeiPluginCommon {
                  ArcFurnaceRecipeHandler.buildRecipes(true));
           dev.golem.core.jei.Jei.addRecipes(reg, HbmJeiRecipeTypes.ALLOY, DiFurnaceRecipeHandler.buildRecipes());
         RTGJeiIntegration.registerRecipes(reg);
+        SatelliteRecipeHandler.registerRecipes(reg);
         com.hbm.handler.jei.NuclearMiscJeiIntegration.registerRecipes(reg);
+        com.hbm.handler.jei.CustomMachineJeiIntegration.registerRecipes(reg);
       }
 
     public static void registerGuiHandlers(IGuiHandlerRegistration reg) {
@@ -458,7 +462,9 @@ public final class HbmJeiPluginCommon {
 
     public static void registerCatalysts(IRecipeCatalystRegistration reg) {
         RTGJeiIntegration.registerCatalyst(reg);
+        SatelliteRecipeHandler.registerCatalyst(reg);
         com.hbm.handler.jei.NuclearMiscJeiIntegration.registerCatalysts(reg);
+        com.hbm.handler.jei.CustomMachineJeiIntegration.registerCatalysts(reg);
           dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE, stack(ModMachineBlocks.machine_assembly_machine.get()));
           dev.golem.core.jei.Jei.addCraftingStation(reg, HbmJeiRecipeTypes.ASSEMBLY_MACHINE,
                   stack(com.hbm.assemblyfactory.AssemblyFactoryRegistrations.MACHINE_ASSEMBLY_FACTORY.get()));

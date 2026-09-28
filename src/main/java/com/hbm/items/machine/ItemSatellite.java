@@ -4,7 +4,6 @@ import com.hbm.items.ISatChip;
 import com.hbm.items.ItemEnumMulti;
 import com.hbm.items.ModSatelliteItems;
 import dev.golem.core.world.CompatTooltipContext;
-import net.minecraft.ChatFormatting;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -13,36 +12,31 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-/** The launchable satellite, one variant per kind, carrying the frequency it will answer on. */
+/**
+ * 1.7 {@code com.hbm.items.special.ItemSatellite}: the launchable satellite, one variant per kind (the variant is
+ * 1.7's metadata, {@link EnumSatType#ordinal()}), carrying the frequency it will answer on.
+ */
 public class ItemSatellite extends ItemEnumMulti implements ISatChip {
 
     public ItemSatellite(Properties properties) {
         super(EnumSatType.class, true, true, properties);
     }
 
+    /** 1.7 {@code ItemSatellite.EnumSatType}, in 1.7 order; the ordinal is the item's metadata. */
     public enum EnumSatType {
-        SPY("satchip.mapper"),
-        SCANNER("satchip.scanner"),
-        RADAR("satchip.radar"),
-        MINER_ASTRO("satchip.miner"),
-        MINER_LUNAR("satchip.lunar_miner"),
-        PRECISION_LASER("satchip.precision_laser"),
-        DEATH_RAY("satchip.laser"),
-        XENIUM_RESONATOR("satchip.resonator"),
-        RELAY("satchip.foeq"),
-        DETECTOR("satchip.detector"),
-        RAY_SCAN("satchip.ray_scanner"),
-        SCIENCE("satchip.science"),
-        SCIENCE_ASSEMBLER("satchip.science_assembler"),
-        SCIENCE_SENSOR("satchip.science_sensor");
+        SPY,
+        SCANNER,
+        RADAR,
+        MINER_ASTRO,
+        MINER_LUNAR,
+        PRECISION_LASER,
+        DEATH_RAY,
+        XENIUM_RESONATOR,
+        RELAY,
+        DETECTOR,
+        RAY_SCAN;
 
         public static final EnumSatType[] VALUES = values();
-
-        public final String descKey;
-
-        EnumSatType(String descKey) {
-            this.descKey = descKey;
-        }
     }
 
     public @Nullable EnumSatType typeOf(ItemStack stack) {
@@ -54,25 +48,10 @@ public class ItemSatellite extends ItemEnumMulti implements ISatChip {
         return ModSatelliteItems.satellite.get().of(type);
     }
 
-    /** The name key a satellite reports as, so a sat link can print what it is talking to. */
-    public static String nameKey(EnumSatType type) {
-        return ModSatelliteItems.satellite.get().getDescriptionId()
-                + "." + type.name().toLowerCase(java.util.Locale.US);
-    }
-
+    /** 1.7: the frequency and nothing else. */
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        EnumSatType type = typeOf(stack);
-        if (type == null) return;
-
-        tooltip.add(Component.translatable("satchip.frequency")
-                .append(Component.literal(": " + getFreq(stack))).withStyle(ChatFormatting.AQUA));
-
-        String base = type.descKey + ".";
-        Language language = Language.getInstance();
-        for (int i = 0; language.has(base + i); i++) {
-            tooltip.add(Component.translatable(base + i));
-        }
+        tooltip.add(Component.literal(Language.getInstance().getOrDefault("satchip.frequency") + ": " + getFreq(stack)));
     }
 }

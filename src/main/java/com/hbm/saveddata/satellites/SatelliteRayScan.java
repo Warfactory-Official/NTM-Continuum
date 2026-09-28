@@ -1,9 +1,6 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
-import com.hbm.items.machine.ItemSatellite;
-import com.hbm.items.machine.ItemSatellite.EnumSatType;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
@@ -13,7 +10,6 @@ import com.mojang.serialization.MapCodec;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
 import java.util.Objects;
 
@@ -35,9 +31,7 @@ public class SatelliteRayScan extends Satellite {
 
     public static final MapCodec<SatelliteRayScan> CODEC = MapCodec.unit(SatelliteRayScan::new);
 
-    public SatelliteRayScan() {
-        super(Interfaces.SAT_PANEL, Set.of(InterfaceActions.HAS_MAP), Set.of());
-    }
+    public SatelliteRayScan() {}
 
     @Override
     public SatelliteType type() {
@@ -45,11 +39,6 @@ public class SatelliteRayScan extends Satellite {
     }
 
     @Override public String getType() { return "NB_RAY_SCANNER"; }
-
-    @Override
-    public Component[] getInfo(Level level) {
-        return new Component[]{Component.translatable(ItemSatellite.nameKey(EnumSatType.RAY_SCAN))};
-    }
 
     @Override
     public void onCommandImpl(Level level, String... cmd) {
@@ -87,11 +76,6 @@ public class SatelliteRayScan extends Satellite {
     public @Nullable RayEvent getEventFromIndex(String cmd) {
         if (cachedResults.isEmpty()) return null;
         return cachedResults.get(IRORInteractive.parseInt(cmd, 1, cachedResults.size()) - 1);
-    }
-
-    @Override
-    public float[] getColor() {
-        return new float[]{0.4F, 1.0F, 0.8F};
     }
 
     // --- the world's emission log ---

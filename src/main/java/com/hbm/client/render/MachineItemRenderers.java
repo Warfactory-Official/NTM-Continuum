@@ -37,6 +37,8 @@ public final class MachineItemRenderers {
         // Guns share this hook: it is the one place below 26.1 that is handed the display context, which
         // a weapon needs in order to tell a held body from an inventory icon.
         if (com.hbm.client.render.weapon.GunLegacyModels.render(stack, context, poseStack, buffers, light, overlay)) return;
+        // Ported 1.7 IItemRenderers (hbm:custom_item) are context-driven for the same reason.
+        if (MachineItemModels.renderCustom(stack, context, poseStack, buffers, light, overlay)) return;
         Identifier id = BuiltInRegistries.ITEM.getKey(stack.getItem());
         if (MachineItemModels.isGlider(id)) {
             com.hbm.client.jetpack.JetpackGliderLegacyRenderer.render(stack, context, poseStack, buffers, light, overlay);
@@ -64,7 +66,7 @@ public final class MachineItemRenderers {
             // The scissor only binds while the draw actually reaches GL, and a buffer source defers that
             // to its batch end — which would otherwise happen after the scissor is dropped.
             if (buffers instanceof MultiBufferSource.BufferSource batched) batched.endBatch();
-            RenderSystem.disableScissor();
+            dev.golem.core.gui.Scissors.pop();
         }
     }
 
@@ -99,8 +101,8 @@ public final class MachineItemRenderers {
         int size = (int) (HALF_SLOT * 2 * guiScale);
         if (size <= 0) return false;
 
-        RenderSystem.enableScissor(left, bottom, size, size);
-        return true;
+        // Core Scissors: nested in (and restored to) any clip already active, e.g. the advancement window's
+        return dev.golem.core.gui.Scissors.push(left, bottom, size, size);
     }
 }
 *///?}

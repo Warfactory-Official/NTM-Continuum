@@ -1,5 +1,0 @@
-{
-  "__comment": "Parent marker for Sedna gun bases. builtin/entity routes legacy items to the BEWLR / DynamicItemRenderer; each modern base supplies the same display transforms inherited by that legacy item.",
-  "parent": "minecraft:builtin/entity",
-  "gui_light": "side"
-}

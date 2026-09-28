@@ -1,13 +1,15 @@
 package com.hbm.saveddata.satellites;
 
-import com.hbm.util.GameTime;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Set;
-
+/**
+ * 1.7 {@code SatelliteMiner}, the asteroid mining ship: a cargo landing pad tuned to it receives a miner rocket
+ * every ten minutes carrying a draw from its item pool.
+ */
 public class SatelliteMiner extends Satellite {
 
     public static final MapCodec<SatelliteMiner> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -15,8 +17,10 @@ public class SatelliteMiner extends Satellite {
     ).apply(i, SatelliteMiner::new));
 
     /**
-     * 1.7 stamped this off {@code System.currentTimeMillis()}; here it is {@link GameTime#millis(net.minecraft.world.level.Level)},
-     * so the window survives {@code /tick freeze} and both ends share one clock domain.
+     * Wall-clock milliseconds of the last delivery, 1.7 {@code System.currentTimeMillis()} as the cargo pad
+     * stamps it: 0 on a fresh satellite, so its first rocket comes at once, then one every ten minutes of real
+     * time (§19ec-satellites restored this from a level-time stamp, which held the first rocket back until the
+     * world was ten minutes old).
      */
     public long lastOp;
 
@@ -25,24 +29,29 @@ public class SatelliteMiner extends Satellite {
     }
 
     protected SatelliteMiner(long lastOp) {
-        super(Interfaces.NONE, Set.of(), Set.of());
         this.lastOp = lastOp;
-    }
-
-    /**
-     * 1.7 {@code SatelliteMiner.getCargoForItem}; null where the item launches no mining satellite.
-     */
-    public static @Nullable String getCargoForStack(net.minecraft.world.item.ItemStack stack) {
-        SatelliteType type = SatelliteType.fromStack(stack);
-        return type == null ? null : type.cargo();
-    }
-
-    public @Nullable String getCargo() {
-        return type().cargo();
     }
 
     @Override
     public SatelliteType type() {
         return SatelliteType.MINER;
+    }
+
+    @Override public String getType() { return "ASTEROID_MINER"; }
+
+    /** 1.7 writeToNBT/readFromNBT store only {@code lastOp}; the base target is not saved. */
+    @Override
+    public boolean savesBaseData() {
+        return false;
+    }
+
+    /** 1.7 {@code SatelliteMiner.getCargoForItem}; null where the item launches no mining satellite. */
+    public static @Nullable String getCargoForItem(ItemStack stack) {
+        SatelliteType type = XSatelliteRegistry.typeFor(stack);
+        return type == null ? null : type.cargo();
+    }
+
+    public @Nullable String getCargo() {
+        return type().cargo();
     }
 }

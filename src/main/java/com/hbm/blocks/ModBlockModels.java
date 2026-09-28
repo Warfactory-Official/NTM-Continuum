@@ -1,5 +1,6 @@
 package com.hbm.blocks;
 
+import dev.golem.core.dejson.Atlases;
 import dev.golem.core.dejson.Dejson;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Slots;
@@ -46,6 +47,8 @@ public final class ModBlockModels {
         renderedMachines();
         handBuilt();
         everythingElse();
+        // 1.7 names block sprites textures/blocks/*, outside the block/ directory vanilla stitches.
+        Atlases.directories("minecraft", "blocks", "blocks", "blocks/");
     }
 
     /** Ladders, which are rungs and a rail: hand-built {@code elements} rotated four ways. */

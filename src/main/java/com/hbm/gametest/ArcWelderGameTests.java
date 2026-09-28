@@ -33,14 +33,14 @@ public final class ArcWelderGameTests {
 
     public static void feasibleCatalogueAndMatching(GameTestHelper helper) {
         ArcWelderRecipes.register();
-        helper.assertTrue(ArcWelderRecipes.recipes.size() == 43,
-                "Arc Welder must retain 43 feasible legacy recipes");
+        // 41: the two 1.12.2 satellite welds (sat_base + sat_head) went with §19ec-satellites; 1.7 assembles
+        // every satellite in the assembly machine and its arc welder makes none.
+        helper.assertTrue(ArcWelderRecipes.recipes.size() == 41,
+                "Arc Welder must retain 41 feasible legacy recipes, found " + ArcWelderRecipes.recipes.size());
 
         var scanner = ArcWelderRecipes.getRecipe(new ItemStack(ModItems.sat_base.get()),
                 new ItemStack(ModItems.sat_head_scanner.get()), ItemStack.EMPTY);
-        helper.assertTrue(scanner != null
-                        && scanner.output.is(com.hbm.items.ModSatelliteItems.satellite.get()),
-                "A satellite base welded to a scanner head must make a satellite");
+        helper.assertTrue(scanner == null, "1.7 has no arc-welder satellite recipe");
 
         Item wire = ModAutogenItems.get(MaterialShapes.DENSEWIRE, com.hbm.inventory.material.Mats.MAT_RED_COPPER);
         var motor = ArcWelderRecipes.getRecipe(

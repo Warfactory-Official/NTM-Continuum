@@ -22,7 +22,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
  * side effects (digamma max-health modifier + death, asbestos/blacklung kill at max).
  *
  * <p>Deferred vs the original: the asbestos/coal-dust on-screen inform toasts, the digamma death
- * particle burst, and the advancement grants (no advancement system ported yet).
+ * particle burst.
  */
 public class HbmLivingProps {
 
@@ -116,7 +116,13 @@ public class HbmLivingProps {
             }
             // TODO(particles): soul-sand sweat burst on digamma death (needs the HBM particle system)
         }
-        // TODO(advancements): digammaSee / digammaFeel / digammaKnow grants
+        // 1.7 setDigamma: digammaSee above 0, digammaFeel from 2, digammaKnow from 10
+        if (entity instanceof net.minecraft.server.level.ServerPlayer player) {
+            double di = getDigamma(entity);
+            if (di > 0D) com.hbm.advancement.HbmCriteria.DIGAMMA.fire(player, "see", net.minecraft.world.item.ItemStack.EMPTY, di);
+            if (di >= 2D) com.hbm.advancement.HbmCriteria.DIGAMMA.fire(player, "feel", net.minecraft.world.item.ItemStack.EMPTY, di);
+            if (di >= 10D) com.hbm.advancement.HbmCriteria.DIGAMMA.fire(player, "know", net.minecraft.world.item.ItemStack.EMPTY, di);
+        }
     }
 
     public static void incrementDigamma(LivingEntity entity, double digamma) {
@@ -213,6 +219,7 @@ public class HbmLivingProps {
 
     /// CONTAGION ///
     public static int getContagion(LivingEntity entity) {
+        if (!com.hbm.config.ServerConfig.ENABLE_MKU.get()) return 0; // 1.7: no MKU, no infection
         return getData(entity).getContagion();
     }
 

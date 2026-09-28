@@ -126,7 +126,10 @@ public final class BeamPronter {
             if (i > 0) {
                 for (int layer = 1; layer <= layers; layer++) {
                     float inter = layers <= 1 ? 0F : (float) (layer - 1) / (layers - 1);
-                    int color = layers == 1 ? outerColor : interpolateColor(innerColor, outerColor, inter);
+                    // 1.7 lerps outer -> inner as the layer grows: the thinnest prism takes the outer colour and the
+                    // widest the inner one. Under additive blending the core is the sum of every layer either way,
+                    // so what this decides is the colour of the beam's edge.
+                    int color = layers == 1 ? outerColor : interpolateColor(outerColor, innerColor, inter);
                     segmentPrism(pose, buffer, color, lastX, lastY, lastZ, x, y, z, radius * layer);
                 }
             }

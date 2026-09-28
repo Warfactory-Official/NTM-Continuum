@@ -3,6 +3,11 @@ package com.hbm.blocks.generic;
 import com.hbm.blocks.machine.storage.BlockCrateSupply;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.special.ItemCell;
+import com.hbm.items.weapon.grenade.ItemGrenadeExtra;
+import com.hbm.items.weapon.grenade.ItemGrenadeFilling;
+import com.hbm.items.weapon.grenade.ItemGrenadeFuze;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell;
+import com.hbm.items.weapon.grenade.ItemGrenadeUniversal;
 import com.hbm.sound.ModSounds;
 import dev.golem.core.Ids;
 import dev.golem.core.world.CompatBlock;
@@ -32,7 +37,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 /**
- * 1.7 {@code BlockCrate}: the weapon, hazmat (lead), machine (metal) and red loot crates. A gravity
+ * 1.7 {@code BlockCrate}: the supply, weapon, hazmat (lead), machine (metal) and red loot crates. A gravity
  * block (the old class extended {@code BlockFalling}); a crowbar spills its loot and breaks it with the
  * crate-break sound; mining it just drops the crate.
  *
@@ -43,7 +48,7 @@ import java.util.function.Supplier;
  */
 public class BlockCrate extends CompatBlock {
 
-    public enum Kind { WEAPON, LEAD, METAL, RED }
+    public enum Kind { SUPPLY, WEAPON, LEAD, METAL, RED }
 
     private final Kind kind;
 
@@ -84,6 +89,7 @@ public class BlockCrate extends CompatBlock {
         return InteractionResult.SUCCESS;
     }
 
+    private static final List<Supplier<ItemStack>> SUPPLY = new ArrayList<>();
     private static final List<Supplier<ItemStack>> WEAPON = new ArrayList<>();
     private static final List<Supplier<ItemStack>> LEAD = new ArrayList<>();
     private static final List<Supplier<ItemStack>> METAL = new ArrayList<>();
@@ -93,6 +99,17 @@ public class BlockCrate extends CompatBlock {
     private static void setDrops() {
         if (dropsSet) return;
         dropsSet = true;
+        // Supply Crate
+        add(SUPPLY, "syringe_metal_stimpak", 10);
+        add(SUPPLY, "syringe_antidote", 5);
+        add(SUPPLY, () -> ItemGrenadeUniversal.make(ItemGrenadeShell.EnumGrenadeShell.FRAG,
+                ItemGrenadeFilling.EnumGrenadeFilling.HE, ItemGrenadeFuze.EnumGrenadeFuze.S3,
+                ItemGrenadeExtra.EnumGrenadeExtra.FRAG_SLEEVE), 8);
+        add(SUPPLY, () -> ItemGrenadeUniversal.make(ItemGrenadeShell.EnumGrenadeShell.STICK,
+                ItemGrenadeFilling.EnumGrenadeFilling.HE, ItemGrenadeFuze.EnumGrenadeFuze.IMPACT), 6);
+        add(SUPPLY, () -> ItemGrenadeUniversal.make(ItemGrenadeShell.EnumGrenadeShell.FRAG,
+                ItemGrenadeFilling.EnumGrenadeFilling.INC, ItemGrenadeFuze.EnumGrenadeFuze.S7), 4);
+        add(SUPPLY, "ammo_container", 2);
         // Weapon Crate
         add(WEAPON, "gun_light_revolver", 10);
         add(WEAPON, "gun_maresleg", 7);
@@ -176,6 +193,7 @@ public class BlockCrate extends CompatBlock {
 
     private List<Supplier<ItemStack>> table() {
         return switch (kind) {
+            case SUPPLY -> SUPPLY;
             case WEAPON -> WEAPON;
             case LEAD -> LEAD;
             case METAL -> METAL;

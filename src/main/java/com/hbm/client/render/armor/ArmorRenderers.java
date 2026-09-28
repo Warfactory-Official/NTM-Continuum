@@ -23,6 +23,23 @@ public final class ArmorRenderers {
         RENDERERS.put("bj", bj);
         RENDERERS.put("bj_jetpack", bj);
         RENDERERS.put("dns", new DNTArmorRenderer());
+        // final armor sets A
+        RENDERERS.put("bismuth", new BismuthArmorRenderer());
+        RENDERERS.put("ajr", new AJRArmorRenderer("ajr"));
+        RENDERERS.put("ajro", new AJRArmorRenderer("ajro"));
+        RENDERERS.put("hev", new HEVArmorRenderer());
+        RENDERERS.put("fau", new DigammaArmorRenderer());
+        RENDERERS.put("trenchmaster", new TrenchmasterArmorRenderer());
+        // final armor B
+        RENDERERS.put("steamsuit", new SteamsuitArmorRenderer());
+        RENDERERS.put("dieselsuit", new DieselsuitArmorRenderer());
+        RENDERERS.put("envsuit", new EnvsuitArmorRenderer());
+        RENDERERS.put("rpa", new RPAArmorRenderer()); // G-C: 1.7 ModelArmorRPA
+        RENDERERS.put("ncrpa", new NCRPAArmorRenderer()); // G-C: 1.7 ModelArmorNCRPA
+        RENDERERS.put("ashglasses", new HeadModelArmorRenderer("goggles", "goggles"));
+        RENDERERS.put("nossy_hat", new HeadModelArmorRenderer("hat", "hat"));
+        RENDERERS.put("no9", new No9ArmorRenderer());
+        RENDERERS.put("back_tesla", new BackTeslaRenderer()); // armor module, drawn by ArmorModRenderLayer
     }
 
     public static void reload() {

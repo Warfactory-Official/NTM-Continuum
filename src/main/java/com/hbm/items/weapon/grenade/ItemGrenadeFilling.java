@@ -232,6 +232,8 @@ public class ItemGrenadeFilling extends Item {
     }
 
     public static void spawnMush(EntityGrenadeUniversal grenade) {
+        com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(grenade.level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
+                com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, grenade.getX(), grenade.getZ());
         grenade.level().playSound(null, grenade.getX(), grenade.getY(), grenade.getZ(),
                 ModSounds.MUKE_EXPLOSION.get(), SoundSource.BLOCKS, 15.0F, 1.0F);
         if (!(grenade.level() instanceof ServerLevel server)) return;

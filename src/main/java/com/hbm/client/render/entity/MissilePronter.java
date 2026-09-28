@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * 1.7 MissilePronter: an assembled custom missile drawn bottom to top, each part raised by the height of the one
  * below it. Meshes and skins are resolved from each part's own declaration on first draw; a part that declares
- * no mesh (this port registers no custom missile parts yet) draws nothing.
+ * no mesh (the guidance chips, as in 1.7) draws nothing.
  */
 public final class MissilePronter {
 

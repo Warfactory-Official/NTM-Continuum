@@ -69,6 +69,13 @@ public final class ModMissileItems {
             missile("missile_taint", MissileFormFactor.MICRO, MissileTier.TIER0);
     public static final RegistryObject<ItemMissileStandard> missile_emp =
             missile("missile_emp", MissileFormFactor.MICRO, MissileTier.TIER0);
+    /**
+     * 1.7 {@code missile_test}: a MICRO/TIER0 {@code ItemMissile} registered with a null creative tab (so it is in
+     * no tab here either). It flies as {@code EntityMissileTest}, which chars a 50-block sphere into slaked
+     * sellafite. 1.7 has no lang entry for it; the port reuses the entity's "Test Missile".
+     */
+    public static final RegistryObject<ItemMissileStandard> missile_test =
+            missile("missile_test", MissileFormFactor.MICRO, MissileTier.TIER0);
 
     // --- tier 1: the V2 family ---
 

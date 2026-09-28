@@ -139,6 +139,10 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
             } else {
                 te.heat = Math.max(0, te.heat - 10);
             }
+
+            if (level.getGameTime() % 100 == 0)
+                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),
+                        com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_NUCLEAR, 200);
         }
         for (DirPos port : te.getConPos()) {
             te.tryProvide(te.steam, level, port);
@@ -181,6 +185,12 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     private void decayRods() {
         for (int slot = 0; slot < 24; slot++) {
             net.minecraft.world.item.ItemStack stack = inventory.getStackInSlot(slot);
+            // 1.7: while on, a bred meteorite sword in a rod slot becomes the irradiated one
+            if (stack.is(com.hbm.items.ModAbilityToolItems.meteorite_sword_bred.get())) {
+                inventory.setStackInSlot(slot, new net.minecraft.world.item.ItemStack(
+                        com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get()));
+                continue;
+            }
             if (!(stack.getItem() instanceof ItemZirnoxRod rod)) continue;
             ZirnoxFuel fuel = rod.fuel();
             int operations = fuel.breeding ? 0 : 1;
@@ -268,8 +278,10 @@ public class TileEntityReactorZirnox extends TileEntityMachineBase implements IF
     private static void grantMeltdownAdvancement(Level level, BlockPos pos) {
         for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class,
                 new net.minecraft.world.phys.AABB(pos).inflate(100.0D))) {
-            dev.golem.core.world.Advancements.award(player,
-                    Constants.MOD_ID + ":zirnox_meltdown", "meltdown");
+            // 1.7 achZIRNOXBoom: every player in the core's box grown by 100
+            com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.ZIRNOX);
+            // 1.7: the same players are marked for BossSpawnHandler's radiation beasts
+            if (com.hbm.config.MobConfig.enableElementals) com.hbm.extprop.HbmPlayerProps.getData(player).radMark = true;
         }
     }
 

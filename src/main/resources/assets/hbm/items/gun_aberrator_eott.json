@@ -1,8 +1,0 @@
-{
-  "model": {
-    "type": "hbm:gun",
-    "base": "hbm:item/gun_obj_base",
-    "weapon": "aberrator_eott"
-  },
-  "oversized_in_gui": true
-}

@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
  * Vanilla's container-minecart open path carries no extra data, so the client builds it over a plain
  * container of the type's slot count and the slots sync as usual.
  */
-public class MenuCrate extends AbstractContainerMenu {
+public class MenuCrate extends dev.golem.core.gui.CompatContainerMenu {
 
     private final CrateType type;
     private final Container container;
@@ -26,7 +26,20 @@ public class MenuCrate extends AbstractContainerMenu {
     }
 
     public MenuCrate(int containerId, Inventory playerInv, CrateType type, Container container) {
-        super(ModMenus.CART_CRATE.get(), containerId);
+        this(ModMenus.CART_CRATE.get(), containerId, playerInv, type, container, -1);
+    }
+
+    /** The hotbar slot of a crate opened from the hand (1.7 {@code InventoryCrate}); -1 for the cart. */
+    protected final int heldSlot;
+
+    /**
+     * The same layout over another menu type: the held crate ({@code com.hbm.inventory.ModHeldCrateMenus}) whose hotbar
+     * slot {@code heldSlot} holds the crate itself and may not be touched (1.7 {@code SlotPlayerCrateLocked}).
+     */
+    public MenuCrate(net.minecraft.world.inventory.MenuType<?> menuType, int containerId, Inventory playerInv,
+                     CrateType type, Container container, int heldSlot) {
+        super(menuType, containerId);
+        this.heldSlot = heldSlot;
         checkContainerSize(container, type.slots);
         this.type = type;
         this.container = container;
@@ -55,6 +68,11 @@ public class MenuCrate extends AbstractContainerMenu {
     }
 
     @Override
+    protected boolean handleClick(int slotId, int button, ClickAction action, Player player) {
+        return com.hbm.items.block.CrateHeldOpening.blocksClick(this, heldSlot, slotId, button, action);
+    }
+
+    @Override
     public boolean stillValid(Player player) {
         return container.stillValid(player);
     }
@@ -63,6 +81,7 @@ public class MenuCrate extends AbstractContainerMenu {
     public void removed(Player player) {
         super.removed(player);
         container.stopOpen(player);
+        if (container instanceof com.hbm.items.block.CrateHeldOpening.HeldCrate held) held.closed();
     }
 
     @Override

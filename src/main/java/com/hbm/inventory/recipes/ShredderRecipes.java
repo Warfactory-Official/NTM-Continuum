@@ -80,6 +80,8 @@ public final class ShredderRecipes {
         initialized = true;
 
         ShredderRecipesGenerated.registerAll(ShredderRecipes::set);   // explicit entries win
+        DecoCrateMachineRecipes.shredder(ShredderRecipes::set); // tungsten crate, bobbleheads
+        BedrockOreChainRecipes.shredder(ShredderRecipes::set); // every bedrock ore grade -> gravel
         registerModernParity();
         registerVanillaSweeps();
         registerTagSweep();

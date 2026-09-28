@@ -42,8 +42,8 @@ public final class NuclearMiscGameTests {
                 "radiolysis must split water into peroxide and hydrogen");
         helper.assertTrue(RadiolysisRecipes.getRadiolysis(Fluids.OIL) != null,
                 "radiolysis must inherit the cracking recipes");
-        helper.assertTrue(BreederRecipes.getAllRecipes().size() == 30,
-                "breeder must expose ten rod recipes for each of the three rod sizes");
+        helper.assertTrue(BreederRecipes.getAllRecipes().size() == 31,
+                "breeder must expose ten rod recipes for each of the three rod sizes, plus the etched meteorite sword");
         BreederRecipes.BreederRecipe quad = BreederRecipes.getOutput(new ItemStack(ModNuclearMiscItems.rod(RodSize.QUAD, BreedingRodType.PU238)));
         helper.assertTrue(quad != null && quad.flux() == 3000
                         && quad.output().getItem() == ModNuclearMiscItems.rod(RodSize.QUAD, BreedingRodType.PU239),

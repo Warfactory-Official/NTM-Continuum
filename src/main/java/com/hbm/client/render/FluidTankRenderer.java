@@ -31,6 +31,8 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
     private static final float BASE_YAW = 180F;
 
     private final WavefrontObj model = WavefrontObj.load(OBJ);
+    private final WavefrontObj exploded = WavefrontObj.load(dev.golem.core.Ids.of("hbm", "models/fluidtank_exploded.obj"));
+    private final Surface inner = Surface.cutout(dev.golem.core.Ids.of("hbm", "textures/models/tank/tank_inner.png").toString());
     private final Surface frame = Surface.cutout(FRAME_TEX.toString());
     private final Map<Identifier, Surface> skins = new ConcurrentHashMap<>();
     /** Cache of fluid name → resolved body texture (falling back to tank_none when a fluid has no skin). */
@@ -57,8 +59,12 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
                 .translate(0.5F, 0F, 0.5F)
                 .angle(Gem.Axes.Y, state -> BASE_YAW + state.yaw);
 
-        tank.child(model.part("Frame"), frame);
-        tank.child(model.part("Tank"), frame).skin(this::skinOf);
+        tank.child(model.part("Frame"), frame).visibleIf(state -> !state.exploded);
+        tank.child(model.part("Tank"), frame).skin(this::skinOf).visibleIf(state -> !state.exploded);
+        // 1.7 RenderFluidTank: a tank that exploded is the torn model, its inner wall in tank_inner
+        tank.child(exploded.part("Frame"), frame).visibleIf(state -> state.exploded);
+        tank.child(exploded.part("TankInner"), inner).visibleIf(state -> state.exploded);
+        tank.child(exploded.part("Tank"), frame).skin(this::skinOf).visibleIf(state -> state.exploded);
     }
 
     private Surface skinOf(FluidTankRenderState state) {
@@ -82,6 +88,7 @@ public class FluidTankRenderer extends GemBER<TileEntityMachineFluidTank, FluidT
             default -> 0F;
         };
         state.bodyTexture = bodyTextureFor(be.tank.getTankType().getName());
+        state.exploded = be.hasExploded;
     }
 
 }

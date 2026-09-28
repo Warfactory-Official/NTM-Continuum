@@ -125,10 +125,9 @@ public class EntityMinerRocket extends CompatEntity {
             this.discard();
     }
 
-    // 1.7 tests the CORE block alone; the 3x3's cells are dummies and do not stop the descent
+    // 1.7 tests the CORE block alone; the 3x3's cells were dummy_plate_cargo and do not stop the descent
     private boolean isSatDock(BlockPos pos) {
-        // TODO(satellites): the satellite dock block (1.7 ModBlocks.sat_dock / MachineSatDock) is not ported; the miner rocket never finds one to land on
-        return false;
+        return com.hbm.blocks.machine.MachineSatDock.isCore(level().getBlockState(pos));
     }
 
     @Override

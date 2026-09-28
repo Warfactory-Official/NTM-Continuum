@@ -50,6 +50,9 @@ public class BlockEntityRBMKRod extends BlockEntityRBMKBase implements IRBMKFlux
         ItemStack fuel = inventory.getStackInSlot(0);
         if (fuel.getItem() instanceof ItemRBMKRod rod) {
             rodColor = rod.colorTint;
+            if (fluxQuantity > 0 && level.getGameTime() % 200 == 0)
+                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(),
+                        com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_NUCLEAR, 300);
             double outputRatio = rod.rType == ItemRBMKRod.NType.SLOW ? 0D : 1D;
             double output = rod.burn(level, fuel, fluxFor(rod.nType));
             rod.updateHeat(level, fuel, 1D); heat += rod.provideHeat(level, fuel, heat, 1D);

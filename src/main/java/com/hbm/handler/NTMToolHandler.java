@@ -53,8 +53,7 @@ public final class NTMToolHandler {
     /**
      * The conversions HBM ships. Called from the mod bootstrap after blocks are registered.
      *
-     * <p>Upstream also registers stone→cobblestone (boltgun) and the two ICF component steps; the
-     * former is a joke entry and the latter waits on the ICF, so neither is here yet.
+     * <p>Upstream also registers stone→cobblestone (boltgun); that joke entry is not here.
      */
     public static void register() {
         // Bind the tool items to their type (by Item, not ItemStack — components aren't bound yet).
@@ -75,5 +74,23 @@ public final class NTMToolHandler {
                 new com.hbm.inventory.RecipesCommon.MaterialStack(
                         com.hbm.inventory.material.Mats.MAT_STEEL,
                         com.hbm.inventory.material.MaterialShapes.CASTPLATE, 1));
+        // ICF vessel wall: welded with a blowtorch and one cast bismoid-bronze plate (1.7 ANY_BISMOIDBRONZE,
+        // whose group is not ported; its bismuth-bronze member stands in, as in the plasma-forge recipes).
+        register(ToolType.TORCH,
+                com.hbm.blocks.ModIcfBlocks.icf_component_vessel::get,
+                com.hbm.blocks.ModIcfBlocks.icf_component_vessel_welded::get,
+                new com.hbm.inventory.RecipesCommon.MaterialStack(
+                        com.hbm.inventory.material.Mats.MAT_BBRONZE,
+                        com.hbm.inventory.material.MaterialShapes.CASTPLATE, 1));
+        // ICF casing: riveted with a boltgun, a cast steel plate and four dura bolts.
+        register(ToolType.BOLT,
+                com.hbm.blocks.ModIcfBlocks.icf_component_structure::get,
+                com.hbm.blocks.ModIcfBlocks.icf_component_structure_bolted::get,
+                new com.hbm.inventory.RecipesCommon.MaterialStack(
+                        com.hbm.inventory.material.Mats.MAT_STEEL,
+                        com.hbm.inventory.material.MaterialShapes.CASTPLATE, 1),
+                new com.hbm.inventory.RecipesCommon.MaterialStack(
+                        com.hbm.inventory.material.Mats.MAT_DURA,
+                        com.hbm.inventory.material.MaterialShapes.BOLT, 4));
     }
 }

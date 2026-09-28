@@ -15,7 +15,6 @@ import com.hbm.items.gear.JetpackGlider;
 import com.hbm.items.gear.JetpackRegular;
 import com.hbm.items.special.ItemHot;
 import com.hbm.items.special.ItemSteelDusted;
-import com.hbm.items.weapon.ItemMissilePart;
 import dev.golem.core.Ids;
 import dev.golem.core.gametest.GameTestHelpers;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -146,10 +145,10 @@ public final class JetpackGameTests {
                         && ItemHot.getHeat(output) == 1D,
                 "chainsteel anvil output did not retain full averaged heat");
 
-        ItemMissilePart thruster = ModJetpackDependencyItems.mp_thruster_10_xenon.get();
-        helper.assertTrue(thruster.getFuel() == com.hbm.inventory.fluid.Fluids.XENON
-                        && thruster.getConsumption() == 1F && thruster.getLift() == 1.5F
-                        && thruster.getHealth() == 5F && thruster.getSize() == ItemMissilePart.PartSize.SIZE_10,
+        com.hbm.items.weapon.ItemCustomMissilePart thruster = com.hbm.items.ModCustomMissileItems.mp_thruster_10_xenon.get();
+        helper.assertTrue(thruster.fuelType() == com.hbm.items.weapon.ItemCustomMissilePart.FuelType.XENON
+                        && thruster.consumption() == 1F && (Float) thruster.attributes[2] == 1.5F
+                        && thruster.health == 5F && thruster.top == com.hbm.items.weapon.ItemCustomMissilePart.PartSize.SIZE_10,
                 "xenon size-10 thruster attributes changed");
         helper.succeed();
     }

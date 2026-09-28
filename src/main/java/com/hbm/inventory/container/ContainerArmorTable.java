@@ -201,8 +201,16 @@ public final class ContainerArmorTable extends AbstractContainerMenu {
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return stack.getItem() instanceof CompatArmorItem armor
-                    && armor.armorSlot().name().equals(equipmentSlot.name());
+            // ArmorSlot spells the pieces HELMET/CHESTPLATE/LEGGINGS/BOOTS and EquipmentSlot HEAD/CHEST/
+            // LEGS/FEET, so the names never matched and no armor could be placed here.
+            if (!(stack.getItem() instanceof CompatArmorItem armor)) return false;
+            EquipmentSlot wanted = switch (armor.armorSlot()) {
+                case HELMET -> EquipmentSlot.HEAD;
+                case CHESTPLATE -> EquipmentSlot.CHEST;
+                case LEGGINGS -> EquipmentSlot.LEGS;
+                case BOOTS -> EquipmentSlot.FEET;
+            };
+            return wanted == equipmentSlot;
         }
 
         @Override

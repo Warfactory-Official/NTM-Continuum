@@ -231,7 +231,10 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
                 continue;
             }
 
-            // 1.7: a bred meteorite sword becomes the irradiated one here (swords not ported)
+            // 1.7: a bred meteorite sword in any rod slot becomes the irradiated one (whenever the reaction runs)
+            if (stack.is(com.hbm.items.ModAbilityToolItems.meteorite_sword_bred.get())) {
+                inventory.setStackInSlot(i, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_irradiated.get()));
+            }
             slotFlux[i] = 0;
         }
     }
@@ -261,7 +264,14 @@ public final class TileEntityReactorResearch extends TileEntityMachineBase imple
         world.setBlock(pos.above(2), ModBlocks.deco_steel.get().defaultBlockState(), 3);
 
         ChunkRadiationManager.proxy.incrementRad(world, pos, 50);
-        // 1.7 MobConfig.enableElementals "radMark" on nearby players is config-gated and not ported.
+        // 1.7: every player within 100 blocks is marked for BossSpawnHandler's radiation beasts
+        if (com.hbm.config.MobConfig.enableElementals) {
+            for (net.minecraft.world.entity.player.Player player : world.getEntitiesOfClass(net.minecraft.world.entity.player.Player.class,
+                    new net.minecraft.world.phys.AABB(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                            pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5).inflate(100.0D))) {
+                com.hbm.extprop.HbmPlayerProps.getData(player).radMark = true;
+            }
+        }
     }
 
     //Control Rods

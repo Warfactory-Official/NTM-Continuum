@@ -397,10 +397,10 @@ public final class ModShapedRecipes {
         shaped(NS, "bucket", VanillaIds.bucket, rows("S S", " S "), "S", TagIds.ingots_steel);
         shaped(NS, "c4", ItemIds.c4, rows("DDD", "DSD", "DDD"), "D", ItemIds.stick_c4, "S", ItemIds.safety_fuse);
         shaped(NS, "cable_detector", ItemIds.cable_detector, rows("S", "W"),
-                "S", TagIds.dusts_redstone, "W", ItemIds.red_cable);
+                "S", TagIds.dusts_redstone, "W", "hbm:red_wire_coated"); // 1.7: the coated wire
         shaped(NS, "cable_diode", ItemIds.cable_diode, rows(" Q ", "CAC", " Q "),
                 "Q", TagIds.nuggets_silicon, "C", ItemIds.red_cable, "A", TagIds.ingots_aluminium);
-        shaped(NS, "cable_switch", ItemIds.cable_switch, rows("S", "W"), "S", VanillaIds.lever, "W", ItemIds.red_cable);
+        shaped(NS, "cable_switch", ItemIds.cable_switch, rows("S", "W"), "S", VanillaIds.lever, "W", "hbm:red_wire_coated"); // 1.7: the coated wire
         shaped(NS, "can_empty", ItemIds.can_empty, rows("P", "P"), "P", TagIds.plates_aluminium);
         shaped(NS, "canister_empty", ItemIds.canister_empty, 2, rows("S ", "AA", "AA"),
                 "S", TagIds.plates_steel, "A", TagIds.plates_aluminium);

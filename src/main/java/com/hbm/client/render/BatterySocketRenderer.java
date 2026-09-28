@@ -72,6 +72,10 @@ public class BatterySocketRenderer extends GemBER<TileEntityBatterySocket, Batte
         if (stack != null && stack.getItem() instanceof ItemBatteryPack battery) {
             state.batteryPart = battery.pack.isCapacitor() ? "Capacitor" : "Battery";
             state.batteryTexture = battery.pack.texture;
+        } else if (stack != null && stack.getItem() instanceof com.hbm.items.machine.ItemBatterySC) {
+            // 1.7 RenderBatterySocket: every radiovoltaic variant is the "Battery" body in battery_sc.png
+            state.batteryPart = "Battery";
+            state.batteryTexture = com.hbm.items.machine.ItemBatterySC.SOCKET_TEXTURE;
         } else {
             state.batteryPart = null;
             state.batteryTexture = null;

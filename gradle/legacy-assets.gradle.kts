@@ -547,6 +547,7 @@ fun Project.applyLegacyItemAssets() {
                     // place would render them flat here and 3D there. The same applies to a gun, whose
                     // placeholder sprite predates its OBJ renderer. Every other item defers to what ships.
                     val selfRendered = parent == MACHINE_OBJ_LEGACY_MODEL || parent.endsWith("_obj_context_legacy")
+                            || parent.endsWith("_obj_flat_legacy") || parent.endsWith("_sprite_legacy")
                             || isGunDefinition(definition)
                     if (target.exists() && !selfRendered) return@forEach
                     itemModels.mkdirs()
@@ -584,7 +585,7 @@ fun Project.applyLegacyItemAssets() {
                 if (!definitions.isDirectory) return@forEach
                 definitions.listFiles()?.filter { it.extension == "json" }?.forEach { definition ->
                     val branches = itemVariantSelectOf(definition) ?: return@forEach
-                    val (_, cases) = branches
+                    val (property, cases) = branches
                     // The item's OWN model, not the fallback's: overrides are not inherited through
                     // `parent`, so they have to sit on the file vanilla resolves for the item itself.
                     val target = File(namespace, "models/item/" + definition.nameWithoutExtension + ".json")
@@ -594,7 +595,7 @@ fun Project.applyLegacyItemAssets() {
                     // Ascending: vanilla scans overrides from the end and takes the first whose
                     // threshold the value clears, so a case out of order would shadow the ones after it.
                     model["overrides"] = cases.sortedBy { it.first }.map { (value, selectedModel) ->
-                        mapOf("predicate" to mapOf("hbm:item_variant" to value), "model" to selectedModel)
+                        mapOf("predicate" to mapOf(property to value), "model" to selectedModel)
                     }
                     target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(model)))
                     selected++
@@ -620,17 +621,66 @@ fun Project.applyLegacyItemAssets() {
                 }
             }
 
+            // Worn armor textures. 26.1 names them through an equipment asset (`equipment/<material>.json`,
+            // whose layers point at `textures/entity/equipment/humanoid[_leggings]/<tex>.png`); 1.21.1 and
+            // 1.20.1 look for `textures/models/armor/<material>_layer_1/2.png` by the material name alone,
+            // and a missing one draws solid magenta. An authored layer file wins.
+            var armorLayers = 0
+            assets.listFiles()?.filter { it.isDirectory }?.forEach { namespace ->
+                val equipment = File(namespace, "equipment")
+                if (!equipment.isDirectory) return@forEach
+                equipment.listFiles()?.filter { it.extension == "json" }?.forEach { asset ->
+                    @Suppress("UNCHECKED_CAST")
+                    val layers = (JsonSlurper().parse(asset) as Map<String, Any?>)["layers"] as? Map<String, Any?>
+                        ?: return@forEach
+                    for ((kind, index) in listOf("humanoid" to 1, "humanoid_leggings" to 2)) {
+                        @Suppress("UNCHECKED_CAST")
+                        val texture = ((layers[kind] as? List<Any?>)?.firstOrNull() as? Map<String, Any?>)
+                            ?.get("texture") as? String ?: continue
+                        val texNamespace = texture.substringBefore(':', "minecraft")
+                        val source = File(assets, "$texNamespace/textures/entity/equipment/$kind/" +
+                            texture.substringAfter(':') + ".png")
+                        val target = File(namespace, "textures/models/armor/${asset.nameWithoutExtension}_layer_$index.png")
+                        if (!source.isFile || target.exists()) continue
+                        target.parentFile.mkdirs()
+                        source.copyTo(target)
+                        armorLayers++
+                    }
+                }
+            }
+
             logger.lifecycle(
                 "legacyItemAssets: generated $generated item model(s); rewrote $conditioned conditional model(s); selected $selected item-variant model(s); " +
-                    "folded $folded item atlas source(s) into blocks.json.")
+                    "folded $folded item atlas source(s) into blocks.json; copied $armorLayers armor layer texture(s).")
         }
     }
+}
+
+/**
+ * One hbm asset as the mod ships it: the Dejson-declared copy the build generated, or an authored file
+ * where one still exists (an authored file wins in the jar, so it wins here too). Item definitions and
+ * models are declarations now, so reading `src/main/resources` alone would find nothing.
+ */
+fun Project.hbmAsset(relative: String): File {
+    val authored = rootProject.file("src/main/resources/assets/hbm/$relative")
+    if (authored.isFile) return authored
+    return layout.buildDirectory.file("generated/dejson/assets/hbm/$relative").get().asFile
 }
 
 /**
  * Resource-level regression test for the nested machine OBJ definitions. This is deliberately
  * independent of a client launch: it catches a wrapper/type regression and exact-value drift in every node.
  */
+/**
+ * Worn-armour icons declared (ArmorSetDeclarations / ArmorSetBDeclarations) without a `scale`. Until the
+ * 2026-09-28 migration the scale check below read only `src/main/resources`, so it never saw declared
+ * definitions; now it reads what the jar ships and found these 36. Whether they take the 0.28 default by
+ * design has not been reviewed, so they are listed rather than silently passed or blindly "fixed".
+ */
+val MACHINE_OBJ_SCALE_UNREVIEWED = listOf("ajr", "ajro", "bismuth", "dieselsuit", "envsuit", "fau", "hev",
+    "steamsuit", "trenchmaster").flatMap { set -> listOf("boots", "helmet", "legs", "plate").map { "${set}_$it.json" } }
+    .toSet()
+
 fun Project.registerMachineObjTransformChecks() {
     val validation = tasks.register("validateMachineObjTransforms") {
         group = "verification"
@@ -638,7 +688,6 @@ fun Project.registerMachineObjTransformChecks() {
         // By name: dejson.gradle.kts is applied after this script, so the task does not exist yet.
         dependsOn("dejsonGenerate")
         doLast {
-            val directory = rootProject.file("src/main/resources/assets/hbm/items")
             fun close(actual: Any?, expected: Double, label: String) {
                 check(actual is Number && kotlin.math.abs(actual.toDouble() - expected) < 0.000001) {
                     "$label expected $expected but was $actual"
@@ -659,7 +708,7 @@ fun Project.registerMachineObjTransformChecks() {
                 }
             }
             MACHINE_OBJ_TRANSFORM_EXPECTATIONS.forEach { (name, expected) ->
-                val file = File(directory, "$name.json")
+                val file = hbmAsset("items/$name.json")
                 check(file.isFile) { "Missing machine OBJ item definition: $file" }
                 @Suppress("UNCHECKED_CAST")
                 val root = JsonSlurper().parse(file) as? Map<String, Any?>
@@ -754,13 +803,18 @@ fun Project.registerMachineObjTransformChecks() {
             // number at all, so the icon draws at roughly a third of its size behind a green build.
             var scaled = 0
             val pending = ArrayDeque<Pair<String, Any?>>()
-            directory.listFiles()?.filter { it.name.endsWith(".json") }?.sortedBy { it.name }
-                ?.forEach { pending.add(it.name to JsonSlurper().parse(it)) }
+            // Every item definition the jar ships: the declared ones, with an authored file winning.
+            val definitions = sortedMapOf<String, File>()
+            listOf(layout.buildDirectory.dir("generated/dejson/assets/hbm/items").get().asFile,
+                rootProject.file("src/main/resources/assets/hbm/items")).forEach { directory ->
+                directory.listFiles()?.filter { it.name.endsWith(".json") }?.forEach { definitions[it.name] = it }
+            }
+            definitions.values.forEach { pending.add(it.name to JsonSlurper().parse(it)) }
             while (pending.isNotEmpty()) {
                 val (name, node) = pending.removeFirst()
                 when (node) {
                     is Map<*, *> -> {
-                        if (node["type"] == "hbm:machine_obj") {
+                        if (node["type"] == "hbm:machine_obj" && name !in MACHINE_OBJ_SCALE_UNREVIEWED) {
                             check(node.containsKey("scale")) {
                                 "$name declares an hbm:machine_obj model with no scale"
                             }
@@ -865,8 +919,8 @@ fun Project.registerGunObjTransformChecks() {
     val validation = tasks.register("validateGunObjTransforms") {
         group = "verification"
         description = "Checks Sedna gun base references and that no base authors its own frame."
+        dependsOn("dejsonGenerate")
         doLast {
-            val assets = rootProject.file("src/main/resources/assets/hbm")
             fun vector(actual: Any?, expected: List<Double>, label: String) {
                 check(actual is List<*> && actual.size == expected.size) {
                     "$label must contain ${expected.size} values"
@@ -880,7 +934,7 @@ fun Project.registerGunObjTransformChecks() {
             }
 
             GUN_OBJ_EXPECTATIONS.forEach { (item, base) ->
-                val definition = File(assets, "items/$item.json")
+                val definition = hbmAsset("items/$item.json")
                 check(definition.isFile) { "Missing gun item definition: $definition" }
                 @Suppress("UNCHECKED_CAST")
                 val root = JsonSlurper().parse(definition) as Map<String, Any?>
@@ -908,7 +962,7 @@ fun Project.registerGunObjTransformChecks() {
             }
 
             gunBaseChain.forEach { name ->
-                val baseFile = File(assets, "models/item/$name.json")
+                val baseFile = hbmAsset("models/item/$name.json")
                 check(baseFile.isFile) { "Missing gun base: $baseFile" }
                 @Suppress("UNCHECKED_CAST")
                 val base = JsonSlurper().parse(baseFile) as Map<String, Any?>
@@ -922,7 +976,7 @@ fun Project.registerGunObjTransformChecks() {
                 }
             }
 
-            val marker = JsonSlurper().parse(File(assets, "models/item/gun_obj_legacy.json")) as Map<*, *>
+            val marker = JsonSlurper().parse(hbmAsset("models/item/gun_obj_legacy.json")) as Map<*, *>
             check(marker["parent"] == "minecraft:builtin/entity" && !marker.containsKey("display")) {
                 "gun_obj_legacy must remain a transform-free builtin/entity marker"
             }
@@ -965,14 +1019,19 @@ fun customModelDataConditionOf(definition: File): Pair<String, String>? {
     return onFalse to onTrue
 }
 
+val LEGACY_SELECT_PROPERTIES = setOf("hbm:item_variant", "hbm:coltass", "hbm:polaroid")
+
 fun itemVariantSelectOf(definition: File): Pair<String, List<Pair<Float, String>>>? {
     @Suppress("UNCHECKED_CAST")
     val json = JsonSlurper().parse(definition) as? Map<String, Any?> ?: return null
     @Suppress("UNCHECKED_CAST")
     val model = json["model"] as? Map<String, Any?> ?: return null
-    if (model["type"] != "minecraft:select" || model["property"] != "hbm:item_variant") return null
+    // hbm:coltass and hbm:polaroid are client-state selects (the Coltass needle frame, the Polaroid's roll);
+    // Core's ItemModelProperties installs them as legacy float predicates under the same name.
+    val property = model["property"] as? String ?: return null
+    if (model["type"] != "minecraft:select" || property !in LEGACY_SELECT_PROPERTIES) return null
     @Suppress("UNCHECKED_CAST")
-    val fallback = (model["fallback"] as? Map<String, Any?>)?.get("model") as? String ?: return null
+    (model["fallback"] as? Map<String, Any?>)?.get("model") as? String ?: return null
     @Suppress("UNCHECKED_CAST")
     val cases = model["cases"] as? List<Map<String, Any?>> ?: return null
     val parsed = cases.mapNotNull { entry ->
@@ -981,7 +1040,7 @@ fun itemVariantSelectOf(definition: File): Pair<String, List<Pair<Float, String>
         val selected = (entry["model"] as? Map<String, Any?>)?.get("model") as? String ?: return@mapNotNull null
         value to selected
     }
-    return fallback to (parsed.takeIf { it.isNotEmpty() } ?: return null)
+    return property to (parsed.takeIf { it.isNotEmpty() } ?: return null)
 }
 
 fun isMachineObjDirect(model: Any?): Boolean {
@@ -1024,6 +1083,14 @@ fun parentModelOf(definition: File): String? {
         "hbm:machine_obj" -> contextLegacyModelOf(model)
         // Gun bases inherit builtin/entity themselves, preserving their exact modern display matrices.
         "hbm:gun" -> model["base"] as? String
+        // A ported 1.7 IItemRenderer draws every slot from the BEWLR hook in its frame's display; a renderer that
+        // leaves the inventory to the sprite wears the same frame with the sprite's front GUI light.
+        "hbm:custom_item" -> {
+            // generated/handheld: a sprite the renderer only adds to, drawn by the hook in the sprite's own frame
+            val frame = model["frame"] as? String ?: "weapon"
+            if (frame == "generated" || frame == "handheld") "hbm:item/${frame}_sprite_legacy"
+            else if (model["flat"] != null) "hbm:item/${frame}_obj_flat_legacy" else "hbm:item/${frame}_obj_context_legacy"
+        }
         "minecraft:special" -> {
             @Suppress("UNCHECKED_CAST")
             val inner = model["model"] as? Map<String, Any?>
@@ -1073,10 +1140,11 @@ fun Project.registerMissileObjTransformChecks() {
     val validation = tasks.register("validateMissileObjTransforms") {
         group = "verification"
         description = "Checks the launchable missiles' item icons against 1.7's per-tier GUI table."
+        dependsOn("dejsonGenerate")
         doLast {
             val assets = rootProject.file("src/main/resources/assets/hbm")
             MISSILE_OBJ_EXPECTATIONS.forEach { (item, expected) ->
-                val definition = File(assets, "items/$item.json")
+                val definition = hbmAsset("items/$item.json")
                 check(definition.isFile) { "Missing missile item definition: $definition" }
                 @Suppress("UNCHECKED_CAST")
                 val root = JsonSlurper().parse(definition) as Map<String, Any?>

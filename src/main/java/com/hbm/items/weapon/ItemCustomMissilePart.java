@@ -79,11 +79,11 @@ public class ItemCustomMissilePart extends CompatItem {
 
         public Component getDisplay() {
             switch (this) {
-                case ANY: return Component.translatable("item.hbm.missile.part.size.any");
+                case ANY: return Component.translatable("item.missile.part.size.any");
                 case SIZE_10: return Component.literal("1.0m");
                 case SIZE_15: return Component.literal("1.5m");
                 case SIZE_20: return Component.literal("2.0m");
-                default: return Component.translatable("item.hbm.missile.part.size.none");
+                default: return Component.translatable("item.missile.part.size.none");
             }
         }
     }
@@ -137,7 +137,7 @@ public class ItemCustomMissilePart extends CompatItem {
         }
 
         private static Component key(String name, ChatFormatting color) {
-            return Component.translatable("item.hbm.warhead.desc." + name).withStyle(color);
+            return Component.translatable("item.warhead.desc." + name).withStyle(color);
         }
     }
 
@@ -158,7 +158,7 @@ public class ItemCustomMissilePart extends CompatItem {
         }
 
         public Component getDisplay() {
-            return Component.translatable("item.hbm.missile.fuel." + key).withStyle(color);
+            return Component.translatable("item.missile.fuel." + key).withStyle(color);
         }
     }
 
@@ -180,7 +180,7 @@ public class ItemCustomMissilePart extends CompatItem {
         }
 
         public Component getDisplay() {
-            return Component.translatable("item.hbm.missile.part.rarity." + key).withStyle(color);
+            return Component.translatable("item.missile.part.rarity." + key).withStyle(color);
         }
     }
 
@@ -258,8 +258,8 @@ public class ItemCustomMissilePart extends CompatItem {
     public ItemCustomMissilePart setRarity(Rarity rarity) {
         this.rarity = rarity;
 
-        // 1.7 also files the part into ItemLootCrate's LIST_10/LIST_15/LIST_MISC pools; the loot crate item
-        // is not ported yet (entity port manifest).
+        // 1.7 also filed the part into ItemLootCrate's list10/list15/listMisc here; the port's ItemLootCrate
+        // reads the same pools back from the registry (every part with a rarity) when a crate is first opened.
 
         return this;
     }
@@ -340,19 +340,25 @@ public class ItemCustomMissilePart extends CompatItem {
         if (this.rarity != null) {
             tooltip.add(stat("rarity", this.rarity.getDisplay()));
         }
+        // 1.7 indented the byline and the witty line with three spaces
         if (this.author != null) {
-            tooltip.add(Component.translatable("item.hbm.missile.part.by").append(" " + this.author)
-                                  .withStyle(ChatFormatting.WHITE));
+            tooltip.add(Component.literal("   ").append(Component.translatable("item.missile.part.by"))
+                                  .append(" " + this.author).withStyle(ChatFormatting.WHITE));
         }
         if (this.witty != null) {
-            tooltip.add(Component.literal("\"" + this.witty + "\"")
+            tooltip.add(Component.literal("   \"" + this.witty + "\"")
                                   .withStyle(ChatFormatting.GOLD, ChatFormatting.ITALIC));
         }
     }
 
-    private static Component stat(String key, Component value) {
-        return Component.translatable("item.hbm.missile.part." + key).withStyle(ChatFormatting.BOLD)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.GRAY))
-                        .append(value);
+    /**
+     * 1.7 {@code BOLD + key + ": " + GRAY + value}. 1.7's tooltip renderer prefixed every line after the name
+     * with gray, so the bold key reads gray too; the value's own colour code, where it has one, wins.
+     */
+    static Component stat(String key, Component value) {
+        return Component.translatable(key.contains(".") ? key : "item.missile.part." + key).append(": ")
+                        .withStyle(ChatFormatting.GRAY, ChatFormatting.BOLD)
+                        .append(value.copy().withStyle(style -> style.getColor() == null
+                                ? style.withColor(ChatFormatting.GRAY).withBold(false) : style.withBold(false)));
     }
 }

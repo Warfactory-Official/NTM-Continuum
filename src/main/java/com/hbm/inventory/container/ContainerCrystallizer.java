@@ -47,7 +47,7 @@ public class ContainerCrystallizer extends AbstractContainerMenu {
 
         this.addSlot(validated(0, 62, 45));    // input
         this.addSlot(validated(1, 152, 72));   // battery
-        this.addSlot(takeOnly(2, 113, 45));    // output
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 2, 113, 45)); // output, 1.7 SlotCraftingOutput
         this.addSlot(validated(3, 17, 18));    // fluid-container in
         this.addSlot(takeOnly(4, 17, 54));     // emptied-container out
         this.addSlot(validated(5, 80, 18));    // upgrade

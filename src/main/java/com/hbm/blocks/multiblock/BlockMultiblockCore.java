@@ -427,10 +427,20 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     /** The state written for one cell. */
     protected abstract BlockState cellStateFor(int localX, int localY, int localZ, Direction facing, int shapeId);
 
-    public final void fillSpace(Level level, BlockPos core, Direction facing) {
+    public final void fillSpace(net.minecraft.world.level.LevelAccessor level, BlockPos core, Direction facing) {
+        fillSpace(level, core, facing, null);
+    }
+
+    /**
+     * {@link #fillSpace} restricted to the cells inside {@code clip}: a hardcoded world-generation structure builds
+     * chunk by chunk, and 1.7's structure {@code fillSpace} wrote only the cells inside the populating box.
+     */
+    public final void fillSpace(net.minecraft.world.level.LevelAccessor level, BlockPos core, Direction facing,
+                                net.minecraft.world.level.levelgen.structure.@Nullable BoundingBox clip) {
         CoreIndexScratch scratch = CoreIndexScratch.borrow();
         try {
             visitCells(core, facing, (pos, mask) -> {
+                if (clip != null && !clip.isInside(pos)) return;
                 int dx = pos.getX() - core.getX(), dy = pos.getY() - core.getY(), dz = pos.getZ() - core.getZ();
                 int lx = MultiblockMaskTable.localX(dx, dy, dz, facing), lz = MultiblockMaskTable.localZ(dx, dy, dz, facing);
                 level.setBlock(pos, cellStateFor(lx, dy, lz, facing, 0), 3);
@@ -438,6 +448,16 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
             });
             if (level instanceof ServerLevel server) {
                 for (int i = 0; i < scratch.size(); i++) MultiblockCoreIndex.put(server, BlockPos.of(scratch.get(i)), core);
+            } else if (level instanceof net.minecraft.world.level.WorldGenLevel worldgen && scratch.size() > 0) {
+                // A structure placed during world generation (a worker thread): the index is level SavedData, so
+                // its entries are handed to the server thread instead of being written from here.
+                ServerLevel server = worldgen.getLevel();
+                long[] cells = new long[scratch.size()];
+                for (int i = 0; i < cells.length; i++) cells[i] = scratch.get(i);
+                BlockPos owner = core.immutable();
+                server.getServer().execute(() -> {
+                    for (long cell : cells) MultiblockCoreIndex.put(server, BlockPos.of(cell), owner);
+                });
             }
         } finally { scratch.release(); }
     }
@@ -576,16 +596,25 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
         return useAtCore(state, level, pos, player, hit);
     }
 
+    // 1.7 BlockDummyable.getSettings/pasteSettings/infoForDisplay: findCore first, so the settings tool works on
+    // any part of the machine, not only the core.
     @Override public @Nullable CompoundTag getSettings(Level level, BlockPos pos) {
-        return level.getBlockEntity(pos) instanceof ICopiable copiable ? copiable.getSettings(level, pos) : null;
+        BlockPos core = copyCore(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof ICopiable copiable ? copiable.getSettings(level, core) : null;
     }
 
     @Override public void pasteSettings(CompoundTag nbt, int index, Level level, Player player, BlockPos pos) {
-        if (level.getBlockEntity(pos) instanceof ICopiable copiable) copiable.pasteSettings(nbt, index, level, player, pos);
+        BlockPos core = copyCore(level, pos);
+        if (core != null && level.getBlockEntity(core) instanceof ICopiable copiable) copiable.pasteSettings(nbt, index, level, player, core);
     }
 
     @Override public String @Nullable [] infoForDisplay(Level level, BlockPos pos) {
-        return level.getBlockEntity(pos) instanceof ICopiable copiable ? copiable.infoForDisplay(level, pos) : null;
+        BlockPos core = copyCore(level, pos);
+        return core != null && level.getBlockEntity(core) instanceof ICopiable copiable ? copiable.infoForDisplay(level, core) : null;
+    }
+
+    private @Nullable BlockPos copyCore(Level level, BlockPos pos) {
+        return isCellState(level.getBlockState(pos)) ? MultiblockSurface.coreOfCell(level, pos) : pos;
     }
 
     @Override public BlockState rotate(BlockState state, Rotation rotation) {

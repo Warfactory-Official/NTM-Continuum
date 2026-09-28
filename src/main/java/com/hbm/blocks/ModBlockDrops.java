@@ -10,9 +10,9 @@ import dev.golem.core.dejson.Drops;
  * They said six things between them: drops itself, drops itself even when blown up, drops nothing,
  * drops double as a double slab, keeps its inventory, drops its mineral unless silk-touched. The
  * commonest of those, "drops itself", had drifted into six different spellings on disk, because
- * there was nowhere to say it once. The two tables that genuinely are programs,
- * {@code waste_leaves} and {@code zirnox_destroyed}, are still files, which is the right place for
- * them.
+ * there was nowhere to say it once. The tables that say something else are spelled out in
+ * {@link #special()}: a door drops itself only from its lower half, dead leaves drop a dead bush a
+ * quarter of the time, and a destroyed ZIRNOX breaks into its materials.
  *
  * <p>The spellings that differed only in {@code bonus_rolls} and {@code random_sequence} were
  * normalised onto the shape vanilla's own generator emits before the files were deleted; neither
@@ -27,7 +27,7 @@ public final class ModBlockDrops {
     private static final String NS = "hbm";
 
     /** How many loot tables the declarations below stand in for; quoted in this class's own javadoc. */
-    static final int FILES_REPLACED = 541;
+    static final int FILES_REPLACED = 549;
 
     private static boolean declared;
 
@@ -60,6 +60,25 @@ public final class ModBlockDrops {
         ores();
         Drops.only(NS, "fallout", "hbm:falloutitem");
         Drops.only(NS, "ore_oil", "hbm:oil_tar_crude");
+        special();
+    }
+
+    /**
+     * The tables that are not one of the lists above. {@code waste_leaves} and {@code zirnox_destroyed}
+     * once carried no {@code random_sequence} and no {@code bonus_rolls}; the declarations add vanilla's
+     * defaults, which change nothing a player gets.
+     */
+    private static void special() {
+        for (String door : new String[] {"door_bunker", "door_metal", "door_office", "door_red"}) {
+            Drops.selfWhen(NS, door, "half", "lower");
+        }
+        // 1.7 WasteLeaves.getItemDropped returns null: waste leaves drop nothing (the earlier 25% dead bush was not 1.7).
+        Drops.nothing(NS, "waste_leaves");
+        // 1.7 ZirnoxDestroyed.getDrops, in its order: 6 smooth concrete, 4 steel pipes, 2 steel grates, 6 metal debris,
+        // 2 graphite debris, 4 fallout.
+        Drops.stacks(NS, "zirnox_destroyed",
+                "hbm:concrete_smooth", 6, "hbm:pipe_steel", 4, "hbm:steel_grate", 2,
+                "hbm:debris_metal", 6, "hbm:debris_graphite", 2, "hbm:falloutitem", 4);
     }
 
     private static final String[] SELF = {
@@ -169,7 +188,7 @@ public final class ModBlockDrops {
             "fusion_torus", "gas_radon", "gas_radon_dense", "glass_ash", "glass_polarized", "glass_polonium",
             "glass_trinitite", "glass_uranium", "hadron_analysis_glass", "hadron_plating_glass", "mud_block",
             "oil_pipe", "oil_spill", "ore_bedrock_oil", "reinforced_glass", "turret_emplacement", "turret_pad",
-            "turret_sentry_damaged", "watz"
+            "turret_sentry_damaged", "watz", "pile_block", "soyuz_launcher"
     };
 
     private static final String[] SLABS = {

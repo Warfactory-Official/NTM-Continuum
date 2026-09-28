@@ -108,10 +108,7 @@ public final class NorwoodMachineDeclarations {
                 .and("_xenium_resonator", Models.generated("hbm:items/satellite_xenium_resonator"))
                 .and("_relay", Models.generated("hbm:items/satellite_relay"))
                 .and("_detector", Models.generated("hbm:items/satellite_detector"))
-                .and("_ray_scan", Models.generated("hbm:items/satellite_ray_scan"))
-                .and("_science", Models.generated("hbm:items/satellite_science"))
-                .and("_science_assembler", Models.generated("hbm:items/satellite_science_assembler"))
-                .and("_science_sensor", Models.generated("hbm:items/satellite_science_sensor")))
+                .and("_ray_scan", Models.generated("hbm:items/satellite_ray_scan")))
                 .selects(NS + ":item_variant").register();
         Dejson.item(NS, "soyuz_launcher").shares("hbm:block/soyuz_launcher").register();
         Dejson.item(NS, "struct_soyuz_core").shares("hbm:block/struct_soyuz_core").register();

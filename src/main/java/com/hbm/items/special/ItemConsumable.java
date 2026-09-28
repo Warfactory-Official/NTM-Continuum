@@ -66,14 +66,16 @@ public final class ItemConsumable extends CompatItem {
     private void apply(ServerLevel level, Player user, LivingEntity target, InteractionHand hand) {
         switch (id) {
             case "syringe_antidote" -> {
-                if (!Effects.hasRegistered(target, ModEffects.POTION_SICKNESS.get())) {
+                // 1.7 ItemSimpleConsumable.effectAntidote: sickness only through the (default-off) config
+                if (!com.hbm.config.VersatileConfig.hasPotionSickness(target)) {
                     Effects.clear(target);
-                    Effects.addRegistered(target, ModEffects.POTION_SICKNESS.get(), 5 * 20, 0);
                     play(level, target, ModSounds.SYRINGE.get());
                     shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_empty.get());
+                    com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
                 }
             }
             case "syringe_awesome" -> {
+                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
                 add(target, MobEffects.REGENERATION, 50 * 20, 9);
                 add(target, Effects.resistance(), 50 * 20, 9);
                 add(target, MobEffects.FIRE_RESISTANCE, 50 * 20, 0);
@@ -86,6 +88,7 @@ public final class ItemConsumable extends CompatItem {
                 add(target, MobEffects.NAUSEA, 5 * 20, 4);
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_empty.get());
+                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
             }
             case "syringe_poison" -> {
                 play(level, target, ModSounds.SYRINGE.get());
@@ -94,28 +97,37 @@ public final class ItemConsumable extends CompatItem {
                         ? ModDamageSources.euthanizedSelf(level) : ModDamageSources.euthanizedSelf2(level), 30F);
             }
             case "syringe_metal_stimpak" -> {
+                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
                 target.heal(5F);
+                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
             }
             case "syringe_metal_medx" -> {
+                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
                 add(target, Effects.resistance(), 4 * 60 * 20, 2);
+                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
             }
             case "syringe_metal_psycho" -> {
+                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
                 add(target, Effects.resistance(), 2 * 60 * 20, 0);
                 add(target, Effects.strength(), 2 * 60 * 20, 0);
+                com.hbm.config.VersatileConfig.applyPotionSickness(target, 5);
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
             }
             case "syringe_metal_super" -> {
+                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
                 target.heal(25F);
                 add(target, MobEffects.SLOWNESS, 10 * 20, 0);
+                com.hbm.config.VersatileConfig.applyPotionSickness(target, 15);
                 play(level, target, ModSounds.SYRINGE.get());
                 shrinkAndReplace(user, hand, com.hbm.items.ModItems.syringe_metal_empty.get());
             }
             case "med_bag" -> {
+                if (com.hbm.config.VersatileConfig.hasPotionSickness(target)) return;
                 target.setHealth(target.getMaxHealth());
                 Effects.remove(target, MobEffects.BLINDNESS);
                 Effects.remove(target, MobEffects.NAUSEA);
@@ -126,6 +138,7 @@ public final class ItemConsumable extends CompatItem {
                 Effects.remove(target, MobEffects.WEAKNESS);
                 Effects.remove(target, MobEffects.WITHER);
                 Effects.removeRegistered(target, ModEffects.RADIATION.get());
+                com.hbm.config.VersatileConfig.applyPotionSickness(target, 15);
                 user.getItemInHand(hand).shrink(1);
             }
             case "syringe_taint" -> {

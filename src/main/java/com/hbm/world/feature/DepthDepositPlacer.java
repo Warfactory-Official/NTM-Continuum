@@ -23,7 +23,7 @@ import net.minecraft.world.level.block.state.BlockState;
  * <p><b>Y rebasing (deviation):</b> upstream clamped to {@code 1 <= y <= 126} and centred deposits at
  * {@code y = 0..2}, which were the floor and ceiling of a 1.12 world. 26.1's overworld floor is −64 and
  * the nether roof is still 127, so the y band is expressed relative to {@link WorldGenLevel#getMinY()}
- * and the guard uses the level's real bounds — the same adjustment {@code BedrockOilFeature} makes.
+ * and the guard uses the level's real bounds — the same adjustment {@code MapGenBedrockOil} makes.
  */
 public final class DepthDepositPlacer {
 

@@ -58,6 +58,7 @@ public final class CombinationRecipes {
         add(Mats.MAT_COAL.dust(), ModOilItems.coke(EnumCokeType.COAL, 1), fluid(Fluids.COALCREOSOTE, 100));
         add(Mats.MAT_LIGNITE.gem(), ModOilItems.coke(EnumCokeType.LIGNITE, 1), fluid(Fluids.COALCREOSOTE, 50));
         add(Mats.MAT_LIGNITE.dust(), ModOilItems.coke(EnumCokeType.LIGNITE, 1), fluid(Fluids.COALCREOSOTE, 50));
+        FinalConsumableMachineRecipes.combination(CombinationRecipes::add); // coal/lignite/sawdust briquettes
 
         add(Mats.MAT_CHLOROCALCITE.dust(), new ItemStack(ModItems.powder_calcium.get()), fluid(Fluids.CHLORINE, 250));
         add(Mats.MAT_MOLYSITE.dust(), new ItemStack(Items.IRON_INGOT), fluid(Fluids.CHLORINE, 250));
@@ -80,6 +81,7 @@ public final class CombinationRecipes {
 
         add(new ComparableStack(Items.SUGAR_CANE), new ItemStack(Items.SUGAR, 2), fluid(Fluids.ETHANOL, 50));
         add(new ComparableStack(Blocks.CLAY.asItem()), new ItemStack(Blocks.BRICKS.asItem()), null);
+        BedrockOreChainRecipes.combination(CombinationRecipes::add); // bedrock ore roasting, 50 mB vitriol
     }
 
     private static void add(AStack input, ItemStack itemOutput, FluidStack fluidOutput) {

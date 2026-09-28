@@ -54,6 +54,17 @@ public class NeoForgeInit {
         com.hbm.gametest.SteelStructureGameTests.init();
         com.hbm.gametest.HazardGameTests.init();
         com.hbm.gametest.ToolingGameTests.init();
+        com.hbm.gametest.AbilityToolGameTests.init();
+        com.hbm.gametest.MeleeKitGameTests.init();
+        com.hbm.gametest.FinalCellHudFixGameTests.init();
+        com.hbm.gametest.FinalGapsAGameTests.init();
+        com.hbm.gametest.FinalGapsBGameTests.init();
+        com.hbm.gametest.AdvancementCommandGameTests.init();
+        com.hbm.gametest.DecoCrateGameTests.init();
+        com.hbm.gametest.FinalConsumableGameTests.init();
+        com.hbm.gametest.FinalRecipeGapGameTests.init();
+        com.hbm.gametest.RecipeContentGameTests.init();
+        com.hbm.gametest.UtilityToolGameTests.init();
         com.hbm.gametest.AssemblyFactoryGameTests.init();
         com.hbm.gametest.ChemicalFactoryGameTests.init();
         com.hbm.gametest.AutosawGameTests.init();
@@ -112,6 +123,28 @@ public class NeoForgeInit {
                 com.hbm.gametest.HazardGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ToolingGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AbilityToolGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.MeleeKitGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalCellHudFixGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalGapsAGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalGapsBGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AdvancementCommandGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.DecoCrateGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalConsumableGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalRecipeGapGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RecipeContentGameTests.TESTS));
+        eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.UtilityToolGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.AssemblyFactoryGameTests.TESTS));
         eventBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -194,7 +227,6 @@ public class NeoForgeInit {
                 com.hbm.tileentity.network.RTTYSystem.updateBroadcastQueue(event.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> {
             RadiationSystemNT.tickServer(event.getServer());
-            com.hbm.saveddata.satellites.SatelliteSystems.tickServer(event.getServer());
         });
         NeoForge.EVENT_BUS.addListener((LevelEvent.Unload event) -> {
             if (event.getLevel() instanceof ServerLevel level) {
@@ -233,9 +265,6 @@ public class NeoForgeInit {
             }
         });
 
-        // Debug commands (/hbm rad ...).
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.RegisterCommandsEvent event) ->
-                com.hbm.command.HbmCommands.register(event.getDispatcher()));
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
             com.hbm.config.AutocalConfig.load(event.getServer());
             Constants.LOG.info("[HBM] Loaded {} total recipes", event.getServer().getRecipeManager().getRecipes().size());

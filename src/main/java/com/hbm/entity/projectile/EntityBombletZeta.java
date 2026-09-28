@@ -83,7 +83,7 @@ public class EntityBombletZeta extends CompatEntity {
         BlockPos block = new BlockPos((int) getX(), (int) getY(), (int) getZ()); // 1.7 cast truncation, not floor
         if (level().getBlockState(block).isAir() || level().isClientSide()) return;
         if (type == 0) {
-            ExplosionVNT vnt = new ExplosionVNT(level(), getX() + 0.5F, getY() + 1.5F, getZ() + 0.5F, 4F);
+            ExplosionVNT vnt = new ExplosionVNT(level(), getX() + 0.5F, getY() + 1.5F, getZ() + 0.5F, 4F, this); // exploder: see MachineExplosionDamage
             vnt.setBlockAllocator(new BlockAllocatorStandard());
             vnt.setBlockProcessor(new BlockProcessorStandard());
             vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, 100));
@@ -92,7 +92,7 @@ public class EntityBombletZeta extends CompatEntity {
             vnt.explode();
         }
         if (type == 1) {
-            ExplosionVNT vnt = new ExplosionVNT(level(), getX() + 0.5F, getY() + 1.5F, getZ() + 0.5F, 4F);
+            ExplosionVNT vnt = new ExplosionVNT(level(), getX() + 0.5F, getY() + 1.5F, getZ() + 0.5F, 4F, this); // exploder: see MachineExplosionDamage
             vnt.setBlockAllocator(new BlockAllocatorStandard());
             vnt.setBlockProcessor(new BlockProcessorStandard().withBlockEffect(new BlockMutatorFire()));
             vnt.setEntityProcessor(new EntityProcessorCrossSmooth(1, 100));

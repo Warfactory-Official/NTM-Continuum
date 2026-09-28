@@ -15,10 +15,12 @@ import java.util.Map;
  * generated {@link ModItems} only covers {@code ItemBase}/{@code ItemCustomLore}), so codegen never
  * clobbers them.
  *
- * <p><b>Burn times are the 1.12.2 values, in ticks</b> (vanilla coal = 1600). Registering a burn time is
+ * <p><b>Burn times are the 1.7 {@code FuelHandler} values, in ticks</b> (vanilla coal = 1600): the 1.12.2
+ * {@code ItemFuel} table differed (biomass 20, presto 6400, triplet 19200) and made graphite, tiny coal dust,
+ * C4, coal pellets and resin burn, none of which 1.7 does, so those five are plain items here. Registering a burn time is
  * loader-specific in 26.1 and is done <i>twice</i>, once per loader, from {@link #BURN_TIMES}:
  * <ul>
- *   <li><b>NeoForge</b> — data-driven: {@code data/neoforge/data_maps/item/furnace_fuels.json} (in common
+ *   <li><b>NeoForge</b> — data-driven: the {@code neoforge:furnace_fuels} data map {@link FuelDataMapDeclarations} declares (in common
  *       resources; Fabric ignores the file). <b>Keep it in sync with {@link #BURN_TIMES}.</b></li>
  *   <li><b>Fabric</b> — code: a {@code FuelValueEvents.BUILD} listener in the {@code hbm} entrypoint,
  *       which reads {@link #BURN_TIMES} directly.</li>
@@ -33,7 +35,7 @@ public final class ModFuelItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
 
     /** item -> furnace burn time in ticks. Iteration order = registration order (stable JSON output). */
-    public static final Map<RegistryObject<Item>, Integer> BURN_TIMES = new LinkedHashMap<>();
+    public static final Map<java.util.function.Supplier<? extends Item>, Integer> BURN_TIMES = new LinkedHashMap<>();
 
     private static RegistryObject<Item> fuel(String name, int burnTicks) {
         RegistryObject<Item> ro = ITEMS.registerSimpleItem(name);
@@ -42,20 +44,20 @@ public final class ModFuelItems {
         return ro;
     }
 
-    public static final RegistryObject<Item> ingot_graphite = fuel("ingot_graphite", 1600);
+    public static final RegistryObject<Item> ingot_graphite = plain("ingot_graphite");
     public static final RegistryObject<Item> powder_lignite = fuel("powder_lignite", 1200);
     public static final RegistryObject<Item> powder_coal = fuel("powder_coal", 1600);
-    public static final RegistryObject<Item> powder_coal_tiny = fuel("powder_coal_tiny", 160);
+    public static final RegistryObject<Item> powder_coal_tiny = plain("powder_coal_tiny");
     public static final RegistryObject<Item> powder_fire = fuel("powder_fire", 6400);
-    public static final RegistryObject<Item> ingot_c4 = fuel("ingot_c4", 1600);
-    public static final RegistryObject<Item> pellet_coal = fuel("pellet_coal", 320);
-    public static final RegistryObject<Item> biomass = fuel("biomass", 20);
+    public static final RegistryObject<Item> ingot_c4 = plain("ingot_c4");
+    public static final RegistryObject<Item> pellet_coal = plain("pellet_coal");
+    public static final RegistryObject<Item> biomass = fuel("biomass", 200 * 2);
     public static final RegistryObject<Item> biomass_compressed = fuel("biomass_compressed", 800);
-    public static final RegistryObject<Item> ball_resin = fuel("ball_resin", 80);
+    public static final RegistryObject<Item> ball_resin = plain("ball_resin");
     public static final RegistryObject<Item> coal_infernal = fuel("coal_infernal", 4800);
     public static final RegistryObject<Item> solid_fuel = fuel("solid_fuel", 3200);
-    public static final RegistryObject<Item> solid_fuel_presto = fuel("solid_fuel_presto", 6400);
-    public static final RegistryObject<Item> solid_fuel_presto_triplet = fuel("solid_fuel_presto_triplet", 19200);
+    public static final RegistryObject<Item> solid_fuel_presto = fuel("solid_fuel_presto", 200 * 40);
+    public static final RegistryObject<Item> solid_fuel_presto_triplet = fuel("solid_fuel_presto_triplet", 200 * 200);
     public static final RegistryObject<Item> rocket_fuel = fuel("rocket_fuel", 6400);
     public static final RegistryObject<Item> lignite = fuel("lignite", 1200);
     public static final RegistryObject<Item> crystal_coal = fuel("crystal_coal", 6400);
@@ -80,6 +82,33 @@ public final class ModFuelItems {
 
     static {
         ModTabs.addTo(HbmTab.MATERIALS, powder_cement);
+        // 1.7 FuelHandler's fuels that the 1.12.2 ItemFuel table above never had (single = 200 ticks). The
+        // metadata families burn per 1.7 meta: every coke / coke block variant alike, the ash by EnumAshType
+        // (fullerene, meta 5, is not a fuel). Looked up by id: they are registered in other item classes.
+        // Keep FuelDataMapDeclarations (the NeoForge data map) in sync.
+        extra("solid_fuel_bf", 200 * 160);
+        extra("solid_fuel_presto_bf", 200 * 400);
+        extra("solid_fuel_presto_triplet_bf", 200 * 2000);
+        extra("scrap", 200 / 4);
+        extra("dust", 200 / 8);
+        extra("block_scrap", 200 * 2);
+        for (String coke : new String[]{"coal", "lignite", "petroleum"}) {
+            extra("coke_" + coke, 200 * 16);
+            extra("block_coke_" + coke, 200 * 160);
+        }
+        extra("book_guide", 200);
+        extra("coal_eternal", 200 * 16);
+        extra("powder_sawdust", 200 / 2);
+        extra("powder_ash_wood", 200 / 2);
+        extra("powder_ash_coal", 200);
+        extra("powder_ash_misc", 200 / 2);
+        extra("powder_ash_fly", 200);
+        extra("powder_ash_soot", 200 / 2);
+    }
+
+    private static void extra(String id, int burnTicks) {
+        BURN_TIMES.put(() -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
+                dev.golem.core.Ids.of(Constants.MOD_ID, id)), burnTicks);
     }
 
     public static void init() {}

@@ -136,11 +136,18 @@ public final class DamageResistanceHandler {
                 ModGearItems.hazmat_legs_red.get(), ModGearItems.hazmat_boots_red.get(), new ResistanceStats());
         registerSet(ModGearItems.hazmat_helmet_grey.get(), ModGearItems.hazmat_plate_grey.get(),
                 ModGearItems.hazmat_legs_grey.get(), ModGearItems.hazmat_boots_grey.get(), new ResistanceStats());
+        com.hbm.items.ModArmorSetItems.registerResistances(); // final armor sets A: alloy..trenchmaster
+        com.hbm.items.ModArmorSetBItems.registerResistances(); // final armor B: suits, jackets, hat/no9 handlers
 
         DamageEvents.install();
     }
 
-    private static void registerSet(Item helmet, Item chest, Item legs, Item boots, ResistanceStats stats) {
+    /** 1.7 {@code itemStats.put}: resistances of a single worn piece, set or no set. */
+    public static void registerItem(Item item, ResistanceStats stats) {
+        ITEM_STATS.put(item, stats);
+    }
+
+    public static void registerSet(Item helmet, Item chest, Item legs, Item boots, ResistanceStats stats) {
         ArmorSet set = new ArmorSet(helmet, chest, legs, boots);
         SET_STATS.put(set, stats);
         if (helmet != null) ITEM_INFO_SETS.computeIfAbsent(helmet, ignored -> new ArrayList<>()).add(set);
@@ -235,6 +242,8 @@ public final class DamageResistanceHandler {
     }
 
     private static void onEntityHurt(DamageEvents.DamageEvent event) {
+        // 1.7 onEntityDamaged: the player shield soaks first, then the armor modules run.
+        com.hbm.handler.ArmorModEvents.absorbShield(event);
         applyArmorModules(event);
         if (event.entity() instanceof net.minecraft.world.entity.player.Player player) {
             ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
@@ -270,6 +279,8 @@ public final class DamageResistanceHandler {
             if (stack.getItem() instanceof ArmorFSBPowered powered) {
                 powered.dischargeBattery(stack, (long) damage * powered.consumption);
                 stack.setDamageValue(0);
+            } else if (stack.getItem() instanceof com.hbm.items.gear.ArmorFSBFueled fueled) {
+                fueled.burn(stack, damage); // 1.7 ArmorFSBFueled.setDamage
             }
         }
     }

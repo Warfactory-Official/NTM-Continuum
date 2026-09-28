@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+/** 1.7 {@code SatelliteLunarMiner}: the asteroid miner with the lunar pool. */
 public class SatelliteLunarMiner extends SatelliteMiner {
 
     public static final MapCodec<SatelliteLunarMiner> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -22,4 +23,6 @@ public class SatelliteLunarMiner extends SatelliteMiner {
     public SatelliteType type() {
         return SatelliteType.LUNAR_MINER;
     }
+
+    @Override public String getType() { return "LUNAR_MINER"; }
 }

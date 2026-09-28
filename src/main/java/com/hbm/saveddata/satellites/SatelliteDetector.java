@@ -1,11 +1,7 @@
 package com.hbm.saveddata.satellites;
 
 import com.hbm.api.redstoneoverradio.IRORInteractive;
-import com.hbm.items.machine.ItemSatellite;
-import com.hbm.items.machine.ItemSatellite.EnumSatType;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import org.jspecify.annotations.Nullable;
 
@@ -13,7 +9,6 @@ import com.mojang.serialization.MapCodec;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Watches the whole dimension for detonations. Where the ray scanner reports a running machine at its exact
@@ -24,9 +19,7 @@ public class SatelliteDetector extends Satellite {
 
     public static final MapCodec<SatelliteDetector> CODEC = MapCodec.unit(SatelliteDetector::new);
 
-    public SatelliteDetector() {
-        super(Interfaces.NONE, Set.of(), Set.of());
-    }
+    public SatelliteDetector() {}
 
     @Override
     public SatelliteType type() {
@@ -49,11 +42,6 @@ public class SatelliteDetector extends Satellite {
     public final List<RadiationBurst> cachedResults = new ArrayList<>();
 
     @Override public String getType() { return "UWB_EMISSION_DETECTOR"; }
-
-    @Override
-    public Component[] getInfo(Level level) {
-        return new Component[]{Component.translatable(ItemSatellite.nameKey(EnumSatType.DETECTOR))};
-    }
 
     @Override
     public void onCommandImpl(Level level, String... cmd) {
@@ -89,11 +77,6 @@ public class SatelliteDetector extends Satellite {
         return cachedResults.get(IRORInteractive.parseInt(cmd, 1, cachedResults.size()) - 1);
     }
 
-    @Override
-    public float[] getColor() {
-        return new float[]{0.8F, 0.4F, 1.0F};
-    }
-
     public static final List<RadiationBurst> bursts = new ArrayList<>();
 
     public static void reportEvent(Level level, int lifetime, BurstIntensity intensity, double x, double z) {
@@ -124,8 +107,9 @@ public class SatelliteDetector extends Satellite {
                 case HIGH -> INACCURACY_HIGH;
             };
 
-            this.x = (int) (x + Mth.clamp(level.getRandom().nextGaussian(), -1, 1) * inaccuracy);
-            this.z = (int) (z + Mth.clamp(level.getRandom().nextGaussian(), -1, 1) * inaccuracy);
+            // 1.7: an unclamped gaussian, so a small burst can read tens of kilometres off
+            this.x = (int) (x + level.getRandom().nextGaussian() * inaccuracy);
+            this.z = (int) (z + level.getRandom().nextGaussian() * inaccuracy);
         }
     }
 

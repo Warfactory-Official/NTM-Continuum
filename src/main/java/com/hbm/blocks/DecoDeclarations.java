@@ -121,21 +121,26 @@ public final class DecoDeclarations {
 
         // ---- bricks and concrete ----
         // Red Room brick: the marked face follows the six-way facing; up/down use the "_top" icon set.
+        // plain=true is 1.7 meta 6 (no marked face, brick_base all round), set only by the keyhole rooms.
         Map<String, List<Placement>> redBrick = new LinkedHashMap<>();
-        redBrick.put("facing=up", List.of(Placement.model("_top")));
-        redBrick.put("facing=down", List.of(Placement.model("_top").plus(Placement.rotated(180, 0, false))));
-        redBrick.put("facing=north", List.of(Placement.NONE));
-        redBrick.put("facing=east", List.of(Placement.rotated(0, 90, false)));
-        redBrick.put("facing=south", List.of(Placement.rotated(0, 180, false)));
-        redBrick.put("facing=west", List.of(Placement.rotated(0, 270, false)));
+        redBrick.put("facing=up,plain=false", List.of(Placement.model("_top")));
+        redBrick.put("facing=down,plain=false", List.of(Placement.model("_top").plus(Placement.rotated(180, 0, false))));
+        redBrick.put("facing=north,plain=false", List.of(Placement.NONE));
+        redBrick.put("facing=east,plain=false", List.of(Placement.rotated(0, 90, false)));
+        redBrick.put("facing=south,plain=false", List.of(Placement.rotated(0, 180, false)));
+        redBrick.put("facing=west,plain=false", List.of(Placement.rotated(0, 270, false)));
+        for (String facing : new String[]{"up", "down", "north", "east", "south", "west"}) {
+            redBrick.put("facing=" + facing + ",plain=true", List.of(Placement.model("_plain")));
+        }
         Dejson.block(NS, "brick_red")
                 .models(Models.group()
                         .and("", Models.parented("minecraft:block/cube", Slots.of("particle", "hbm:blocks/brick_base")
                                 .and("down", "hbm:blocks/brick_base").and("up", "hbm:blocks/brick_base")
                                 .and("north", "hbm:blocks/brick_red").and("south", "hbm:blocks/brick_base")
                                 .and("west", "hbm:blocks/brick_base").and("east", "hbm:blocks/brick_base")))
-                        .and("_top", Models.cubeBottomTop("hbm:blocks/brick_base", "hbm:blocks/brick_base", "hbm:blocks/brick_red_top")))
-                .states(Variants.of(Set.of("facing"), redBrick))
+                        .and("_top", Models.cubeBottomTop("hbm:blocks/brick_base", "hbm:blocks/brick_base", "hbm:blocks/brick_red_top"))
+                        .and("_plain", Models.cubeAll("hbm:blocks/brick_base")))
+                .states(Variants.of(Set.of("facing", "plain"), redBrick))
                 .blockItemDirect()
                 .register();
         Drops.nothing(NS, "brick_red");

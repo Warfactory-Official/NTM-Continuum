@@ -17,6 +17,7 @@ import com.hbm.hazard.type.IHazardType;
 import com.hbm.hazard.transformer.HazardTransformerCustom;
 import com.hbm.hazard.transformer.HazardTransformerRadiationNBT;
 import com.hbm.hazard.transformer.HazardTransformerZirnox;
+import com.hbm.hazard.transformer.IHazardTransformer;
 import com.hbm.hazard.modifier.HazardModifierFuelRadiation;
 import com.hbm.hazard.modifier.HazardModifierRBMKHot;
 import com.hbm.hazard.modifier.HazardModifierRBMKRadiation;
@@ -128,6 +129,17 @@ public class HazardRegistry {
         HazardSystem.trafos.add(new HazardTransformerRadiationNBT());
         HazardSystem.trafos.add(new HazardTransformerZirnox());
         HazardSystem.trafos.add(HazardTransformerCustom.INSTANCE);
+        // 1.7 registered cell_tritium and cell_sas3 as items; here they are one component-backed cell.
+        HazardSystem.trafos.add(IHazardTransformer.post((stack, entries) -> {
+            if (!(stack.getItem() instanceof com.hbm.items.special.ItemCell)) return;
+            com.hbm.inventory.fluid.FluidType fluid = com.hbm.items.special.ItemCell.getFluidType(stack);
+            if (fluid == com.hbm.inventory.fluid.Fluids.TRITIUM) {
+                entries.add(new HazardEntry(RADIATION, 0.001F));
+            } else if (fluid == com.hbm.inventory.fluid.Fluids.SAS3) {
+                entries.add(new HazardEntry(RADIATION, sas3));
+                entries.add(new HazardEntry(BLINDING, 60F));
+            }
+        }));
         // Deferred: ForgeFluid / RadiationContainer / RadiationME transformers
     }
 

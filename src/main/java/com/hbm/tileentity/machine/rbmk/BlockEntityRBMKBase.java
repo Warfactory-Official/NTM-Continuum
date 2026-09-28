@@ -150,7 +150,7 @@ public abstract class BlockEntityRBMKBase extends TileEntityMachineBase implemen
         level.playSound(null, x, worldPosition.getY() + 1D, z, com.hbm.sound.ModSounds.RBMK_EXPLOSION.get(), SoundSource.BLOCKS, 50F, 1F);
         if (level instanceof ServerLevel server) {
             AwardRegions.within(server, worldPosition.getX() + .5D, worldPosition.getY() + .5D, worldPosition.getZ() + .5D,
-                    50D, player -> Advancements.award(player, "hbm:rbmk_meltdown", "meltdown"));
+                    50D, player -> com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.RBMK));
             if (RBMKDials.getOverpressure(level)) overpressure(server);
         }
         if (digamma) {

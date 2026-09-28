@@ -41,10 +41,8 @@ public final class ModMedicineItems {
         return item;
     }
 
-    public static final RegistryObject<Item> iv_empty = ITEMS.registerSimpleItem("iv_empty");
-    static {
-        ModTabs.addTo(HbmTab.CONSUMABLES, iv_empty);
-    }
+    /** 1.7 ItemSimpleConsumable: draws 5 health into a blood bag (the IV bags live in ModArmorSetBItems). */
+    public static final RegistryObject<ItemSimpleConsumable> iv_empty = simple("iv_empty", HbmTab.CONSUMABLES);
 
     public static final RegistryObject<ItemConsumable> syringe_awesome = consumable("syringe_awesome", HbmTab.CONSUMABLES, false);
     public static final RegistryObject<ItemConsumable> syringe_antidote = consumable("syringe_antidote", HbmTab.CONSUMABLES, false);

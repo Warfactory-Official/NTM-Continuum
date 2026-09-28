@@ -58,6 +58,13 @@ public final class ModRBMKBlockEntities {
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKConsole>> RBMK_CONSOLE=type("rbmk_console",BlockEntityRBMKConsole::new,ModRBMKBlocks.rbmk_console);
     public static final RegistryObject<BlockEntityType<BlockEntityCraneConsole>> RBMK_CRANE_CONSOLE=type("rbmk_crane_console",BlockEntityCraneConsole::new,ModRBMKBlocks.rbmk_crane_console);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKGauge>> RBMK_GAUGE=type("rbmk_gauge",BlockEntityRBMKGauge::new,ModRBMKBlocks.rbmk_gauge);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKDisplay>> RBMK_DISPLAY=type("rbmk_display",BlockEntityRBMKDisplay::new,ModRBMKBlocks.rbmk_display);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKKeyPad>> RBMK_KEY_PAD=type("rbmk_key_pad",BlockEntityRBMKKeyPad::new,ModRBMKBlocks.rbmk_key_pad);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKLever>> RBMK_LEVER=type("rbmk_lever",BlockEntityRBMKLever::new,ModRBMKBlocks.rbmk_lever);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKNumitron>> RBMK_NUMITRON=type("rbmk_numitron",BlockEntityRBMKNumitron::new,ModRBMKBlocks.rbmk_numitron);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKGraph>> RBMK_GRAPH=type("rbmk_graph",BlockEntityRBMKGraph::new,ModRBMKBlocks.rbmk_graph);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKIndicator>> RBMK_INDICATOR=type("rbmk_indicator",BlockEntityRBMKIndicator::new,ModRBMKBlocks.rbmk_indicator);
+    public static final RegistryObject<BlockEntityType<BlockEntityRBMKAutoloader>> RBMK_AUTOLOADER=type("rbmk_autoloader",BlockEntityRBMKAutoloader::new,ModRBMKBlocks.rbmk_autoloader);
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal>> RBMK_TERMINAL=
             BLOCK_ENTITIES.register("rbmk_terminal", () -> BlockEntities.serverTicking(
                     com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal::new,

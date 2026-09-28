@@ -111,6 +111,10 @@ public final class NeoForgeClientInit {
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
                 event.register(dev.golem.core.Ids.of("hbm", "gun"),
                         com.hbm.client.render.weapon.GunItemModel.Unbaked.MAP_CODEC));
+        // Ported 1.7 IItemRenderers: an item model too, because they branch on the display context.
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
+                event.register(com.hbm.client.render.MachineItemModelRenderer.CustomItem.ID,
+                        com.hbm.client.render.MachineItemModelRenderer.CustomItem.Unbaked.MAP_CODEC));
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->
                 event.register(MachineItemModelRenderer.ID, MachineItemModelRenderer.Unbaked.MAP_CODEC));
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterItemModelsEvent event) ->

@@ -227,8 +227,10 @@ public final class PowerNetworkGameTests {
      */
     private static void foreignLookup(GameTestHelper helper) {
         boolean forgeLike = dev.golem.core.GolemCore.loader() != dev.golem.core.GolemCore.Loader.FABRIC;
-        helper.assertTrue(EnergyCompat.supported() == forgeLike,
-                "Foreign energy is a forge-like feature; loader " + dev.golem.core.GolemCore.loader()
+        // Fabric: only with the optional Team Reborn Energy (loaded in the dev game)
+        boolean expected = forgeLike || dev.golem.core.world.RebornEnergy.present();
+        helper.assertTrue(EnergyCompat.supported() == expected,
+                "Foreign energy is forge-like or Team Reborn Energy; loader " + dev.golem.core.GolemCore.loader()
                         + " reports supported=" + EnergyCompat.supported());
         BlockPos empty = helper.absolutePos(new BlockPos(2, 1, 2));
         helper.getLevel().removeBlock(empty, false);

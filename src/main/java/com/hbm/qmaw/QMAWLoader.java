@@ -267,7 +267,8 @@ public final class QMAWLoader {
     private static boolean componentVariantFamily(Identifier id) {
         String path = id.getPath();
         return path.equals("gear_large") || path.equals("concrete_colored") || path.equals("concrete_colored_ext")
-                || path.equals("lightstone") || path.equals("machine_sawmill") || path.equals("machine_stirling");
+                || path.equals("lightstone") || path.equals("machine_sawmill") || path.equals("machine_stirling")
+                || path.equals("satellite");
     }
 
     private static Identifier flattenedId(Identifier oldId, int metadata) {
@@ -290,7 +291,6 @@ public final class QMAWLoader {
         if (oldId.equals(Ids.of("hbm", "wire_dense")) && metadata == 48) return Ids.of("hbm", "wire_dense_bscco");
         if (oldId.equals(Ids.of("hbm", "wire_dense")) && metadata == 7900) return Ids.of("hbm", "wire_dense_gold");
         if (oldId.equals(Ids.of("hbm", "coke"))) return Ids.of("hbm", "coke_coal");
-        if (oldId.equals(Ids.of("hbm", "satellite"))) return null;
         if (path.equals("pile_device") || path.equals("pile_brick")) return null;
         return oldId;
     }

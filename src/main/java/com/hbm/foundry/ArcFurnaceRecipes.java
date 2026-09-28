@@ -78,6 +78,7 @@ public final class ArcFurnaceRecipes {
                 new ItemStack(com.hbm.blocks.ModGlassBlocks.glass_quartz.get().asItem()));
         register(Mats.MAT_BORAX.dust(), new ItemStack(ModItems.powder_boron_tiny.get(), 3),
                 new Mats.MaterialStack(Mats.MAT_BORON, n * 3));
+        com.hbm.inventory.recipes.BedrockOreChainRecipes.arcFurnace(); // 1.7 order: before the material autogen
 
         registerMaterialShapes();
         registerExplicitMaterialItems();

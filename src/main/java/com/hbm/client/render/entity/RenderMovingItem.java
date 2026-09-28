@@ -31,7 +31,7 @@ public class RenderMovingItem extends CompatEntityRenderer<EntityMovingItem, Ren
     @Override
     public void extract(EntityMovingItem entity, State state, float partialTicks) {
         state.lift = (float) (new Random(entity.getId()).nextDouble() * 0.0625D);
-        state.block = FramedItem.resolve(state.item, entity.getItemStack(), entity.level());
+        state.arm = FramedItem.resolveArm(state.item, entity.getItemStack(), entity.level());
     }
 
     @Override
@@ -41,14 +41,13 @@ public class RenderMovingItem extends CompatEntityRenderer<EntityMovingItem, Ren
         poseStack.pushPose();
         poseStack.translate(0F, state.lift, 0F);
 
-        if (state.block) {
+        if (state.arm.block()) {
             FramedItem.framedBlockPrefix(poseStack);
         } else {
             // 1.7 RenderMovingItem:34-35 - the caller's gate fails for the flat arm
             poseStack.mulPose(Axis.XP.rotationDegrees(90F));
             poseStack.translate(0F, -0.1875F, 0F);
-            FramedItem.framedSpritePrefix(poseStack);
-            FramedItem.framedSpriteAnchor(poseStack);
+            FramedItem.framedFlatArm(poseStack, state.arm);
         }
         FramedItem.draw(poseStack, state.item, sink, state.lightCoords);
 
@@ -58,6 +57,6 @@ public class RenderMovingItem extends CompatEntityRenderer<EntityMovingItem, Ren
     public static final class State extends CompatEntityRenderState {
         public final CompatItemRenderState item = new CompatItemRenderState();
         float lift;
-        boolean block;
+        FramedItem.Arm arm = FramedItem.Arm.SPRITE;
     }
 }

@@ -68,9 +68,18 @@ public class SoyuzLauncher extends BlockMultiblockMachine
     }
 
     /**
-     * 1.7 sets the core {@code SoyuzLauncher.height} above the block the complex grows from and fills the
-     * footprint around that ground block, so every box below is stated from there rather than from the core.
+     * 1.7 sets the core {@code SoyuzLauncher.height} above the block the complex grows from. Its
+     * {@code checkRequirement}/{@code fillSpace} add that height back before stating the boxes, so every box is
+     * relative to the CORE: the apron is the core's own course and the one below it, the legs and trenches the
+     * four courses under the apron (§19ec-satellites corrected an earlier reading that stated them from the ground
+     * block, which sank the whole footprint four blocks below the rendered pad).
      */
+    /** 1.7 {@code onBlockPlacedBy}: {@code ForgeDirection dir = ForgeDirection.EAST}, whichever way the placer looks. */
+    @Override
+    public Direction getDirModified(Direction direction) {
+        return Direction.EAST;
+    }
+
     @Override
     public int getHeightOffset() {
         return HEIGHT;
@@ -79,15 +88,14 @@ public class SoyuzLauncher extends BlockMultiblockMachine
     /** The apron, the four flame trenches and the two service towers, exactly upstream's boxes. */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
-        BlockPos ground = core.below(HEIGHT);
-        for (int[] box : BOXES) MultiblockHandlerXR.visitBox(ground, box, facing, visitor);
-        visitor.cell(ground, MASK_NONE);
-        ring(ground, (pos, mask) -> visitor.cell(pos, mask, ROLE_ALL));
+        for (int[] box : BOXES) MultiblockHandlerXR.visitBox(core, box, facing, visitor);
+        ring(core, (pos, mask) -> visitor.cell(pos, mask, ROLE_ALL));
     }
 
     /**
-     * The apron's outer ring, both courses, each cell open on the face it turns outward. The ring is
-     * square and its four sides are stated together, so the set is the same whichever way the pad faces.
+     * The apron's outer ring, both courses (the core's and the one below: 1.7 {@code getConPos}), each cell open
+     * on the face it turns outward. The ring is square and its four sides are stated together, so the set is the
+     * same whichever way the pad faces.
      */
     private static void ring(BlockPos ground, java.util.function.ObjIntConsumer<BlockPos> out) {
         for (int i = -6; i <= 6; i++) {
@@ -104,9 +112,8 @@ public class SoyuzLauncher extends BlockMultiblockMachine
 
     @Override
     protected boolean checkRequirement(Level level, BlockPos core, Direction facing, BlockPos clicked) {
-        BlockPos ground = core.below(HEIGHT);
         for (int[] box : BOXES) {
-            if (!MultiblockHandlerXR.checkSpace(level, ground, box, clicked, facing)) return false;
+            if (!MultiblockHandlerXR.checkSpace(level, core, box, clicked, facing)) return false;
         }
         return true;
     }
@@ -114,7 +121,7 @@ public class SoyuzLauncher extends BlockMultiblockMachine
     @Override
     protected void visitPassiveCells(BlockPos core, Direction facing, PassiveCellVisitor visitor) {
         int domains = PASSIVE_POWER_IN | PASSIVE_FLUID_IN;
-        ring(core.below(HEIGHT), (pos, mask) -> visitor.passiveCell(pos, MASK_ALL, domains));
+        ring(core, (pos, mask) -> visitor.passiveCell(pos, MASK_ALL, domains));
     }
 
     /**
@@ -140,4 +147,12 @@ public class SoyuzLauncher extends BlockMultiblockMachine
         return List.of();
     }
 
+    /** 1.7 {@code onBlockActivated}: {@code BossSpawnHandler.markFBI} on every non-sneaking use. */
+    @Override
+    protected net.minecraft.world.InteractionResult useAtCore(net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.level.Level level, net.minecraft.core.BlockPos core, net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.phys.BlockHitResult hit) {
+        if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
+        return super.useAtCore(state, level, core, player, hit);
+    }
 }

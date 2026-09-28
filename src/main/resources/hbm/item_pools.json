@@ -236,28 +236,19 @@
   ],
   "POOL_BLACK_PART": [
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:item_secret",
+      "item": "hbm:item_secret_selenium_steel",
       "max": 4,
       "min": 4,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:item_secret",
+      "item": "hbm:item_secret_controller",
       "max": 1,
       "min": 1,
       "weight": 10
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:item_secret",
+      "item": "hbm:item_secret_canister",
       "max": 1,
       "min": 1,
       "weight": 10
@@ -1078,73 +1069,49 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 0
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing1",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 1
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing2",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing3",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 3
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing4",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 4
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing5",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 5
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing6",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 6
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing7",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 7
-      },
-      "item": "hbm:stamp_book",
+      "item": "hbm:stamp_book_printing8",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -1700,7 +1667,7 @@
       "weight": 40
     },
     {
-      "item": "hbm:canned_conserve",
+      "item": "hbm:canned_conserve_beef",
       "max": 5,
       "min": 2,
       "weight": 40
@@ -2169,10 +2136,7 @@
       "weight": 5
     },
     {
-      "components": {
-        "hbm:item_variant": 2
-      },
-      "item": "hbm:canned_conserve",
+      "item": "hbm:canned_conserve_mystery",
       "max": 1,
       "min": 0,
       "weight": 5
@@ -2307,10 +2271,7 @@
       "weight": 1
     },
     {
-      "components": {
-        "hbm:item_variant": 4
-      },
-      "item": "hbm:item_secret",
+      "item": "hbm:item_secret_folly",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -2436,16 +2397,19 @@
   ],
   "POOL_SAT_LUNAR": [
     {
+      "item": "hbm:moon_turf",
       "max": 48,
       "min": 48,
       "weight": 5
     },
     {
+      "item": "hbm:moon_turf",
       "max": 32,
       "min": 32,
       "weight": 7
     },
     {
+      "item": "hbm:moon_turf",
       "max": 16,
       "min": 16,
       "weight": 5
@@ -3029,11 +2993,13 @@
       "weight": 1
     },
     {
+      "item": "hbm:jackt",
       "max": 1,
       "min": 1,
       "weight": 1
     },
     {
+      "item": "hbm:jackt2",
       "max": 1,
       "min": 1,
       "weight": 1
@@ -3720,6 +3686,82 @@
       "max": 1,
       "min": 1,
       "weight": 1
+    }
+  ],
+  "POOL_SODA": [
+    {
+      "item": "hbm:bottle_nuka",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:bottle_cherry",
+      "max": 1,
+      "min": 1,
+      "weight": 5
+    },
+    {
+      "item": "hbm:bottle_quantum",
+      "max": 1,
+      "min": 1,
+      "weight": 1
+    },
+    {
+      "item": "hbm:can_bepis",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:can_luna",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:can_mug",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:can_breen",
+      "max": 1,
+      "min": 1,
+      "weight": 1
+    }
+  ],
+  "POOL_SNACKS": [
+    {
+      "item": "hbm:definitelyfood",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:canned_conserve_beef",
+      "max": 1,
+      "min": 1,
+      "weight": 5
+    },
+    {
+      "item": "hbm:canned_conserve_tube",
+      "max": 1,
+      "min": 1,
+      "weight": 5
+    },
+    {
+      "item": "hbm:twinkie",
+      "max": 1,
+      "min": 1,
+      "weight": 10
+    },
+    {
+      "item": "hbm:chocolate",
+      "max": 1,
+      "min": 1,
+      "weight": 10
     }
   ]
 }

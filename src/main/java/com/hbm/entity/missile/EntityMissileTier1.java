@@ -64,6 +64,8 @@ public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
         }
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.ingot_steel.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_decoy.get()); }
+        @Override public String getRadarName() { return "radar.target.tier4"; }
+        @Override public int getBlipLevel() { return com.hbm.api.entity.IRadarDetectableNT.TIER4; }
     }
 
     /** The same blast as the generic, but it leaves the crater burning. */

@@ -404,6 +404,12 @@ public class TileEntityWatz extends TileEntityMachineBase
             setBrokenColumn(level, pos, 1, casing, -2, -2);
         });
         Watz.drop = true;
+
+        // 1.7 achWatzBoom (TileEntityWatz:529): every player in the core's box grown by 50
+        if (level instanceof net.minecraft.server.level.ServerLevel server) {
+            com.hbm.advancement.AwardRegions.within(server, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 50D,
+                    player -> com.hbm.advancement.HbmCriteria.detonation(player, com.hbm.advancement.DetonationTrigger.Kind.WATZ));
+        }
     }
 
     /** A three-tall column that survives to a random height and is mud above that. */

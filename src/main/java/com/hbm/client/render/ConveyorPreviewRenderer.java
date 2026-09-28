@@ -7,7 +7,6 @@ import com.hbm.util.ConveyorRoute;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.render.CameraInfo;
 import dev.golem.core.render.GhostBlocks;
-import dev.golem.core.render.Poses;
 import dev.golem.core.render.WorldEffects;
 import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
@@ -148,9 +147,10 @@ public final class ConveyorPreviewRenderer {
         if (run.isEmpty()) return;
 
         Vec3 eye = camera.pos;
-        // Frame-start submissions sit under an identity model-view; the view rotation is ours to apply.
+        // Frame-start (onBegin) submissions are drawn under Core's hook model-view, which already is the frame's view
+        // rotation on every node: the pose stays world-axis and camera-relative (applying viewRotation() here as
+        // well rotated the ghost run twice, off into the sky).
         PoseStack pose = new PoseStack();
-        Poses.mulPose(pose, WorldEffects.viewRotation());
 
         // ONE submission for the whole run, as the 1.7 preview was one tessellator pass.
         WorldEffects.submit(pose, GhostBlocks.renderType(), 0, (drawPose, buffer) -> {

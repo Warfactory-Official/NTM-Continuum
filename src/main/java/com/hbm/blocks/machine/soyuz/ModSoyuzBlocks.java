@@ -40,12 +40,16 @@ public final class ModSoyuzBlocks {
 
     public static final RegistryObject<BlockItem> struct_soyuz_core_item =
             ITEMS.registerBlockItem("struct_soyuz_core", struct_soyuz_core);
+    /** 1.7 registers the launcher's block, and so its item, on the missile tab: placed by hand it forms at once. */
+    public static final RegistryObject<BlockItem> soyuz_launcher_item =
+            ITEMS.registerBlockItem("soyuz_launcher", soyuz_launcher);
 
     public static final RegistryObject<ItemSoyuz> missile_soyuz =
             ITEMS.registerItem("missile_soyuz", ItemSoyuz::new, p -> p.stacksTo(1));
 
     static {
         ModTabs.addTo(HbmTab.MACHINES, struct_soyuz_core_item);
+        ModTabs.addTo(HbmTab.MISSILES, soyuz_launcher_item);
         ModTabs.addStacksTo(HbmTab.MISSILES, () -> Arrays.stream(SoyuzSkinType.VALUES)
                 .map(type -> missile_soyuz.get().of(type)).toList());
     }

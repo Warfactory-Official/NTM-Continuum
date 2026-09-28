@@ -297,7 +297,8 @@ public final class MachineItemModel {
 
     /** Whether the declared body itself moves — the branches of {@link #declare()} that read the clock. */
     private boolean animatedBody() {
-        return "pump".equals(animation) || "autosaw".equals(animation) || (spin && !spinParts.isEmpty());
+        return "pump".equals(animation) || "autosaw".equals(animation) || "radar_large".equals(animation)
+                || (spin && !spinParts.isEmpty());
     }
 
     private ItemGem declare() {
@@ -306,8 +307,12 @@ public final class MachineItemModel {
             pump(builder);
         } else if ("autosaw".equals(animation)) {
             autosaw(builder);
+        } else if ("radar_large".equals(animation)) {
+            radarLarge(builder);
         } else if ("rbmk_gauge".equals(animation)) {
             RBMKGaugeIcon.declare(builder, model, surface, partSurfaces);
+        } else if (RBMKPanelIcon.handles(animation)) {
+            RBMKPanelIcon.declare(builder, animation, model, surface, partSurfaces);
         } else if ("armor_bj_jetpack_chest".equals(animation) && !partSurfaces.isEmpty()) {
             jetpackChest(builder);
         } else if (!partSurfaces.isEmpty()) {
@@ -332,6 +337,15 @@ public final class MachineItemModel {
                 .slide(Gem.Axes.Y, MachineItemModel::pumpLift)
                 .spin(Gem.Axes.Z, 0F, 4.75F, 0F, state -> -pumpArmAngle(state));
         named(builder, "Piston", surface).slide(Gem.Axes.Y, MachineItemModel::pumpLift);
+    }
+
+    /**
+     * 1.7 {@code RenderRadarLarge}'s item: the {@code Radar} body, then the {@code Dish} turned
+     * {@code currentTimeMillis % 3600 * 0.1} degrees about -Y (one turn in 3.6 s) - the item clock exactly (G-C).
+     */
+    private void radarLarge(ItemGem.Builder builder) {
+        named(builder, "Radar", surface);
+        named(builder, "Dish", surface).angle(Gem.Axes.Y, state -> -state.animation);
     }
 
     private static float pumpArmAngle(ItemPose state) {
@@ -465,6 +479,8 @@ public final class MachineItemModel {
             box = source.boundsExcludingExact(excluded);
         } else {
             Set<String> chosen = remaining(parts, excluded);
+            // 1.7 renderPart drew nothing for a name the OBJ lacks; a pass may name none of its parts
+            chosen.retainAll(source.partNames());
             if (chosen.isEmpty()) return;
             geometry = source.parts(chosen, false);
             box = source.boundsIncluding(chosen);
@@ -558,7 +574,7 @@ public final class MachineItemModel {
         ContextTransform contextTransform = context == null || context == ItemDisplayContext.NONE ? null
                 : context == ItemDisplayContext.GUI ? contextTransforms.get("gui")
                 : context == ItemDisplayContext.GROUND ? contextTransforms.get("ground")
-                : contextTransforms.get("non_gui");
+                : slotTransform(context);
         if (contextTransform != null) {
             contextTransform.apply(poseStack);
         } else if (context == ItemDisplayContext.GUI) {
@@ -601,6 +617,22 @@ public final class MachineItemModel {
         poseStack.translate(-cx, -cy, -cz);
     }
 
+    /**
+     * The non-GUI adjustment for one display slot. {@code first_person}, {@code third_person} (hands and head)
+     * and {@code fixed} are optional refinements of {@code non_gui}, for a 1.7 renderer whose equipped preamble
+     * differs from its frame's per slot (the custom missile parts' {@code ItemRenderMissilePart}).
+     */
+    private @Nullable ContextTransform slotTransform(ItemDisplayContext context) {
+        String key = switch (context) {
+            case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> "first_person";
+            case THIRD_PERSON_LEFT_HAND, THIRD_PERSON_RIGHT_HAND, HEAD -> "third_person";
+            case FIXED -> "fixed";
+            default -> null;
+        };
+        ContextTransform specific = key == null ? null : contextTransforms.get(key);
+        return specific != null ? specific : contextTransforms.get("non_gui");
+    }
+
     /** Reproduces ArmorFSB.setupRender* followed by renderStandard for a BJ/DNS item icon. */
     /** The GUI spin's angle now, wrapped at a whole turn rather than at the millisecond count 1.7 wrote. */
     private float guiSpinAngle() {
@@ -612,6 +644,13 @@ public final class MachineItemModel {
         if (inventory) {
             if (animation.endsWith("_head") && animation.startsWith("armor_dnt_"))
                 poseStack.translate(0F, -1F, 0F);
+            // ArmorDigamma / ArmorTrenchmaster renderInventory: their own adjustment before setupRenderInv.
+            if (animation.equals("armor_fau_head")) {
+                poseStack.scale(0.875F, 0.875F, 0.875F);
+                poseStack.translate(0F, -2F, 0F);
+            }
+            if (animation.equals("armor_trenchmaster_head")) poseStack.translate(0F, 1F, 0F);
+            if (animation.equals("armor_trenchmaster_chest")) poseStack.translate(0F, 1.5F, 0F);
             poseStack.translate(0F, -1.5F, 0F);
             poseStack.scale(3.25F, 3.25F, 3.25F);
             poseStack.mulPose(Axis.XP.rotationDegrees(180F));
@@ -621,6 +660,18 @@ public final class MachineItemModel {
             poseStack.mulPose(Axis.XP.rotationDegrees(180F));
             poseStack.scale(0.75F, 0.75F, 0.75F);
             poseStack.mulPose(Axis.YP.rotationDegrees(-90F));
+        }
+
+        // ArmorBismuth renderCommon: its own framing in front of renderStandard.
+        if (animation.equals("armor_bismuth_head")) {
+            poseStack.translate(0F, -0.5F, 0F);
+            poseStack.scale(0.625F, 0.625F, 0.625F);
+        } else if (animation.equals("armor_bismuth_chest")) {
+            poseStack.scale(0.875F, 0.875F, 0.875F);
+        } else if (animation.equals("armor_dieselsuit_head")) {
+            // ArmorDiesel renderCommon, before renderStandard
+            poseStack.translate(0F, 0.5F, 0F);
+            poseStack.scale(0.875F, 0.875F, 0.875F);
         }
 
         if (animation.endsWith("_head")) {

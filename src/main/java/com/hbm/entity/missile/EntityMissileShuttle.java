@@ -69,6 +69,7 @@ public class EntityMissileShuttle extends EntityMissileBaseNT {
         return new ItemStack(ModMissileItems.missile_generic.get());
     }
 
+    @Override
     public String getRadarName() {
         return "radar.target.shuttle";
     }

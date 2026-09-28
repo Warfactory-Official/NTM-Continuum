@@ -16,14 +16,54 @@ import net.minecraft.world.level.block.Block;
  * into its upgraded form, consuming the bolts the conversion asks for. Its job in this wave is turning
  * plain Watz casing into the bolted casing the reactor structure requires.
  *
- * <p>The 1.12.2 original doubled as a weapon (left-click fires a bolt from the player's inventory for
- * 10 armour-piercing damage, with a recoil animation); that half belongs with the gun wave and is not
- * ported here. It is unfuelled either way — the bolts are the ammunition and the conversion cost.
+ * <p>It doubles as a weapon, 1.7 {@code onLeftClickEntity}: a swing at a living target spends one bolt from the
+ * inventory (spike, steel, tungsten, then dura bolts, first slot first) for 10 armour-piercing damage that ignores
+ * hurt cooldown, replacing the ordinary melee hit. A player killed that way earns "Go Fish". Both the bolted hit and a
+ * bolted block play the barrel recoil ({@code RECOIL} bus, 1.7 {@code playAnimation(player, SWING)}).
  */
-public class ItemBoltgun extends CompatItem {
+public class ItemBoltgun extends CompatItem implements com.hbm.items.IAnimatedItem {
 
     public ItemBoltgun(Properties properties) {
         super(properties);
+    }
+
+    /** 1.7 order of {@code ItemBoltgun.onLeftClickEntity}'s bolt table. */
+    private static final String[] BOLTS = {"bolt_spike", "bolt_steel", "bolt_tungsten", "bolt_dura_steel"};
+
+    /** Hooks the melee replacement; called once from {@code ModAdvancementContent}. */
+    public static void installAttack() {
+        dev.golem.core.world.Attacks.interceptPlayerAttack(ItemBoltgun::onLeftClickEntity);
+    }
+
+    /** 1.7 {@code onLeftClickEntity}; {@code true} takes the swing over from vanilla's attack. */
+    static boolean onLeftClickEntity(Player player, net.minecraft.world.entity.Entity entity) {
+        if (!(player.getMainHandItem().getItem() instanceof ItemBoltgun) || !entity.isAlive()) return false;
+        net.minecraft.world.entity.player.Inventory inventory = player.getInventory();
+        for (String bolt : BOLTS) {
+            net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
+                    dev.golem.core.Ids.of(com.hbm.Constants.MOD_ID, bolt));
+            for (int i = 0; i < inventory.getContainerSize(); i++) {
+                net.minecraft.world.item.ItemStack slot = inventory.getItem(i);
+                if (slot.isEmpty() || !slot.is(item)) continue;
+                if (player.level() instanceof net.minecraft.server.level.ServerLevel server) {
+                    server.playSound(null, entity.getX(), entity.getY(), entity.getZ(), ModSounds.BOLTGUN.get(),
+                            SoundSource.PLAYERS, 1.0F, 1.0F);
+                    inventory.removeItem(i, 1);
+                    com.hbm.util.EntityDamageUtil.attackEntityFromIgnoreIFrame(entity, com.hbm.lib.ModDamageSources.source(
+                            server, com.hbm.lib.ModDamageSources.BOLTGUN, player, player), 10F);
+                    // 1.7 achGoFish goes to the victim
+                    if (!entity.isAlive() && entity instanceof net.minecraft.server.level.ServerPlayer victim) {
+                        com.hbm.advancement.HbmCriteria.BOLTED.fire(victim);
+                    }
+                    server.sendParticles(net.minecraft.core.particles.ParticleTypes.EXPLOSION, entity.getX(),
+                            entity.getY() + entity.getBbHeight() / 2D, entity.getZ(), 1, 0D, 0D, 0D, 0D);
+                    ((ItemBoltgun) player.getMainHandItem().getItem()).playAnimation(player,
+                            com.hbm.items.ToolAnimation.SWING, player.getMainHandItem());
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -40,6 +80,7 @@ public class ItemBoltgun extends CompatItem {
         if (toolable.onScrew(level, player, pos, context.getClickedFace(), context.getClickLocation(),
                 context.getHand(), IToolable.ToolType.BOLT)) {
             level.playSound(null, pos, ModSounds.BOLTGUN.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
+            playAnimation(player, com.hbm.items.ToolAnimation.SWING, context.getItemInHand());
         }
         return InteractionResult.SUCCESS;
     }

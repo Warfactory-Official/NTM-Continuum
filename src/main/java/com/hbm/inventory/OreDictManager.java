@@ -141,4 +141,6 @@ public final class OreDictManager {
     public static final NTMMaterial ANY_HARDPLASTIC    = new NTMMaterial(-1, "any_hardplastic");
     public static final NTMMaterial ANY_RESISTANTALLOY = new NTMMaterial(-1, "any_resistant_alloy");
     public static final NTMMaterial ANY_BISMOID        = new NTMMaterial(-1, "any_bismoid");
+    /** 1.7 DictGroup "AnyBismoidBronze" (bismuth + arsenic bronze): ingot/cast plate via the c:*_/any_bismoid_bronze tags. */
+    public static final NTMMaterial ANY_BISMOIDBRONZE  = new NTMMaterial(-1, "any_bismoid_bronze");
 }

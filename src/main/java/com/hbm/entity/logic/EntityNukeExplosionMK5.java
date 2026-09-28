@@ -116,6 +116,12 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
             return;
         }
 
+        // 1.7 MK5.onUpdate: achManhattan for every player in the world, on every tick the blast lives
+        if (level() instanceof net.minecraft.server.level.ServerLevel server) {
+            com.hbm.advancement.AwardRegions.inLevel(server, p -> com.hbm.advancement.HbmCriteria.detonation(p,
+                    com.hbm.advancement.DetonationTrigger.Kind.NUKE));
+        }
+
         double r2 = this.radius * 2.0D;
         List<Entity> list = level().getEntities(this,
                 new AABB(getX() - r2, getY() - r2, getZ() - r2, getX() + r2, getY() + r2, getZ() + r2));
@@ -136,6 +142,8 @@ public class EntityNukeExplosionMK5 extends CompatEntity {
         if (!initialized) {
             explosion = new ExplosionNukeRayBatched(level(), (int) getX(), (int) getY(), (int) getZ(), strength, radius);
             explosion.setDetonator(detonator);
+            com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_HIGH,
+                    com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.HIGH, getX(), getZ());
             initialized = true;
         }
 

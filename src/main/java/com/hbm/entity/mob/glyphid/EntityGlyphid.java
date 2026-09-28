@@ -348,17 +348,14 @@ public class EntityGlyphid extends CompatMonster implements IResistanceProvider 
                                       .orElse(false);
     }
 
-    /**
-     * 1.7: the three glyphid spawner blocks. This port has not registered the hive blocks yet (see the
-     * entity port manifest), so nothing answers as a spawner until the hive wave lands.
-     */
+    /** 1.7 {@code BlockAllocatorGlyphidDig}: {@code glyphid_spawner} (all three subtypes) is never dug. */
     public static boolean isSpawnerBlock(BlockState state) {
-        return isHiveBlock(state.getBlock());
+        return state.getBlock() == com.hbm.blocks.ModDecoCrateBlocks.glyphid_spawner.get();
     }
 
-    /** The hive-block identity test the hive wave fills in; false while the blocks are unregistered. */
+    /** 1.7 {@code EntityGlyphidScout}: a {@code glyphid_base} wall means a hive is already here. */
     public static boolean isHiveBlock(Block block) {
-        return false;
+        return block == com.hbm.blocks.ModDecoCrateBlocks.glyphid_base.get();
     }
 
     @Override

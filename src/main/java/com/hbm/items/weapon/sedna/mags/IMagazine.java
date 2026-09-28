@@ -95,4 +95,18 @@ public interface IMagazine<T> {
                     (float) shotsFired / config.casingAmount * 0.5F)) return;
         }
     }
+
+    /**
+     * 1.7 {@code shouldUseUpTrenchie}: a Trenchmaster or an Ace of Spades wearer spends a round only two
+     * times in three.
+     */
+    static boolean shouldUseUpTrenchie(Container inventory) {
+        if (inventory instanceof net.minecraft.world.entity.player.Inventory playerInventory) {
+            net.minecraft.world.entity.player.Player player = playerInventory.player;
+            boolean trenchie = com.hbm.items.armor.ArmorTrenchmaster.isTrenchMaster(player);
+            boolean aos = com.hbm.items.armor.ArmorTrenchmaster.hasAoS(player);
+            if (trenchie || aos) return player.getRandom().nextInt(3) < 2;
+        }
+        return true;
+    }
 }

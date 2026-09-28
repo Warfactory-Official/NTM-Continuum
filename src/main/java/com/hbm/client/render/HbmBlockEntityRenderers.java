@@ -58,6 +58,13 @@ public final class HbmBlockEntityRenderers {
         regGem(sink, ModRBMKBlockEntities.RBMK_OUTGASSER.get(), () -> new RBMKColumnShellRenderer<>("rbmk_outgasser", RBMKColumnShellRenderer.Kind.PLAIN));
         regGem(sink, ModRBMKBlockEntities.RBMK_CONSOLE.get(), RBMKConsoleRenderer::new);
         regGem(sink, ModRBMKBlockEntities.RBMK_GAUGE.get(), RBMKGaugeRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_DISPLAY.get(), RBMKDisplayRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_KEY_PAD.get(), RBMKKeyPadRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_LEVER.get(), RBMKLeverRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_NUMITRON.get(), RBMKNumitronRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_GRAPH.get(), RBMKGraphRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_INDICATOR.get(), RBMKIndicatorRenderer::new);
+        regGem(sink, ModRBMKBlockEntities.RBMK_AUTOLOADER.get(), RBMKAutoloaderRenderer::new);
         regGem(sink, ModRBMKBlockEntities.RBMK_CRANE_CONSOLE.get(), RBMKCraneConsoleRenderer::new);
         regGem(sink, ModRBMKBlockEntities.RBMK_DEBRIS.get(), RBMKDebrisBlockRenderer::new);
          // The assembly machine has its own animated renderer (spinning ring + two robotic arms).
@@ -246,9 +253,7 @@ public final class HbmBlockEntityRenderers {
         regGem(sink, ModBlockEntities.MACHINE_SOLIDIFIER.get(),
                 () -> new TankGlassRenderer<com.hbm.tileentity.machine.oil.TileEntityMachineSolidifier>("solidifier", "solidifier", te -> te.tank));
         // Refinery: static OBJ; the old yaw map is a constant 180 for all facings (facing-independent).
-        regGem(sink, ModBlockEntities.MACHINE_REFINERY.get(),
-                () -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachineRefinery>(180F, 1F,
-                        new ModelDef(obj("machines/refinery.obj"), tex("machines/refinery.png"))).ignoreFacing());
+        regGem(sink, ModBlockEntities.MACHINE_REFINERY.get(), RefineryRenderer::new); // + 1.7 exploded model
         // Advanced oil machines — static OBJ renders (facing-dependent animations deferred, §20).
         regGem(sink, ModBlockEntities.MACHINE_FRACKING_TOWER.get(),
                 () -> new MachineObjRenderer<com.hbm.tileentity.machine.oil.TileEntityMachineFrackingTower>(180F, 1F,

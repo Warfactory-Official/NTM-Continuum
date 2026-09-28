@@ -168,6 +168,11 @@ public class TileEntityFusionTorus extends TileEntityCooledBase implements MenuP
         if (te.didProcess && recipe != null) {
             te.plasmaEnergy = (long) Math.ceil(recipe.outputTemp * factor);
             te.fuelConsumption = factor;
+
+            if (level.getGameTime() % 20 == 15) {
+                com.hbm.saveddata.satellites.SatelliteRayScan.reportEvent(level, te.getBlockPos().getX(), te.getBlockPos().getY(),
+                        te.getBlockPos().getZ(), com.hbm.saveddata.satellites.SatelliteRayScan.RayEvent.INFO_PARTICLE, 200);
+            }
         }
 
         if (te.plasmaEnergy > 0) {

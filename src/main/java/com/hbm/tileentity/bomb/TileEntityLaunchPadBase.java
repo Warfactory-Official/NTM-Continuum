@@ -65,7 +65,7 @@ import org.jspecify.annotations.Nullable;
  * connection-anchor conveniences.
  */
 public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
-        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2 {
+        implements IEnergyReceiverMK2, IFluidStandardReceiverMK2, com.hbm.api.block.IRadarCommandReceiver {
 
     /**
      * Which entity each missile item becomes. Upstream keys this by {@code ComparableStack}; a plain
@@ -88,6 +88,7 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         // Tier 0
         missiles.put(ModMissileItems.missile_micro.get(), EntityMissileTier0.EntityMissileMicro::new);
         missiles.put(ModMissileItems.missile_taint.get(), EntityMissileTier0.EntityMissileTaint::new);
+        missiles.put(ModMissileItems.missile_test.get(), EntityMissileTier0.EntityMissileTest::new);
         // Tier 1
         missiles.put(ModMissileItems.missile_generic.get(), EntityMissileTier1.EntityMissileGeneric::new);
         missiles.put(ModMissileItems.missile_decoy.get(), EntityMissileTier1.EntityMissileDecoy::new);
@@ -411,6 +412,18 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
 
         finalizeLaunch(e);
         return BombReturnCode.LAUNCHED;
+    }
+
+    /** 1.7 {@code IRadarCommandReceiver}: a radar's linked launch command fires at the map position. */
+    @Override
+    public boolean sendCommandPosition(int x, int y, int z) {
+        return this.launchToCoordinate(x, z) == BombReturnCode.LAUNCHED;
+    }
+
+    /** 1.7 {@code IRadarCommandReceiver}: a radar's linked launch command fires at the blip's entity. */
+    @Override
+    public boolean sendCommandEntity(Entity target) {
+        return this.launchToEntity(target) == BombReturnCode.LAUNCHED;
     }
 
     /** The ABM aims itself, so it is the one missile that launches with an empty designator slot. */

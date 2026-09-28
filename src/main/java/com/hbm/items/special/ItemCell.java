@@ -10,17 +10,18 @@ import dev.golem.core.world.CompatItem;
 import dev.golem.core.world.CompatTooltipContext;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 /** Component-backed replacement for the old metadata fluid cell used by the antimatter recipe. */
 public final class ItemCell extends CompatItem implements IFillableItem {
     public static final int CAPACITY = 1_000;
+
     public ItemCell(Item.Properties properties) {
         super(properties);
     }
@@ -61,13 +62,24 @@ public final class ItemCell extends CompatItem implements IFillableItem {
         }
         ModDataComponents.fluidId(stack, fluid.getID());
         ModDataComponents.fluidAmount(stack, Math.min(CAPACITY, amount));
-        ModDataComponents.ITEM_VARIANT.set(stack, fluid.getID());
+        ModDataComponents.ITEM_VARIANT.set(stack, variantOf(fluid));
+    }
+
+    /** The cell variant (1.7 item) that holds this fluid, or {@link CellVariants#EMPTY} if no cell holds it. */
+    public static int variantOf(FluidType fluid) {
+        if (fluid == null) return CellVariants.EMPTY;
+        if (fluid == Fluids.UF6) return CellVariants.UF6;
+        if (fluid == Fluids.PUF6) return CellVariants.PUF6;
+        if (fluid == Fluids.AMAT) return CellVariants.ANTIMATTER;
+        if (fluid == Fluids.DEUTERIUM) return CellVariants.DEUTERIUM;
+        if (fluid == Fluids.TRITIUM) return CellVariants.TRITIUM;
+        if (fluid == Fluids.SAS3) return CellVariants.SAS3;
+        if (fluid == Fluids.ASCHRAB) return CellVariants.ANTI_SCHRABIDIUM;
+        return CellVariants.EMPTY;
     }
 
     private static boolean isCellFluid(FluidType fluid) {
-        return fluid == Fluids.UF6 || fluid == Fluids.PUF6 || fluid == Fluids.AMAT
-                || fluid == Fluids.DEUTERIUM || fluid == Fluids.TRITIUM || fluid == Fluids.SAS3
-                || fluid == Fluids.ASCHRAB;
+        return variantOf(fluid) != CellVariants.EMPTY;
     }
 
     /** Full cells leave one empty cell, while an empty cell is deliberately not a container item. */
@@ -118,39 +130,86 @@ public final class ItemCell extends CompatItem implements IFillableItem {
 
     @Override
     public Component getName(ItemStack stack) {
-        FluidType fluid = getFluidType(stack);
-        if (fluid == null || fluid == Fluids.NONE) return Component.translatable("item.hbm.cell_empty");
-        return Component.translatable("item.hbm.cell_" + switch (fluid.getID()) {
-            case 8 -> "deuterium";
-            case 9 -> "tritium";
-            case 28 -> "uf6";
-            case 29 -> "puf6";
-            case 30 -> "sas3";
-            case 33 -> "antimatter";
-            case 34 -> "anti_schrabidium";
-            default -> "empty";
-        });
+        int variant = variantOf(getFluidType(stack));
+        MutableComponent name = Component.translatable("item.hbm.cell_" + CellVariants.NAMES[variant]);
+        // 1.7 cell_sas3 was ItemCustomLore.setRarity(EnumRarity.rare); per-stack rarity is spelled differently
+        // on every target, so the rare (aqua) colour is carried by the name itself, which wins over the
+        // outer rarity style in every version's tooltip and held-item label.
+        return variant == CellVariants.SAS3 ? name.withStyle(ChatFormatting.AQUA) : name;
     }
 
-    /** Preserves the old AMAT ground/burning trigger for the dependency used by Spark production. */
+    /**
+     * 1.7 {@code ItemDrop.onEntityItemUpdate} for {@code cell_antimatter} and {@code cell_anti_schrabidium}, the
+     * only two cells that were {@code ItemDrop}s. On the ground (1.7 checked {@code onGround} only - a burning cell
+     * in the air does nothing) the entity is always removed, and with {@code dropCell} on:
+     * <ul>
+     *   <li>antimatter: {@code new ExplosionVNT(..., 3F).makeAmat().explode()};</li>
+     *   <li>anti-schrabidium: an {@code aSchrabRadius} FLEIJA field ({@code EntityNukeExplosionMK3.statFacFleija})
+     *       plus its cloud and a volume-100 explosion sound, unless the factory refused the blast.</li>
+     * </ul>
+     * Odd but 1.7: with {@code dropCell} off the dropped cell still vanishes, because {@code setDead} sat outside
+     * the config check.
+     */
     public static void tickDropped(ItemEntity entity) {
-        if (!(entity.getItem().getItem() instanceof ItemCell)
-                || (!entity.onGround() && !entity.isOnFire()) || entity.level().isClientSide()) return;
-        if (WeaponConfig.dropCell && getFluidType(entity.getItem()) == Fluids.AMAT
-                && entity.level() instanceof net.minecraft.server.level.ServerLevel level) {
-            entity.discard();
-            level.explode(entity, entity.getX(), entity.getY(), entity.getZ(), 10F, true,
-                    Level.ExplosionInteraction.TNT);
+        if (!(entity.getItem().getItem() instanceof ItemCell) || entity.level().isClientSide()) return;
+        migrateVariant(entity.getItem());
+        if (!entity.onGround() || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        FluidType fluid = getFluidType(entity.getItem());
+        if (!isFullCell(entity.getItem(), fluid) || (fluid != Fluids.AMAT && fluid != Fluids.ASCHRAB)) return;
+
+        double x = entity.getX(), y = entity.getY(), z = entity.getZ();
+        if (WeaponConfig.dropCell) {
+            if (fluid == Fluids.AMAT) {
+                new com.hbm.explosion.vanillant.ExplosionVNT(level, x, y, z, 3F).makeAmat().explode();
+            } else {
+                int radius = com.hbm.config.BombConfig.aSchrabRadius;
+                com.hbm.entity.logic.EntityNukeExplosionMK3 ex =
+                        com.hbm.entity.logic.EntityNukeExplosionMK3.statFacFleija(level, x, y, z, radius);
+                if (!ex.isRemoved()) {
+                    level.playSound(null, x, y, z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(),
+                            net.minecraft.sounds.SoundSource.BLOCKS, 100.0F, level.getRandom().nextFloat() * 0.1F + 0.9F);
+                    level.addFreshEntity(ex);
+                    level.addFreshEntity(com.hbm.entity.effect.EntityCloudFleija.statFac(level, radius, x, y, z));
+                }
+            }
         }
+        entity.discard();
+    }
+
+    /**
+     * Stacks saved before 2026-09-25 carry the fluid id as their model variant (e.g. 33 for antimatter), which the
+     * cell model no longer selects on, so they drew the empty icon. Any stack that ticks in an inventory or on the
+     * ground is rewritten to the variant its fluid calls for, after which it also stacks with new cells.
+     */
+    public static void migrateVariant(ItemStack stack) {
+        if (!(stack.getItem() instanceof ItemCell)) return;
+        FluidType fluid = getFluidType(stack);
+        int expected = variantOf(fluid);
+        if (expected == CellVariants.EMPTY) {
+            if (ModDataComponents.ITEM_VARIANT.has(stack) && isEmptyCell(stack)) ModDataComponents.ITEM_VARIANT.remove(stack);
+            return;
+        }
+        if (ModDataComponents.ITEM_VARIANT.getOr(stack, -1) != expected) ModDataComponents.ITEM_VARIANT.set(stack, expected);
+    }
+
+    @Override
+    protected void compatInventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level,
+                                       net.minecraft.world.entity.Entity owner,
+                                       net.minecraft.world.entity.EquipmentSlot slot, boolean held) {
+        migrateVariant(stack);
     }
 
     @Override
     protected void appendCompatHoverText(ItemStack stack, CompatTooltipContext context,
                                          List<Component> tooltip, TooltipFlag flag) {
-        if (getFluidType(stack) == Fluids.AMAT) {
-            tooltip.add(Component.literal("Exposure to matter will lead to violent annihilation!")
-                    .withStyle(ChatFormatting.YELLOW));
-            tooltip.add(Component.literal("[Dangerous Drop]").withStyle(ChatFormatting.RED));
+        // 1.7 ItemDrop.addInformation, verbatim: plain grey lines, no drop badge.
+        FluidType fluid = getFluidType(stack);
+        if (fluid == Fluids.AMAT) {
+            tooltip.add(Component.literal("Warning: Exposure to matter will"));
+            tooltip.add(Component.literal("lead to violent annihilation!"));
+        } else if (fluid == Fluids.ASCHRAB) {
+            tooltip.add(Component.literal("Warning: Exposure to matter will"));
+            tooltip.add(Component.literal("create a fólkvangr field!"));
         }
     }
 }

@@ -48,9 +48,11 @@ public final class BedrockOreFeature {
         };
     }
 
-    /** Old one-in-ten generic bedrock-ore attempt, rebased from y=0 to the modern world's floor. */
+    /**
+     * 1.7 {@code BedrockOre.generateAuto}, rebased from y=0 to the modern world's floor. The old one-in-ten roll
+     * is the placed feature's {@code rarity_filter} (see {@code BedrockDepositFeature}).
+     */
     public static void generateAutoChunk(WorldGenLevel level, RandomSource random, int chunkMinX, int chunkMinZ) {
-        if (random.nextInt(10) != 0) return;
         int x = chunkMinX + random.nextInt(2) + 8;
         int z = chunkMinZ + random.nextInt(2) + 8;
         double density = ItemBedrockOreBase.averageOreLevel(x, z);
@@ -60,9 +62,11 @@ public final class BedrockOreFeature {
                         boreFluidForTier(tier), 0xD78A16, tier, ModOreBlocks.stone_depth.get()));
     }
 
-    /** Old Nether-only one-in-ten attempt, with the ore kind fixed deterministically per chunk. */
+    /**
+     * 1.7's Nether-only weighted deposit, the ore kind fixed deterministically per chunk. The one-in-ten roll is the
+     * placed feature's {@code rarity_filter}.
+     */
     public static void generateNetherChunk(WorldGenLevel level, RandomSource random, int chunkMinX, int chunkMinZ) {
-        if (random.nextInt(10) != 0) return;
         int x = chunkMinX + random.nextInt(2) + 8;
         int z = chunkMinZ + random.nextInt(2) + 8;
         Deposit deposit = weightedNetherDeposit(level.getSeed(), chunkMinX >> 4, chunkMinZ >> 4);

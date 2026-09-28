@@ -145,9 +145,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
         }
 
         @Override public ItemStack getDebrisRareDrop() { return ItemStack.EMPTY; } // 1.7: null rare drop
-        // The 1.7 test missile item is not among this port's missile items (see ROADMAP: carrier/endo/exo/n2
-        // stand in for test/custom/soyuz), so the pad shows nothing for it until that item lands.
-        @Override public ItemStack getMissileItemForInfo() { return ItemStack.EMPTY; }
+        @Override public ItemStack getMissileItemForInfo() { return new ItemStack(com.hbm.items.ModMissileItems.missile_test.get()); }
     }
 
     /** 1.7 EntityMissileSchrabidium: an anti-schrabidium fleija blast of {@code BombConfig.aSchrabRadius}. */

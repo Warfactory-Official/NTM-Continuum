@@ -21,19 +21,25 @@ public class SatelliteSavedData extends CompatSavedData<SatelliteSavedData> {
 
     /**
      * 1.7 {@code SatelliteBase.writeToNBT} rides on the entry: the target and the reply register belong to
-     * every satellite, so they are stated once here rather than in each type's own codec.
+     * every satellite, so they are stated once here rather than in each type's own codec. A class whose 1.7
+     * {@code writeToNBT} skipped super ({@link Satellite#savesBaseData()}) writes none of the three.
      */
     private static final Codec<Entry> ENTRY_CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.fieldOf("freq").forGetter(Entry::freq),
             SatelliteType.DISPATCH_CODEC.fieldOf("sat").forGetter(Entry::sat),
-            Codec.INT.optionalFieldOf("targetX", 0).forGetter(e -> e.sat().targetX),
-            Codec.INT.optionalFieldOf("targetZ", 0).forGetter(e -> e.sat().targetZ),
-            Codec.STRING.optionalFieldOf("tx", "").forGetter(e -> e.sat().tx)
+            Codec.INT.optionalFieldOf("targetX").forGetter(e -> base(e, e.sat().targetX)),
+            Codec.INT.optionalFieldOf("targetZ").forGetter(e -> base(e, e.sat().targetZ)),
+            Codec.STRING.optionalFieldOf("tx").forGetter(e -> base(e, e.sat().tx))
     ).apply(i, (freq, sat, targetX, targetZ, tx) -> {
-        sat.setTarget(targetX, targetZ);
-        sat.tx = tx;
+        sat.setTarget(targetX.orElse(0), targetZ.orElse(0));
+        sat.tx = tx.orElse("");
         return new Entry(freq, sat);
     }));
+
+    private static <T> java.util.Optional<T> base(Entry entry, T value) {
+        return entry.sat().savesBaseData() ? java.util.Optional.of(value) : java.util.Optional.empty();
+    }
+
     public static final Codec<SatelliteSavedData> CODEC = RecordCodecBuilder.create(i -> i.group(
             ENTRY_CODEC.listOf().optionalFieldOf("sats", List.of()).forGetter(SatelliteSavedData::toEntries)
     ).apply(i, SatelliteSavedData::fromEntries));

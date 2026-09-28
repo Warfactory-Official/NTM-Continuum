@@ -65,6 +65,7 @@ public class ContainerAnvil extends AbstractContainerMenu {
                     }
                 }
                 ContainerAnvil.this.updateSmithing();
+                com.hbm.util.AchievementHandler.fire(player, stack); // 1.7 SlotCraftingOutput
                 super.onTake(player, stack);
             }
         });

@@ -51,7 +51,7 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
         this.addSlot(validated(3, 152, 126));   // upgrade
 
         for (int i = 0; i < 3; i++) this.addSlot(validated(4 + i, 8 + i * 18, 99));   // item input
-        for (int i = 0; i < 3; i++) this.addSlot(takeOnly(7 + i, 80 + i * 18, 99));   // item output
+        for (int i = 0; i < 3; i++) this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 7 + i, 80 + i * 18, 99)); // item output, 1.7 addOutputSlots
         for (int i = 0; i < 3; i++) this.addSlot(validated(10 + i, 8 + i * 18, 54));  // fluid-in load
         for (int i = 0; i < 3; i++) this.addSlot(takeOnly(13 + i, 8 + i * 18, 72));   // emptied bucket out
         for (int i = 0; i < 3; i++) this.addSlot(validated(16 + i, 80 + i * 18, 54)); // fluid-out load
@@ -109,6 +109,7 @@ public class ContainerMachineChemicalPlant extends AbstractContainerMenu {
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();
+            slot.onTake(player, result); // 1.7 transferStackInSlot: slot.onPickupFromSlot (SlotCraftingOutput)
         }
         return result;
     }

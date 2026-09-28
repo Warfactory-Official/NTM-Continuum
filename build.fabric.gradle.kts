@@ -213,6 +213,11 @@ dependencies {
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.
     propOrNull("deps.sodium_fabric")?.let { devRuntime("maven.modrinth:sodium:$it") }
+    // 1.20.1: Sodium 0.5 skips FabricBakedModel.emitBlockQuads (connected textures) unless Indium is loaded.
+    propOrNull("deps.indium")?.let { devRuntime("maven.modrinth:indium:$it") }
+    // Team Reborn Energy is an optional peer of Core's energy facades; the dev game loads it so the RF
+    // converters' Fabric exposure can be exercised (HBM never compiles against it).
+    propOrNull("deps.tr_energy")?.let { devRuntime("teamreborn:energy:$it") }
 }
 
 loom {

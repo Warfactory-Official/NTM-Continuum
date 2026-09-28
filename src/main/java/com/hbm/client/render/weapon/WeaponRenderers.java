@@ -34,6 +34,20 @@ public final class WeaponRenderers {
     }
 
     public static float viewFov(ItemStack stack, float fov, float partialTick) {
+        WeaponRenderer renderer = byItem().get(stack.getItem());
+        return renderer == null ? fov : renderer.viewFov(stack, fov, partialTick);
+    }
+
+    /**
+     * Whether the stack is drawn by a weapon renderer - 1.7's {@code ItemRenderWeaponBase}, an
+     * {@code IItemRenderer} - rather than by a sprite or block model. A caller that reproduces 1.7's
+     * {@code EntityItem} route needs to know, because Forge sent such an item down its own arm.
+     */
+    public static boolean handles(ItemStack stack) {
+        return !stack.isEmpty() && byItem().containsKey(stack.getItem());
+    }
+
+    private static Map<Item, WeaponRenderer> byItem() {
         if (byItem == null) {
             Map<Item, WeaponRenderer> resolved = new HashMap<>();
             DECLARED_BY_ITEM.forEach((item, renderer) -> {
@@ -42,8 +56,7 @@ public final class WeaponRenderers {
             });
             byItem = resolved;
         }
-        WeaponRenderer renderer = byItem.get(stack.getItem());
-        return renderer == null ? fov : renderer.viewFov(stack, fov, partialTick);
+        return byItem;
     }
 
     /**

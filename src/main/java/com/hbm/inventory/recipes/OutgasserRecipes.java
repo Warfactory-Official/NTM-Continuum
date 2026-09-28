@@ -52,6 +52,10 @@ public final class OutgasserRecipes extends GenericRecipes {
         register(new OutgasserRecipe("outgasser.thorium_fuel_billet").inputItems(MAT_THORIUM.billet())
                 .outputItems(new ItemStack(ModItems.billet_thorium_fuel.get())).setup(DURATION, 0));
 
+        // 1.7 OutgasserRecipes:53, mushroom stew to glowing mushroom stew.
+        register(new OutgasserRecipe("outgasser.glowing_stew").inputItems(
+                        new com.hbm.inventory.RecipesCommon.ComparableStack(net.minecraft.world.item.Items.MUSHROOM_STEW))
+                .outputItems(new ItemStack(com.hbm.items.ModFinalConsumableItems.glowing_stew.get())).setup(DURATION, 0));
         // Coal to coal tar plus syngas.
         register(new OutgasserRecipe("outgasser.coal_gem").inputItems(MAT_COAL.gem())
                 .outputItems(ModOilItems.tar(EnumTarType.COAL, 1))

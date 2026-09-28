@@ -73,7 +73,9 @@ public final class BedrockOreGameTests {
     public static final GameTests.Function RECIPES =
             TESTS.function("bedrock_ore_feasible_recipes", 40, () -> BedrockOreGameTests::recipePresence);
 
-    public static void init() {}
+    public static void init() {
+        EnergyBedrockGameTests.init(); // grade chain + converter rates, on this suite
+    }
 
     public static void placementAndDensity(GameTestHelper helper) {
         BlockPos relative = new BlockPos(4, 2, 4);

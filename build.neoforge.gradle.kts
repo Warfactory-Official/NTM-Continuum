@@ -59,6 +59,8 @@ neoForge {
         register("gameTestServer") {
             type = "gameTestServer"
             gameDirectory = file("runs/gametest")
+            // -Pgametest.filter=<regex> runs only the matching test ids (see Golem's GameTests.selected).
+            systemProperty("golem.gametest.filter", providers.gradleProperty("gametest.filter").orElse("").get())
         }
         // Rewrites src/generated/java from the live registry, then halts before any test runs. Borrows
         // the gameTestServer type because it is the headless server that needs no EULA, and the tag

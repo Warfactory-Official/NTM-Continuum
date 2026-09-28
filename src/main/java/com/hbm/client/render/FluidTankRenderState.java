@@ -7,4 +7,6 @@ import net.minecraft.resources.Identifier;
 public class FluidTankRenderState extends CompatRenderState {
     public float yaw;
     public Identifier bodyTexture;
+    /** 1.7 {@code hasExploded}: draw {@code fluidtank_exploded.obj} instead. */
+    public boolean exploded;
 }

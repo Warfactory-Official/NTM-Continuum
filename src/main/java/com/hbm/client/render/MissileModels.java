@@ -61,6 +61,7 @@ public final class MissileModels {
         put(ModMissileItems.missile_bhole.get(), "missile_micro.obj", "missile_micro_bhole.png", 1.0F);
         put(ModMissileItems.missile_schrabidium.get(), "missile_micro.obj", "missile_micro_schrab.png", 1.0F);
         put(ModMissileItems.missile_emp.get(), "missile_micro.obj", "missile_micro_emp.png", 1.0F);
+        put(ModMissileItems.missile_test.get(), "missile_micro.obj", "missile_test.png", 1.0F);
 
         // Tier 1 — the V2 body.
         put(ModMissileItems.missile_generic.get(), "missile_v2.obj", "missile_v2.png", 1.0F);

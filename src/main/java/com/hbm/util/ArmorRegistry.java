@@ -15,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * Maps armor items to the {@link HazardClass}es they protect against, ported from 1.12.2's
  * {@code ArmorRegistry}. Direct armor registrations and installed {@code IGasMask} filters contribute
- * protection. Armor-mod recursion remains deferred.
+ * protection, recursing into installed armor modules as 1.7 did.
  */
 public class ArmorRegistry {
 
@@ -60,7 +60,12 @@ public class ArmorRegistry {
             }
         }
 
-        // TODO(armor-mods): ArmorModHandler recursion
+        // 1.7 ran the same procedure on every installed module, so a gas-mask attachment protects.
+        if (com.hbm.handler.ArmorModHandler.hasMods(stack)) {
+            for (ItemStack mod : com.hbm.handler.ArmorModHandler.pryMods(stack)) {
+                if (!mod.isEmpty()) prot.addAll(getProtectionFromItem(mod));
+            }
+        }
 
         return prot;
     }

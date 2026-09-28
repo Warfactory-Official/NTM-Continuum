@@ -33,7 +33,11 @@ public class BlockSulfuricAcid extends BlockStaticFluid {
             if (entity.tickCount % 20 == 0 && !level.isClientSide()) {
                 entity.hurt(ModDamageSources.source(level, ModDamageSources.ACID), DAMAGE * 0.1F);
                 if (entity.isRemoved() && item.getItem().is(Items.SLIME_BALL)) {
-                    // 1.7: MainRegistry.achSulfuric for every player within 10 blocks — no achievements here.
+                    // 1.7 achSulfuric: every player in the dissolved item's box grown by 10
+                    if (level instanceof net.minecraft.server.level.ServerLevel server) {
+                        com.hbm.advancement.AwardRegions.nearby(server, entity.getBoundingBox().inflate(10D),
+                                player -> com.hbm.advancement.HbmCriteria.DISSOLVED.fire(player, item.getItem()));
+                    }
                 }
             }
             if (entity.tickCount % 5 == 0) {

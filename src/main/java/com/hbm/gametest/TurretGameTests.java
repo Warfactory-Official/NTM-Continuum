@@ -598,8 +598,11 @@ public final class TurretGameTests {
         helper.assertTrue(maxwell.target != null, "The MASER never acquired a target");
         helper.assertTrue(zombie.getHealth() < before,
                 "The MASER takes no ammunition, so power alone must be enough to hurt a target");
-        helper.assertTrue(maxwell.getAmmoTypesForDisplay().size() == 15,
-                "The MASER's slot panel lists the five upgrade chains it reacts to, three tiers each");
+        // As in 1.7: the five upgrade chains it reacts to, three tiers each, then the 5G and screm
+        // upgrades (both ported in the final-content wave).
+        helper.assertTrue(maxwell.getAmmoTypesForDisplay().size() == 17,
+                "The MASER's slot panel lists the five upgrade chains (three tiers each) plus 5G and screm, got "
+                        + maxwell.getAmmoTypesForDisplay().size());
         helper.succeed();
     }
 

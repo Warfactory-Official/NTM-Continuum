@@ -39,8 +39,8 @@ import com.hbm.tileentity.machine.TileEntityPWRController;
  *
  * <p>The scan is a six-way flood fill from the cell behind the controller, verbatim from 1.7: casing blocks
  * (vessel, reflector, port) bound the fill, core blocks (fuel, control, channel, heat exchanger, heatsink,
- * neutron source) continue it, anything else is an error. 1.7 reported errors as in-world marker particles;
- * that effect is not ported, so the same messages go to chat with the offending position.
+ * neutron source) continue it, anything else is an error, reported as a red labelled in-world marker
+ * ({@code RenderOverhead}) as in 1.7.
  */
 public class MachinePWRController extends CompatBlock implements TickingBlock {
 
@@ -199,9 +199,9 @@ public class MachinePWRController extends CompatBlock implements TickingBlock {
 
     /** 1.7 sent a red, labelled marker particle; the label goes to chat here with the position. */
     public static void sendError(BlockPos pos, String message, @Nullable Player player) {
+        // 1.7: a red RenderOverhead marker on the offending block, labelled, for five seconds within 128 blocks (G-C)
         if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.sendSystemMessage(Component.literal(message + " @ " + pos.getX() + ", " + pos.getY() + ", "
-                    + pos.getZ()).withStyle(ChatFormatting.RED));
+            com.hbm.util.OverheadMarkers.send(serverPlayer, pos, 0xff0000, message, 5_000, 128D);
         }
     }
 

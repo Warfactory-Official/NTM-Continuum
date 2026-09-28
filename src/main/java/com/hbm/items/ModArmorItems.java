@@ -390,6 +390,7 @@ public final class ModArmorItems {
         rpa_plate.get().cloneStats(rpa);
         rpa_legs.get().cloneStats(rpa);
         rpa_boots.get().cloneStats(rpa);
+        for (var piece : java.util.List.of(rpa_helmet, rpa_plate, rpa_legs, rpa_boots)) piece.get().setArmorModel("rpa"); // G-C: worn ModelArmorRPA
 
         ArmorFSBPowered ncrpa = ncrpa_helmet.get();
         ncrpa.addEffect(Effects.instance(Effects.strength(), 20, 2)).enableVATS(true)
@@ -398,6 +399,7 @@ public final class ModArmorItems {
                 .setJump(ModSounds.STEP_POWERED)
                 .setFall(ModSounds.STEP_POWERED);
         ncrpa_plate.get().cloneStats(ncrpa);
+        for (var piece : java.util.List.of(ncrpa_helmet, ncrpa_plate, ncrpa_legs, ncrpa_boots)) piece.get().setArmorModel("ncrpa"); // G-C: worn ModelArmorNCRPA
         ncrpa_legs.get().cloneStats(ncrpa);
         ncrpa_boots.get().cloneStats(ncrpa);
         ArmorPAWeapons.registerMelee(rpa_plate.get(), new com.hbm.items.armor.ArmorRPAMelee());

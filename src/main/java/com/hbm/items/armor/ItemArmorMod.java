@@ -64,8 +64,36 @@ public class ItemArmorMod extends ItemCustomLore {
 
     public void modUpdate(LivingEntity entity, ItemStack armor) {}
 
+    /**
+     * Old {@code getModifiers}: the attribute modifiers this module grants while installed in {@code armor}
+     * worn in {@code slot}. Applied and removed by {@code ArmorModEvents} as the worn stack changes.
+     */
+    public void collectModifiers(ItemStack armor, dev.golem.core.world.ArmorSlot slot, List<Modifier> modifiers) {}
+
+    /** One attribute modifier, named by attribute so the handler can resolve it on every version. */
+    public record Modifier(String attribute, double amount, dev.golem.core.world.Attributes.Op op) {
+        public static final String MAX_HEALTH = "max_health";
+        public static final String KNOCKBACK_RESISTANCE = "knockback_resistance";
+        public static final String ATTACK_DAMAGE = "attack_damage";
+        public static final String MOVEMENT_SPEED = "movement_speed";
+        public static final String[] ALL = {MAX_HEALTH, KNOCKBACK_RESISTANCE, ATTACK_DAMAGE, MOVEMENT_SPEED};
+    }
+
     /** Old {@code addDesc}: one installed-module line in an armor piece's shift tooltip. */
     public void addArmorModDescription(List<Component> tooltip, ItemStack stack, ItemStack armor) {
         tooltip.add(stack.getHoverName());
+    }
+
+    /**
+     * The usual shape of an old {@code addDesc} line: {@code COLOR + "  " + name + suffix}. The colour is
+     * applied to the whole component so the appended name inherits it, as the section code did.
+     */
+    protected static Component modLine(ChatFormatting color, ItemStack stack, String suffix) {
+        return Component.literal("  ").append(stack.getHoverName()).append(suffix).withStyle(color);
+    }
+
+    /** A plain coloured tooltip line. */
+    protected static net.minecraft.network.chat.MutableComponent coloured(ChatFormatting color, String text) {
+        return Component.literal(text).withStyle(color);
     }
 }

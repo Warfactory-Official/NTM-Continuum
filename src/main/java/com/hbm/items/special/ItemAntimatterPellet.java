@@ -1,7 +1,6 @@
 package com.hbm.items.special;
 
 import com.hbm.config.WeaponConfig;
-import com.hbm.explosion.ExplosionLarge;
 import com.hbm.items.ModSingularityItems;
 import dev.golem.core.world.Compat;
 import dev.golem.core.world.CompatItem;
@@ -25,13 +24,19 @@ public final class ItemAntimatterPellet extends CompatItem {
         return Compat.craftingRemainder(properties, ModSingularityItems.cell.get());
     }
 
+    /**
+     * 1.7 {@code ItemDrop.onEntityItemUpdate} for {@code pellet_antimatter}: on the ground (not while burning in the
+     * air) {@code new ExplosionVNT(..., 20F).makeAmat().explode()} when {@code dropCell} is on; the entity is removed
+     * either way, as 1.7's {@code setDead} sat outside the config check.
+     */
     public static void tickDropped(ItemEntity entity) {
-        if (!(entity.getItem().getItem() instanceof ItemAntimatterPellet)
-                || (!entity.onGround() && !entity.isOnFire()) || entity.level().isClientSide()
-                || !WeaponConfig.dropCell || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        if (!(entity.getItem().getItem() instanceof ItemAntimatterPellet) || !entity.onGround()
+                || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        if (WeaponConfig.dropCell) {
+            new com.hbm.explosion.vanillant.ExplosionVNT(level, entity.getX(), entity.getY(), entity.getZ(), 20F)
+                    .makeAmat().explode();
+        }
         entity.discard();
-        ExplosionLarge.explodeFire(level, entity, entity.getX(), entity.getY(), entity.getZ(),
-                100F, true, true, true);
     }
 
     @Override

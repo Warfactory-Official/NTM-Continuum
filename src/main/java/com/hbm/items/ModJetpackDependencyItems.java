@@ -3,10 +3,8 @@ package com.hbm.items;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.items.special.ItemHot;
 import com.hbm.items.special.ItemSteelDusted;
-import com.hbm.items.weapon.ItemMissilePart;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
@@ -26,17 +24,11 @@ public final class ModJetpackDependencyItems {
     public static final RegistryObject<ItemHot> ingot_chainsteel = ITEMS.registerItem(
             "ingot_chainsteel", p -> new ItemHot(p, 200));
 
-    /** Old ItemMissile.makeThruster(XENON, 1F, 1.5F, SIZE_10).setHealth(5F). */
-    public static final RegistryObject<ItemMissilePart> mp_thruster_10_xenon = ITEMS.registerItem(
-            "mp_thruster_10_xenon",
-            p -> new ItemMissilePart(p, Fluids.XENON, 1F, 1.5F,
-                    ItemMissilePart.PartSize.SIZE_10, 5F),
-            p -> p.stacksTo(1));
+    // mp_thruster_10_xenon moved to ModCustomMissileItems with the rest of the custom missile parts.
 
     static {
         ModTabs.addTo(HbmTab.MATERIALS, ingot_steel_dusted);
         ModTabs.addTo(HbmTab.MATERIALS, ingot_chainsteel);
-        ModTabs.addTo(HbmTab.MISSILES, mp_thruster_10_xenon);
     }
 
     public static void init() {}

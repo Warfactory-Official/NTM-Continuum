@@ -129,6 +129,7 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
         @Override public void onMissileImpact(HitResult hit) { detonateNuclear(BombConfig.missileRadius * 2, 100, true); }
         @Override public @Nullable List<ItemStack> getDebris() { return null; }
         @Override public @Nullable ItemStack getDebrisRareDrop() { return null; }
+        @Override public String getRadarName() { return "radar.target.doomsday"; }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(ModMissileItems.missile_doomsday.get()); }
     }
 

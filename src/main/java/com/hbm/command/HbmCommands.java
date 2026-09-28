@@ -18,8 +18,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.AABB;
 
 /**
- * Debug/testing commands (op-only). Registered per loader (NeoForge {@code RegisterCommandsEvent} /
- * Fabric {@code CommandRegistrationCallback}). Currently exposes the chunk radiation engine so it can be
+ * Debug/testing commands (op-only), registered with the 1.7 ntm* commands through
+ * {@link com.hbm.commands.HbmServerCommands} (Golem Core's command facade). Currently exposes the chunk radiation engine so it can be
  * exercised without a placed radioactive source:
  *
  * <ul>

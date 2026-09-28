@@ -71,7 +71,9 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
                     new ItemStack(ModUpgradeItems.upgrade_afterburn_3.get()),
                     new ItemStack(ModUpgradeItems.upgrade_overdrive_1.get()),
                     new ItemStack(ModUpgradeItems.upgrade_overdrive_2.get()),
-                    new ItemStack(ModUpgradeItems.upgrade_overdrive_3.get()));
+                    new ItemStack(ModUpgradeItems.upgrade_overdrive_3.get()),
+                    new ItemStack(com.hbm.items.ModFinalConsumableItems.upgrade_5g.get()),
+                    new ItemStack(ModUpgradeItems.upgrade_screm.get()));
         }
         return upgradeDisplay;
     }
@@ -146,9 +148,25 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
         return 2D;
     }
 
+    /** 1.7 flags recounted every 20 ticks: the 5G emitter and the screaming-scientist kill sound. */
+    private boolean fiveG;
+    private boolean screm;
+    private int checkDelay;
+
     @Override
     protected void tickServer() {
         upgradeManager.checkSlots(inventory, SLOT_AMMO_FIRST, SLOT_AMMO_LAST);
+        if (checkDelay <= 0) {
+            checkDelay = 20;
+            fiveG = false;
+            screm = false;
+            for (int i = SLOT_AMMO_FIRST; i <= SLOT_AMMO_LAST; i++) {
+                ItemStack stack = inventory.getStackInSlot(i);
+                if (stack.is(com.hbm.items.ModFinalConsumableItems.upgrade_5g.get())) fiveG = true;
+                if (stack.is(ModUpgradeItems.upgrade_screm.get())) screm = true;
+            }
+        }
+        checkDelay--;
         super.tickServer();
     }
 
@@ -169,15 +187,26 @@ public class TileEntityTurretMaxwell extends TileEntityTurretBaseNT implements I
         int speed = upgradeManager.getLevel(UpgradeType.SPEED);
         int afterburn = upgradeManager.getLevel(UpgradeType.AFTERBURN);
 
-        EntityDamageUtil.attackEntityFromIgnoreIFrame(target, ModDamageSources.microwave(level),
-                (overdrive * 10 + speed + 1F) * 0.25F);
+        if (fiveG && target instanceof net.minecraft.world.entity.player.Player player) {
+            // 1.7: a player in the beam of a 5G-equipped MASER gets thirty minutes of Death instead of damage
+            player.addEffect(dev.golem.core.world.Effects.instanceRegistered(
+                    com.hbm.potion.ModEffects.DEATH.get(), 30 * 60 * 20, 0, true, true));
+        } else {
+            EntityDamageUtil.attackEntityFromIgnoreIFrame(target, ModDamageSources.microwave(level),
+                    (overdrive * 10 + speed + 1F) * 0.25F);
+        }
 
         if (afterburn > 0) dev.golem.core.world.Effects.ignite(target, afterburn * 3);
 
         if (!target.isAlive() && target instanceof LivingEntity living) {
-            server.playSound(null, living.getX(), living.getY(), living.getZ(),
-                    SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.HOSTILE, 2.0F,
-                    0.95F + level.getRandom().nextFloat() * 0.2F);
+            if (screm) {
+                server.playSound(null, living.getX(), living.getY(), living.getZ(),
+                        com.hbm.sound.ModSounds.SCREM.get(), SoundSource.HOSTILE, 20.0F, 1.0F);
+            } else {
+                server.playSound(null, living.getX(), living.getY(), living.getZ(),
+                        SoundEvents.ZOMBIE_BREAK_WOODEN_DOOR, SoundSource.HOSTILE, 2.0F,
+                        0.95F + level.getRandom().nextFloat() * 0.2F);
+            }
         }
 
         setPower(getPower() - demand);

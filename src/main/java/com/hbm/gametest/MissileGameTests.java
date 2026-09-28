@@ -795,6 +795,7 @@ public final class MissileGameTests {
 
         java.util.List<net.minecraft.world.item.Item> launchable = java.util.List.of(
                 ModMissileItems.missile_micro.get(), ModMissileItems.missile_taint.get(),
+                ModMissileItems.missile_test.get(),
                 ModMissileItems.missile_generic.get(), ModMissileItems.missile_decoy.get(),
                 ModMissileItems.missile_incendiary.get(), ModMissileItems.missile_buster.get(),
                 ModMissileItems.missile_anti_ballistic.get(),

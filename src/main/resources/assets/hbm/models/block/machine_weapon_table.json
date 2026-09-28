@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/cube_bottom_top",
-  "textures": {
-    "bottom": "hbm:blocks/gun_table_bottom",
-    "side": "hbm:blocks/gun_table_side",
-    "top": "hbm:blocks/gun_table_top"
-  }
-}

@@ -127,6 +127,10 @@ public class TileEntityMachineAssemblyMachine extends TileEntityMachineBase impl
         ItemStack blueprint = te.inventory.getStackInSlot(1);
         te.assemblerModule.update(speed, pow, true, blueprint);
         te.didProcess = te.assemblerModule.didProcess;
+        // 1.7: every working tick turns an alloyed meteorite sword in the battery slot into the machined one
+        if (te.didProcess && te.inventory.getStackInSlot(0).is(com.hbm.items.ModAbilityToolItems.meteorite_sword_alloyed.get())) {
+            te.inventory.setStackInSlot(0, new ItemStack(com.hbm.items.ModAbilityToolItems.meteorite_sword_machined.get()));
+        }
 
         if (te.assemblerModule.markDirty) te.setChanged();
         te.networkPackNT();

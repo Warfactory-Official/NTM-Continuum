@@ -227,7 +227,8 @@ public class Landmine extends CompatBlock implements TickingBlock, IBomb, IToola
                 XFactoryCatapult.irradiate(level, x, y, z, 1.5F);
                 EntityEffects.muke(level, x + 0.5, y + 0.5, z + 0.5, false,
                         MainRegistry.polaroidID == 11 || level.getRandom().nextInt(100) == 0, 250);
-                // 1.7 also reports a LOW burst to SatelliteDetector (not ported).
+                com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(level, com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
+                        com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, x + 0.5, z + 0.5);
                 level.playSound(null, x + 0.5, y + 0.5, z + 0.5, ModSounds.MUKE_EXPLOSION.get(), SoundSource.BLOCKS,
                         25.0F, 0.9F); // upstream: "this has to be the single worst solution ever"
             }

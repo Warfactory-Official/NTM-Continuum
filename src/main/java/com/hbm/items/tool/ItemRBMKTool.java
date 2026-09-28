@@ -40,8 +40,20 @@ public class ItemRBMKTool extends Item {
                 BlockPos core = MultiblockSurface.coreOfAny(level, pos);
                 if (core != null) {
                     ModDataComponents.RBMK_TOOL_TARGET.set(stack, core.asLong());
-                    message(player, "item.hbm.rbmk_tool.linked");
+                    message(player, "item.rbmk_tool.linked");
                 }
+            }
+            return InteractionResult.SUCCESS;
+        }
+
+        // 1.7 ItemRBMKTool: the display panel takes the stored reactor position directly.
+        if (block instanceof com.hbm.blocks.machine.rbmk.RBMKDisplay) {
+            Long target = ModDataComponents.RBMK_TOOL_TARGET.get(stack).orElse(null);
+            if (target == null) return InteractionResult.TRY_WITH_EMPTY_HAND;
+            if (!level.isClientSide() && level.getBlockEntity(pos) instanceof com.hbm.tileentity.machine.rbmk.BlockEntityRBMKDisplay display) {
+                BlockPos targetPos = BlockPos.of(target);
+                display.setTarget(targetPos.getX(), targetPos.getY(), targetPos.getZ());
+                message(player, "item.rbmk_tool.set");
             }
             return InteractionResult.SUCCESS;
         }
@@ -60,10 +72,10 @@ public class ItemRBMKTool extends Item {
                 BlockPos targetPos = BlockPos.of(target);
                 if (blockEntity instanceof BlockEntityRBMKConsole console) {
                     console.setTarget(targetPos.getX(), targetPos.getY(), targetPos.getZ());
-                    message(player, "item.hbm.rbmk_tool.set");
+                    message(player, "item.rbmk_tool.set");
                 } else if (blockEntity instanceof BlockEntityCraneConsole crane) {
                     crane.setTarget(targetPos.getX(), targetPos.getY(), targetPos.getZ());
-                    message(player, "item.hbm.rbmk_tool.set");
+                    message(player, "item.rbmk_tool.set");
                 }
             }
         }

@@ -46,9 +46,9 @@ import static com.hbm.inventory.OreDictManager.*;
  *       existing, dust→gem (t3), the deco-block plating recipes (t1), coils/motors, the construction
  *       recipes for the <i>already-ported</i> machines (assembly machine, soldering station, t2), the
  *       armor-plate chain heads that exist ({@code plate_desh}/{@code plate_bismuth}), and the stamp
- *       conversions. <b>Deferred:</b> ammo/siren/recycling blocks, mold recipes, and all
- *       {@code enableLBSM}/{@code enable528}/{@code enableExpensiveMode} non-default alternates (per the
- *       recipe-porting filters).</li>
+ *       conversions. The assembly machine's {@code enableExpensiveMode} circuit alternate is kept as in 1.7.
+ *       The recycling block (with its {@code !enable528} RBMK/research-reactor dismantling) is
+ *       {@link AnvilRecyclingRecipes}. <b>Deferred:</b> the ammo block and the {@code enableLBSM} alternates.</li>
  * </ul>
  *
  * <p><b>Init is lazy</b> ({@link #register()} on first access): recipes build {@link ItemStack}s, which
@@ -82,7 +82,10 @@ public final class AnvilRecipes {
         initialized = true;
         registerSmithing();
         registerConstruction();
+        com.hbm.inventory.recipes.DecoCrateMachineRecipes.anvil(constructionRecipes); // FM radio, filing cabinet recycling
+        com.hbm.inventory.recipes.EnergyBedrockMachineRecipes.anvil(constructionRecipes); // red copper boxcable, 5 sizes
         registerConstructionSirens();
+        AnvilRecyclingRecipes.register(constructionRecipes); // 1.7 registerConstructionRecycling
     }
 
     private static void registerSmithing() {
@@ -113,6 +116,8 @@ public final class AnvilRecipes {
                 new ItemStack(ModJetpackDependencyItems.ingot_chainsteel.get()),
                 new ComparableStack(ItemSteelDusted.stack(9)),
                 new ComparableStack(ItemSteelDusted.stack(9))));
+        com.hbm.inventory.recipes.AbilityToolMachineRecipes.smithing(smithingRecipes); // meteorite + decorated cobalt
+        com.hbm.inventory.recipes.FinalConsumableMachineRecipes.smithing(smithingRecipes); // shield infusion flask
 
         smithingRecipes.add(new AnvilSmithingRecipe(1, new ItemStack(ModItems.ingot_gunmetal.get()), CU.ingot(), AL.ingot()));
 
@@ -234,7 +239,9 @@ public final class AnvilRecipes {
                         STEEL.ingot().count(8),
                         CU.plate().count(4),
                         new ComparableStack(ModItems.motor.get(), 2),
-                        cir(EnumCircuitType.VACUUM_TUBE, 4)
+                        // 1.7 `exp ? 2 analog circuits : 4 vacuum tubes` (GeneralConfig.enableExpensiveMode)
+                        com.hbm.config.GeneralConfig.enableExpensiveMode ? cir(EnumCircuitType.ANALOG, 2)
+                                : cir(EnumCircuitType.VACUUM_TUBE, 4)
                 }, new AnvilOutput(new ItemStack(com.hbm.blocks.machine.ModMachineBlocks.machine_assembly_machine.get()))).setTier(2));
 
         add(new AnvilConstructionRecipe(

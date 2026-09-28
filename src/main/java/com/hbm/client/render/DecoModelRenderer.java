@@ -103,7 +103,7 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
                         .rotateX((float) Math.toRadians(state.roll)));
         fixture.child(spotlightParts.get("CageLamp"), spotlights.get(ModDecoContent.spotlight_incandescent.get()).surface())
                 .mesh(state -> spotlightParts.getOrDefault(state.part, spotlightParts.get("CageLamp")))
-                .skin(state -> spotlights.get(state.block).surface());
+                .skin(state -> spotlights.getOrDefault(state.block, spotlights.get(ModDecoContent.spotlight_incandescent.get())).surface());
 
         // RenderTapeBlock: translate(x+0.5, y, z+0.5), rotateAroundY(meta rotation [- 90° for the pole]).
         Gem.Part<DecoModelRenderState> steelPole = declaration.joint()
@@ -138,7 +138,7 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
                 .translate(0.5F, 0F, 0.5F)
                 .angle(Gem.Axes.Y, state -> state.yaw)
                 .child(toaster, variants.get(ModDecoContent.deco_toaster_iron.get()).surface())
-                .skin(state -> variants.get(state.block).surface());
+                .skin(state -> variants.getOrDefault(state.block, variants.get(ModDecoContent.deco_toaster_iron.get())).surface());
 
         // RenderCRT: same pose; Monitor lit normally, Screen fullbright for the blinking/BSOD subtypes (old meta >= 8).
         Gem.Part<DecoModelRenderState> crt = declaration.joint()
@@ -146,9 +146,9 @@ public class DecoModelRenderer extends GemBER<TileEntityDecoModel, DecoModelRend
                 .translate(0.5F, 0F, 0.5F)
                 .angle(Gem.Axes.Y, state -> state.yaw);
         crt.child(crtMonitor, variants.get(ModDecoContent.deco_crt_clean.get()).surface())
-                .skin(state -> variants.get(state.block).surface());
+                .skin(state -> variants.getOrDefault(state.block, variants.get(ModDecoContent.deco_toaster_iron.get())).surface());
         crt.child(crtScreen, variants.get(ModDecoContent.deco_crt_clean.get()).surface())
-                .skin(state -> variants.get(state.block).surface())
+                .skin(state -> variants.getOrDefault(state.block, variants.get(ModDecoContent.deco_toaster_iron.get())).surface())
                 .light(state -> is(state, DecoModelBlock.Kind.CRT_BLINKING) || is(state, DecoModelBlock.Kind.CRT_BSOD)
                         ? 0xF000F0 : state.lightCoords);
 

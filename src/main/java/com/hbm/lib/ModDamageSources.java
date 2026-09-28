@@ -55,6 +55,8 @@ public final class ModDamageSources {
      */
     public static final ResourceKey<DamageType> HARD_LANDING = key("hard_landing");
     public static final ResourceKey<DamageType> TAINT = key("taint");
+    /** absolute + bypasses armor — 1.7 {@code ModDamageSource.mku}, the MKU contagion */
+    public static final ResourceKey<DamageType> MKU = key("mku");
     public static final ResourceKey<DamageType> BANG = key("bang");
     /** absolute + bypasses armor (old: {@code setDamageIsAbsolute().setDamageBypassesArmor()}) */
     public static final ResourceKey<DamageType> ELECTRICITY = key("electricity");
@@ -70,6 +72,10 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> ICE = key("ice");
     /** Eaten by a corrosive fluid. Absolute, and it damages the whole suit on the way through. */
     public static final ResourceKey<DamageType> ACID = key("acid");
+    /** The corrupted broadcaster (old {@code ModDamageSource.broadcast}): absolute + bypasses armor. */
+    public static final ResourceKey<DamageType> BROADCAST = key("broadcast");
+    /** The pest control box (old {@code ModDamageSource.enervation}): absolute + bypasses armor. */
+    public static final ResourceKey<DamageType> ENERVATION = key("enervation");
 
     // --- ntm-next entity port (gen_entity_damage_types.py) ---
     /** ntm-next cloud: bypasses_armor, bypasses_effects. */
@@ -139,6 +145,9 @@ public final class ModDamageSources {
      */
     public static final ResourceKey<DamageType> BULLET_PIERCING = key("bullet_piercing");
 
+    /** 1.7 {@code ItemBoltgun}'s armour-piercing player attack; the player is both direct and causing entity. */
+    public static final ResourceKey<DamageType> BOLTGUN = key("boltgun");
+
     /** A bullet hit: {@code direct} is the projectile, {@code attacker} whoever fired it (may be null). */
     public static DamageSource bullet(Level level, ResourceKey<DamageType> key,
             net.minecraft.world.entity.Entity direct, net.minecraft.world.entity.Entity attacker) {
@@ -180,6 +189,7 @@ public final class ModDamageSources {
     public static DamageSource rubble(Level level) { return source(level, RUBBLE); }
     public static DamageSource turbofan(Level level) { return source(level, TURBOFAN); }
     public static DamageSource taint(Level level) { return source(level, TAINT); }
+    public static DamageSource mku(Level level) { return source(level, MKU); }
     public static DamageSource bang(Level level) { return source(level, BANG); }
     public static DamageSource shrapnel(Level level) { return source(level, SHRAPNEL); }
     public static DamageSource electricity(Level level) { return source(level, ELECTRICITY); }

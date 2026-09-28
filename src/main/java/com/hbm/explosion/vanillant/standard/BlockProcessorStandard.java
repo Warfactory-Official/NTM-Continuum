@@ -6,9 +6,7 @@ import com.hbm.explosion.vanillant.interfaces.IBlockProcessor;
 import com.hbm.explosion.vanillant.interfaces.IDropChanceMutator;
 import com.hbm.explosion.vanillant.interfaces.IFortuneMutator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -55,18 +53,27 @@ public class BlockProcessorStandard implements IBlockProcessor {
     public void process(ExplosionVNT explosion, Level world, double x, double y, double z, ObjectOpenHashSet<BlockPos> affectedBlocks) {
 
         float baseDropChance = 1.0F / explosion.size;
-        List<BlockPos> blocksToRemove = new ArrayList<>();
 
         for (Iterator<BlockPos> iterator = affectedBlocks.iterator(); iterator.hasNext(); ) {
             BlockPos pos = iterator.next();
             BlockState state = world.getBlockState(pos);
 
             if (state.isAir()) {
-                blocksToRemove.add(pos);
+                // 1.7 iterator.remove(). Collecting these into a list for a later removeAll made the set test
+                // every member against the list, quadratic in the blast: a volcano core left erupting in the
+                // GameTest world pinned the server thread there for minutes.
+                iterator.remove();
                 continue;
             }
 
             Block block = state.getBlock();
+            // 1.7 onBlockExploded: a block that handles its own blast (the fluid tank, the refinery) keeps its cell
+            if (block instanceof com.hbm.explosion.vanillant.IBlockExplodedVNT hooked
+                    && world instanceof net.minecraft.server.level.ServerLevel server
+                    && hooked.onVNTExploded(server, pos, state, explosion)) {
+                iterator.remove();
+                continue;
+            }
             float dropChance = chance == null ? baseDropChance
                     : chance.mutateDropChance(explosion, block, pos.getX(), pos.getY(), pos.getZ(), baseDropChance);
 
@@ -80,8 +87,6 @@ public class BlockProcessorStandard implements IBlockProcessor {
 
             if (convert != null) convert.mutatePre(explosion, state, pos);
         }
-
-        affectedBlocks.removeAll(blocksToRemove);
 
         if (convert != null) {
             for (BlockPos pos : affectedBlocks) {

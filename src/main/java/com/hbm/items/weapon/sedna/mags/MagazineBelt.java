@@ -56,8 +56,9 @@ public class MagazineBelt implements IMagazine<BulletConfig> {
     }
 
     @Override public void useUpAmmo(ItemStack stack, Container inventory, int amount) {
+        if (inventory == null || !IMagazine.shouldUseUpTrenchie(inventory)) return;
         BulletConfig type = getFirstConfig(stack, inventory);
-        if (type == null || inventory == null) return;
+        if (type == null) return;
         for (int i = 0; i < inventory.getContainerSize() && amount > 0; i++) {
             ItemStack slot = inventory.getItem(i);
             if (type.matchesAmmo(slot)) {

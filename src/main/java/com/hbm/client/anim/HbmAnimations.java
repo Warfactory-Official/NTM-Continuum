@@ -59,11 +59,19 @@ public final class HbmAnimations {
     }
 
     public static void start(Item item, BusAnimation animation, InteractionHand hand, int rail) {
+        start(item, animation, hand, rail, false);
+    }
+
+    /**
+     * As {@link #start(Item, BusAnimation, InteractionHand, int)}; {@code holdLastFrame} keeps the finished animation
+     * applying (1.7: a sequential reload, which waits for its next cycle) instead of expiring it.
+     */
+    public static void start(Item item, BusAnimation animation, InteractionHand hand, int rail, boolean holdLastFrame) {
         Player player = Minecraft.getInstance().player;
         if (player == null || animation == null) return;
         int slot = slotOf(player);
         if (rail < 0 || rail >= HANDS[hand.ordinal()][slot].length) return;
-        HANDS[hand.ordinal()][slot][rail] = new Animation(item, GameTime.millis(), animation, false);
+        HANDS[hand.ordinal()][slot][rail] = new Animation(item, GameTime.millis(), animation, holdLastFrame);
     }
 
     /** The animation currently applying to the held item on {@code rail}, or null. */
@@ -84,6 +92,13 @@ public final class HbmAnimations {
 
         Animation animation = HANDS[hand.ordinal()][slot][rail];
         if (animation == null) return null;
+        // 1.7 ModEventHandlerClient cleared every finished animation each frame unless it held its last frame; a
+        // finished bus reads as identity again. The crucible depends on it: its deploy ends on GUARD_ROT z = 1,
+        // and its blade only shows once that bus is back at z = 0.
+        if (!animation.holdLastFrame && GameTime.now() - animation.startMillis > animation.animation.getDuration()) {
+            HANDS[hand.ordinal()][slot][rail] = null;
+            return null;
+        }
         // The slot's animation belongs to a different item — the player swapped. Do not replay it.
         return animation.key == stack.getItem() ? animation : null;
     }

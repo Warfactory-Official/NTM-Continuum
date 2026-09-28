@@ -68,4 +68,13 @@ public final class MachineRadiolysis extends BlockMultiblockMachine
             case DOWN -> MASK_DOWN;
         };
     }
+
+    /** 1.7 {@code onBlockActivated}: {@code BossSpawnHandler.markFBI} on every non-sneaking use. */
+    @Override
+    protected net.minecraft.world.InteractionResult useAtCore(net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.level.Level level, net.minecraft.core.BlockPos core, net.minecraft.world.entity.player.Player player,
+            net.minecraft.world.phys.BlockHitResult hit) {
+        if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
+        return super.useAtCore(state, level, core, player, hit);
+    }
 }

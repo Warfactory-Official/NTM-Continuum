@@ -77,6 +77,8 @@ public final class PressRecipes {
         initialized = true;
 
         // The eight feasible non-plate defaults from the 1.12.2 PressRecipes table.
+        AbilityToolMachineRecipes.press(); // reforged -> hardened meteorite sword (1.7 PressRecipes:67)
+        FinalConsumableMachineRecipes.press(); // briquettes + the eight printing-press pages (1.7 PressRecipes:70-72, 101-108)
         makeRecipe(StampType.FLAT, dustTag("quartz"), new ItemStack(Items.QUARTZ));
         makeRecipe(StampType.FLAT, dustTag("lapis"), new ItemStack(Items.LAPIS_LAZULI));
         makeRecipe(StampType.FLAT, DIAMOND.dust(), new ItemStack(Items.DIAMOND));

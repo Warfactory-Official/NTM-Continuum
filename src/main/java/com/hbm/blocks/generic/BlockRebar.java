@@ -1,0 +1,209 @@
+package com.hbm.blocks.generic;
+
+import com.hbm.api.fluidmk2.IFluidPipeMK2;
+import com.hbm.api.fluidmk2.IFluidReceiverMK2;
+import com.hbm.blocks.ModDecoContent;
+import com.hbm.blocks.material.BlockConcreteColored;
+import com.hbm.blocks.material.BlockConcreteColoredExt;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.items.tool.ItemRebarPlacer;
+import com.hbm.tileentity.ModDungeonBlockEntities;
+import com.hbm.tileentity.TileEntityLoadedBase;
+import com.hbm.uninos.networkproviders.RebarNetwork;
+import dev.golem.core.data.DataIn;
+import dev.golem.core.data.DataOut;
+import dev.golem.core.registry.TickingBlock;
+import dev.golem.core.world.CompatBlock;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 1.7 {@code BlockRebar}: a cage of twelve steel bars (the block model), placed in bulk by the rebar placer and
+ * filled with liquid concrete from the fluid network. 1.7's {@code concrete_liquid} fluid block was never
+ * registered; what actually runs is this: a rebar next to a duct carrying {@code CONCRETE} is a fluid receiver,
+ * and it hands every delivery to the lowest layer of the rebar cage it belongs to (all rebar connected face to face,
+ * 1.7's {@code RebarNetwork}). That layer fills evenly, at most 50 mB per rebar per delivery, and a rebar that
+ * reaches 1,000 mB sets into the concrete the placer was loaded with (or reinforced concrete if that is not a valid
+ * concrete). The rising concrete is drawn by {@code RenderRebarFill}.
+ */
+public class BlockRebar extends CompatBlock implements TickingBlock {
+
+    public BlockRebar(Properties properties) {
+        super(properties);
+    }
+
+    @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new TileEntityRebar(pos, state);
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Shapes.block();
+    }
+
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock, boolean movedByPiston) {
+        if (!(level.getBlockEntity(pos) instanceof TileEntityRebar rebar)) return;
+        rebar.hasConnection = false;
+        for (Direction dir : Direction.values()) {
+            if (level.getBlockEntity(pos.relative(dir)) instanceof IFluidPipeMK2) {
+                rebar.hasConnection = true;
+                return;
+            }
+        }
+    }
+
+    @Override
+    protected void onBlockRemoved(BlockState state, Level level, BlockPos pos, boolean movedByPiston) {
+        RebarNetwork.invalidate();
+    }
+
+    public static class TileEntityRebar extends TileEntityLoadedBase implements IFluidReceiverMK2 {
+
+        /** The concrete this rebar sets into: the placer's loaded stack (1.7 stored the block and its metadata). */
+        public ItemStack concrete = ItemStack.EMPTY;
+        public int progress;
+        public int prevProgress;
+        public boolean hasConnection = false;
+
+        public TileEntityRebar(BlockPos pos, BlockState state) {
+            super(ModDungeonBlockEntities.REBAR.get(), pos, state);
+        }
+
+        public TileEntityRebar setup(ItemStack concrete) {
+            this.concrete = concrete.copyWithCount(1);
+            setChanged();
+            return this;
+        }
+
+        @Override
+        public void clearRemoved() {
+            super.clearRemoved();
+            RebarNetwork.invalidate();
+        }
+
+        public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityRebar rebar) {
+            if (rebar.prevProgress != rebar.progress) {
+                rebar.setChanged();
+                rebar.prevProgress = rebar.progress;
+            }
+
+            if (rebar.progress >= 1_000) {
+                level.setBlock(pos, rebar.setState(), 3);
+                return;
+            }
+
+            rebar.networkPackNT();
+        }
+
+        /** What the rebar becomes once full: the loaded concrete if it is a valid one, else reinforced concrete. */
+        BlockState setState() {
+            if (!concrete.isEmpty() && ItemRebarPlacer.isValidConk(concrete) && concrete.getItem() instanceof BlockItem item) {
+                Block block = item.getBlock();
+                if (block instanceof BlockConcreteColored colored) return colored.stateForItem(concrete);
+                if (block instanceof BlockConcreteColoredExt ext) return ext.stateForItem(concrete);
+                return block.defaultBlockState();
+            }
+            return ModDecoContent.concrete_rebar.get().defaultBlockState();
+        }
+
+        @Override
+        public void serialize(RegistryFriendlyByteBuf buf) {
+            super.serialize(buf);
+            buf.writeInt(progress);
+        }
+
+        @Override
+        public void deserialize(RegistryFriendlyByteBuf buf) {
+            super.deserialize(buf);
+            this.progress = buf.readInt();
+        }
+
+        @Override
+        protected void loadData(DataIn nbt) {
+            super.loadData(nbt);
+            this.progress = nbt.getIntOr("progress", 0);
+            this.hasConnection = nbt.getBooleanOr("hasConnection", false);
+            this.concrete = nbt.read("concrete", ItemStack.CODEC).orElse(ItemStack.EMPTY);
+        }
+
+        @Override
+        protected void saveData(DataOut nbt) {
+            super.saveData(nbt);
+            nbt.putInt("progress", this.progress);
+            nbt.putBoolean("hasConnection", this.hasConnection);
+            if (!concrete.isEmpty()) nbt.store("concrete", ItemStack.CODEC, concrete);
+        }
+
+        @Override
+        public FluidTankNTM[] getAllTanks() {
+            FluidTankNTM tank = new FluidTankNTM(Fluids.CONCRETE, 1_000);
+            tank.setFill(progress);
+            return new FluidTankNTM[]{tank};
+        }
+
+        @Override
+        public long transferFluid(FluidType type, int pressure, long amount) {
+            if (type != Fluids.CONCRETE || level == null) return amount;
+
+            List<TileEntityRebar> lowestLinks = new ArrayList<>();
+            int lowestY = Integer.MAX_VALUE;
+            int progress = 0;
+            int capacity = 0;
+
+            for (BlockPos link : RebarNetwork.linksOf(level, worldPosition)) {
+                int y = link.getY();
+                if (y < lowestY) {
+                    lowestY = y;
+                    progress = 0;
+                    capacity = 0;
+                    lowestLinks.clear();
+                }
+                if (y == lowestY) {
+                    if (!(level.getBlockEntity(link) instanceof TileEntityRebar rebar)) continue;
+                    progress += rebar.progress;
+                    capacity += 1_000;
+                    lowestLinks.add(rebar);
+                }
+            }
+
+            if (capacity > 0 && !lowestLinks.isEmpty()) {
+                int maxSpeed = 50;
+                int maxAccept = (int) Math.min(Math.min(capacity - progress, amount), maxSpeed * lowestLinks.size());
+                int target = Math.min((progress + maxAccept) / lowestLinks.size(), 1_000);
+
+                for (TileEntityRebar rebar : lowestLinks) {
+                    if (rebar.progress >= target) continue;
+                    int delta = target - rebar.progress;
+                    if (delta > amount) continue;
+                    rebar.progress += delta;
+                    amount -= delta;
+                }
+            }
+            return amount;
+        }
+
+        @Override
+        public long getDemand(FluidType type, int pressure) {
+            return 10_000;
+        }
+    }
+}

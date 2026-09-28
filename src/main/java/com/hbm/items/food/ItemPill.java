@@ -30,7 +30,7 @@ public final class ItemPill extends CompatItem {
 
     @Override
     protected InteractionResult compatUse(Level level, Player player, InteractionHand hand) {
-        if (Effects.hasRegistered(player, ModEffects.POTION_SICKNESS.get())) {
+        if (com.hbm.config.VersatileConfig.hasPotionSickness(player)) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
         return compatVanillaUse(level, player, hand);
@@ -49,7 +49,8 @@ public final class ItemPill extends CompatItem {
     }
 
     private void apply(Player player, Level level) {
-        Effects.addRegistered(player, ModEffects.POTION_SICKNESS.get(), 5 * 20, 0);
+        // 1.7 VersatileConfig: off at the default PotionConfig.potionSickness
+        com.hbm.config.VersatileConfig.applyPotionSickness(player, 5);
 
         switch (id) {
             case "pill_iodine" -> {
@@ -75,7 +76,7 @@ public final class ItemPill extends CompatItem {
                 }
             }
             case "pill_red" -> Effects.addRegistered(player, ModEffects.DEATH.get(), 60 * 60 * 20, 0);
-            case "radx" -> Effects.addRegistered(player, ModEffects.RADX.get(), 3 * 60 * 20, 3);
+            case "radx" -> Effects.addRegistered(player, ModEffects.RADX.get(), 3 * 60 * 20, 0); // 1.7 ItemPill: amplifier 0
             case "siox" -> {
                 HbmLivingProps.setAsbestos(player, 0);
                 HbmLivingProps.setBlackLung(player,
@@ -122,7 +123,7 @@ public final class ItemPill extends CompatItem {
         switch (id) {
             case "pill_iodine" -> tooltip.add(Component.literal("Removes negative effects"));
             case "plan_c" -> tooltip.add(Component.literal("Deadly"));
-            case "radx" -> tooltip.add(Component.literal("Increases radiation resistance by 0.4 for 3 minutes"));
+            case "radx" -> tooltip.add(Component.literal("Increases radiation resistance by 0.2 (37%) for 3 minutes"));
             case "siox" -> tooltip.add(Component.literal("Reverses mesothelioma with the power of Asbestos!"));
             case "pill_herbal" -> {
                 tooltip.add(Component.literal("Effective treatment against lung disease and mild radiation poisoning"));

@@ -52,6 +52,9 @@ public final class XFactoryCatapult {
             vnt.setPlayerProcessor(new PlayerProcessorStandard());
             vnt.explode();
             irradiate(bullet.level(), pos.x, pos.y, pos.z, rad);
+            // 1.7: every mushroom-cloud lambda (standard, demo, high, balefire, tiny tot) reports a LOW burst
+            if (effect != null) com.hbm.saveddata.satellites.SatelliteDetector.reportEvent(bullet.level(), com.hbm.saveddata.satellites.SatelliteDetector.DURATION_LOW,
+                    com.hbm.saveddata.satellites.SatelliteDetector.BurstIntensity.LOW, bullet.getX(), bullet.getZ());
             if (effect != null) mushroom(bullet.level(), pos, effect,
                     balefireMode == 2 || (balefireMode == 1 && (MainRegistry.polaroidID == 11
                             || bullet.level().getRandom().nextInt(100) == 0)));

@@ -40,6 +40,11 @@ public class GenericRecipe {
     public String[] blueprintPools = null;
     /** Translation key wrapping the icon's name for display, e.g. {@code purex.recycle} = "Reprocessing of %s". */
     public String nameWrapper = null;
+    /**
+     * 1.7 {@code customLocalization}: the recipe is displayed under its own name, the translation of its
+     * internal name ({@code ass.nitra} = "Nitra to Ammunition"), instead of its icon's.
+     */
+    public boolean customLocalization = false;
     private ItemStack icon = ItemStack.EMPTY;
 
     public GenericRecipe(String name) {
@@ -49,6 +54,17 @@ public class GenericRecipe {
     public GenericRecipe setup(int duration, long power) {
         this.duration = duration;
         this.power = power;
+        return this;
+    }
+
+    /** 1.7 {@code setupNamed}: {@link #setup} plus {@link #setNamed}. */
+    public GenericRecipe setupNamed(int duration, long power) {
+        return setup(duration, power).setNamed();
+    }
+
+    /** 1.7 {@code setNamed}: display the translation of the internal name (lang {@code ass.*}, {@code chem.*}, ...). */
+    public GenericRecipe setNamed() {
+        this.customLocalization = true;
         return this;
     }
 
@@ -94,6 +110,24 @@ public class GenericRecipe {
         return this;
     }
 
+    /** 1.7 {@code inputItemsEx}: replaces the inputs only while {@code enableExpensiveMode} is on (off by default). */
+    public GenericRecipe inputItemsEx(AStack... input) {
+        if (!com.hbm.config.GeneralConfig.enableExpensiveMode) return this;
+        return inputItems(input);
+    }
+
+    /** 1.7 {@code inputFluidsEx}: the fluid counterpart of {@link #inputItemsEx}. */
+    public GenericRecipe inputFluidsEx(FluidStack... input) {
+        if (!com.hbm.config.GeneralConfig.enableExpensiveMode) return this;
+        return inputFluids(input);
+    }
+
+    /** 1.7 {@code setPools528}: blueprint pools that exist only while {@code enable528} is on (off by default). */
+    public GenericRecipe setPools528(String... pools) {
+        if (!com.hbm.config.GeneralConfig.enable528) return this;
+        return setPools(pools);
+    }
+
     public GenericRecipe setGroup(String autoSwitch, GenericRecipes set) {
         this.autoSwitchGroup = autoSwitch;
         set.addToGroup(autoSwitch, this);
@@ -136,12 +170,18 @@ public class GenericRecipe {
     }
 
     /**
-     * The recipe's display name: the icon's item name, wrapped by {@link #nameWrapper} when set (the
-     * original's {@code nameWrapper}, e.g. "Reprocessing of Spent MOX").
+     * The recipe's display name, as 1.7's {@code getLocalizedName}: the translation of the internal name for a
+     * named recipe ({@link #setNamed}), otherwise the icon's item name; wrapped by {@link #nameWrapper} when set
+     * (e.g. "Reprocessing of Spent MOX").
      */
     public String getLocalizedName() {
-        ItemStack icon = getIcon();
-        String base = icon.isEmpty() ? this.name : icon.getHoverName().getString();
+        String base;
+        if (customLocalization) {
+            base = Component.translatable(this.name).getString();
+        } else {
+            ItemStack icon = getIcon();
+            base = icon.isEmpty() ? this.name : icon.getHoverName().getString();
+        }
         return nameWrapper == null ? base : Component.translatable(nameWrapper, base).getString();
     }
 
@@ -152,6 +192,14 @@ public class GenericRecipe {
     public List<Component> print() {
         List<Component> list = new ArrayList<>();
         list.add(Component.literal(getLocalizedName()).withStyle(ChatFormatting.YELLOW));
+
+        // 1.7 autoSwitch(): the group's name and what joining it means, one line per '$' of the lang entry
+        if (autoSwitchGroup != null) {
+            String group = Component.translatable(autoSwitchGroup).getString();
+            for (String line : Component.translatable("autoswitch", group).getString().split("\\$")) {
+                list.add(Component.literal(line).withStyle(ChatFormatting.GOLD));
+            }
+        }
 
         if (duration > 0) {
             list.add(Component.translatable("gui.recipe.duration")

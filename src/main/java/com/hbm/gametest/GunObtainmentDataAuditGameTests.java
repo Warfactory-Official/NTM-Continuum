@@ -36,6 +36,13 @@ public final class GunObtainmentDataAuditGameTests {
             "gun_drill", "gun_pa_melee", "gun_pa_ranged", "gun_b92", "gun_b92_ammo", "gun_fireext");
 
     /**
+     * Original-hbm items whose registry name starts with {@code gun_} but which are not guns: the two
+     * weapon repair kits (1.7 {@code ModItems.gun_kit_1/2}, {@code ItemRepairKit}). Named explicitly so
+     * the gun check above stays strict for everything else.
+     */
+    private static final List<String> ORIGINAL_NON_GUN_ITEMS = List.of("gun_kit_1", "gun_kit_2");
+
+    /**
      * The guns original-hbm fires without a report of their own: the two flamethrowers and the
      * chemthrower run a looping client sound instead, the Tau charges, and the tools and the B92 have
      * no {@code .sound(...)} on any receiver upstream either.
@@ -99,6 +106,11 @@ public final class GunObtainmentDataAuditGameTests {
         for (Item item : BuiltInRegistries.ITEM) {
             var id = BuiltInRegistries.ITEM.getKey(item);
             if (!Constants.MOD_ID.equals(id.getNamespace()) || !id.getPath().startsWith("gun_")) continue;
+            if (ORIGINAL_NON_GUN_ITEMS.contains(id.getPath())) {
+                helper.assertTrue(!(item instanceof ItemGunBaseNT),
+                        "source non-gun item is registered as a gun: " + id);
+                continue;
+            }
             guns++;
             helper.assertTrue(item instanceof ItemGunBaseNT || ORIGINAL_WEAPON_GUN_OUTPUTS.contains(id.getPath()),
                     "gun-shaped registry entry has no Sedna/source identity: " + id);

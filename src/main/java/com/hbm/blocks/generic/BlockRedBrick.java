@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,19 +16,24 @@ import org.jetbrains.annotations.Nullable;
  * 1.7 {@code BlockRedBrick}, the Red Room brick: the "brick_red" face (or "brick_red_top" on up/down) is
  * drawn on the side the block was placed facing — {@code BlockPistonBase.determineOrientation}, i.e. the
  * piston rule: pointing back toward the placer. Drops nothing.
+ *
+ * <p>1.7's metadata 6 matched no side, so every face showed the plain {@code brick_base}; the Red Room and the
+ * black room behind {@code stone_keyhole_meta} build their shells from it. That is {@link #PLAIN} here, which
+ * placement never sets.
  */
 public class BlockRedBrick extends Block {
 
     public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
+    public static final BooleanProperty PLAIN = BooleanProperty.create("plain");
 
     public BlockRedBrick(Properties properties) {
         super(properties);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(PLAIN, false));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, PLAIN);
     }
 
     @Override

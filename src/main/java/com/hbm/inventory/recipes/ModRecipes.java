@@ -26,5 +26,12 @@ public final class ModRecipes {
     public static final RegistryObject<RecipeSerializer<dev.golem.core.world.ComponentSmeltingRecipe>> COMPONENT_SMELTING =
             SERIALIZERS.register("component_smelting", () -> dev.golem.core.world.ComponentSmeltingRecipe.SERIALIZER);
 
-    public static void init() {}
+    /** 1.7 ShapelessOreRecipe with metadata/NBT, tag and getDict fluid-container ingredients. */
+    public static final RegistryObject<RecipeSerializer<ComponentShapelessRecipe>> COMPONENT_SHAPELESS =
+            SERIALIZERS.register("component_shapeless", () -> ComponentShapelessRecipe.SERIALIZER);
+
+    public static void init() {
+        // the container<amount><fluid> dictionary behind every fluid ingredient
+        com.hbm.inventory.FluidContainerRegistry.register();
+    }
 }

@@ -2,7 +2,7 @@ package com.hbm.blocks;
 
 import dev.golem.core.dejson.Tags;
 
-/** Pickaxe membership preserved from the content generators; emitted only by Dejson.
+/** Pickaxe, axe, shovel, hoe, iron-tool and climbable membership preserved from the content generators; emitted only by Dejson.
  * Update membership with port-tools/mining_tags.py when a generator adds or retires blocks.
  */
 public final class ModMiningTags {
@@ -10,10 +10,58 @@ public final class ModMiningTags {
 
     public static void declare() {
         Tags.block("minecraft", "mineable/pickaxe", MEMBERS.strip().split("\\s+"));
+        Tags.block("minecraft", "mineable/axe", AXE_MEMBERS.strip().split("\\s+"));
+        Tags.block("minecraft", "climbable", CLIMBABLE_MEMBERS.strip().split("\\s+"));
+        Tags.block("minecraft", "mineable/shovel", SHOVEL_MEMBERS.strip().split("\\s+"));
+        Tags.block("minecraft", "mineable/hoe", HOE_MEMBERS.strip().split("\\s+"));
+        Tags.block("minecraft", "needs_iron_tool", NEEDS_IRON_TOOL_MEMBERS.strip().split("\\s+"));
     }
 
     private static final String MEMBERS = """
             hbm:ancient_scrap
+            hbm:brick_jungle_fragile
+            hbm:brick_jungle_lava
+            hbm:brick_jungle_ooze
+            hbm:brick_jungle_mystic
+            hbm:brick_jungle_circle
+            hbm:pedestal
+            hbm:skeleton_holder
+            hbm:lantern_behemoth
+            hbm:rebar
+            hbm:rail_narrow
+            hbm:rail_highspeed
+            hbm:rail_booster
+            hbm:brick_jungle_trap_falling_rocks
+            hbm:brick_jungle_trap_fire
+            hbm:brick_jungle_trap_arrow
+            hbm:brick_jungle_trap_spikes
+            hbm:brick_jungle_trap_mine
+            hbm:brick_jungle_trap_web
+            hbm:brick_jungle_trap_flaming_arrow
+            hbm:brick_jungle_trap_pillar
+            hbm:brick_jungle_trap_rad_conversion
+            hbm:brick_jungle_trap_magic_converstion
+            hbm:brick_jungle_trap_slowness
+            hbm:brick_jungle_trap_weakness
+            hbm:brick_jungle_trap_poison_dart
+            hbm:brick_jungle_trap_zombie
+            hbm:brick_jungle_trap_spiders
+            hbm:brick_jungle_glyph_0
+            hbm:brick_jungle_glyph_1
+            hbm:brick_jungle_glyph_2
+            hbm:brick_jungle_glyph_3
+            hbm:brick_jungle_glyph_4
+            hbm:brick_jungle_glyph_5
+            hbm:brick_jungle_glyph_6
+            hbm:brick_jungle_glyph_7
+            hbm:brick_jungle_glyph_8
+            hbm:brick_jungle_glyph_9
+            hbm:brick_jungle_glyph_10
+            hbm:brick_jungle_glyph_11
+            hbm:brick_jungle_glyph_12
+            hbm:brick_jungle_glyph_13
+            hbm:brick_jungle_glyph_14
+            hbm:brick_jungle_glyph_15
             hbm:anvil_arsenic_bronze
             hbm:anvil_bismuth_bronze
             hbm:anvil_desh
@@ -378,9 +426,73 @@ public final class ModMiningTags {
             hbm:heater_heatex
             hbm:heater_oilburner
             hbm:heater_oven
+            hbm:crate_tungsten
+            hbm:safe
+            hbm:filing_cabinet
+            hbm:vending_machine
+            hbm:broadcaster_pc
+            hbm:radiobox
+            hbm:radiorec
+            hbm:deco_emitter
+            hbm:part_emitter
+            hbm:field_disturber
+            hbm:rad_absorber
+            hbm:rad_absorber_red
+            hbm:rad_absorber_green
+            hbm:rad_absorber_pink
+            hbm:hadron_coil_alloy
+            hbm:hadron_coil_gold
+            hbm:hadron_coil_neodymium
+            hbm:hadron_coil_magtung
+            hbm:hadron_coil_schrabidium
+            hbm:hadron_coil_schrabidate
+            hbm:hadron_coil_starmetal
+            hbm:hadron_coil_chlorophyte
+            hbm:hadron_coil_mese
+            hbm:block_cap_nuka
+            hbm:block_cap_quantum
+            hbm:block_cap_sparkle
+            hbm:block_cap_rad
+            hbm:block_cap_korl
+            hbm:block_cap_fritz
+            hbm:icf
+            hbm:icf_block
+            hbm:icf_component
+            hbm:icf_component_structure
+            hbm:icf_component_structure_bolted
+            hbm:icf_component_vessel
+            hbm:icf_component_vessel_welded
+            hbm:icf_controller
+            hbm:red_wire_coated
+            hbm:red_cable_box_0
+            hbm:red_cable_box_1
+            hbm:red_cable_box_2
+            hbm:red_cable_box_3
+            hbm:red_cable_box_4
+            hbm:charger
+            hbm:machine_converter_he_rf
+            hbm:machine_converter_rf_he
+            hbm:icf_laser_component_capacitor
+            hbm:icf_laser_component_casing
+            hbm:icf_laser_component_cell
+            hbm:icf_laser_component_emitter
+            hbm:icf_laser_component_port
+            hbm:icf_laser_component_turbo
+            hbm:machine_icf_press
+            hbm:struct_icf_core
             hbm:lamp_demon
             hbm:large_vehicle_door
             hbm:launch_pad
+            hbm:launch_pad_large
+            hbm:launch_pad_rusted
+            hbm:machine_satlinker
+            hbm:sat_dock
+            hbm:machine_satlink
+            hbm:launch_table
+            hbm:compact_launcher
+            hbm:machine_missile_assembly
+            hbm:struct_launcher_core
+            hbm:struct_launcher_core_large
             hbm:lightstone
             hbm:lightstone_bricks_slab
             hbm:lightstone_bricks_stairs
@@ -477,6 +589,16 @@ public final class ModMiningTags {
             hbm:machine_shredder
             hbm:machine_silex
             hbm:machine_siren
+            hbm:machine_radar
+            hbm:machine_radar_large
+            hbm:radar_screen
+            hbm:machine_forcefield
+            hbm:machine_teleporter
+            hbm:teleanchor
+            hbm:machine_orbus
+            hbm:seal_controller
+            hbm:soyuz_capsule
+            hbm:book_guide_block
             hbm:machine_solar_boiler
             hbm:machine_soldering_station
             hbm:machine_solidifier
@@ -620,6 +742,7 @@ public final class ModMiningTags {
             hbm:qe_containment
             hbm:qe_sliding_door
             hbm:rbmk_absorber
+            hbm:rbmk_autoloader
             hbm:rbmk_blank
             hbm:rbmk_boiler
             hbm:rbmk_console
@@ -634,18 +757,27 @@ public final class ModMiningTags {
             hbm:rbmk_debris_burning
             hbm:rbmk_debris_digamma
             hbm:rbmk_debris_radiating
+            hbm:rbmk_display
+            hbm:rbmk_display_blank
             hbm:rbmk_fuel_rod
             hbm:rbmk_fuel_rod_moderated
             hbm:rbmk_fuel_rod_reasim
             hbm:rbmk_fuel_rod_reasim_moderated
             hbm:rbmk_gauge
+            hbm:rbmk_graph
             hbm:rbmk_heater
+            hbm:rbmk_indicator
+            hbm:rbmk_key_pad
+            hbm:rbmk_lever
+            hbm:rbmk_loader
             hbm:rbmk_moderator
+            hbm:rbmk_numitron
             hbm:rbmk_outgasser
             hbm:rbmk_reflector
             hbm:rbmk_steam_inlet
             hbm:rbmk_steam_outlet
             hbm:rbmk_storage
+            hbm:rbmk_terminal
             hbm:red_barrel
             hbm:red_cable
             hbm:red_cable_gauge
@@ -754,5 +886,156 @@ public final class ModMiningTags {
             hbm:zirnox_destroyed
             hbm:machine_tower_small
             hbm:machine_tower_large
+            hbm:custom_machine
+            hbm:cm_block_steel
+            hbm:cm_block_alloy
+            hbm:cm_block_desh
+            hbm:cm_block_tcalloy
+            hbm:cm_sheet_steel
+            hbm:cm_sheet_alloy
+            hbm:cm_sheet_desh
+            hbm:cm_sheet_tcalloy
+            hbm:cm_tank_steel
+            hbm:cm_tank_alloy
+            hbm:cm_tank_desh
+            hbm:cm_tank_tcalloy
+            hbm:cm_port_steel
+            hbm:cm_port_alloy
+            hbm:cm_port_desh
+            hbm:cm_port_tcalloy
+            hbm:cm_engine_standard
+            hbm:cm_engine_desh
+            hbm:cm_engine_bismuth
+            hbm:cm_circuit_aluminium
+            hbm:cm_circuit_copper
+            hbm:cm_circuit_red_copper
+            hbm:cm_circuit_gold
+            hbm:cm_circuit_schrabidium
+            hbm:cm_flux
+            hbm:cm_heat
+            hbm:custom_machine_anchor
+            """;
+
+    private static final String AXE_MEMBERS = """
+            hbm:waste_log
+            hbm:ladder_sturdy
+            hbm:ladder_iron
+            hbm:ladder_gold
+            hbm:ladder_aluminium
+            hbm:ladder_copper
+            hbm:ladder_titanium
+            hbm:ladder_lead
+            hbm:ladder_cobalt
+            hbm:ladder_steel
+            hbm:ladder_tungsten
+            hbm:ladder_red
+            hbm:ladder_red_top
+            hbm:pink_slab
+            hbm:pink_stairs
+            hbm:wood_barrier
+            hbm:crate
+            hbm:crate_can
+            hbm:pink_log
+            hbm:wood_structure_roof
+            hbm:wood_structure_scaffold
+            hbm:wood_structure_ceiling
+            hbm:rail_wood
+            """;
+
+    private static final String CLIMBABLE_MEMBERS = """
+            hbm:ladder_aluminium
+            hbm:ladder_cobalt
+            hbm:ladder_copper
+            hbm:ladder_gold
+            hbm:ladder_iron
+            hbm:ladder_lead
+            hbm:ladder_red
+            hbm:ladder_red_top
+            hbm:ladder_steel
+            hbm:ladder_sturdy
+            hbm:ladder_titanium
+            hbm:ladder_tungsten
+            hbm:dungeon_chain
+            hbm:wood_structure_scaffold
+            """;
+
+    private static final String SHOVEL_MEMBERS = """
+            hbm:fallout
+            hbm:waste_earth
+            hbm:waste_mycelium
+            hbm:waste_trinitite
+            hbm:waste_trinitite_red
+            hbm:gravel_obsidian
+            hbm:gravel_diamond
+            hbm:dirt_dead
+            hbm:dirt_oily
+            hbm:sand_dirty
+            hbm:sand_dirty_red
+            hbm:ore_oil_sand
+            hbm:ash_digamma
+            hbm:sand_lead
+            hbm:block_scrap
+            hbm:block_electrical_scrap
+            hbm:moon_turf
+            hbm:block_red_phosphorus
+            hbm:sand_boron
+            hbm:sand_gold
+            hbm:sand_quartz
+            hbm:barricade
+            hbm:burning_earth
+            hbm:block_fallout
+            hbm:block_yellowcake
+            hbm:sand_uranium
+            hbm:sand_polonium
+            hbm:ntm_dirt
+            hbm:impact_dirt
+            """;
+
+    private static final String HOE_MEMBERS = """
+            hbm:waste_leaves
+            """;
+
+    private static final String NEEDS_IRON_TOOL_MEMBERS = """
+            hbm:ore_uranium
+            hbm:ore_uranium_scorched
+            hbm:ore_gneiss_uranium
+            hbm:ore_gneiss_uranium_scorched
+            hbm:ore_nether_uranium
+            hbm:ore_nether_uranium_scorched
+            hbm:machine_turbine
+            hbm:machine_condenser
+            hbm:machine_zirnox
+            hbm:watz_casing
+            hbm:watz_casing_tooled
+            hbm:fusion_component
+            hbm:fusion_component_bscco_welded
+            hbm:fusion_component_blanket
+            hbm:fusion_component_motor
+            hbm:watz
+            hbm:watz_pump
+            hbm:struct_watz_core
+            hbm:fusion_torus
+            hbm:struct_torus_core
+            hbm:fusion_coupler
+            hbm:fusion_collector
+            hbm:fusion_klystron
+            hbm:fusion_klystron_creative
+            hbm:fusion_boiler
+            hbm:fusion_mhdt
+            hbm:turret_pad
+            hbm:turret_emplacement
+            hbm:turret_chekhov
+            hbm:turret_friendly
+            hbm:turret_sentry
+            hbm:turret_sentry_damaged
+            hbm:turret_howard
+            hbm:turret_howard_damaged
+            hbm:turret_tauon
+            hbm:turret_maxwell
+            hbm:turret_jeremy
+            hbm:turret_richard
+            hbm:turret_fritz
+            hbm:turret_himars
+            hbm:turret_arty
             """;
 }

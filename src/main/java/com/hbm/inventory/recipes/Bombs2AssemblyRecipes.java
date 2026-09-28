@@ -31,8 +31,8 @@ import com.hbm.blocks.ModBombs2Blocks;
 import com.hbm.items.ModBombs2Items;
 
 /**
- * 1.7 {@code AssemblyMachineRecipes} entries for the special bombs and their parts. The 528 pool
- * annotations are config-gated upstream and not carried. Euphemium has no material tag here, so its
+ * 1.7 {@code AssemblyMachineRecipes} entries for the special bombs and their parts. The 528 pools
+ * ({@code setPools528}) apply only in 528 mode, as upstream. Euphemium has no material tag here, so its
  * nugget/ingot is matched by item.
  */
 public final class Bombs2AssemblyRecipes {
@@ -48,28 +48,33 @@ public final class Bombs2AssemblyRecipes {
                 .inputItems(new ComparableStack(ModItems.dysfunctional_reactor.get()), STEEL.shell().count(2),
                         new ComparableStack(ModItems.ingot_euphemium.get(), 3),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 8))
-                .outputItems(new ItemStack(ModBombs2Blocks.nuke_prototype.get())));
+                .outputItems(new ItemStack(ModBombs2Blocks.nuke_prototype.get()))
+                .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.fleija").setup(300, 100)
                 .inputItems(AL.shell(), new ComparableStack(ModItems.fins_quad_titanium.get()),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER)),
                         new ComparableStack(Items.WHITE_DYE, 4))
-                .outputItems(new ItemStack(ModBombs2Blocks.nuke_fleija.get())));
+                .outputItems(new ItemStack(ModBombs2Blocks.nuke_fleija.get()))
+                .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.solinium").setup(300, 100)
                 .inputItems(STEEL.shell().count(2), new ComparableStack(ModItems.fins_quad_titanium.get()),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER)),
                         new ComparableStack(Items.GRAY_DYE, 8))
-                .outputItems(new ItemStack(ModBombs2Blocks.nuke_solinium.get())));
+                .outputItems(new ItemStack(ModBombs2Blocks.nuke_solinium.get()))
+                .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.balefirebomb").setup(400, 100)
                 .inputItems(new ComparableStack(ModItems.sphere_steel.get()), TI.shell().count(6),
                         new ComparableStack(ModItems.fins_big_steel.get()), new ComparableStack(ModItems.powder_magic.get(), 8),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 4),
                         new ComparableStack(Items.GRAY_DYE, 8))
-                .outputItems(new ItemStack(ModBombs2Blocks.nuke_fstbmb.get())));
+                .outputItems(new ItemStack(ModBombs2Blocks.nuke_fstbmb.get()))
+                .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.customnuke").setup(300, 100)
                 .inputItems(STEEL.shell().count(2), new ComparableStack(ModItems.fins_small_steel.get()),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.CONTROLLER_ADVANCED), 8),
                         new ComparableStack(Items.GRAY_DYE, 4))
-                .outputItems(new ItemStack(ModBombs2Blocks.nuke_custom.get())));
+                .outputItems(new ItemStack(ModBombs2Blocks.nuke_custom.get()))
+                .setPools528("528.controller"));
         recipes.registerGenerated(new GenericRecipe("ass.levibomb").setup(200, 100)
                 .inputItems(TI.plate().count(12), SA326.nugget().count(3),
                         new ComparableStack(ModIntermediateItems.circuit(EnumCircuitType.ADVANCED), 4),

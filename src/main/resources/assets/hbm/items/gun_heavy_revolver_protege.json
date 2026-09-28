@@ -1,8 +1,0 @@
-{
-  "model": {
-    "type": "hbm:gun",
-    "base": "hbm:item/gun_obj_base",
-    "weapon": "heavy_revolver_protege"
-  },
-  "oversized_in_gui": true
-}

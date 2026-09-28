@@ -46,7 +46,7 @@ import static com.hbm.inventory.OreDictManager.*;
  *
  * <p><b>What's ported:</b> every default recipe whose complete input/output path exists in this port,
  * including the old coal/uranium, cement, gravel, tar, wax, semtex, latex, and fullerene entries.
- * Deferred entries are listed in the completion-wave review report: mercury, bedrock-ore grades, rebar,
+ * Deferred entries are listed in the completion-wave review report: mercury
  * and external-mod compatibility recipes.
  *
  * <p>{@code productivity} is carried for parity but unused: in the 1.12.2 tile the free-item chance
@@ -128,6 +128,7 @@ public final class CrystallizerRecipes {
         peroxide(item(ModBlocks.stone_gneiss.get().asItem()),    stack(ModItems.powder_lithium.get()),            utilityTime, 0.25F);
         add(item(Items.BONE_MEAL),     stack(Items.SLIME_BALL, 4),  mixingTime, 0F, Fluids.SULFURIC_ACID, 250);
         add(item(Items.BONE),          stack(Items.SLIME_BALL, 16), mixingTime, 0F, Fluids.SULFURIC_ACID, 1_000);
+        add(item(com.hbm.blocks.ModDungeonBlocks.rebar.get().asItem()), stack(com.hbm.blocks.ModDecoContent.concrete_rebar.get().asItem()), 10, 0F, Fluids.CONCRETE, 1_000);
         add(item(ModItems.scrap_oil.get()).count(16), stack(ModItems.nugget_arsenic.get()), utilityTime, 0.30F, Fluids.RADIOSOLVENT, 100);
         add(MALACHITE.ingot(),
                 ItemScraps.create(new Mats.MaterialStack(Mats.MAT_COPPER, MaterialShapes.INGOT.quantity)),
@@ -140,6 +141,8 @@ public final class CrystallizerRecipes {
         peroxide(item(ModItems.powder_semtex_mix.get()), stack(ModFoodItems.ingot_semtex.get()), baseTime, 0F);
         peroxide(item(ModItems.powder_desh_ready.get()), stack(ModItems.ingot_desh.get()),         baseTime,    0F);
         peroxide(item(ModItems.powder_meteorite.get()),  stack(ModItems.fragment_meteorite.get()), utilityTime, 0F);
+        AbilityToolMachineRecipes.crystallizer(recipes, baseTime); // treated -> etched meteorite sword
+        BedrockOreChainRecipes.crystallizer(recipes); // bedrock ore washing / acid grades
         add(CD.dust(),                 stack(ModItems.ingot_rubber.get()), utilityTime, 0F,    Fluids.FISHOIL, 250);
         add(item(ModItems.ingot_biorubber.get()), stack(ModItems.ingot_rubber.get()), mixingTime, 0.15F,
                 Fluids.SOURGAS, 25);

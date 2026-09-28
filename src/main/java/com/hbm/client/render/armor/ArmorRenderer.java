@@ -95,8 +95,12 @@ public abstract class ArmorRenderer {
 
     protected final Gem.Part<ArmorPose> piece(Gem.Model<ArmorPose> declaration, ArmorSlot slot,
             WavefrontObj model, String group, Surface surface, Pivot pivot) {
+        // Only the slot gates a piece, never the wearer bone's `visible` flag. 1.7's ModelRendererObj copied
+        // the biped's pose but not its isHidden, so a suit that hides the wearer's own limbs (FAU leggings,
+        // full set: LEFT_LEG/RIGHT_LEG via ArmorPartHiding) still drew its own leg and boot geometry over them.
+        // Reading `visible` here made the FAU legs and boots vanish as soon as the boots completed the set.
         return declaration.part(model.part(group), surface)
-                .visibleIf(state -> state.slot == slot && pivot.bone(state.wearer).visible)
+                .visibleIf(state -> state.slot == slot)
                 .pose(state -> pivot.pose(state.wearer))
                 .scale(UNIT);
     }

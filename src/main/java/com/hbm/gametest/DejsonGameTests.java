@@ -65,6 +65,7 @@ public final class DejsonGameTests {
         ModShapedRecipes.declare();
         ModShapelessRecipes.declare();
         ModComponentRecipes.declare();
+        com.hbm.inventory.recipes.gen.CraftingRecipesGenerated.declare();
     }
 
     public static void coversEveryBlockState(GameTestHelper helper) {
@@ -211,6 +212,12 @@ public final class DejsonGameTests {
         helper.succeed();
     }
 
+    private static boolean isLegacyFrameMarker(JsonObject model) {
+        return model.size() == 1 && model.has("parent") && model.get("parent").isJsonPrimitive()
+                && model.get("parent").getAsString().startsWith(Constants.MOD_ID + ":item/")
+                && model.get("parent").getAsString().endsWith("_legacy");
+    }
+
     public static void matchesShippedItems(GameTestHelper helper) {
         declareAll();
         List<String> problems = new ArrayList<>();
@@ -222,7 +229,11 @@ public final class DejsonGameTests {
             JsonObject generated = declaration.models().get(declaration.itemId());
             // A shares() declaration emits no model of its own; below 1.21.4 legacy-assets derives a bare
             // parent pointer at that path, which is not this declaration's to compare.
-            if (shippedModel != null && generated != null) {
+            // Below 1.21.4 nothing reads an item definition, so legacy-assets rewrites the model at the item's
+            // own path into a bare pointer at its renderer frame's legacy parent (hbm:item/<frame>_legacy) for a
+            // custom-renderer item that declared a sprite model there. That file is legacy-assets' product, which
+            // the definition comparison below still covers; it is not this declaration saying something else.
+            if (shippedModel != null && generated != null && !isLegacyFrameMarker(shippedModel)) {
                 models++;
                 if (!contains(normalise(shippedModel), normalise(generated))) {
                     problems.add(declaration.itemId() + " is on the classpath saying something "
@@ -271,9 +282,19 @@ public final class DejsonGameTests {
         Map<String, int[]> loaderTrees = new LinkedHashMap<>();
         int tables = 0;
         int others = 0;
+        Map<String, JsonObject> folded = foldedAtlases(Data.files());
 
         for (Map.Entry<String, JsonObject> declared : Data.files().entrySet()) {
             String path = declared.getKey();
+            if (folded.containsKey(path) && folded.get(path) == null) {
+                // folded away: legacy-assets must have deleted it after merging its sources into blocks.json
+                if (!readAll("/" + path).isEmpty()) {
+                    problems.add(path + " was packed on a target with no items atlas; legacy-assets should have "
+                            + "folded it into " + BLOCKS_ATLAS + " and removed it");
+                }
+                others++;
+                continue;
+            }
             // Every copy on the classpath: a shared tag such as c:glass_panes is also packed by Fabric API,
             // and whichever copy the loader answers first is not necessarily this mod's.
             List<JsonObject> copies = readAll("/" + path);
@@ -309,7 +330,7 @@ public final class DejsonGameTests {
             // the NBT shape below 1.20.5, so their packed content is expected to differ too.
             if (path.contains("/loot_table/")) continue;
             *///?}
-            JsonElement expected = unwrapped(declared.getValue());
+            JsonElement expected = unwrapped(folded.getOrDefault(path, declared.getValue()));
             if (copies.stream().noneMatch(copy -> unwrapped(copy).equals(expected))) {
                 problems.add(path + " is on the classpath saying something other than "
                         + "what it was declared to say");
@@ -329,6 +350,44 @@ public final class DejsonGameTests {
                 + "and biome modifiers match their file; {} loader tree(s) declared",
                 tables, others, loaderTrees.size());
         helper.succeed();
+    }
+
+    private static final String ITEMS_ATLAS = "assets/minecraft/atlases/items.json";
+    private static final String BLOCKS_ATLAS = "assets/minecraft/atlases/blocks.json";
+
+    /**
+     * What {@code legacy-assets.gradle.kts} must have made of the declared atlases on a target without an
+     * items atlas (below 1.21.4 item sprites are stitched into the blocks atlas, and Core's
+     * {@code Sprites.Atlas.ITEMS} names the blocks atlas there). The fold only happens when both files
+     * were declared: {@code blocks.json} then carries its own sources followed by every items source it
+     * did not already list, with its other keys unchanged, and {@code items.json} is deleted (mapped to
+     * {@code null} here, meaning "must not be packed"). On a target that has the items atlas, and when
+     * either file is not declared, nothing is folded and the map is empty, so every atlas is compared
+     * exactly as declared. This is the build's documented conversion stated as an expectation, not an
+     * exemption: blocks.json must still say precisely the folded content.
+     */
+    private static Map<String, JsonObject> foldedAtlases(Map<String, JsonObject> files) {
+        Map<String, JsonObject> folded = new LinkedHashMap<>();
+        if ("minecraft:items".equals(dev.golem.core.render.Sprites.Atlas.ITEMS.id())) {
+            return folded;
+        }
+        JsonObject items = files.get(ITEMS_ATLAS);
+        JsonObject blocks = files.get(BLOCKS_ATLAS);
+        if (items == null || blocks == null || !items.has("sources")) {
+            return folded;
+        }
+        JsonObject merged = blocks.deepCopy();
+        JsonArray sources = blocks.has("sources") ? blocks.getAsJsonArray("sources").deepCopy() : new JsonArray();
+        JsonArray own = sources.deepCopy();
+        for (JsonElement source : items.getAsJsonArray("sources")) {
+            if (!own.contains(source)) {
+                sources.add(source.deepCopy());
+            }
+        }
+        merged.add("sources", sources);
+        folded.put(BLOCKS_ATLAS, merged);
+        folded.put(ITEMS_ATLAS, null);
+        return folded;
     }
 
     /**

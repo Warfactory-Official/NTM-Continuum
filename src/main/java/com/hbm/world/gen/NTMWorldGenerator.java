@@ -1,0 +1,115 @@
+package com.hbm.world.gen;
+
+import com.hbm.Constants;
+import com.hbm.main.StructureManager;
+import com.hbm.world.gen.nbt.JigsawPiece;
+import com.hbm.world.gen.nbt.NBTStructure;
+import com.hbm.world.gen.nbt.SpawnCondition;
+import dev.golem.core.registry.DeferredRegister;
+import dev.golem.core.registry.RegistryObject;
+import dev.golem.core.world.Structures;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.levelgen.structure.StructureType;
+import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+
+/**
+ * 1.7 {@code NTMWorldGenerator}: the NBT structures that generate in the overworld.
+ *
+ * <p>Split along the modern data/code line. What decides <i>where</i> a structure goes (its biome predicate and spawn
+ * weight, and the region grid) is data, written at build time by {@link NTMStructureDeclarations} into
+ * {@code worldgen/structure}, the {@code hbm:ntm_structures} structure set and {@code hbm:has_structure/*} biome tags.
+ * What decides <i>how</i> it is built (piece, height offset, height clamp, terrain conforming) is registered here, under
+ * the same names 1.7 used, and read by {@link NBTStructure.GenStructure} through the structure JSON's {@code spawn}.
+ *
+ * <p>1.7 also registered {@code features}, {@code bunker} and {@code meteor_dungeon} here; they plug in the same way (a
+ * {@link SpawnCondition} with {@code start} or {@code pools}, plus one declaration line) from
+ * {@link NTMComponentStructures}.
+ *
+ * <p>The 1.7 names are kept, including {@code labolatory} (sic) and the capitalised {@code ruinA..J}; resource ids must
+ * be lower case, so those structures are {@code hbm:ruina..hbm:ruinj}.
+ */
+public final class NTMWorldGenerator {
+
+    private NTMWorldGenerator() {}
+
+    public static final DeferredRegister<StructureType<?>> STRUCTURE_TYPES =
+            DeferredRegister.create(Registries.STRUCTURE_TYPE, Constants.MOD_ID);
+    public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
+            DeferredRegister.create(Registries.STRUCTURE_PIECE, Constants.MOD_ID);
+
+    /** {@code hbm:nbt}: one registered {@link SpawnCondition} as a vanilla structure. */
+    public static final RegistryObject<StructureType<NBTStructure.GenStructure>> NBT_STRUCTURE =
+            STRUCTURE_TYPES.register("nbt", () -> Structures.type(NBTStructure.GenStructure.CODEC));
+
+    /** {@code hbm:nbt_component}: one placed jigsaw piece (1.7 {@code NBTStructure.Component}). */
+    public static final RegistryObject<StructurePieceType> NBT_COMPONENT =
+            STRUCTURE_PIECES.register("nbt_component", () -> (StructurePieceType) NBTStructure.Component::new);
+
+    private static boolean registered;
+
+    public static void init() {
+        registerSpawns();
+    }
+
+    /** The 1.7 constructor's registrations, minus biome predicate and weight (see the class comment). */
+    public static synchronized void registerSpawns() {
+        if (registered) return;
+        registered = true;
+
+        single("spire", new JigsawPiece("spire", StructureManager.spire, -1));
+        single("vertibird", new JigsawPiece("vertibird", StructureManager.vertibird, -3));
+        single("crashed_vertibird", new JigsawPiece("crashed_vertibird", StructureManager.crashed_vertibird, -10));
+        single("beached_patrol", new JigsawPiece("beached_patrol", StructureManager.beached_patrol, -5), 58, 67);
+        single("aircraft_carrier", new JigsawPiece("aircraft_carrier", StructureManager.aircraft_carrier, -6), 1, 42);
+        single("oil_rig", new JigsawPiece("oil_rig", StructureManager.oil_rig, -20), 11, 12);
+        single("lighthouse", new JigsawPiece("lighthouse", StructureManager.lighthouse, -40), 28, 29);
+        single("dish", new JigsawPiece("dish", StructureManager.dish, -10), 53, 65);
+        single("water_pump", new JigsawPiece("water_pump", StructureManager.water_pump, -10));
+        single("forestchem", new JigsawPiece("forest_chem", StructureManager.forest_chem, -9));
+        single("labolatory", new JigsawPiece("laboratory", StructureManager.laboratory, -10), 53, 65);
+        single("forest_post", new JigsawPiece("forest_post", StructureManager.forest_post, -10));
+        single("radio", new JigsawPiece("radio_house", StructureManager.radio_house, -6));
+        single("factory", new JigsawPiece("factory", StructureManager.factory, -10));
+        single("crane", new JigsawPiece("crane", StructureManager.crane, -13));
+        single("broadcaster_tower", new JigsawPiece("broadcaster_tower", StructureManager.broadcasting_tower, -9));
+        single("plane1", new JigsawPiece("crashed_plane_1", StructureManager.plane1, -5));
+        single("plane2", new JigsawPiece("crashed_plane_2", StructureManager.plane2, -8));
+        single("desert_shack_1", new JigsawPiece("desert_shack_1", StructureManager.desert_shack_1, -7));
+        single("desert_shack_2", new JigsawPiece("desert_shack_2", StructureManager.desert_shack_2, -7));
+        single("desert_shack_3", new JigsawPiece("desert_shack_3", StructureManager.desert_shack_3, -5));
+        single("dead_dish_small", new JigsawPiece("dead_dish_small", StructureManager.dead_dish_small, -5));
+        ruin("ruinA", "NTMRuinsA", StructureManager.ntmruinsA);
+        ruin("ruinB", "NTMRuinsB", StructureManager.ntmruinsB);
+        ruin("ruinC", "NTMRuinsC", StructureManager.ntmruinsC);
+        ruin("ruinD", "NTMRuinsD", StructureManager.ntmruinsD);
+        ruin("ruinE", "NTMRuinsE", StructureManager.ntmruinsE);
+        ruin("ruinF", "NTMRuinsF", StructureManager.ntmruinsF);
+        ruin("ruinG", "NTMRuinsG", StructureManager.ntmruinsG);
+        ruin("ruinH", "NTMRuinsH", StructureManager.ntmruinsH);
+        ruin("ruinI", "NTMRuinsI", StructureManager.ntmruinsI);
+        ruin("ruinJ", "NTMRuinsJ", StructureManager.ntmruinsJ);
+        single("tower_base", new JigsawPiece("tower_base", StructureManager.tower_base, -6));
+
+        // 1.7 registerNullWeight: a pick that spawns nothing, so plains and oceans stay emptier
+        NBTStructure.registerStructure(new SpawnCondition(NTMStructureDeclarations.NULL_PLAINS));
+        NBTStructure.registerStructure(new SpawnCondition(NTMStructureDeclarations.NULL_OCEAN));
+    }
+
+    private static void single(String name, JigsawPiece piece) {
+        single(name, piece, 1, 128);
+    }
+
+    private static void single(String name, JigsawPiece piece, int minHeight, int maxHeight) {
+        SpawnCondition spawn = new SpawnCondition(name);
+        spawn.structure = piece;
+        spawn.minHeight = minHeight;
+        spawn.maxHeight = maxHeight;
+        NBTStructure.registerStructure(spawn);
+    }
+
+    private static void ruin(String name, String pieceName, NBTStructure structure) {
+        JigsawPiece piece = new JigsawPiece(pieceName, structure, -1);
+        piece.conformToTerrain = true;
+        single(name, piece);
+    }
+}

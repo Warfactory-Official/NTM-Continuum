@@ -392,8 +392,13 @@ public final class MaterialCompletionGameTests {
                 ModIntermediateItems.circuit(EnumCircuitType.SILICON), 1);
 
         CrystallizerRecipes.register();
-        helper.assertTrue(CrystallizerRecipes.recipes.size() == 79,
-                "Crystallizer catalogue must contain exactly 79 dependency-complete defaults");
+        // 79 dependency-complete defaults, + the rebar -> concrete rebar recipe, + the etched meteorite sword,
+        // + 1.7's bedrock-ore washing/acid grades: 37 per ore type (2 washed, 2 sulfuric, 3 solvent, 4 rad,
+        // 3+3+3 byproduct washes, 8 hydrogen, 8 chlorine, 1 slop crumb recovery) over the six types.
+        int crystallizerExpected = 79 + 1 + 1 + 37 * com.hbm.items.special.BedrockOreType.VALUES.length;
+        helper.assertTrue(CrystallizerRecipes.recipes.size() == crystallizerExpected,
+                "Crystallizer catalogue must contain exactly " + crystallizerExpected
+                        + " dependency-complete defaults, found " + CrystallizerRecipes.recipes.size());
         assertCrystallizer(helper, new ItemStack(Blocks.COAL_ORE.asItem()), Fluids.PEROXIDE, 500, 600, 0.05F,
                 new ItemStack(ModFuelItems.crystal_coal.get()), 1);
         assertCrystallizer(helper, new ItemStack(ModNuclearBlocks.ore_gneiss_uranium.get().asItem()), Fluids.SULFURIC_ACID,

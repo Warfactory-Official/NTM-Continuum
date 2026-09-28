@@ -128,7 +128,16 @@ public final class FalloutConfig {
                 .solid(true).build());
 
         // TODO(port): ore_nether_uranium -> ore_nether_schrabidium/scorched (nether ores not in the transform set yet)
-        // TODO(port): glyphid_base/glyphid_spawner -> RAD variants (glyphids not ported)
+        e.add(FalloutEntry.builder()
+                .matchesBlock(com.hbm.blocks.ModDecoCrateBlocks.glyphid_base.get())
+                .addPrimary(com.hbm.blocks.ModDecoCrateBlocks.glyphid_base.get().defaultBlockState()
+                        .setValue(com.hbm.blocks.generic.BlockGlyphid.TYPE, com.hbm.blocks.generic.BlockGlyphid.HiveType.RAD), 1)
+                .build());
+        e.add(FalloutEntry.builder()
+                .matchesBlock(com.hbm.blocks.ModDecoCrateBlocks.glyphid_spawner.get())
+                .addPrimary(com.hbm.blocks.ModDecoCrateBlocks.glyphid_spawner.get().defaultBlockState()
+                        .setValue(com.hbm.blocks.generic.BlockGlyphid.TYPE, com.hbm.blocks.generic.BlockGlyphid.HiveType.RAD), 1)
+                .build());
 
         // the sellafite shade rings: i-th ring = <= i*5 percent, shade m = 10-i (9 = darkest at GZ)
         for (int i = 1; i <= 10; i++) {

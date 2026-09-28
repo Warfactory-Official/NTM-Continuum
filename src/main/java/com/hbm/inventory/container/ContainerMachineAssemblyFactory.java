@@ -163,6 +163,7 @@ public final class ContainerMachineAssemblyFactory extends AbstractContainerMenu
         private void onCrafting(ItemStack stack) {
             if (craftBuffer <= 0) return;
             dev.golem.core.world.ItemStacks.onCraftedBy(stack, player, craftBuffer);
+            com.hbm.util.AchievementHandler.fire(player, stack); // 1.7 SlotCraftingOutput.checkAchievements
             craftBuffer = 0;
         }
     }

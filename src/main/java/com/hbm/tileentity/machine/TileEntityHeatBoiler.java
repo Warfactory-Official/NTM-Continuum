@@ -38,10 +38,11 @@ import com.hbm.sound.AudioWrapper;
  * the burst husk renders via {@code boiler_burst.obj}).
  *
  * <p>Skips (§20): TomSaveData sun-fire heating, the boilerGroan ambience, the boiler audio loop,
- * IPersistentNBT/IConfigurableMachine/IFluidCopiable. Port seam: heat is polled through a
+ * IPersistentNBT/IConfigurableMachine. IFluidCopiable (water/steam ids) is back, as 1.7. Port seam: heat is polled through a
  * multiblock cell below by resolving its core (old used proxy TEs).
  */
-public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider {
+public class TileEntityHeatBoiler extends TileEntityLoadedBase implements IFluidStandardTransceiverMK2, IRORValueProvider,
+        com.hbm.tileentity.IFluidCopiable {
 
     public static final int maxHeat = 12_800_000;
     public static final double diffusion = 0.1D;

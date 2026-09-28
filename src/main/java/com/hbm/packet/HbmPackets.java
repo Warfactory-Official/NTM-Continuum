@@ -172,6 +172,8 @@ public final class HbmPackets {
         com.hbm.client.PneumaticClientRegistrations.registerPacketHandlers();
         com.hbm.client.DroneClientRegistrations.registerPacketHandlers();
         com.hbm.client.PowerGenClientRegistrations.registerPacketHandlers();
+        com.hbm.client.RenderInputClientRegistrations.registerPacketHandlers(); // G-C: tool animation cues
+        com.hbm.client.AbilityToolClientRegistrations.registerPacketHandlers();
     }
 
     /**
@@ -269,6 +271,7 @@ public final class HbmPackets {
         for (int i = 0; i < count; i++) {
             if (com.hbm.util.InventoryUtil.doesPlayerHaveAStacks(player, recipe.input, true)) {
                 com.hbm.util.InventoryUtil.giveChanceStacksToPlayer(player, recipe.output);
+                com.hbm.util.AchievementHandler.fire(player, recipe.output.get(0).stack); // 1.7 AnvilCraftPacket
             } else {
                 break;
             }
@@ -300,7 +303,7 @@ public final class HbmPackets {
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof IControlReceiver receiver && receiver.hasPermission(player)) {
             try {
-                receiver.receiveControl(data);
+                receiver.receiveControl(player, data);
                 be.setChanged();
             } catch (Exception e) {
                 Constants.LOG.warn("Failed to apply ControlEventPayload at {}: {}", pos, e.toString());

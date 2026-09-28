@@ -190,9 +190,11 @@ public class EntityGlyphidScout extends EntityGlyphid {
 
                         if (level() instanceof ServerLevel serverLevel) {
                             serverLevel.explode(this, getX(), getY(), getZ(), 5F, Level.ExplosionInteraction.NONE);
-                            // 1.7 GlyphidHive.generateSmall: the hive blocks (glyphid_base/glyphid_spawner and
-                            // their infested/radioactive variants) are not registered in this port yet, so the scout
-                            // only breaks ground here; the hive feature follows with those blocks (entity port manifest).
+                            // 1.7: the scout builds the same small hive the world generator does, infested unless it is
+                            // a normal glyphid, and without the hive loot
+                            com.hbm.world.feature.GlyphidHive.generateSmall(serverLevel, (int) Math.floor(getX()),
+                                    (int) Math.floor(getY()), (int) Math.floor(getZ()), getRandom(),
+                                    subtype() != TYPE_NORMAL, false);
                         }
                         discard();
 

@@ -507,7 +507,10 @@ public class ItemGunBaseNT extends dev.golem.core.world.CompatItem implements IK
             return;
         }
 
-        for (int i = 0; i < confNo; i++) {
+        // 1.7: a Trenchmaster runs a reloading config's tick twice (the k loop), which is his faster reload.
+        for (int i = 0; i < confNo; i++) for (int k = 0; k == 0 || (k < 2
+                && com.hbm.items.armor.ArmorTrenchmaster.isTrenchMaster(player)
+                && getState(stack, i) == GunState.RELOADING); k++) {
             // Keep the upstream order: cue zero is played on the tick before the animation timer moves.
             if (configs[i].getOrchestra(stack) != null) {
                 configs[i].getOrchestra(stack).accept(stack, ctx[i]);

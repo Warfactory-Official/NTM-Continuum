@@ -130,6 +130,7 @@ public final class DiFurnaceRecipes extends GenericRecipes {
         entries.add(new FuelEntry(new ComparableStack(ModFuelItems.solid_fuel.get()), 400));
         entries.add(new FuelEntry(new ComparableStack(ModFuelItems.solid_fuel_presto.get()), 800));
         entries.add(new FuelEntry(new ComparableStack(ModFuelItems.solid_fuel_presto_triplet.get()), 2_400));
+        FinalConsumableMachineRecipes.diFurnaceFuels(entries); // briquettes, 200 each
         fuelEntries = entries;
         return entries;
     }

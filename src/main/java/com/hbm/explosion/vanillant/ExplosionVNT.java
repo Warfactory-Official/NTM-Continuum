@@ -148,4 +148,19 @@ public class ExplosionVNT {
         this.setPlayerProcessor(new PlayerProcessorStandard());
         return this;
     }
+
+    /**
+     * 1.7 {@code makeAmat}: 16 rays per edge below size 15 (32 above), no block drops, twice the entity range,
+     * 50 RAD per unit of size on top of the blast damage, and the antimatter flash.
+     */
+    public ExplosionVNT makeAmat() {
+        this.setBlockAllocator(new BlockAllocatorStandard(this.size < 15 ? 16 : 32));
+        this.setBlockProcessor(new BlockProcessorStandard().setNoDrop());
+        this.setEntityProcessor(new com.hbm.explosion.vanillant.standard.EntityProcessorStandard()
+                .withRangeMod(2F)
+                .withDamageMod(new com.hbm.explosion.vanillant.standard.CustomDamageHandlerAmat(50F)));
+        this.setPlayerProcessor(new PlayerProcessorStandard());
+        this.setSFX(new com.hbm.explosion.vanillant.standard.ExplosionEffectAmat());
+        return this;
+    }
 }

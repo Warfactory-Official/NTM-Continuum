@@ -39,9 +39,7 @@ public final class ContainerMachineReactorBreeding extends AbstractContainerMenu
         this.access = access;
 
         addSlot(new Slot(machine, 0, 35, 35));
-        addSlot(new Slot(machine, 1, 125, 35) {
-            @Override public boolean mayPlace(ItemStack stack) { return false; }
-        });
+        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 1, 125, 35)); // 1.7 SlotCraftingOutput
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 84);
     }

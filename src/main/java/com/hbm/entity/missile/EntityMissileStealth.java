@@ -51,4 +51,10 @@ public class EntityMissileStealth extends EntityMissileBaseNT {
     public ItemStack getMissileItemForInfo() {
         return new ItemStack(ModMissileItems.missile_stealth.get());
     }
+
+    /** 1.7: the whole point of the airframe. */
+    @Override
+    public boolean canBeSeenBy(Object radar) {
+        return false;
+    }
 }

@@ -84,6 +84,41 @@ public final class HbmArmorMaterials {
     public static final GolemArmorMaterial PAA = new GolemArmorMaterial(
             Constants.MOD_ID, "paa", 75, 3, 8, 6, 3, 25, 2.0F, 0.0F, "repairs/paa");
 
+    // ---- final armor sets A (1.7 MainRegistry / ModItemsArmor). 1.7 defense arrays are {helmet, chest,
+    // legs, boots}; 1.7 has no toughness, so these materials declare 0. Each EnumHelper call made its own
+    // enum constant, and set identity is reference equality, so every 1.7 material is its own object here.
+
+    /** 1.7 {@code aMatAlloy} ("HBM_ALLOY", deprecated): 40, {3, 8, 6, 3}, 12; it never had a repair material. */
+    public static final GolemArmorMaterial ALLOY = new GolemArmorMaterial(
+            Constants.MOD_ID, "alloy", 40, 3, 8, 6, 3, 12, 0.0F, 0.0F, "repairs/alloy");
+    /** 1.7 {@code aMatCMB}: 60, {3, 8, 6, 3}, 50, repaired by CMB steel. */
+    public static final GolemArmorMaterial CMB = new GolemArmorMaterial(
+            Constants.MOD_ID, "cmb", 60, 3, 8, 6, 3, 50, 0.0F, 0.0F, "repairs/cmb");
+    /** 1.7 {@code aMatBismuth}: 100, {3, 8, 6, 3}, 100, repaired by bismuth plate. */
+    public static final GolemArmorMaterial BISMUTH = new GolemArmorMaterial(
+            Constants.MOD_ID, "bismuth", 100, 3, 8, 6, 3, 100, 0.0F, 0.0F, "repairs/bismuth_armor");
+    /** 1.7 {@code aMatEuph}: 15,000,000, {3, 8, 6, 3}, 100. ArmorEuphemium also ignores every damage write. */
+    public static final GolemArmorMaterial EUPHEMIUM = new GolemArmorMaterial(
+            Constants.MOD_ID, "euphemium", 15_000_000, 3, 8, 6, 3, 100, 0.0F, 0.0F, "repairs/euphemium");
+    /** 1.7 {@code aMatZirconium} ("HBM_ZIRCONIUM"): 1000, {2, 5, 3, 1}, 1000, repaired by zirconium. */
+    public static final GolemArmorMaterial ZIRCONIUM = new GolemArmorMaterial(
+            Constants.MOD_ID, "zirconium", 1000, 2, 5, 3, 1, 1000, 0.0F, 0.0F, "repairs/zirconium");
+    /** 1.7 {@code aMatDNT} ("HBM_DNT_LOLOLOL"): durability 3, {1, 1, 1, 1}, 0 - the joke set. */
+    public static final GolemArmorMaterial DNT = new GolemArmorMaterial(
+            Constants.MOD_ID, "dnt", 3, 1, 1, 1, 1, 0, 0.0F, 0.0F, "repairs/dnt");
+    /** 1.7 {@code aMatHEV}: 150, {3, 8, 6, 3}, 0, repaired by HEV plating. */
+    public static final GolemArmorMaterial HEV = new GolemArmorMaterial(
+            Constants.MOD_ID, "hev", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/hev");
+    /** 1.7 {@code aMatFau} ("HBM_DIGAMMA"): 150, {3, 8, 6, 3}, 0, repaired by Fau plating. */
+    public static final GolemArmorMaterial FAU = new GolemArmorMaterial(
+            Constants.MOD_ID, "fau", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/fau");
+    /**
+     * 1.7 {@code aMatTrench} ("HBM_TRENCH"): 150, {3, 8, 6, 3}, 0, repaired by iron plate. It shares its enum
+     * name with Taurun's material but is a distinct constant, so the two suits never form a mixed set.
+     */
+    public static final GolemArmorMaterial TRENCHMASTER = new GolemArmorMaterial(
+            Constants.MOD_ID, "trenchmaster", 150, 3, 8, 6, 3, 0, 0.0F, 0.0F, "repairs/taurun");
+
     private static GolemArmorMaterial hazmat(String name, String repairIngredient) {
         return new GolemArmorMaterial(Constants.MOD_ID, name, 15, 2, 5, 4, 1, 5,
                 0.0F, 0.0F, "repairs/" + repairIngredient);

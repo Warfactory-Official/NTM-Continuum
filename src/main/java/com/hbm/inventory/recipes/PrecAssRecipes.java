@@ -46,35 +46,35 @@ public final class PrecAssRecipes extends GenericRecipes {
             registerPair(new GenericRecipe("precass.chip").setup(100, 200L)
                             .inputItems(cir(SILICON, 1), new ComparableStack(ModItems.plate_polymer.get(), 3), GOLD.wire().count(4))
                             .setPools(GenericRecipes.POOL_PREFIX_528 + "chip"),
-                    ModIntermediateItems.circuit(CHIP, 1), 50, GeneralConfig.enableExpensiveMode ? 10 : 90);
+                    ModIntermediateItems.circuit(CHIP, 1), 90, GeneralConfig.enableExpensiveMode ? 50 : 90);
             registerPair(new GenericRecipe("precass.chip_bismoid").setup(200, 1_000L)
                             .inputItems(cir(SILICON, 4), new ComparableStack(ModItems.plate_polymer.get(), 8), ANY_BISMOID.nugget().count(2), GOLD.wire().count(4))
-                            .inputFluids(new FluidStack(Fluids.PERFLUOROMETHYL, 1_000)).setPools(GenericRecipes.POOL_PREFIX_528 + "chip_bismoid"),
-                    ModIntermediateItems.circuit(CHIP_BISMOID, 1), 50, GeneralConfig.enableExpensiveMode ? 10 : 75);
+                            .inputFluids(new FluidStack(Fluids.PERFLUOROMETHYL, 500)).setPools(GenericRecipes.POOL_PREFIX_528 + "chip_bismoid"),
+                    ModIntermediateItems.circuit(CHIP_BISMOID, 1), 75, GeneralConfig.enableExpensiveMode ? 50 : 75);
             registerPair(new GenericRecipe("precass.chip_quantum").setup(300, 20_000L)
-                            .inputItems(cir(SILICON, 8), BSCCO.wireDense().count(2), ANY_HARDPLASTIC.ingot().count(8),
+                            .inputItems(cir(SILICON, 8), BSCCO.wireDense().count(2), ANY_HARDPLASTIC.ingot().count(4),
                                     new ComparableStack(ModItems.pellet_charged.get(), 4), GOLD.wire().count(8))
-                            .inputFluids(new FluidStack(Fluids.HELIUM4, 4_000)).setPools(GenericRecipes.POOL_PREFIX_528 + "chip_quantum"),
-                    ModIntermediateItems.circuit(CHIP_QUANTUM, 1), 50, GeneralConfig.enableExpensiveMode ? 10 : 50);
+                            .inputFluids(new FluidStack(Fluids.HELIUM4, 250)).setPools(GenericRecipes.POOL_PREFIX_528 + "chip_quantum"),
+                    ModIntermediateItems.circuit(CHIP_QUANTUM, 1), 90, GeneralConfig.enableExpensiveMode ? 50 : 75);
             registerPair(new GenericRecipe("precass.atomic_clock").setup(200, 2_000L)
                             .inputItems(cir(CHIP, 8), ANY_PLASTIC.ingot().count(4), ZR.wire().count(8), SR.dust())
                             .setPools(GenericRecipes.POOL_PREFIX_528 + "strontium"),
-                    ModIntermediateItems.circuit(ATOMIC_CLOCK, 1), 50, GeneralConfig.enableExpensiveMode ? 10 : 50);
+                    ModIntermediateItems.circuit(ATOMIC_CLOCK, 1), 50, GeneralConfig.enableExpensiveMode ? 50 : 75);
             registerPair(new GenericRecipe("precass.controller").setup(400, 15_000L)
                             .inputItems(cir(CHIP, 32), cir(CAPACITOR, 32), cir(CAPACITOR_TANTALIUM, 16), cir(CONTROLLER_CHASSIS, 1),
                                     new ComparableStack(ModUpgradeItems.upgrade_speed_1.get()), PB.wire().count(16))
                             .inputFluids(new FluidStack(Fluids.PERFLUOROMETHYL, 1_000)),
-                    ModIntermediateItems.circuit(CONTROLLER, 1), 10, GeneralConfig.enableExpensiveMode ? 50 : 90);
+                    ModIntermediateItems.circuit(CONTROLLER, 1), 75, GeneralConfig.enableExpensiveMode ? 50 : 90);
             registerPair(new GenericRecipe("precass.controller_advanced").setup(600, 25_000L)
                             .inputItems(cir(CHIP_BISMOID, 16), cir(CAPACITOR_TANTALIUM, 48), cir(ATOMIC_CLOCK, 1), cir(CONTROLLER_CHASSIS, 1),
                                     new ComparableStack(ModUpgradeItems.upgrade_speed_3.get()), PB.wire().count(24))
                             .inputFluids(new FluidStack(Fluids.PERFLUOROMETHYL, 4_000)),
-                    ModIntermediateItems.circuit(CONTROLLER_ADVANCED, 1), 10, GeneralConfig.enableExpensiveMode ? 33 : 75);
+                    ModIntermediateItems.circuit(CONTROLLER_ADVANCED, 1), 50, GeneralConfig.enableExpensiveMode ? 50 : 75);
             registerPair(new GenericRecipe("precass.controller_quantum").setup(600, 250_000L)
                             .inputItems(cir(CHIP_QUANTUM, 16), cir(CHIP_BISMOID, 48), cir(ATOMIC_CLOCK, 8), cir(CONTROLLER_ADVANCED, 2),
                                     new ComparableStack(ModUpgradeItems.upgrade_overdrive_1.get()), PB.wire().count(32))
                             .inputFluids(new FluidStack(Fluids.PERFLUOROMETHYL_COLD, 6_000)),
-                    ModIntermediateItems.circuit(CONTROLLER_QUANTUM, 1), 5, GeneralConfig.enableExpensiveMode ? 10 : 50);
+                    ModIntermediateItems.circuit(CONTROLLER_QUANTUM, 1), 75, GeneralConfig.enableExpensiveMode ? 50 : 75);
 
             addFirstUpgrade(ModUpgradeItems.upgrade_speed_1.get(), ModUpgradeItems.upgrade_speed_2.get(), "precass.upgrade_speed_ii");
             addSecondUpgrade(ModUpgradeItems.upgrade_speed_2.get(), ModUpgradeItems.upgrade_speed_3.get(), "precass.upgrade_speed_iii");
@@ -90,17 +90,17 @@ public final class PrecAssRecipes extends GenericRecipes {
             registerPair(new GenericRecipe("precass.upgrade_overdive_i").setup(200, 1_000)
                             .inputItems(new ComparableStack(ModUpgradeItems.upgrade_speed_3.get()), new ComparableStack(ModUpgradeItems.upgrade_effect_3.get()),
                                     BIGMT.ingot().count(16), ANY_HARDPLASTIC.ingot().count(16), cir(ADVANCED, 16)),
-                    new ItemStack(ModUpgradeItems.upgrade_overdrive_1.get()), 10, GeneralConfig.enableExpensiveMode ? 10 : 50);
+                    new ItemStack(ModUpgradeItems.upgrade_overdrive_1.get()), 50, GeneralConfig.enableExpensiveMode ? 50 : 75);
             registerPair(new GenericRecipe("precass.upgrade_overdive_ii").setup(600, 5_000)
                             .inputItems(new ComparableStack(ModUpgradeItems.upgrade_overdrive_1.get()), new ComparableStack(ModUpgradeItems.upgrade_speed_3.get()),
                                     new ComparableStack(ModUpgradeItems.upgrade_effect_3.get()), BIGMT.ingot().count(16), new ComparableStack(ModItems.ingot_cft.get(), 8),
                                     cir(CAPACITOR_BOARD, 16)),
-                    new ItemStack(ModUpgradeItems.upgrade_overdrive_2.get()), 10, GeneralConfig.enableExpensiveMode ? 10 : 50);
+                    new ItemStack(ModUpgradeItems.upgrade_overdrive_2.get()), 50, GeneralConfig.enableExpensiveMode ? 50 : 75);
             registerPair(new GenericRecipe("precass.upgrade_overdive_iii").setup(1_200, 100_000)
                             .inputItems(new ComparableStack(ModUpgradeItems.upgrade_overdrive_2.get()), new ComparableStack(ModUpgradeItems.upgrade_speed_3.get()),
                                     new ComparableStack(ModUpgradeItems.upgrade_effect_3.get()), BBRONZE.ingot().count(16), new ComparableStack(ModItems.ingot_cft.get(), 16),
                                     cir(BISMOID, 16)),
-                    new ItemStack(ModUpgradeItems.upgrade_overdrive_3.get()), 5, GeneralConfig.enableExpensiveMode ? 10 : 50);
+                    new ItemStack(ModUpgradeItems.upgrade_overdrive_3.get()), 25, GeneralConfig.enableExpensiveMode ? 50 : 75);
         }
 
         // These two are outside the old enable528 block. Their folder output is now represented by the
@@ -126,14 +126,14 @@ public final class PrecAssRecipes extends GenericRecipes {
     private void addFirstUpgrade(Item lower, Item higher, String name) {
         registerPair(new GenericRecipe(name).setup(300, 10_000)
                         .inputItems(cir(CHIP, 8), cir(CAPACITOR_TANTALIUM, 4), new ComparableStack(lower), ANY_PLASTIC.ingot().count(4)),
-                new ItemStack(higher), 15, 25);
+                new ItemStack(higher), 50, 75); // 1.7: "upgrades are now actually valuable"
     }
 
     private void addSecondUpgrade(Item lower, Item higher, String name) {
         registerPair(new GenericRecipe(name).setup(400, 25_000)
                         .inputItems(cir(CHIP, 16), cir(CAPACITOR_TANTALIUM, 16), new ComparableStack(lower), RUBBER.ingot().count(4))
                         .inputFluids(new FluidStack(Fluids.SOLVENT, 500)),
-                new ItemStack(higher), 5, 10);
+                new ItemStack(higher), 25, 75); // 1.7: "admittedly this one's just me being a dick"
     }
 
     private void registerChoices(GenericRecipe recipe, ItemStack first, float firstWeight, ItemStack second, float secondWeight) {

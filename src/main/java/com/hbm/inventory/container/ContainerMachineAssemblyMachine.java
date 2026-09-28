@@ -48,9 +48,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
         for (int row = 0; row < 4; row++) for (int col = 0; col < 3; col++) {
             this.addSlot(validated(4 + row * 3 + col, 8 + col * 18, 18 + row * 18)); // 12 inputs (3 wide × 4 tall)
         }
-        this.addSlot(new Slot(this.machine, 16, 98, 45) {             // output (take only)
-            @Override public boolean mayPlace(ItemStack stack) { return false; }
-        });
+        this.addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 16, 98, 45)); // output, 1.7 SlotCraftingOutput
 
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 174);
     }
@@ -96,6 +94,7 @@ public class ContainerMachineAssemblyMachine extends AbstractContainerMenu {
             }
             if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
             else slot.setChanged();
+            slot.onTake(player, result); // 1.7 transferStackInSlot: slot.onPickupFromSlot (SlotCraftingOutput)
         }
         return result;
     }

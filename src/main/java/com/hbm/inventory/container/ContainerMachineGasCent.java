@@ -47,7 +47,7 @@ public class ContainerMachineGasCent extends AbstractContainerMenu {
 
         for (int row = 0; row < 2; row++) {
             for (int column = 0; column < 2; column++) {
-                addSlot(takeOnly(column + row * 2, 71 + column * 18, 53 + row * 18));
+                addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, column + row * 2, 71 + column * 18, 53 + row * 18)); // 1.7 SlotCraftingOutput
             }
         }
         addSlot(validated(4, 182, 71));

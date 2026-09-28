@@ -46,8 +46,8 @@ public class ContainerPADetector extends AbstractContainerMenu {
         addSlot(validated(0, 8, 72));
         addSlot(validated(1, 62, 18));
         addSlot(validated(2, 80, 18));
-        addSlot(takeOnly(3, 62, 45));
-        addSlot(takeOnly(4, 80, 45));
+        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 3, 62, 45)); // 1.7 SlotCraftingOutput
+        addSlot(new com.hbm.inventory.SlotCraftingOutput(playerInventory.player, this.machine, 4, 80, 45));
         Compat.addPlayerInventory(this::addSlot, playerInventory, 8, 122);
     }
 

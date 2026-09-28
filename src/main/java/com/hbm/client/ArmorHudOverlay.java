@@ -64,7 +64,8 @@ public final class ArmorHudOverlay {
 
         Player player = mc.player;
         ArmorFSB helmet = player.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof ArmorFSB fsb ? fsb : null;
-        if (helmet != null && helmet.overlay() != null) {
+        // Forge only ran renderHelmetOverlay in first person, like vanilla's pumpkin blur.
+        if (helmet != null && helmet.overlay() != null && mc.options.getCameraType().isFirstPerson()) {
             int width = mc.getWindow().getGuiScaledWidth();
             int height = mc.getWindow().getGuiScaledHeight();
             GuiDraw.blit(graphics, helmet.overlay(), 0, 0, 0F, 0F, width, height, 256, 256);

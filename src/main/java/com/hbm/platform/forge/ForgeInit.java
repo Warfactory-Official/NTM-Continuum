@@ -58,6 +58,17 @@ public final class ForgeInit {
         com.hbm.gametest.SteelStructureGameTests.init();
         com.hbm.gametest.HazardGameTests.init();
         com.hbm.gametest.ToolingGameTests.init();
+        com.hbm.gametest.AbilityToolGameTests.init();
+        com.hbm.gametest.MeleeKitGameTests.init();
+        com.hbm.gametest.FinalCellHudFixGameTests.init();
+        com.hbm.gametest.FinalGapsAGameTests.init();
+        com.hbm.gametest.FinalGapsBGameTests.init();
+        com.hbm.gametest.AdvancementCommandGameTests.init();
+        com.hbm.gametest.DecoCrateGameTests.init();
+        com.hbm.gametest.FinalConsumableGameTests.init();
+        com.hbm.gametest.FinalRecipeGapGameTests.init();
+        com.hbm.gametest.RecipeContentGameTests.init();
+        com.hbm.gametest.UtilityToolGameTests.init();
         com.hbm.gametest.AssemblyFactoryGameTests.init();
         com.hbm.gametest.ChemicalFactoryGameTests.init();
         com.hbm.gametest.AutosawGameTests.init();
@@ -109,6 +120,28 @@ public final class ForgeInit {
                 com.hbm.gametest.HazardGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.ToolingGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AbilityToolGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.MeleeKitGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalCellHudFixGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalGapsAGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalGapsBGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.AdvancementCommandGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.DecoCrateGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalConsumableGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.FinalRecipeGapGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.RecipeContentGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.UtilityToolGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.AssemblyFactoryGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
@@ -180,6 +213,10 @@ public final class ForgeInit {
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.PollutionGameTests.TESTS));
 
+        // Forge 1.20.1 has no furnace-fuel data map: the burn times answer FurnaceFuelBurnTimeEvent (lazily
+        // resolved, so registering before the registries flush is fine).
+        dev.golem.core.registry.Fuels.register(com.hbm.items.ModFuelItems.BURN_TIMES);
+
         HbmPackets.declare();
         GolemNetwork.flushCommonRegistrations();
 
@@ -234,8 +271,6 @@ public final class ForgeInit {
                 com.hbm.items.special.ItemDemonCore.tickDropped(item);
             }
         });
-        MinecraftForge.EVENT_BUS.addListener((RegisterCommandsEvent event) ->
-                com.hbm.command.HbmCommands.register(event.getDispatcher()));
         MinecraftForge.EVENT_BUS.addListener((ServerStartedEvent event) -> {
             com.hbm.config.AutocalConfig.load(event.getServer());
             com.hbm.Constants.LOG.info("[HBM] Loaded {} total recipes",
@@ -265,11 +300,25 @@ public final class ForgeInit {
                         feature.unwrapKey().map(ResourceKey::location)
                                 .filter(id -> id.getNamespace().equals(com.hbm.Constants.MOD_ID))
                                 .ifPresent(features::add))));
-        if (features.size() == 9) {
-            com.hbm.Constants.LOG.info("[HBM] Forge biome modifiers injected all 9 placed features: {}", features);
+        // every hbm placed feature named by a loaded forge:add_features modifier must reach a biome (the old fixed
+        // expectation of 9 predates the per-ore features of §19ec-worldfeatures)
+        Set<Identifier> expected = new TreeSet<>();
+        server.registryAccess().registryOrThrow(net.minecraftforge.registries.ForgeRegistries.Keys.BIOME_MODIFIERS)
+                .forEach(modifier -> {
+                    if (modifier instanceof net.minecraftforge.common.world.ForgeBiomeModifiers.AddFeaturesBiomeModifier add) {
+                        add.features().forEach(feature -> feature.unwrapKey().map(ResourceKey::location)
+                                .filter(id -> id.getNamespace().equals(com.hbm.Constants.MOD_ID))
+                                .ifPresent(expected::add));
+                    }
+                });
+        Set<Identifier> missing = new TreeSet<>(expected);
+        missing.removeAll(features);
+        if (missing.isEmpty()) {
+            com.hbm.Constants.LOG.info("[HBM] Forge biome modifiers injected all {} modifier features ({} hbm placed features in biomes): {}",
+                    expected.size(), features.size(), features);
         } else {
-            com.hbm.Constants.LOG.error("[HBM] Forge biome modifiers injected {}/9 placed features: {}",
-                    features.size(), features);
+            com.hbm.Constants.LOG.error("[HBM] Forge biome modifiers injected {}/{} modifier features; missing {}",
+                    expected.size() - missing.size(), expected.size(), missing);
         }
     }
 

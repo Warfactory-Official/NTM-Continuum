@@ -1,7 +1,6 @@
 package com.hbm.entity.mob;
 
 import com.hbm.blocks.bomb.ModBombBlocks;
-import com.hbm.config.GeneralConfig;
 import dev.golem.core.world.Compat;
 import com.hbm.blocks.bomb.BlockTaint;
 import net.minecraft.core.BlockPos;
@@ -40,6 +39,18 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
     }
 
     @Override
+    public void die(DamageSource source) {
+        super.die(source);
+        // 1.7 ModEventHandler.onEntityDeath: bobHidden for every player within 50 of a tainted creeper a boxcar
+        // crushed
+        if (level() instanceof ServerLevel server && source.is(com.hbm.lib.ModDamageSources.BOXCAR)) {
+            String kind = net.minecraft.world.entity.EntityType.getKey(getType()).toString();
+            com.hbm.advancement.AwardRegions.nearby(server, getBoundingBox().inflate(50D),
+                    player -> com.hbm.advancement.HbmCriteria.CRUSHED.fire(player, kind));
+        }
+    }
+
+    @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
 
@@ -59,7 +70,7 @@ public class EntityCreeperTainted extends EntityCreeperBase implements IRadiatio
         if (!Compat.canEntityGrief(level, this)) return;
 
         // TAINT_TRAILS keeps the scatter young so it keeps creeping; without it the taint starts old
-        boolean trails = GeneralConfig.taintTrails;
+        boolean trails = com.hbm.config.ServerConfig.TAINT_TRAILS.get(); // 1.7 read the /ntmserver key
 
         if (isPowered()) {
             scatter(level, 255, 15, 7, trails ? 0 : 5, 3);

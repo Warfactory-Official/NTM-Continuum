@@ -35,10 +35,21 @@ public final class HbmEffect extends CompatMobEffect {
 
         switch (kind) {
             case TAINT -> {
-                // The tainted-creeper exception belongs to the mob wave; ordinary entities retain the
-                // old one-in-eighty absolute damage pulse here.
-                if (level.getRandom().nextInt(80) == 0) {
+                // 1.7 HbmPotion.performEffect (every second tick, isReady): 1 in 40, never the tainted creeper or crab
+                if (!(entity instanceof com.hbm.entity.mob.EntityCreeperTainted)
+                        && !(entity instanceof com.hbm.entity.mob.EntityTaintCrab)
+                        && level.getRandom().nextInt(40) == 0) {
                     Compat.hurt(entity, level, ModDamageSources.taint(level), amplifier + 1);
+                }
+                // 1.7 ServerConfig.TAINT_TRAILS: the tainted leave young taint (age 14) in the full block below them
+                if (com.hbm.config.ServerConfig.TAINT_TRAILS.get()) {
+                    net.minecraft.core.BlockPos below = net.minecraft.core.BlockPos.containing(
+                            Math.floor(entity.getX()), Math.floor(entity.getY()) - 1, Math.floor(entity.getZ()));
+                    net.minecraft.world.level.block.state.BlockState b = level.getBlockState(below);
+                    if (below.getY() + 1 > level.getMinY() + 1 && Compat.isSolidRender(b) && !b.isAir()) { // 1.7 y > 1: the world floor
+                        level.setBlock(below, com.hbm.blocks.bomb.ModBombBlocks.taint.get().defaultBlockState()
+                                .setValue(com.hbm.blocks.bomb.BlockTaint.TAINTAGE, 14), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+                    }
                 }
             }
             case RADAWAY -> HbmLivingProps.incrementRadiation(entity, -(amplifier + 1) * 0.05F);

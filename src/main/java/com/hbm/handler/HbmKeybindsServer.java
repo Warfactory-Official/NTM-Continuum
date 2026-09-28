@@ -34,5 +34,7 @@ public class HbmKeybindsServer {
                 || keybind == EnumKeybind.TOGGLE_HEAD) {
             JetpackHandler.handleKeybind(player, keybind, state);
         }
+        if (keybind == EnumKeybind.DASH) ArmorDashHandler.setKeyPressed(player, state);
+        if (keybind == EnumKeybind.TOGGLE_MAGNET) MagnetToggleHandler.setKeyPressed(player, state); // G-C
     }
 }

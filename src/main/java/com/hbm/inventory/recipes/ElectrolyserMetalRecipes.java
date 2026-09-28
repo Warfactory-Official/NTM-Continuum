@@ -62,6 +62,7 @@ public final class ElectrolyserMetalRecipes {
                 stack(ModItems.powder_astatine, 3), stack(ModItems.nugget_mercury, 72));
         add(ModItems.crystal_cobalt.get(), out(Mats.MAT_COBALT, MaterialShapes.INGOT, 3), out(Mats.MAT_IRON, MaterialShapes.INGOT, 4),
                 stack(ModItems.powder_copper, 4), stack(ModItems.powder_lithium_tiny, 3));
+        BedrockOreChainRecipes.electrolyser(ElectrolyserMetalRecipes::add); // weighted primaries and crumbs, 20 ticks
     }
 
     public static ElectrolysisMetalRecipe getRecipe(ItemStack stack) {
@@ -71,7 +72,13 @@ public final class ElectrolyserMetalRecipes {
 
     private static void add(net.minecraft.world.item.Item input, Mats.MaterialStack output1, Mats.MaterialStack output2,
                             ItemStack... byproduct) {
-        ElectrolysisMetalRecipe recipe = new ElectrolysisMetalRecipe(new ComparableStack(input), output1, output2, byproduct);
+        add(input, output1, output2, 600, byproduct);
+    }
+
+    /** 1.7's second constructor, with an explicit duration (the bedrock ore grades use 20). */
+    private static void add(net.minecraft.world.item.Item input, Mats.MaterialStack output1, Mats.MaterialStack output2,
+                            int duration, ItemStack... byproduct) {
+        ElectrolysisMetalRecipe recipe = new ElectrolysisMetalRecipe(new ComparableStack(input), output1, output2, duration, byproduct);
         RECIPES.add(recipe);
         BY_ITEM.put(input, recipe);
     }
@@ -89,10 +96,11 @@ public final class ElectrolyserMetalRecipes {
         public final Mats.MaterialStack output1;
         public final Mats.MaterialStack output2;
         public final ItemStack[] byproduct;
-        public final int duration = 600;
+        public final int duration;
 
         private ElectrolysisMetalRecipe(AStack input, Mats.MaterialStack output1, Mats.MaterialStack output2,
-                                        ItemStack[] byproduct) {
+                                        int duration, ItemStack[] byproduct) {
+            this.duration = duration;
             this.input = input;
             this.output1 = output1;
             this.output2 = output2;

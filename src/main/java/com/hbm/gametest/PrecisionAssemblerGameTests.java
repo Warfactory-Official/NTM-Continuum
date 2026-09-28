@@ -32,6 +32,9 @@ public final class PrecisionAssemblerGameTests {
     private PrecisionAssemblerGameTests() {}
 
     public static void recipes(GameTestHelper helper) {
+        // The assembly list is built lazily and reads enable528 (1.7 no528 blocks, setPools528): build it with the
+        // real config before the 528 window below, or a first build here would bake 528 mode into it for every test.
+        AssemblyMachineRecipes.INSTANCE.registerRecipes();
         boolean previous = GeneralConfig.enable528;
         GeneralConfig.enable528 = true;
         try {
@@ -44,7 +47,6 @@ public final class PrecisionAssemblerGameTests {
             GenericRecipe recycle = PrecAssRecipes.INSTANCE.getRecipe("precass.chip.recycle");
             helper.assertTrue(recycle != null && recycle.outputChance.length == 3,
                     "Precision assembler recycle recipe must return each input with its old chance");
-            AssemblyMachineRecipes.INSTANCE.registerRecipes();
             helper.assertTrue(AssemblyMachineRecipes.INSTANCE.getRecipe("ass.precass") != null,
                     "Assembly machine must expose the precision assembler construction recipe");
         } finally {

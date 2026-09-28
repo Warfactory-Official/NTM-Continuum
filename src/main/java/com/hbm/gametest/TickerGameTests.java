@@ -57,7 +57,14 @@ public final class TickerGameTests {
      * battery): 254.
      */
     // +5: compact compressor, funnel, decon, small tower and large tower (2026-09-21).
-    private static final int TICKING_TYPES = 259;
+    // +45 for the final-content wave (2026-09-24), counted per registration: custom machine 1, custom
+    // missile 7 (two launcher cores, assembly, compact launcher, launch table, large and rusted pads),
+    // deco/crate 9, dungeon 6, energy/bedrock 3 (charger, two RF converters), ICF 5, radar/utility 7
+    // (two radars, screen, forcefield, teleporter, orbus, seal hatch) and RBMK 7 (display, key pad,
+    // lever, numitron, graph, indicator, autoloader): 259 + 45 = 304; +5 structure wands (loot, jigsaw,
+    // spawner, tandem, structure): 309; +1 armor set B (the Elbow statue's healing aura, statue_elb_f): 310;
+    // +2 satellites (§19ec: the ID manager machine_satlinker and the cargo landing pad sat_dock): 312.
+    private static final int TICKING_TYPES = 312;
 
     public static void everyTickingBlockAnswersWithItsTicker(GameTestHelper helper) {
         List<String> problems = new ArrayList<>();

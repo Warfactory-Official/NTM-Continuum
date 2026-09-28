@@ -41,8 +41,12 @@ public final class ElectrolyserGameTests {
         ElectrolyserMetalRecipes.register();
         helper.assertTrue(ElectrolyserFluidRecipes.RECIPES.size() == 8,
                 "electrolyser must expose all eight legacy fluid recipes");
-        helper.assertTrue(ElectrolyserMetalRecipes.RECIPES.size() == 18,
-                "electrolyser must expose all eighteen ported crystal recipes");
+        // Eighteen crystal recipes plus 1.7's bedrock-ore products: primary-first, primary-second and
+        // crumbs for each of the six ore types.
+        int metalExpected = 18 + 3 * com.hbm.items.special.BedrockOreType.VALUES.length;
+        helper.assertTrue(ElectrolyserMetalRecipes.RECIPES.size() == metalExpected,
+                "electrolyser must expose all " + metalExpected + " ported metal recipes, found "
+                        + ElectrolyserMetalRecipes.RECIPES.size());
         helper.assertTrue(ElectrolyserFluidRecipes.getRecipe(Fluids.HEAVYWATER).output1.type == Fluids.DEUTERIUM,
                 "heavy water must produce deuterium");
         helper.assertTrue(ElectrolyserMetalRecipes.getRecipe(new ItemStack(ModItems.crystal_uranium.get())).output2.material

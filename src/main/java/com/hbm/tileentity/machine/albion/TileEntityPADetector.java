@@ -38,8 +38,7 @@ import java.util.List;
  *
  * <p>Ported from 1.12.2's {@code albion/TileEntityPADetector}.
  *
- * <p>Deviation from CE: a successful run does not grant the digamma advancement — the advancement manager
- * is not ported.
+ * <p>A run producing a digamma particle grants {@code hbm:omega12} to bystanders, as 1.7 did.
  * Sided automation exposes the same slots to every face for the reason given on
  * {@link TileEntityPASource}.
  */
@@ -160,6 +159,16 @@ public class TileEntityPADetector extends TileEntityCooledBase
             }
 
             BlockPos pos = getBlockPos();
+            // 1.7 achOmega12: a digamma particle made here, every player in the box grown by 100/50/100
+            for (net.minecraft.world.item.ItemStack made : new net.minecraft.world.item.ItemStack[] {recipe.output1, recipe.output2}) {
+                if (made != null && made.is(com.hbm.items.ModRBMKItems.particle_digamma.get())
+                        && level instanceof net.minecraft.server.level.ServerLevel server) {
+                    com.hbm.advancement.AwardRegions.nearby(server, new net.minecraft.world.phys.AABB(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                                    pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D).inflate(100D, 50D, 100D),
+                            player -> com.hbm.advancement.HbmCriteria.PARTICLE_PRODUCED.fire(player, made));
+                    break;
+                }
+            }
             SatelliteDetector.reportEvent(level, SatelliteDetector.DURATION_MEDIUM,
                     SatelliteDetector.BurstIntensity.MEDIUM, pos.getX(), pos.getZ());
             SatelliteRayScan.reportEvent(level, pos.getX(), pos.getY(), pos.getZ(),

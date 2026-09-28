@@ -112,6 +112,7 @@ public class RBMKConsole extends BlockMultiblockCore {
     protected InteractionResult useAtCore(BlockState state, Level level, BlockPos core, Player player,
                                           BlockHitResult hit) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
+        if (!player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player); // 1.7 onBlockActivated
         if (player.isShiftKeyDown()) {
             if (level.getBlockEntity(core) instanceof BlockEntityRBMKConsole console) console.rotate();
             return InteractionResult.SUCCESS;

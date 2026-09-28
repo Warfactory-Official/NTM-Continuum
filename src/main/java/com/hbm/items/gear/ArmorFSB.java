@@ -276,6 +276,7 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
      */
     public static void handleTick(Player player) {
         updateInsertSpeed(player);
+        updateStepSize(player);
         if (!hasFSBArmor(player)) return;
 
         ArmorFSB chestplate = chestplate(player);
@@ -295,6 +296,20 @@ public class ArmorFSB extends CompatArmorItem implements IArmorDisableModel, IFi
                 && !player.isShiftKeyDown()) {
             steppy(player, chestplate.step.get());
         }
+    }
+
+    /**
+     * 1.7 {@code ModEventHandlerClient} (client tick START): a working full set with a step size sets the
+     * player's step height to {@code stepSize + 0.003}; without one, a height it recognises as its own is put
+     * back. The 0.003 "discriminator" was how upstream told its own value from anyone else's; the step height
+     * facade tracks ownership by id instead, so only the value is kept. Run on both sides here because the
+     * modern step height is a synced attribute rather than a client-only field.
+     */
+    private static void updateStepSize(Player player) {
+        ArmorFSB plate = chestplate(player);
+        int size = plate != null && hasFSBArmor(player) ? plate.stepSize : 0;
+        if (size > 0) dev.golem.core.world.StepHeight.set(player, "hbm:armor_step_size", size + 0.003D);
+        else dev.golem.core.world.StepHeight.clear(player, "hbm:armor_step_size");
     }
 
     private static void updateInsertSpeed(Player player) {

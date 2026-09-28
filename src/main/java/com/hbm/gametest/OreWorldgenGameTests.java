@@ -274,9 +274,14 @@ public final class OreWorldgenGameTests {
         }
 
         // Enough attempts that some roll lands its 5-block scan window on the exposed face.
+        // 1.7: 30 columns a chunk, x/z in the chunk and d = 16 + rand(96) (the placed feature's in_square + height_range)
+        BlockState smolderingState = ModOreBlocks.ore_nether_smoldering.get().defaultBlockState();
         for (int i = 0; i < 200; i++) {
-            com.hbm.world.feature.NetherOreFeature.smolderingNetherrack(level, RandomSource.create(31L + i),
-                    origin.getX(), origin.getZ());
+            RandomSource rand = RandomSource.create(31L + i);
+            for (int k = 0; k < 30; k++) {
+                com.hbm.world.feature.CrustColumnFeature.scan(level, new BlockPos(origin.getX() + rand.nextInt(16),
+                        16 + rand.nextInt(96), origin.getZ() + rand.nextInt(16)), smolderingState);
+            }
         }
 
         Block smoldering = ModOreBlocks.ore_nether_smoldering.get();

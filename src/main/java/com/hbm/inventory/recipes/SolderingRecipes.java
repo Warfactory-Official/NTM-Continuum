@@ -29,7 +29,7 @@ import static com.hbm.items.ItemEnums.EnumCircuitType.*;
  * {@link ModIntermediateItems intermediates} + lead fine-wire (autogen) + fluids: ANALOG, BASIC (the
  * canonical "Integrated Circuit Board"), ADVANCED, CAPACITOR_BOARD, BISMOID, QUANTUM — plus the
  * machine-upgrade chains (speed/effect/power/fortune tiers I→II→III, the 1.12.2 tier-1 recipes +
- * {@code addFirstUpgrade}/{@code addSecondUpgrade}). <b>Deferred:</b> the CONTROLLER* circuits, the
+ * {@code addFirstUpgrade}/{@code addSecondUpgrade}). The CONTROLLER* circuits are in 1.7's {@code if(no528)}. <b>Deferred:</b> the
  * afterburn upgrade chain (its machines aren't ported), and the {@code enableLBSM} "simple crafting"
  * ingredient reductions (the non-default full-cost values are used).
  */
@@ -86,6 +86,21 @@ public final class SolderingRecipes {
                 a(cir(CHIP_QUANTUM, 4), cir(CHIP_BISMOID, 16), cir(ATOMIC_CLOCK, 4)),
                 a(cir(PCB, 16), ANY_HARDPLASTIC.ingot().count(4)),                                       a(PB.wire().count(16)));
 
+        // 1.7 "COMPUTERS": the control units, only in 1.7's `if(no528)` (528 mode makes them in the precision
+        // assembler). Non-LBSM counts, as for every other recipe here.
+        if (!com.hbm.config.GeneralConfig.enable528) {
+            add(out(CONTROLLER),          400,  15_000, new FluidStack(Fluids.PERFLUOROMETHYL, 1_000),
+                    a(cir(CHIP, 32), cir(CAPACITOR, 32), cir(CAPACITOR_TANTALIUM, 16)),
+                    a(cir(CONTROLLER_CHASSIS, 1), RUBBER.ingot().count(4)),                              a(PB.wire().count(16)));
+            add(out(CONTROLLER_ADVANCED), 600,  25_000, new FluidStack(Fluids.PERFLUOROMETHYL, 4_000),
+                    a(cir(CHIP_BISMOID, 16), cir(CAPACITOR_TANTALIUM, 48), cir(ATOMIC_CLOCK, 1)),
+                    a(cir(CONTROLLER_CHASSIS, 1), ANY_HARDPLASTIC.ingot().count(4)),                     a(PB.wire().count(24)));
+            add(out(CONTROLLER_QUANTUM),  600, 250_000, new FluidStack(Fluids.PERFLUOROMETHYL_COLD, 6_000),
+                    a(cir(CHIP_QUANTUM, 16), cir(CHIP_BISMOID, 48), cir(ATOMIC_CLOCK, 8)),
+                    a(cir(CONTROLLER_ADVANCED, 2), new ComparableStack(ModUpgradeItems.upgrade_speed_3.get())),
+                    a(PB.wire().count(32)));
+        }
+
         // machine upgrades (tier 1: template + a signature dust; tiers 2/3 via the 1.12.2 upgrade chains).
         add(new ItemStack(ModUpgradeItems.upgrade_speed_1.get()), 200, 1_000, null,
                 a(cir(VACUUM_TUBE, 4), cir(CAPACITOR, 1)),
@@ -100,6 +115,8 @@ public final class SolderingRecipes {
                 a(cir(VACUUM_TUBE, 4), cir(CAPACITOR, 1)),
                 a(new ComparableStack(ModItems.upgrade_template.get()), NB.dust().count(4)),             a());
 
+        // 1.7 `if(no528)`: in 528 mode the tier II/III upgrades come from the precision assembler instead
+        if (!com.hbm.config.GeneralConfig.enable528) {
         addFirstUpgrade(ModUpgradeItems.upgrade_speed_1.get(), ModUpgradeItems.upgrade_speed_2.get());
         addSecondUpgrade(ModUpgradeItems.upgrade_speed_2.get(), ModUpgradeItems.upgrade_speed_3.get());
         addFirstUpgrade(ModUpgradeItems.upgrade_effect_1.get(), ModUpgradeItems.upgrade_effect_2.get());
@@ -108,6 +125,11 @@ public final class SolderingRecipes {
         addSecondUpgrade(ModUpgradeItems.upgrade_power_2.get(), ModUpgradeItems.upgrade_power_3.get());
         addFirstUpgrade(ModUpgradeItems.upgrade_fortune_1.get(), ModUpgradeItems.upgrade_fortune_2.get());
         addSecondUpgrade(ModUpgradeItems.upgrade_fortune_2.get(), ModUpgradeItems.upgrade_fortune_3.get());
+        }
+        // 1.7 SolderingRecipes: the satellite ID chip
+        add(new ItemStack(com.hbm.items.ModSatelliteItems.sat_chip.get()), 100, 100, null,
+                a(cir(CHIP, 8), cir(CAPACITOR, 2)),              a(cir(PCB, 2)),                          a(PB.wire().count(4)));
+        RadarUtilityAssemblyRecipes.registerSoldering(); // forcefield radius / health upgrades
     }
 
     /** Tier I → II (the 1.12.2 {@code addFirstUpgrade}, non-LBSM ingredient counts). */

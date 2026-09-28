@@ -787,7 +787,7 @@ public final class ModShapelessRecipes {
         shapeless(NS, "red_cable_classic", ItemIds.red_cable_classic, ItemIds.red_cable);
         shapeless(NS, "red_cable_from_classic", ItemIds.red_cable, ItemIds.red_cable_classic);
         shapeless(NS, "red_cable_gauge", ItemIds.red_cable_gauge,
-                ItemIds.red_cable, TagIds.ingots_steel, ItemIds.circuit_basic);
+                "hbm:red_wire_coated", TagIds.ingots_steel, ItemIds.circuit_basic); // 1.7: the coated wire
         shapeless(NS, "red_pylon_medium_steel_transformer", ItemIds.red_pylon_medium_steel_transformer,
                 ItemIds.red_pylon_medium_steel, ItemIds.plate_polymer, ItemIds.coil_copper);
         shapeless(NS, "red_pylon_medium_wood_transformer", ItemIds.red_pylon_medium_wood_transformer,

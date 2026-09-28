@@ -39,10 +39,13 @@ import org.jspecify.annotations.Nullable;
  * <p>Radius 1: like ballistic missiles on the modern nonblocking ticket layer, the ABM claims the 3×3
  * around itself. Its turning path makes that full envelope necessary rather than directional lookahead.
  *
- * <p>Deferred: the radar interfaces, the {@code particleControl} exhaust trail, and
+ * <p>Radar: an ABM blip, seen by any radar scanning for missiles, never driving its redstone.
+ *
+ * <p>Deferred: the {@code particleControl} exhaust trail, and
  * {@code ExplosionLarge.spawnShock}'s lock-on ring (its particle family is unported).
  */
-public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLoader, IMissilePitch {
+public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLoader, IMissilePitch,
+        com.hbm.api.entity.IRadarDetectableNT {
 
     /** See {@link IMissilePitch}: the interceptor dives, so its pitch runs past −90 too. */
     public static final net.minecraft.network.syncher.EntityDataAccessor<Float> PITCH =
@@ -256,4 +259,12 @@ public class EntityMissileAntiBallistic extends CompatEntity implements IChunkLo
     protected void saveData(DataOut output) {
         output.putDouble("veloc", this.velocity);
     }
+
+    // --- 1.7 IRadarDetectableNT ---
+
+    @Override public String getRadarName() { return "radar.target.abm"; }
+    @Override public int getBlipLevel() { return TIER_AB; }
+    @Override public boolean canBeSeenBy(Object radar) { return true; }
+    @Override public boolean paramsApplicable(RadarScanParams params) { return params.scanMissiles; }
+    @Override public boolean suppliesRedstone(RadarScanParams params) { return false; }
 }

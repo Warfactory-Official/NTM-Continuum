@@ -159,8 +159,10 @@ public final class TileEntityMachineRadiolysis extends TileEntityMachineBase
         ItemStack input = inventory.getStackInSlot(12);
         if (input.isEmpty()) return;
 
-        // 1.7 eats one food item per cycle (the pancake was exempt; it is not ported)
-        if (ItemStacks.foodProperties(input) != null) {
+        // 1.7 eats one ItemFood per cycle, except the pancake; the canned conserves were never ItemFood
+        if (ItemStacks.foodProperties(input) != null
+                && !input.is(com.hbm.items.ModFinalConsumableItems.pancake.get())
+                && !(input.getItem() instanceof com.hbm.items.food.ItemConserve)) {
             inventory.extractItem(12, 1, false);
             input = inventory.getStackInSlot(12);
         }

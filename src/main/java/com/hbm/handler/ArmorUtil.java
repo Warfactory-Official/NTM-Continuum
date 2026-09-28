@@ -22,7 +22,7 @@ import net.minecraft.world.item.ItemStack;
  * counts for {@code checkForHaz2} (and implies hazmat).</li>
  * </ul>
  *
- * <p>Deferred vs the original: the digamma armor set (FAU — {@code checkForDigamma} returns false),
+ * <p>Deferred vs the original:
  * the mutation-potion hazmat bypass (no potions yet), and asbestos suit.
  */
 public class ArmorUtil {
@@ -96,15 +96,63 @@ public class ArmorUtil {
         return checkAnySet(entity, hazmat2Sets);
     }
 
-    /** Digamma protection (old FAU armor set) — armor not yet ported. */
+    /** 1.7 {@code checkForDigamma}: the full Fau or DNT-nano suit, or the stability effect. */
     public static boolean checkForDigamma(LivingEntity entity) {
-        return false; // TODO(armor): FAU set
+        if (checkArmor(entity, com.hbm.items.ModArmorSetItems.fau_helmet.get(), com.hbm.items.ModArmorSetItems.fau_plate.get(),
+                com.hbm.items.ModArmorSetItems.fau_legs.get(), com.hbm.items.ModArmorSetItems.fau_boots.get())) return true;
+        if (checkArmor(entity, com.hbm.items.ModArmorItems.dns_helmet.get(), com.hbm.items.ModArmorItems.dns_plate.get(),
+                com.hbm.items.ModArmorItems.dns_legs.get(), com.hbm.items.ModArmorItems.dns_boots.get())) return true;
+        return dev.golem.core.world.Effects.hasRegistered(entity, com.hbm.potion.ModEffects.STABILITY.get());
+    }
+
+    /**
+     * 1.7 {@code ArmorUtil.addGasMaskTooltip}: the installed filter and its remaining life. The filter's
+     * own lore lines, which upstream appended in yellow, are not reproduced.
+     */
+    public static void addGasMaskTooltip(ItemStack mask, List<net.minecraft.network.chat.Component> list) {
+        if (mask.isEmpty() || !(mask.getItem() instanceof IGasMask gasMask)) return;
+        ItemStack filter = gasMask.getFilter(mask);
+        if (filter.isEmpty()) {
+            list.add(net.minecraft.network.chat.Component.literal("No filter installed!")
+                    .withStyle(net.minecraft.ChatFormatting.RED));
+            return;
+        }
+        list.add(net.minecraft.network.chat.Component.literal("Installed filter:")
+                .withStyle(net.minecraft.ChatFormatting.GOLD));
+        int meta = filter.getDamageValue();
+        int max = filter.getMaxDamage();
+        String append = max > 0 ? " (" + ((max - meta) * 100 / max) + "%)" : "";
+        list.add(net.minecraft.network.chat.Component.literal("  ").append(filter.getHoverName()).append(append));
+    }
+
+    /**
+     * 1.7 {@code getGasMaskFilterRecursively}: the helmet's own filter, else the filter of a gas-mask
+     * attachment in its helmet-only module slot. Used by the attachment renderer.
+     */
+    public static ItemStack getGasMaskFilterRecursively(ItemStack mask) {
+        if (mask.isEmpty()) return ItemStack.EMPTY;
+        ItemStack filter = mask.getItem() instanceof IGasMask gasMask ? gasMask.getFilter(mask) : ItemStack.EMPTY;
+        if (filter.isEmpty() && ArmorModHandler.hasMods(mask)) {
+            ItemStack mod = ArmorModHandler.pryMod(mask, ArmorModHandler.helmet_only);
+            if (mod.getItem() instanceof IGasMask modMask) filter = modMask.getFilter(mod);
+        }
+        return filter;
     }
 
     /** Damages the installed filter of a filterable helmet, removing it once exhausted. */
     public static void damageGasMaskFilter(LivingEntity entity, int damage) {
         ItemStack helmet = entity.getItemBySlot(EquipmentSlot.HEAD);
-        if (helmet.getItem() instanceof IGasMask mask) mask.damageFilter(helmet, damage);
+        if (helmet.getItem() instanceof IGasMask mask) {
+            mask.damageFilter(helmet, damage);
+        } else if (ArmorModHandler.hasMods(helmet)) {
+            // 1.7 fell through to a gas-mask attachment in the helmet-only slot. Modules are stored as
+            // copies, so the worn one has to be written back after its filter wears.
+            ItemStack mod = ArmorModHandler.pryMod(helmet, ArmorModHandler.helmet_only);
+            if (mod.getItem() instanceof IGasMask modMask) {
+                modMask.damageFilter(mod, damage);
+                ArmorModHandler.applyMod(helmet, mod);
+            }
+        }
     }
 
     /**

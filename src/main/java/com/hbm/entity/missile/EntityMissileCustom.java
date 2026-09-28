@@ -271,11 +271,10 @@ public class EntityMissileCustom extends EntityMissileBaseNT {
     public List<ItemStack> getDebris() { return new ArrayList<>(); }
     @Override public ItemStack getDebrisRareDrop() { return ItemStack.EMPTY; }
 
-    // The 1.7 custom-missile item is not among this port's missile items (see ROADMAP: carrier/endo/exo/n2
-    // stand in for test/custom/soyuz), so the pad shows nothing for it until that item lands.
+    // 1.7: new ItemStack(ModItems.missile_custom), a bare one without its parts
     @Override
     public ItemStack getMissileItemForInfo() {
-        return ItemStack.EMPTY;
+        return new ItemStack(com.hbm.items.ModCustomMissileItems.missile_custom.get());
     }
 
     // the blip is the fuselage's silhouette: which of the five 1.7 size pairs the craft assembles into

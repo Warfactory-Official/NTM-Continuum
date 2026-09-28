@@ -70,7 +70,13 @@ public class MachineSatLink extends BlockMultiblockMachine implements ILookOverl
             player.sendSystemMessage(Component.literal("Set frequency to " + link.freq)
                     .withStyle(ChatFormatting.YELLOW));
         }
-        level.playSound(null, pos, ModSounds.TECH_BLEEP.get(), SoundSource.BLOCKS, 1F, 1F);
+        // 1.7 playSoundAtEntity(player, ...)
+        if (player != null) {
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), ModSounds.TECH_BLEEP.get(),
+                    SoundSource.PLAYERS, 1F, 1F);
+        } else {
+            level.playSound(null, pos, ModSounds.TECH_BLEEP.get(), SoundSource.BLOCKS, 1F, 1F);
+        }
         return true;
     }
 
@@ -80,11 +86,8 @@ public class MachineSatLink extends BlockMultiblockMachine implements ILookOverl
         if (core == null || !(level.getBlockEntity(core) instanceof TileEntityMachineSatLink link)) return null;
 
         List<String> text = new ArrayList<>();
-        text.add("Frequency: " + link.freq);
+        text.add("Freq: " + link.freq);
         text.add("Connected: " + (link.connected ? "§aYes" : "§cNo"));
-        for (Component component : link.info) {
-            if (component != null) text.add(component.getString());
-        }
         return new ILookOverlay.Data(getName().getString(), 0xffff00, 0x404000, text);
     }
 

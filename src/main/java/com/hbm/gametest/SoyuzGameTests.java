@@ -119,6 +119,42 @@ public final class SoyuzGameTests {
         helper.succeed();
     }
 
+    /** 1.7 designator()/orbital()/satellite(): Gerald needs the orbital module, CARGO needs a designator. */
+    public static void modes(GameTestHelper helper) {
+        TileEntitySoyuzLauncher launcher = place(helper);
+        launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ROCKET,
+                ModSoyuzBlocks.missile_soyuz.get().of(SoyuzSkinType.NORMAL));
+        fuel(launcher);
+        launcher.power = launcher.getMaxPower();
+
+        launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_SATELLITE,
+                new ItemStack(com.hbm.items.ModSatelliteItems.sat_gerald.get()));
+        helper.assertTrue(launcher.orbital() == 1 && !launcher.canLaunch(), "Gerald without the orbital module must not launch");
+        launcher.inventory.setStackInSlot(TileEntitySoyuzLauncher.SLOT_ORBITAL,
+                new ItemStack(com.hbm.items.ModItems.missile_soyuz_lander.get()));
+        helper.assertTrue(launcher.orbital() == 2 && launcher.canLaunch(), "Gerald with the orbital module is ready");
+
+        launcher.handleButtonPacket(1, 0);
+        helper.assertTrue(launcher.mode == 1 && launcher.satellite() == 0 && launcher.designator() == 1
+                && !launcher.canLaunch(), "CARGO mode needs a designator and no satellite");
+        helper.assertTrue(launcher.getFuelRequired() == 5000, "CARGO fuel is 5000 + distance, 0 without a target");
+
+        launcher.handleButtonPacket(0, 0);
+        launcher.tanks[1].setFill(0);
+        helper.assertTrue(launcher.canLaunch(), "1.7 canLaunch never checks oxygen");
+
+        // the button's path: start, then thirty seconds of server ticks, then liftoff
+        launcher.handleButtonPacket(0, 1);
+        helper.assertTrue(launcher.starting, "the launch button starts the countdown");
+        for (int i = 0; i <= TileEntitySoyuzLauncher.maxCount; i++) tick(helper, launcher);
+        var rockets = helper.getLevel().getEntitiesOfClass(EntitySoyuz.class,
+                new net.minecraft.world.phys.AABB(helper.absolutePos(LAUNCHER)).inflate(16));
+        helper.assertTrue(rockets.size() == 1, "the countdown ends in a liftoff, rockets: " + rockets.size()
+                + " countdown " + launcher.countdown + " starting " + launcher.starting);
+        rockets.forEach(net.minecraft.world.entity.Entity::discard);
+        helper.succeed();
+    }
+
     public static void assets(GameTestHelper helper) {
         String[] required = {
                 "assets/hbm/blockstates/soyuz_launcher.json",

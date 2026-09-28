@@ -185,6 +185,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("satellite_chip", 100, 8, () -> SatelliteGameTests::chip);
     public static final GameTests.Function SATELLITE_ASSETS =
             TESTS.function("satellite_assets", 20, () -> SatelliteGameTests::assets);
+    public static final GameTests.Function SATELLITE_PERSISTENCE =
+            TESTS.function("satellite_persistence", 20, () -> SatelliteGameTests::persistence);
+    public static final GameTests.Function SATELLITE_WEAPONS =
+            TESTS.function("satellite_weapons", 100, 4, () -> SatelliteGameTests::weapons);
+    public static final GameTests.Function SATELLITE_SURVEY =
+            TESTS.function("satellite_survey", 20, () -> SatelliteGameTests::survey);
+    public static final GameTests.Function SATELLITE_LINKER =
+            TESTS.function("satellite_linker", 20, () -> SatelliteGameTests::linker);
+    public static final GameTests.Function SATELLITE_DOCK =
+            TESTS.function("satellite_dock", 100, 4, () -> SatelliteGameTests::dock);
+    public static final GameTests.Function SOYUZ_MODES =
+            TESTS.function("soyuz_modes", 100, 16, () -> SoyuzGameTests::modes);
     public static final GameTests.Function DFC_BEAM =
             TESTS.function("dfc_beam", 100, 12, () -> DFCGameTests::beam);
     public static final GameTests.Function DFC_REACTION =
@@ -908,6 +920,26 @@ public final class HbmGameTestFunctions {
             TESTS.function("armor_protection", 20, () -> ArmorGameTests::protectionRegistered);
     public static final GameTests.Function ARMOR_HIDES_HAT =
             TESTS.function("armor_hides_hat", 20, () -> ArmorGameTests::hidesHatLayer);
+    // --- final armor sets A (implementations live in ArmorSetGameTests) ---
+    public static final GameTests.Function ARMOR_SET_A_CONFIGURED =
+            TESTS.function("armor_set_a_configured", 20, () -> ArmorSetGameTests::configured);
+    public static final GameTests.Function ARMOR_SET_A_POWER =
+            TESTS.function("armor_set_a_power", 40, () -> ArmorSetGameTests::powerDrain);
+    public static final GameTests.Function ARMOR_SET_A_EUPHEMIUM =
+            TESTS.function("armor_set_a_euphemium", 20, () -> ArmorSetGameTests::euphemium);
+    public static final GameTests.Function ARMOR_SET_A_TRENCHMASTER =
+            TESTS.function("armor_set_a_trenchmaster", 20, () -> ArmorSetGameTests::trenchmaster);
+    public static final GameTests.Function ARMOR_SET_A_DASH =
+            TESTS.function("armor_set_a_dash", 20, () -> ArmorSetGameTests::bismuthDash);
+    public static final GameTests.Function ARMOR_SET_A_DIGAMMA =
+            TESTS.function("armor_set_a_digamma", 20, () -> ArmorSetGameTests::digamma);
+    // --- final armor B (implementations live in ArmorSetBGameTests) ---
+    public static final GameTests.Function ARMOR_SET_B_FUELED =
+            TESTS.function("armor_set_b_fueled", 20, () -> ArmorSetBGameTests::fueled);
+    public static final GameTests.Function ARMOR_SET_B_IV_BAGS =
+            TESTS.function("armor_set_b_iv_bags", 20, () -> ArmorSetBGameTests::ivBags);
+    public static final GameTests.Function ARMOR_SET_B_KITS =
+            TESTS.function("armor_set_b_kits", 20, () -> ArmorSetBGameTests::kits);
     public static final GameTests.Function ARMOR_EFFECT_VISIBLE =
             TESTS.function("armor_effect_visible", 20, () -> ArmorGameTests::setBonusEffectIsVisible);
     public static final GameTests.Function ARMOR_HARD_LANDING =
@@ -922,6 +954,12 @@ public final class HbmGameTestFunctions {
             TESTS.function("armor_module_storage", 40, () -> ArmorWaveGameTests::moduleStorageRoundTrip);
     public static final GameTests.Function ARMOR_TABLE_LIFECYCLE =
             TESTS.function("armor_table_lifecycle", 40, () -> ArmorWaveGameTests::tableSlotsAndLifecycle);
+    public static final GameTests.Function ARMOR_MOD_MODIFIERS =
+            TESTS.function("armor_mod_modifiers", 40, () -> ArmorModGameTests::modifiersFollowTheWornStack);
+    public static final GameTests.Function ARMOR_MOD_TICK =
+            TESTS.function("armor_mod_tick", 40, () -> ArmorModGameTests::medalAndMilkTick);
+    public static final GameTests.Function ARMOR_MOD_REVIVE =
+            TESTS.function("armor_mod_revive", 40, () -> ArmorModGameTests::whiskeyRevivesThreeTimes);
     public static final GameTests.Function ARMOR_SHORT_FALL =
             TESTS.function("armor_short_fall", 40, () -> ArmorGameTests::shortFallDoesNothing);
     public static final GameTests.Function ARMOR_STEEL_TITANIUM =
@@ -967,6 +1005,12 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function DAMAGE_TYPES_KEYED =
             TESTS.function("damage_types_keyed", 40, () -> DamageTypeGameTests::everyDamageTypeIsKeyedAndTagged);
 
+    // --- creative wands + missile_test (implementations live in WandGameTests) ---
+    public static final GameTests.Function WAND_K_FILLS_BOX =
+            TESTS.function("wand_k_fills_box", 40, () -> WandGameTests::constructionWandFillsBox);
+    public static final GameTests.Function WAND_MISSILE_TEST_LAUNCHABLE =
+            TESTS.function("wand_missile_test_launchable", 40, () -> WandGameTests::testMissileIsLaunchable);
+
     public static final GameTests.Function CONVEYOR_ROUTE_VERTICAL_THEN_TURN =
             TESTS.function("conveyor_route_vertical_then_turn", 40, 16, () -> ConveyorRouteGameTests::verticalThenTurn);
 
@@ -989,6 +1033,24 @@ public final class HbmGameTestFunctions {
             TESTS.function("missile_holds_chunk", 60, () -> MissileGameTests::missileHoldsItsChunk);
     public static final GameTests.Function MISSILE_PITCH_NOSES_OVER =
             TESTS.function("missile_pitch_noses_over", 60, () -> MissileGameTests::missilePitchNosesOver);
+    public static final GameTests.Function RADAR_UTILITY_RADAR =
+            TESTS.function("radar_utility_radar_redstone", 20, () -> RadarUtilityGameTests::radarDetectionAndRedstone);
+    public static final GameTests.Function RADAR_UTILITY_SEAL =
+            TESTS.function("radar_utility_seal_hatch", 20, () -> RadarUtilityGameTests::sealTogglesHatch);
+    public static final GameTests.Function RADAR_UTILITY_TELEPORTER =
+            TESTS.function("radar_utility_teleporter", 20, () -> RadarUtilityGameTests::teleporterMovesEntity);
+    public static final GameTests.Function CUSTOM_MISSILE_ASSEMBLE_LAUNCH =
+            TESTS.function("custom_missile_assemble_launch", 40, () -> CustomMissileGameTests::assembleAndLaunch);
+    public static final GameTests.Function ICF_PRESS_FILLS =
+            TESTS.function("icf_press_fills", 20, () -> IcfGameTests::pressFillsPellets);
+    public static final GameTests.Function ICF_REACTOR_TICK =
+            TESTS.function("icf_reactor_tick", 20, () -> IcfGameTests::reactorTick);
+    public static final GameTests.Function ICF_LASER_ARRAY =
+            TESTS.function("icf_laser_array", 20, 8, () -> IcfGameTests::laserArrayScan);
+    public static final GameTests.Function DUNGEON_REBAR_FILL =
+            TESTS.function("dungeon_rebar_fill", 20, () -> DungeonGameTests::rebarFillsLowestLayer);
+    public static final GameTests.Function DUNGEON_PEDESTAL_RITUAL =
+            TESTS.function("dungeon_pedestal_ritual", 40, 10, () -> DungeonGameTests::pedestalRitual);
     public static final GameTests.Function MISSILE_LAUNCH_TABLE =
             TESTS.function("missile_launch_table", 20, () -> MissileGameTests::launchTableResolves);
     public static final GameTests.Function MISSILE_MICRO_PAYLOAD =
@@ -1105,6 +1167,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("rbmk_boiler", 40, () -> RBMKGameTests::boiler);
     public static final GameTests.Function RBMK_DEBRIS =
             TESTS.function("rbmk_debris", 40, () -> RBMKGameTests::debris);
+    public static final GameTests.Function RBMK_ROR_PANELS =
+            TESTS.function("rbmk_ror_panels", 40, () -> RBMKGameTests::rorPanels);
     public static final GameTests.Function LOOK_OVERLAY_SERVER_CLASSES =
             TESTS.function("look_overlay_server_classes", 20,
                     () -> LookOverlayGameTests::blockClassesAreDedicatedServerSafe);
@@ -1135,9 +1199,61 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function EXPLOSIVES_CHARGE =
             TESTS.function("explosives_charge_timer_defuse", 40, () -> ExplosivesGameTests::chargeTimerAndDefuse);
 
+    public static final GameTests.Function CUSTOM_MACHINE_CONFIG =
+            TESTS.function("custom_machine_config", 40, () -> CustomMachineGameTests::defaultConfig);
+    public static final GameTests.Function CUSTOM_MACHINE_STRUCTURE_RECIPE =
+            TESTS.function("custom_machine_structure_recipe", 100, 8, () -> CustomMachineGameTests::structureAndRecipe);
+    public static final GameTests.Function CUSTOM_MACHINE_CONTROLLER_RECIPE =
+            TESTS.function("custom_machine_controller_recipe", 40, () -> CustomMachineGameTests::controllerRecipe);
+
     // --- the generated id constants (implementations live in IdGameTests) ---
     public static final GameTests.Function IDS_MATCH_REGISTRY =
             TESTS.function("ids_match_registry", 40, () -> IdGameTests::constantsMatchTheRegistry);
+
+    // --- the 1.7 NBT structure system (implementations live in StructureWandGameTests) ---
+    public static final GameTests.Function STRUCTURE_LEGACY_PALETTE =
+            TESTS.function("structure_legacy_palette", 20, () -> StructureWandGameTests::legacyPalette);
+    public static final GameTests.Function STRUCTURE_BUNDLED_BUILD =
+            TESTS.function("structure_bundled_build", 20, () -> StructureWandGameTests::bundledStructure);
+    public static final GameTests.Function STRUCTURE_SAVE_LOAD =
+            TESTS.function("structure_save_load", 20, () -> StructureWandGameTests::saveAndLoad);
+    // --- NBT structure world generation (implementations live in NTMStructureGameTests) ---
+    public static final GameTests.Function NTM_STRUCTURE_REGION_PICK =
+            TESTS.function("ntm_structure_region_pick", 20, () -> NTMStructureGameTests::regionPick);
+    public static final GameTests.Function NTM_STRUCTURE_SPAWNS =
+            TESTS.function("ntm_structure_spawns", 20, () -> NTMStructureGameTests::spawnsRegistered);
+    public static final GameTests.Function NTM_STRUCTURE_PALETTES =
+            TESTS.function("ntm_structure_palettes", 200, () -> NTMStructureGameTests::palettesResolve);
+    public static final GameTests.Function NTM_STRUCTURE_COMPONENT_BUILD =
+            TESTS.function("ntm_structure_component_build", 60, 48, () -> NTMStructureGameTests::componentBuild);
+    // --- legacy hardcoded dungeons + scattered world blocks, WG-D (implementations live in LegacyDungeonGameTests) ---
+    public static final GameTests.Function WGD_BUILDERS = TESTS.function("wgd_builders", 200, () -> LegacyDungeonGameTests::builders);
+    public static final GameTests.Function WGD_APPLY = TESTS.function("wgd_apply", 40, 16, () -> LegacyDungeonGameTests::apply);
+    public static final GameTests.Function WGD_FEATURES = TESTS.function("wgd_features", 40, 16, () -> LegacyDungeonGameTests::features);
+    // --- multi-piece 1.7 structures, WG-C (implementations live in NTMComponentStructureGameTests) ---
+    public static final GameTests.Function WGC_SPAWNS = TESTS.function("wgc_spawns", 20, () -> NTMComponentStructureGameTests::spawnsRegistered);
+    public static final GameTests.Function WGC_METEOR_ASSEMBLY = TESTS.function("wgc_meteor_assembly", 200, () -> NTMComponentStructureGameTests::meteorAssembly);
+    public static final GameTests.Function WGC_METEOR_PALETTES = TESTS.function("wgc_meteor_palettes", 100, () -> NTMComponentStructureGameTests::meteorPalettes);
+    public static final GameTests.Function WGC_METEOR_BLOCK_TABLE = TESTS.function("wgc_meteor_block_table", 40, 24, () -> NTMComponentStructureGameTests::meteorBlockTable);
+    public static final GameTests.Function WGC_FEATURES_ASSEMBLY = TESTS.function("wgc_features_assembly", 200, () -> NTMComponentStructureGameTests::featuresAssembly);
+    public static final GameTests.Function WGC_BUNKER_ASSEMBLY = TESTS.function("wgc_bunker_assembly", 40, () -> NTMComponentStructureGameTests::bunkerAssembly);
+    public static final GameTests.Function WGC_HOUSE1 = TESTS.function("wgc_house1", 40, 20, () -> NTMComponentStructureGameTests::house1);
+    public static final GameTests.Function WGC_HOUSE2 = TESTS.function("wgc_house2", 40, 24, () -> NTMComponentStructureGameTests::house2);
+    public static final GameTests.Function WGC_LAB1 = TESTS.function("wgc_lab1", 40, 20, () -> NTMComponentStructureGameTests::lab1);
+    public static final GameTests.Function WGC_LAB2 = TESTS.function("wgc_lab2", 40, 24, () -> NTMComponentStructureGameTests::lab2);
+    public static final GameTests.Function WGC_RURAL_HOUSE = TESTS.function("wgc_rural_house", 40, 24, () -> NTMComponentStructureGameTests::ruralHouse);
+    public static final GameTests.Function WGC_LARGE_OFFICE = TESTS.function("wgc_large_office", 40, 24, () -> NTMComponentStructureGameTests::largeOffice);
+    public static final GameTests.Function WGC_LARGE_OFFICE_CORNER = TESTS.function("wgc_large_office_corner", 40, 24, () -> NTMComponentStructureGameTests::largeOfficeCorner);
+    public static final GameTests.Function WGC_SILO = TESTS.function("wgc_silo", 60, 56, () -> NTMComponentStructureGameTests::silo);
+    public static final GameTests.Function WGC_BUNKER_HUB = TESTS.function("wgc_bunker_hub", 40, 20, () -> NTMComponentStructureGameTests::bunkerHub);
+
+    // --- 1.7 world features (implementations live in WorldFeatureGameTests) ---
+    public static final GameTests.Function WG_OVERWORLD_FEATURES =
+            TESTS.function("wg_overworld_features", 20, () -> WorldFeatureGameTests::overworldFeatureLists);
+    public static final GameTests.Function WG_GLYPHID_HIVE =
+            TESTS.function("wg_glyphid_hive", 20, () -> WorldFeatureGameTests::glyphidHive);
+    public static final GameTests.Function WG_METEOR_CHARMS =
+            TESTS.function("wg_meteor_charms", 20, () -> WorldFeatureGameTests::meteorCharms);
 
     public static void init() {}
 
@@ -1823,7 +1939,7 @@ public final class HbmGameTestFunctions {
     private static void storageDrumRecipes(GameTestHelper helper) {
         com.hbm.inventory.fluid.Fluids.init();
         com.hbm.inventory.recipes.StorageDrumRecipes.registerRecipes();
-        helper.assertTrue(com.hbm.inventory.recipes.StorageDrumRecipes.getAll().size() == 27,
+        helper.assertTrue(com.hbm.inventory.recipes.StorageDrumRecipes.getAll().size() == 32,
                 "Storage drum available recipe count regressed");
 
         var input = com.hbm.items.ModStorageDrumItems.make(
@@ -1836,7 +1952,8 @@ public final class HbmGameTestFunctions {
                         && ((com.hbm.items.special.ItemWasteStorage) output.getItem()).variant(output)
                                 == com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(),
                 "Short-waste transformation lost its subtype");
-        helper.assertTrue(waste != null && waste[0] == 216_000 && waste[1] == 350 && waste[2] == 1_000,
+        // 1.7 VersatileConfig.getShortDecayChance: 15 min (the 1.12.2 table had 3 h)
+        helper.assertTrue(waste != null && waste[0] == 18_000 && waste[1] == 350 && waste[2] == 1_000,
                 "Short-waste liquid/gas output regressed");
 
         var longTinyInput = com.hbm.items.ModStorageDrumItems.make(
@@ -1856,9 +1973,22 @@ public final class HbmGameTestFunctions {
                 com.hbm.items.ModStorageDrumItems.nuclear_waste_short_tiny.get(),
                 com.hbm.items.special.ItemWasteStorage.ShortWasteClass.PLUTONIUM240.ordinal(), 1);
         var shortTinyWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(shortTinyInput);
-        helper.assertTrue(shortTinyWaste != null && shortTinyWaste[0] == 21_600
+        helper.assertTrue(shortTinyWaste != null && shortTinyWaste[0] == 1_800
                         && shortTinyWaste[1] == 35 && shortTinyWaste[2] == 100,
                 "Short-tiny waste must scale liquid and gas by 0.1");
+
+        // 1.7 TileEntityStorageDrum: Au-198 decays into the mercury droplet (ingot_mercury = hbm:nugget_mercury) at
+        // shortChance / 20, the Pb-209 / Sr-90 ingots, nuggets and powder into bismuth / zirconium.
+        var au = com.hbm.inventory.recipes.StorageDrumRecipes.getOutput(
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.ingot_au198.get()));
+        var auWaste = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.ingot_au198.get()));
+        helper.assertTrue(au != null && au.getItem() == com.hbm.items.ModItems.nugget_mercury.get()
+                        && auWaste != null && auWaste[0] == 900 && auWaste[1] == 0 && auWaste[2] == 0,
+                "Au-198 must decay into the mercury droplet at 1.7's 900-tick chance");
+        var sr = com.hbm.inventory.recipes.StorageDrumRecipes.getWaste(
+                new net.minecraft.world.item.ItemStack(com.hbm.items.ModItems.nugget_sr90.get()));
+        helper.assertTrue(sr != null && sr[0] == 360, "Sr-90 nugget must decay at shortChance / 50");
 
         var contaminated = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.IRON_INGOT);
         com.hbm.util.ContaminationUtil.neutronActivateItem(contaminated, 1F, 1F);
@@ -2089,8 +2219,10 @@ public final class HbmGameTestFunctions {
     private static void fusionPlasmaForgeRecipes(GameTestHelper helper) {
         var recipes = com.hbm.inventory.recipes.PlasmaForgeRecipes.INSTANCE;
         recipes.registerRecipes();
-        helper.assertTrue(recipes.recipeOrderedList.size() == 20,
-                "Expected 20 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
+        // 20 before the final-content wave; +12 ICF parts (plsm.icf*) and plsm.schrabhammer make 33 of
+        // the original's 34; plsm.gerald (the construction satellite, §19ec-satellites) completes them.
+        helper.assertTrue(recipes.recipeOrderedList.size() == 34,
+                "Expected 34 feasible plasma-forge recipes, found " + recipes.recipeOrderedList.size());
         helper.assertTrue(recipes.autoSwitchGroups.getOrDefault("autoswitch.weldPlates", java.util.List.of()).size() == 11,
                 "Expected 11 welded-plate variants in the auto-switch group");
 
