@@ -37,7 +37,11 @@ public final class ModFalloutBlocks {
 
     /** The radioactive ash layer deposited by fallout rain (drops the {@code falloutitem}). */
     public static final RegistryObject<BlockFallout> fallout = block("fallout", BlockFallout::new,
-            p -> p.strength(0.1F).sound(SoundType.SAND).noOcclusion().replaceable()
+            // forceSolidOn: 1.7 made this Material.sand, which blocks liquid movement, so water never flowed
+            // into the ash. Without it a 2px replaceable layer is not "solid", flowing water spreads into every
+            // cell and breaks it with its drop: an ocean next to a crater washed out the fallout as hundreds of
+            // items. Vanilla's snow layer uses the same flag for the same reason.
+            p -> p.strength(0.1F).sound(SoundType.SAND).noOcclusion().replaceable().forceSolidOn()
                     .isValidSpawn((state, level, pos, type) -> false));
 
     // ---- waste terrain ----

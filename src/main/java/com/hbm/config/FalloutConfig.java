@@ -340,6 +340,12 @@ public final class FalloutConfig {
             if (preserveAxis && state.hasProperty(BlockStateProperties.AXIS) && conversion.hasProperty(BlockStateProperties.AXIS)) {
                 conversion = conversion.setValue(BlockStateProperties.AXIS, state.getValue(BlockStateProperties.AXIS));
             }
+            // A destroyed block leaves the fluid it stood in, not air. 1.7 had no underwater plants; here
+            // seagrass and sea pickles are VegetationBlocks, and turning them to air cut a hole in the ocean
+            // floor's water that the sweep then filled with ash (fallout "spawning" deep under the sea).
+            if (conversion.isAir() && !state.getFluidState().isEmpty()) {
+                return state.getFluidState().createLegacyBlock();
+            }
             return conversion;
         }
 

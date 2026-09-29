@@ -90,12 +90,40 @@ public final class PickAndFalloutGameTests {
             }
         }
 
+        // Inside 65% the vegetation rule removes seagrass; at 50% the forced roll still lays ash (0.1 - 0.2^2 > 0).
+        // The seagrass must become water, not air, or the floor under it gets ash deep under the sea.
+        BlockPos nearGrass = helper.absolutePos(new BlockPos(13, 1, 1));
+        basin(helper, nearGrass, Blocks.SEAGRASS.defaultBlockState());
+        Map<BlockPos, BlockState> nearWrites = stomp(helper, nearGrass, 50.0D);
+        for (Map.Entry<BlockPos, BlockState> write : nearWrites.entrySet()) {
+            helper.assertTrue(!write.getValue().is(ash),
+                    "No ash under water where the sweep removed seagrass, got one at " + write.getKey() + " in " + nearWrites);
+            helper.assertTrue(!write.getValue().isAir() || !write.getKey().equals(nearGrass.above()),
+                    "Removed seagrass must leave water, not air: " + nearWrites);
+        }
+
         helper.assertTrue(!BlockFallout.canOccupy(Blocks.SEAGRASS.defaultBlockState())
                         && !BlockFallout.canOccupy(Blocks.WATER.defaultBlockState())
                         && BlockFallout.canOccupy(Blocks.AIR.defaultBlockState())
                         && BlockFallout.canOccupy(Blocks.DEAD_BUSH.defaultBlockState()),
                 "Ash may replace air and dry plants, never a cell holding fluid");
         helper.succeed();
+    }
+
+    /** 1.7 Material.sand blocks liquid movement: water next to ash must not flow in and wash it out as items. */
+    public static void falloutHoldsWater(GameTestHelper helper) {
+        BlockState stone = Blocks.STONE.defaultBlockState();
+        for (int x = 1; x <= 4; x++) helper.getLevel().setBlock(helper.absolutePos(new BlockPos(x, 1, 2)), stone, 3);
+        BlockPos ash = helper.absolutePos(new BlockPos(2, 2, 2));
+        helper.getLevel().setBlock(ash, ModFalloutBlocks.fallout.get().defaultBlockState(), 3);
+        helper.getLevel().setBlock(helper.absolutePos(new BlockPos(3, 2, 2)), Blocks.WATER.defaultBlockState(), 3);
+        helper.runAfterDelay(30, () -> {
+            helper.assertTrue(helper.getLevel().getBlockState(ash).is(ModFalloutBlocks.fallout.get()),
+                    "Water must not flow into ash, got " + helper.getLevel().getBlockState(ash));
+            helper.assertTrue(helper.getLevel().getEntitiesOfClass(ItemEntity.class, new AABB(ash).inflate(3D)).isEmpty(),
+                    "Water next to ash must not wash it out as items");
+            helper.succeed();
+        });
     }
 
     /** 1.7 onNeighborBlockChange: ash that loses its support is set to air, dropping nothing. */
@@ -131,12 +159,23 @@ public final class PickAndFalloutGameTests {
     }
 
     private static Map<BlockPos, BlockState> stomp(GameTestHelper helper, BlockPos column) {
+        return stomp(helper, column, 70.0D);
+    }
+
+    private static Map<BlockPos, BlockState> stomp(GameTestHelper helper, BlockPos column, double distPercent) {
         LegacyRandomSource rolls = new LegacyRandomSource(0L) {
             @Override
             public double nextDouble() {
                 return 0.0D;
             }
+
+            // Vanilla's polar gaussian loops until two nextDouble() draws land inside the unit circle; with
+            // nextDouble() pinned to 0 they never do, and a falloff-tail rule (reached inside 65%) hangs the server.
+            @Override
+            public double nextGaussian() {
+                return 0.0D;
+            }
         };
-        return EntityFalloutRain.stompColumnForTest(helper.getLevel(), column.getX(), column.getZ(), 70.0D, rolls);
+        return EntityFalloutRain.stompColumnForTest(helper.getLevel(), column.getX(), column.getZ(), distPercent, rolls);
     }
 }

@@ -1020,9 +1020,11 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function PICK_CONVEYOR_WAND =
             TESTS.function("pick_conveyor_wand", 20, () -> PickAndFalloutGameTests::conveyorPick);
     public static final GameTests.Function FALLOUT_NOT_ON_WATER =
-            TESTS.function("fallout_not_on_water", 20, 12, () -> PickAndFalloutGameTests::falloutPlacement);
+            TESTS.function("fallout_not_on_water", 20, 16, () -> PickAndFalloutGameTests::falloutPlacement);
     public static final GameTests.Function FALLOUT_POPS_WITHOUT_DROPS =
             TESTS.function("fallout_pops_without_drops", 20, () -> PickAndFalloutGameTests::falloutPopsWithoutDrops);
+    public static final GameTests.Function FALLOUT_HOLDS_WATER =
+            TESTS.function("fallout_holds_water", 60, () -> PickAndFalloutGameTests::falloutHoldsWater);
 
     // --- volcano cores + blobs (implementations live in VolcanoGameTests) ---
     public static final GameTests.Function VOLCANO_GROWING_CORE_CLIMBS =
