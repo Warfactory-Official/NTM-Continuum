@@ -1014,6 +1014,16 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function CONVEYOR_ROUTE_VERTICAL_THEN_TURN =
             TESTS.function("conveyor_route_vertical_then_turn", 40, 16, () -> ConveyorRouteGameTests::verticalThenTurn);
 
+    // --- 2026-09-29 playtest fixes (implementations live in PickAndFalloutGameTests) ---
+    public static final GameTests.Function PICK_BOBBLEHEAD_TYPE =
+            TESTS.function("pick_bobblehead_type", 20, () -> PickAndFalloutGameTests::bobblePick);
+    public static final GameTests.Function PICK_CONVEYOR_WAND =
+            TESTS.function("pick_conveyor_wand", 20, () -> PickAndFalloutGameTests::conveyorPick);
+    public static final GameTests.Function FALLOUT_NOT_ON_WATER =
+            TESTS.function("fallout_not_on_water", 20, 12, () -> PickAndFalloutGameTests::falloutPlacement);
+    public static final GameTests.Function FALLOUT_POPS_WITHOUT_DROPS =
+            TESTS.function("fallout_pops_without_drops", 20, () -> PickAndFalloutGameTests::falloutPopsWithoutDrops);
+
     // --- volcano cores + blobs (implementations live in VolcanoGameTests) ---
     public static final GameTests.Function VOLCANO_GROWING_CORE_CLIMBS =
             TESTS.function("volcano_growing_core_climbs", 400, 64, () -> VolcanoGameTests::growingCoreClimbs);

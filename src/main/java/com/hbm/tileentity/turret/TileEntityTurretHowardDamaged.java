@@ -60,6 +60,7 @@ public class TileEntityTurretHowardDamaged extends TileEntityTurretHoward {
     @Override
     public boolean entityAcceptableTarget(Entity e) {
         if (e instanceof Player player && player.isCreative()) return false;
+        if (e.isSpectator()) return false;
         return e instanceof LivingEntity && e.isAlive();
     }
 

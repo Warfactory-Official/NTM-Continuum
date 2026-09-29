@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.items.tool.ItemConveyorWand.ConveyorType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -9,6 +10,12 @@ public class BlockConveyorExpress extends BlockConveyorBendable {
 
     public BlockConveyorExpress(Properties properties) {
         super(properties);
+    }
+
+    /** 1.7 {@code damageDropped}: the express wand. */
+    @Override
+    protected ConveyorType wandType() {
+        return ConveyorType.EXPRESS;
     }
 
     @Override

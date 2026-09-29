@@ -155,4 +155,10 @@ public class SoyuzLauncher extends BlockMultiblockMachine
         if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
         return super.useAtCore(state, level, core, player, hit);
     }
+
+    /** 1.7 {@code SoyuzLauncher.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return BOXES;
+    }
 }

@@ -103,4 +103,15 @@ public class MachineZirnox extends BlockMultiblockMachine implements IFluidConne
         if (!level.isClientSide() && !player.isShiftKeyDown()) com.hbm.handler.BossSpawnHandler.markFBI(player);
         return super.useAtCore(state, level, core, player, hit);
     }
+
+    /** 1.7 {@code ReactorZirnox.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {1, 0, 2, 2, 2, 2,},
+            new int[] {4, -2, 1, 1, 1, 1},
+            new int[] {4, -2, 0, 0, 2, -2},
+            new int[] {4, -2, 0, 0, -2, 2}
+        };
+    }
 }

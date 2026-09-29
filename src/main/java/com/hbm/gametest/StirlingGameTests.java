@@ -99,7 +99,7 @@ public final class StirlingGameTests {
         TileEntityStirling stirling = (TileEntityStirling) helper.getLevel().getBlockEntity(core);
         helper.assertTrue(stirling != null && !stirling.hasCog,
                 "Missing-gear Stirling item must place without its gear");
-        ItemStack clone = block.getCloneItemStack(helper.getLevel(), core, helper.getLevel().getBlockState(core));
+        ItemStack clone = block.pickBlockStack(helper.getLevel(), core, helper.getLevel().getBlockState(core));
         helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, 0) == 1,
                 "Cloning a missing-gear Stirling must preserve its item variant");
         helper.succeed();

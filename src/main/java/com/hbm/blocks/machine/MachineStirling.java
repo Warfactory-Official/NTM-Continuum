@@ -98,11 +98,8 @@ public class MachineStirling extends BlockMultiblockMachine implements IEnergyCo
         return List.of(stack);
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return cloneWithCogState(level, pos);
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return cloneWithCogState(level, pos);
     }
 

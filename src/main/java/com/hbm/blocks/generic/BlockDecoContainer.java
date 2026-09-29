@@ -116,11 +116,8 @@ public class BlockDecoContainer extends CompatBlock implements TickingBlock {
         return List.of(stackFor(state));
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return stackFor(state);
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return stackFor(state);
     }
 

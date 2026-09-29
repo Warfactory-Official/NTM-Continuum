@@ -81,4 +81,12 @@ public class MachineFusionBoiler extends BlockMultiblockMachine implements ILook
         visitor.passiveCell(core.offset(dx * 2 + rx, 0, dz * 2 + rz), MASK_ALL, PASSIVE_FLUID_IN);
         visitor.passiveCell(core.offset(dx * 2 - rx, 0, dz * 2 - rz), MASK_ALL, PASSIVE_FLUID_IN);
     }
+
+    /** 1.7 {@code MachineFusionBoiler.getAABBExtras}, read only by the placement highlight. */
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+            {1.5, 3.5, -4.5, -4.5, 1, -1}
+        };
+    }
 }

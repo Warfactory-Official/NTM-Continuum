@@ -69,4 +69,13 @@ public final class MachineAnnihilator extends BlockMultiblockMachine
         visitor.passiveCell(core.relative(facing, 3).relative(rot), MASK_ALL, domains);
         visitor.passiveCell(core.relative(facing, 3).relative(rot, -1), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineAnnihilator.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {2, 0, 4, 4, 1, 1},
+            new int[] {8, -2, 1, 1, 1, 1, -3, 0, 0}
+        };
+    }
 }

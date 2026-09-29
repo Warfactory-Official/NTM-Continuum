@@ -88,4 +88,18 @@ public class MachineBigAssTank extends MachineGiantTank {
         visitor.passiveCell(core.relative(facing, 6), MASK_ALL, PASSIVE_FLUID_IN);
         visitor.passiveCell(core.relative(facing, -6), MASK_ALL, PASSIVE_FLUID_IN);
     }
+
+    /** 1.7 {@code MachineBigAssTank.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {5, 0, 4, 4, 4, 4},
+            new int[] {4, 0, 5, -4, 2, 2},
+            new int[] {4, 0, -4, 5, 2, 2},
+            new int[] {4, 0, 2, 2, 5, -4},
+            new int[] {4, 0, 2, 2, -4, 5},
+            new int[] {3, 0, 6, -5, 0, 0},
+            new int[] {3, 0, -5, 6, 0, 0}
+        };
+    }
 }

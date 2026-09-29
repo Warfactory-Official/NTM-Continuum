@@ -1,5 +1,6 @@
 package com.hbm.blocks.network;
 
+import com.hbm.items.tool.ItemConveyorWand.ConveyorType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -10,6 +11,12 @@ public class BlockConveyorTriple extends BlockConveyorBendable {
 
     public BlockConveyorTriple(Properties properties) {
         super(properties);
+    }
+
+    /** 1.7 {@code damageDropped}: the triple wand. */
+    @Override
+    protected ConveyorType wandType() {
+        return ConveyorType.TRIPLE;
     }
 
     @Override

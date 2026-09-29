@@ -79,4 +79,14 @@ public class MachineCatalyticReformer extends BlockMultiblockMachine implements 
         visitor.passiveCell(core.offset(rot.getStepX() * 2, 0, rot.getStepZ() * 2), MASK_ALL, domains);
         visitor.passiveCell(core.offset(-rot.getStepX() * 2, 0, -rot.getStepZ() * 2), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineCatalyticReformer.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {2, 0, 1, 1, 2, 2},
+            new int[] {3, -3, 1, 0, -1, 2},
+            new int[] {6, -3, 1, 1, 2, 0},
+        };
+    }
 }

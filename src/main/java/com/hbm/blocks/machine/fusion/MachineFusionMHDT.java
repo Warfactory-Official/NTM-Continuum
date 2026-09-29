@@ -121,4 +121,25 @@ public class MachineFusionMHDT extends BlockMultiblockMachine implements ILookOv
         visitor.passiveCell(core.offset(dx * 4 - rx * 3, 0, dz * 4 - rz * 3), MASK_ALL, domains);
         visitor.passiveCell(core.offset(dx * 7, 1, dz * 7), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineFusionMHDT.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] { 2, 0, 6, 7, 2, 2 },
+            new int[] { 3, -2, 6, 2, 1, 1 },
+            new int[] { 3, -2, -6, 7, 1, 1 },
+            new int[] { 3, -2, -3, 5, 2, 2 },
+            new int[] { 4, -3, -3, 5, 1, 1 },
+            new int[] { 1, 0, 0, 1, 3, 3, 3, 0, 0 },
+        };
+    }
+
+    /** 1.7 {@code MachineFusionMHDT.getAABBExtras}, read only by the placement highlight. */
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+            {1.5, 3.5, -6.5, -6.5, 1, -1}
+        };
+    }
 }

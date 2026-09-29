@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ForkJoinPool;
 
 import com.hbm.blocks.ModFalloutBlocks;
+import com.hbm.blocks.generic.BlockFallout;
 import com.hbm.config.BombConfig;
 import com.hbm.config.FalloutConfig;
 import com.hbm.config.FalloutConfig.FalloutEntry;
@@ -20,9 +21,7 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -175,6 +174,16 @@ public class EntityFalloutRain extends CompatEntity {
 
     public int getMaxUnresolvedRequests() {
         return maxUnresolvedRequests;
+    }
+
+    /** Diagnostics seam: the state writes one column's stomp emits (last write per position wins). */
+    public static java.util.Map<BlockPos, BlockState> stompColumnForTest(ServerLevel level, int x, int z,
+                                                                        double distPercent, RandomSource rand) {
+        ChunkScan scan = new ChunkScan(ChunkPos.pack(x >> 4, z >> 4));
+        stompColumn(scan, level.getChunk(x >> 4, z >> 4), x, z, distPercent, rand);
+        java.util.Map<BlockPos, BlockState> writes = new java.util.LinkedHashMap<>();
+        for (BlockWrite write : scan.stateWrites) writes.put(BlockPos.of(write.pos()), write.state());
+        return writes;
     }
 
     /** Diagnostics seam proving the references' separate last-state/first-falling position maps. */
@@ -935,7 +944,7 @@ public class EntityFalloutRain extends CompatEntity {
      * {@link #MAX_SOLID_DEPTH} solid blocks, depositing the fallout layer / fire on the way.
      * Emits writes instead of applying them.
      */
-    private void stompColumn(ChunkScan scan, LevelChunk chunk, int x, int z, double distPercent, RandomSource rand) {
+    private static void stompColumn(ChunkScan scan, LevelChunk chunk, int x, int z, double distPercent, RandomSource rand) {
         int solidDepth = 0;
         int bottomY = chunk.getMinY();
         int maxY = chunk.getMaxY();
@@ -946,6 +955,11 @@ public class EntityFalloutRain extends CompatEntity {
 
         // Start at the surface, not the sky top (chunk-local heightmap; +1 = Level.getHeight parity).
         int top = Math.min(maxY, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x & 15, z & 15) + 1);
+        // 1.7 wrote each change into the world at once, so the next (lower) cell saw the column as already
+        // transformed: ash lands on the ground under a canopy the sweep just burned away. The scan only
+        // emits writes, so it carries the cell it last processed forward instead of re-reading the chunk.
+        int lastY = Integer.MIN_VALUE;
+        BlockState lastEffective = null;
         for (int y = top; y >= bottomY; y--) {
             if (solidDepth >= MAX_SOLID_DEPTH) return;
 
@@ -957,41 +971,40 @@ public class EntityFalloutRain extends CompatEntity {
             // fallout ash layer on the surface — chance peaks (0.1) at 70% of the scale
             BlockState stateUp = null;
             int upY = y + 1;
-            if (solidDepth == 0 && upY <= maxY) {
-                stateUp = chunk.getBlockState(posUp.set(x, upY, z));
-                boolean airOrReplaceable = stateUp.isAir() || (stateUp.canBeReplaced() && !stateUp.liquid());
-                // BlockFallout.canSurvive replicated chunk-locally: it only inspects the support block
-                // below (= this column's current block): no ice, and leaves or a sturdy up face.
-                boolean supports = !(state.is(Blocks.ICE) || state.is(Blocks.PACKED_ICE))
-                        && (state.is(BlockTags.LEAVES) || state.isFaceSturdy(chunk, pos, Direction.UP));
-                if (airOrReplaceable && supports) {
-                    double d = distPercent / 100.0;
-                    double chance = 0.1 - Math.pow(d - 0.7, 2.0);
-                    if (chance >= rand.nextDouble()) {
-                        scan.addStateWrite(posUp.asLong(), ModFalloutBlocks.fallout.get().defaultBlockState());
-                    }
-                }
+            boolean ash = false;
+            if (upY <= maxY) {
+                stateUp = lastY == upY ? lastEffective : chunk.getBlockState(posUp.set(x, upY, z));
+            }
+            if (solidDepth == 0 && stateUp != null
+                    && BlockFallout.canOccupy(stateUp) && BlockFallout.canSupport(state, chunk, pos)) {
+                double d = distPercent / 100.0;
+                double chance = 0.1 - Math.pow(d - 0.7, 2.0);
+                ash = chance >= rand.nextDouble();
             }
 
-            // fires on flammables inside 65%
-            if (distPercent < 65 && ((FireBlockAccessor) Blocks.FIRE).hbm$getBurnOdds(state) > 0 && upY <= maxY) {
-                if (stateUp == null) stateUp = chunk.getBlockState(posUp.set(x, upY, z));
-                if (stateUp.isAir() && rand.nextInt(5) == 0) {
+            // fires on flammables inside 65%; 1.7 had already set the ash, so the cell was no longer air
+            if (distPercent < 65 && ((FireBlockAccessor) Blocks.FIRE).hbm$getBurnOdds(state) > 0 && stateUp != null) {
+                if (!ash && stateUp.isAir() && rand.nextInt(5) == 0) {
                     scan.addStateWrite(BlockPos.asLong(x, upY, z), Blocks.FIRE.defaultBlockState());
                 }
             }
 
             // the transform table — first matching entry wins
             boolean transformed = false;
+            BlockState effective = state;
             for (FalloutEntry entry : entries) {
                 BlockState result = entry.eval(y, state, distPercent, rand, bottomY);
                 if (result != null) {
                     scan.addStateWrite(pos.asLong(), result);
                     if (entry.isSolid()) solidDepth++;
                     transformed = true;
+                    effective = result;
                     break;
                 }
             }
+            lastY = y;
+            lastEffective = effective;
+            boolean collapses = false;
 
             // untransformed soft blocks over air collapse as falling blocks (no drops)
             if (!transformed && distPercent < 65 && y > bottomY) {
@@ -1008,10 +1021,18 @@ public class EntityFalloutRain extends CompatEntity {
                             float h = sAt.getDestroySpeed(chunk, p);
                             if (h >= 0.0F && h <= stonebrickRes) {
                                 scan.addFallingMarker(p.asLong(), sAt);
+                                if (i == 0) collapses = true;
                             }
                         }
                     }
                 }
+            }
+
+            // The ash goes in last, against the support as the sweep leaves it. 1.7 set it first and let
+            // onNeighborBlockChange silently remove it when the same pass burned the leaves / melted the snow
+            // under it or dropped the sand; the end state is ash only on support that is still there.
+            if (ash && !collapses && BlockFallout.canSupport(effective, chunk, pos)) {
+                scan.addStateWrite(BlockPos.asLong(x, upY, z), ModFalloutBlocks.fallout.get().defaultBlockState());
             }
 
             if (!transformed && state.isCollisionShapeFullBlock(chunk, pos)) solidDepth++;

@@ -361,6 +361,8 @@ public final class HbmClientRegistrations {
         installJetpackBridge();
         dev.golem.core.render.HeatDistortionRenderType.configure(
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
+        // 1.12 HbmShaderManager2 bloom/distortion layers, composited after the hand (first-person crucible blade)
+        dev.golem.core.render.ScreenEffects.init();
         com.hbm.client.jetpack.JetpackClientVisuals.init();
          com.hbm.client.jetpack.JetpackSmokeClient.register();
          com.hbm.client.render.entity.EntityRenderSmokeClient.register();
@@ -449,6 +451,8 @@ public final class HbmClientRegistrations {
         com.hbm.client.ClientEffects.install();
         // 1.7 RenderOverhead.renderActionPreview: the conveyor wand's ghost run, drawn at world-frame end.
         com.hbm.client.render.ConveyorPreviewRenderer.init();
+        // 1.7 BlockDummyable.drawPlacementHighlight: the held multiblock's footprint outline, green/red.
+        com.hbm.client.render.MultiblockPlacementHighlight.init();
         com.hbm.commands.HbmClientCommands.register(); // 1.7 client commands: /ntmclient, /ntmwikirender, /dumpthreadsandcrashgame
         com.hbm.client.RenderInputClientRegistrations.install(); // G-C: overhead markers, HUD, world text, particles
     }

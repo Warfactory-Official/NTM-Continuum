@@ -2072,6 +2072,9 @@ public final class ObjItemDeclarations {
                 .definition(ItemModels.special("hbm:item/machine_obj_base",
                         MachineObjModel.of("hbm:models/deco/steel_roof.obj", "hbm:textures/models/deco/steelroof.png").scale(0.045)
                                 .ty(0.0).yaw(0))).register();
+        // 1.7 RenderScaffoldBlock.renderInventoryBlock: glTranslated(0, -0.5, 0) centres the 0..1-tall OBJ and it is
+        // drawn unrotated. The block-framed item path already centres the OBJ's bounds on the block centre, so
+        // that is ty 0 / yaw 0 here; the earlier ty -0.5 applied the centring twice (icon half a block low).
         Dejson.item(NS, "steel_scaffold")
                 .models(Model.parent("hbm:item/machine_obj_legacy")
                         .override("hbm:item/steel_scaffold_red", "hbm:item_variant", 1)
@@ -2080,19 +2083,19 @@ public final class ObjItemDeclarations {
                 .definition(ItemModels.select("hbm:item_variant")
                         .when("0", ItemModels.special("hbm:item/machine_obj_base",
                                 MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_steel.png").scale(1.0)
-                                        .ty(-0.5).yaw(180.0)))
+                                        .ty(0.0).yaw(0.0)))
                         .when("1", ItemModels.special("hbm:item/machine_obj_base",
                                 MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_red.png").scale(1.0)
-                                        .ty(-0.5).yaw(180.0)))
+                                        .ty(0.0).yaw(0.0)))
                         .when("2", ItemModels.special("hbm:item/machine_obj_base",
                                 MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_white.png").scale(1.0)
-                                        .ty(-0.5).yaw(180.0)))
+                                        .ty(0.0).yaw(0.0)))
                         .when("3", ItemModels.special("hbm:item/machine_obj_base",
                                 MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_yellow.png").scale(1.0)
-                                        .ty(-0.5).yaw(180.0)))
+                                        .ty(0.0).yaw(0.0)))
                         .fallback(ItemModels.special("hbm:item/machine_obj_base",
                                 MachineObjModel.of("hbm:models/blocks/scaffold.obj", "hbm:textures/blocks/scaffold_steel.png").scale(1.0)
-                                        .ty(-0.5).yaw(180.0)))).register();
+                                        .ty(0.0).yaw(0.0)))).register();
         Dejson.item(NS, "steel_wall")
                 .definition(ItemModels.special("hbm:item/machine_obj_base",
                         MachineObjModel.of("hbm:models/deco/steel_wall.obj", "hbm:textures/models/deco/steelwall.png").scale(0.045)

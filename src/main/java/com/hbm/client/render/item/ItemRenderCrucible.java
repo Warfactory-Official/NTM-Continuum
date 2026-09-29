@@ -6,6 +6,9 @@ import com.hbm.items.weapon.ItemCrucible;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import dev.golem.core.client.EquipProgress;
+import dev.golem.core.render.Bloom;
+import dev.golem.core.render.CompatRenderTypes;
+import dev.golem.core.render.ScreenDistortion;
 import dev.golem.core.render.SubmitSink;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
@@ -27,12 +30,28 @@ import static com.hbm.client.render.item.CustomItemRenderers.*;
  * recovers - after every hit and after every item switch - with the crucible already the item shown. 1.7 had no
  * cooldown, so while the crucible is the item shown the progress is held at 1; the snap to 0 applies only while the
  * renderer is still showing another item (the put-away), as 1.7's did.
+ *
+ * <p>The first-person blade carries 1.12's shader effects ({@code old-hbm} {@code ItemRenderCrucible}, blade
+ * callbacks, with {@code GeneralConfig.bloom} and {@code heatDistortion} at their default {@code true}): translucent at
+ * alpha 0.7 and culled, a bloom pass of {@code crucible_blade_bloom} and a heat-distortion shell. See
+ * {@link #firstPersonBlade}. 1.12's other first-person pieces (the Collada equip animation with the arms, the
+ * clip-plane blade extension, the spark and lightning particles) belong to its different first-person model; this
+ * renderer keeps 1.7's.
  */
 final class ItemRenderCrucible implements CustomItemRenderer {
 
     private static final Identifier HILT = tex("textures/models/weapons/crucible_hilt.png");
     private static final Identifier GUARD = tex("textures/models/weapons/crucible_guard.png");
     private static final Identifier BLADE = tex("textures/models/weapons/crucible_blade.png");
+    private static final Identifier BLADE_BLOOM = tex("textures/models/weapons/crucible_blade_bloom.png");
+    private static final Identifier NOISE = tex("textures/misc/noise_2.png");
+
+    /** 1.12 {@code GlStateManager.color(1, 1, 1, 0.7F)} on the blade, as a vertex colour. */
+    private static final int BLADE_TINT = (Math.round(0.7F * 255F) << 24) | 0xFFFFFF;
+    /** 1.12 {@code HbmShaderManager2.distort(0.5F, ...)}: the amount rides the vertex colour's red channel. */
+    private static final int DISTORTION_AMOUNT = 0xFF000000 | (Math.round(0.5F * 255F) << 16);
+    /** Middle of the OBJ blade along its length ({@code y} 3.0625 .. 11.375). */
+    private static final double BLADE_CENTER_Y = (3.0625D + 11.375D) / 2D;
 
     private final WavefrontObj crucible = obj("models/weapons/crucible.obj");
 
@@ -94,7 +113,7 @@ final class ItemRenderCrucible implements CustomItemRenderer {
                 if (!isSwing && !isOn) rotGuard = 90;
                 guards(pose, sink, (float) rotGuard, light, overlay);
 
-                if (eq == 1.0F && prevEq == 1.0F && rot[2] == 0 && (isSwing || isOn)) blade(pose, sink, overlay);
+                if (eq == 1.0F && prevEq == 1.0F && rot[2] == 0 && (isSwing || isOn)) firstPersonBlade(pose, sink, overlay);
             }
             case ENTITY, EQUIPPED -> {
                 if (type == Type.ENTITY) {
@@ -138,6 +157,40 @@ final class ItemRenderCrucible implements CustomItemRenderer {
         pose.mulPose(Axis.XP.rotationDegrees(angle));
         pose.translate(0D, -3D, 0.5D);
         part(pose, sink, crucible, culled(GUARD), "GuardRight", light, overlay);
+        pose.popPose();
+    }
+
+    /**
+     * The first-person blade with 1.12's effects, nudged 0.005 out of the guards as in 1.7.
+     *
+     * <ol>
+     *   <li>The blade: {@code SRC_ALPHA / ONE_MINUS_SRC_ALPHA} at alpha 0.7, lighting off, lightmap 240/240, back
+     *       faces culled (1.12 restored culling before drawing it), depth written.</li>
+     *   <li>Bloom: the same geometry textured {@code crucible_blade_bloom}, white, {@code SRC_ALPHA / ONE} into the
+     *       bloom layer.</li>
+     *   <li>Heat distortion ({@code diffN > 0.6}, i.e. whenever the blade is out): the geometry scaled
+     *       {@code (1.15, 1.15, 1.05)} with depth writes off, amount 0.5, masked by the bloom texture still bound on
+     *       unit 0. 1.12 scaled its Collada blade node, whose mesh is centred on its origin with thickness on x,
+     *       width on y and length on z; the OBJ blade has thickness on x, length on y and width on z and starts at
+     *       the hilt, so the same shell is a scale of 1.15 across and 1.05 along, about the blade's middle.</li>
+     * </ol>
+     * The two layers are submitted at a later order so they draw after the blade, as 1.12's postRender did.
+     */
+    private void firstPersonBlade(PoseStack pose, SubmitSink sink, int overlay) {
+        pose.pushPose();
+        pose.translate(0.005D, 0D, 0D);
+        sink.submitCustomGeometry(pose, CompatRenderTypes.flatTranslucentCull(BLADE),
+                (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay, BLADE_TINT));
+        SubmitSink layers = sink.order(1);
+        layers.submitCustomGeometry(pose, Bloom.of(BLADE_BLOOM),
+                (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay, -1));
+        pose.pushPose();
+        pose.translate(0D, BLADE_CENTER_Y, 0D);
+        pose.scale(1.15F, 1.05F, 1.15F);
+        pose.translate(0D, -BLADE_CENTER_Y, 0D);
+        layers.submitCustomGeometry(pose, ScreenDistortion.of(BLADE_BLOOM, NOISE),
+                (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay, DISTORTION_AMOUNT));
+        pose.popPose();
         pose.popPose();
     }
 

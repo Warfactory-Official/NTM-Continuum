@@ -129,4 +129,12 @@ public class RBMKConsole extends BlockMultiblockCore {
         return new BlockEntityRBMKConsole(pos, state);
     }
 
+    /** 1.7 {@code RBMKConsole.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {3, 0, 0, 0, 2, 2},
+            new int[] {0, 0, 0, 1, 2, 2},
+        };
+    }
 }

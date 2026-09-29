@@ -127,11 +127,8 @@ public class BlockPileDevice extends dev.golem.core.world.CompatBlock implements
         return List.of(ModPileBlocks.pileDeviceItem(blockMetaToItemMeta(state)));
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return ModPileBlocks.pileDeviceItem(blockMetaToItemMeta(state));
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return ModPileBlocks.pileDeviceItem(blockMetaToItemMeta(state));
     }
 

@@ -121,4 +121,16 @@ public class Watz extends BlockMultiblockMachine implements IFluidConnectorBlock
         }
         visitor.passiveCell(core.offset(0, 2, 0), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code Watz.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {2, 0, 3, 3, 1, 1},
+            new int[] {2, 0, 2, 2, 2, -2},
+            new int[] {2, 0, 2, 2, -2, 2},
+            new int[] {2, 0, 1, 1, 3, -3},
+            new int[] {2, 0, 1, 1, -3, 3},
+        };
+    }
 }

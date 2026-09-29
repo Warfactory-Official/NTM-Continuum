@@ -162,6 +162,7 @@ public abstract class TileEntityTurretBaseArtillery extends TileEntityTurretBase
     @Override
     public boolean entityInLOS(Entity e) {
         if (doLOSCheck()) return super.entityInLOS(e);
+        if (e.isSpectator()) return false; // see TileEntityTurretBaseNT#entityInLOS
 
         Vec3 pos = getTurretPos();
         Vec3 ent = getEntityPos(e);

@@ -19,7 +19,7 @@ import com.hbm.blocks.generic.BlockTallPlant;
  * Dejson declarations for the terrain family: models, blockstates, item definitions, loot tables and the
  * packing recipes. Touches no Minecraft class (it runs in a plain JVM from {@code dejson.gradle.kts}).
  *
- * <p>Authored files (hand-built {@code elements}): {@code plant_reeds_*}, {@code vine_phosphor_*},
+ * <p>Authored files (hand-built {@code elements}): {@code plant_reeds}, {@code vine_phosphor_*},
  * {@code ore_volcano} under {@code assets/hbm/models/block/}; the painted-waste, rope and strong-radaway
  * recipes under {@code data/hbm/recipe/}.
  */
@@ -84,8 +84,8 @@ public final class TerrainDeclarations {
             Drops.nothing(NS, t.id()); // drops are computed in Java (flower item + willow leaves)
         }
 
-        // reeds: authored plant_reeds_1/_2/_3 models (top only; top + bottom cap; top + mid section)
-        Dejson.block(NS, "plant_reeds").statesOnly().states(Variants.select("depth", "1", "_1", "2", "_2", "3", "_3")).register();
+        // reeds: the block model is the top segment only; RenderReeds (block entity) draws the column below.
+        Dejson.block(NS, "plant_reeds").statesOnly().states(Variants.simple()).register();
         Dejson.item(NS, "plant_reeds").models(Models.generated("hbm:blocks/reeds_top")).register();
         Drops.only(NS, "plant_reeds", "minecraft:stick");
 

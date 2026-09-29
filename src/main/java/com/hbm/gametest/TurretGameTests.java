@@ -68,6 +68,8 @@ public final class TurretGameTests {
             TESTS.function("turret_menu", 60, 8, () -> TurretGameTests::menu);
     public static final GameTests.Function TARGETING =
             TESTS.function("turret_targeting", 100, 16, () -> TurretGameTests::targeting);
+    public static final GameTests.Function SPECTATOR =
+            TESTS.function("turret_spectator", 60, 16, () -> TurretGameTests::spectator);
     public static final GameTests.Function PERSISTENCE =
             TESTS.function("turret_persistence", 60, 8, () -> TurretGameTests::persistence);
     public static final GameTests.Function AMMO =
@@ -235,6 +237,38 @@ public final class TurretGameTests {
                 "A .50 turret must not fire 5.56, and XFactory556mm's rounds are a different item");
         helper.assertTrue(XFactory556mm.r556_sp != null && XFactory50.bmg50_sp != null,
                 "Both ammo families must be registered before a turret asks for them");
+        helper.succeed();
+    }
+
+    /**
+     * Spectators are never targets, not even for the wrecked turrets whose target test replaces the base one;
+     * creative players follow 1.7: base turrets accept them, the damaged Sentry/Howard do not.
+     */
+    public static void spectator(GameTestHelper helper) {
+        BlockPos core = place(helper, new BlockPos(2, 1, 2), ModTurretBlocks.turret_chekhov.get());
+        TileEntityTurretChekhov turret = (TileEntityTurretChekhov) helper.getLevel().getBlockEntity(core);
+        turret.targetPlayers = true;
+
+        BlockPos wreck = helper.absolutePos(new BlockPos(10, 1, 2));
+        helper.getLevel().setBlock(wreck, ModTurretBlocks.turret_sentry_damaged.get().defaultBlockState(), 3);
+        TileEntityTurretSentryDamaged damaged =
+                (TileEntityTurretSentryDamaged) helper.getLevel().getBlockEntity(wreck);
+
+        var survival = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        var creative = GameTestHelpers.mockPlayer(helper, GameType.CREATIVE);
+        var spectator = GameTestHelpers.mockPlayer(helper, GameType.SPECTATOR);
+
+        helper.assertTrue(turret.entityAcceptableTarget(survival), "A player-targeting turret must accept a survival player");
+        helper.assertTrue(turret.entityAcceptableTarget(creative),
+                "1.7 base turrets exclude no game mode: a creative player is a target");
+        helper.assertTrue(!turret.entityAcceptableTarget(spectator), "A spectator must never be an acceptable target");
+        helper.assertTrue(!turret.entityInLOS(spectator),
+                "A spectator must fail the line-of-sight test that also governs keeping a locked target");
+
+        helper.assertTrue(damaged.entityAcceptableTarget(survival), "The wrecked sentry shoots survival players");
+        helper.assertTrue(!damaged.entityAcceptableTarget(creative), "1.7 damaged sentry skips creative players");
+        helper.assertTrue(!damaged.entityAcceptableTarget(spectator) && !damaged.entityInLOS(spectator),
+                "The wrecked sentry must never target a spectator");
         helper.succeed();
     }
 

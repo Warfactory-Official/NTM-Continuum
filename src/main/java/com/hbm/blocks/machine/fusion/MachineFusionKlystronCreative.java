@@ -45,4 +45,21 @@ public class MachineFusionKlystronCreative extends BlockMultiblockMachine {
         super.visitCells(core, facing, visitor);
         MultiblockHandlerXR.visitBox(core, WAVEGUIDE, facing, visitor);
     }
+
+    /** 1.7 {@code MachineFusionKlystronCreative.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] { 3, 0, 4, 3, 2, 2 },
+            new int[] { 4, -3, 4, 3, 1, 1 },
+        };
+    }
+
+    /** 1.7 {@code MachineFusionKlystronCreative.getAABBExtras}, read only by the placement highlight. */
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+            {1.5, 3.5, -4.5, -4.5, 1, -1}
+        };
+    }
 }

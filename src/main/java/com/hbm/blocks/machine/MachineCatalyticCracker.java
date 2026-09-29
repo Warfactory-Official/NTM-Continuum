@@ -127,4 +127,16 @@ public class MachineCatalyticCracker extends BlockMultiblockMachine implements I
         visitor.passiveCell(core.relative(facing, -2).relative(rot, 2), MASK_ALL, domains);
         visitor.passiveCell(core.relative(facing, -2).relative(rot, -3), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineCatalyticCracker.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {0, 0, 3, 3, 2, 3},
+            new int[]{8, -1, 3, -1, 2, 0},
+            new int[]{13, 0, 0, 3, 2, 1},
+            new int[]{14, -13, -1, 2, 1, 0},
+            new int[]{3, -1, 2, 3, -1, 3}
+        };
+    }
 }

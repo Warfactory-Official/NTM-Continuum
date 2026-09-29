@@ -54,7 +54,10 @@ public class EntityWastePearl extends EntityGrenadeBase {
                     BlockState state = level().getBlockState(pos);
                     BlockState falloutState = fallout.defaultBlockState();
 
-                    if (random.nextInt(3) == 0 && state.canBeReplaced() && falloutState.canSurvive(level(), pos)) {
+                    // 1.7 isReplaceable also let water through, where the ash is washed out (with a drop)
+                    // at once; canOccupy is the same test minus cells holding fluid.
+                    if (random.nextInt(3) == 0 && com.hbm.blocks.generic.BlockFallout.canOccupy(state)
+                            && falloutState.canSurvive(level(), pos)) {
                         level().setBlockAndUpdate(pos, falloutState);
                     } else if (state.isAir()) {
                         level().setBlockAndUpdate(pos,

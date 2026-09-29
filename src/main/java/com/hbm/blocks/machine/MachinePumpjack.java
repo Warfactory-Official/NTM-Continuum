@@ -85,4 +85,16 @@ public class MachinePumpjack extends BlockMultiblockMachine implements IEnergyCo
         Direction rot = facing.getCounterClockWise();
         return core.offset(rot.getStepX() * 3, 0, rot.getStepZ() * 3);
     }
+
+    /** 1.7 {@code MachinePumpjack.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {3, 0, 0, 0, 0, 6},
+            new int[] {0, 0, -1, 1, -2, 4},
+            new int[] {0, 0, 1, -1, -1, 5},
+            new int[] {0, 0, -1, 1, 1, 1, 0, 0, -3},
+            new int[] {0, 0, 1, -1, 2, 2, 0, 0, -3},
+        };
+    }
 }

@@ -184,4 +184,13 @@ public class MachineStrandCaster extends BlockMultiblockMachine
         visitor.passiveCell(core.relative(rot).above(2), MASK_ALL, PASSIVE_ITEMS);
         visitor.passiveCell(core.above(2), MASK_ALL, PASSIVE_ITEMS);
     }
+
+    /** 1.7 {@code MachineStrandCaster.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] { 0, 0, 6, 0, 1, 0 },
+            new int[] { 2, 0, 1, 0, 1, 0 }
+        };
+    }
 }

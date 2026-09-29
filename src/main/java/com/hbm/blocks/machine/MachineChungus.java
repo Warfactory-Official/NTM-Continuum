@@ -177,4 +177,15 @@ public class MachineChungus extends BlockMultiblockMachine
     public boolean acceptsFluid(FluidType type) {
         return CoolingRecipes.get(type) != null || type == Fluids.SPENTSTEAM;
     }
+
+    /** 1.7 {@code MachineChungus.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] { 3, 0, 0, 3, 2, 2 },
+            new int[] { 4, -4, 0, 3, 1, 1 },
+            new int[] { 3, 0, 6, -1, 1, 1 },
+            new int[] { 2, 0, 10, -7, 1, 1 },
+        };
+    }
 }

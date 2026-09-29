@@ -44,12 +44,9 @@ public class DummyBlockBlast extends CompatBlock implements TickingBlock, IBomb 
         return RenderShape.INVISIBLE;
     }
 
-    /** 1.7 {@code getItem}: pick-block on a leaf gives the blast door (the cell drops nothing). Both era signatures, no @Override. */
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return new ItemStack(ModDoorBlocks.BLAST_DOOR.get());
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    /** 1.7 {@code getItem}: pick-block on a leaf gives the blast door (the cell drops nothing). */
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return new ItemStack(ModDoorBlocks.BLAST_DOOR.get());
     }
 

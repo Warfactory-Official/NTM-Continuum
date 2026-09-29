@@ -26,6 +26,9 @@ public final class ClientConfig extends RunningConfig {
     /** The first-person camera kick after firing a gun (old {@code GUN_VISUAL_RECOIL}). */
     public static boolean GUN_VISUAL_RECOIL = true;
 
+    /** Draws reeds down to the floor of the water they stand in (old {@code RENDER_REEDS}); off draws the top only. */
+    public static boolean RENDER_REEDS = true;
+
     /** Selects the hand-authored gun animation/casing branch, matching upstream's client setting. */
     public static boolean GUN_ANIMS_LEGACY = false;
 
@@ -54,7 +57,7 @@ public final class ClientConfig extends RunningConfig {
         configMap.put("NUKE_HUD_FLASH", ConfigWrapper.bound(() -> NUKE_HUD_FLASH, v -> NUKE_HUD_FLASH = v));
         configMap.put("NUKE_HUD_SHAKE", ConfigWrapper.bound(() -> NUKE_HUD_SHAKE, v -> NUKE_HUD_SHAKE = v));
         // 1.7: !Compat.isModLoaded(Compat.MOD_ANG); Angelica does not exist on these loaders
-        configMap.put("RENDER_REEDS", new ConfigWrapper<>(true));
+        configMap.put("RENDER_REEDS", ConfigWrapper.bound(() -> RENDER_REEDS, v -> RENDER_REEDS = v));
         configMap.put("NEI_HIDE_SECRETS", new ConfigWrapper<>(true));
         configMap.put("COOLING_TOWER_PARTICLES", new ConfigWrapper<>(true));
         configMap.put("RENDER_REBAR_SIMPLE", new ConfigWrapper<>(false));

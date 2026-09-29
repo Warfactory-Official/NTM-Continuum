@@ -2,6 +2,8 @@ package com.hbm.blocks.network;
 
 import com.hbm.api.conveyor.IConveyorBelt;
 import com.hbm.entity.item.EntityMovingItem;
+import com.hbm.items.ModConveyorItems;
+import com.hbm.items.tool.ItemConveyorWand.ConveyorType;
 import dev.golem.core.world.CompatBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -9,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -64,6 +67,23 @@ public abstract class BlockConveyorBase extends CompatBlock implements IConveyor
     @Override
     public VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SLAB;
+    }
+
+    /**
+     * The wand subtype this belt comes from: 1.7 {@code getItemDropped} is {@code conveyor_wand} for every belt,
+     * with {@code damageDropped} 1/2/3 on express/double/triple and 0 (regular) elsewhere, chute and lift included.
+     */
+    protected ConveyorType wandType() {
+        return ConveyorType.REGULAR;
+    }
+
+    /**
+     * Pick-block gives the wand the belt drops. Literal 1.7 would pick the hidden block's own ItemBlock
+     * (these blocks have no creative tab); the wand is the only way to place a belt, so pick matches the drop.
+     */
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
+        return ModConveyorItems.wand(wandType(), 1);
     }
 
     /** 1.7 {@code onBlockPlacedBy}: the belt carries items the way the placer faces. */

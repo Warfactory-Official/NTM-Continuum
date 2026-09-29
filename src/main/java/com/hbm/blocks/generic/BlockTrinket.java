@@ -80,11 +80,8 @@ public abstract class BlockTrinket extends CompatBlock implements TickingBlock {
         return List.of(stackFor(be instanceof TileEntityTrinket trinket ? trinket.typeOrdinal() : 0));
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return clone(level, pos);
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return clone(level, pos);
     }
 

@@ -1,5 +1,6 @@
 package com.hbm.blocks.generic;
 
+import net.minecraft.world.item.ItemStack;
 import com.hbm.items.ModDataComponents;
 import dev.golem.core.registry.TickingBlock;
 import com.hbm.tileentity.deco.TileEntityDeco;
@@ -76,12 +77,8 @@ public class BlockScaffold extends CompatBlock implements TickingBlock {
                 .setValue(ORIENT, orientation);
     }
 
-    public net.minecraft.world.item.ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(this);
-        return withVariant(stack, state);
-    }
-
-    public net.minecraft.world.item.ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(this);
         return withVariant(stack, state);
     }

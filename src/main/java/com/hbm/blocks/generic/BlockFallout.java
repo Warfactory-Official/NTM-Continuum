@@ -29,8 +29,11 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * (amp 14 ≙ 15 RAD/s for 2 min, the old {@code HbmPotion.radiation} dose).
  *
  * <p>Support rules match the old {@code canPlaceBlockAt}: sits on leaves or any up-sturdy block,
- * never on ice/packed ice; loses support → pops off (snow-layer pattern via {@code updateShape},
- * which also covers the old fork's post-placement fallout re-validation pass).
+ * never on ice/packed ice ({@link #canSupport}); the sweep also refuses a cell holding fluid
+ * ({@link #canOccupy}). A layer that loses its support vanishes <b>without drops</b>: 1.7's
+ * {@code onNeighborBlockChange} called {@code setBlockToAir}. Returning air from {@code updateShape}, the
+ * snow-layer pattern used before, makes vanilla {@code destroyBlock} it with loot — one ash item per
+ * cell, hundreds after a blast whose sweep removed the support (leaves, snow, collapsing sand).
  */
 public class BlockFallout extends dev.golem.core.world.CompatBlock {
 
@@ -59,6 +62,11 @@ public class BlockFallout extends dev.golem.core.world.CompatBlock {
 
     @Override
     public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        // Safety net for a support lost through a shape-only update (no neighbour notification).
+        if (!state.canSurvive(level, pos)) {
+            level.removeBlock(pos, false);
+            return;
+        }
         ChunkRadiationManager.proxy.incrementRad(level, pos, 1, 100);
         level.scheduleTick(pos, this, tickDelay(random));
     }
@@ -66,16 +74,36 @@ public class BlockFallout extends dev.golem.core.world.CompatBlock {
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
         BlockPos below = pos.below();
-        BlockState belowState = level.getBlockState(below);
-        if (belowState.is(Blocks.ICE) || belowState.is(Blocks.PACKED_ICE)) return false;
-        return belowState.is(BlockTags.LEAVES) || belowState.isFaceSturdy(level, below, Direction.UP);
+        return canSupport(level.getBlockState(below), level, below);
     }
 
+    /** 1.7 {@code canPlaceBlockAt}, on the block below: never ice or packed ice; leaves or an up-sturdy face. */
+    public static boolean canSupport(BlockState below, BlockGetter level, BlockPos belowPos) {
+        if (below.is(Blocks.ICE) || below.is(Blocks.PACKED_ICE)) return false;
+        return below.is(BlockTags.LEAVES) || below.isFaceSturdy(level, belowPos, Direction.UP);
+    }
+
+    /**
+     * Whether ash may go into this cell: air, or a replaceable block with no fluid in it. 1.7 asked
+     * {@code !isLiquid()} of the replaced block; seagrass, tall seagrass and waterlogged plants are
+     * replaceable but stand in water, which would wash the ash away (with drops) the moment it lands.
+     */
+    public static boolean canOccupy(BlockState cell) {
+        return cell.isAir() || (cell.canBeReplaced() && !cell.liquid() && cell.getFluidState().isEmpty());
+    }
+
+    /** Keep the state: an unsupported layer is removed drop-free by the neighbour/tick hooks, never here. */
     @Override
     protected BlockState onUpdateShape(BlockState state, LevelReader level, BlockTickScheduler ticks, BlockPos pos,
                                        Direction directionToNeighbour, BlockPos neighbourPos, BlockState neighbourState) {
-        if (!state.canSurvive(level, pos)) return Blocks.AIR.defaultBlockState();
         return state;
+    }
+
+    /** 1.7 {@code onNeighborBlockChange} → {@code setBlockToAir}: an unsupported layer vanishes, dropping nothing. */
+    @Override
+    protected void onNeighborChanged(BlockState state, Level level, BlockPos pos, Block neighbourBlock,
+                                     boolean movedByPiston) {
+        if (!level.isClientSide() && !state.canSurvive(level, pos)) level.removeBlock(pos, false);
     }
 
     @Override

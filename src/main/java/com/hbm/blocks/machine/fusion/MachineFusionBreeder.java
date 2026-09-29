@@ -82,4 +82,12 @@ public class MachineFusionBreeder extends BlockMultiblockMachine implements IFlu
         visitor.passiveCell(core.offset(dx - rx, 0, dz - rz), MASK_ALL, domains);
         visitor.passiveCell(core.offset(dx * 2, 2, dz * 2), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineFusionBreeder.getAABBExtras}, read only by the placement highlight. */
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+            {1.5, 3.5, -2.5, -2.5, 1, -1}
+        };
+    }
 }

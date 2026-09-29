@@ -1,6 +1,5 @@
 package com.hbm.world.feature;
 
-import com.hbm.blocks.generic.BlockReeds;
 import com.hbm.saveddata.TomSaveData;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
@@ -18,9 +17,9 @@ import net.minecraft.world.level.levelgen.feature.configurations.BlockStateConfi
  * The chunk gate, the column and {@code y = getHeightValue} are the placed feature's {@code rarity_filter} +
  * {@code in_square} + {@code heightmap}.
  *
- * <p>Two things keep this a feature of its own rather than vanilla's patch: 26.1 dissolved {@code random_patch} into
- * placement modifiers (the patch would be spelled differently per version), and {@code plant_reeds} carries the depth
- * of the water column below it in its state, which a plain block placer cannot compute.
+ * <p>This stays a feature of its own rather than vanilla's patch because 26.1 dissolved {@code random_patch} into
+ * placement modifiers (the patch would be spelled differently per version). ({@code plant_reeds} no longer carries
+ * its water depth in state: its renderer measures the column, as 1.7's did.)
  *
  * <p>1.7 generated none of these after a Tom impact ({@code TomSaveData.impact}); neither does this.
  */
@@ -45,9 +44,7 @@ public class LegacyFlowerFeature extends Feature<BlockStateConfiguration> {
                     origin.getZ() + rand.nextInt(8) - rand.nextInt(8));
             if (pos.getY() < level.getMinY() || pos.getY() >= level.getMaxY()) continue;
             if (!level.isEmptyBlock(pos) || !state.canSurvive(level, pos)) continue;
-            BlockState put = state;
-            if (state.getBlock() instanceof BlockReeds) put = state.setValue(BlockReeds.DEPTH, BlockReeds.depth(level, pos));
-            level.setBlock(pos, put, 2);
+            level.setBlock(pos, state, 2);
             placed = true;
         }
         return placed;

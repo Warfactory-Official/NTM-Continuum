@@ -86,4 +86,17 @@ public class MachineCoker extends BlockMultiblockMachine implements IFluidConnec
             }
         }
     }
+
+    /** 1.7 {@code MachineCoker.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {22, 0, 1, 1, 1, 1},
+            new int[] {5, 0, 2, 2, 2, 2, 0, 1, 0},
+            new int[] {0, 1, 0, 0, 0, 0, 2, 1, 2},
+            new int[] {0, 1, 0, 0, 0, 0, 2, 1, -2},
+            new int[] {0, 1, 0, 0, 0, 0, -2, 1, 2},
+            new int[] {0, 1, 0, 0, 0, 0, -2, 1, -2},
+        };
+    }
 }

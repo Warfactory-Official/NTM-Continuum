@@ -54,11 +54,8 @@ public final class BlockLightstone extends CompatBlock {
         return List.of(MaterialCompletionRegistrations.lightstoneItem(variant(state)));
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return MaterialCompletionRegistrations.lightstoneItem(variant(state));
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return MaterialCompletionRegistrations.lightstoneItem(variant(state));
     }
 

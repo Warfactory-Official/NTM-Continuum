@@ -64,4 +64,21 @@ public class MachineFusionKlystron extends BlockMultiblockMachine implements IEn
         visitor.passiveCell(core.offset(rot.getStepX() * 2, 0, rot.getStepZ() * 2), MASK_ALL, domains);
         visitor.passiveCell(core.offset(-rot.getStepX() * 2, 0, -rot.getStepZ() * 2), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineFusionKlystron.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] { 3, 0, 4, 3, 2, 2 },
+            new int[] { 4, -3, 4, 3, 1, 1 },
+        };
+    }
+
+    /** 1.7 {@code MachineFusionKlystron.getAABBExtras}, read only by the placement highlight. */
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+            {1.5, 3.5, -4.5, -4.5, 1, -1}
+        };
+    }
 }

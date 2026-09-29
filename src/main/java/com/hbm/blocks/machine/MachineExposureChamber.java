@@ -101,4 +101,17 @@ public class MachineExposureChamber extends BlockMultiblockMachine implements IE
     private static BlockPos head(BlockPos core, Direction facing) {
         return core.relative(facing.getCounterClockWise(), 7);
     }
+
+    /** 1.7 {@code MachineExposureChamber.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            getDimensions(),
+            new int[] {3, 0, 0, 0, -3, 8},
+            new int[] {0, 0, 1, -1, -3, 6, 0, 2, 0},
+            new int[] {0, 0, -1, 1, -3, 6, 0, 2, 0},
+            new int[] {3, 0, 1, -1, 0, 1, 0, 0, -7},
+            new int[] {3, 0, -1, 1, 0, 1, 0, 0, -7},
+        };
+    }
 }

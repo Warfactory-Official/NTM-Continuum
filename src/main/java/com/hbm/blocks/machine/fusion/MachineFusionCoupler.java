@@ -30,4 +30,12 @@ public class MachineFusionCoupler extends BlockMultiblockMachine {
 
     @Override public int getOffset() { return 0; }
 
+    /** 1.7 {@code MachineFusionCoupler.getAABBExtras}, read only by the placement highlight. */
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+            {1.5, 3.5, 1, -1, 1.5, 1.5},
+            {1.5, 3.5, 1, -1, -1.5, -1.5}
+        };
+    }
 }

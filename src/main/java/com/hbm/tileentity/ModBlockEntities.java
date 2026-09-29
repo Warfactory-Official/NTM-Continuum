@@ -798,6 +798,12 @@ public final class ModBlockEntities {
                             com.hbm.blocks.ModDecoBlocks.OBJ_BLOCKS.stream(), com.hbm.blocks.ModSteelBlocks.OBJ_BLOCKS.stream())
                             .map(RegistryObject::get).toArray(net.minecraft.world.level.block.Block[]::new)));
 
+    /** plant_reeds: exists only so RenderReeds can draw the stem down the whole water column. */
+    public static final RegistryObject<BlockEntityType<com.hbm.tileentity.deco.TileEntityReeds>> REEDS =
+            BLOCK_ENTITIES.register("reeds",
+                    () -> BlockEntities.type(com.hbm.tileentity.deco.TileEntityReeds::new,
+                            com.hbm.blocks.ModTerrainBlocks.plant_reeds.get()));
+
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.bomb.TileEntityFireworks>> FIREWORKS =
             BLOCK_ENTITIES.register("fireworks",
                     () -> BlockEntities.serverTicking(com.hbm.tileentity.bomb.TileEntityFireworks::new,

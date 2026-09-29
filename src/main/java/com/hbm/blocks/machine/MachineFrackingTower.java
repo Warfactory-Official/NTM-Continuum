@@ -88,4 +88,20 @@ public class MachineFrackingTower extends BlockMultiblockMachine implements IEne
 
     /** The whole port surface is the core's own four horizontals. */
     @Override public int coreMask() { return MASK_HORIZONTAL; }
+
+    /** 1.7 {@code MachineFrackingTower.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {3, 0, 0, 0, 0, 0},
+            new int[] {1, 0, 3, 3, 3, 3, 0, 2, 0},
+            new int[] {-1, 2, 0, 1, 0, 1, -2, 2, -2},
+            new int[] {-1, 2, 0, 1, 0, 1, 3, 2, -2},
+            new int[] {-1, 2, 0, 1, 0, 1, -2, 2, 3},
+            new int[] {-1, 2, 0, 1, 0, 1, 3, 2, 3},
+            new int[] {10, -4, 2, 2, 2, 2},
+            new int[] {24, -9, 1, 1, 1, 1},
+            new int[] {1, 0, -2, 3, 1, 1, 0, 15, 0},
+        };
+    }
 }

@@ -1,17 +1,18 @@
 package com.hbm.blocks.generic;
 
+import com.hbm.tileentity.deco.TileEntityReeds;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import org.jspecify.annotations.Nullable;
 
@@ -19,22 +20,15 @@ import java.util.List;
 
 /**
  * 1.7 {@code BlockReeds} ({@code plant_reeds}): a reed that stands on water and drops a stick. The old
- * {@code RenderReeds} drew crossed squares down through the whole water column below the block; a JSON
- * model can reach one block down at most, so {@code depth} records how much of the column shows —
- * 1 (top only), 2 (top + bottom cap one below) or 3 (top + mid section one below, column continues).
+ * {@code RenderReeds} drew crossed squares down through the whole water column below the block, measured every
+ * frame. The block model draws the top segment; {@link TileEntityReeds} carries
+ * {@link com.hbm.client.render.RenderReeds}, which draws the rest of the column at any depth (a block model can
+ * reach one block below its cell at most, which is why the earlier depth-1..3 blockstate stopped short).
  */
-public class BlockReeds extends BlockTerrainPlant {
-
-    public static final IntegerProperty DEPTH = IntegerProperty.create("depth", 1, 3);
+public class BlockReeds extends BlockTerrainPlant implements EntityBlock {
 
     public BlockReeds(Properties properties) {
         super(properties);
-        registerDefaultState(getStateDefinition().any().setValue(DEPTH, 1));
-    }
-
-    @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(DEPTH);
     }
 
     private static boolean isWater(BlockState state) {
@@ -52,13 +46,17 @@ public class BlockReeds extends BlockTerrainPlant {
         return false;
     }
 
-    /** The water column depth below, as the old renderer measured it, clamped to what the model can show. */
-    public static int depth(LevelReader level, BlockPos pos) {
+    /**
+     * 1.7 {@code RenderReeds}' {@code depth}: walking down from the block below, {@code depth = y - i} is set
+     * before the water test, so it counts every water block plus one (the reed itself). The first non-water
+     * block ends the walk; the old loop also stopped above y = 0, here the level's floor.
+     */
+    public static int columnDepth(BlockGetter level, BlockPos pos) {
         int depth = 0;
+        BlockPos.MutableBlockPos cursor = pos.mutable();
         for (int y = pos.getY() - 1; y > level.getMinY(); y--) {
-            if (!isWater(level.getBlockState(new BlockPos(pos.getX(), y, pos.getZ())))) break;
             depth = pos.getY() - y;
-            if (depth >= 3) break;
+            if (!isWater(level.getBlockState(cursor.setY(y)))) break;
         }
         return Math.max(1, depth);
     }
@@ -68,15 +66,12 @@ public class BlockReeds extends BlockTerrainPlant {
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         if (!isWater(level.getBlockState(pos.below()))) return null;
-        return defaultBlockState().setValue(DEPTH, depth(level, pos));
+        return defaultBlockState();
     }
 
     @Override
-    protected BlockState onUpdateShape(BlockState state, LevelReader level, dev.golem.core.world.BlockTickScheduler ticks,
-                                       BlockPos pos, Direction direction, BlockPos neighbourPos, BlockState neighbourState) {
-        BlockState result = super.onUpdateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState);
-        if (result != state || direction != Direction.DOWN) return result;
-        return state.setValue(DEPTH, depth(level, pos));
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new TileEntityReeds(pos, state);
     }
 
     /** 1.7 {@code getItemDropped -> Items.stick}. */

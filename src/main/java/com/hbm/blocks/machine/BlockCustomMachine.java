@@ -132,15 +132,8 @@ public class BlockCustomMachine extends CompatBlock implements TickingBlock {
         return ret;
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
-        return pick(level, pos);
-    }
-
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return pick(level, pos);
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return pick(level, pos);
     }
 

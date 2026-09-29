@@ -122,6 +122,32 @@ public abstract class BlockMultiblockCore extends CompatBlock implements Ticking
     public Direction getDirModified(Direction direction) { return direction; }
 
     /**
+     * 1.7 {@code BlockDummyable#getAllDimensions}: the boxes the placement highlight outlines, in
+     * {@link #getDimensions} order (up, down, north, south, west, east), optionally followed by a forward, up and
+     * lateral offset from the core. Only the highlight reads it; a machine whose real footprint is several boxes
+     * overrides it, or the highlight shows the wrong shape (as in 1.7).
+     */
+    public int[][] getAllDimensions() {
+        return new int[][] { getDimensions() };
+    }
+
+    /**
+     * 1.7 {@code BlockDummyable#getAABBExtras}: extra boxes the placement highlight outlines in blue, each
+     * {up, down, forward, backward, left, right} from the core cell's bottom centre.
+     */
+    public double[][] getAABBExtras() {
+        return new double[0][0];
+    }
+
+    /**
+     * The placement highlight's green/red answer: {@link #checkRequirement} for a block placed at {@code placed}
+     * facing {@code facing}, the core found as {@link #setPlacedBy} finds it.
+     */
+    public final boolean canPlaceAt(Level level, BlockPos placed, Direction facing) {
+        return checkRequirement(level, placed.relative(facing, -getOffset()), facing, placed);
+    }
+
+    /**
      * The yaw the placer turns through to cycle all four facings once. 1.7's large pylon halves it, so its
      * facing advances every 45 degrees and a full turn cycles the four twice.
      */

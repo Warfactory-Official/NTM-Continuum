@@ -950,42 +950,15 @@ public final class BlockModelDeclarations {
                         .face(Face.of("south", "#all"))
                         .face(Face.of("west", "#all"))
                         .face(Face.of("east", "#all"))));
-        Dejson.model("hbm:block/plant_reeds_1", Model.of().ambientOcclusion(false).renderType("minecraft:cutout")
+        // plant_reeds top segment (1.7 drawCrossedSquares, 0.75 grey via tint 0); RenderReeds draws the stem below.
+        Dejson.model("hbm:block/plant_reeds", Model.of().ambientOcclusion(false).renderType("minecraft:cutout")
                 .textures(Slots.of("particle", "hbm:blocks/reeds_top", "tex0", "hbm:blocks/reeds_top"))
                 .elements(Element.box(0.8, 0, 8, 15.2, 16, 8).rotation(8, 8, 8, "y", 45, true).shade(false)
-                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16)),
+                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16).tintIndex(0))
+                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16).tintIndex(0)),
                         Element.box(0.8, 0, 8, 15.2, 16, 8).rotation(8, 8, 8, "y", -45, true).shade(false)
-                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16))));
-        Dejson.model("hbm:block/plant_reeds_2", Model.of().ambientOcclusion(false).renderType("minecraft:cutout")
-                .textures(Slots.of("particle", "hbm:blocks/reeds_top", "tex0", "hbm:blocks/reeds_top", "tex1", "hbm:blocks/reeds_bottom"))
-                .elements(Element.box(0.8, 0, 8, 15.2, 16, 8).rotation(8, 8, 8, "y", 45, true).shade(false)
-                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16)),
-                        Element.box(0.8, 0, 8, 15.2, 16, 8).rotation(8, 8, 8, "y", -45, true).shade(false)
-                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16)),
-                        Element.box(0.8, -16, 8, 15.2, 0, 8).rotation(8, 8, 8, "y", 45, true).shade(false)
-                        .face(Face.of("north", "#tex1").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex1").uv(0, 0, 16, 16)),
-                        Element.box(0.8, -16, 8, 15.2, 0, 8).rotation(8, 8, 8, "y", -45, true).shade(false)
-                        .face(Face.of("north", "#tex1").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex1").uv(0, 0, 16, 16))));
-        Dejson.model("hbm:block/plant_reeds_3", Model.of().ambientOcclusion(false).renderType("minecraft:cutout")
-                .textures(Slots.of("particle", "hbm:blocks/reeds_top", "tex0", "hbm:blocks/reeds_top", "tex1", "hbm:blocks/reeds_mid"))
-                .elements(Element.box(0.8, 0, 8, 15.2, 16, 8).rotation(8, 8, 8, "y", 45, true).shade(false)
-                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16)),
-                        Element.box(0.8, 0, 8, 15.2, 16, 8).rotation(8, 8, 8, "y", -45, true).shade(false)
-                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16)),
-                        Element.box(0.8, -16, 8, 15.2, 0, 8).rotation(8, 8, 8, "y", 45, true).shade(false)
-                        .face(Face.of("north", "#tex1").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex1").uv(0, 0, 16, 16)),
-                        Element.box(0.8, -16, 8, 15.2, 0, 8).rotation(8, 8, 8, "y", -45, true).shade(false)
-                        .face(Face.of("north", "#tex1").uv(0, 0, 16, 16))
-                        .face(Face.of("south", "#tex1").uv(0, 0, 16, 16))));
+                        .face(Face.of("north", "#tex0").uv(0, 0, 16, 16).tintIndex(0))
+                        .face(Face.of("south", "#tex0").uv(0, 0, 16, 16).tintIndex(0))));
         Dejson.model("hbm:block/radio_torch_template", Model.of().ambientOcclusion(false)
                 .textures(Slots.of("particle", "#torch"))
                 .elements(Element.box(7, 0, 7, 9, 10, 9).shade(false)
@@ -1672,82 +1645,20 @@ public final class BlockModelDeclarations {
                 .textures(Slots.of("particle", "#chain"))
                 .elements(Element.box(0, 0, 15, 16, 16, 15).shade(false)
                         .face(Face.of("north", "#chain").uv(0, 0, 16, 16))));
-        Dejson.model("hbm:block/template_pipe", Model.of().ambientOcclusion(false)
+        // Octagonal pipe bodies (1.7 RenderPipe + pipe/pipe_rim/pipe_quad/pipe_frame OBJs). Each octagon is four
+        // boxes rotated +/-22.5 degrees; only each box's two SHORT ends lie on the octagon perimeter (the long
+        // sides are interior chords), so those ends carry the side texture. Drawing the long sides instead
+        // produced an eight-pointed star of chords ("spikey" pipes, 2026-09-29 playtest). The block/block parent
+        // supplies the 3D inventory display (1.7 shouldRender3DInInventory); without it the icon was a flat front view.
+        Dejson.model("hbm:block/template_pipe", Model.parent("minecraft:block/block").ambientOcclusion(false)
                 .textures(Slots.of("particle", "#top", "top", "#top", "side", "#side"))
-                .elements(Element.box(2.457, 0, 5.704, 13.543, 16, 10.296).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(2.457, 5.704, 13.543, 10.296))
-                        .face(Face.of("down", "#top").uv(2.457, 5.704, 13.543, 10.296)),
-                        Element.box(2.457, 0, 5.704, 13.543, 16, 10.296).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(2.457, 5.704, 13.543, 10.296))
-                        .face(Face.of("down", "#top").uv(2.457, 5.704, 13.543, 10.296)),
-                        Element.box(5.704, 0, 2.457, 10.296, 16, 13.543).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.704, 2.457, 10.296, 13.543))
-                        .face(Face.of("down", "#top").uv(5.704, 2.457, 10.296, 13.543)),
-                        Element.box(5.704, 0, 2.457, 10.296, 16, 13.543).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.704, 2.457, 10.296, 13.543))
-                        .face(Face.of("down", "#top").uv(5.704, 2.457, 10.296, 13.543))));
-        Dejson.model("hbm:block/template_pipe_framed", Model.of().ambientOcclusion(false).renderType("minecraft:cutout")
+                .elements(pipeOctagon(8, 8, 6, 0, 16, 3, 8, 13, 0, 16, 1, true)));
+        Dejson.model("hbm:block/template_pipe_rim", Model.parent("minecraft:block/block").ambientOcclusion(false)
+                .textures(Slots.of("particle", "#top", "top", "#top", "side", "#side"))
+                .elements(pipeRim()));
+        Dejson.model("hbm:block/template_pipe_framed", Model.parent("minecraft:block/block").ambientOcclusion(false).renderType("minecraft:cutout")
                 .textures(Slots.of("particle", "#top", "top", "#top", "side", "#side").and("frame", "hbm:blocks/pipe_frame").and("mesh", "hbm:blocks/pipe_mesh"))
-                .elements(Element.box(2.457, 1, 5.704, 13.543, 15, 10.296).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16)),
-                        Element.box(2.457, 1, 5.704, 13.543, 15, 10.296).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16)),
-                        Element.box(5.704, 1, 2.457, 10.296, 15, 13.543).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16)),
-                        Element.box(5.704, 1, 2.457, 10.296, 15, 13.543).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16)),
-                        Element.box(1.533, 0, 5.321, 14.467, 1, 10.679).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(1.533, 0, 5.321, 14.467, 1, 10.679).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(5.321, 0, 1.533, 10.679, 1, 14.467).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467)),
-                        Element.box(5.321, 0, 1.533, 10.679, 1, 14.467).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467)),
-                        Element.box(1.533, 15, 5.321, 14.467, 16, 10.679).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(1.533, 15, 5.321, 14.467, 16, 10.679).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(5.321, 15, 1.533, 10.679, 16, 14.467).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467)),
-                        Element.box(5.321, 15, 1.533, 10.679, 16, 14.467).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467)),
+                .elements(concat(pipeRim(), new Element[]{
                         Element.box(0, 0, 0, 2, 16, 2)
                         .face(Face.of("north", "#frame").uv(0, 0, 2, 16))
                         .face(Face.of("south", "#frame").uv(0, 0, 2, 16))
@@ -1787,143 +1698,15 @@ public final class BlockModelDeclarations {
                         .face(Face.of("east", "#mesh").uv(2, 0, 14, 16)),
                         Element.box(15, 0, 2, 15, 16, 14)
                         .face(Face.of("west", "#mesh").uv(2, 0, 14, 16))
-                        .face(Face.of("east", "#mesh").uv(2, 0, 14, 16))));
-        Dejson.model("hbm:block/template_pipe_quad", Model.of().ambientOcclusion(false)
+                        .face(Face.of("east", "#mesh").uv(2, 0, 14, 16))})));
+        // pipe_quad: four radius-2 pipes at the quarter points; their sides use u 6..8/8..10 and every cap maps
+        // the texture's central radius-3 disc (1.5 texels per model pixel), exactly as the OBJ's UVs do.
+        Dejson.model("hbm:block/template_pipe_quad", Model.parent("minecraft:block/block").ambientOcclusion(false)
                 .textures(Slots.of("particle", "#top", "top", "#top", "side", "#side"))
-                .elements(Element.box(2.152, 0, 3.235, 5.848, 16, 4.765).rotation(4, 8, 4, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(2.152, 3.235, 5.848, 4.765))
-                        .face(Face.of("down", "#top").uv(2.152, 3.235, 5.848, 4.765)),
-                        Element.box(2.152, 0, 3.235, 5.848, 16, 4.765).rotation(4, 8, 4, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(2.152, 3.235, 5.848, 4.765))
-                        .face(Face.of("down", "#top").uv(2.152, 3.235, 5.848, 4.765)),
-                        Element.box(3.235, 0, 2.152, 4.765, 16, 5.848).rotation(4, 8, 4, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(3.235, 2.152, 4.765, 5.848))
-                        .face(Face.of("down", "#top").uv(3.235, 2.152, 4.765, 5.848)),
-                        Element.box(3.235, 0, 2.152, 4.765, 16, 5.848).rotation(4, 8, 4, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(3.235, 2.152, 4.765, 5.848))
-                        .face(Face.of("down", "#top").uv(3.235, 2.152, 4.765, 5.848)),
-                        Element.box(2.152, 0, 11.235, 5.848, 16, 12.765).rotation(4, 8, 12, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(2.152, 11.235, 5.848, 12.765))
-                        .face(Face.of("down", "#top").uv(2.152, 11.235, 5.848, 12.765)),
-                        Element.box(2.152, 0, 11.235, 5.848, 16, 12.765).rotation(4, 8, 12, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(2.152, 11.235, 5.848, 12.765))
-                        .face(Face.of("down", "#top").uv(2.152, 11.235, 5.848, 12.765)),
-                        Element.box(3.235, 0, 10.152, 4.765, 16, 13.848).rotation(4, 8, 12, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(3.235, 10.152, 4.765, 13.848))
-                        .face(Face.of("down", "#top").uv(3.235, 10.152, 4.765, 13.848)),
-                        Element.box(3.235, 0, 10.152, 4.765, 16, 13.848).rotation(4, 8, 12, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(3.235, 10.152, 4.765, 13.848))
-                        .face(Face.of("down", "#top").uv(3.235, 10.152, 4.765, 13.848)),
-                        Element.box(10.152, 0, 3.235, 13.848, 16, 4.765).rotation(12, 8, 4, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(10.152, 3.235, 13.848, 4.765))
-                        .face(Face.of("down", "#top").uv(10.152, 3.235, 13.848, 4.765)),
-                        Element.box(10.152, 0, 3.235, 13.848, 16, 4.765).rotation(12, 8, 4, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(10.152, 3.235, 13.848, 4.765))
-                        .face(Face.of("down", "#top").uv(10.152, 3.235, 13.848, 4.765)),
-                        Element.box(11.235, 0, 2.152, 12.765, 16, 5.848).rotation(12, 8, 4, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(11.235, 2.152, 12.765, 5.848))
-                        .face(Face.of("down", "#top").uv(11.235, 2.152, 12.765, 5.848)),
-                        Element.box(11.235, 0, 2.152, 12.765, 16, 5.848).rotation(12, 8, 4, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(11.235, 2.152, 12.765, 5.848))
-                        .face(Face.of("down", "#top").uv(11.235, 2.152, 12.765, 5.848)),
-                        Element.box(10.152, 0, 11.235, 13.848, 16, 12.765).rotation(12, 8, 12, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(10.152, 11.235, 13.848, 12.765))
-                        .face(Face.of("down", "#top").uv(10.152, 11.235, 13.848, 12.765)),
-                        Element.box(10.152, 0, 11.235, 13.848, 16, 12.765).rotation(12, 8, 12, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(10.152, 11.235, 13.848, 12.765))
-                        .face(Face.of("down", "#top").uv(10.152, 11.235, 13.848, 12.765)),
-                        Element.box(11.235, 0, 10.152, 12.765, 16, 13.848).rotation(12, 8, 12, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(11.235, 10.152, 12.765, 13.848))
-                        .face(Face.of("down", "#top").uv(11.235, 10.152, 12.765, 13.848)),
-                        Element.box(11.235, 0, 10.152, 12.765, 16, 13.848).rotation(12, 8, 12, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(11.235, 10.152, 12.765, 13.848))
-                        .face(Face.of("down", "#top").uv(11.235, 10.152, 12.765, 13.848))));
-        Dejson.model("hbm:block/template_pipe_rim", Model.of().ambientOcclusion(false)
-                .textures(Slots.of("particle", "#top", "top", "#top", "side", "#side"))
-                .elements(Element.box(2.457, 1, 5.704, 13.543, 15, 10.296).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16)),
-                        Element.box(2.457, 1, 5.704, 13.543, 15, 10.296).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16)),
-                        Element.box(5.704, 1, 2.457, 10.296, 15, 13.543).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16)),
-                        Element.box(5.704, 1, 2.457, 10.296, 15, 13.543).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16)),
-                        Element.box(1.533, 0, 5.321, 14.467, 1, 10.679).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(1.533, 0, 5.321, 14.467, 1, 10.679).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(5.321, 0, 1.533, 10.679, 1, 14.467).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467)),
-                        Element.box(5.321, 0, 1.533, 10.679, 1, 14.467).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467)),
-                        Element.box(1.533, 15, 5.321, 14.467, 16, 10.679).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(1.533, 15, 5.321, 14.467, 16, 10.679).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("north", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("south", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(1.533, 5.321, 14.467, 10.679))
-                        .face(Face.of("down", "#top").uv(1.533, 5.321, 14.467, 10.679)),
-                        Element.box(5.321, 15, 1.533, 10.679, 16, 14.467).rotation(8, 8, 8, "y", 22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467)),
-                        Element.box(5.321, 15, 1.533, 10.679, 16, 14.467).rotation(8, 8, 8, "y", -22.5)
-                        .face(Face.of("west", "#side").uv(3, 0, 8, 16))
-                        .face(Face.of("east", "#side").uv(8, 0, 13, 16))
-                        .face(Face.of("up", "#top").uv(5.321, 1.533, 10.679, 14.467))
-                        .face(Face.of("down", "#top").uv(5.321, 1.533, 10.679, 14.467))));
+                .elements(concat(pipeOctagon(4, 4, 2, 0, 16, 6, 8, 10, 0, 16, 1.5, true),
+                        pipeOctagon(4, 12, 2, 0, 16, 6, 8, 10, 0, 16, 1.5, true),
+                        pipeOctagon(12, 4, 2, 0, 16, 6, 8, 10, 0, 16, 1.5, true),
+                        pipeOctagon(12, 12, 2, 0, 16, 6, 8, 10, 0, 16, 1.5, true))));
         Dejson.model("hbm:block/tinted_cube_all", Model.parent("minecraft:block/block")
                 .textures(Slots.of("particle", "#all"))
                 .elements(Element.box(0, 0, 0, 16, 16, 16)
@@ -2547,5 +2330,56 @@ public final class BlockModelDeclarations {
                         .face(Face.of("east", "#all"))));
         Dejson.model("hbm:block/zirnox_destroyed", Model.of()
                 .textures(Slots.of("particle", "hbm:blocks/block_steel")));
+    }
+
+    /** pipe_rim: a radius-6 body between two radius-7, one-pixel rims (old side v 1..15, rims v 0..1 / 15..16). */
+    private static Element[] pipeRim() {
+        return concat(pipeOctagon(8, 8, 6, 1, 15, 3, 8, 13, 1, 15, 1, false),
+                pipeOctagon(8, 8, 7, 0, 1, 3, 8, 13, 15, 16, 1, true),
+                pipeOctagon(8, 8, 7, 15, 16, 3, 8, 13, 0, 1, 1, true));
+    }
+
+    /**
+     * A regular octagon prism about the Y axis (vertices on the X/Z axes, like the old OBJs), built from four
+     * boxes rotated +/-22.5 degrees. A box of half-extents r*cos(22.5) x r*sin(22.5) has its four corners on the
+     * circumcircle, so after rotation its two short ends are octagon edges and its long sides are hidden chords.
+     * Adjacent octagon edges alternate between the u ranges [u0,u1] and [u1,u2] as in the OBJ side UVs; caps map
+     * a disc of radius r*capScale around the texture centre.
+     */
+    private static Element[] pipeOctagon(double cx, double cz, double r, double y0, double y1,
+                                         double u0, double u1, double u2, double v0, double v1,
+                                         double capScale, boolean caps) {
+        double a = round3(r * Math.cos(Math.PI / 8)), b = round3(r * Math.sin(Math.PI / 8));
+        double ca = round3(a * capScale), cb = round3(b * capScale);
+        Element[] out = new Element[4];
+        int i = 0;
+        for (double angle : new double[]{22.5, -22.5}) {
+            double uStart = angle > 0 ? u0 : u1, uEnd = angle > 0 ? u1 : u2;
+            Element xLong = Element.box(round3(cx - a), y0, round3(cz - b), round3(cx + a), y1, round3(cz + b))
+                    .rotation(cx, 8, cz, "y", angle)
+                    .face(Face.of("east", "#side").uv(uStart, v0, uEnd, v1))
+                    .face(Face.of("west", "#side").uv(uStart, v0, uEnd, v1));
+            Element zLong = Element.box(round3(cx - b), y0, round3(cz - a), round3(cx + b), y1, round3(cz + a))
+                    .rotation(cx, 8, cz, "y", angle)
+                    .face(Face.of("north", "#side").uv(uStart, v0, uEnd, v1))
+                    .face(Face.of("south", "#side").uv(uStart, v0, uEnd, v1));
+            if (caps) {
+                xLong.face(Face.of("up", "#top").uv(round3(8 - ca), round3(8 - cb), round3(8 + ca), round3(8 + cb)))
+                        .face(Face.of("down", "#top").uv(round3(8 - ca), round3(8 - cb), round3(8 + ca), round3(8 + cb)));
+                zLong.face(Face.of("up", "#top").uv(round3(8 - cb), round3(8 - ca), round3(8 + cb), round3(8 + ca)))
+                        .face(Face.of("down", "#top").uv(round3(8 - cb), round3(8 - ca), round3(8 + cb), round3(8 + ca)));
+            }
+            out[i++] = xLong;
+            out[i++] = zLong;
+        }
+        return out;
+    }
+
+    private static double round3(double value) {
+        return Math.round(value * 1000.0) / 1000.0;
+    }
+
+    private static Element[] concat(Element[]... parts) {
+        return java.util.Arrays.stream(parts).flatMap(java.util.Arrays::stream).toArray(Element[]::new);
     }
 }

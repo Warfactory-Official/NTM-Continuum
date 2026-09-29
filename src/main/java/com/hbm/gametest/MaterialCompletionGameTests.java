@@ -106,7 +106,7 @@ public final class MaterialCompletionGameTests {
                     "Concrete item lost variant " + variant);
             helper.assertTrue(BlockConcreteColored.variant(block.stateForItem(stack)) == variant,
                     "Concrete placement changed variant " + variant);
-            ItemStack clone = block.getCloneItemStack((net.minecraft.world.level.BlockGetter) null,
+            ItemStack clone = block.pickBlockStack((net.minecraft.world.level.BlockGetter) null,
                     BlockPos.ZERO, block.stateForVariant(variant));
             helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, -1) == variant,
                     "Concrete clone lost variant " + variant);
@@ -154,7 +154,7 @@ public final class MaterialCompletionGameTests {
                     "Lightstone placement changed variant " + variant);
             helper.assertTrue(block.stateForVariant(variant).getLightEmission() == 0,
                     "Legacy lightstone variant unexpectedly emits light: " + variant);
-            ItemStack clone = block.getCloneItemStack((net.minecraft.world.level.BlockGetter) null,
+            ItemStack clone = block.pickBlockStack((net.minecraft.world.level.BlockGetter) null,
                     BlockPos.ZERO, block.stateForVariant(variant));
             helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, -1) == variant,
                     "Lightstone clone lost variant " + variant);

@@ -191,4 +191,27 @@ public class MachineFusionTorus extends BlockMultiblockMachine
             }
         }
     }
+
+    /** 1.7 {@code MachineFusionTorus.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] { 4, 0, 7, 7, 3, 3 },
+            new int[] { 4, 0, 6, 6, 4, 4 },
+            new int[] { 4, 0, 5, 5, 5, 5 },
+            new int[] { 4, 0, 4, 4, 6, 6 },
+            new int[] { 4, 0, 3, 3, 7, 7 },
+        };
+    }
+
+    /** 1.7 {@code MachineFusionTorus.getAABBExtras}, read only by the placement highlight. */
+    @Override
+    public double[][] getAABBExtras() {
+        return new double[][] {
+            {3.5, 1.5, 7.5, 7.5, 1, -1},
+            {3.5, 1.5, -7.5, -7.5, 1, -1},
+            {3.5, 1.5, 1, -1, 7.5, 7.5},
+            {3.5, 1.5, 1, -1, -7.5, -7.5},
+        };
+    }
 }

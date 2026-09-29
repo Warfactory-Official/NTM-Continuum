@@ -395,6 +395,8 @@ public final class HbmBlockEntityRenderers {
 
         // Decorative OBJ blocks (boxcar / boat / satellites): one renderer picks the model per block.
         regGem(sink, ModBlockEntities.DECO.get(), DecoObjRenderer::new);
+        // plant_reeds: the stem below the water line (1.7 RenderReeds).
+        regGem(sink, ModBlockEntities.REEDS.get(), RenderReeds::new);
 
         // The 12 tiered anvils: one renderer picks the per-anvil OBJ + texture from the block.
         regGem(sink, ModBlockEntities.ANVIL.get(), AnvilObjRenderer::new);

@@ -87,11 +87,17 @@ public class DecoObjRenderer extends GemBER<TileEntityDeco, DecoRenderState> {
             Gem.Part<DecoRenderState> scaffold = declaration.joint()
                     .visibleIf(state -> styleOf(state) == Style.SCAFFOLD && orientationOf(state) == orientation)
                     .translate(0.5F, 0.5F, 0.5F);
+            // 1.7 RenderScaffoldBlock: v' = rotY(rotation) * rotZ(-pitch) * v + origin (ObjUtil applies Vec3
+            // rotateAroundZ(pitch), which is a -pitch rotation, then rotateAroundY(rotation)). Metas 0/8 stand on
+            // the block's floor at (0.5, 0, 0.5); metas 4 (placed on a N/S face) and 12 (E/W face) lie on their
+            // side with pitch 90 about origins (0.5, 0.5, 0) and (1, 0.5, 0.5). Pose ops compose outer-first, so
+            // the Y rotation precedes the Z rotation here; the reverse order laid both side-placed states out of
+            // their block (2026-09-29 playtest).
             switch (orientation) {
                 case HORIZONTAL_NS -> scaffold.rotate(Gem.Axes.Y, -90F).translate(0F, -0.5F, 0F);
                 case HORIZONTAL_EW -> scaffold.rotate(Gem.Axes.Y, -180F).translate(0F, -0.5F, 0F);
-                case VERTICAL_NS -> scaffold.rotate(Gem.Axes.Z, -90F).rotate(Gem.Axes.Y, -90F).translate(0F, 0F, 0.5F);
-                case VERTICAL_EW -> scaffold.rotate(Gem.Axes.Z, -90F).rotate(Gem.Axes.Y, -180F).translate(-0.5F, 0F, 0F);
+                case VERTICAL_NS -> scaffold.translate(0F, 0F, -0.5F).rotate(Gem.Axes.Y, -90F).rotate(Gem.Axes.Z, -90F);
+                case VERTICAL_EW -> scaffold.translate(0.5F, 0F, 0F).rotate(Gem.Axes.Y, -180F).rotate(Gem.Axes.Z, -90F);
             }
             scaffold.child(fallback.mesh(), fallback.surface())
                     .mesh(state -> scaffoldPiece(state).mesh())

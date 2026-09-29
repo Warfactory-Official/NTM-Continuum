@@ -108,7 +108,7 @@ public final class SawmillGameTests {
         TileEntitySawmill sawmill = (TileEntitySawmill) helper.getLevel().getBlockEntity(core);
         helper.assertTrue(sawmill != null && !sawmill.hasBlade,
                 "missing-blade machine item must place a sawmill without its blade");
-        ItemStack clone = block.getCloneItemStack(helper.getLevel(), core, helper.getLevel().getBlockState(core));
+        ItemStack clone = block.pickBlockStack(helper.getLevel(), core, helper.getLevel().getBlockState(core));
         helper.assertTrue(ModDataComponents.ITEM_VARIANT.getOr(clone, 0) == 1,
                 "cloning a missing-blade sawmill must preserve its item variant");
         ItemStack drop = block.getDrops(helper.getLevel().getBlockState(core),

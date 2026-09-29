@@ -54,11 +54,8 @@ public final class BlockConcreteColoredExt extends CompatBlock {
         return List.of(MaterialCompletionRegistrations.concreteColoredExtItem(variant(state)));
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return MaterialCompletionRegistrations.concreteColoredExtItem(variant(state));
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return MaterialCompletionRegistrations.concreteColoredExtItem(variant(state));
     }
 

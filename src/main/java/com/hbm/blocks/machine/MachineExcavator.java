@@ -72,4 +72,15 @@ public final class MachineExcavator extends BlockMultiblockMachine implements IE
         visitor.passiveCell(core.relative(rot, 3).above(), MASK_ALL, domains);
         visitor.passiveCell(core.relative(rot, -3).above(), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineExcavator.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {3, 0, 3, 3, 3, 3},
+            new int[] {-1, 3, 3, -2, 3, -2},
+            new int[] {-1, 3, 3, -2, -2, 3},
+            new int[] {-1, 3, -2, 3, 3, 3},
+        };
+    }
 }

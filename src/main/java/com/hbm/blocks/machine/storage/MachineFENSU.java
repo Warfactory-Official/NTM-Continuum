@@ -187,11 +187,8 @@ public class MachineFENSU extends BlockMultiblockMachine implements IEnergyConne
         return List.of(stack);
     }
 
-    public ItemStack getCloneItemStack(net.minecraft.world.level.LevelReader level, BlockPos pos, BlockState state) {
-        return cloneStack(level, pos);
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return cloneStack(level, pos);
     }
 

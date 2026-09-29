@@ -63,4 +63,14 @@ public class MachineCompressor extends BlockMultiblockMachine implements IEnergy
         visitor.passiveCell(core.offset(rot.getStepX(), 0, rot.getStepZ()), MASK_ALL, domains);
         visitor.passiveCell(core.offset(-rot.getStepX(), 0, -rot.getStepZ()), MASK_ALL, domains);
     }
+
+    /** 1.7 {@code MachineCompressor.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {2, 0, 1, 2, 1, 1},
+            new int[] {3, -3, 1, 1, 1, 1},
+            new int[] {8, -4, 0, 0, 1, 1}
+        };
+    }
 }

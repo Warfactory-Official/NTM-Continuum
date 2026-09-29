@@ -270,6 +270,11 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     public boolean entityInLOS(Entity e) {
         if (!e.isAlive()) return false;
+        // 1.7 predates spectators. A spectator is not in the world physically: never acquire or keep one.
+        // Checked here, not only in entityAcceptableTarget, because this is the one test every target
+        // passes - on acquisition, on the per-tick retention check, and in the damaged turrets whose
+        // entityAcceptableTarget replaces the base one - so a player who switches mode mid-lock is dropped.
+        if (e.isSpectator()) return false;
         if (!hasThermalVision() && e instanceof LivingEntity living && living.hasEffect(MobEffects.INVISIBILITY)) {
             return false;
         }
@@ -294,7 +299,9 @@ public abstract class TileEntityTurretBaseNT extends TileEntityMachineBase
 
     public boolean entityAcceptableTarget(Entity e) {
         if (!e.isAlive()) return false;
-        if (e instanceof Player player && (player.isSpectator() || player.isCreative())) return false;
+        // 1.7 base turrets exclude no game mode: creative players are targeted (their invulnerability
+        // ignores the damage). Only the damaged Howard/Sentry skip creative players. Spectators: entityInLOS.
+        if (e.isSpectator()) return false;
 
         List<String> whitelist = getWhitelist();
         if (whitelist != null) {

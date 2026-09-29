@@ -141,11 +141,8 @@ public class MachineSawmill extends BlockMultiblockMachine implements WorldlyCon
         return List.of(stack);
     }
 
-    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
-        return cloneWithBladeState(level, pos);
-    }
-
-    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+    @Override
+    protected ItemStack onPickBlock(BlockGetter level, BlockPos pos, BlockState state) {
         return cloneWithBladeState(level, pos);
     }
 

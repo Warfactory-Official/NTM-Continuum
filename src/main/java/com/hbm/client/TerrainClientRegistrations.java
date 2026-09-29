@@ -29,8 +29,15 @@ public final class TerrainClientRegistrations {
         @Override public Set<Property<?>> relevantProperties() { return Set.of(); }
     };
 
+    /** 1.7 RenderReeds: {@code colorMultiplier} (white) times 0.75, on every segment (tint index 0 of the top model). */
+    private static final BlockTint REEDS = new BlockTint() {
+        @Override public int color(BlockState state) { return com.hbm.client.render.RenderReeds.COLOR; }
+        @Override public Set<Property<?>> relevantProperties() { return Set.of(); }
+    };
+
     @SuppressWarnings("unchecked")
     public static void registerBlockColors() {
+        Tints.registerBlockTint(REEDS, ModTerrainBlocks.plant_reeds);
         List<Supplier<? extends Block>> tinted = new ArrayList<>();
         for (BlockNTMFlower.Type t : BlockNTMFlower.Type.values()) {
             if (t.tinted()) tinted.add(() -> ModTerrainBlocks.plant_flower(t));

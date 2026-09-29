@@ -97,4 +97,14 @@ public class MachineICF extends BlockMultiblockMachine implements IFluidConnecto
         if (state.getValue(CELL) && !MultiblockSurface.carriesPassive(level, pos, PASSIVE_ITEMS)) return null;
         return MultiblockSurface.coreEntity(level, pos) instanceof TileEntityICF icf ? icf : null;
     }
+
+    /** 1.7 {@code MachineICF.getAllDimensions}, read only by the placement highlight. */
+    @Override
+    public int[][] getAllDimensions() {
+        return new int[][] {
+            new int[] {5, 0, 1, 1, 8, 8},
+            new int[] {1, 1, -1, 2, 8, 8, 0, 3, 0},
+            new int[] {1, 1, 2, -1, 8, 8, 0, 3, 0},
+        };
+    }
 }
