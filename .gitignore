@@ -35,3 +35,6 @@ replay_pid*
 ### OS
 .DS_Store
 Thumbs.db
+
+### Visual test harness (CLI lives in ../Golem-Core/harness)
+.harness/

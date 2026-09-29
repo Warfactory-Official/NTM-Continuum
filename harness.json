@@ -1,0 +1,19 @@
+{
+  "name": "hbm",
+  "mod": ".",
+  "golemCore": "../Golem-Core",
+  "scenarios": "harness/scenarios",
+  "fixtures": "harness/fixtures",
+  "out": "harness/out",
+  "world": "harness",
+  "defaultNodes": ["1.21.1-neoforge", "1.21.1-fabric"],
+  "maxClients": 2,
+  "nodes": [
+    {"name": "26.1-neoforge", "minecraft": "26.1", "loader": "neoforge", "port": 47601, "packFormat": 84, "java": 25},
+    {"name": "26.1-fabric", "minecraft": "26.1", "loader": "fabric", "port": 47602, "packFormat": 84, "java": 25},
+    {"name": "1.21.1-neoforge", "minecraft": "1.21.1", "loader": "neoforge", "port": 47603, "packFormat": 34, "java": 21},
+    {"name": "1.21.1-fabric", "minecraft": "1.21.1", "loader": "fabric", "port": 47604, "packFormat": 34, "java": 21},
+    {"name": "1.20.1-fabric", "minecraft": "1.20.1", "loader": "fabric", "port": 47605, "packFormat": 15, "java": 17},
+    {"name": "1.20.1-forge", "minecraft": "1.20.1", "loader": "forge", "port": 47606, "packFormat": 15, "java": 17}
+  ]
+}

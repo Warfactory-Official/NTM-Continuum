@@ -212,7 +212,7 @@ tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 extra["mc_version"] = mcVersion
 extra["java_version"] = javaVersion.toString()
 apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
-// Visual test harness launch capture (shared by every Golem Core mod); see ../harness.json.
+// Visual test harness launch capture (shared by every Golem Core mod); see harness.json and ../Golem-Core/harness/README.md.
 apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-recipes.gradle.kts"))
 apply(from = rootProject.file("gradle/legacy-biomes.gradle.kts"))
