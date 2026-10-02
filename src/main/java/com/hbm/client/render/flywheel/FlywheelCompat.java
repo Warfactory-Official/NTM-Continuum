@@ -87,10 +87,13 @@ public final class FlywheelCompat {
      * <p>Safe to call unguarded: a node with no engine is a no-op.
      */
     public static void startEngine() {
+        // The published engine subscribes its own listeners, so there is nothing to start on its nodes.
+        // Core's is started even when the backend is off at startup: it then subscribes only its config
+        // file and `/flywheel backend`, so the player can turn the engine back on. (No guarded branch may
+        // begin with a line comment; Stonecutter's un-comment pass eats the slashes.)
         //? if flywheel {
-        /*// The published engine subscribes its own listeners.
+        /*return;
         *///?} else {
-        if (!Instancing.isAvailable()) return;
         Instancing.init(FlywheelCompat::crumblingCore);
         //?}
     }

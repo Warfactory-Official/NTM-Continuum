@@ -249,7 +249,7 @@ public final class SingularityGameTests {
                 helper.getLevel().getBlockEntity(helper.absolutePos(new BlockPos(8, 1, 4)));
         for (BlockPos ductPos : new BlockPos[] {new BlockPos(6, 1, 4), new BlockPos(7, 1, 4),
                 new BlockPos(7, 1, 3)}) {
-            helper.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState());
+            helper.setBlock(ductPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
             TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(
                     helper.absolutePos(ductPos));
             duct.setFluidType(Fluids.AMAT);

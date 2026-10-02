@@ -43,8 +43,23 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
     /** One fixed item that always holds {@code amount} of {@code fluid}; {@code container} is what crafting leaves. */
     private record Fixed(String full, String container, String fluid, int amount) {}
 
-    /** A component-backed container item full at {@code capacity}; {@code container} is what crafting leaves. */
-    private record Typed(Supplier<? extends Item> item, Supplier<ItemStack> container, boolean leadOnlyAllowed) {}
+    /**
+     * A component-backed container item full at {@code capacity}; {@code container} is what crafting leaves.
+     * {@code dispersableOnly}: 1.7 registered the disperser canister and glyphid gland only for
+     * {@code isDispersable()} fluids, and did so before its lead-container cut-off.
+     */
+    private record Typed(Supplier<? extends Item> item, Supplier<ItemStack> container, boolean leadOnlyAllowed,
+                         boolean dispersableOnly) {
+        Typed(Supplier<? extends Item> item, Supplier<ItemStack> container, boolean leadOnlyAllowed) {
+            this(item, container, leadOnlyAllowed, false);
+        }
+
+        boolean admits(FluidType type) {
+            if (FluidContainers.hasNoContainer(type)) return false;
+            if (dispersableOnly) return type.isDispersable();
+            return leadOnlyAllowed || !FluidContainers.needsLeadContainer(type);
+        }
+    }
 
     private static final List<Fixed> FIXED = List.of(
             new Fixed("minecraft:water_bucket", "minecraft:bucket", "WATER", 1000),
@@ -78,8 +93,8 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
                 // the universal tank and barrel are one item full or empty: an empty one is the bare item
                 new Typed(ModFluidItems.fluid_tank, () -> new ItemStack(ModFluidItems.fluid_tank.get()), false),
                 new Typed(ModFluidItems.fluid_barrel, () -> new ItemStack(ModFluidItems.fluid_barrel.get()), false),
-                new Typed(ModEntityItems.disperser_canister, () -> item(ItemIds.disperser_canister_empty), false),
-                new Typed(ModEntityItems.glyphid_gland, () -> item(ItemIds.glyphid_gland_empty), false));
+                new Typed(ModEntityItems.disperser_canister, () -> item(ItemIds.disperser_canister_empty), true, true),
+                new Typed(ModEntityItems.glyphid_gland, () -> item(ItemIds.glyphid_gland_empty), true, true));
     }
 
     private FluidContainerRegistry() {}
@@ -109,6 +124,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         }
         for (Typed typed : typed()) {
             if (stack.getItem() != typed.item.get() || !(stack.getItem() instanceof ItemFluidTank tank)) continue;
+            if (typed.dispersableOnly && !type.isDispersable()) return false;
             if (!typed.leadOnlyAllowed && FluidContainers.needsLeadContainer(type)) return false;
             return tank.capacity == amount && ItemFluidTank.getType(stack) == type && tank.getFill(stack) == amount;
         }
@@ -146,8 +162,7 @@ public final class FluidContainerRegistry implements FilledContainers.Dictionary
         }
         for (Typed typed : typed()) {
             if (!(typed.item.get() instanceof ItemFluidTank tank) || tank.capacity != amount) continue;
-            if (!typed.leadOnlyAllowed && FluidContainers.needsLeadContainer(type)) continue;
-            if (FluidContainers.hasNoContainer(type)) continue;
+            if (!typed.admits(type)) continue;
             if (!tank.acceptsFluid(type, new ItemStack(tank))) continue;
             ItemStack full = tank.make(type, amount);
             if (holds(full, fluid, amount)) examples.add(full);

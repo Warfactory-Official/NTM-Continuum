@@ -18,7 +18,7 @@ import net.minecraft.util.Mth;
  */
 public final class RenderGlyphidNuclear extends RenderGlyphid<EntityGlyphidNuclear> {
 
-    private static final RenderType MINI_NUKE_TYPE = CompatRenderTypes.entityCutout(ResourceManager.mini_nuke_tex);
+    private static final RenderType MINI_NUKE_TYPE = CompatRenderTypes.entityCutoutNoCull(ResourceManager.mini_nuke_tex);
     private static final RenderType WHITE_FLASH_TYPE = CompatRenderTypes.entityTranslucent(ResourceManager.white_tex);
 
     public RenderGlyphidNuclear(EntityRendererProvider.Context context) {
@@ -34,7 +34,7 @@ public final class RenderGlyphidNuclear extends RenderGlyphid<EntityGlyphidNucle
     @Override
     public void submit(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         int light = state.lightCoords;
-        RenderType type = CompatRenderTypes.entityCutout(state.texture);
+        RenderType type = CompatRenderTypes.entityCutoutNoCull(state.texture);
 
         pose.pushPose();
         applySwellScale(pose, state);

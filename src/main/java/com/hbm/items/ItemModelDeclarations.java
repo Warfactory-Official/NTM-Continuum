@@ -1,13 +1,15 @@
 package com.hbm.items;
 
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Model;
 import dev.golem.core.dejson.Models;
-import dev.golem.core.dejson.Slots;
 
 /**
- * Item models no single item declaration owns: select cases, shared parents and the legacy
- * {@code builtin/entity} markers the OBJ and gun items resolve through below 26.1.
+ * Item models no single item declaration owns: the select cases of enum-backed sprite families.
+ *
+ * <p>The shared parents and legacy {@code builtin/entity} markers ({@code machine_obj_base},
+ * {@code machine_obj_legacy} with its hand-tuned display block, {@code gun_obj_legacy}, the four
+ * {@code gun_*_base} models, {@code machine_weapon_table}) are authored JSON under
+ * {@code assets/hbm/models/item/}: hand-tuned transforms stay files (gradle/dejson-authored.txt).
  *
  * <p>Touches no Minecraft class: Dejson runs {@link #declare()} in a plain JVM at build time.
  */
@@ -28,21 +30,6 @@ public final class ItemModelDeclarations {
 
     private static void part0() {
         Dejson.model("hbm:item/ammo_container_alt", Models.generated("hbm:items/ammo_container_alt"));
-        Dejson.model("hbm:item/gun_b92_base", Model.parent("hbm:item/gun_obj_base").guiLight("side")
-                .textures(Slots.of("particle", "hbm:items/gun_b92")));
-        Dejson.model("hbm:item/gun_obj_dani_base", Model.parent("hbm:item/gun_obj_base").guiLight("side"));
-        Dejson.model("hbm:item/gun_obj_g3_base", Model.parent("hbm:item/gun_obj_base").guiLight("side"));
-        Dejson.model("hbm:item/gun_obj_legacy", Model.parent("minecraft:builtin/entity").guiLight("side"));
-        Dejson.model("hbm:item/gun_obj_pepperbox_base", Model.parent("hbm:item/gun_obj_base").guiLight("side"));
-        Dejson.model("hbm:item/machine_obj_base", Models.parented("minecraft:block/block", Slots.of("particle", "hbm:blocks/block_steel")));
-        Dejson.model("hbm:item/machine_obj_legacy", Model.parent("minecraft:builtin/entity").guiLight("side")
-                .display("gui", Model.xyz(30, 225, 0), Model.xyz(0, 0, 0), Model.xyz(0.625, 0.625, 0.625))
-                .display("ground", Model.xyz(0, 0, 0), Model.xyz(0, 3, 0), Model.xyz(0.25, 0.25, 0.25))
-                .display("fixed", Model.xyz(0, 0, 0), Model.xyz(0, 0, 0), Model.xyz(0.5, 0.5, 0.5))
-                .display("thirdperson_righthand", Model.xyz(75, 45, 0), Model.xyz(0, 2.5, 0), Model.xyz(0.375, 0.375, 0.375))
-                .display("firstperson_righthand", Model.xyz(0, 45, 0), Model.xyz(0, 0, 0), Model.xyz(0.4, 0.4, 0.4))
-                .display("firstperson_lefthand", Model.xyz(0, 225, 0), Model.xyz(0, 0, 0), Model.xyz(0.4, 0.4, 0.4)));
-        Dejson.model("hbm:item/machine_weapon_table", Models.parented("hbm:block/machine_weapon_table", Slots.EMPTY));
         Dejson.model("hbm:item/weapon_mod_caliber.bmg50", Models.generated("hbm:items/weapon_mod_caliber.bmg50"));
         Dejson.model("hbm:item/weapon_mod_caliber.m357", Models.generated("hbm:items/weapon_mod_caliber.m357"));
         Dejson.model("hbm:item/weapon_mod_caliber.m44", Models.generated("hbm:items/weapon_mod_caliber.m44"));

@@ -10,6 +10,11 @@ public final class GeneralConfig {
     public static boolean enableBomberShortMode = false;
     /** 1.12.2 {@code 1.18_enableExtendedLogging}: logs detonator use, nuclear explosions, launches, grenades. */
     public static boolean enableExtendedLogging = false;
+    /**
+     * old-hbm {@code 1.33_crucible_max_charges}: how many hits and slices a crucible holds before it needs the tungsten
+     * crate's laser again (16; a value of 0 or less falls back to 16, as old-hbm did).
+     */
+    public static int crucibleMaxCharges = 16;
 
     private GeneralConfig() {}
 

@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.weapon.sedna.GunConfig;
@@ -32,6 +33,7 @@ import net.minecraft.sounds.SoundEvent;
 public final class BallisticGunCatalog {
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     private static final BiConsumer<net.minecraft.world.item.ItemStack, ItemGunBaseNT.LambdaContext> LAMBDA_BMG_SMOKE =
             (stack, ctx) -> Lego.handleStandardSmoke(ctx.entity, stack, 2000, 0.05D, 1.1D, ctx.hand, 0);
@@ -362,19 +364,19 @@ public final class BallisticGunCatalog {
 
     private static RegistryObject<ItemGunBaseNT> gun(String id, WeaponQuality quality,
             Supplier<GunConfig>... configs) {
-        return ITEMS.registerItem(id, props -> {
+        return REG.item(id, props -> {
             installCasings();
             GunConfig[] values = new GunConfig[configs.length];
             for (int i = 0; i < configs.length; i++) {
                 values[i] = configs[i].get().orchestra(orchestraFor(id));
             }
             return new ItemGunBaseNT(props, quality, values);
-        });
+        }, p -> p);
     }
 
     private static RegistryObject<ItemGunBaseNT> gun(String id, WeaponQuality quality,
             Supplier<? extends Item> defaultAmmo, int defaultAmount, Supplier<GunConfig>... configs) {
-        return ITEMS.registerItem(id, props -> {
+        return REG.item(id, props -> {
             installCasings();
             GunConfig[] values = new GunConfig[configs.length];
             for (int i = 0; i < configs.length; i++) {
@@ -382,7 +384,7 @@ public final class BallisticGunCatalog {
             }
             return new ItemGunBaseNT(props, quality, values)
                     .setDefaultAmmo(defaultAmmo, defaultAmount);
-        });
+        }, p -> p);
     }
 
     /** Binds the shared casing identities after the casing registry has flushed, before gun construction. */

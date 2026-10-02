@@ -3,7 +3,6 @@ package com.hbm.client.render;
 import com.hbm.blocks.network.BlockFluidDuct;
 import com.hbm.client.model.WavefrontObj;
 import com.hbm.blocks.network.FluidDuctNeo;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.tileentity.network.TileEntityFluidDuctNT;
 import dev.golem.core.render.CompatRenderState;
 import dev.golem.core.render.gem.Gem;
@@ -18,9 +17,8 @@ import java.util.Set;
 
 /**
  * Draws the 1.7 {@code fluid_duct_neo} in its three skins ({@code pipe_neo}, {@code pipe_silver},
- * {@code pipe_colored}) exactly as {@link com.hbm.client.render.FluidDuctObjRenderer} draws
- * {@code fluid_duct_mk2}: the {@code pipe_neo.obj} parts picked from the connection flags, the base
- * sprite, and for a typed duct the {@code _overlay} sprite tinted by the fluid colour. The skin comes
+ * {@code pipe_colored}): the {@code pipe_neo.obj} parts picked from the connection flags, the base
+ * sprite, and the {@code _overlay} sprite tinted by the fluid colour (NONE's grey when empty). The skin comes
  * from the block, so the three blocks share one block-entity type and this one renderer.
  */
 public class NeoDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, NeoDuctRenderer.State> {
@@ -82,7 +80,9 @@ public class NeoDuctRenderer<T extends TileEntityFluidDuctNT> extends GemBER<T, 
         boolean nZ = bs.getValue(BlockFluidDuct.NORTH);
         state.parts = selectParts(pX, nX, pY, nY, pZ, nZ);
         if (state.parts.isEmpty()) state.parts = selectParts(false, false, false, false, false, false);
-        state.fluidColor = be.getFluidType() == Fluids.NONE ? 0 : (0xFF000000 | (be.getFluidType().getColor() & 0xFFFFFF));
+        // 1.7 RenderTestPipe.renderDuct draws the overlay for every duct, empty ones in NONE's 0x888888: the
+        // pipe_colored skin is all overlay (its base sprite is only the bolt), so skipping NONE hid empty ducts.
+        state.fluidColor = 0xFF000000 | (be.getFluidType().getColor() & 0xFFFFFF);
         state.skin = bs.getBlock() instanceof FluidDuctNeo neo ? Math.min(neo.skin, SKINS.length - 1) : 0;
     }
 

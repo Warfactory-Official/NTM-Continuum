@@ -74,6 +74,7 @@ public final class FabricGameTests {
         com.hbm.gametest.WeaponTableGameTests.init();
         com.hbm.gametest.GunSupportGameTests.init();
         com.hbm.gametest.PollutionGameTests.init();
+        com.hbm.gametest.ToxinGameTests.init();
         com.hbm.gametest.FlywheelGameTests.init();
     }
 
@@ -133,6 +134,7 @@ public final class FabricGameTests {
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.GunSupportGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.FlywheelGameTests.TESTS);
         dev.golem.core.gametest.GameTests.register(com.hbm.gametest.PollutionGameTests.TESTS);
+        dev.golem.core.gametest.GameTests.register(com.hbm.gametest.ToxinGameTests.TESTS);
         return dev.golem.core.gametest.GameTests.pending();
     }
     *///?}

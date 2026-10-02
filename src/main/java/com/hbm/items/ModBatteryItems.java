@@ -2,7 +2,6 @@ package com.hbm.items;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemBatteryPack;
 import com.hbm.items.machine.ItemBatteryPack.EnumBatteryPack;
 import dev.golem.core.registry.DeferredRegister;
@@ -10,6 +9,7 @@ import dev.golem.core.registry.RegistryObject;
 
 import java.util.EnumMap;
 import java.util.Map;
+import com.hbm.registration.Reg;
 
 /**
  * The modern HBM battery / capacitor items — the storage medium the {@code machine_battery_socket} holds.
@@ -21,16 +21,17 @@ public final class ModBatteryItems {
     private ModBatteryItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** Lookup from variant → its registered item, used by the socket renderer / item-icon JSON wiring. */
     public static final Map<EnumBatteryPack, RegistryObject<ItemBatteryPack>> PACKS = new EnumMap<>(EnumBatteryPack.class);
 
     static {
         for (EnumBatteryPack pack : EnumBatteryPack.VALUES) {
-            RegistryObject<ItemBatteryPack> item = ITEMS.registerItem(
-                    pack.name, p -> new ItemBatteryPack(p, pack), p -> p.stacksTo(1));
+            // The OBJ item definitions are typed data (ObjItemDeclarations), not stated here.
+            RegistryObject<ItemBatteryPack> item = REG.<ItemBatteryPack>item(
+                    pack.name, p -> new ItemBatteryPack(p, pack), p -> p.stacksTo(1)).tab(HbmTab.CONTROL);
             PACKS.put(pack, item);
-            ModTabs.addTo(HbmTab.CONTROL, item);
         }
     }
 

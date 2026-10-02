@@ -16,7 +16,9 @@ import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -48,7 +50,7 @@ import java.util.List;
  * into a held container or a fluid network. A recipe with no item output is retained in the recipe table,
  * but remains unprocessable because that is what the old {@code canSmelt()} did.
  */
-public class TileEntityFurnaceCombination extends TileEntityMachineBase implements MenuProvider, IFluidStandardSenderMK2,
+public class TileEntityFurnaceCombination extends TileEntityMachinePolluting implements MenuProvider, IFluidStandardSenderMK2,
         WorldlyContainer {
 
     public static final int processTime = 20_000;
@@ -61,7 +63,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
     public final FluidTankNTM tank;
 
     public TileEntityFurnaceCombination(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.FURNACE_COMBINATION.get(), pos, state, 4);
+        super(ModBlockEntities.FURNACE_COMBINATION.get(), pos, state, 4, 50);
         this.tank = new FluidTankNTM(Fluids.NONE, 24_000);
     }
 
@@ -77,6 +79,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
         if (TickPhase.every(level, pos, 20L)) {
             for (DirPos connection : furnace.getConPos()) {
                 if (furnace.tank.getFill() > 0) furnace.tryProvide(furnace.tank, level, connection);
+                furnace.sendSmoke(connection);
             }
         }
 
@@ -107,6 +110,8 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
                 for (Entity entity : level.getEntitiesOfClass(Entity.class, flameBox)) {
                     Effects.ignite(entity, 5);
                 }
+
+                if (TickPhase.every(level, pos, 20L)) furnace.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
             } else {
                 furnace.progress = 0;
             }
@@ -200,7 +205,7 @@ public class TileEntityFurnaceCombination extends TileEntityMachineBase implemen
     @Override public boolean canPlaceItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 0 && isItemValidForSlot(slot, stack); }
     @Override public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) { return slot == 1; }
 
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tank, smoke, smoke_leaded, smoke_poison}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
     public DirPos[] getConPos() {

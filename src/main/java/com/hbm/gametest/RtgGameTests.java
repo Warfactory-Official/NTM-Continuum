@@ -217,8 +217,8 @@ public final class RtgGameTests {
                         && !blockstate.contains("hbm:block/machine_rtg_grey"),
                 "Grey RTG blockstate must leave world geometry exclusively to RTGRenderer");
         String itemDefinition = resourceText("assets/hbm/items/machine_rtg_grey.json");
-        helper.assertTrue(itemDefinition.contains("minecraft:special")
-                        && itemDefinition.contains("hbm:item/machine_obj_base")
+        // 1.7 RenderRTGBlock.renderInventoryBlock on the block frame (icon-P2 2026-10-01): a direct raw OBJ model
+        helper.assertTrue(itemDefinition.contains("rawLegacyTransform")
                         && itemDefinition.contains("hbm:machine_obj")
                         && itemDefinition.contains("hbm:models/machines/rtg.obj")
                         && itemDefinition.contains("hbm:textures/models/machines/rtg.png")

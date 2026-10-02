@@ -1,0 +1,22 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "#top"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 4, 16],
+      "faces": {
+        "down":  {"texture": "#top", "cullface": "down", "rotation": 180},
+        "up":    {"texture": "#top"},
+        "north": {"texture": "#side", "cullface": "north"},
+        "south": {"texture": "#side", "cullface": "south"},
+        "west":  {"texture": "#side", "cullface": "west"},
+        "east":  {"texture": "#side", "cullface": "east"}
+      }
+    }
+  ]
+}

@@ -2,14 +2,12 @@ package com.hbm.blocks;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.hbm.items.MachineObjModel;
 import com.hbm.items.weapon.MissilePartTable;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Drops;
-import dev.golem.core.dejson.Models;
-import dev.golem.core.dejson.Variants;
 import org.joml.Matrix3f;
 import org.joml.Vector3f;
 
@@ -17,12 +15,10 @@ import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
 
 /**
- * Dejson declarations for the custom missile system. Touches no Minecraft class: it runs in a plain JVM from
- * {@code dejson.gradle.kts}.
- *
- * <p>The launchers and pads are folded multiblocks drawn by their renderers, so their blockstates are the empty
- * placeholder. The two launchers and the assembly station had no item renderer in 1.7, so their items are the
- * flat block icon, exactly as 1.7 drew a render-type -1 block in a slot.
+ * The custom missile system's typed item data and recipes: the two pads' and every part's {@code hbm:machine_obj}
+ * item definition, the chips, the assembled missile's renderer, and the crafting recipes. Touches no Minecraft
+ * class: it runs in a plain JVM from {@code dejson.gradle.kts}. The blocks, their loot, tags and plain items are
+ * stated on their registrations in {@link ModCustomMissileBlocks} (Reg).
  *
  * <p>Every part with a body gets upstream's {@code ItemRenderMissilePart}, which is not a frame of its own: its
  * inventory pose is the bare 1.7 pixel slot — the same GUI frame the launchable missiles use — with the chain
@@ -48,33 +44,8 @@ public final class CustomMissileDeclarations {
         recipes();
     }
 
+    /** The two pads' typed OBJ item definitions; their blocks are declared on their registrations. */
     private static void blocks() {
-        for (String name : new String[]{"compact_launcher", "launch_table", "launch_pad_large", "launch_pad_rusted"}) {
-            Dejson.block(NS, name).rendered("hbm:block/machine_dummy_empty")
-                    .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
-                            Variants.uniform("cell", "false", "true"))).register();
-        }
-        Dejson.block(NS, "machine_missile_assembly").rendered("hbm:block/machine_dummy_empty")
-                .states(Variants.uniform("facing", "north", "east", "south", "west")).register();
-
-        for (String core : new String[]{"struct_launcher_core", "struct_launcher_core_large"}) {
-            Dejson.block(NS, core).models(Models.cubeAll("hbm:blocks/" + core)).states(Variants.simple()).register();
-            Dejson.item(NS, core).shares("hbm:block/" + core).register();
-            Drops.self(NS, core);
-        }
-
-        // 1.7: no IItemRenderer, render type -1 -> the block's own icon as a flat item
-        for (String flat : new String[]{"compact_launcher", "launch_table", "machine_missile_assembly"}) {
-            Dejson.item(NS, flat).models(Models.generated("hbm:blocks/" + flat)).register();
-        }
-
-        // 1.7 getItemDropped: the launchers give back their core component; the rusted pad gives nothing
-        Drops.only(NS, "compact_launcher", "hbm:struct_launcher_core");
-        Drops.only(NS, "launch_table", "hbm:struct_launcher_core_large");
-        Drops.self(NS, "machine_missile_assembly");
-        Drops.self(NS, "launch_pad_large");
-        Drops.nothing(NS, "launch_pad_rusted");
-
         // RenderLaunchPadRusted's item: ItemRenderBase, renderInventory T(0,-1,0) S(3), the silo in the rusted skin
         {
             JsonObject model = machine("hbm:models/weapons/launch_pad_silo.obj", "hbm:textures/models/launchpad/silo_rusted.png");
@@ -105,15 +76,47 @@ public final class CustomMissileDeclarations {
             model.add("passes", passes);
             item("launch_pad_large", model);
         }
+        // 1.7 ItemRenderLibrary drew the assembly station and both launchers as OBJ items (icon audit 2026-10-01; the
+        // port had drawn them as flat block sprites). Each is ItemRenderBase: renderInventory -> gui*, renderCommon ->
+        // scale/yaw and the further pieces.
+        // machine_missile_assembly: renderInventory T(0,-2.5,0) S(10); common: cull off, the assembly OBJ
+        Dejson.item(NS, "machine_missile_assembly")
+                .definition(MachineObjModel.of("hbm:models/missile_assembly.obj", "hbm:textures/models/missile_assembly.png")
+                        .scale(1.0).ty(0.0).yaw(0.0).guiScale(10.0).rawLegacyTransform().noCull()
+                        .guiTranslate(0.0, -2.5, 0.0)).oversizedInGui().register();
+        // compact_launcher: renderInventory T(0,-4,0) S(3.5); common S(0.5), the launcher OBJ
+        Dejson.item(NS, "compact_launcher")
+                .definition(MachineObjModel.of("hbm:models/compact_launcher.obj", "hbm:textures/models/compact_launcher.png")
+                        .scale(0.5).ty(0.0).yaw(0.0).guiScale(3.5).rawLegacyTransform()
+                        .guiTranslate(0.0, -4.0, 0.0)).oversizedInGui().register();
+        // launch_table: renderInventory T(0,-2,0) S(2.5); common S(0.5), base, small pad, then T(0,0,2.5) and eight
+        // cumulative T(0,1,0) steps: scaffold base at y 1..6, the connector at 7, the empty scaffold (base skin) at 8
+        {
+            String scaffold = "hbm:textures/models/missile_parts/launch_table_small_scaffold_base.png";
+            MachineObjModel.Pass[] passes = new MachineObjModel.Pass[9];
+            passes[0] = MachineObjModel.pass("hbm:textures/models/missile_parts/launch_table_small_pad.png")
+                    .obj("hbm:models/launch_table/launch_table_small_pad.obj");
+            for (int y = 1; y <= 6; y++) {
+                passes[y] = MachineObjModel.pass(scaffold).obj("hbm:models/launch_table/launch_table_small_scaffold_base.obj")
+                        .translate(0.0, (double) y, 2.5);
+            }
+            passes[7] = MachineObjModel.pass("hbm:textures/models/missile_parts/launch_table_small_scaffold_connector.png")
+                    .obj("hbm:models/launch_table/launch_table_small_scaffold_connector.obj").translate(0.0, 7.0, 2.5);
+            passes[8] = MachineObjModel.pass(scaffold).obj("hbm:models/launch_table/launch_table_small_scaffold_empty.obj")
+                    .translate(0.0, 8.0, 2.5);
+            Dejson.item(NS, "launch_table")
+                    .definition(MachineObjModel.of("hbm:models/launch_table/launch_table_base.obj",
+                                    "hbm:textures/models/missile_parts/launch_table.png")
+                            .scale(0.5).ty(0.0).yaw(0.0).guiScale(2.5).rawLegacyTransform()
+                            .guiTranslate(0.0, -2.0, 0.0).passes(passes)).oversizedInGui().register();
+        }
     }
 
     private static void parts() {
         for (MissilePartTable.Row row : MissilePartTable.rows().values()) {
             item(row.id(), partModel(row));
         }
-        for (int i = 1; i <= 5; i++) {
-            Dejson.item(NS, "mp_c_" + i).models(Models.generated("hbm:items/mp_c_" + i)).register();
-        }
+        // the five chips (mp_c_1..5) are plain sprites, stated on their registrations (ModCustomMissileItems)
         // 1.7 ItemRenderMissile draws the assembled missile from its parts in every slot
         com.hbm.items.ItemRendererDeclarations.model("missile_custom", "missile_custom", "weapon");
     }

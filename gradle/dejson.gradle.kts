@@ -11,12 +11,12 @@
 // generator defers to it. That is what makes adoption and retreat both one-step operations —
 // deleting a JSON file hands it to the declaration, restoring it takes it back.
 
-// Every class holding declarations. Each is asked for its static declare() in a plain JVM, so
-// nothing any of them touches may reach a Minecraft class.
+// Every class holding declarations. Each is initialised in a plain JVM and then asked for its static
+// declare() if it has one, so nothing any of them touches may need a running game. A Reg-migrated
+// registration class (com.hbm.registration.Reg) has no declare(): its registration chains record the
+// declarations while its statics initialise, and Minecraft is on this classpath but never bootstrapped.
 val DECLARATION_CLASSES = arrayOf(
-    "com.hbm.blocks.ModBlockModels",
     "com.hbm.items.ModItemModels",
-    "com.hbm.blocks.ModBlockDrops",
     "com.hbm.inventory.material.ModMaterialTags",
     "com.hbm.lib.ModDamageTypes",
     "com.hbm.world.gen.ModBiomeModifiers",
@@ -26,55 +26,161 @@ val DECLARATION_CLASSES = arrayOf(
     "com.hbm.inventory.recipes.ModComponentRecipes",
     "com.hbm.inventory.recipes.ModContainerRecipes",
     "com.hbm.inventory.recipes.gen.CraftingRecipesGenerated",
-    "com.hbm.blocks.FluidNetDeclarations",
-    "com.hbm.blocks.ConveyorDeclarations",
-    "com.hbm.blocks.ProductionDeclarations",
-    "com.hbm.blocks.Production2Declarations",
-    "com.hbm.blocks.SecurityDeclarations",
-    "com.hbm.blocks.DoorDeclarations",
-    "com.hbm.blocks.PneumaticDeclarations",
-    "com.hbm.blocks.PwrDeclarations",
-    "com.hbm.blocks.DroneDeclarations",
-    "com.hbm.blocks.EnergyNetDeclarations",
-    "com.hbm.blocks.PowerGenDeclarations",
-    "com.hbm.blocks.NuclearMiscDeclarations",
-    "com.hbm.blocks.ExplosivesDeclarations",
-    "com.hbm.blocks.DecoDeclarations",
+    "com.hbm.blocks.ModSecurityBlocks",
+    "com.hbm.items.ModSecurityItems",
+    "com.hbm.blocks.ModDoorBlocks",
+    // Reg-migrated registration classes (2026-10-01): initialising one records the declarations chained
+    // onto its registrations. List the class itself; it needs no declare().
+    "com.hbm.blocks.ModPowerGenBlocks",
+    "com.hbm.items.ModPowerGenItems",
+    "com.hbm.items.ModAchievementItems",
+    "com.hbm.items.ModBedrockOreItems",
+    "com.hbm.items.ModDungeonItems",
+    "com.hbm.items.ModCustomMissileItems",
+    "com.hbm.items.ModUtilityToolItems",
+    "com.hbm.items.ModMeleeKitItems",
+    "com.hbm.items.ModAbilityToolItems",
+    "com.hbm.items.ModGunItems",
+    "com.hbm.blocks.generic.ModStructureWandBlocks",
+    "com.hbm.blocks.ModUtilityToolContent",
+    "com.hbm.items.ModWandItems",
+    "com.hbm.blocks.ModSatelliteBlocks",
+    "com.hbm.items.ModSatelliteItems",
+    "com.hbm.blocks.ModProductionBlocks",
+    "com.hbm.blocks.ModProduction2Blocks",
+    "com.hbm.blocks.ModRailBlocks",
+    "com.hbm.blocks.ModRadarUtilityBlocks",
+    "com.hbm.items.ModRadarUtilityItems",
+    "com.hbm.blocks.machine.rbmk.ModRBMKBlocks",
+    "com.hbm.items.ModRBMKItems",
+    "com.hbm.blocks.machine.dfc.ModDFCBlocks",
+    "com.hbm.blocks.machine.pile.ModPileBlocks",
+    "com.hbm.blocks.machine.soyuz.ModSoyuzBlocks",
+    "com.hbm.blocks.turret.ModTurretBlocks",
+    "com.hbm.blocks.ModPwrBlocks",
+    "com.hbm.items.ModPwrItems",
+    "com.hbm.items.ModZirnoxItems",
+    "com.hbm.items.ModWatzItems",
+    "com.hbm.blocks.ModNuclearBlocks",
+    "com.hbm.blocks.ModNuclearMiscBlocks",
+    "com.hbm.items.ModNuclearMiscItems",
+    "com.hbm.blocks.ModIcfBlocks",
+    "com.hbm.items.ModIcfItems",
+    "com.hbm.items.ModRtgContent",
+    "com.hbm.blocks.ModEnergyNetBlocks",
+    "com.hbm.blocks.ModEnergyBedrockBlocks",
+    "com.hbm.radio.ModRadioBlocks",
+    "com.hbm.blocks.ModOilBlocks",
+    "com.hbm.items.ModOilItems",
+    "com.hbm.blocks.ModDroneBlocks",
+    "com.hbm.blocks.ModDroneContent",
+    "com.hbm.blocks.ModPneumaticBlocks",
+    "com.hbm.blocks.ModConveyorBlocks",
+    "com.hbm.items.ModConveyorItems",
+    "com.hbm.blocks.machine.ModMachineBlocks",
+    "com.hbm.blocks.ModFluidNetBlocks",
+    "com.hbm.items.ModFluidNetItems",
+    "com.hbm.items.ModFluidItems",
+    "com.hbm.blocks.ModExplosivesBlocks",
+    "com.hbm.items.ModExplosivesItems",
+    "com.hbm.blocks.ModBlocks",
+    "com.hbm.items.ModItems",
+    "com.hbm.blocks.ModHazardBlocks",
+    "com.hbm.blocks.ModOutgasBlocks",
+    "com.hbm.blocks.ModFalloutBlocks",
+    "com.hbm.blocks.ModFallingBlocks",
+    "com.hbm.blocks.ModGlassBlocks",
+    "com.hbm.blocks.ModBeaconBlocks",
+    "com.hbm.blocks.ModLadderBlocks",
+    "com.hbm.blocks.ModAnvilBlocks",
+    "com.hbm.blocks.ModSteelBlocks",
+    "com.hbm.blocks.ModOreBlocks",
+    "com.hbm.items.ModCatalystItems",
+    "com.hbm.items.machine.ModStampItems",
+    "com.hbm.items.ModFoodItems",
+    "com.hbm.items.ModMedicineItems",
+    "com.hbm.items.ModFuelItems",
+    "com.hbm.items.machine.ModMoldItems",
+    "com.hbm.items.ModIngredientItems",
+    "com.hbm.items.ModIntermediateItems",
+    "com.hbm.items.ModCasingItems",
+    "com.hbm.items.ModAutogenItems",
+    "com.hbm.items.material.FuelAdditiveItems",
+    "com.hbm.items.ModConsumableTailItems",
+    "com.hbm.items.ModChemicalDyeItems",
+    "com.hbm.items.ModSingularityItems",
+    "com.hbm.blocks.material.MaterialCompletionRegistrations",
+    "com.hbm.blocks.ModDecoBlocks",
+    "com.hbm.blocks.ModDecoContent",
+    "com.hbm.blocks.ModTerrainBlocks",
+    "com.hbm.items.ModTerrainItems",
     "com.hbm.blocks.TerrainDeclarations",
-    "com.hbm.blocks.Bombs2Declarations",
+    "com.hbm.blocks.ModBombs2Blocks",
+    "com.hbm.items.ModBombs2Items",
+    "com.hbm.blocks.ModCustomMissileBlocks",
+    "com.hbm.blocks.bomb.ModBombBlocks",
+    "com.hbm.items.ModBombItems",
+    "com.hbm.items.ModAmmoItems",
+    "com.hbm.items.ModGunSupportItems",
+    "com.hbm.items.ModWeaponModItems",
+    "com.hbm.items.ModMissileItems",
+    "com.hbm.items.ModToolItems",
+    "com.hbm.items.ModJetpackDependencyItems",
+    "com.hbm.items.ModEntityItems",
+    "com.hbm.items.ModArmorModules",
+    "com.hbm.items.ModArmorItems",
+    "com.hbm.items.ModGearItems",
+    "com.hbm.items.ModArmorSetItems",
+    "com.hbm.items.ModArmorSetBItems",
+    "com.hbm.blocks.ModArmorSetBBlocks",
+    "com.hbm.items.ModArmorModItems",
+    "com.hbm.smoke.SmokeChainRegistration",
     "com.hbm.blocks.CustomMissileDeclarations",
     "com.hbm.blocks.RadarUtilityDeclarations",
+    "com.hbm.blocks.ModDecoCrateBlocks",
     "com.hbm.blocks.DecoCrateDeclarations",
-    "com.hbm.blocks.IcfDeclarations",
     "com.hbm.blocks.EnergyBedrockDeclarations",
+    "com.hbm.blocks.ModDungeonBlocks",
     "com.hbm.blocks.DungeonDeclarations",
-    "com.hbm.blocks.NorwoodMachineDeclarations",
-    "com.hbm.blocks.RailDeclarations",
     "com.hbm.items.AbilityToolDeclarations",
     "com.hbm.items.MeleeKitDeclarations",
+    "com.hbm.items.ModFinalConsumableItems",
     "com.hbm.items.FinalConsumableDeclarations",
     "com.hbm.items.ArmorModDeclarations",
     "com.hbm.items.ArmorSetDeclarations",
     "com.hbm.items.ArmorSetBDeclarations",
     "com.hbm.items.UtilityToolDeclarations",
-    "com.hbm.blocks.CustomMachineDeclarations",
+    "com.hbm.blocks.ModCustomMachineBlocks",
+    "com.hbm.items.ModCustomMachineItems",
+    "com.hbm.items.ModMachineItems",
+    "com.hbm.blocks.machine.storage.ModBatteryBlocks",
+    "com.hbm.blocks.machine.storage.ModStorageBlocks",
+    "com.hbm.items.ModStorageDrumItems",
+    "com.hbm.items.ModSelfchargerItems",
+    "com.hbm.items.ModBatterySCItems",
+    "com.hbm.items.ModUpgradeItems",
+    "com.hbm.blocks.machine.DiFurnaceContent",
+    "com.hbm.blocks.machine.AutosawFeature",
+    "com.hbm.blocks.machine.ModArmorTableBlocks",
+    "com.hbm.blocks.machine.ModWeaponTableBlocks",
+    "com.hbm.blocks.machine.solar.ModSolarBlocks",
+    "com.hbm.items.solar.ModSolarItems",
+    "com.hbm.foundry.FoundryExpansion",
+    "com.hbm.chemicalfactory.ChemicalFactoryRegistrations",
+    "com.hbm.assemblyfactory.AssemblyFactoryRegistrations",
     "com.hbm.blocks.RBMKPeripheralDeclarations",
     "com.hbm.items.WandDeclarations",
     "com.hbm.blocks.SatelliteDeclarations",
     "com.hbm.items.GapsADeclarations",
-    "com.hbm.items.RenderInputDeclarations",
-    "com.hbm.blocks.StructureWandDeclarations",
     "com.hbm.world.gen.NTMStructureDeclarations",
     "com.hbm.world.gen.LegacyDungeonDeclarations",
     "com.hbm.advancement.HbmAdvancementDeclarations",
     // 2026-09-28 JSON migration (§19ed-dejson): the files that were still authored.
-    "com.hbm.items.SpriteItemDeclarations",
-    "com.hbm.items.ItemDefinitionDeclarations",
     "com.hbm.items.ObjItemDeclarations",
     "com.hbm.items.GunItemDeclarations",
     "com.hbm.items.ItemModelDeclarations",
-    "com.hbm.blocks.BlockModelDeclarations",
-    "com.hbm.blocks.BlockStateDeclarations",
+    // BlockModelDeclarations (hand-built element geometry transliterated from JSON) was removed 2026-09-30;
+    // those models are authored files again, listed in gradle/dejson-authored.txt.
     "com.hbm.items.ArmorEquipmentDeclarations",
     "com.hbm.items.FuelDataMapDeclarations",
     "com.hbm.lib.ModTagDeclarations",
@@ -152,19 +258,34 @@ val DEJSON_OWNED_FOLDERS = listOf(
     "data/*/worldgen", "data/*/data_maps", "data/*/jukebox_song", "data/*/neoforge/biome_modifier",
 )
 val DEJSON_UNOWNED_MODELS = listOf("assets/hbm/models/anim/", "assets/hbm/models/doors/", "assets/hbm/models/weapons/")
-val DEJSON_AUTHORED_EXCEPTIONS = setOf<String>()
+// Dejson declares uniform boilerplate only (sprite items, cube_all-style parent+texture blocks, simple
+// blockstates, loot, tags, recipes). Hand-tuned JSON — custom `elements` geometry, display transforms, one-off
+// OBJ item definitions — stays an authored file (rule of 2026-09-30, History §19eg-dejson-authored), listed in
+// gradle/dejson-authored.txt: one resource-relative path per line, a trailing `/` exempts a whole folder.
+// port-tools/generator_safety.py reads the same file and keeps generators out of those paths. A listed path
+// that no longer exists fails the check, so the list cannot rot.
+val dejsonAuthoredManifest = rootProject.file("gradle/dejson-authored.txt")
+val DEJSON_AUTHORED_EXCEPTIONS: Set<String> = if (!dejsonAuthoredManifest.isFile) emptySet() else
+    dejsonAuthoredManifest.readLines().map { it.trim() }.filter { it.isNotEmpty() && !it.startsWith("#") }.toSet()
 
 val dejsonOwnership = tasks.register("dejsonOwnership") {
     group = "verification"
     description = "Fails when a JSON file is hand-written where Dejson declarations own the folder."
     inputs.dir(authoredResources)
+    if (dejsonAuthoredManifest.isFile) inputs.file(dejsonAuthoredManifest)
     doLast {
         val root = authoredResources
+        val stale = DEJSON_AUTHORED_EXCEPTIONS.filter { !File(root, it).exists() }.sorted()
+        check(stale.isEmpty()) {
+            "${stale.size} path(s) in gradle/dejson-authored.txt do not exist under src/main/resources:\n  " +
+                stale.joinToString("\n  ")
+        }
         val offenders = root.walkTopDown()
             .filter { it.isFile && it.extension == "json" }
             .map { it.relativeTo(root).invariantSeparatorsPath }
             .filter { path ->
-                path !in DEJSON_AUTHORED_EXCEPTIONS && DEJSON_UNOWNED_MODELS.none { path.startsWith(it) } &&
+                DEJSON_AUTHORED_EXCEPTIONS.none { path == it || (it.endsWith("/") && path.startsWith(it)) } &&
+                    DEJSON_UNOWNED_MODELS.none { path.startsWith(it) } &&
                     DEJSON_OWNED_FOLDERS.any { folder ->
                         val pattern = folder.split('/')
                         val parts = path.split('/')
@@ -173,9 +294,9 @@ val dejsonOwnership = tasks.register("dejsonOwnership") {
             }
             .sorted().toList()
         check(offenders.isEmpty()) {
-            "${offenders.size} JSON file(s) are hand-written in folders Dejson owns; declare them instead " +
-                "(Dejson.block/item/model, States, ItemModels, Tags, Drops, Equipment, ...) or list a deliberate " +
-                "exception in DEJSON_AUTHORED_EXCEPTIONS:\n  " + offenders.take(30).joinToString("\n  ") +
+            "${offenders.size} JSON file(s) are hand-written in folders Dejson owns; declare uniform boilerplate " +
+                "(Dejson.block/item/model, States, ItemModels, Tags, Drops, Equipment, ...), or list hand-tuned " +
+                "geometry/display transforms in gradle/dejson-authored.txt:\n  " + offenders.take(30).joinToString("\n  ") +
                 (if (offenders.size > 30) "\n  ... and ${offenders.size - 30} more" else "")
         }
     }

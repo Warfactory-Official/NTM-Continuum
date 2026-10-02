@@ -1,0 +1,26 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "__comment_display": "Inventory only (display is never read for the placed block): 1.7 RenderConveyor.renderInventoryBlock translate(-0.5, -0.25, -0.5) and the 0..0.25 slab, in RenderItem's 3D-block pose (rotateY -45, not block/block's 225). The translation is 0.625 * 16 * rotateX(30) * (0, 0.25, 0). icon-P2 2026-10-01.",
+  "display": {
+    "gui": {"rotation": [30, -45, 0], "translation": [0, 2.165064, 1.25], "scale": [0.625, 0.625, 0.625]}
+  },
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "#top"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 4, 16],
+      "faces": {
+        "down":  {"texture": "#top", "cullface": "down", "rotation": 180},
+        "up":    {"texture": "#top"},
+        "north": {"texture": "#top", "cullface": "north"},
+        "south": {"texture": "#top", "cullface": "south"},
+        "west":  {"texture": "#side", "cullface": "west"},
+        "east":  {"texture": "#side", "cullface": "east", "rotation": 180}
+      }
+    }
+  ]
+}

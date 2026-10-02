@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.RegistryObject;
 
 import com.hbm.Constants;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.Item;
  */
 public final class SpecialGunCatalog {
     public static final DeferredRegister.Items GUNS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(GUNS);
 
     public static RegistryObject<ItemGunBaseNT> gun_panzerschreck;
     public static RegistryObject<ItemGunBaseNT> gun_stinger;
@@ -57,34 +59,34 @@ public final class SpecialGunCatalog {
         if (gunsRegistered) return;
         gunsRegistered = true;
 
-        gun_panzerschreck = GUNS.registerItem("gun_panzerschreck", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
+        gun_panzerschreck = REG.item("gun_panzerschreck", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
                 XFactoryRocket.rocketConfig(0, 1, 1, 25F, 5, 50, 40).orchestra(Orchestras.ORCHESTRA_PANERSCHRECK))
-                .setDefaultAmmo(ModAmmoItems.rocket_he, 3));
-        gun_stinger = GUNS.registerItem("gun_stinger", p -> new ItemGunStinger(p, WeaponQuality.SPECIAL,
+                .setDefaultAmmo(ModAmmoItems.rocket_he, 3), p -> p);
+        gun_stinger = REG.item("gun_stinger", p -> new ItemGunStinger(p, WeaponQuality.SPECIAL,
                 XFactoryRocket.lockonRocketConfig(0, 1, 1, 35F, 5, 50, 40)
                         .ps(XFactoryRocket.LAMBDA_STINGER_SECONDARY_PRESS)
                         .rs(XFactoryRocket.LAMBDA_STINGER_SECONDARY_RELEASE)
                         .orchestra(Orchestras.ORCHESTRA_STINGER))
-                .setDefaultAmmo(ModAmmoItems.rocket_heat, 3));
-        gun_quadro = GUNS.registerItem("gun_quadro", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
+                .setDefaultAmmo(ModAmmoItems.rocket_heat, 3), p -> p);
+        gun_quadro = REG.item("gun_quadro", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
                 XFactoryRocket.rocketConfig(1, 4, 4, 40F, 10, 55, 40).orchestra(Orchestras.ORCHESTRA_QUADRO))
-                .setDefaultAmmo(ModAmmoItems.rocket_he, 4));
-        gun_missile_launcher = GUNS.registerItem("gun_missile_launcher", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
+                .setDefaultAmmo(ModAmmoItems.rocket_he, 4), p -> p);
+        gun_missile_launcher = REG.item("gun_missile_launcher", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
                 XFactoryRocket.rocketConfig(2, 1, 1, 50F, 5, 48, 33)
                         .pp(XFactoryRocket.LAMBDA_MISSILE_LAUNCHER_PRIMARY_PRESS)
                         .orchestra(Orchestras.ORCHESTRA_MISSILE_LAUNCHER))
-                .setDefaultAmmo(ModAmmoItems.rocket_heat, 5));
-        gun_fatman = GUNS.registerItem("gun_fatman", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
+                .setDefaultAmmo(ModAmmoItems.rocket_heat, 5), p -> p);
+        gun_fatman = REG.item("gun_fatman", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
                 XFactoryCatapult.gunConfig().orchestra(Orchestras.ORCHESTRA_FATMAN))
-                .setDefaultAmmoExpensive(ModAmmoItems.nuke_standard, 1));
-        gun_flamer = GUNS.registerItem("gun_flamer", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
+                .setDefaultAmmoExpensive(ModAmmoItems.nuke_standard, 1), p -> p);
+        gun_flamer = REG.item("gun_flamer", p -> new ItemGunBaseNT(p, WeaponQuality.A_SIDE,
                 XFactoryFlamer.gunConfig(0).orchestra(Orchestras.ORCHESTRA_FLAMER))
-                .setDefaultAmmo(ModAmmoItems.flame_diesel, 1));
-        gun_flamer_topaz = GUNS.registerItem("gun_flamer_topaz", p -> new ItemGunBaseNT(p, WeaponQuality.B_SIDE,
+                .setDefaultAmmo(ModAmmoItems.flame_diesel, 1), p -> p);
+        gun_flamer_topaz = REG.item("gun_flamer_topaz", p -> new ItemGunBaseNT(p, WeaponQuality.B_SIDE,
                 XFactoryFlamer.gunConfig(1).orchestra(Orchestras.ORCHESTRA_FLAMER))
-                .setDefaultAmmo(ModAmmoItems.flame_diesel, 1));
-        gun_flamer_daybreaker = GUNS.registerItem("gun_flamer_daybreaker", p -> new ItemGunBaseNT(p, WeaponQuality.LEGENDARY,
+                .setDefaultAmmo(ModAmmoItems.flame_diesel, 1), p -> p);
+        gun_flamer_daybreaker = REG.item("gun_flamer_daybreaker", p -> new ItemGunBaseNT(p, WeaponQuality.LEGENDARY,
                 XFactoryFlamer.gunConfig(2).orchestra(Orchestras.ORCHESTRA_FLAMER_DAYBREAKER))
-                .setDefaultAmmo(ModAmmoItems.flame_diesel, 1));
+                .setDefaultAmmo(ModAmmoItems.flame_diesel, 1), p -> p);
     }
 }

@@ -49,10 +49,9 @@ public final class ArcWelderRecipes {
         add(ModIngredientItems.part(EnumPartType.LDE, 1), 200, 10_000,
                 TI.plate().count(2), new ComparableStack(ModItems.ingot_fiberglass.get(), 4),
                 ANY_HARDPLASTIC.ingot());
-        // ANY_BISMOIDBRONZE is not a current aggregate; the established port uses its bismuth-bronze member.
-        add(ModIngredientItems.part(EnumPartType.HDE, 1), 600, 25_000_000,
-                new FluidStack(Fluids.STELLAR_FLUX, 4_000), BBRONZE.plateCast().count(2),
-                CMB.plateWelded(), new ComparableStack(ModItems.ingot_cft.get()));
+        // Neutron reflector weld (1.7 and 1.12.2 both have it): WC ingots come from the tungsten carbide ingot item.
+        add(new ItemStack(ModItems.neutron_reflector.get(), 2), 400, 50_000,
+                new ComparableStack(ModItems.ingot_tungsten_carbide.get(), 2), DURA.plate());
 
         // Dense wires.
         addDenseWire(Mats.MAT_COPPER, 100, 10_000, CU.wire().count(8));
@@ -70,7 +69,7 @@ public final class ArcWelderRecipes {
         addWelded(Mats.MAT_CDALLOY, 1_200, 1_000_000, new FluidStack(Fluids.OXYGEN, 1_000));
         addWelded(Mats.MAT_TUNGSTEN, 1_200, 250_000, new FluidStack(Fluids.OXYGEN, 1_000));
         addWelded(Mats.MAT_CMB, 1_200, 10_000_000, new FluidStack(Fluids.REFORMGAS, 1_000));
-        addWelded(Mats.MAT_OSMIRIDIUM, 6_000, 20_000_000, new FluidStack(Fluids.REFORMGAS, 16_000));
+        addWelded(Mats.MAT_OSMIRIDIUM, 6_000, 50_000_000, new FluidStack(Fluids.REFORMGAS, 16_000));
 
         // Missile parts.
         add(new ItemStack(ModItems.thruster_small.get()), 60, 1_000,
@@ -79,7 +78,7 @@ public final class ArcWelderRecipes {
                 STEEL.plate().count(8), new ComparableStack(ModItems.motor.get()), Mats.MAT_GRAPHITE.ingot().count(8));
         add(new ItemStack(ModItems.thruster_large.get()), 200, 5_000,
                 DURA.ingot().count(10), new ComparableStack(ModItems.motor.get()),
-                new ComparableStack(ModItems.neutron_reflector.get(), 12));
+                new ComparableStack(ModItems.ingot_tungsten_carbide.get(), 12)); // 1.7: WC.ingot(), 12
         add(new ItemStack(ModItems.fuel_tank_small.get()), 60, 1_000,
                 AL.plate().count(6), CU.plate().count(4),
                 new ComparableStack(ModSteelBlocks.steel_scaffold.get().asItem(), 4));
@@ -122,7 +121,9 @@ public final class ArcWelderRecipes {
         add(new ItemStack(ModMissileItems.missile_buster_strong.get()), 200, 10_000,
                 new ComparableStack(ModItems.warhead_buster_medium.get()),
                 new ComparableStack(ModItems.fuel_tank_medium.get()), new ComparableStack(ModItems.thruster_medium.get()));
-        // The old missile_emp_strong entry is omitted: its emp_bomb block has no current ID.
+        add(new ItemStack(ModMissileItems.missile_emp_strong.get()), 200, 10_000,
+                new ComparableStack(com.hbm.blocks.ModBombs2Blocks.emp_bomb.get().asItem(), 3),
+                new ComparableStack(ModItems.fuel_tank_medium.get()), new ComparableStack(ModItems.thruster_medium.get()));
 
         add(new ItemStack(ModMissileItems.missile_burst.get()), 300, 25_000,
                 new ComparableStack(ModItems.warhead_generic_large.get()),

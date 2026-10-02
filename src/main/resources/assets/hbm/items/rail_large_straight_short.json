@@ -1,0 +1,23 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "frame": "block",
+    "obj": "hbm:models/blocks/rail_standard_short.obj",
+    "texture": "hbm:textures/blocks/rail_standard_straight.png",
+    "scale": 0.7,
+    "yaw": 90.0,
+    "pitch": 0.0,
+    "rawLegacyTransform": true,
+    "itemTranslate": [
+      0.0,
+      -0.0625,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "oversized_in_gui": true
+}

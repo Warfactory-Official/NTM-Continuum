@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
@@ -19,19 +20,20 @@ public final class ModConveyorMenus {
     private ModConveyorMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerCraneInserter>> CRANE_INSERTER =
-            MENUS.register("crane_inserter", () -> Menus.typeWithPos(ContainerCraneInserter::new));
+            REG.menu("crane_inserter", () -> Menus.typeWithPos(ContainerCraneInserter::new));
     public static final RegistryObject<MenuType<ContainerCraneExtractor>> CRANE_EXTRACTOR =
-            MENUS.register("crane_extractor", () -> Menus.typeWithPos(ContainerCraneExtractor::new));
+            REG.menu("crane_extractor", () -> Menus.typeWithPos(ContainerCraneExtractor::new));
     public static final RegistryObject<MenuType<ContainerCraneGrabber>> CRANE_GRABBER =
-            MENUS.register("crane_grabber", () -> Menus.typeWithPos(ContainerCraneGrabber::new));
+            REG.menu("crane_grabber", () -> Menus.typeWithPos(ContainerCraneGrabber::new));
     public static final RegistryObject<MenuType<ContainerCraneRouter>> CRANE_ROUTER =
-            MENUS.register("crane_router", () -> Menus.typeWithPos(ContainerCraneRouter::new));
+            REG.menu("crane_router", () -> Menus.typeWithPos(ContainerCraneRouter::new));
     public static final RegistryObject<MenuType<ContainerCraneBoxer>> CRANE_BOXER =
-            MENUS.register("crane_boxer", () -> Menus.typeWithPos(ContainerCraneBoxer::new));
+            REG.menu("crane_boxer", () -> Menus.typeWithPos(ContainerCraneBoxer::new));
     public static final RegistryObject<MenuType<ContainerCraneUnboxer>> CRANE_UNBOXER =
-            MENUS.register("crane_unboxer", () -> Menus.typeWithPos(ContainerCraneUnboxer::new));
+            REG.menu("crane_unboxer", () -> Menus.typeWithPos(ContainerCraneUnboxer::new));
 
     public static void init() {}
 }

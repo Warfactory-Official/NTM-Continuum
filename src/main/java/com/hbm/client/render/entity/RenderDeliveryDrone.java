@@ -17,9 +17,9 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 /** 1.7 RenderDeliveryDrone: the quadcopter body and, by appearance byte, the crate or barrel slung under it. */
 public class RenderDeliveryDrone<T extends EntityDroneBase> extends CompatEntityRenderer<T, RenderDeliveryDrone.State> {
 
-    private static final RenderType DELIVERY = CompatRenderTypes.entityCutout(ResourceManager.delivery_drone_tex);
-    private static final RenderType REQUEST = CompatRenderTypes.entityCutout(ResourceManager.delivery_drone_request_tex);
-    private static final RenderType EXPRESS = CompatRenderTypes.entityCutout(ResourceManager.delivery_drone_express_tex);
+    private static final RenderType DELIVERY = CompatRenderTypes.entityCutoutNoCull(ResourceManager.delivery_drone_tex);
+    private static final RenderType REQUEST = CompatRenderTypes.entityCutoutNoCull(ResourceManager.delivery_drone_request_tex);
+    private static final RenderType EXPRESS = CompatRenderTypes.entityCutoutNoCull(ResourceManager.delivery_drone_express_tex);
 
     public RenderDeliveryDrone(EntityRendererProvider.Context context) {
         super(context);

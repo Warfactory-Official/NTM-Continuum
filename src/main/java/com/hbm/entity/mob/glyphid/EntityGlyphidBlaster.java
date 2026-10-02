@@ -1,6 +1,7 @@
 package com.hbm.entity.mob.glyphid;
 
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.LivingAttributes;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.registry.Entities;
@@ -15,8 +16,10 @@ import net.minecraft.world.level.Level;
 
 public class EntityGlyphidBlaster extends EntityGlyphidBombardier {
 
+    private static final Reg REG = Reg.of(ModNtmEntities.ENTITY_TYPES);
+
     public static final RegistryObject<EntityType<EntityGlyphidBlaster>> TYPE =
-            ModNtmEntities.ENTITY_TYPES.register("entity_glyphid_blaster", key -> Entities.build(
+            REG.entity("entity_glyphid_blaster", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityGlyphidBlaster>of(EntityGlyphidBlaster::new, MobCategory.MONSTER)).sized(2F, 1.125F).clientTrackingRange(5).updateInterval(3), key));
 
     static {

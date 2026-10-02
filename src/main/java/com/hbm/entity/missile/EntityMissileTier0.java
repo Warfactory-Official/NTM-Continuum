@@ -18,7 +18,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.HitResult;
 
-/** The tier-0 missile family. Only warheads with a ported payload are launchable. */
+/** The tier-0 missile family: micro, test, taint, schrabidium, black hole and EMP. */
 public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
 
     protected EntityMissileTier0(EntityType<?> type, Level level) { super(type, level); }
@@ -212,8 +212,7 @@ public abstract class EntityMissileTier0 extends EntityMissileBaseNT {
             level().addFreshEntity(wave);
         }
 
-        // 1.7 dropped the EMP bomb block, which this port has not registered; nothing rare drops until it does.
-        @Override public ItemStack getDebrisRareDrop() { return ItemStack.EMPTY; }
+        @Override public ItemStack getDebrisRareDrop() { return new ItemStack(com.hbm.blocks.ModBombs2Blocks.emp_bomb.get()); }
         @Override public ItemStack getMissileItemForInfo() { return new ItemStack(com.hbm.items.ModMissileItems.missile_emp.get()); }
     }
 }

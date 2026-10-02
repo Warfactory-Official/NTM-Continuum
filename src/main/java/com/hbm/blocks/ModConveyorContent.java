@@ -15,6 +15,5 @@ public final class ModConveyorContent {
         ModConveyorItems.init();
         ModConveyorBlockEntities.init();
         ModConveyorMenus.init();
-        ConveyorDeclarations.declare();
     }
 }

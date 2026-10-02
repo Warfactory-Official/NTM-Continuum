@@ -1,0 +1,61 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "top": "hbm:blocks/capacitor_copper_top",
+    "side": "hbm:blocks/capacitor_copper_side",
+    "bottom": "hbm:blocks/capacitor_copper_bottom",
+    "inner_top": "hbm:blocks/capacitor_copper_inner_top",
+    "inner_side": "hbm:blocks/capacitor_copper_inner_side",
+    "particle": "hbm:blocks/capacitor_copper_inner_side"
+  },
+  "elements": [
+    {
+      "from": [0, 15, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "up": { "texture": "#top" },
+        "down": { "texture": "#top" }
+      }
+    },
+    {
+      "from": [0, 0, 0],
+      "to": [16, 4, 16],
+      "faces": {
+        "down": { "texture": "#bottom" },
+        "up": { "texture": "#bottom" },
+        "north": { "texture": "#bottom" },
+        "south": { "texture": "#bottom" },
+        "west": { "texture": "#bottom" },
+        "east": { "texture": "#bottom" }
+      }
+    },
+    {
+      "from": [0.0001, 0, 0.0001],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": { "texture": "#side" },
+        "south": { "texture": "#side" },
+        "west": { "texture": "#side" },
+        "east": { "texture": "#side" }
+      }
+    },
+    {
+      "from": [1, 14, 1],
+      "to": [15, 15, 15],
+      "faces": {
+        "up": { "texture": "#inner_top" },
+        "down": { "texture": "#inner_top" }
+      }
+    },
+    {
+      "from": [1, 4, 1],
+      "to": [15, 14, 15],
+      "faces": {
+        "north": { "texture": "#inner_side" },
+        "south": { "texture": "#inner_side" },
+        "west": { "texture": "#inner_side" },
+        "east": { "texture": "#inner_side" }
+      }
+    }
+  ]
+}

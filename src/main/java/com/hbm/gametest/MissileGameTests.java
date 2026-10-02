@@ -686,28 +686,203 @@ public final class MissileGameTests {
     }
 
     /**
-     * A missile whose payload path is not ported must be refused by the slot, not accepted and then silently
-     * un-launchable. The black-hole missile's missile-specific launch path remains blocked even though the
-     * shared EntityBlackHole field is now available.
+     * Every missile the 1.7.10 pad accepts is accepted here, including the ones that used to be refused for want of a
+     * warhead (schrabidium, black hole, EMP, cluster, strong cluster, rain, drill, volcano, shuttle) - and the ABM,
+     * which is built directly and never appears in the launch table. The retired endo/exo/carrier items no longer
+     * exist, and the rusted doomsday missile stays refused as upstream.
      */
-    public static void unportedMissileRefused(GameTestHelper helper) {
+    public static void formerlyBlockedMissilesAccepted(GameTestHelper helper) {
         TileEntityLaunchPadBase.registerLaunchables();
         TileEntityLaunchPad pad = pad(helper);
 
-        // missile_bhole remains blocked because its missile-specific black-hole payload is not ported.
-        ItemStack blackHole = new ItemStack(ModMissileItems.missile_bhole.get());
-        helper.assertFalse(pad.isMissileValid(blackHole),
-                "a missile with no flying entity was accepted as valid");
-        helper.assertFalse(pad.isItemValidForSlot(0, blackHole),
-                "the missile slot accepted a missile this build cannot launch");
-
-        // The ones that DO fly must still be accepted, including the ABM, which is built directly and
-        // never appears in the launch table.
+        for (net.minecraft.world.item.Item item : formerlyBlocked().keySet()) {
+            ItemStack stack = new ItemStack(item);
+            helper.assertTrue(pad.isMissileValid(stack), "the pad refuses " + item);
+            helper.assertTrue(pad.isItemValidForSlot(0, stack), "the missile slot refuses " + item);
+        }
         helper.assertTrue(pad.isMissileValid(new ItemStack(ModMissileItems.missile_generic.get())),
                 "a launchable missile was refused");
         helper.assertTrue(pad.isMissileValid(new ItemStack(ModMissileItems.missile_anti_ballistic.get())),
-                "the ABM was refused — it is instantiated directly, not through the launch table");
+                "the ABM was refused - it is instantiated directly, not through the launch table");
+        helper.assertFalse(pad.isMissileValid(new ItemStack(ModMissileItems.missile_doomsday_rusted.get())),
+                "the rusted doomsday missile was accepted");
         helper.succeed();
+    }
+
+    /** The missiles the pad used to refuse, and the entity each must become (built lazily: items are registry objects). */
+    private static java.util.Map<net.minecraft.world.item.Item, Class<? extends EntityMissileBaseNT>> formerlyBlocked() {
+        java.util.Map<net.minecraft.world.item.Item, Class<? extends EntityMissileBaseNT>> map =
+                new java.util.LinkedHashMap<>();
+        map.put(ModMissileItems.missile_schrabidium.get(), EntityMissileTier0.EntityMissileSchrabidium.class);
+        map.put(ModMissileItems.missile_bhole.get(), EntityMissileTier0.EntityMissileBHole.class);
+        map.put(ModMissileItems.missile_emp.get(), EntityMissileTier0.EntityMissileEMP.class);
+        map.put(ModMissileItems.missile_cluster.get(), EntityMissileTier1.EntityMissileCluster.class);
+        map.put(ModMissileItems.missile_cluster_strong.get(),
+                com.hbm.entity.missile.EntityMissileTier2.EntityMissileClusterStrong.class);
+        map.put(ModMissileItems.missile_rain.get(), com.hbm.entity.missile.EntityMissileTier3.EntityMissileRain.class);
+        map.put(ModMissileItems.missile_drill.get(), com.hbm.entity.missile.EntityMissileTier3.EntityMissileDrill.class);
+        map.put(ModMissileItems.missile_volcano.get(),
+                com.hbm.entity.missile.EntityMissileTier4.EntityMissileVolcano.class);
+        map.put(ModMissileItems.missile_shuttle.get(), com.hbm.entity.missile.EntityMissileShuttle.class);
+        return map;
+    }
+
+    /**
+     * Each of those nine launches from a fuelled pad and spawns exactly its own entity class. A fresh pad per missile,
+     * and the entity is discarded before the tick ends, so nothing flies or impacts.
+     */
+    public static void formerlyBlockedMissilesLaunch(GameTestHelper helper) {
+        TileEntityLaunchPadBase.registerLaunchables();
+        BlockPos base = helper.absolutePos(BlockPos.ZERO);
+
+        for (java.util.Map.Entry<net.minecraft.world.item.Item, Class<? extends EntityMissileBaseNT>> entry
+                : formerlyBlocked().entrySet()) {
+            net.minecraft.world.item.Item item = entry.getKey();
+            TileEntityLaunchPad pad = pad(helper);
+            ItemMissileStandard standard = (ItemMissileStandard) item;
+            pad.inventory.setStackInSlot(0, new ItemStack(item));
+            pad.setFuel(standard);
+            pad.tanks[0].setFill(standard.fuelCap * 2);
+            pad.tanks[1].setFill(standard.fuelCap * 2);
+            pad.power = TileEntityLaunchPadBase.maxPower;
+
+            ItemStack designator = new ItemStack(ModMissileItems.designator.get());
+            ModDataComponents.DESIGNATOR_X.set(designator, base.getX() + 300);
+            ModDataComponents.DESIGNATOR_Z.set(designator, base.getZ());
+            pad.inventory.setStackInSlot(1, designator);
+
+            helper.assertTrue(pad.launchFromDesignator().wasSuccessful(), "the pad refused to launch " + item);
+
+            java.util.List<EntityMissileBaseNT> flying = helper.getLevel().getEntitiesOfClass(
+                    EntityMissileBaseNT.class, new AABB(pad.getBlockPos()).inflate(8));
+            try {
+                helper.assertTrue(flying.size() == 1 && flying.get(0).getClass() == entry.getValue(),
+                        item + " launched " + flying + ", expected exactly one " + entry.getValue().getSimpleName());
+            } finally {
+                flying.forEach(net.minecraft.world.entity.Entity::discard);
+            }
+        }
+        helper.succeed();
+    }
+
+    /** 1.7 rare drops: the EMP missile returns the EMP bomb block (no longer the empty stack), as original-hbm. */
+    public static void missileRareDrops(GameTestHelper helper) {
+        BlockPos origin = helper.absolutePos(new BlockPos(2, 2, 2));
+        EntityMissileTier0.EntityMissileEMP emp = new EntityMissileTier0.EntityMissileEMP(helper.getLevel(),
+                origin.getX(), origin.getY(), origin.getZ(), origin.getX() + 1, origin.getZ());
+        helper.assertTrue(emp.getDebrisRareDrop().getItem() == com.hbm.blocks.ModBombs2Blocks.emp_bomb.get().asItem(),
+                "the EMP missile's rare drop is not the EMP bomb: " + emp.getDebrisRareDrop());
+        emp.discard();
+        helper.succeed();
+    }
+
+    /**
+     * Free space (blocks, every side) the two strength-10 blast tests own. A vanilla strength-10 explosion breaks
+     * blocks up to about 17 blocks out and hurts entities within {@code 2 * strength} = 20; {@code ExplosionNT}'s
+     * {@code EntityProcessorStandard} reaches {@code size * 2} = 20 too. 24 keeps both inside the test's own plot, so
+     * a neighbouring test's mobs or blocks are never hit (a failure there would be reported on the neighbour).
+     */
+    static final int BLAST_PADDING = 24;
+
+    /**
+     * Discards what a blast test created inside its padded plot: drops, rubble, shrapnel and falling gravel. Only
+     * those types are removed, so a neighbour's mobs are untouched even if the box ever overlapped one.
+     */
+    private static void discardBlastDebris(ServerLevel level, BlockPos centre) {
+        level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, new AABB(centre).inflate(BLAST_PADDING),
+                e -> e instanceof net.minecraft.world.entity.item.ItemEntity
+                        || e instanceof net.minecraft.world.entity.item.FallingBlockEntity
+                        || e instanceof com.hbm.entity.projectile.EntityRubble
+                        || e instanceof com.hbm.entity.projectile.EntityShrapnel)
+                .forEach(net.minecraft.world.entity.Entity::discard);
+    }
+
+    /**
+     * 1.7 EntityMissileVolcano: a 3x3x3 of volcanic lava with the volcano core at the centre. The blast itself also
+     * runs (strength 10, plus rubble and shrapnel), so the cube is checked right after impact; everything is cleared
+     * in the same tick so the freshly placed core never gets to erupt in the test world, and the debris entities
+     * are discarded before they can fly. The test sits at the centre of a {@link #BLAST_PADDING} plot.
+     */
+    public static void volcanoMissilePlacesCore(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos origin = helper.absolutePos(dev.golem.core.gametest.GameTests.paddedCentre(BLAST_PADDING, 2));
+        com.hbm.entity.missile.EntityMissileTier4.EntityMissileVolcano missile =
+                new com.hbm.entity.missile.EntityMissileTier4.EntityMissileVolcano(level,
+                        origin.getX(), origin.getY(), origin.getZ(), origin.getX() + 1, origin.getZ());
+        try {
+            missile.onMissileImpact(null);
+
+            net.minecraft.world.level.block.Block lava = com.hbm.blocks.ModFluidNetBlocks.volcanic_lava_block.get();
+            net.minecraft.world.level.block.Block core = com.hbm.blocks.ModTerrainBlocks.volcanoCore("volcano_core");
+            int lavaCount = 0;
+            for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
+                BlockPos at = origin.offset(x, y, z);
+                net.minecraft.world.level.block.Block block = level.getBlockState(at).getBlock();
+                if (x == 0 && y == 0 && z == 0) {
+                    helper.assertTrue(block == core, "the centre is " + block + ", expected the volcano core");
+                } else if (block == lava) {
+                    lavaCount++;
+                }
+            }
+            helper.assertTrue(lavaCount == 26, "the 3x3x3 holds " + lavaCount + " volcanic lava blocks, expected 26");
+            helper.succeed();
+        } finally {
+            for (int x = -1; x <= 1; x++) for (int y = -1; y <= 1; y++) for (int z = -1; z <= 1; z++) {
+                level.setBlock(origin.offset(x, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+            }
+            missile.discard();
+            discardBlastDebris(level, origin);
+        }
+    }
+
+    /**
+     * 1.7 ExplosionNT ERRODE: a size-10 blast cannot break concrete (resistance 140), but an eroding one still
+     * affects the concrete its rays stop in - 60% of it crumbles into gravel, the rest is cleared. A cell of air
+     * inside a concrete cube is the positive signal: without ERRODE the cube would survive untouched.
+     *
+     * <p>What 1.7's code determines exactly: every ray starts in the air cell, steps 0.3 and loses
+     * {@code (140 + 0.3) * 0.3} in the first concrete cell it samples, so it dies there - and that first cell is always
+     * one of the 26 neighbours (a 0.3 step cannot jump the 1-block inner shell). ExplosionNT:117 adds that cell either
+     * way, and the 16-ray fan reaches all 26 (faces, edges and corners). So the inner 26 cells all become gravel or
+     * air and the 98 outer-shell cells stay concrete. Only the gravel/air split is random: Binomial(26, 0.6).
+     */
+    public static void erodingBlastTurnsConcreteToGravel(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos centre = helper.absolutePos(dev.golem.core.gametest.GameTests.paddedCentre(BLAST_PADDING, 4));
+        net.minecraft.world.level.block.Block concrete = com.hbm.blocks.ModBlocks.concrete.get();
+        BlockState air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++) for (int z = -2; z <= 2; z++) {
+            level.setBlock(centre.offset(x, y, z), (x == 0 && y == 0 && z == 0) ? air : concrete.defaultBlockState(), 2);
+        }
+        try {
+            com.hbm.explosion.ExplosionNT.explodeErode(level, null, centre.getX() + 0.5D, centre.getY() + 0.5D,
+                    centre.getZ() + 0.5D, 10F);
+
+            int innerGravel = 0;
+            int innerAir = 0;
+            int concreteLeft = 0;
+            for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++) for (int z = -2; z <= 2; z++) {
+                if (x == 0 && y == 0 && z == 0) continue;
+                BlockState state = level.getBlockState(centre.offset(x, y, z));
+                boolean inner = Math.abs(x) <= 1 && Math.abs(y) <= 1 && Math.abs(z) <= 1;
+                if (state.is(concrete)) concreteLeft++;
+                else if (inner && state.is(net.minecraft.world.level.block.Blocks.GRAVEL)) innerGravel++;
+                else if (inner && state.isAir()) innerAir++;
+            }
+            helper.assertTrue(concreteLeft == 98,
+                    "expected exactly the 98 outer-shell concrete cells to survive, found " + concreteLeft);
+            helper.assertTrue(innerGravel + innerAir == 26, "every inner cell must be eroded or cleared: "
+                    + innerGravel + " gravel + " + innerAir + " air of 26");
+            // Binomial(26, 0.6): P(< 5) ~ 1e-6, P(26) ~ 2e-6
+            helper.assertTrue(innerGravel >= 5 && innerGravel <= 25,
+                    "the 60% erosion roll gave " + innerGravel + " gravel of 26, outside 5..25");
+            helper.succeed();
+        } finally {
+            for (int x = -2; x <= 2; x++) for (int y = -2; y <= 2; y++) for (int z = -2; z <= 2; z++) {
+                level.setBlock(centre.offset(x, y, z), air, 2);
+            }
+            discardBlastDebris(level, centre);
+        }
     }
 
     /**
@@ -795,8 +970,12 @@ public final class MissileGameTests {
 
         java.util.List<net.minecraft.world.item.Item> launchable = java.util.List.of(
                 ModMissileItems.missile_micro.get(), ModMissileItems.missile_taint.get(),
-                ModMissileItems.missile_test.get(),
+                ModMissileItems.missile_test.get(), ModMissileItems.missile_schrabidium.get(),
+                ModMissileItems.missile_bhole.get(), ModMissileItems.missile_emp.get(),
                 ModMissileItems.missile_generic.get(), ModMissileItems.missile_decoy.get(),
+                ModMissileItems.missile_cluster.get(), ModMissileItems.missile_cluster_strong.get(),
+                ModMissileItems.missile_rain.get(), ModMissileItems.missile_drill.get(),
+                ModMissileItems.missile_volcano.get(), ModMissileItems.missile_shuttle.get(),
                 ModMissileItems.missile_incendiary.get(), ModMissileItems.missile_buster.get(),
                 ModMissileItems.missile_anti_ballistic.get(),
                 ModMissileItems.missile_strong.get(), ModMissileItems.missile_incendiary_strong.get(),
@@ -811,20 +990,13 @@ public final class MissileGameTests {
                     "the pad refuses " + item + ", which is supposed to be launchable");
         }
 
-        // Everything blocked on an unported warhead, one per reason.
+        // The only refusal left is upstream's own: the rusted doomsday missile is notLaunchable.
         java.util.List<net.minecraft.world.item.Item> refused = java.util.List.of(
-                ModMissileItems.missile_bhole.get(),          // EntityBlackHole
-                ModMissileItems.missile_cluster.get(),        // EntityRocket
-                ModMissileItems.missile_drill.get(),          // ExplosionNT ERRODE + jolt
-                ModMissileItems.missile_endo.get(),           // ExplosionThermo
-                ModMissileItems.missile_volcano.get(),        // the volcano blocks
-                ModMissileItems.missile_shuttle.get(),        // the Soyuz chain
-                ModMissileItems.missile_doomsday_rusted.get() // notLaunchable upstream too
-        );
+                ModMissileItems.missile_doomsday_rusted.get());
 
         for (net.minecraft.world.item.Item item : refused) {
             helper.assertFalse(pad.isMissileValid(new ItemStack(item)),
-                    item + " is accepted by the pad but has no flying entity");
+                    item + " is accepted by the pad but upstream refuses it");
         }
 
         helper.assertTrue(TileEntityLaunchPadBase.missiles.size() == launchable.size() - 1,

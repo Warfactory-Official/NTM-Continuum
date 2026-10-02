@@ -30,11 +30,11 @@ import static com.hbm.inventory.OreDictManager.*;
 /**
  * Press recipes — shared by the burner press and the electric press. A recipe is keyed by
  * (ingredient, {@link StampType}): inserting an ingredient plus a stamp of the matching type yields the
- * output. Faithful but <b>feasibility-limited</b> port of the 1.12.2 {@code PressRecipes} (see
- * IMPLEMENTATION.md §18): the eight feasible defaults, metal-<b>plate</b> family, metal casing family,
- * and material fine-wire loop are registered here. Meteorite-sword, briquette, and printing-page recipes
- * remain blocked by their absent items or subsystems. The plate set matches {@link AssemblyMachineRecipes}
- * (ingot → plate) so the two machines stay consistent.
+ * output. Complete port of the 1.7 {@code PressRecipes} defaults: the flat-stamp table, the meteorite
+ * sword ({@link AbilityToolMachineRecipes#press}), the three briquettes and eight printing-press pages
+ * ({@link FinalConsumableMachineRecipes#press}), the metal-<b>plate</b> family, the casing family and the
+ * material fine-wire loop. The plate set matches {@link AssemblyMachineRecipes} (ingot → plate) so the two
+ * machines stay consistent.
  */
 public final class PressRecipes {
 
@@ -76,7 +76,7 @@ public final class PressRecipes {
         if (initialized) return;
         initialized = true;
 
-        // The eight feasible non-plate defaults from the 1.12.2 PressRecipes table.
+        // The non-plate flat/circuit defaults from the 1.7 PressRecipes table.
         AbilityToolMachineRecipes.press(); // reforged -> hardened meteorite sword (1.7 PressRecipes:67)
         FinalConsumableMachineRecipes.press(); // briquettes + the eight printing-press pages (1.7 PressRecipes:70-72, 101-108)
         makeRecipe(StampType.FLAT, dustTag("quartz"), new ItemStack(Items.QUARTZ));

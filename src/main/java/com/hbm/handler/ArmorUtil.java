@@ -156,21 +156,22 @@ public class ArmorUtil {
     }
 
     /**
-     * Damages every worn armour piece by the same amount — what a corrosive fluid does on its way
-     * through. Unlike ordinary damage this is not attributed to an attacker, so no enchantment or
-     * unbreaking hook applies: 1.12.2 spends the durability directly, and a piece worn through is
-     * removed rather than left at zero.
+     * Damages every worn armour piece by the same amount: 1.7 {@code damageSuit(entity, i, amount)} for i 0..3
+     * (feet, legs, chest, head), each an {@code ItemStack.damageItem}. That is vanilla's durability path, so
+     * Unbreaking applies per point (armour: 60% always takes it, otherwise 1 in level+1), a creative player's
+     * items never wear, and a worn-through piece breaks and leaves the slot empty. The modern path breaks at
+     * damage == max (1.7 at max + 1), the one difference that comes with the vanilla version.
      */
     public static void damageWholeSuit(LivingEntity entity, int damage) {
         if (damage <= 0) return;
+        // 1.7 damageItem skips creative players; the modern LivingEntity overload only checks a ServerPlayer.
+        if (entity instanceof net.minecraft.world.entity.player.Player player && player.isCreative()) return;
         // Named rather than filtered on the slot's type: that enum constant was renamed at 1.21.2.
-        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST,
-                EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+        for (EquipmentSlot slot : new EquipmentSlot[]{EquipmentSlot.FEET, EquipmentSlot.LEGS,
+                EquipmentSlot.CHEST, EquipmentSlot.HEAD}) {
             ItemStack piece = entity.getItemBySlot(slot);
             if (piece.isEmpty() || !piece.isDamageableItem()) continue;
-            int next = piece.getDamageValue() + damage;
-            if (next >= piece.getMaxDamage()) entity.setItemSlot(slot, ItemStack.EMPTY);
-            else piece.setDamageValue(next);
+            dev.golem.core.world.Durability.hurt(piece, damage, entity, slot);
         }
     }
 }

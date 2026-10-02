@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -19,6 +21,7 @@ public final class ModCasingItems {
     private ModCasingItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     private static final Map<EnumCasingType, RegistryObject<Item>> CASINGS = new EnumMap<>(EnumCasingType.class);
     private static final EnumCasingType[] PORTED = {
@@ -39,7 +42,10 @@ public final class ModCasingItems {
                 continue;
             }
             String id = "casing_" + type.name().toLowerCase(Locale.ROOT);
-            RegistryObject<Item> casing = ITEMS.registerSimpleItem(id);
+            // the four brass/steel casings keep the 1.7 metadata sprites (casing.<type>); the shotgun ones are their own
+            boolean ownSprite = type == EnumCasingType.SHOTSHELL || type == EnumCasingType.BUCKSHOT_ADVANCED;
+            RegistryObject<Item> casing = REG.item(id).transform(ownSprite ? Presets.sprite()
+                    : Presets.sprite("hbm:items/casing." + type.name().toLowerCase(Locale.ROOT)));
             CASINGS.put(type, casing);
             ModTabs.addTo(HbmTab.MATERIALS, casing);
         }

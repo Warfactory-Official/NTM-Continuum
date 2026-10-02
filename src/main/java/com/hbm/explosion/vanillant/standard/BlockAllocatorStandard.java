@@ -5,7 +5,10 @@ import com.hbm.explosion.vanillant.interfaces.IBlockAllocator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import java.util.Map;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Vanilla's own ray allocator, with the ray count made a parameter.
@@ -19,12 +22,23 @@ public class BlockAllocatorStandard implements IBlockAllocator {
 
     protected int resolution;
 
+    /**
+     * 1.7 {@code ExplosionNT} {@code ExAttrib.ERRODE}: blocks in this table are affected even when the ray's power
+     * ran out inside them, so a blast too weak to break concrete still gets to erode it.
+     */
+    protected @Nullable Map<Block, Block> erosion;
+
     public BlockAllocatorStandard() {
         this(16);
     }
 
     public BlockAllocatorStandard(int resolution) {
         this.resolution = resolution;
+    }
+
+    public BlockAllocatorStandard withErosion(Map<Block, Block> erosion) {
+        this.erosion = erosion;
+        return this;
     }
 
     @Override
@@ -71,6 +85,9 @@ public class BlockAllocatorStandard implements IBlockAllocator {
                         }
 
                         if (powerRemaining > 0.0F) {
+                            affectedBlocks.add(cursor.immutable());
+                        } else if (erosion != null && erosion.containsKey(state.getBlock())) {
+                            // 1.7 ExplosionNT.doExplosionA: "else if(has(ERRODE) && errosion.containsKey(block))"
                             affectedBlocks.add(cursor.immutable());
                         }
 

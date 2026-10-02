@@ -1,9 +1,9 @@
 package com.hbm.sound;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvent;
 
 /** Sound events used by the Sedna firearm batch and its animation timelines. */
@@ -12,7 +12,8 @@ public final class ModGunSounds {
     private ModGunSounds() {}
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
-            DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+            DeferredRegister.createSounds(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
 
     public static final RegistryObject<SoundEvent> FIRE_BLACK_POWDER = register("weapon.fire.blackpowder");
     public static final RegistryObject<SoundEvent> DISINTEGRATION = register("weapon.fire.disintegration");
@@ -95,8 +96,7 @@ public final class ModGunSounds {
     public static final RegistryObject<SoundEvent> PLAYER_GROAN = register("player.groan");
 
     private static RegistryObject<SoundEvent> register(String name) {
-        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
-                dev.golem.core.Ids.of(Constants.MOD_ID, name)));
+        return REG.sound(name);
     }
 
     public static void init() {}

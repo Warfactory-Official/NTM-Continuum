@@ -1,7 +1,9 @@
 package com.hbm.blocks;
 
+import dev.golem.core.dejson.Dispatch;
+import dev.golem.core.dejson.Models;
+import dev.golem.core.dejson.Variants;
 import dev.golem.core.world.Compat;
-import java.util.List;
 import java.util.function.UnaryOperator;
 
 import com.hbm.Constants;
@@ -9,10 +11,13 @@ import com.hbm.blocks.generic.BlockDeco;
 import com.hbm.blocks.generic.BlockDeco.Shape;
 import com.hbm.blocks.generic.BlockDecoObj;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -27,8 +32,10 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
  *       {@link com.hbm.client.render.DecoObjRenderer} ({@link BlockDecoObj} + a {@code TileEntityDeco}),
  *       the same invisible-block + BER pattern the machines use.</li>
  * </ul>
- * Hand-registered like {@link ModHazardBlocks}; assets via {@code port-tools/gen_deco_blocks.py}. The 4
- * {@code statue_elb} {@code DecoBlockAlt} easter-egg statues are deferred.
+ * Hand-registered like {@link ModHazardBlocks}; OBJ meshes via {@code port-tools/gen_deco_blocks.py}. Each
+ * block's blockstate, loot and mining tag are stated on its registration (Reg; emitted by Dejson at build time);
+ * the OBJ item icons are typed data in {@code ObjItemDeclarations}. The 4 {@code statue_elb}
+ * {@code DecoBlockAlt} easter-egg statues are deferred.
  */
 public final class ModDecoBlocks {
 
@@ -36,16 +43,28 @@ public final class ModDecoBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     /** The OBJ-rendered blocks — the {@code deco} block-entity type binds to all of them (see ModBlockEntities). */
     public static final java.util.List<RegistryObject<Block>> OBJ_BLOCKS = new java.util.ArrayList<>();
 
+    private static final Dispatch HORIZONTAL = Variants.uniform("facing", "north", "east", "south", "west");
+    /** Renderer-drawn: the blockstate points every facing at the empty placeholder; drops itself, pickaxe. */
+    private static final Preset OBJ_DECO = Presets.rendered(HORIZONTAL)
+            .and(handle -> handle.loot(Loot.self()).tag(BlockTag.PICKAXE));
+
     // ---- steel structural pieces (OBJ-rendered from their old ModelBase box models; custom collision) ----
     public static final RegistryObject<Block> steel_wall   = decoObj("steel_wall", Shape.WALL, p -> p.strength(5.0F, 15.0F));
     public static final RegistryObject<Block> steel_corner = decoObj("steel_corner", Shape.CORNER, p -> p.strength(15.0F, 15.0F));
-    public static final RegistryObject<Block> steel_roof   = decoObj("steel_roof", Shape.ROOF, p -> p.strength(5.0F, 15.0F));
-    // steel_beam kept as a static JSON central post (its old model was a simple beam.obj post).
-    public static final RegistryObject<Block> steel_beam   = deco("steel_beam", Shape.BEAM, p -> p.strength(5.0F, 15.0F));
+    // 1.7 ItemRenderDecoBlock: the flat steel_roof block icon in a slot, ModelSteelRoof in hand and on the ground
+    public static final RegistryObject<Block> steel_roof   = decoObj("steel_roof", Shape.ROOF, p -> p.strength(5.0F, 15.0F))
+            .andThen(h -> com.hbm.items.ItemRendererDeclarations.heldBlockIcon(h.path(), "hbm:blocks/steel_roof", "deco_block"));
+    // steel_beam kept as a static JSON central post (its old model was a simple beam.obj post); the model is authored.
+    public static final RegistryObject<Block> steel_beam   = deco("steel_beam", Shape.BEAM, p -> p.strength(5.0F, 15.0F))
+            .transform(Presets.statesOnly(HORIZONTAL))
+            .icon(d -> d.models(Models.blockItem("hbm:block/steel_beam")))
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
     // ---- satellite dishes (OBJ-rendered, full-cube collision) ----
     public static final RegistryObject<Block> deco_sat_mapper    = decoObj("deco_sat_mapper", Shape.FULL, p -> p.strength(5.0F, 10.0F));
@@ -60,35 +79,39 @@ public final class ModDecoBlocks {
     public static final RegistryObject<Block> boat   = decoObj("boat", Shape.FULL, p -> p.strength(10.0F, 10.0F).sound(SoundType.METAL));
 
     // Current ntm-next DecoBlock registrations: ordinary stone-sounding full cubes, hardness 5, resistance 100.
-    public static final RegistryObject<Block> deco_rbmk = solidDeco("deco_rbmk", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE));
-    public static final RegistryObject<Block> deco_rbmk_smooth = solidDeco("deco_rbmk_smooth", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE));
+    // They drop themselves even out of an explosion.
+    public static final RegistryObject<Block> deco_rbmk = solidDeco("deco_rbmk", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE))
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.selfAlways())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<Block> deco_rbmk_smooth = solidDeco("deco_rbmk_smooth", p -> p.strength(5.0F, 100.0F).sound(SoundType.STONE))
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.selfAlways())
+            .tag(BlockTag.PICKAXE);
 
     /** A JSON-modelled deco block (steel pieces). */
-    private static RegistryObject<Block> deco(String id, Shape shape, UnaryOperator<BlockBehaviour.Properties> props) {
-        RegistryObject<Block> block = BLOCKS.registerBlock(id, p -> new BlockDeco(p, shape),
-                p -> props.apply(p.noOcclusion()));
-        blockItem(id, block);
+    private static Reg.Handle<Block> deco(String id, Shape shape, UnaryOperator<BlockBehaviour.Properties> props) {
+        Reg.Handle<Block> block = REG.<Block>block(id, p -> new BlockDeco(p, shape), p -> props.apply(p.noOcclusion()));
+        blockItem(block);
         return block;
     }
 
     /** An OBJ-rendered (invisible + BER) deco block with the given collision shape. */
-    private static RegistryObject<Block> decoObj(String id, Shape shape, UnaryOperator<BlockBehaviour.Properties> props) {
-        RegistryObject<Block> block = BLOCKS.registerBlock(id, p -> new BlockDecoObj(p, shape),
-                p -> props.apply(p.noOcclusion()));
-        blockItem(id, block);
+    private static Reg.Handle<Block> decoObj(String id, Shape shape, UnaryOperator<BlockBehaviour.Properties> props) {
+        Reg.Handle<Block> block = REG.<Block>block(id, p -> new BlockDecoObj(p, shape), p -> props.apply(p.noOcclusion()));
+        blockItem(block);
         OBJ_BLOCKS.add(block);
+        return block.transform(OBJ_DECO);
+    }
+
+    private static Reg.Handle<Block> solidDeco(String id, UnaryOperator<BlockBehaviour.Properties> props) {
+        Reg.Handle<Block> block = REG.<Block>block(id, Block::new, props);
+        blockItem(block);
         return block;
     }
 
-    private static RegistryObject<Block> solidDeco(String id, UnaryOperator<BlockBehaviour.Properties> props) {
-        RegistryObject<Block> block = BLOCKS.registerBlock(id, Block::new, props);
-        blockItem(id, block);
-        return block;
-    }
-
-    private static void blockItem(String id, RegistryObject<Block> block) {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
-        ModTabs.addTo(HbmTab.BLOCKS, item);
+    private static void blockItem(Reg.Handle<Block> block) {
+        REG.blockItem(block, p -> Compat.blockDescription(p)).tab(HbmTab.BLOCKS);
     }
 
     public static void init() {}

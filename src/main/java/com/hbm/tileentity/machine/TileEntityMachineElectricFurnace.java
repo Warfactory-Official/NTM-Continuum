@@ -3,6 +3,9 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.util.TickPhase;
 import com.hbm.blocks.machine.MachineElectricFurnace;
 import com.hbm.blocks.machine.ModMachineBlocks;
 import com.hbm.inventory.UpgradeManagerNT;
@@ -37,8 +40,8 @@ import dev.golem.core.world.Recipes;
  * tick. Faithful port of the 1.12.2 {@code TileEntityMachineElectricFurnace}.
  *
  * <p>Slots: 0 battery, 1 input, 2 output, 3 upgrade (SPEED/POWER, 1.12.2 formulas on the base
- * 50 HE / 100 ticks). Deferred (see IMPLEMENTATION.md §18): the soot-pollution output, the lit flame
- * particles, and the per-loader energy capability bridge.
+ * 50 HE / 100 ticks). Soot: 1.7's {@code SOOT_PER_SECOND} once a second while smelting. Deferred (see
+ * IMPLEMENTATION.md §18): the lit flame particles and the per-loader energy capability bridge.
  */
 public class TileEntityMachineElectricFurnace extends TileEntityMachineBase implements MenuProvider, IEnergyReceiverMK2, WorldlyContainer, IUpgradeInfoProvider {
 
@@ -103,6 +106,9 @@ public class TileEntityMachineElectricFurnace extends TileEntityMachineBase impl
         if (canProcess && hasPower) {
             te.progress++;
             te.power -= te.consumption;
+
+            if (TickPhase.every(level, pos, 20L)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND);
+
             if (te.progress >= te.maxProgress) {
                 te.progress = 0;
                 te.processItem(serverLevel);

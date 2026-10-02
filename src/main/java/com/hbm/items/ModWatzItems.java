@@ -5,6 +5,8 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.EnumWatzType;
 import com.hbm.items.machine.ItemWatzPellet;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import org.jspecify.annotations.Nullable;
@@ -23,16 +25,19 @@ public final class ModWatzItems {
     private ModWatzItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     private static final Map<EnumWatzType, RegistryObject<ItemWatzPellet>> FRESH = new EnumMap<>(EnumWatzType.class);
     private static final Map<EnumWatzType, RegistryObject<ItemWatzPellet>> DEPLETED = new EnumMap<>(EnumWatzType.class);
 
     static {
         for (EnumWatzType type : EnumWatzType.VALUES) {
-            RegistryObject<ItemWatzPellet> fresh = ITEMS.registerItem("watz_pellet_" + type.itemSuffix(),
-                    p -> new ItemWatzPellet(p, type, false), p -> p.stacksTo(16));
-            RegistryObject<ItemWatzPellet> spent = ITEMS.registerItem("watz_pellet_depleted_" + type.itemSuffix(),
-                    p -> new ItemWatzPellet(p, type, true), p -> p.stacksTo(16));
+            RegistryObject<ItemWatzPellet> fresh = REG.item("watz_pellet_" + type.itemSuffix(),
+                    p -> new ItemWatzPellet(p, type, false), p -> p.stacksTo(16))
+                    .transform(Presets.sprite());
+            RegistryObject<ItemWatzPellet> spent = REG.item("watz_pellet_depleted_" + type.itemSuffix(),
+                    p -> new ItemWatzPellet(p, type, true), p -> p.stacksTo(16))
+                    .transform(Presets.sprite());
             FRESH.put(type, fresh);
             DEPLETED.put(type, spent);
             ModTabs.addTo(HbmTab.CONTROL, fresh);

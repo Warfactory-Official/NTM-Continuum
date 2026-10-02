@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerLeadBox;
 import com.hbm.inventory.container.ContainerLemegeton;
@@ -15,11 +16,12 @@ public final class ModUtilityToolMenus {
     private ModUtilityToolMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
-    public static final RegistryObject<MenuType<ContainerLeadBox>> LEAD_BOX = MENUS.register("containment_box", () ->
+    public static final RegistryObject<MenuType<ContainerLeadBox>> LEAD_BOX = REG.menu("containment_box", () ->
             Menus.typeWithHand((id, inventory, hand) -> new ContainerLeadBox(leadBoxType(), id, inventory, hand)));
 
-    public static final RegistryObject<MenuType<ContainerLemegeton>> LEMEGETON = MENUS.register("book_lemegeton", () ->
+    public static final RegistryObject<MenuType<ContainerLemegeton>> LEMEGETON = REG.menu("book_lemegeton", () ->
             Menus.typeWithHand((id, inventory, hand) -> new ContainerLemegeton(lemegetonType(), id, inventory)));
 
     private static MenuType<ContainerLeadBox> leadBoxType() { return LEAD_BOX.get(); }

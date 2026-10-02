@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine.oil;
 import dev.golem.core.data.Tags;
 
 import com.hbm.tileentity.MachineCore;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.container.ContainerMachineCoker;
@@ -41,8 +43,10 @@ import dev.golem.core.data.DataOut;
  * take-only). Tanks: {@code [0] HEAVYOIL 16k} input + {@code [1] OIL_COKER 8k} byproduct. Recipe outputs
  * one item + an optional byproduct fluid per {@link CokerRecipes}.
  *
- * <p>Deferred (§20): pollution/soot; the tall {@code HbmEffectNT.Tower} smoke → vanilla
- * {@code CAMPFIRE_COSY_SMOKE} stand-in at y+22; IFluidCopiable.
+ * <p>Soot: 1.7's {@code SOOT_PER_SECOND * 5} every fifth tick while burning.
+ *
+ * <p>Deferred (§20): the tall {@code HbmEffectNT.Tower} smoke → vanilla {@code CAMPFIRE_COSY_SMOKE}
+ * stand-in at y+22; IFluidCopiable.
  */
 public class TileEntityMachineCoker extends TileEntityMachineBase
         implements MenuProvider, IFluidStandardTransceiverMK2, WorldlyContainer {
@@ -99,6 +103,8 @@ public class TileEntityMachineCoker extends TileEntityMachineBase
                     te.tanks[0].setFill(te.tanks[0].getFill() - fillReq);
                 }
             }
+
+            if (te.wasOn && TickPhase.every(level, pos, 5)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
         }
 
         for (DirPos dp : te.getConPos()) {

@@ -52,7 +52,7 @@ public final class MachineItemRenderers {
 
         // In a GUI these models must not paint outside their slot; see clipToSlot.
         boolean clipped = context == ItemDisplayContext.GUI
-                && !MachineItemModels.isOversizedInGui(id) && clipToSlot(poseStack);
+                && !MachineItemModels.isOversizedInGui(id) && clipToSlot(poseStack, stack);
 
         RecordingSubmitSink sink = new RecordingSubmitSink();
         if (column != null) column.submit(poseStack, sink, light, overlay);
@@ -85,14 +85,26 @@ public final class MachineItemRenderers {
      * <p>The rectangle is recovered from the pose rather than passed in, because the callback is never
      * told which slot it is drawing into. By the time vanilla calls a custom renderer it has translated to
      * the slot centre, scaled by 16, applied the model's GUI display transform and then shifted by
-     * {@code (-0.5,-0.5,-0.5)} — so the model-space point {@code (0.5,0.5,0.5)} is the slot centre, and
-     * transforming it back out yields that centre in GUI pixels.
+     * {@code (-0.5,-0.5,-0.5)} — so the model-space point {@code (0.5,0.5,0.5)} is the slot centre moved by
+     * that display transform's translation, which is applied outermost ({@code T . R . S}). The machine frames
+     * translate (machine_obj_context_base: -0.707, -1.567 px), so that translation is taken back out: without
+     * it the clip sat 1.6 px low and cut the top of tall icons that 26.1, whose bound is the slot itself, keeps
+     * (icon audit 2026-10-01: trenchmaster/fau antennas).
      ^/
-    private static boolean clipToSlot(PoseStack poseStack) {
+    private static boolean clipToSlot(PoseStack poseStack, ItemStack stack) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.getWindow() == null) return false;
 
         Vector3f centre = new Vector3f(0.5F, 0.5F, 0.5F).mulPosition(poseStack.last().pose());
+        // ItemTransform.translation is in blocks; the GUI base pose is scale(16, -16, 16).
+        // The shaper's per-item model is a map lookup; only an item whose model carries overrides (a
+        // custom_model_data variant may frame differently) pays for getModel's override resolution.
+        net.minecraft.client.resources.model.BakedModel model = minecraft.getItemRenderer().getItemModelShaper().getItemModel(stack);
+        if (model.getOverrides() != net.minecraft.client.renderer.block.model.ItemOverrides.EMPTY) {
+            model = minecraft.getItemRenderer().getModel(stack, minecraft.level, null, 0);
+        }
+        Vector3f shift = model.getTransforms().getTransform(ItemDisplayContext.GUI).translation;
+        centre.add(-shift.x() * 16F, shift.y() * 16F, 0F);
         double guiScale = minecraft.getWindow().getGuiScale();
         // Framebuffer coordinates: origin bottom-left, so the top edge is measured from the window height.
         // This is the same conversion GuiGraphicsExtractor.applyScissor performs.

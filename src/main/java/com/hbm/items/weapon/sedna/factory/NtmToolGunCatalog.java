@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -15,6 +16,7 @@ import net.minecraft.world.item.Item;
 /** Registry boundary for the tool and power-armour guns restored from ntm-next. */
 public final class NtmToolGunCatalog {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static RegistryObject<ItemGunDrill> gun_drill;
     public static RegistryObject<ItemGunBaseNT> gun_charge_thrower;
@@ -31,7 +33,7 @@ public final class NtmToolGunCatalog {
 
     /** Declares a tool gun and keeps its source order in the ordinary weapons tab. */
     public static <T extends Item> RegistryObject<T> weapon(String id, Function<Item.Properties, ? extends T> factory) {
-        RegistryObject<T> item = ITEMS.registerItem(id, factory);
+        RegistryObject<T> item = REG.<T>item(id, factory, p -> p);
         ModTabs.addTo(HbmTab.WEAPONS, item);
         return item;
     }

@@ -38,12 +38,12 @@ public final class CrucibleShaders implements Scenario {
         c.look(0, 10);
 
         c.cmd("time set 6000");
-        Fixtures.giveOnly(c, c.node().startsWith("1.20") ? "hbm:crucible{\"hbm:crucible_spent\":3}"
-                : "hbm:crucible[hbm:crucible_spent=3]", 1);
+        Fixtures.giveOnly(c, "hbm:crucible", 1); // old-hbm: crafted empty
         c.waitTicks(30);
         c.screenshot("00-day-spent");
 
-        Fixtures.giveOnly(c, "hbm:crucible", 1);
+        Fixtures.giveOnly(c, c.node().startsWith("1.20") ? "hbm:crucible{\"hbm:charges\":16}"
+                : "hbm:crucible[hbm:charges=16]", 1);
         c.waitTicks(40);
         c.screenshot("01-day-blade-a");
         c.waitTicks(7);
@@ -53,8 +53,7 @@ public final class CrucibleShaders implements Scenario {
         c.cmd("time set 18000");
         c.waitTicks(10);
         c.screenshot("04-night-blade");
-        Fixtures.giveOnly(c, c.node().startsWith("1.20") ? "hbm:crucible{\"hbm:crucible_spent\":3}"
-                : "hbm:crucible[hbm:crucible_spent=3]", 1);
+        Fixtures.giveOnly(c, "hbm:crucible", 1); // old-hbm: crafted empty
         c.waitTicks(30);
         c.screenshot("05-night-spent");
 

@@ -1,7 +1,12 @@
 package com.hbm.blocks.machine;
 
 import com.hbm.api.energymk2.IEnergyConnectorBlock;
+import com.hbm.api.fluidmk2.DuctData;
 import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.Fluids;
+import com.hbm.lib.ForgeDirection;
+import net.minecraft.world.level.BlockGetter;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockSurface;
 import com.hbm.tileentity.ModBlockEntities;
@@ -42,9 +47,9 @@ public class MachinePyroOven extends BlockMultiblockMachine implements IEnergyCo
     }
 
     /**
-     * A row of five ports down one flank. 1.7 also vents smoke upward from the cell at {@code (-rot, 2)},
-     * which is why that cell exists, but Continuum has no smoke tank yet (deferred, §20) -- and a face
-     * open on the fluid plane with no smoke behind it would offer a duct the machine's oil instead.
+     * A row of five ports down one flank, and the smoke vent: the top face of the cell at {@code (-rot, 2)},
+     * where 1.7 sends the smoke tank upward. {@link #canConnect(FluidType, BlockGetter, int, int, int, ForgeDirection)}
+     * keeps the two apart, because 1.7 offered smoke only at the vent and the oil only at the flank.
      */
     @Override
     protected void visitCells(BlockPos core, Direction facing, CellVisitor visitor) {
@@ -56,6 +61,14 @@ public class MachinePyroOven extends BlockMultiblockMachine implements IEnergyCo
         for (int i = -2; i <= 2; i++) {
             visitor.cell(core.offset(dx * i + rx * 2, 0, dz * i + rz * 2), MASK_EAST);
         }
+        visitor.cell(core.offset(-rx, 2, -rz), MASK_UP);
+    }
+
+    /** The vent (the only face open upward) carries {@code SMOKE} alone; the flank ports carry no smoke. */
+    @Override
+    public boolean canConnect(FluidType type, BlockGetter world, int x, int y, int z, ForgeDirection dir) {
+        if (!super.canConnect(type, world, x, y, z, dir)) return false;
+        return dir == ForgeDirection.UP ? type == Fluids.SMOKE : !DuctData.isSmoke(type);
     }
 
     @Override

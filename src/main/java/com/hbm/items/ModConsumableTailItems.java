@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.capability.HbmLivingProps;
 import com.hbm.creativetabs.HbmTab;
@@ -14,26 +16,31 @@ public final class ModConsumableTailItems {
     private ModConsumableTailItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     private static RegistryObject<ItemEnergy> can(String id) {
-        RegistryObject<ItemEnergy> item = ITEMS.registerItem(id, p -> new ItemEnergy(p, id, ItemEnergy.Container.CAN));
+        RegistryObject<ItemEnergy> item = REG.item(id, p -> new ItemEnergy(p, id, ItemEnergy.Container.CAN))
+                .transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, item);
         return item;
     }
 
     private static RegistryObject<ItemEnergy> bottle(String id) {
-        RegistryObject<ItemEnergy> item = ITEMS.registerItem(id, p -> new ItemEnergy(p, id, ItemEnergy.Container.BOTTLE));
+        RegistryObject<ItemEnergy> item = REG.item(id, p -> new ItemEnergy(p, id, ItemEnergy.Container.BOTTLE))
+                .transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, item);
         return item;
     }
 
     private static RegistryObject<ItemEnergy> drink(String id) {
-        RegistryObject<ItemEnergy> item = ITEMS.registerItem(id, p -> new ItemEnergy(p, id, ItemEnergy.Container.NONE));
+        RegistryObject<ItemEnergy> item = REG.item(id, p -> new ItemEnergy(p, id, ItemEnergy.Container.NONE))
+                .transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, item);
         return item;
     }
 
-    public static final RegistryObject<Item> bottle_opener = ITEMS.registerSimpleItem("bottle_opener", p -> p.stacksTo(1));
+    public static final RegistryObject<Item> bottle_opener = REG.simpleItem("bottle_opener", p -> p.stacksTo(1))
+            .transform(Presets.handheld());
     static { ModTabs.addTo(HbmTab.CONSUMABLES, bottle_opener); }
     public static final RegistryObject<ItemEnergy> can_smart = can("can_smart");
     public static final RegistryObject<ItemEnergy> can_creature = can("can_creature");

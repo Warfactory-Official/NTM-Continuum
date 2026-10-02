@@ -13,14 +13,15 @@ import dev.golem.core.data.DataOut;
 
 /**
  * Per-living-entity HBM state (radiation, digamma, lung disease, timers), ported from 1.12.2's
- * {@code HbmLivingCapability.EntityHbmProps}. There is no Forge capability system in common code:
- * every {@link net.minecraft.world.entity.LivingEntity} carries one of these via the
- * {@code MixinLivingEntity} duck field ({@link IHbmLivingDuck}), so the old DUMMY
- * fallback no longer exists. Use the {@link com.hbm.capability.HbmLivingProps} static facade for all
- * gameplay access (it carries the clamps/side-effects); this class is dumb storage + serialization.
+ * {@code HbmLivingCapability.EntityHbmProps}. Every {@link net.minecraft.world.entity.LivingEntity} carries
+ * one of these as Golem Core entity data ({@link com.hbm.capability.HbmLivingProps#DATA}: a NeoForge/Fabric data
+ * attachment or a Forge capability), so the old DUMMY fallback no longer exists. Use the
+ * {@link com.hbm.capability.HbmLivingProps} static facade for all gameplay access (it carries the
+ * clamps/side-effects); this class is dumb storage + serialization.
  *
- * <p>NBT lives under the {@code HbmLivingProps} child of the entity tag (v1 format, doubles). The
- * network payload is the old versioned ByteBuf format (v1).
+ * <p>Saved as the {@code hbm:living_props} attachment (v1 field layout, doubles). Before 2026-09-30 the same
+ * layout was a {@code HbmLivingProps} child of the entity tag; that is read once on load. The network payload
+ * is the old versioned ByteBuf format (v1).
  */
 public class EntityHbmProps {
 
@@ -131,7 +132,7 @@ public class EntityHbmProps {
     public boolean getEnableHUD() { return enableHUD; }
     public void setEnableHUD(boolean enabled) { enableHUD = enabled; }
 
-    // ---- persistence (entity NBT child "HbmLivingProps") ----
+    // ---- persistence (the hbm:living_props attachment; formerly the entity NBT child "HbmLivingProps") ----
 
     public void save(DataOut out) {
         out.putString("fmt", "v1");

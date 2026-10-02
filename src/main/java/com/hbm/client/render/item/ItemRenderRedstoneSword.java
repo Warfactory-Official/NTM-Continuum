@@ -38,7 +38,7 @@ final class ItemRenderRedstoneSword implements CustomItemRenderer {
         pose.pushPose();
         pose.mulPose(Axis.ZP.rotationDegrees(-135.0F));
         pose.translate(-0.8F, 0.4F, -0.1F);
-        sink.submitCustomGeometry(pose, culled(TEXTURE), (p, buffer) -> {
+        sink.submitCustomGeometry(pose, heldFaces(type, TEXTURE), (p, buffer) -> {
             PoseStack local = new PoseStack();
             local.last().pose().set(p.pose());
             local.last().normal().set(p.normal());

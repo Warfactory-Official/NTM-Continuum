@@ -48,6 +48,8 @@ public final class CyclotronRecipes {
         add(ModItems.part_lithium.get(), dustTag("quartz"), ModFuelItems.powder_fire.get(), 50);
         add(ModItems.part_lithium.get(), IRON.dust(), ModItems.powder_cobalt.get(), 50);
         add(ModItems.part_lithium.get(), exact(ModItems.powder_strontium.get()), ModItems.powder_zirconium.get(), 50);
+        // 1.7 ingot_mercury is registered as nugget_mercury (its nugget_mercury field is nugget_mercury_tiny).
+        add(ModItems.part_lithium.get(), GOLD.dust(), ModItems.nugget_mercury.get(), 50);
         add(ModItems.part_lithium.get(), PO210.dust(), ModItems.powder_astatine.get(), 50);
         add(ModItems.part_lithium.get(), LA.dust(), ModItems.powder_cerium.get(), 50);
         add(ModItems.part_lithium.get(), AC227.dust(), ModItems.powder_thorium.get(), 50);
@@ -69,6 +71,7 @@ public final class CyclotronRecipes {
         add(ModItems.part_carbon.get(), TI.dust(), ModItems.powder_cobalt.get(), 10);
         add(ModItems.part_carbon.get(), exact(ModItems.powder_caesium.get()), ModItems.powder_lanthanium.get(), 10);
         add(ModItems.part_carbon.get(), exact(ModItems.powder_neodymium.get()), ModItems.powder_gold.get(), 10);
+        add(ModItems.part_carbon.get(), exact(ModItems.nugget_mercury.get()), ModItems.powder_polonium.get(), 10);
         add(ModItems.part_carbon.get(), PB.dust(), ModItems.powder_ra226.get(), 10);
         add(ModItems.part_carbon.get(), exact(ModItems.powder_astatine.get()), ModItems.powder_actinium.get(), 10);
 
@@ -89,8 +92,7 @@ public final class CyclotronRecipes {
         add(ModItems.part_plutonium.get(), exact(ModItems.powder_tennessine.get()), ModItems.powder_australium.get(), 100);
         add(ModItems.part_plutonium.get(), exact(ModItems.pellet_charged.get()), ModItems.nugget_schrabidium.get(), 1_000);
 
-        // Omitted rather than remapped: two dustPhosphorus inputs have no c:dusts/phosphorus tag, one
-        // recipe consumes the absent ingot_mercury, and one recipe produces it.
+        // Omitted rather than remapped: two dustPhosphorus inputs have no c:dusts/phosphorus tag.
     }
 
     public static CyclotronRecipe getRecipe(ItemStack particle, ItemStack input) {

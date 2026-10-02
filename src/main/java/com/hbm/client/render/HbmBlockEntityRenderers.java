@@ -189,6 +189,8 @@ public final class HbmBlockEntityRenderers {
         regGem(sink, ModBlockEntities.CARGO_ELEVATOR.get(), CargoElevatorRenderer::new);
         regGem(sink, ModBlockEntities.MACHINE_SATLINK.get(), SatLinkRenderer::new);
         regGem(sink, ModBlockEntities.SOYUZ_LAUNCHER.get(), SoyuzLauncherRenderer::new);
+        // 1.7 RenderSoyuzMultiblock: the launch-complex ghost around the struct seed (built geometry, no gem).
+        regCustom(sink, ModBlockEntities.STRUCT_SOYUZ_CORE.get(), ctx -> new SoyuzStructPreviewRenderer());
         regGem(sink, ModBlockEntities.PILE_CONTROL.get(), PileDeviceRenderers.Control::new);
         regGem(sink, ModBlockEntities.PILE_LOADER.get(), PileDeviceRenderers.Loader::new);
         regGem(sink, ModBlockEntities.PILE_VENT.get(), PileDeviceRenderers.Vent::new);
@@ -208,6 +210,12 @@ public final class HbmBlockEntityRenderers {
         regGem(sink, ModBlockEntities.DFC_INJECTOR.get(), CoreComponentRenderers.Injector::new);
         regGem(sink, ModBlockEntities.DFC_STABILIZER.get(), CoreComponentRenderers.Stabilizer::new);
         regCustom(sink, ModBlockEntities.DFC_CORE.get(), ctx -> new CoreRenderer());
+
+        // 1.7 RenderMassStorage: the stored item, count and fill bar on each variant's front face.
+        for (com.hbm.tileentity.machine.storage.MassStorageType type
+                : com.hbm.tileentity.machine.storage.MassStorageType.values()) {
+            regCustom(sink, type.blockEntityType(), ctx -> new RenderMassStorage());
+        }
 
         reg(sink, ModBlockEntities.PA_SOURCE.get(), 90F, 1F,
                 new ModelDef(obj("particleaccelerator/source.obj"), tex("particleaccelerator/source.png"), -1F));
@@ -328,8 +336,7 @@ public final class HbmBlockEntityRenderers {
         // Red cable: the real cable_neo.obj, parts chosen from the connection state.
         regGem(sink, ModBlockEntities.RED_CABLE.get(), CableObjRenderer::new);
 
-        // Fluid duct: the real pipe_neo.obj, parts chosen from the connection state (like the cable).
-        regGem(sink, ModBlockEntities.FLUID_DUCT.get(), FluidDuctObjRenderer::new);
+        // Fluid ducts (fluid_duct_neo): registered by FluidNetClientRegistrations through NeoDuctRenderer.
 
          // Fluid tank: a multiblock with its own renderer — the cylinder body is textured
          // per-fluid (tank/tank_<name>.png, NONE -> tank_none) while the frame stays machines/tank.png, so

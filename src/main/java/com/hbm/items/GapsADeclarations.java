@@ -32,10 +32,7 @@ public final class GapsADeclarations {
         if (declared) return;
         declared = true;
 
-        for (String[] row : SC) {
-            String id = "battery_sc_" + row[0];
-            Dejson.item(NS, id).models(Models.generated("hbm:items/" + id)).register();
-        }
+        // The ten sprites are stated on ModBatterySCItems' registrations (Reg).
         // 1.7 CraftingManager:262: the empty radiovoltaic cell
         shaped(NS, "battery_sc_empty", "hbm:battery_sc_empty", rows("PGP", "L L", "PGP"),
                 "P", TagIds.ingots_any_plastic, "G", TagIds.wires_gold, "L", TagIds.plates_lead);

@@ -1,6 +1,7 @@
 package com.hbm.inventory;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import com.hbm.inventory.container.ContainerMachineRTG;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -13,8 +14,9 @@ public final class ModRtgMenus {
 
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
-    public static final RegistryObject<MenuType<ContainerMachineRTG>> MACHINE_RTG = MENUS.register(
+    public static final RegistryObject<MenuType<ContainerMachineRTG>> MACHINE_RTG = REG.menu(
             "machine_rtg_grey", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineRTG::new));
 
     public static void init() {}

@@ -1,0 +1,10 @@
+{
+  "textures": {
+    "particle": "hbm:blocks/rbmk/rbmk_control_auto_side",
+    "side": "hbm:blocks/rbmk/rbmk_control_auto_side",
+    "top": "hbm:blocks/rbmk/rbmk_control_auto_top",
+    "bottom": "hbm:blocks/rbmk/rbmk_control_auto_top",
+    "pipe_side": "hbm:blocks/rbmk/rbmk_control_auto_pipe_side",
+    "pipe_top": "hbm:blocks/rbmk/rbmk_control_auto_pipe_top"
+  }
+}

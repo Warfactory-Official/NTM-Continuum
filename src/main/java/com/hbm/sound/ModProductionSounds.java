@@ -1,5 +1,6 @@
 package com.hbm.sound;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -12,9 +13,9 @@ public final class ModProductionSounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
 
-    public static final RegistryObject<SoundEvent> ENGINE = SOUNDS.register("block.engine",
-            () -> SoundEvent.createVariableRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.engine")));
+    public static final RegistryObject<SoundEvent> ENGINE = REG.sound("block.engine");
 
     public static void init() {}
 }

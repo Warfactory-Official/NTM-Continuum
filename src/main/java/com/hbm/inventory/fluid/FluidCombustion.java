@@ -1,15 +1,14 @@
 package com.hbm.inventory.fluid;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The fluid combustion data stripped from the port's slim {@link FluidType} — stand-in for the 1.12.2
  * traits {@code FT_Flammable} (heat energy per bucket; oilburner / gas flare / solidifier SF math),
  * {@code FT_Combustible} (fuel grade + combustion energy per bucket; diesel generator / combustion
- * engine), and {@code FT_Gaseous} (gas flare venting + its burn penalty; this fork has no GASEOUS_ART).
+ * engine). The gaseous/liquid/viscous tags are real traits now ({@code FluidTraitSimple}, assigned in
+ * {@link Fluids}); {@link #isGaseous} and {@link #isLiquidAndViscous} only read them.
  *
  * <p>Values replicate old {@code Fluids.init()} <b>exactly</b>: the literal trait registrations first,
  * then the "almighty excel spreadsheet" {@code registerCalculatedFuel} block (old L701-790) which
@@ -27,12 +26,6 @@ public final class FluidCombustion {
 
     private static final Map<FluidType, Long> FLAMMABLE = new HashMap<>();
     private static final Map<FluidType, Combustible> COMBUSTIBLE = new HashMap<>();
-    private static final Set<FluidType> GASEOUS = new HashSet<>();
-    private static final Set<String> LIQUID_VISCOUS = Set.of(
-            "OIL", "HEAVYOIL", "SMEAR", "HEATINGOIL", "NAPHTHA", "NITAN", "BALEFIRE",
-            "CRACKOIL", "COALOIL", "NAPHTHA_CRACK", "AROMATICS", "HEAVYOIL_VACUUM", "REFORMATE",
-            "XYLENE", "HEATINGOIL_VACUUM", "OIL_DS", "CRACKOIL_DS", "OIL_COKER", "NAPHTHA_COKER",
-            "REDMUD");
     private static boolean initialized = false;
 
     /** TU per bucket when burned for heat (old FT_Flammable.getHeatEnergy), 0 when not flammable. */
@@ -53,15 +46,18 @@ public final class FluidCombustion {
         return COMBUSTIBLE.get(type);
     }
 
-    /** Old FT_Gaseous (flare venting; gaseous fuels burn with penalty 5 instead of 10). */
+    /**
+     * 1.7 {@code FT_Gaseous} alone (not {@code FT_Gaseous_ART}); consumers that test both use
+     * {@link com.hbm.inventory.fluid.trait.FluidTraitSimple#isGaseousAny}.
+     */
     public static boolean isGaseous(FluidType type) {
-        init();
-        return GASEOUS.contains(type);
+        return type != null && type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Gaseous.class);
     }
 
-    /** The old drain's liquid + viscous gate; the two traits are represented by this exact legacy set. */
+    /** The 1.7 drain's {@code FT_Liquid && FT_Viscous} gate. */
     public static boolean isLiquidAndViscous(FluidType type) {
-        return type != null && LIQUID_VISCOUS.contains(type.getName());
+        return type != null && type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Liquid.class)
+                && type.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Viscous.class);
     }
 
     private static void flam(FluidType type, long energy) {
@@ -214,17 +210,6 @@ public final class FluidCombustion {
 
         // BITUMEN / LUBRICANT / HOTOIL etc. never carry FT_Flammable in this fork — the oilburner
         // can't burn them; their flame TU lives in FluidCombustionRecipes (boiler flame table) instead.
-
-        // --- FT_Gaseous (old fluid declarations; this fork has no GASEOUS_ART) ---
-        java.util.Collections.addAll(GASEOUS,
-                Fluids.STEAM, Fluids.HOTSTEAM, Fluids.SUPERHOTSTEAM, Fluids.ULTRAHOTSTEAM,
-                Fluids.DEUTERIUM, Fluids.TRITIUM, Fluids.GAS, Fluids.PETROLEUM, Fluids.BIOGAS,
-                Fluids.UF6, Fluids.PUF6, Fluids.AMAT, Fluids.ASCHRAB, Fluids.XENON, Fluids.WASTEGAS,
-                Fluids.SPENTSTEAM, Fluids.CARBONDIOXIDE, Fluids.HELIUM3, Fluids.UNSATURATEDS,
-                Fluids.SYNGAS, Fluids.OXYHYDROGEN, Fluids.CHLORINE, Fluids.SOURGAS, Fluids.REFORMGAS,
-                Fluids.PHOSGENE, Fluids.MUSTARDGAS, Fluids.GAS_COKER, Fluids.SMOKE, Fluids.SMOKE_LEADED,
-                Fluids.SMOKE_POISON, Fluids.HELIUM4, Fluids.STELLAR_FLUX, Fluids.AIR, Fluids.DHC,
-                Fluids.AIRBLAST, Fluids.FLUE);
     }
 
     private static long getFlam(FluidType type) {

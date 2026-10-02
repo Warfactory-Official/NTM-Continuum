@@ -392,10 +392,11 @@ public final class MaterialCompletionGameTests {
                 ModIntermediateItems.circuit(EnumCircuitType.SILICON), 1);
 
         CrystallizerRecipes.register();
-        // 79 dependency-complete defaults, + the rebar -> concrete rebar recipe, + the etched meteorite sword,
+        // 82 dependency-complete defaults (79 + the two 1.7 mercury recipes + mustard willow -> cadmium; the
+        // three tag-gated compat recipes stay absent without another mod), + the rebar -> concrete rebar recipe, + the etched meteorite sword,
         // + 1.7's bedrock-ore washing/acid grades: 37 per ore type (2 washed, 2 sulfuric, 3 solvent, 4 rad,
         // 3+3+3 byproduct washes, 8 hydrogen, 8 chlorine, 1 slop crumb recovery) over the six types.
-        int crystallizerExpected = 79 + 1 + 1 + 37 * com.hbm.items.special.BedrockOreType.VALUES.length;
+        int crystallizerExpected = 82 + 1 + 1 + 37 * com.hbm.items.special.BedrockOreType.VALUES.length;
         helper.assertTrue(CrystallizerRecipes.recipes.size() == crystallizerExpected,
                 "Crystallizer catalogue must contain exactly " + crystallizerExpected
                         + " dependency-complete defaults, found " + CrystallizerRecipes.recipes.size());

@@ -20,6 +20,69 @@ public final class MeleeKitHarnessQueries {
 
     public static void register() {
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_living", (mc, params) -> query(mc));
+        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_props", MeleeKitHarnessQueries::props);
+    }
+
+    /**
+     * The {@code hbm_props} query (EntityDataRoundTrip): the integrated server's HBM living props of the local
+     * player and every living entity within 24 blocks. {@code set_rads}/{@code set_reputation} write the player's
+     * (and, with {@code mobs=true}, the nearby entities') values first, on the server thread.
+     */
+    private static JsonObject props(Minecraft mc, JsonObject params) {
+        JsonObject json = new JsonObject();
+        var server = mc.getSingleplayerServer();
+        if (mc.player == null || server == null) return json;
+        java.util.UUID id = mc.player.getUUID();
+        java.util.concurrent.CompletableFuture<JsonObject> result = new java.util.concurrent.CompletableFuture<>();
+        server.execute(() -> {
+            try {
+                ServerPlayer player = server.getPlayerList().getPlayer(id);
+                result.complete(player == null ? new JsonObject() : propsOnServer(player, params));
+            } catch (Throwable t) {
+                JsonObject error = new JsonObject();
+                error.addProperty("error", t.toString());
+                result.complete(error);
+            }
+        });
+        try {
+            return result.get(5, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (Exception e) {
+            json.addProperty("error", e.toString());
+            return json;
+        }
+    }
+
+    private static JsonObject propsOnServer(ServerPlayer player, JsonObject params) {
+        boolean mobs = params.has("mobs") && params.get("mobs").getAsBoolean();
+        java.util.List<LivingEntity> nearby = player.level().getEntitiesOfClass(LivingEntity.class,
+                new AABB(player.blockPosition()).inflate(24), e -> e != player);
+        java.util.List<LivingEntity> targets = new java.util.ArrayList<>();
+        targets.add(player);
+        if (mobs) targets.addAll(nearby);
+        for (LivingEntity target : targets) {
+            var data = com.hbm.capability.HbmLivingProps.getData(target);
+            if (params.has("set_rads")) data.setRads(params.get("set_rads").getAsDouble());
+            if (params.has("set_reputation")) data.reputation = params.get("set_reputation").getAsInt();
+        }
+        JsonObject json = new JsonObject();
+        json.add("player", propsJson(player));
+        JsonArray list = new JsonArray();
+        for (LivingEntity living : nearby) list.add(propsJson(living));
+        json.add("living", list);
+        return json;
+    }
+
+    private static JsonObject propsJson(LivingEntity living) {
+        JsonObject e = new JsonObject();
+        e.addProperty("type", BuiltInRegistries.ENTITY_TYPE.getKey(living.getType()).toString());
+        e.addProperty("name", living.getName().getString());
+        e.addProperty("stored", com.hbm.capability.HbmLivingProps.DATA.has(living));
+        var data = com.hbm.capability.HbmLivingProps.getData(living);
+        e.addProperty("rads", data.getRads());
+        e.addProperty("digamma", data.getDigamma());
+        e.addProperty("reputation", data.reputation);
+        e.addProperty("radMark", data.radMark);
+        return e;
     }
 
     private static JsonObject query(Minecraft mc) {

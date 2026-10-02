@@ -3,12 +3,7 @@ package com.hbm.items;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
-import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Tags;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static dev.golem.core.dejson.Crafting.componentSmelt;
 import static dev.golem.core.dejson.Crafting.item;
@@ -18,10 +13,10 @@ import static dev.golem.core.dejson.Crafting.smelt;
 import static dev.golem.core.dejson.Crafting.stack;
 
 /**
- * Dejson declarations for the ability tool family ({@link ModAbilityToolItems}): item models, the vanilla
- * tool-class item tags (enchanting and anvil applicability), the repair tags of the 1.7 tool materials,
- * and the crafting and furnace recipes of 1.7 {@code ToolRecipes}, {@code WeaponRecipes},
- * {@code CraftingManager} and {@code SmeltingRecipes}. Touches no Minecraft class.
+ * Dejson declarations for the ability tool family ({@link ModAbilityToolItems}): the repair tags of the 1.7 tool
+ * materials and the crafting and furnace recipes of 1.7 {@code ToolRecipes}, {@code WeaponRecipes},
+ * {@code CraftingManager} and {@code SmeltingRecipes}. The item models and the vanilla tool-class item tags
+ * (enchanting and anvil applicability) are stated on the registrations. Touches no Minecraft class.
  */
 public final class AbilityToolDeclarations {
 
@@ -30,76 +25,13 @@ public final class AbilityToolDeclarations {
 
     private AbilityToolDeclarations() {}
 
-    static final String[] SETS = {"schrabidium", "titanium", "steel", "alloy", "cmb", "desh", "cobalt", "cobalt_decorated", "starmetal"};
-    static final String[] METEORITE_TIERS = {"", "_seared", "_reforged", "_hardened", "_alloyed", "_machined",
-            "_treated", "_etched", "_bred", "_irradiated", "_fused", "_baleful"};
-
     public static void declare() {
         if (declared) return;
         declared = true;
 
-        List<String> swords = new ArrayList<>();
-        List<String> pickaxes = new ArrayList<>();
-        List<String> axes = new ArrayList<>();
-        List<String> shovels = new ArrayList<>();
-        List<String> hoes = new ArrayList<>();
-
-        for (String set : SETS) {
-            handheld(set + "_sword"); swords.add(NS + ":" + set + "_sword");
-            handheld(set + "_pickaxe"); pickaxes.add(NS + ":" + set + "_pickaxe");
-            handheld(set + "_axe"); axes.add(NS + ":" + set + "_axe");
-            handheld(set + "_shovel"); shovels.add(NS + ":" + set + "_shovel");
-            handheld(set + "_hoe"); hoes.add(NS + ":" + set + "_hoe");
-        }
-
-        // 1.7 texture names of the animated electric tools.
-        handheld("elec_sword", "elec_sword_anim"); swords.add("hbm:elec_sword");
-        handheld("elec_pickaxe", "elec_drill_anim"); pickaxes.add("hbm:elec_pickaxe");
-        handheld("elec_axe", "elec_chainsaw_anim"); axes.add("hbm:elec_axe");
-        handheld("elec_shovel", "elec_shovel_anim"); shovels.add("hbm:elec_shovel");
-
-        for (String id : new String[]{"bismuth_pickaxe", "volcanic_pickaxe", "chlorophyte_pickaxe", "mese_pickaxe",
-                "dwarven_pickaxe", "centri_stick", "smashing_hammer"}) {
-            handheld(id);
-            pickaxes.add(NS + ":" + id);
-        }
-        for (String id : new String[]{"bismuth_axe", "volcanic_axe", "chlorophyte_axe", "mese_axe"}) {
-            handheld(id);
-            axes.add(NS + ":" + id);
-        }
-        // 1.7 ItemRenderChainsaw: the model in every slot, the inventory included
-        ItemRendererDeclarations.model("chainsaw", "chainsaw", "weapon");
-        axes.add(NS + ":chainsaw");
-        // dnt_sword is ItemRenderTransformer: the sprite, scaled up in hand the way item/handheld already is
-        handheld("dnt_sword");
-        swords.add(NS + ":dnt_sword");
-        ItemRendererDeclarations.heldModel("redstone_sword", "redstone_sword", "redstone_sword"); // 1.7 ItemRenderRedstoneSword
-        swords.add(NS + ":redstone_sword");
-        ItemRendererDeclarations.heldModel("mese_gavel", "mese_gavel", "gavel"); // 1.7 ItemRenderGavel
-        swords.add(NS + ":mese_gavel");
-        ItemRendererDeclarations.model("crucible", "crucible", "weapon"); // 1.7 ItemRenderCrucible
-        swords.add(NS + ":crucible");
-        // Every meteorite sword tier shares the one 1.7 texture; the tier colour was a renderer glint.
-        for (String tier : METEORITE_TIERS) {
-            handheld("meteorite_sword" + tier, "meteorite_sword");
-            swords.add(NS + ":meteorite_sword" + tier);
-            // 1.7 ItemRendererMeteorSword on every tier but the plain sword: the glint in the tier's colour
-            if (!tier.isEmpty()) {
-                ItemRendererDeclarations.overSprite("meteorite_sword" + tier, "meteorite_sword", "meteorite_sword",
-                        "handheld");
-            }
-        }
-        for (String id : new String[]{"ingot_meteorite", "ingot_meteorite_forged", "blade_meteorite"}) {
-            Dejson.item(NS, id).models(Models.generated("hbm:items/" + id)).register();
-            ItemRendererDeclarations.overSprite(id, id, "hot", "generated"); // 1.7 ItemRendererHot
-        }
-
-        swords.add("#hbm:melee_kit_swords"); // the WeaponSpecial family (MeleeKitDeclarations)
-        Tags.item("minecraft", "swords", swords.toArray(String[]::new));
-        Tags.item("minecraft", "pickaxes", pickaxes.toArray(String[]::new));
-        Tags.item("minecraft", "axes", axes.toArray(String[]::new));
-        Tags.item("minecraft", "shovels", shovels.toArray(String[]::new));
-        Tags.item("minecraft", "hoes", hoes.toArray(String[]::new));
+        // The tool-class tags' members are stated on the registrations in ModAbilityToolItems; minecraft:swords also
+        // nests the WeaponSpecial family's tag, whose members ModMeleeKitItems states.
+        Tags.item("minecraft", "swords", "#hbm:melee_kit_swords");
 
         // Repair items of the 1.7 materials that the existing repair tags do not already name.
         Tags.item(NS, "repairs/cmb", ItemIds.ingot_combine_steel);
@@ -111,14 +43,6 @@ public final class AbilityToolDeclarations {
         Tags.item(NS, "repairs/starmetal_ingot", ItemIds.ingot_starmetal);
 
         recipes();
-    }
-
-    private static void handheld(String id) {
-        handheld(id, id);
-    }
-
-    private static void handheld(String id, String texture) {
-        Dejson.item(NS, id).models(Models.handheld("hbm:items/" + texture)).register();
     }
 
     private static void recipes() {
@@ -200,8 +124,8 @@ public final class AbilityToolDeclarations {
         shaped(NS, "redstone_sword", "hbm:redstone_sword", rows("R", "R", "S"),
                 "R", TagIds.storage_blocks_redstone, "S", stick);
 
-        // 1.7 WeaponRecipes:322 — the crucible is crafted empty (damage 3).
-        shaped(NS, "crucible", stack("hbm:crucible").with("hbm:crucible_spent", 3), rows("MEM", "YDY", "YCY"),
+        // old-hbm WeaponRecipes:334 — new ItemStack(crucible, 1, 3): item damage 3 and no charges (an empty crucible).
+        shaped(NS, "crucible", stack("hbm:crucible").with("minecraft:damage", 3), rows("MEM", "YDY", "YCY"),
                 "M", "hbm:ingot_meteorite_forged", "E", TagIds.ingots_euphemium, "Y", ItemIds.billet_yharonite,
                 "D", ItemIds.demon_core_closed, "C", ItemIds.ingot_chainsteel);
 

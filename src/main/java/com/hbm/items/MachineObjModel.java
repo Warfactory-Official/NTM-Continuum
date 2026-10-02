@@ -67,6 +67,26 @@ public final class MachineObjModel implements ItemModel {
     public MachineObjModel rotatePivot(Number x, Number y, Number z) { model.numbers("rotatePivot", x, y, z); return this; }
     public MachineObjModel spinPivot(Number x, Number y, Number z) { model.numbers("spinPivot", x, y, z); return this; }
 
+    /**
+     * GUI-only steps after {@link #guiTranslate}/{@link #guiScale}/{@link #guiYaw}, in order: the rest of a 1.7
+     * {@code renderInventory} that turned the model after scaling it. {@code guiRotateStep} takes Euler degrees
+     * (X, then Y, then Z), {@code guiSpinStep} turns the GUI spin angle ({@link #guiSpinSpeed}) about an axis.
+     */
+    public MachineObjModel guiRotateStep(Number x, Number y, Number z) { return guiStep("rotate", x, y, z); }
+    public MachineObjModel guiTranslateStep(Number x, Number y, Number z) { return guiStep("translate", x, y, z); }
+    public MachineObjModel guiScaleStep(Number x, Number y, Number z) { return guiStep("scale", x, y, z); }
+    public MachineObjModel guiSpinStep(Number x, Number y, Number z) { return guiStep("spin", x, y, z); }
+
+    private JsonArray guiSteps;
+
+    private MachineObjModel guiStep(String kind, Number x, Number y, Number z) {
+        if (guiSteps == null) guiSteps = new JsonArray();
+        JsonObject step = new JsonObject();
+        step.add(kind, numbers(x, y, z));
+        guiSteps.add(step); // written once, by toJson(): Custom refuses a field set twice
+        return this;
+    }
+
     /** Only these OBJ groups are drawn. */
     public MachineObjModel parts(String... parts) { model.strings("parts", parts); return this; }
     /** Every OBJ group but these is drawn. */
@@ -98,13 +118,28 @@ public final class MachineObjModel implements ItemModel {
 
     /** The GUI context's own rotation, translation and uniform scale, applied after the frame. */
     public MachineObjModel guiContext(Number[] rotation, Number[] translation, Number scale) {
-        JsonObject gui = new JsonObject();
-        gui.add("rotation", numbers(rotation));
-        gui.add("translation", numbers(translation));
-        gui.addProperty("scale", scale);
-        JsonObject contexts = new JsonObject();
-        contexts.add("gui", gui);
-        model.with("contextTransforms", contexts);
+        return context("gui", rotation, translation, scale);
+    }
+
+    /**
+     * A 1.7 {@code renderNonInv}: applied after the frame in every non-GUI slot (hands, ground, item frame), where
+     * ItemRenderBase called it. The renderer rotates X, Y, Z before it translates, so a 1.7 translate-then-rotate
+     * chain is restated with the translation carried through the inverse rotation.
+     */
+    public MachineObjModel nonInvContext(Number[] rotation, Number[] translation, Number scale) {
+        context("non_gui", rotation, translation, scale);
+        return context("ground", rotation, translation, scale);
+    }
+
+    private JsonObject contexts;
+
+    private MachineObjModel context(String key, Number[] rotation, Number[] translation, Number scale) {
+        JsonObject transform = new JsonObject();
+        transform.add("rotation", numbers(rotation));
+        transform.add("translation", numbers(translation));
+        transform.addProperty("scale", scale);
+        if (contexts == null) contexts = new JsonObject();
+        contexts.add(key, transform); // written once, by toJson(): Custom refuses a field set twice
         return this;
     }
 
@@ -127,7 +162,10 @@ public final class MachineObjModel implements ItemModel {
 
     @Override
     public JsonObject toJson() {
-        return model.toJson();
+        JsonObject json = model.toJson();
+        if (contexts != null) json.add("contextTransforms", contexts.deepCopy());
+        if (guiSteps != null) json.add("guiSteps", guiSteps.deepCopy());
+        return json;
     }
 
     private static JsonArray numbers(Number... values) {
@@ -156,6 +194,12 @@ public final class MachineObjModel implements ItemModel {
         }
 
         public Pass translate(Number x, Number y, Number z) { json.add("translate", numbers(x, y, z)); return this; }
+
+        /** 1.7's {@code ObjUtil.setColor(rgb)} around this pass: an opaque RGB vertex tint. */
+        public Pass tint(int rgb) { json.addProperty("tint", rgb & 0xFFFFFF); return this; }
+
+        /** A uniform scale about the pass origin, applied after its translation and steps. */
+        public Pass scale(Number scale) { json.addProperty("scale", scale); return this; }
 
         /** A rotation step applied before this pass draws; steps apply in order. */
         public Pass rotateStep(Number... angleAxis) { return step("rotate", angleAxis); }

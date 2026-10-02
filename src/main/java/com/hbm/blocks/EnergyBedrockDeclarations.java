@@ -1,13 +1,9 @@
 package com.hbm.blocks;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Drops;
 import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Tint;
 import dev.golem.core.dejson.Tints;
-import dev.golem.core.dejson.Variants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +12,11 @@ import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
 
 /**
- * Dejson declarations for the energy extras and the bedrock ore grades. Touches no Minecraft class: it runs in a
- * plain JVM from {@code dejson.gradle.kts}, so the 1.7 grade table is restated here as data.
- *
- * <p>1.7 icons: {@code red_wire_coated} (its {@code _ct} sheet is not used, see {@code WireCoated}); the boxcable's
- * item is 1.7's {@code RenderBoxDuct.renderInventoryBlock} box, an authored element model per size; the converters
- * one icon on every face; the charger's block icon {@code block_steel} (particles only) and its item 1.7's
- * {@code ItemRenderBase}: inventory {@code T(0,-7,0) S(10)}, common {@code S(2) T(0.5,0,0)}, parts Base + Slide.
+ * Dejson declarations for the bedrock ore grades and the energy extras' 1.7 recipes. Touches no Minecraft class: it
+ * runs in a plain JVM from {@code dejson.gradle.kts}, so the 1.7 grade table is restated here as data. The energy
+ * extras' own models, blockstates, loot and tags are stated on their registrations in {@link ModEnergyBedrockBlocks}
+ * (Reg); the grade items are registered by {@code ModBedrockOreItems}, whose chains state their models through
+ * {@link #gradeModel}.
  *
  * <p>A bedrock ore grade draws the type's greyscale {@code bedrock_ore_<prefix>_<type>} art recoloured on the atlas
  * into the type's band (the sprites are computed, see {@code EnergyBedrockClientRegistrations}), multiplied by the
@@ -31,7 +25,6 @@ import static dev.golem.core.dejson.Crafting.shaped;
 public final class EnergyBedrockDeclarations {
 
     private static final String NS = "hbm";
-    private static final String EMPTY = "hbm:block/machine_dummy_empty";
     private static boolean declared;
 
     /** 1.7 {@code BedrockOreType} suffixes, in ordinal order. */
@@ -84,46 +77,8 @@ public final class EnergyBedrockDeclarations {
     public static void declare() {
         if (declared) return;
         declared = true;
-        blocks();
         bedrockOres();
         recipes();
-    }
-
-    private static void blocks() {
-        // the boxcable: drawn by its renderer; the blockstate only carries the break particle
-        for (int size = 0; size < 5; size++) {
-            String id = "red_cable_box_" + size;
-            Dejson.block(NS, id).rendered("hbm:block/red_cable_box_particle").states(Variants.simple()).register();
-            Dejson.item(NS, id).shares("hbm:block/red_cable_box_inventory_" + size).register();
-            Drops.self(NS, id);
-        }
-
-        Dejson.block(NS, "red_wire_coated").models(Models.cubeAll("hbm:blocks/red_wire_coated"))
-                .states(Variants.simple()).blockItemDirect().register();
-        Drops.self(NS, "red_wire_coated");
-
-        for (String id : new String[]{"machine_converter_he_rf", "machine_converter_rf_he"}) {
-            Dejson.block(NS, id).models(Models.cubeAll("hbm:blocks/" + id)).states(Variants.simple()).blockItemDirect().register();
-            Drops.self(NS, id);
-        }
-
-        Dejson.block(NS, "charger").rendered(EMPTY)
-                .states(Variants.uniform("facing", "north", "east", "south", "west")).register();
-        Drops.self(NS, "charger");
-        JsonObject model = new JsonObject();
-        model.addProperty("type", "hbm:machine_obj");
-        model.addProperty("obj", "hbm:models/blocks/charger.obj");
-        model.addProperty("texture", "hbm:textures/models/machines/charger.png");
-        model.add("parts", strings("Base", "Slide"));
-        model.addProperty("scale", 2.0);
-        model.addProperty("yaw", 0.0);
-        model.addProperty("rawLegacyTransform", true);
-        model.add("itemTranslate", numbers(1, 0, 0)); // S(2) then T(0.5,0,0)
-        model.add("guiTranslate", numbers(0, -7, 0));
-        model.addProperty("guiScale", 10.0);
-        Dejson.item(NS, "charger").shares("hbm:item/machine_obj_base").register();
-        Dejson.itemDefinition("hbm:item/charger").add("model", model);
-        Dejson.itemDefinition("hbm:item/charger").addProperty("oversized_in_gui", true);
     }
 
     private static void bedrockOres() {
@@ -132,26 +87,30 @@ public final class EnergyBedrockDeclarations {
                 Dejson.generatedSprites(NS + ":items/bedrock_ore/" + prefix + "_" + type, "_", List.of(REMAPPED));
             }
         }
+        // The grade items' own models are on their registrations (ModBedrockOreItems, through gradeModel).
+    }
+
+    /**
+     * The model of {@code bedrock_ore_<grade>_<type>}: the type's art for the grade's prefix, tinted by the grade,
+     * then one untinted overlay per processing trait. Called from {@code ModBedrockOreItems}' registration chain.
+     */
+    public static Dejson.ItemDeclaration gradeModel(Dejson.ItemDeclaration item, String grade, String type) {
         for (int g = 1; g < GRADES.length; g++) {
-            String grade = (String) GRADES[g][0];
+            if (!GRADES[g][0].equals(grade)) continue;
             String prefix = (String) GRADES[g][1];
             int tint = (Integer) GRADES[g][2];
             String[] traits = (String[]) GRADES[g][3];
-            for (String type : TYPES) {
-                List<String> layers = new ArrayList<>();
-                List<Tint> tints = new ArrayList<>();
-                layers.add(sprite(prefix, type));
-                tints.add(Tints.constant(0xFF000000 | tint));
-                for (String trait : traits) {
-                    layers.add(NS + ":items/bedrock_ore_overlay." + trait);
-                    tints.add(Tints.constant(-1));
-                }
-                Dejson.item(NS, "bedrock_ore_" + grade + "_" + type)
-                        .models(Models.generated(layers.toArray(new String[0])))
-                        .tints(tints.toArray(new Tint[0]))
-                        .register();
+            List<String> layers = new ArrayList<>();
+            List<Tint> tints = new ArrayList<>();
+            layers.add(sprite(prefix, type));
+            tints.add(Tints.constant(0xFF000000 | tint));
+            for (String trait : traits) {
+                layers.add(NS + ":items/bedrock_ore_overlay." + trait);
+                tints.add(Tints.constant(-1));
             }
+            return item.models(Models.generated(layers.toArray(new String[0]))).tints(tints.toArray(new Tint[0]));
         }
+        throw new IllegalArgumentException("not a processed bedrock ore grade: " + grade);
     }
 
     private static void recipes() {
@@ -166,17 +125,5 @@ public final class EnergyBedrockDeclarations {
                 "G", "minecraft:glowstone_dust", "S", "#c:ingots/steel", "C", "hbm:coil_copper");
         shaped(NS, "charger_16", "hbm:charger", 16, rows("G", "S", "C"),
                 "G", "minecraft:glowstone", "S", "#c:storage_blocks/steel", "C", "hbm:coil_copper_torus");
-    }
-
-    private static JsonArray numbers(double... values) {
-        JsonArray array = new JsonArray();
-        for (double value : values) array.add(value);
-        return array;
-    }
-
-    private static JsonArray strings(String... values) {
-        JsonArray array = new JsonArray();
-        for (String value : values) array.add(value);
-        return array;
     }
 }

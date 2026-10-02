@@ -6,6 +6,8 @@ import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.tileentity.MachineCore;
@@ -46,6 +48,7 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
             } else {
                 int toSpill = Math.max(drain.tank.getFill() / 2, 1);
                 drain.tank.setFill(drain.tank.getFill() - toSpill);
+                FT_Polluting.pollute(level, pos, drain.tank.getTankType(), FluidReleaseType.SPILL, toSpill);
 
                 if (toSpill >= 100 && level.getRandom().nextInt(20) == 0
                         && FluidCombustion.isLiquidAndViscous(drain.tank.getTankType())
@@ -55,9 +58,9 @@ public class TileEntityMachineDrain extends TileEntityLoadedBase implements IFlu
                             pos.getY() + 0.5D, pos.getZ() + 0.5D - dir.offsetZ * 3D);
                     Vec3 end = start.add(level.getRandom().nextGaussian() * 5D, -25D,
                             level.getRandom().nextGaussian() * 5D);
-                    BlockHitResult hit = level.clip(new ClipContext(start, end,
-                            ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE,
-                            (net.minecraft.world.entity.Entity) null));
+                    // Core's clip: a null-entity ClipContext throws on 26.1 (CollisionContext.of(null)).
+                    BlockHitResult hit = dev.golem.core.world.Compat.clip(level, start, end,
+                            ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE);
 
                     if (hit.getType() == HitResult.Type.BLOCK && hit.getDirection() == Direction.UP) {
                         BlockPos spillPos = hit.getBlockPos().above();

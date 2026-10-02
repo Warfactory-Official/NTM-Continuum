@@ -1,5 +1,6 @@
 package com.hbm.world.gen;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.config.DungeonConfig;
 import com.hbm.world.dungeon.AncientTomb;
@@ -111,11 +112,12 @@ public class LegacyDungeonStructure extends Structure {
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Constants.MOD_ID);
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(STRUCTURE_TYPES, STRUCTURE_PIECES);
 
     public static final RegistryObject<StructureType<LegacyDungeonStructure>> TYPE =
-            STRUCTURE_TYPES.register("legacy_dungeon", () -> Structures.type(CODEC));
+            REG.register(Registries.STRUCTURE_TYPE, "legacy_dungeon", () -> Structures.type(CODEC));
     public static final RegistryObject<StructurePieceType> PIECE =
-            STRUCTURE_PIECES.register("legacy_dungeon_piece", () -> (StructurePieceType) Piece::new);
+            REG.register(Registries.STRUCTURE_PIECE, "legacy_dungeon_piece", () -> (StructurePieceType) Piece::new);
 
     /** Structure and piece types, and the scattered-block feature types. */
     public static void init() {
@@ -181,6 +183,13 @@ public class LegacyDungeonStructure extends Structure {
         long seed = rand.nextLong();
 
         BlockPos site = new BlockPos(x, terrain.height(x, z), z); // biome sampled at the surface, like 1.7's 2D biome
+
+        // 1.7's climate rule on the site's biome: the tag holds the table's biomes plus every other overworld biome, a
+        // table biome answers through its row, a modded one through its own climate (not where /place turns biomes off)
+        if (com.hbm.world.gen.nbt.NBTStructure.GenStructure.checksBiome(context)
+                && !LegacyBiomes.acceptsDungeon(kind, LegacyBiomes.biomeAt(context.biomeSource(), context.randomState(), x, site.getY(), z))) {
+            return Optional.empty();
+        }
 
         LegacyDungeonWorld.Result result = run(kind, x, y, z, seed, terrain);
         if (result == null) return Optional.empty();

@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 /** The four legacy mass-storage variants and their fixed stockpile capacities. */
 public enum MassStorageType {
-    WOOD("mass_storage_wood", "container.massStorage", 1_000),
+    WOOD("mass_storage_wood", "container.massStorage", 100), // 1.7 BlockMassStorage.getCapacity: meta 3 (wood) holds 100
     IRON("mass_storage_iron", "container.massStorage", 10_000),
     DESH("mass_storage_desh", "container.massStorage", 100_000),
     MASS("mass_storage", "container.massStorage", 1_000_000);

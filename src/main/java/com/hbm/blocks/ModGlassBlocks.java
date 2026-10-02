@@ -1,5 +1,10 @@
 package com.hbm.blocks;
 
+import dev.golem.core.dejson.Models;
+import dev.golem.core.dejson.Variants;
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Reg;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockNTMGlass;
@@ -23,58 +28,92 @@ public final class ModGlassBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     /**
      * Quartz glass — hardness 1, blast resistance 40, and it <b>drops itself</b> (the old
      * {@code doesDrop = true}), unlike vanilla glass. Not rad-resistant.
      */
-    public static final RegistryObject<BlockNTMGlass> glass_quartz = BLOCKS.registerBlock("glass_quartz",
+    public static final RegistryObject<BlockNTMGlass> glass_quartz = REG.block("glass_quartz",
             p -> new BlockNTMGlass(p, true, false),
             p -> p.strength(1.0F, 40.0F).sound(SoundType.GLASS).noOcclusion().isSuffocating((s, l, pos) -> false)
-                    .isViewBlocking((s, l, pos) -> false).noLootTable());
+                    .isViewBlocking((s, l, pos) -> false).noLootTable())
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_quartz"))).states(Variants.simple()).blockItem())
+            .tag(BlockTag.PICKAXE);
 
     /** Boron and lead glass are radiation-sealing, silk-touch-only panes in current ntm-next. */
-    public static final RegistryObject<BlockRadResistant> glass_boron = resistantGlass("glass_boron");
-    public static final RegistryObject<BlockRadResistant> glass_lead = resistantGlass("glass_lead");
+    public static final RegistryObject<BlockRadResistant> glass_boron = resistantGlass("glass_boron")
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_boron"))).states(Variants.simple()).blockItem())
+            .loot(Loot.silkTouchOnly());
+    public static final RegistryObject<BlockRadResistant> glass_lead = resistantGlass("glass_lead")
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_lead"))).states(Variants.simple()).blockItem())
+            .loot(Loot.silkTouchOnly());
 
     public static final RegistryObject<BlockNTMGlass> reinforced_glass = glass("reinforced_glass", false, true,
-            0.3F, 25.0F, SoundType.GLASS, 0, HbmTab.BLOCKS);
+            0.3F, 25.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
+            .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/reinforced_glass"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> reinforced_laminate = glass("reinforced_laminate", true, true,
-            15.0F, 300.0F, SoundType.GLASS, 0, HbmTab.BLOCKS);
+            15.0F, 300.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/reinforced_laminate"))).states(Variants.simple()).blockItem())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_uranium = glass("glass_uranium", false, false,
-            0.3F, 0.3F, SoundType.GLASS, 5, HbmTab.BLOCKS);
+            0.3F, 0.3F, () -> SoundType.GLASS, 5, HbmTab.BLOCKS)
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_uranium"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_trinitite = glass("glass_trinitite", false, false,
-            0.3F, 0.3F, SoundType.GLASS, 5, HbmTab.BLOCKS);
+            0.3F, 0.3F, () -> SoundType.GLASS, 5, HbmTab.BLOCKS)
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_trinitite"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_polonium = glass("glass_polonium", false, false,
-            0.3F, 0.3F, SoundType.GLASS, 5, HbmTab.BLOCKS);
+            0.3F, 0.3F, () -> SoundType.GLASS, 5, HbmTab.BLOCKS)
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_polonium"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_ash = glass("glass_ash", false, false,
-            3.0F, 3.0F, SoundType.GLASS, 0, HbmTab.BLOCKS);
+            3.0F, 3.0F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
+            .model(d -> d.models(Models.renderType("minecraft:translucent", Models.cubeAll("hbm:blocks/glass_ash"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> glass_polarized = glass("glass_polarized", false, false,
-            0.3F, 0.3F, SoundType.GLASS, 0, HbmTab.BLOCKS);
+            0.3F, 0.3F, () -> SoundType.GLASS, 0, HbmTab.BLOCKS)
+            .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/glass_polarized"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> hadron_plating_glass = glass("hadron_plating_glass", false, false,
-            5.0F, 10.0F, SoundType.METAL, 0, HbmTab.MACHINES);
+            5.0F, 10.0F, () -> SoundType.METAL, 0, HbmTab.MACHINES)
+            .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/hadron_plating_glass"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockNTMGlass> hadron_analysis_glass = glass("hadron_analysis_glass", false, false,
-            5.0F, 10.0F, SoundType.METAL, 0, HbmTab.MACHINES);
+            5.0F, 10.0F, () -> SoundType.METAL, 0, HbmTab.MACHINES)
+            .model(d -> d.models(Models.renderType("minecraft:cutout", Models.cubeAll("hbm:blocks/hadron_analysis_glass"))).states(Variants.simple()).blockItem())
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
 
     static {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem("glass_quartz", glass_quartz,
+        Reg.Handle<BlockItem> item = REG.blockItem(glass_quartz,
                 p -> Compat.blockDescription(p));
         ModTabs.addTo(HbmTab.BLOCKS, item);
         blockItem("glass_boron", glass_boron);
         blockItem("glass_lead", glass_lead);
     }
 
-    private static RegistryObject<BlockRadResistant> resistantGlass(String id) {
-        return BLOCKS.registerBlock(id, BlockRadResistant::new,
+    private static Reg.Handle<BlockRadResistant> resistantGlass(String id) {
+        return REG.block(id, BlockRadResistant::new,
                 p -> p.strength(0.3F).sound(SoundType.GLASS).noOcclusion()
                         .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false));
     }
 
-    private static RegistryObject<BlockNTMGlass> glass(String id, boolean drops, boolean radResistant,
-                                                        float hardness, float resistance, SoundType sound, int light,
+    private static Reg.Handle<BlockNTMGlass> glass(String id, boolean drops, boolean radResistant,
+                                                        float hardness, float resistance, java.util.function.Supplier<SoundType> sound, int light,
                                                         HbmTab tab) {
-        RegistryObject<BlockNTMGlass> block = BLOCKS.registerBlock(id, p -> new BlockNTMGlass(p, drops, radResistant),
-                p -> p.strength(hardness, resistance).sound(sound).lightLevel(s -> light).noOcclusion()
+        Reg.Handle<BlockNTMGlass> block = REG.block(id, p -> new BlockNTMGlass(p, drops, radResistant),
+                p -> p.strength(hardness, resistance).sound(sound.get()).lightLevel(s -> light).noOcclusion()
                         .isSuffocating((s, l, pos) -> false).isViewBlocking((s, l, pos) -> false));
         blockItem(id, block, tab);
         return block;
@@ -86,7 +125,7 @@ public final class ModGlassBlocks {
 
     private static void blockItem(String id, RegistryObject<? extends net.minecraft.world.level.block.Block> block,
                                   HbmTab tab) {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block::get, p -> Compat.blockDescription(p));
+        Reg.Handle<BlockItem> item = REG.blockItem(block, p -> Compat.blockDescription(p));
         ModTabs.addTo(tab, item);
     }
 

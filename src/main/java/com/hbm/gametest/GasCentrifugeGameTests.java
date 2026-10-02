@@ -132,7 +132,7 @@ public final class GasCentrifugeGameTests {
         TileEntityMachineGasCent gasCent = (TileEntityMachineGasCent) level.getBlockEntity(gasPos);
 
         BlockPos ductPos = gasPos.west();
-        BlockFluidDuct ductBlock = ModMachineBlocks.fluid_duct_mk2.get();
+        BlockFluidDuct ductBlock = com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get();
         level.setBlock(ductPos, ductBlock.defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.UF6);

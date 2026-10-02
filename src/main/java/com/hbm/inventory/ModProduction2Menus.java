@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
@@ -18,17 +19,18 @@ public final class ModProduction2Menus {
 
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerMachineExcavator>> EXCAVATOR =
-            MENUS.register("machine_excavator", () -> Menus.typeWithPos(ContainerMachineExcavator::new));
+            REG.menu("machine_excavator", () -> Menus.typeWithPos(ContainerMachineExcavator::new));
     public static final RegistryObject<MenuType<ContainerOreSlopper>> ORE_SLOPPER =
-            MENUS.register("machine_ore_slopper", () -> Menus.typeWithPos(ContainerOreSlopper::new));
+            REG.menu("machine_ore_slopper", () -> Menus.typeWithPos(ContainerOreSlopper::new));
     public static final RegistryObject<MenuType<ContainerMachineAnnihilator>> ANNIHILATOR =
-            MENUS.register("machine_annihilator", () -> Menus.typeWithPos(ContainerMachineAnnihilator::new));
+            REG.menu("machine_annihilator", () -> Menus.typeWithPos(ContainerMachineAnnihilator::new));
     public static final RegistryObject<MenuType<ContainerRtgFurnace>> RTG_FURNACE =
-            MENUS.register("machine_rtg_furnace", () -> Menus.typeWithPos(ContainerRtgFurnace::new));
+            REG.menu("machine_rtg_furnace", () -> Menus.typeWithPos(ContainerRtgFurnace::new));
     public static final RegistryObject<MenuType<ContainerMachineDiFurnaceRTG>> DIFURNACE_RTG =
-            MENUS.register("machine_difurnace_rtg", () -> Menus.typeWithPos(ContainerMachineDiFurnaceRTG::new));
+            REG.menu("machine_difurnace_rtg", () -> Menus.typeWithPos(ContainerMachineDiFurnaceRTG::new));
 
     public static void init() {}
 }

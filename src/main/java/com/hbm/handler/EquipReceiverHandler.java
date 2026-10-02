@@ -22,7 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public final class EquipReceiverHandler {
 
-    private static final Map<UUID, Item> PREVIOUS = new ConcurrentHashMap<>();
+    /** The last tick's held item, or the receiver's {@link IEquipReceiver#equipKey} for it. */
+    private static final Map<UUID, Object> PREVIOUS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Object> PREVIOUS_OFF = new ConcurrentHashMap<>();
 
     private EquipReceiverHandler() {}
 
@@ -33,14 +35,24 @@ public final class EquipReceiverHandler {
     private static void tick(MinecraftServer server) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             ItemStack held = player.getMainHandItem();
-            Item now = held.isEmpty() ? Items.AIR : held.getItem();
-            Item before = PREVIOUS.put(player.getUUID(), now);
-            if (!held.isEmpty() && before != now && now instanceof IEquipReceiver receiver) {
+            Item item = held.isEmpty() ? Items.AIR : held.getItem();
+            Object now = item instanceof IEquipReceiver keyed ? keyed.equipKey(held) : item;
+            Object before = PREVIOUS.put(player.getUUID(), now);
+            if (!held.isEmpty() && !now.equals(before) && item instanceof IEquipReceiver receiver) {
                 receiver.onEquip(player, held);
+            }
+            // old-hbm's off-hand edge (onEquip(player, OFF_HAND)); only receivers that override onEquipOffHand act on it
+            ItemStack off = player.getOffhandItem();
+            Item offItem = off.isEmpty() ? Items.AIR : off.getItem();
+            Object offNow = offItem instanceof IEquipReceiver keyed ? keyed.equipKey(off) : offItem;
+            Object offBefore = PREVIOUS_OFF.put(player.getUUID(), offNow);
+            if (!off.isEmpty() && !offNow.equals(offBefore) && offItem instanceof IEquipReceiver receiver) {
+                receiver.onEquipOffHand(player, off);
             }
         }
         if (PREVIOUS.size() > server.getPlayerList().getPlayerCount() * 2 + 16) {
             PREVIOUS.keySet().removeIf(id -> server.getPlayerList().getPlayer(id) == null);
+            PREVIOUS_OFF.keySet().removeIf(id -> server.getPlayerList().getPlayer(id) == null);
         }
     }
 }

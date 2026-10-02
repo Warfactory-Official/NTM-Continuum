@@ -19,7 +19,11 @@ import com.hbm.lib.Library;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.particle.helper.HbmEffectNT;
+import com.hbm.tileentity.TileEntityMachinePolluting;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -40,21 +44,24 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Pyro Oven — 1:1 port of the 1.12.2 {@code TileEntityMachinePyroOven} (ported without pollution — §20).
+ * Pyro Oven — 1:1 port of the 1.12.2 {@code TileEntityMachinePyroOven}.
  * 6 slots (0 battery, 1 input item, 2 output item, 3 fluid identifier, 4-5 upgrades). Two 24k tanks
  * (input pipe-fed + type-settable, output sent). maxPower 10M. Progress increment
  * {@code 1/max((dur − speed·dur/4)/(overdrive·2+1),1)}; consumption {@code (10_000·(s+1)²)/(ps+1)} —
  * checked with {@code (speed, powerSaving)} but drained with {@code (speed + overdrive·2, powerSaving)}.
  * SPEED/POWER/OVERDRIVE ×3.
  *
- * <p>Deferred (§20): pollution/smoke tank + venting.
+ * <p>Smoke: every processing tick adds 1.7's {@code SOOT_PER_SECOND} to the 50 mB smoke tank (per tick, not
+ * per second -- 1.7 does not gate it), which leaves upward through the vent cell above the flank. What
+ * does not fit goes straight into the region and sets {@link #isVenting}, which draws the dark plume.
  */
-public class TileEntityMachinePyroOven extends TileEntityMachineBase
+public class TileEntityMachinePyroOven extends TileEntityMachinePolluting
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, WorldlyContainer {
 
     public long power;
     public static final long maxPower = 10_000_000;
     public boolean isProgressing;
+    public boolean isVenting;
     public float progress;
     public static final int consumption = 10_000;
 
@@ -66,7 +73,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
     protected PyroOvenRecipe lastValidRecipe;
 
     public TileEntityMachinePyroOven(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_PYROOVEN.get(), pos, state, 6);
+        super(ModBlockEntities.MACHINE_PYROOVEN.get(), pos, state, 6, 50);
         tanks = new FluidTankNTM[2];
         tanks[0] = new FluidTankNTM(Fluids.NONE, 24_000);
         tanks[1] = new FluidTankNTM(Fluids.NONE, 24_000);
@@ -82,12 +89,15 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
             if (te.tanks[1].getFill() > 0) te.tryProvide(te.tanks[1], level, dp);
         }
 
+        if (te.smoke.getFill() > 0) te.tryProvide(te.smoke, level, te.getSmokePos());
+
         te.upgradeManager.checkSlots(te.inventory, 4, 5);
         int speed = te.upgradeManager.getLevel(UpgradeType.SPEED);
         int powerSaving = te.upgradeManager.getLevel(UpgradeType.POWER);
         int overdrive = te.upgradeManager.getLevel(UpgradeType.OVERDRIVE);
 
         te.isProgressing = false;
+        te.isVenting = false;
 
         if (te.canProcess()) {
             PyroOvenRecipe recipe = te.getMatchingRecipe();
@@ -100,6 +110,8 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
                 te.finishRecipe(recipe);
                 te.setChanged();
             }
+
+            te.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND);
         } else {
             te.progress = 0F;
         }
@@ -129,7 +141,35 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
                         pos.getZ() + 0.5 - rot.offsetZ + dir.offsetZ * 2.375, 0.0, 0.05, 0.0);
             }
         }
+
+        if (te.isVenting && level.getGameTime() % 2 == 0) {
+            ForgeDirection dir = ForgeDirection.getOrientation(MachineCore.facingOrdinal(te.getBlockState(), 2));
+            ForgeDirection rot = dir.getRotation(ForgeDirection.DOWN);
+            CompoundTag fx = new CompoundTag();
+            fx.putFloat("lift", 10F);
+            fx.putFloat("base", 0.25F);
+            fx.putFloat("max", 2.5F);
+            fx.putInt("life", 100 + level.getRandom().nextInt(20));
+            fx.putInt("color", 0x202020);
+            HbmEffectNT.Tower.summonParticle(level, pos.getX() + 0.5 - rot.offsetX, pos.getY() + 3, pos.getZ() + 0.5 - rot.offsetZ, fx);
+        }
         com.hbm.client.sound.PyroOvenSoundHandler.tickLoop(te);
+    }
+
+    /** 1.7's override: an overflow vents into the region without the hiss and lights the plume instead. */
+    @Override
+    public void pollute(PollutionType type, float amount) {
+        FluidTankNTM tank = type == PollutionType.SOOT ? smoke : type == PollutionType.HEAVYMETAL ? smoke_leaded : smoke_poison;
+
+        int fluidAmount = (int) Math.ceil(amount * 100);
+        tank.setFill(tank.getFill() + fluidAmount);
+
+        if (tank.getFill() > tank.getMaxFill()) {
+            int overflow = tank.getFill() - tank.getMaxFill();
+            tank.setFill(tank.getMaxFill());
+            PollutionHandler.incrementPollution(level, worldPosition, type, overflow / 100F);
+            this.isVenting = true;
+        }
     }
 
     @Override
@@ -217,6 +257,22 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         };
     }
 
+    /**
+     * 1.7's smoke target, {@code sendFluid(smoke, x - rot.x, y + 3, z - rot.z, POS_Y)}: the vent on top of the
+     * cell at {@code (-rot, 2)}. Declared as a port getter so the folded face table is checked against it.
+     */
+    public DirPos getSmokePos() {
+        ForgeDirection rot = ForgeDirection.getOrientation(MachineCore.facingOrdinal(getBlockState(), 2))
+                .getRotation(ForgeDirection.DOWN);
+        return new DirPos(worldPosition.getX() - rot.offsetX, worldPosition.getY() + 3,
+                worldPosition.getZ() - rot.offsetZ, ForgeDirection.UP);
+    }
+
+    /** {@link #getSmokePos()} as a port list, for the folded-port parity check. */
+    public DirPos[] getSmokePorts() {
+        return new DirPos[]{getSmokePos()};
+    }
+
     private void setTypeFromFluidId() {
         ItemStack id = inventory.getStackInSlot(3);
         if (id.isEmpty() || !(id.getItem() instanceof IItemFluidId ident)) return;
@@ -249,9 +305,9 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
     @Override public void setPower(long i) { power = i; }
     @Override public long getMaxPower() { return maxPower; }
 
-    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1]}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{tanks[1], smoke}; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tanks[0]}; }
-    @Override public FluidTankNTM[] getAllTanks() { return tanks; }
+    @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tanks[0], tanks[1], smoke}; }
 
     @Override
     public boolean canProvideInfo(UpgradeType type, int level, boolean extendedInfo) {
@@ -296,6 +352,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         tanks[0].serialize(buf);
         tanks[1].serialize(buf);
         buf.writeLong(power);
+        buf.writeBoolean(isVenting);
         buf.writeBoolean(isProgressing);
         buf.writeFloat(progress);
     }
@@ -306,6 +363,7 @@ public class TileEntityMachinePyroOven extends TileEntityMachineBase
         tanks[0].deserialize(buf);
         tanks[1].deserialize(buf);
         power = buf.readLong();
+        isVenting = buf.readBoolean();
         isProgressing = buf.readBoolean();
         progress = buf.readFloat();
     }

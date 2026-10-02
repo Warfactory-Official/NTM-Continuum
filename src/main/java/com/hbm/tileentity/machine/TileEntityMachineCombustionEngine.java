@@ -4,7 +4,9 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.util.TickPhase;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
 import com.hbm.blocks.ModBlocks;
@@ -22,7 +24,7 @@ import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -46,10 +48,13 @@ import dev.golem.core.data.DataOut;
  * ({@code speed = setting·2} mB×10/tick); {@code power += toBurn · combustionEnergy/10_000 · pistonEff}.
  * A sub-mB {@code tenth} accumulator preserves fractional burn.
  *
- * <p>Deferred (§20): pollution/smoke, OpenComputers {@code SimpleComponent}, IFluidCopiable.
+ * <p>Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 50 mB smoke tanks,
+ * which leave through the four fuel ports.
+ *
+ * <p>Deferred (§20): OpenComputers {@code SimpleComponent}, IFluidCopiable.
  */
-public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
-        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, IRORValueProvider, IRORInteractive {
+public class TileEntityMachineCombustionEngine extends TileEntityMachinePolluting
+        implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
 
     public static final long maxPower = 2_500_000;
 
@@ -66,7 +71,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
     public FluidTankNTM tank;
 
     public TileEntityMachineCombustionEngine(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_COMBUSTION_ENGINE.get(), pos, state, 5);
+        super(ModBlockEntities.MACHINE_COMBUSTION_ENGINE.get(), pos, state, 5, 50);
         tank = new FluidTankNTM(Fluids.DIESEL, 24_000);
     }
 
@@ -90,6 +95,11 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
                 int toBurn = Math.min(fill, speed);
                 te.power += (long) (toBurn * (fuel.energyPerBucket() / 10_000D) * eff);
                 fill -= toBurn;
+
+                if (TickPhase.every(level, pos, 5L) && toBurn > 0) {
+                    te.pollute(te.tank.getTankType(), FluidReleaseType.BURN, toBurn * 0.5F);
+                }
+
                 if (toBurn > 0) te.wasOn = true;
                 te.tank.setFill(fill / 10);
                 te.tenth = fill % 10;
@@ -100,6 +110,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
 
         for (DirPos dp : te.getConPos()) {
             te.tryProvide(level, dp.getPos().getX(), dp.getPos().getY(), dp.getPos().getZ(), dp.getDir());
+            te.sendSmoke(dp);
         }
 
         if (te.power > maxPower) te.power = maxPower;
@@ -210,6 +221,7 @@ public class TileEntityMachineCombustionEngine extends TileEntityMachineBase
     @Override public long getMaxPower() { return maxPower; }
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return this.getSmokeTanks(); }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
     @Override

@@ -1,5 +1,6 @@
 package com.hbm.world.gen;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.main.StructureManager;
 import com.hbm.world.gen.nbt.JigsawPiece;
@@ -36,14 +37,15 @@ public final class NTMWorldGenerator {
             DeferredRegister.create(Registries.STRUCTURE_TYPE, Constants.MOD_ID);
     public static final DeferredRegister<StructurePieceType> STRUCTURE_PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(STRUCTURE_TYPES, STRUCTURE_PIECES);
 
     /** {@code hbm:nbt}: one registered {@link SpawnCondition} as a vanilla structure. */
     public static final RegistryObject<StructureType<NBTStructure.GenStructure>> NBT_STRUCTURE =
-            STRUCTURE_TYPES.register("nbt", () -> Structures.type(NBTStructure.GenStructure.CODEC));
+            REG.register(Registries.STRUCTURE_TYPE, "nbt", () -> Structures.type(NBTStructure.GenStructure.CODEC));
 
     /** {@code hbm:nbt_component}: one placed jigsaw piece (1.7 {@code NBTStructure.Component}). */
     public static final RegistryObject<StructurePieceType> NBT_COMPONENT =
-            STRUCTURE_PIECES.register("nbt_component", () -> (StructurePieceType) NBTStructure.Component::new);
+            REG.register(Registries.STRUCTURE_PIECE, "nbt_component", () -> (StructurePieceType) NBTStructure.Component::new);
 
     private static boolean registered;
 

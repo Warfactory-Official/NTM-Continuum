@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -22,6 +24,7 @@ public final class ModIngredientItems {
     private ModIngredientItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
     private static final Map<EnumPartType, RegistryObject<Item>> PARTS = new EnumMap<>(EnumPartType.class);
     private static final Map<EnumAshType, RegistryObject<Item>> ASHES = new EnumMap<>(EnumAshType.class);
     private static final Map<PlateFuelType, RegistryObject<ItemPlateFuel>> PLATE_FUELS =
@@ -29,18 +32,24 @@ public final class ModIngredientItems {
 
     static {
         for (EnumPartType type : EnumPartType.VALUES) {
-            RegistryObject<Item> item = ITEMS.registerSimpleItem("part_generic_" + type.name().toLowerCase(Locale.ROOT));
+            String name = type.name().toLowerCase(Locale.ROOT);
+            // the 1.7 metadata sprites keep their dotted names: part_generic.<type>
+            RegistryObject<Item> item = REG.item("part_generic_" + name)
+                    .transform(Presets.sprite("hbm:items/part_generic." + name));
             PARTS.put(type, item);
             ModTabs.addTo(HbmTab.MATERIALS, item);
         }
         for (EnumAshType type : EnumAshType.VALUES) {
-            RegistryObject<Item> item = ITEMS.registerSimpleItem("powder_ash_" + type.name().toLowerCase(Locale.ROOT));
+            String name = type.name().toLowerCase(Locale.ROOT);
+            RegistryObject<Item> item = REG.item("powder_ash_" + name)
+                    .transform(Presets.sprite("hbm:items/powder_ash." + name));
             ASHES.put(type, item);
             ModTabs.addTo(HbmTab.MATERIALS, item);
         }
         for (PlateFuelType type : PlateFuelType.values()) {
-            RegistryObject<ItemPlateFuel> item = ITEMS.registerItem(type.id,
-                    p -> new ItemPlateFuel(p.stacksTo(1), type.lifeTime, type.function, type.reactivity));
+            RegistryObject<ItemPlateFuel> item = REG.item(type.id,
+                    (Item.Properties p) -> new ItemPlateFuel(p.stacksTo(1), type.lifeTime, type.function, type.reactivity))
+                    .transform(Presets.sprite());
             PLATE_FUELS.put(type, item);
             ModTabs.addTo(HbmTab.CONTROL, item);
         }

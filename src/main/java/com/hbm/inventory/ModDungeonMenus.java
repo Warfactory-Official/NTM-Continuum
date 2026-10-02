@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerRebar;
 import dev.golem.core.gui.Menus;
@@ -14,8 +15,9 @@ public final class ModDungeonMenus {
     private ModDungeonMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
-    public static final RegistryObject<MenuType<ContainerRebar>> REBAR = MENUS.register("rebar_placer", () ->
+    public static final RegistryObject<MenuType<ContainerRebar>> REBAR = REG.menu("rebar_placer", () ->
             Menus.typeWithHand((id, inventory, hand) -> new ContainerRebar(rebarType(), id, inventory, hand)));
 
     private static MenuType<ContainerRebar> rebarType() { return REBAR.get(); }

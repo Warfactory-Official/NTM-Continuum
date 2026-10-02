@@ -46,6 +46,7 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
+import com.hbm.registration.Reg;
 
 /** Registry for HBM menu types. Menu types are created via the platform service so each loader can
  * carry the {@link net.minecraft.core.BlockPos} open-data in its own way. */
@@ -55,278 +56,279 @@ public final class ModMenus {
 
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPASource>> PA_SOURCE =
-            MENUS.register("pa_source", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPASource::new));
+            REG.menu("pa_source", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPASource::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPARFC>> PA_RFC =
-            MENUS.register("pa_rfc", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPARFC::new));
+            REG.menu("pa_rfc", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPARFC::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPAQuadrupole>> PA_QUADRUPOLE =
-            MENUS.register("pa_quadrupole", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPAQuadrupole::new));
+            REG.menu("pa_quadrupole", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPAQuadrupole::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPADipole>> PA_DIPOLE =
-            MENUS.register("pa_dipole", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADipole::new));
+            REG.menu("pa_dipole", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADipole::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPADetector>> PA_DETECTOR =
-            MENUS.register("pa_detector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADetector::new));
+            REG.menu("pa_detector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPADetector::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCore>> DFC_CORE =
-            MENUS.register("dfc_core", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCore::new));
+            REG.menu("dfc_core", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCore::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreEmitter>> DFC_EMITTER =
-            MENUS.register("dfc_emitter", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreEmitter::new));
+            REG.menu("dfc_emitter", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreEmitter::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreReceiver>> DFC_RECEIVER =
-            MENUS.register("dfc_receiver", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreReceiver::new));
+            REG.menu("dfc_receiver", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreReceiver::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreInjector>> DFC_INJECTOR =
-            MENUS.register("dfc_injector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreInjector::new));
+            REG.menu("dfc_injector", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreInjector::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCoreStabilizer>> DFC_STABILIZER =
-            MENUS.register("dfc_stabilizer", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreStabilizer::new));
+            REG.menu("dfc_stabilizer", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCoreStabilizer::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerSoyuzLauncher>> SOYUZ_LAUNCHER =
-            MENUS.register("soyuz_launcher", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSoyuzLauncher::new));
+            REG.menu("soyuz_launcher", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSoyuzLauncher::new));
 
 
     public static final RegistryObject<MenuType<ContainerMachineBattery>> MACHINE_BATTERY =
-            MENUS.register("machine_battery", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineBattery::new));
+            REG.menu("machine_battery", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineBattery::new));
 
     public static final RegistryObject<MenuType<ContainerWasteDrum>> MACHINE_WASTE_DRUM =
-            MENUS.register("machine_waste_drum", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerWasteDrum::new));
+            REG.menu("machine_waste_drum", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerWasteDrum::new));
     public static final RegistryObject<MenuType<ContainerStorageDrum>> MACHINE_STORAGE_DRUM =
-            MENUS.register("machine_storage_drum", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerStorageDrum::new));
+            REG.menu("machine_storage_drum", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerStorageDrum::new));
 
     public static final RegistryObject<MenuType<ContainerMachineRadGen>> MACHINE_RAD_GEN =
-            MENUS.register("machine_radgen", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineRadGen::new));
+            REG.menu("machine_radgen", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineRadGen::new));
 
     public static final RegistryObject<MenuType<ContainerMachineAssemblyMachine>> MACHINE_ASSEMBLY_MACHINE =
-            MENUS.register("machine_assembly_machine", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineAssemblyMachine::new));
+            REG.menu("machine_assembly_machine", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineAssemblyMachine::new));
     public static final RegistryObject<MenuType<ContainerMachinePrecAss>> MACHINE_PREC_ASS =
-            MENUS.register("machine_precass", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePrecAss::new));
+            REG.menu("machine_precass", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePrecAss::new));
 
     public static final RegistryObject<MenuType<ContainerMachineChemicalPlant>> MACHINE_CHEMICAL_PLANT =
-            MENUS.register("machine_chemical_plant", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineChemicalPlant::new));
+            REG.menu("machine_chemical_plant", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineChemicalPlant::new));
 
     public static final RegistryObject<MenuType<ContainerMixer>> MACHINE_MIXER =
-            MENUS.register("machine_mixer", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMixer::new));
+            REG.menu("machine_mixer", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMixer::new));
 
     public static final RegistryObject<MenuType<ContainerMachineExposureChamber>> MACHINE_EXPOSURE_CHAMBER =
-            MENUS.register("machine_exposure_chamber",
+            REG.menu("machine_exposure_chamber",
                     () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineExposureChamber::new));
 
     public static final RegistryObject<MenuType<ContainerBlastFurnace>> MACHINE_BLAST_FURNACE =
-            MENUS.register("machine_blast_furnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBlastFurnace::new));
+            REG.menu("machine_blast_furnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBlastFurnace::new));
 
     public static final RegistryObject<MenuType<ContainerMachinePUREX>> MACHINE_PUREX =
-            MENUS.register("machine_purex", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePUREX::new));
+            REG.menu("machine_purex", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePUREX::new));
 
     public static final RegistryObject<MenuType<ContainerMachineSolderingStation>> MACHINE_SOLDERING_STATION =
-            MENUS.register("machine_soldering_station", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineSolderingStation::new));
+            REG.menu("machine_soldering_station", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineSolderingStation::new));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineArcWelder>> MACHINE_ARC_WELDER =
-            MENUS.register("machine_arc_welder", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineArcWelder::new));
+            REG.menu("machine_arc_welder", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineArcWelder::new));
 
     public static final RegistryObject<MenuType<ContainerCrystallizer>> MACHINE_CRYSTALLIZER =
-            MENUS.register("machine_crystallizer", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrystallizer::new));
+            REG.menu("machine_crystallizer", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrystallizer::new));
 
     public static final RegistryObject<MenuType<ContainerCentrifuge>> MACHINE_CENTRIFUGE =
-            MENUS.register("machine_centrifuge", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCentrifuge::new));
+            REG.menu("machine_centrifuge", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCentrifuge::new));
 
     public static final RegistryObject<MenuType<ContainerMachineCyclotron>> MACHINE_CYCLOTRON =
-            MENUS.register("machine_cyclotron", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineCyclotron::new));
+            REG.menu("machine_cyclotron", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineCyclotron::new));
 
     public static final RegistryObject<MenuType<ContainerMachineGasCent>> MACHINE_GAS_CENT =
-            MENUS.register("machine_gascent", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineGasCent::new));
+            REG.menu("machine_gascent", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineGasCent::new));
 
     public static final RegistryObject<MenuType<ContainerMachineElectrolyser>> MACHINE_ELECTROLYSER_FLUID =
-            MENUS.register("machine_electrolyser_fluid", () -> dev.golem.core.gui.Menus.typeWithPos(
+            REG.menu("machine_electrolyser_fluid", () -> dev.golem.core.gui.Menus.typeWithPos(
                     (id, inventory, pos) -> new ContainerMachineElectrolyser(id, inventory, pos, false)));
     public static final RegistryObject<MenuType<ContainerMachineElectrolyser>> MACHINE_ELECTROLYSER_METAL =
-            MENUS.register("machine_electrolyser_metal", () -> dev.golem.core.gui.Menus.typeWithPos(
+            REG.menu("machine_electrolyser_metal", () -> dev.golem.core.gui.Menus.typeWithPos(
                     (id, inventory, pos) -> new ContainerMachineElectrolyser(id, inventory, pos, true)));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerSILEX>> MACHINE_SILEX =
-            MENUS.register("machine_silex", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSILEX::new));
+            REG.menu("machine_silex", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSILEX::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerFEL>> MACHINE_FEL =
-            MENUS.register("machine_fel", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFEL::new));
+            REG.menu("machine_fel", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFEL::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineTurbine>> MACHINE_TURBINE =
-            MENUS.register("machine_turbine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineTurbine::new));
+            REG.menu("machine_turbine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineTurbine::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineLargeTurbine>> MACHINE_LARGE_TURBINE =
-            MENUS.register("machine_large_turbine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineLargeTurbine::new));
+            REG.menu("machine_large_turbine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineLargeTurbine::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineTurbineGas>> MACHINE_TURBINE_GAS =
-            MENUS.register("machine_turbine_gas", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineTurbineGas::new));
+            REG.menu("machine_turbine_gas", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineTurbineGas::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineTurbofan>> MACHINE_TURBOFAN =
-            MENUS.register("machine_turbofan", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineTurbofan::new));
+            REG.menu("machine_turbofan", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineTurbofan::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineDiesel>> MACHINE_DIESEL =
-            MENUS.register("machine_diesel", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineDiesel::new));
+            REG.menu("machine_diesel", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineDiesel::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineGasFlare>> MACHINE_GAS_FLARE =
-            MENUS.register("machine_flare", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineGasFlare::new));
+            REG.menu("machine_flare", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineGasFlare::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerLiquefactor>> MACHINE_LIQUEFACTOR =
-            MENUS.register("machine_liquefactor", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerLiquefactor::new));
+            REG.menu("machine_liquefactor", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerLiquefactor::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerSolidifier>> MACHINE_SOLIDIFIER =
-            MENUS.register("machine_solidifier", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSolidifier::new));
+            REG.menu("machine_solidifier", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerSolidifier::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineRefinery>> MACHINE_REFINERY =
-            MENUS.register("machine_refinery", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineRefinery::new));
+            REG.menu("machine_refinery", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineRefinery::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerOilburner>> HEATER_OILBURNER =
-            MENUS.register("heater_oilburner", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerOilburner::new));
+            REG.menu("heater_oilburner", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerOilburner::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineWoodBurner>> MACHINE_WOOD_BURNER =
-            MENUS.register("machine_wood_burner", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineWoodBurner::new));
+            REG.menu("machine_wood_burner", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineWoodBurner::new));
 
     /** Shared by the oil derrick and the pumpjack (both bind {@code TileEntityOilDrillBase}). */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineOilWell>> MACHINE_OIL_WELL =
-            MENUS.register("machine_oil_well", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineOilWell::new));
+            REG.menu("machine_oil_well", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineOilWell::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineMiningLaser>> MACHINE_MINING_LASER =
-            MENUS.register("machine_mining_laser", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineMiningLaser::new));
+            REG.menu("machine_mining_laser", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineMiningLaser::new));
 
     // --- advanced oil wave ---
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineVacuumDistill>> MACHINE_VACUUM_DISTILL =
-            MENUS.register("machine_vacuum_distill", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineVacuumDistill::new));
+            REG.menu("machine_vacuum_distill", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineVacuumDistill::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineCatalyticReformer>> MACHINE_CATALYTIC_REFORMER =
-            MENUS.register("machine_catalytic_reformer", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineCatalyticReformer::new));
+            REG.menu("machine_catalytic_reformer", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineCatalyticReformer::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineHydrotreater>> MACHINE_HYDROTREATER =
-            MENUS.register("machine_hydrotreater", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineHydrotreater::new));
+            REG.menu("machine_hydrotreater", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineHydrotreater::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMachineCoker>> MACHINE_COKER =
-            MENUS.register("machine_coker", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineCoker::new));
+            REG.menu("machine_coker", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachineCoker::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerFurnaceCombination>> FURNACE_COMBINATION =
-            MENUS.register("machine_furnace_combination", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFurnaceCombination::new));
+            REG.menu("machine_furnace_combination", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFurnaceCombination::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerPyroOven>> MACHINE_PYROOVEN =
-            MENUS.register("machine_pyrooven", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPyroOven::new));
+            REG.menu("machine_pyrooven", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerPyroOven::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCombustionEngine>> MACHINE_COMBUSTION_ENGINE =
-            MENUS.register("machine_combustion_engine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCombustionEngine::new));
+            REG.menu("machine_combustion_engine", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCombustionEngine::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCompressor>> MACHINE_COMPRESSOR =
-            MENUS.register("machine_compressor", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCompressor::new));
+            REG.menu("machine_compressor", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCompressor::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCrucible>> MACHINE_CRUCIBLE =
-            MENUS.register("machine_crucible", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCrucible::new));
+            REG.menu("machine_crucible", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerCrucible::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerFirebox>> HEATER_FIREBOX =
-            MENUS.register("heater_firebox", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFirebox::new));
+            REG.menu("heater_firebox", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFirebox::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerHeaterHeatex>> HEATER_HEATEX =
-            MENUS.register("heater_heatex", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerHeaterHeatex::new));
+            REG.menu("heater_heatex", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerHeaterHeatex::new));
 
     public static final RegistryObject<MenuType<ContainerNukeMan>> NUKE_MAN =
-            MENUS.register("nuke_man", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeMan::new));
+            REG.menu("nuke_man", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeMan::new));
 
     public static final RegistryObject<MenuType<ContainerNukeN2>> NUKE_N2 =
-            MENUS.register("nuke_n2", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeN2::new));
+            REG.menu("nuke_n2", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeN2::new));
     public static final RegistryObject<MenuType<ContainerNukeBoy>> NUKE_BOY =
-            MENUS.register("nuke_boy", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeBoy::new));
+            REG.menu("nuke_boy", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeBoy::new));
     public static final RegistryObject<MenuType<ContainerNukeGadget>> NUKE_GADGET =
-            MENUS.register("nuke_gadget", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeGadget::new));
+            REG.menu("nuke_gadget", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeGadget::new));
     public static final RegistryObject<MenuType<ContainerNukeTsar>> NUKE_TSAR =
-            MENUS.register("nuke_tsar", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeTsar::new));
+            REG.menu("nuke_tsar", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeTsar::new));
     public static final RegistryObject<MenuType<ContainerNukeMike>> NUKE_MIKE =
-            MENUS.register("nuke_mike", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeMike::new));
+            REG.menu("nuke_mike", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerNukeMike::new));
 
     public static final RegistryObject<MenuType<ContainerReactorZirnox>> REACTOR_ZIRNOX =
-            MENUS.register("reactor_zirnox", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerReactorZirnox::new));
+            REG.menu("reactor_zirnox", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerReactorZirnox::new));
 
     public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerWatz>> WATZ =
-            MENUS.register("watz", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerWatz::new));
+            REG.menu("watz", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerWatz::new));
 
     public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerFusionTorus>> FUSION_TORUS =
-            MENUS.register("fusion_torus", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionTorus::new));
+            REG.menu("fusion_torus", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionTorus::new));
 
 
     public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerFusionBreeder>> FUSION_BREEDER =
-            MENUS.register("fusion_breeder", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionBreeder::new));
+            REG.menu("fusion_breeder", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionBreeder::new));
 
     public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerFusionKlystron>> FUSION_KLYSTRON =
-            MENUS.register("fusion_klystron", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionKlystron::new));
+            REG.menu("fusion_klystron", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerFusionKlystron::new));
     public static final RegistryObject<net.minecraft.world.inventory.MenuType<com.hbm.inventory.container.ContainerMachinePlasmaForge>> FUSION_PLASMA_FORGE =
-            MENUS.register("fusion_plasma_forge", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachinePlasmaForge::new));
+            REG.menu("fusion_plasma_forge", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerMachinePlasmaForge::new));
 
     public static final RegistryObject<MenuType<ContainerMachinePress>> MACHINE_PRESS =
-            MENUS.register("machine_press", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePress::new));
+            REG.menu("machine_press", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachinePress::new));
 
     public static final RegistryObject<MenuType<ContainerMachineAmmoPress>> MACHINE_AMMO_PRESS =
-            MENUS.register("machine_ammo_press", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineAmmoPress::new));
+            REG.menu("machine_ammo_press", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineAmmoPress::new));
 
     public static final RegistryObject<MenuType<ContainerMachineEPress>> MACHINE_EPRESS =
-            MENUS.register("machine_epress", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineEPress::new));
+            REG.menu("machine_epress", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineEPress::new));
 
     public static final RegistryObject<MenuType<ContainerMachineElectricFurnace>> MACHINE_ELECTRIC_FURNACE =
-            MENUS.register("machine_electric_furnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineElectricFurnace::new));
+            REG.menu("machine_electric_furnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineElectricFurnace::new));
 
     public static final RegistryObject<MenuType<ContainerFurnaceBrick>> FURNACE_BRICK =
-            MENUS.register("machine_furnace_brick_off", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerFurnaceBrick::new));
+            REG.menu("machine_furnace_brick_off", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerFurnaceBrick::new));
     public static final RegistryObject<MenuType<ContainerFurnaceIron>> FURNACE_IRON =
-            MENUS.register("furnace_iron", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerFurnaceIron::new));
+            REG.menu("furnace_iron", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerFurnaceIron::new));
     public static final RegistryObject<MenuType<ContainerFurnaceSteel>> FURNACE_STEEL =
-            MENUS.register("furnace_steel", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerFurnaceSteel::new));
+            REG.menu("furnace_steel", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerFurnaceSteel::new));
 
     public static final RegistryObject<MenuType<ContainerMachineShredder>> MACHINE_SHREDDER =
-            MENUS.register("machine_shredder", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineShredder::new));
+            REG.menu("machine_shredder", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineShredder::new));
 
 
     public static final RegistryObject<MenuType<ContainerMachineFluidTank>> FLUID_TANK =
-            MENUS.register("machine_fluidtank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineFluidTank::new));
+            REG.menu("machine_fluidtank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineFluidTank::new));
 
     public static final RegistryObject<MenuType<ContainerMachineF6Tank>> F6_TANK =
-            MENUS.register("f6_tank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineF6Tank::new));
+            REG.menu("f6_tank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineF6Tank::new));
 
     public static final RegistryObject<MenuType<ContainerMachineGiantTank>> GIANT_TANK =
-            MENUS.register("giant_tank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineGiantTank::new));
+            REG.menu("giant_tank", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineGiantTank::new));
 
     public static final RegistryObject<MenuType<ContainerBatterySocket>> BATTERY_SOCKET =
-            MENUS.register("machine_battery_socket", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBatterySocket::new));
+            REG.menu("machine_battery_socket", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBatterySocket::new));
     public static final RegistryObject<MenuType<ContainerMachineFENSU>> FENSU =
-            MENUS.register("machine_fensu", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineFENSU::new));
+            REG.menu("machine_fensu", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineFENSU::new));
     public static final RegistryObject<MenuType<ContainerBatteryREDD>> BATTERY_REDD =
-            MENUS.register("machine_battery_redd", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBatteryREDD::new));
+            REG.menu("machine_battery_redd", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerBatteryREDD::new));
 
     /** Shared by all 12 anvils; the container re-derives the tier from the block state at the pos. */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerAnvil>> ANVIL =
-            MENUS.register("anvil", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerAnvil::new));
+            REG.menu("anvil", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerAnvil::new));
 
     /** Shared by all three storage crates; the container reads the BlockEntity's {@code CrateType} for layout. */
     public static final RegistryObject<MenuType<ContainerCrate>> CRATE =
-            MENUS.register("crate", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrate::new));
+            REG.menu("crate", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerCrate::new));
 
     // --- the ntm-next entity port: vehicle menus opened through vanilla's data-less MenuProvider path ---
     /** The crate minecart (1.7 ContainerCrate on the cart's own inventory). */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuCrate>> CART_CRATE =
-            MENUS.register("cart_crate", () -> new MenuType<>(com.hbm.inventory.container.MenuCrate::new,
+            REG.menu("cart_crate", () -> new MenuType<>(com.hbm.inventory.container.MenuCrate::new,
                     net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
     /** The destroyer minecart's two ghost filter grids (1.7 ContainerCartDestroyer). */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuCartDestroyer>> CART_DESTROYER =
-            MENUS.register("cart_destroyer", () -> new MenuType<>(com.hbm.inventory.container.MenuCartDestroyer::new,
+            REG.menu("cart_destroyer", () -> new MenuType<>(com.hbm.inventory.container.MenuCartDestroyer::new,
                     net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
     /** The cargo tram engine: 28 cargo slots, a charge slot and the power gauge. */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuTrainCargoTram>> TRAIN_CARGO_TRAM =
-            MENUS.register("train_cargo_tram", () -> new MenuType<>(com.hbm.inventory.container.MenuTrainCargoTram::new,
+            REG.menu("train_cargo_tram", () -> new MenuType<>(com.hbm.inventory.container.MenuTrainCargoTram::new,
                     net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
     /** The cargo tram trailer: cargo slots only. */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.MenuTrainCargoTramTrailer>> TRAIN_CARGO_TRAM_TRAILER =
-            MENUS.register("train_cargo_tram_trailer", () -> new MenuType<>(
+            REG.menu("train_cargo_tram_trailer", () -> new MenuType<>(
                     com.hbm.inventory.container.MenuTrainCargoTramTrailer::new,
                     net.minecraft.world.flag.FeatureFlags.DEFAULT_FLAGS));
 
     public static final RegistryObject<MenuType<ContainerArmorTable>> ARMOR_TABLE =
-            MENUS.register("armor_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerArmorTable::new));
+            REG.menu("armor_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerArmorTable::new));
     public static final RegistryObject<MenuType<ContainerWeaponTable>> WEAPON_TABLE =
-            MENUS.register("weapon_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerWeaponTable::new));
+            REG.menu("weapon_table", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerWeaponTable::new));
 
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerMassStorage>> MASS_STORAGE =
-            MENUS.register("mass_storage", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->
+            REG.menu("mass_storage", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->
                     new com.hbm.inventory.container.ContainerMassStorage(id, inventory, pos, ModMenus::massStorageMenu)));
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerCrateTemplate>> CRATE_TEMPLATE =
-            MENUS.register("crate_template", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->
+            REG.menu("crate_template", () -> dev.golem.core.gui.Menus.typeWithPos((id, inventory, pos) ->
                     new com.hbm.inventory.container.ContainerCrateTemplate(id, inventory, pos, ModMenus::templateCrateMenu)));
 
     static {
@@ -338,11 +340,11 @@ public final class ModMenus {
 
     /** Shared by every launch pad type (only the small silo pad exists so far). */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerLaunchPad>> LAUNCH_PAD =
-            MENUS.register("launch_pad", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerLaunchPad::new));
+            REG.menu("launch_pad", () -> dev.golem.core.gui.Menus.typeWithPos(com.hbm.inventory.container.ContainerLaunchPad::new));
 
     /** Shared by every turret: the layout is identical, only the background texture differs. */
     public static final RegistryObject<MenuType<com.hbm.inventory.container.ContainerTurretBase>> TURRET_BASE =
-            MENUS.register("turret_base", () -> dev.golem.core.gui.Menus.typeWithPos(
+            REG.menu("turret_base", () -> dev.golem.core.gui.Menus.typeWithPos(
                     com.hbm.inventory.container.ContainerTurretBase::new));
 
     private static MenuType<com.hbm.inventory.container.ContainerMassStorage> massStorageMenu() {

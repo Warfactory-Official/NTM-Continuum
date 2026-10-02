@@ -78,10 +78,21 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
 
     /** One additional ordered OBJ/texture pass; an omitted OBJ reuses the primary OBJ. */
     public record Pass(Optional<Identifier> obj, Identifier texture, List<String> parts, List<Float> translate,
-                       List<Step> steps) {}
+                       List<Step> steps, int tint, float scale) {}
 
     /** One step of a pass's own transform; exactly one of the two is present. */
     public record Step(List<Float> rotate, List<Float> translate) {}
+
+    /** One {@link MachineItemModel.GuiStep} as the item JSON spells it; exactly one of the four is present. */
+    public record GuiStepJson(List<Float> rotate, List<Float> translate, List<Float> scale, List<Float> spin) {
+
+        MachineItemModel.GuiStep step() {
+            if (spin.size() == 3) return new MachineItemModel.GuiStep("spin", vector(spin));
+            if (scale.size() == 3) return new MachineItemModel.GuiStep("scale", vector(scale));
+            if (translate.size() == 3) return new MachineItemModel.GuiStep("translate", vector(translate));
+            return new MachineItemModel.GuiStep("rotate", vector(rotate));
+        }
+    }
 
     /** The data-driven, codec-backed factory for this renderer (one entry per machine in the item JSON). */
     public record Unbaked(Identifier obj, Identifier texture, boolean noCull, float scale, boolean rawLegacyTransform,
@@ -94,7 +105,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                              List<String> spinParts, List<Float> spinPivot,
                              Map<String, MachineItemModel.ContextTransform> contextTransforms, String animation,
                              List<String> parts, List<Float> translate, List<Pass> passes, float guiSpinSpeed,
-                             String frame)
+                             String frame, List<GuiStepJson> guiSteps)
                  implements NoDataSpecialModelRenderer.Unbaked, ItemModel.Unbaked {
 
         private static final MapCodec<Unbaked> BASE_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -118,7 +129,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                       rotateParts, rotateX, rotatePivot, spinParts, spinPivot) ->
                        new Unbaked(obj, texture, noCull, scale, false, yaw, pitch, ty, List.of(), List.of(), List.of(), 1.0F, 0.0F, exclude, List.of(),
                               overlayTexture, overlayParts, mtl, Map.of(), rotateParts, rotateX, rotatePivot, spinParts, spinPivot,
-                              Map.of(), "", List.of(), List.of(), List.of(), 0F, MACHINE_FRAME)));
+                              Map.of(), "", List.of(), List.of(), List.of(), 0F, MACHINE_FRAME, List.of())));
 
         private static final MapCodec<Map<String, Identifier>> PART_TEXTURES =
                 Codec.unboundedMap(Codec.STRING, Identifier.CODEC).optionalFieldOf("partTextures", Map.of());
@@ -160,18 +171,29 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                   Identifier.CODEC.fieldOf("texture").forGetter(Pass::texture),
                   Codec.STRING.listOf().optionalFieldOf("parts", List.of()).forGetter(Pass::parts),
                   Codec.FLOAT.listOf().optionalFieldOf("translate", List.of()).forGetter(Pass::translate),
-                  STEP_CODEC.listOf().optionalFieldOf("steps", List.of()).forGetter(Pass::steps)
+                  STEP_CODEC.listOf().optionalFieldOf("steps", List.of()).forGetter(Pass::steps),
+                  Codec.INT.optionalFieldOf("tint", MachineItemModel.ModelPass.UNTINTED).forGetter(Pass::tint),
+                  Codec.FLOAT.optionalFieldOf("scale", 1F).forGetter(Pass::scale)
           ).apply(i, Pass::new));
           private static final MapCodec<List<Pass>> PASSES =
                   PASS_CODEC.listOf().optionalFieldOf("passes", List.of());
           private static final MapCodec<Float> GUI_SPIN_SPEED = Codec.FLOAT.optionalFieldOf("guiSpinSpeed", 0F);
           private static final MapCodec<String> FRAME = Codec.STRING.optionalFieldOf("frame", MACHINE_FRAME);
+          private static final Codec<GuiStepJson> GUI_STEP_CODEC = RecordCodecBuilder.create(i -> i.group(
+                  Codec.FLOAT.listOf().optionalFieldOf("rotate", List.of()).forGetter(GuiStepJson::rotate),
+                  Codec.FLOAT.listOf().optionalFieldOf("translate", List.of()).forGetter(GuiStepJson::translate),
+                  Codec.FLOAT.listOf().optionalFieldOf("scale", List.of()).forGetter(GuiStepJson::scale),
+                  Codec.FLOAT.listOf().optionalFieldOf("spin", List.of()).forGetter(GuiStepJson::spin)
+          ).apply(i, GuiStepJson::new));
+          private static final MapCodec<List<GuiStepJson>> GUI_STEPS =
+                  GUI_STEP_CODEC.listOf().optionalFieldOf("guiSteps", List.of());
           private record Extensions(Map<String, Identifier> partTextures, List<Float> itemTranslate,
                                     List<Float> itemPreTranslate, List<Float> guiTranslate, float guiScale,
                                     boolean rawLegacyTransform, float guiYaw, List<String> blackParts,
                                     Map<String, MachineItemModel.ContextTransform> contextTransforms,
                                     String animation, List<String> parts, List<Float> translate,
-                                    List<Pass> passes, float guiSpinSpeed, String frame) {}
+                                    List<Pass> passes, float guiSpinSpeed, String frame,
+                                    List<GuiStepJson> guiSteps) {}
           private static final MapCodec<Extensions> EXTENSIONS_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
                   PART_TEXTURES.forGetter(Extensions::partTextures),
                   ITEM_TRANSLATE.forGetter(Extensions::itemTranslate),
@@ -187,7 +209,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                   TRANSLATE.forGetter(Extensions::translate),
                   PASSES.forGetter(Extensions::passes),
                   GUI_SPIN_SPEED.forGetter(Extensions::guiSpinSpeed),
-                  FRAME.forGetter(Extensions::frame)
+                  FRAME.forGetter(Extensions::frame),
+                  GUI_STEPS.forGetter(Extensions::guiSteps)
           ).apply(i, Extensions::new));
 
          /** Adds the legacy transform extensions without exceeding RecordCodecBuilder's 16-field limit. */
@@ -202,7 +225,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                                  value.itemPreTranslate(), value.guiTranslate(), value.guiScale(),
                                  value.rawLegacyTransform(), value.guiYaw(), value.blackParts(),
                                  value.contextTransforms(), value.animation(), value.parts(), value.translate(),
-                                 value.passes(), value.guiSpinSpeed(), value.frame()), ops, prefix);
+                                 value.passes(), value.guiSpinSpeed(), value.frame(), value.guiSteps()), ops, prefix);
                     }
 
                     @Override
@@ -226,7 +249,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                                                  extra.guiScale(), extra.guiYaw(), extra.blackParts(),
                                                  extra.contextTransforms(), extra.animation(), extra.parts(),
                                                  extra.translate(), extra.passes(), extra.guiSpinSpeed(),
-                                                 extra.frame())));
+                                                 extra.frame(), extra.guiSteps())));
                     }
 
                     @Override
@@ -316,7 +339,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                   }
                   modelPasses.add(new MachineItemModel.ModelPass(passModel,
                           cutout(pass.texture(), noCull), List.copyOf(pass.parts()), translation,
-                          List.copyOf(steps)));
+                          List.copyOf(steps), pass.tint(), pass.scale()));
               }
               Vector3f primaryTranslation = vector(translate);
               return new MachineItemModel(loaded, cutout(texture, noCull),
@@ -325,7 +348,8 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                     Set.copyOf(exclude), overlay, List.copyOf(overlayParts), black, List.copyOf(blackParts),
                      List.copyOf(rotateParts), rotateX, pivot, List.copyOf(spinParts), spinningPivot, types, partTypes,
                       !spinParts.isEmpty(), contextTransforms, animation, List.copyOf(parts), primaryTranslation,
-                      modelPasses, guiSpinSpeed);
+                      modelPasses, guiSpinSpeed)
+                      .withGuiSteps(guiSteps.stream().map(GuiStepJson::step).toList());
          }
 
         /**
@@ -350,13 +374,13 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
                                                   Map<String, MachineItemModel.ContextTransform> contextTransforms,
                                                    String animation, List<String> parts, List<Float> translate,
                                                    List<Pass> passes,
-                                                   float guiSpinSpeed, String frame) {
+                                                   float guiSpinSpeed, String frame, List<GuiStepJson> guiSteps) {
          return new Unbaked(base.obj(), base.texture(), base.noCull(), base.scale(), rawLegacyTransform,
                  base.yaw(), base.pitch(), base.ty(),
                   itemTranslate, itemPreTranslate, guiTranslate, guiScale, guiYaw, base.exclude(), blackParts,
                   base.overlayTexture(), base.overlayParts(), base.mtl(), partTextures,
                  base.rotateParts(), base.rotateX(), base.rotatePivot(), base.spinParts(), base.spinPivot(),
-                  contextTransforms, animation, parts, translate, passes, guiSpinSpeed, frame);
+                  contextTransforms, animation, parts, translate, passes, guiSpinSpeed, frame, guiSteps);
      }
 
     private static Vector3f vector(List<Float> values) {
@@ -456,7 +480,7 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
             LivingEntity living = owner == null ? null : owner.asLivingEntity();
             ItemStackRenderState.LayerRenderState layer = output.newLayer();
             layer.setExtents(() -> extents(item, type, living));
-            layer.setupSpecialModel(body, new Argument(item, type, living));
+            layer.setupSpecialModel(body, new Argument(item, type, displayContext, living));
             properties.applyToLayer(layer, displayContext);
         }
 
@@ -470,14 +494,15 @@ public class MachineItemModelRenderer implements NoDataSpecialModelRenderer {
             return bounds.corners();
         }
 
-        public record Argument(ItemStack stack, com.hbm.client.render.item.CustomItemRenderer.Type type, @Nullable LivingEntity owner) {}
+        public record Argument(ItemStack stack, com.hbm.client.render.item.CustomItemRenderer.Type type,
+                               ItemDisplayContext context, @Nullable LivingEntity owner) {}
 
         private final class Body implements SpecialModelRenderer<Argument> {
             @Override
             public void submit(@Nullable Argument argument, PoseStack pose, SubmitNodeCollector collector,
                                int lightCoords, int overlayCoords, boolean hasFoil, int outlineColor) {
                 if (argument == null) return;
-                renderer.render(argument.stack(), argument.type(), pose, new VanillaSubmitSink(collector),
+                renderer.render(argument.stack(), argument.context(), pose, new VanillaSubmitSink(collector),
                         lightCoords, overlayCoords, argument.owner());
             }
 

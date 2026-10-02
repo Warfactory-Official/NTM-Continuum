@@ -153,10 +153,14 @@ dependencies {
         localRuntime("mezz.jei:jei-$jei-neoforge:$jeiVer")
     }
 
-    // Published Flywheel supplies 1.21.1; the 26.1 node leaves this blank and starts Core's engine.
+    // Published Flywheel supplies 1.21.1; the 26.1 node leaves this blank and starts Core's vendored
+    // engine instead (switched off with config/golemcore-flywheel.json or `/flywheel backend off`).
+    // `-Pflywheel.run=false` leaves the engine jar out of the dev run (compile stays), so the dev client
+    // can be launched as a player without Flywheel would see it: every machine through its vanilla
+    // BER. The instanced visuals are optional; this is how that claim is tested on these nodes.
     propOrNull("deps.flywheel")?.let { fw ->
         compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-$mcVersion:$fw")
-        devModJar("dev.engine-room.flywheel:flywheel-neoforge-$mcVersion:$fw")
+        if (propOrNull("flywheel.run") != "false") devModJar("dev.engine-room.flywheel:flywheel-neoforge-$mcVersion:$fw")
     }
 
     // Sodium declares itself client-side, so it loads only during the client run. It goes on
@@ -211,6 +215,9 @@ tasks.processResources { dependsOn(tasks.named("stonecutterGenerate")) }
 // Recipe ingredients are written in the 26.1 shape and converted downward for older nodes.
 extra["mc_version"] = mcVersion
 extra["java_version"] = javaVersion.toString()
+// Loader fact: NeoForge patches SimpleCookingSerializer to read the result with ItemStack.CODEC, so a cooking
+// result keeps its count on 1.21.1 where vanilla (and Fabric) drop it; see gradle/legacy-recipes.gradle.kts.
+extra["loader_cooking_result_count"] = true
 apply(from = rootProject.file("gradle/run-toolchain.gradle.kts"))
 // Visual test harness launch capture (shared by every Golem Core mod); see harness.json and ../Golem-Core/harness/README.md.
 apply(from = rootProject.file("../Golem-Core/gradle/harness-spec.gradle.kts"))

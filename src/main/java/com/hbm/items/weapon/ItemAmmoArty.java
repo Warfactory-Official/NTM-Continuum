@@ -1,5 +1,7 @@
 package com.hbm.items.weapon;
 
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 import com.hbm.blocks.ModBlocks;
 import com.hbm.blocks.generic.BlockSlag;
 import com.hbm.config.BombConfig;
@@ -47,10 +49,9 @@ import net.minecraft.world.phys.Vec3;
  * The twelve 16-inch shells. 1.12.2 holds them as an array of anonymous subclasses indexed by item
  * damage; here the behaviour lives on the enum constants and the selector is {@code ITEM_VARIANT}.
  *
- * <p>Two things upstream does here are absent, both by standing project decision rather than by
- * oversight. Spent casings: this port's ammunition carries no casing, so the shells declare none.
- * And pollution: the chemical shells push heavy-metal and poison loads into the pollution system,
- * which is deferred wholesale — see {@link EntityMist} for what that costs the gas rounds.
+ * <p>Spent casings are absent by standing project decision: this port's ammunition carries no casing, so
+ * the shells declare none. The chemical shells push 1.7's heavy-metal and poison loads into the pollution
+ * system at the struck block ({@link #polluteAt}).
  */
 public class ItemAmmoArty extends ItemEnumMulti {
 
@@ -232,6 +233,7 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 mist.setPos(impact.x, impact.y - 3D, impact.z);
                 mist.setArea(15F, 7.5F);
                 level.addFreshEntity(mist);
+                PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.HEAVYMETAL, 5F);
             }
         },
         PHOSGENE("ammo_arty_phosgene") {
@@ -242,6 +244,8 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 shell.killAndClear();
                 level.explode(shell, impact.x, impact.y, impact.z, 5F, Level.ExplosionInteraction.NONE);
                 gasCloud(shell, impact, Fluids.PHOSGENE, 3, 15D, 15F, 10F);
+                PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.HEAVYMETAL, 10F);
+                PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.POISON, 15F);
             }
         },
         MUSTARD("ammo_arty_mustard_gas") {
@@ -252,6 +256,8 @@ public class ItemAmmoArty extends ItemEnumMulti {
                 shell.killAndClear();
                 level.explode(shell, impact.x, impact.y, impact.z, 5F, Level.ExplosionInteraction.NONE);
                 gasCloud(shell, impact, Fluids.MUSTARDGAS, 5, 25D, 20F, 10F);
+                PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.HEAVYMETAL, 15F);
+                PollutionHandler.incrementPollution(level, polluteAt(hit), PollutionType.POISON, 30F);
             }
         };
 
@@ -278,6 +284,14 @@ public class ItemAmmoArty extends ItemEnumMulti {
         shell.level().playSound(null, shell.getX(), shell.getY(), shell.getZ(),
                 ModSounds.EXPLOSION_SMALL_NEAR.get(), SoundSource.BLOCKS, 20.0F,
                 0.9F + shell.level().getRandom().nextFloat() * 0.2F);
+    }
+
+    /**
+     * 1.7's {@code mop.blockX/Y/Z}: the struck block. On an entity hit 1.7 reads the unset block fields,
+     * i.e. the world origin; the port uses the hit point instead of dumping the load at (0, 0, 0).
+     */
+    private static BlockPos polluteAt(HitResult hit) {
+        return hit instanceof BlockHitResult block ? block.getBlockPos() : BlockPos.containing(hit.getLocation());
     }
 
     /** Upstream backs the blast off one motion step so a shell never detonates inside what it hit. */

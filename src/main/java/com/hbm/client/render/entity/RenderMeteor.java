@@ -33,7 +33,7 @@ public final class RenderMeteor extends CompatEntityRenderer<EntityMeteor, Rende
             {-0.5F, -0.5F, +0.5F, 1F, 0F, +0.5F, -0.5F, +0.5F, 0F, 0F, +0.5F, -0.5F, -0.5F, 0F, 1F, -0.5F, -0.5F, -0.5F, 1F, 1F},
             {+0.5F, +0.5F, +0.5F, 1F, 0F, -0.5F, +0.5F, +0.5F, 0F, 0F, -0.5F, +0.5F, -0.5F, 0F, 1F, +0.5F, +0.5F, -0.5F, 1F, 1F}};
 
-    private final RenderType type = CompatRenderTypes.entityCutout(ResourceManager.meteor_tex);
+    private final RenderType type = CompatRenderTypes.entityCutoutNoCull(ResourceManager.meteor_tex);
 
     public RenderMeteor(EntityRendererProvider.Context context) {
         super(context);

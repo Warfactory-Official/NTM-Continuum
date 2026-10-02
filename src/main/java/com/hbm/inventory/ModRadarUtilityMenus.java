@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerForceField;
 import com.hbm.inventory.container.ContainerMachineRadarNT;
@@ -19,13 +20,14 @@ public final class ModRadarUtilityMenus {
     private ModRadarUtilityMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerMachineRadarNT>> RADAR =
-            MENUS.register("machine_radar", () -> Menus.typeWithPos(ContainerMachineRadarNT::new));
+            REG.menu("machine_radar", () -> Menus.typeWithPos(ContainerMachineRadarNT::new));
     public static final RegistryObject<MenuType<ContainerForceField>> FORCEFIELD =
-            MENUS.register("machine_forcefield", () -> Menus.typeWithPos(ContainerForceField::new));
+            REG.menu("machine_forcefield", () -> Menus.typeWithPos(ContainerForceField::new));
     public static final RegistryObject<MenuType<ContainerSoyuzCapsule>> SOYUZ_CAPSULE =
-            MENUS.register("soyuz_capsule", () -> Menus.typeWithPos(ContainerSoyuzCapsule::new));
+            REG.menu("soyuz_capsule", () -> Menus.typeWithPos(ContainerSoyuzCapsule::new));
 
     public static void init() {}
 }

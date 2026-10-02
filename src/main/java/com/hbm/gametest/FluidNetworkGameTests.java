@@ -121,8 +121,8 @@ public final class FluidNetworkGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos water = helper.absolutePos(new BlockPos(6, Y, TYPE_Z));
         BlockPos diesel = water.east();
-        level.setBlock(water, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
-        level.setBlock(diesel, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+        level.setBlock(water, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
+        level.setBlock(diesel, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         ((TileEntityFluidDuctNT) level.getBlockEntity(water)).setFluidType(Fluids.WATER);
         ((TileEntityFluidDuctNT) level.getBlockEntity(diesel)).setFluidType(Fluids.DIESEL);
 
@@ -151,7 +151,7 @@ public final class FluidNetworkGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos first = helper.absolutePos(new BlockPos(2, Y, SPREAD_Z));
         for (int i = 0; i < 4; i++) {
-            level.setBlock(first.east(i), ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+            level.setBlock(first.east(i), com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         }
         BlockPos other = first.east(3);
         ((TileEntityFluidDuctNT) level.getBlockEntity(other)).setFluidType(Fluids.DIESEL);
@@ -195,7 +195,7 @@ public final class FluidNetworkGameTests {
         ServerLevel level = helper.getLevel();
         BlockPos first = helper.absolutePos(new BlockPos(2, Y, INTERIOR_Z));
         for (int i = 0; i < 5; i++) {
-            level.setBlock(first.east(i), ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+            level.setBlock(first.east(i), com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         }
         LevelNodeGraph<DuctData> graph = FluidGraph.get(level);
         BlockPos middle = first.east(2);
@@ -263,7 +263,7 @@ public final class FluidNetworkGameTests {
                 "leaded smoke never crossed an exhaust run that was never typed to it");
 
         BlockPos poison = source.east(2).north();
-        level.setBlock(poison, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+        level.setBlock(poison, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         ((TileEntityFluidDuctNT) level.getBlockEntity(poison)).setFluidType(Fluids.SMOKE_POISON);
         helper.assertTrue(graph.networkAt(poison.asLong()) == graph.networkAt(source.east(2).asLong()),
                 "a duct typed to any smoke must join the exhaust run beside it");
@@ -287,7 +287,7 @@ public final class FluidNetworkGameTests {
     }
 
     private static void duct(GameTestHelper helper, BlockPos pos) {
-        helper.getLevel().setBlock(pos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+        helper.getLevel().setBlock(pos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         ((TileEntityFluidDuctNT) helper.getLevel().getBlockEntity(pos)).setFluidType(Fluids.WATER);
     }
 

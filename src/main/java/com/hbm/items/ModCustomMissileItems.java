@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -41,14 +43,15 @@ public final class ModCustomMissileItems {
     private ModCustomMissileItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** The assembled missile's five parts; 1.7 kept them as numeric item ids on the stack NBT. */
     public static final GolemComponent<ItemCustomMissile.Parts> MISSILE_PARTS =
-            GolemComponent.of(Constants.MOD_ID, "missile_custom_parts", ItemCustomMissile.Parts.CODEC);
+            GolemComponent.of(Constants.MOD_ID, "missile_custom_parts", () -> ItemCustomMissile.Parts.CODEC); // lazy: the codec names the item registry
 
     /** 1.7 {@code missile_custom}: stack size 1, no creative tab of its own (the missile tab adds prebuilt ones). */
     public static final RegistryObject<ItemCustomMissile> missile_custom =
-            ITEMS.registerItem("missile_custom", ItemCustomMissile::new, p -> p.stacksTo(1));
+            REG.item("missile_custom", ItemCustomMissile::new, p -> p.stacksTo(1));
 
     public static final RegistryObject<ItemCustomMissilePart> mp_thruster_10_kerosene = part("mp_thruster_10_kerosene",
             p -> p.makeThruster(FuelType.KEROSENE, 1F, 1.5F, PartSize.SIZE_10).setHealth(10F));
@@ -285,18 +288,18 @@ public final class ModCustomMissileItems {
     public static final RegistryObject<ItemCustomMissilePart> mp_warhead_15_turbine = part("mp_warhead_15_turbine",
             p -> p.makeWarhead(WarheadType.TURBINE, 200F, 5F, PartSize.SIZE_15).setRarity(Rarity.STRANGE).setHealth(250F));
     public static final RegistryObject<ItemCustomMissilePart> mp_chip_1 = part("mp_c_1",
-            p -> p.makeChip(0.1F));
+            p -> p.makeChip(0.1F)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomMissilePart> mp_chip_2 = part("mp_c_2",
-            p -> p.makeChip(0.05F));
+            p -> p.makeChip(0.05F)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomMissilePart> mp_chip_3 = part("mp_c_3",
-            p -> p.makeChip(0.01F));
+            p -> p.makeChip(0.01F)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomMissilePart> mp_chip_4 = part("mp_c_4",
-            p -> p.makeChip(0.005F));
+            p -> p.makeChip(0.005F)).transform(Presets.sprite());
     public static final RegistryObject<ItemCustomMissilePart> mp_chip_5 = part("mp_c_5",
-            p -> p.makeChip(0.0F));
+            p -> p.makeChip(0.0F)).transform(Presets.sprite());
 
-    private static RegistryObject<ItemCustomMissilePart> part(String id, UnaryOperator<ItemCustomMissilePart> builder) {
-        return ITEMS.registerItem(id, props -> {
+    private static Reg.Handle<ItemCustomMissilePart> part(String id, UnaryOperator<ItemCustomMissilePart> builder) {
+        return REG.item(id, props -> {
             ItemCustomMissilePart part = builder.apply(new ItemCustomMissilePart(props));
             MissilePartTable.Row row = MissilePartTable.get(id);
             if (row != null) {

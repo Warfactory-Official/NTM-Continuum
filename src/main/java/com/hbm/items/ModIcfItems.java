@@ -5,7 +5,10 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemICFPellet;
 import com.hbm.items.machine.ItemICFPellet.EnumICFFuel;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.mojang.serialization.Codec;
+import dev.golem.core.dejson.Tints;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -23,6 +26,9 @@ public final class ModIcfItems {
     private ModIcfItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
+    /** 1.7 {@code ItemICFPellet.getColorFromItemStack} for a pellet with no NBT: the deuterium/tritium average. */
+    private static final int DEFAULT_PELLET_TINT = 0x1414AE;
 
     /** 1.7 {@code type1}: the first fuel's {@link EnumICFFuel} ordinal. */
     public static final GolemComponent<Integer> PELLET_TYPE1 = GolemComponent.integer(Constants.MOD_ID, "icf_type1");
@@ -35,7 +41,10 @@ public final class ModIcfItems {
 
     // 1.7: setMaxStackSize(1), controlTab
     public static final RegistryObject<ItemICFPellet> icf_pellet =
-            ITEMS.registerItem("icf_pellet", ItemICFPellet::new, p -> p.stacksTo(1));
+            REG.item("icf_pellet", ItemICFPellet::new, p -> p.stacksTo(1))
+                    // 1.7 two passes: pass 0 the tinted icf_pellet_bg, pass 1 the untinted icf_pellet shell over it
+                    .transform(Presets.sprite("hbm:items/icf_pellet_bg", "hbm:items/icf_pellet")
+                            .tints(Tints.customModelData(0, DEFAULT_PELLET_TINT), Tints.constant(-1)));
 
     static {
         // 1.7 getSubItems: five preset pairs, the last two muon-catalysed

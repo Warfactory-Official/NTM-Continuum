@@ -3,6 +3,9 @@ package com.hbm.tileentity.machine.oil;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.util.TickPhase;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.inventory.container.ContainerMachineRefinery;
@@ -47,7 +50,8 @@ import net.minecraft.sounds.SoundSource;
  *
  * <p>1.7's explosion damage is ported ({@link #hasExploded}: the first explosion that reaches it blows it open, it
  * burns off its tanks until extinguished and is repaired with a blowtorch, eight steel plates and four duct tape).
- * Deferred (§20): pollution/soot, the meta&lt;12 self-heal branch and checkTilt.
+ * Refining adds {@code SOOT_PER_SECOND * 5} soot a second, as in 1.7.
+ * Deferred (§20): the meta&lt;12 self-heal branch and checkTilt.
  */
 public class TileEntityMachineRefinery extends TileEntityMachineBase
         implements MenuProvider, IEnergyReceiverMK2, IFluidStandardTransceiverMK2, WorldlyContainer,
@@ -126,8 +130,8 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
 
     /**
      * 1.7's burning refinery: 10 mB a tick off every tank that still holds something; while there is fuel,
-     * everything in the 4x8x4 box is set alight and gas flames rise from the tower. (1.7 also added soot every
-     * second; the pollution system is not ported.)
+     * everything in the 4x8x4 box is set alight, gas flames rise from the tower, and 1.7's
+     * {@code SOOT_PER_SECOND * 70} soot goes up once a second.
      */
     private void burn(Level level, BlockPos pos) {
         boolean hasFuel = false;
@@ -150,6 +154,10 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
         flame.putDouble("moZ", rand.nextGaussian() * 0.05);
         com.hbm.particle.helper.HbmEffectNT.GasFlame.send(server, x + rand.nextDouble(), y + 1.5 + rand.nextDouble() * 3,
                 z + rand.nextDouble(), flame, 150);
+
+        if (TickPhase.every(level, pos, 20L)) {
+            PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 70);
+        }
     }
 
     /** 1.7 {@code explode}: once, and always on fire. */
@@ -252,6 +260,7 @@ public class TileEntityMachineRefinery extends TileEntityMachineBase
             setChanged();
         }
 
+        if (TickPhase.every(level, worldPosition, 20L)) PollutionHandler.incrementPollution(level, worldPosition, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 5);
         this.power -= 5;
     }
 

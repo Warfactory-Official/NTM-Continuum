@@ -75,7 +75,6 @@ public class TileEntityCrateTungsten extends TileEntityCrateBase implements ILas
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         if (this.isLocked()) return false;
         if (stack.getItem() == ModItems.billet_polonium.get()) return false;
-        if (stack.getItem() == ModAbilityToolItems.crucible.get() && ItemCrucible.spent(stack) > 0) return false;
         return level == null || Recipes.smeltingResult(level, stack).isEmpty();
     }
 
@@ -93,8 +92,11 @@ public class TileEntityCrateTungsten extends TileEntityCrateBase implements ILas
             if (slot.getItem() == ModItems.billet_polonium.get() && energy > 10000000)
                 result = new ItemStack(ModItems.billet_yharonite.get());
 
-            if (slot.getItem() == ModAbilityToolItems.crucible.get() && ItemCrucible.spent(slot) > 0 && energy > 10000000)
-                result = new ItemStack(ModAbilityToolItems.crucible.get());
+            // old-hbm TileEntityCrateTungsten: a crucible with fewer than three charges is recharged in place over 10 MHE
+            if (slot.getItem() == ModAbilityToolItems.crucible.get() && ItemCrucible.getCharges(slot) < 3 && energy > 10000000) {
+                ItemCrucible.charge(slot);
+                inventory.setStackInSlot(i, slot); // old-hbm: changed = true
+            }
 
             int size = slot.getCount();
 

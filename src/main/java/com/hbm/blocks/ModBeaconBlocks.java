@@ -1,5 +1,9 @@
 package com.hbm.blocks;
 
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockBeaconable;
 import com.hbm.creativetabs.HbmTab;
@@ -18,23 +22,57 @@ public final class ModBeaconBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
-    public static final RegistryObject<BlockBeaconable> block_cadmium = beacon("block_cadmium", 5.0F, 30.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_bismuth = beacon("block_bismuth", 5.0F, 30.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_coltan = beacon("block_coltan", 5.0F, 30.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_tantalium = beacon("block_tantalium", 5.0F, 30.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_niobium = beacon("block_niobium", 5.0F, 30.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_lanthanium = beacon("block_lanthanium", 5.0F, 30.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_actinium = beacon("block_actinium", 5.0F, 30.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_polymer = beacon("block_polymer", 3.0F, 10.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_bakelite = beacon("block_bakelite", 3.0F, 10.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_rubber = beacon("block_rubber", 3.0F, 10.0F, SoundType.METAL);
-    public static final RegistryObject<BlockBeaconable> block_zirconium = beacon("block_zirconium", 5.0F, 10.0F, SoundType.METAL);
+    public static final RegistryObject<BlockBeaconable> block_cadmium = beacon("block_cadmium", 5.0F, 30.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_bismuth = beacon("block_bismuth", 5.0F, 30.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_coltan = beacon("block_coltan", 5.0F, 30.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_tantalium = beacon("block_tantalium", 5.0F, 30.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_niobium = beacon("block_niobium", 5.0F, 30.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_lanthanium = beacon("block_lanthanium", 5.0F, 30.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_actinium = beacon("block_actinium", 5.0F, 30.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_polymer = beacon("block_polymer", 3.0F, 10.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_bakelite = beacon("block_bakelite", 3.0F, 10.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_rubber = beacon("block_rubber", 3.0F, 10.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockBeaconable> block_zirconium = beacon("block_zirconium", 5.0F, 10.0F, () -> SoundType.METAL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
-    private static RegistryObject<BlockBeaconable> beacon(String id, float hardness, float resistance, SoundType sound) {
-        RegistryObject<BlockBeaconable> block = BLOCKS.registerBlock(id, BlockBeaconable::new,
-                p -> p.strength(hardness, resistance).sound(sound).requiresCorrectToolForDrops());
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, Compat::blockDescription);
+    private static Reg.Handle<BlockBeaconable> beacon(String id, float hardness, float resistance, java.util.function.Supplier<SoundType> sound) {
+        Reg.Handle<BlockBeaconable> block = REG.block(id, BlockBeaconable::new,
+                p -> p.strength(hardness, resistance).sound(sound.get()).requiresCorrectToolForDrops());
+        Reg.Handle<BlockItem> item = REG.blockItem(block, Compat::blockDescription);
         ModTabs.addTo(HbmTab.BLOCKS, item);
         return block;
     }

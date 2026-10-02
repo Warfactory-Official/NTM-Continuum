@@ -92,8 +92,44 @@ public final class WeaponTableGameTests {
     public static final GameTests.Function CONFIG1_QUICK_MOVE = TESTS.function(
             "weapon_table_config1_quick_move_keeps_mod", 20,
             () -> WeaponTableGameTests::config1QuickMoveKeepsMod);
+    public static final GameTests.Function GRENADE_SUBITEMS = TESTS.function(
+            "grenade_universal_subitems_and_stack_limits", 20,
+            () -> WeaponTableGameTests::grenadeSubItemsAndStackLimits);
 
     public static void init() {}
+
+    /**
+     * 1.7 ItemGrenadeUniversal: getSubItems lists every compatible shell/filling/fuze(/extra) combination
+     * (19 pairs x 5 fuzes x 5 = 475, shell-major), and getItemStackLimit is the shell's (NUKE 1, TECH 2, else 4).
+     */
+    private static void grenadeSubItemsAndStackLimits(GameTestHelper helper) {
+        List<ItemStack> sub = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.subItems();
+        helper.assertTrue(sub.size() == 475, "grenade_universal sub-items: expected 475, got " + sub.size());
+        var first = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.getData(sub.get(0));
+        helper.assertTrue(first.shell() == com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell.FRAG
+                        && first.filling() == com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling.POWDER
+                        && first.fuze() == com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze.S3
+                        && first.extra() == null, "first grenade sub-item must be frag/powder/s3: " + first);
+        var second = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.getData(sub.get(1));
+        helper.assertTrue(second.extra() == com.hbm.items.weapon.grenade.ItemGrenadeExtra.EnumGrenadeExtra.GLUE,
+                "second grenade sub-item must add the first extra: " + second);
+        for (ItemStack stack : sub) {
+            var data = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.getData(stack);
+            helper.assertTrue(stack.getMaxStackSize() == data.shell().getStackLimit(),
+                    data + " stacks to " + stack.getMaxStackSize() + ", not " + data.shell().getStackLimit());
+        }
+        int[] expected = {4, 4, 2, 1};
+        var shells = com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell.values();
+        for (int i = 0; i < shells.length; i++) {
+            helper.assertTrue(shells[i].getStackLimit() == expected[i], shells[i] + " limit");
+        }
+        // a nuke grenade must not merge into another one
+        ItemStack nuke = com.hbm.items.weapon.grenade.ItemGrenadeUniversal.make(shells[3],
+                com.hbm.items.weapon.grenade.ItemGrenadeFilling.EnumGrenadeFilling.NUCLEAR,
+                com.hbm.items.weapon.grenade.ItemGrenadeFuze.EnumGrenadeFuze.S3);
+        helper.assertFalse(nuke.isStackable(), "a nuke grenade must not be stackable");
+        helper.succeed();
+    }
 
     /** Regression: a gun that entered by shift-click after another gun left must not crash or leak mods. */
     private static void secondGunAfterShiftClick(GameTestHelper helper) {

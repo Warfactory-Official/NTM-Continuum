@@ -1,5 +1,6 @@
 package com.hbm.world.gen;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.main.StructureManager;
 import com.hbm.world.gen.component.BunkerComponents;
@@ -45,6 +46,7 @@ public final class NTMComponentStructures {
 
     public static final DeferredRegister<StructurePieceType> PIECES =
             DeferredRegister.create(Registries.STRUCTURE_PIECE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(PIECES);
 
     // 1.7 MapGenStructureIO names, lower-cased
     public static final RegistryObject<StructurePieceType> NTM_HOUSE_1 = piece("ntmhouse1", CivilianFeatures.NTMHouse1::new);
@@ -64,7 +66,7 @@ public final class NTMComponentStructures {
     public static final RegistryObject<StructurePieceType> NTMB_POWER_ROOM = piece("ntmbpowerroom", BunkerComponents.PowerRoom::new);
 
     private static RegistryObject<StructurePieceType> piece(String name, StructurePieceType type) {
-        return PIECES.register(name, () -> type);
+        return REG.register(Registries.STRUCTURE_PIECE, name, () -> type);
     }
 
     public static final String FEATURES = "features";

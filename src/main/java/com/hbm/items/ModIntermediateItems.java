@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -29,6 +31,7 @@ public final class ModIntermediateItems {
     private ModIntermediateItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     private static final Map<EnumChunkType, RegistryObject<Item>> CHUNKS = new EnumMap<>(EnumChunkType.class);
     private static final Map<EnumCircuitType, RegistryObject<Item>> CIRCUITS = new EnumMap<>(EnumCircuitType.class);
@@ -40,10 +43,12 @@ public final class ModIntermediateItems {
         for (EnumExpensiveType v : EnumExpensiveType.VALUES) EXPENSIVE.put(v, reg("item_expensive", v.name()));
     }
 
+    /** {@code <base>_<variant>}, drawn with the 1.7 metadata sprite {@code <base>.<variant>}. */
     private static RegistryObject<Item> reg(String base, String variant) {
-        RegistryObject<Item> item = ITEMS.registerSimpleItem(base + "_" + variant.toLowerCase(Locale.US));
-        ModTabs.addTo(HbmTab.MATERIALS, item);
-        return item;
+        String name = variant.toLowerCase(Locale.US);
+        return REG.item(base + "_" + name)
+                .transform(Presets.sprite("hbm:items/" + base + "." + name))
+                .tab(HbmTab.MATERIALS);
     }
 
     public static Item chunk(EnumChunkType v)         { return CHUNKS.get(v).get(); }

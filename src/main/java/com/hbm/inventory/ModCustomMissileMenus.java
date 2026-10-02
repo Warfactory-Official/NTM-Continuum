@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerCompactLauncher;
 import com.hbm.inventory.container.ContainerLaunchPadRusted;
@@ -17,15 +18,16 @@ public final class ModCustomMissileMenus {
     private ModCustomMissileMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerMachineMissileAssembly>> MISSILE_ASSEMBLY =
-            MENUS.register("machine_missile_assembly", () -> Menus.typeWithPos(ContainerMachineMissileAssembly::new));
+            REG.menu("machine_missile_assembly", () -> Menus.typeWithPos(ContainerMachineMissileAssembly::new));
     public static final RegistryObject<MenuType<ContainerCompactLauncher>> COMPACT_LAUNCHER =
-            MENUS.register("compact_launcher", () -> Menus.typeWithPos(ContainerCompactLauncher::new));
+            REG.menu("compact_launcher", () -> Menus.typeWithPos(ContainerCompactLauncher::new));
     public static final RegistryObject<MenuType<ContainerLaunchTable>> LAUNCH_TABLE =
-            MENUS.register("launch_table", () -> Menus.typeWithPos(ContainerLaunchTable::new));
+            REG.menu("launch_table", () -> Menus.typeWithPos(ContainerLaunchTable::new));
     public static final RegistryObject<MenuType<ContainerLaunchPadRusted>> LAUNCH_PAD_RUSTED =
-            MENUS.register("launch_pad_rusted", () -> Menus.typeWithPos(ContainerLaunchPadRusted::new));
+            REG.menu("launch_pad_rusted", () -> Menus.typeWithPos(ContainerLaunchPadRusted::new));
 
     public static void init() {}
 }

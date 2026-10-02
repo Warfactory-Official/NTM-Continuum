@@ -28,8 +28,6 @@ import org.jspecify.annotations.Nullable;
  * <p>{@link #ROT_IDX} is the pad's facing, pushed to the client by the launch pad at spawn. Its only
  * consumer upstream is the contrail, which is deferred, so it is currently carried and not read — kept
  * because the launch pad sets it and dropping it would silently change what a future contrail sees.
- *
- * <p>Not ported yet: {@code EntityMissileVolcano} (needs the volcano blocks) — IMPLEMENTATION.md §20.
  */
 public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
 
@@ -165,8 +163,23 @@ public abstract class EntityMissileTier4 extends EntityMissileBaseNT {
         public void onMissileImpact(HitResult mop) {
             com.hbm.explosion.ExplosionLarge.explode(level(), getX(), getY(), getZ(), 10.0F, true, true, true);
 
-            // 1.7 then fills a 3x3x3 with volcanic lava around a volcano core. Neither block is registered in
-            // this port yet; the blast lands, the volcano does not grow, and the gap is recorded in the manifest.
+            // 1.7 then fills a 3x3x3 with volcanic lava (plain setBlock, meta 0, flags 3) and puts the volcano core
+            // (meta 0 = the bare, static-active "volcano_core") in the centre cell. Positions use floor(pos + offset).
+            net.minecraft.world.level.block.state.BlockState lava =
+                    com.hbm.blocks.ModFluidNetBlocks.volcanic_lava_block.get().defaultBlockState();
+            for (int x = -1; x <= 1; x++) {
+                for (int y = -1; y <= 1; y++) {
+                    for (int z = -1; z <= 1; z++) {
+                        level().setBlock(new net.minecraft.core.BlockPos(
+                                (int) Math.floor(getX() + x), (int) Math.floor(getY() + y), (int) Math.floor(getZ() + z)),
+                                lava, net.minecraft.world.level.block.Block.UPDATE_ALL);
+                    }
+                }
+            }
+            level().setBlock(new net.minecraft.core.BlockPos(
+                    (int) Math.floor(getX()), (int) Math.floor(getY()), (int) Math.floor(getZ())),
+                    com.hbm.blocks.ModTerrainBlocks.volcanoCore("volcano_core").defaultBlockState(),
+                    net.minecraft.world.level.block.Block.UPDATE_ALL);
         }
 
         @Override public ItemStack getDebrisRareDrop() { return new ItemStack(ModItems.warhead_volcano.get()); }

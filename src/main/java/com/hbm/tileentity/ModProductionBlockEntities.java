@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
@@ -20,30 +21,31 @@ public final class ModProductionBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineRotaryFurnace>> ROTARY_FURNACE =
-            BLOCK_ENTITIES.register("machine_rotary_furnace", () -> BlockEntities.ticking(
+            REG.blockEntity("machine_rotary_furnace", () -> BlockEntities.ticking(
                     TileEntityMachineRotaryFurnace::new, TileEntityMachineRotaryFurnace::clientTick,
                     TileEntityMachineRotaryFurnace::serverTick, ModProductionBlocks.MACHINE_ROTARY_FURNACE.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineThresher>> THRESHER =
-            BLOCK_ENTITIES.register("machine_thresher", () -> BlockEntities.ticking(
+            REG.blockEntity("machine_thresher", () -> BlockEntities.ticking(
                     TileEntityMachineThresher::new, TileEntityMachineThresher::clientTick,
                     TileEntityMachineThresher::serverTick, ModProductionBlocks.MACHINE_THRESHER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMicrowave>> MICROWAVE =
-            BLOCK_ENTITIES.register("machine_microwave", () -> BlockEntities.serverTicking(
+            REG.blockEntity("machine_microwave", () -> BlockEntities.serverTicking(
                     TileEntityMicrowave::new, (level, pos, state, be) -> TileEntityMicrowave.serverTick(level, pos, state, be),
                     ModProductionBlocks.MACHINE_MICROWAVE.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineAutocrafter>> AUTOCRAFTER =
-            BLOCK_ENTITIES.register("machine_autocrafter", () -> BlockEntities.serverTicking(
+            REG.blockEntity("machine_autocrafter", () -> BlockEntities.serverTicking(
                     TileEntityMachineAutocrafter::new,
                     (level, pos, state, be) -> TileEntityMachineAutocrafter.serverTick(level, pos, state, be),
                     ModProductionBlocks.MACHINE_AUTOCRAFTER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityConveyorPress>> CONVEYOR_PRESS =
-            BLOCK_ENTITIES.register("machine_conveyor_press", () -> BlockEntities.ticking(
+            REG.blockEntity("machine_conveyor_press", () -> BlockEntities.ticking(
                     TileEntityConveyorPress::new, TileEntityConveyorPress::clientTick,
                     TileEntityConveyorPress::serverTick, ModProductionBlocks.MACHINE_CONVEYOR_PRESS.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineFunnel>> FUNNEL =
-            BLOCK_ENTITIES.register("machine_funnel", () -> BlockEntities.serverTicking(
+            REG.blockEntity("machine_funnel", () -> BlockEntities.serverTicking(
                     TileEntityMachineFunnel::new, (level, pos, state, be) -> TileEntityMachineFunnel.serverTick(level, pos, state, be),
                     ModProductionBlocks.MACHINE_FUNNEL.get()));
 

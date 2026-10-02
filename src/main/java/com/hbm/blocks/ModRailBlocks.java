@@ -1,5 +1,9 @@
 package com.hbm.blocks;
 
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Variants;
 import com.hbm.Constants;
 import com.hbm.blocks.rail.BlockRailNTM;
 import com.hbm.blocks.rail.RailNarrowCurve;
@@ -14,7 +18,6 @@ import com.hbm.blocks.rail.RailStandardStraightShort;
 import com.hbm.blocks.rail.RailStandardSwitch;
 import com.hbm.blocks.rail.RailStandardSwitchFlipped;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.tileentity.BlockEntityRail;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
@@ -43,17 +46,28 @@ public final class ModRailBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    /** Typed register(s): REG picks them without naming a registry key, which 1.20.1 cannot do in the build-time Dejson JVM. */
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+            DeferredRegister.createBlockEntityTypes(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS, BLOCK_ENTITIES);
+
+    /**
+     * The blockstate is deliberately empty: the rail BER owns the OBJ, while the state still has to enumerate
+     * every {@code cell/facing/waterlogged} combination so the client never falls back to a missing model.
+     */
+    private static final Preset RAIL = Presets.rendered(Variants.product(
+            Variants.uniform("cell", "false", "true"),
+            Variants.uniform("facing", "north", "east", "south", "west"),
+            Variants.uniform("waterlogged", "false", "true")));
 
     public static final List<RegistryObject<? extends BlockRailNTM>> RAILS = new ArrayList<>();
 
     private static <B extends BlockRailNTM> RegistryObject<B> rail(String name,
             java.util.function.Function<BlockBehaviour.Properties, B> factory) {
-        RegistryObject<B> block = BLOCKS.registerBlock(name, factory,
-                p -> p.strength(5.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops());
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(name, block);
-        ModTabs.addTo(HbmTab.MACHINES, item);
+        RegistryObject<B> block = REG.block(name, factory,
+                        p -> p.strength(5.0F, 6.0F).noOcclusion().requiresCorrectToolForDrops())
+                .transform(RAIL);
+        REG.blockItem(block).tab(HbmTab.MACHINES);
         RAILS.add(block);
         return block;
     }
@@ -83,7 +97,7 @@ public final class ModRailBlocks {
 
     /** One block entity type for the family: every rail carries the switch state (1.7 TileEntityRailSwitch). */
     public static final RegistryObject<BlockEntityType<BlockEntityRail>> RAIL_ENTITY =
-            BLOCK_ENTITIES.register("rail", () -> BlockEntities.type(BlockEntityRail::new,
+            REG.blockEntity("rail", () -> BlockEntities.type(BlockEntityRail::new,
                     rail_large_straight.get(), rail_large_straight_short.get(), rail_large_curve.get(),
                     rail_large_curve_7.get(), rail_large_curve_9.get(), rail_large_ramp.get(), rail_large_buffer.get(),
                     rail_large_switch.get(), rail_large_switch_flipped.get(), rail_narrow_straight.get(),

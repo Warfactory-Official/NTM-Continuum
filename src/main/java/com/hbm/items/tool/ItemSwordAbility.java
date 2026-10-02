@@ -30,7 +30,12 @@ public class ItemSwordAbility extends CompatSwordItem {
     private boolean gavelWhack;
 
     public ItemSwordAbility(Properties properties, float damage, double movement, ToolTier material) {
-        super(properties, material, damage, Tools.SWORD_SPEED, movement);
+        this(properties, damage, Tools.SWORD_SPEED, movement, material);
+    }
+
+    /** With an explicit attack-speed modifier (old-hbm's crucible named none: 0). */
+    protected ItemSwordAbility(Properties properties, float damage, float attackSpeed, double movement, ToolTier material) {
+        super(properties, material, damage, attackSpeed, movement);
         this.damage = damage;
         this.movement = movement;
     }

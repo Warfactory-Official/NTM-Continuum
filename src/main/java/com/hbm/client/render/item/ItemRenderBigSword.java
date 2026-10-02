@@ -42,7 +42,7 @@ final class ItemRenderBigSword implements CustomItemRenderer {
         pose.mulPose(Axis.ZP.rotationDegrees(-135.0F));
         pose.mulPose(Axis.YP.rotationDegrees(90.0F));
         pose.translate(0.0F, 0.4F, -0.7F);
-        sink.submitCustomGeometry(pose, culled(TEXTURE), (p, buffer) -> {
+        sink.submitCustomGeometry(pose, heldFaces(type, TEXTURE), (p, buffer) -> {
             PoseStack local = new PoseStack();
             local.last().pose().set(p.pose());
             local.last().normal().set(p.normal());

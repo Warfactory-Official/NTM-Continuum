@@ -292,7 +292,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                  WavefrontObj passModel = objId.equals(passObj) ? obj : WavefrontObj.load(passObj);
                  modelPasses.add(new MachineItemModel.ModelPass(passModel,
                          cutout(passTexture, noCull), strings(pass, "parts"), vector(translate),
-                         passSteps(pass)));
+                         passSteps(pass), pass.has("tint") ? pass.get("tint").getAsInt()
+                                 : MachineItemModel.ModelPass.UNTINTED, f(pass, "scale", 1F)));
              }
          }
 
@@ -348,7 +349,8 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                  spinPivot.size() == 3 ? new Vector3f(spinPivot.get(0), spinPivot.get(1), spinPivot.get(2)) : new Vector3f(),
                     materialTypes, partTypes,
                     bool(json, "spin", false), contextTransforms, string(json, "animation", ""),
-                     strings(json, "parts"), vector(primaryTranslate), modelPasses, f(json, "guiSpinSpeed", 0F));
+                     strings(json, "parts"), vector(primaryTranslate), modelPasses, f(json, "guiSpinSpeed", 0F))
+                    .withGuiSteps(guiSteps(json));
      }
 
     private static Surface cutout(Identifier texture, boolean noCull) {
@@ -368,6 +370,24 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
                     vector(rotation), vector(translation), f(transform, "scale", 1F)));
         }
         return Map.copyOf(out);
+    }
+
+    // The GUI-only renderInventory tail: [{"rotate": [..]}, {"translate": [..]}, {"scale": [..]}, {"spin": [axis]}].
+    private static List<MachineItemModel.GuiStep> guiSteps(JsonObject json) {
+        JsonElement value = json.get("guiSteps");
+        if (value == null || !value.isJsonArray()) return List.of();
+        List<MachineItemModel.GuiStep> steps = new ArrayList<>();
+        for (JsonElement element : value.getAsJsonArray()) {
+            if (!element.isJsonObject()) continue;
+            JsonObject step = element.getAsJsonObject();
+            for (String kind : List.of("spin", "scale", "translate", "rotate")) {
+                if (step.has(kind)) {
+                    steps.add(new MachineItemModel.GuiStep(kind, vector(floats(step, kind))));
+                    break;
+                }
+            }
+        }
+        return List.copyOf(steps);
     }
 
     // A pass's own ordered transform: [{"rotate": [..]}, {"translate": [..]}, ...].
@@ -501,7 +521,7 @@ public static MachineItemModel get(Identifier item, ItemStack stack) {
         com.hbm.client.render.item.CustomItemRenderer.Type type = com.hbm.client.render.item.CustomItemRenderer.Type.of(context);
         dev.golem.core.render.RecordingSubmitSink sink = new dev.golem.core.render.RecordingSubmitSink();
         if (entry.renderer().handles(stack, type)) {
-            entry.renderer().render(stack, type, poseStack, sink, light, overlay, dev.golem.core.render.ItemRenderContext.owner());
+            entry.renderer().render(stack, context, poseStack, sink, light, overlay, dev.golem.core.render.ItemRenderContext.owner());
         } else if (entry.sprite() != null && entry.spriteFrame()) {
             dev.golem.core.render.ItemSprites.submit(poseStack, sink, entry.sprite(), light, overlay);
         } else if (entry.sprite() != null) {

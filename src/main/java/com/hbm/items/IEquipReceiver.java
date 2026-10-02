@@ -11,4 +11,19 @@ import net.minecraft.world.item.ItemStack;
 public interface IEquipReceiver {
 
     void onEquip(Player player, ItemStack stack);
+
+    /**
+     * What "the held item changed" compares. The item, as in 1.7; a receiver ported from old-hbm (1.12
+     * {@code ItemStack.areItemsEqual}: item and damage) answers with its damage included.
+     */
+    default Object equipKey(ItemStack stack) {
+        return stack.getItem();
+    }
+
+    /**
+     * old-hbm (1.12) also told a receiver when it entered the <em>off</em> hand ({@code onEquip(player, OFF_HAND)}); 1.7
+     * had no off hand. Receivers ported from old-hbm override this; the default ignores the off hand.
+     */
+    default void onEquipOffHand(Player player, ItemStack stack) {}
+
 }

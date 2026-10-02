@@ -1,9 +1,12 @@
 package com.hbm.inventory.fluid.trait;
 
 import com.hbm.inventory.fluid.FluidType;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,8 +17,8 @@ import java.util.Map;
 public final class FT_Coolable {
 
     public enum CoolingType {
-        TURBINE("trait.ctype.turbine"),
-        HEATEXCHANGER("trait.ctype.heatexch");
+        TURBINE("hbmfluid.trait.steam"),
+        HEATEXCHANGER("hbmfluid.trait.coolable");
 
         public static final CoolingType[] VALUES = values();
         public final String name;
@@ -63,5 +66,19 @@ public final class FT_Coolable {
 
     public Map<CoolingType, Double> getEfficiencies() {
         return efficiency;
+    }
+
+    /**
+     * 1.7 {@code addInfoHidden}: {@code "Thermal capacity: 200 TU per 100mB"} in red, then one
+     * {@code "[Turbine Steam] Efficiency: 100%"} line per cooling type with a positive efficiency.
+     */
+    public void addInfoHidden(List<Component> info) {
+        info.add(Component.translatable("hbmfluid.trait.thermalCapacity")
+                .append(": " + heatEnergy + " ").append(Component.translatable("hbmfluid.trait.perTU"))
+                .append(" " + amountReq + "mB").withStyle(ChatFormatting.RED));
+        for (CoolingType type : CoolingType.values()) {
+            double eff = getEfficiency(type);
+            if (eff > 0) info.add(FT_Heatable.efficiencyLine(type.name, eff));
+        }
     }
 }

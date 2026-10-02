@@ -1,5 +1,6 @@
 package com.hbm.world.gen;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.config.WorldConfig;
 import com.hbm.world.feature.AustraliumFeature;
@@ -40,63 +41,64 @@ public final class ModFeatures {
 
     public static final DeferredRegister<Feature<?>> FEATURES =
             DeferredRegister.create(Registries.FEATURE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(FEATURES);
 
     // ---------------------------------------------------------------- 1.7 HbmWorldGen: ores
 
     /** One 1.7 {@code WorldGenMinable} vein; the count, gate and height band are placement. */
     public static final RegistryObject<Feature<OreConfiguration>> LEGACY_ORE =
-            FEATURES.register("legacy_ore", () -> new LegacyOreFeature(OreConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "legacy_ore", () -> new LegacyOreFeature(OreConfiguration.CODEC));
 
     /** One 1.7 {@code DepthDeposit} sphere. */
     public static final RegistryObject<Feature<DepthDepositFeature.Config>> DEPTH_DEPOSIT =
-            FEATURES.register("depth_deposit", () -> new DepthDepositFeature(DepthDepositFeature.Config.CODEC));
+            REG.register(Registries.FEATURE, "depth_deposit", () -> new DepthDepositFeature(DepthDepositFeature.Config.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> BEDROCK_ORE =
-            FEATURES.register("bedrock_ore", () -> new BedrockDepositFeature(NoneFeatureConfiguration.CODEC, false));
+            REG.register(Registries.FEATURE, "bedrock_ore", () -> new BedrockDepositFeature(NoneFeatureConfiguration.CODEC, false));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> BEDROCK_ORE_NETHER =
-            FEATURES.register("bedrock_ore_nether", () -> new BedrockDepositFeature(NoneFeatureConfiguration.CODEC, true));
+            REG.register(Registries.FEATURE, "bedrock_ore_nether", () -> new BedrockDepositFeature(NoneFeatureConfiguration.CODEC, true));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> COLTAN_DEPOSIT =
-            FEATURES.register("coltan_deposit", () -> new ColtanDepositFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "coltan_deposit", () -> new ColtanDepositFeature(NoneFeatureConfiguration.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> AUSTRALIUM =
-            FEATURES.register("australium", () -> new AustraliumFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "australium", () -> new AustraliumFeature(NoneFeatureConfiguration.CODEC));
 
     /** The nether's smoldering-netherrack and geyser column passes. */
     public static final RegistryObject<Feature<BlockStateConfiguration>> CRUST_COLUMN =
-            FEATURES.register("crust_column", () -> new CrustColumnFeature(BlockStateConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "crust_column", () -> new CrustColumnFeature(BlockStateConfiguration.CODEC));
 
     // ---------------------------------------------------------------- 1.7 HbmWorldGen: surface
 
     public static final RegistryObject<Feature<BlockStateConfiguration>> LEGACY_FLOWERS =
-            FEATURES.register("legacy_flowers", () -> new LegacyFlowerFeature(BlockStateConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "legacy_flowers", () -> new LegacyFlowerFeature(BlockStateConfiguration.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> GEYSER_CHLORINE =
-            FEATURES.register("geyser_chlorine", () -> new Geyser(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "geyser_chlorine", () -> new Geyser(NoneFeatureConfiguration.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> FALLEN_METEORITE =
-            FEATURES.register("fallen_meteorite", () -> new FallenMeteoriteFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "fallen_meteorite", () -> new FallenMeteoriteFeature(NoneFeatureConfiguration.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> PINK_TREE =
-            FEATURES.register("pink_tree", () -> new PinkTreeFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "pink_tree", () -> new PinkTreeFeature(NoneFeatureConfiguration.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> GLYPHID_HIVE =
-            FEATURES.register("glyphid_hive", () -> new GlyphidHiveFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "glyphid_hive", () -> new GlyphidHiveFeature(NoneFeatureConfiguration.CODEC));
 
     // ---------------------------------------------------------------- 1.7 HbmWorld: chain-loaded terrain (MapGen)
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> OIL_BUBBLE =
-            FEATURES.register("oil_bubble", () -> MapGenBubble.oil(NoneFeatureConfiguration.CODEC, WorldConfig.oilSpawn));
+            REG.register(Registries.FEATURE, "oil_bubble", () -> MapGenBubble.oil(NoneFeatureConfiguration.CODEC, WorldConfig.oilSpawn));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> OIL_SAND_BUBBLE =
-            FEATURES.register("oil_sand_bubble", () -> MapGenBubble.oilSand(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "oil_sand_bubble", () -> MapGenBubble.oilSand(NoneFeatureConfiguration.CODEC));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> BEDROCK_OIL =
-            FEATURES.register("bedrock_oil", () -> new MapGenBedrockOil(NoneFeatureConfiguration.CODEC, WorldConfig.bedrockOilSpawn));
+            REG.register(Registries.FEATURE, "bedrock_oil", () -> new MapGenBedrockOil(NoneFeatureConfiguration.CODEC, WorldConfig.bedrockOilSpawn));
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> SELLAFIELD_CRATER =
-            FEATURES.register("sellafield_crater", () -> new MapGenCrater(NoneFeatureConfiguration.CODEC, WorldConfig.radfreq, Biomes.DESERT));
+            REG.register(Registries.FEATURE, "sellafield_crater", () -> new MapGenCrater(NoneFeatureConfiguration.CODEC, WorldConfig.radfreq, Biomes.DESERT));
 
     // ---------------------------------------------------------------- 1.7 noise features (DecorateBiomeEvent)
 
@@ -106,15 +108,15 @@ public final class ModFeatures {
      * not down yet. 1.7 ran the noise features during biome decoration and {@code HbmWorldGen} after it.
      */
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> SCHIST_STRATUM =
-            FEATURES.register("schist_stratum", () -> new SchistStratumFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "schist_stratum", () -> new SchistStratumFeature(NoneFeatureConfiguration.CODEC));
 
     /** The sulfur and asbestos cave-wall strata (the old {@code OreCave} pair). */
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ORE_CAVES =
-            FEATURES.register("ore_caves", () -> new OreCaveFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "ore_caves", () -> new OreCaveFeature(NoneFeatureConfiguration.CODEC));
 
     /** The hematite / bauxite / malachite 3D-noise layers (the old {@code OreLayer3D} trio). */
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> ORE_LAYERS =
-            FEATURES.register("ore_layers", () -> new OreLayer3DFeature(NoneFeatureConfiguration.CODEC));
+            REG.register(Registries.FEATURE, "ore_layers", () -> new OreLayer3DFeature(NoneFeatureConfiguration.CODEC));
 
     public static void init() {}
 }

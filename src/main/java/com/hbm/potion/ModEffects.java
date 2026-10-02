@@ -6,6 +6,7 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
+import com.hbm.registration.Reg;
 
 /** HBM status effects, matching the 1.12.2 {@code HbmPotion} registry. */
 public final class ModEffects {
@@ -14,10 +15,11 @@ public final class ModEffects {
 
     public static final DeferredRegister<MobEffect> EFFECTS =
             DeferredRegister.create(Registries.MOB_EFFECT, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(EFFECTS);
 
     /** Colour = the old {@code HbmPotion.radiation} liquid colour (8700200). */
     public static final RegistryObject<MobEffect> RADIATION =
-            EFFECTS.register("radiation", () -> new HbmEffectRadiation(MobEffectCategory.HARMFUL, 8700200));
+            REG.register(Registries.MOB_EFFECT, "radiation", () -> new HbmEffectRadiation(MobEffectCategory.HARMFUL, 8700200));
 
     public static final RegistryObject<MobEffect> TAINT = effect("taint", MobEffectCategory.HARMFUL, 8388736,
             HbmEffect.Kind.TAINT);
@@ -44,7 +46,7 @@ public final class ModEffects {
 
     private static RegistryObject<MobEffect> effect(String id, MobEffectCategory category, int color,
                                                     HbmEffect.Kind kind) {
-        return EFFECTS.register(id, () -> kind == null
+        return REG.register(Registries.MOB_EFFECT, id, () -> kind == null
                 ? new PassiveHbmEffect(category, color)
                 : new HbmEffect(category, color, kind));
     }

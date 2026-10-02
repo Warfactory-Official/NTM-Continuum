@@ -1,10 +1,10 @@
 package com.hbm.entity.missile;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.function.Function;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -25,16 +25,17 @@ import net.minecraft.world.level.Level;
  *       its tracker rotation hack.
  * </ul>
  *
- * <p>Only the missiles whose warheads are ported are registered. A missile item with no entry here is
- * simply not launchable — see {@code ModMissileItems} and IMPLEMENTATION.md §20 for what each of the
- * remaining ones is waiting on.
+ * <p>The schrabidium, black-hole, EMP, test, cluster, strong-cluster, rain, drill, volcano, shuttle and
+ * custom missiles are registered in {@code ModNtmEntities}; this class holds the rest. Every launchable
+ * missile item has an entity type between the two.
  */
 public final class ModMissileEntities {
 
     private ModMissileEntities() {}
 
     public static final DeferredRegister<EntityType<?>> ENTITY_TYPES =
-            DeferredRegister.create(Registries.ENTITY_TYPE, Constants.MOD_ID);
+            DeferredRegister.createEntityTypes(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ENTITY_TYPES);
 
     // --- tier 0 ---
 
@@ -91,7 +92,7 @@ public final class ModMissileEntities {
             missile("entity_missile_stealth", EntityMissileStealth::new);
     /** Taller and thinner than the rest: upstream sizes the interceptor 1 × 8. */
     public static final RegistryObject<EntityType<EntityMissileAntiBallistic>> MISSILE_ANTI_BALLISTIC =
-            ENTITY_TYPES.register("entity_missile_ab", key -> dev.golem.core.registry.Entities.build(
+            REG.entity("entity_missile_ab", key -> dev.golem.core.registry.Entities.build(
                     EntityType.Builder.<EntityMissileAntiBallistic>of(EntityMissileAntiBallistic::new, MobCategory.MISC)
                             .sized(1.0F, 8.0F)
                             .clientTrackingRange(64)
@@ -99,7 +100,7 @@ public final class ModMissileEntities {
 
     private static <T extends net.minecraft.world.entity.Entity> RegistryObject<EntityType<T>> missile(
             String id, EntityType.EntityFactory<T> factory) {
-        return ENTITY_TYPES.register(id, key -> dev.golem.core.registry.Entities.build(
+        return REG.entity(id, key -> dev.golem.core.registry.Entities.build(
                 EntityType.Builder.of(factory, MobCategory.MISC)
                         .sized(1.5F, 1.5F)
                         .clientTrackingRange(64)

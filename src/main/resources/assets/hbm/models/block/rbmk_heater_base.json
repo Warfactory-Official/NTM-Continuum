@@ -1,0 +1,13 @@
+{
+  "textures": {
+    "particle": "hbm:blocks/rbmk/rbmk_heater_side",
+    "side": "hbm:blocks/rbmk/rbmk_heater_side",
+    "top": "hbm:blocks/rbmk/rbmk_heater_top",
+    "cover_side": "hbm:blocks/rbmk/rbmk_heater_cover_side",
+    "cover_top": "hbm:blocks/rbmk/rbmk_heater_cover_top",
+    "glass_side": "hbm:blocks/rbmk/rbmk_heater_glass_side",
+    "glass_top": "hbm:blocks/rbmk/rbmk_heater_glass_top",
+    "pipe_side": "hbm:blocks/rbmk/rbmk_heater_pipe_side",
+    "pipe_top": "hbm:blocks/rbmk/rbmk_heater_pipe_top"
+  }
+}

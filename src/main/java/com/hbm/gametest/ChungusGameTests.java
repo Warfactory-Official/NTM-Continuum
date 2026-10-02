@@ -123,7 +123,7 @@ public final class ChungusGameTests {
                 "assets/hbm/textures/models/machines/chungus.png",
                 "assets/hbm/sounds/block/chungusturbine.ogg",
                 "assets/hbm/sounds/block/largeturbine.ogg",
-                // the blockstate is the shared renderer placeholder (PowerGenDeclarations), so no block model
+                // the blockstate is the shared renderer placeholder (ModPowerGenBlocks, Presets.rendered), so no block model
                 "assets/hbm/blockstates/machine_chungus.json",
                 "assets/hbm/items/machine_chungus.json",
                 "data/hbm/loot_table/blocks/machine_chungus.json",

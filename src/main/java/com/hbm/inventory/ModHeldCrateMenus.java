@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerCrateTungsten;
 import com.hbm.inventory.container.ContainerSafe;
@@ -22,18 +23,19 @@ public final class ModHeldCrateMenus {
     private ModHeldCrateMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
-    public static final RegistryObject<MenuType<MenuCrate>> CRATE_HELD = MENUS.register("crate_held",
+    public static final RegistryObject<MenuType<MenuCrate>> CRATE_HELD = REG.menu("crate_held",
             () -> Menus.typeWithHand((id, inventory, hand) -> {
                 CrateHeldOpening.Kind kind = CrateHeldOpening.kindOf(inventory.player.getItemInHand(hand));
                 if (kind == null) kind = CrateHeldOpening.Kind.IRON;
                 return new MenuCrate(ModHeldCrateMenus.CRATE_HELD.get(), id, inventory, CrateHeldOpening.crateType(kind),
                         new SimpleContainer(CrateHeldOpening.slots(kind)), Compat.selectedSlot(inventory.player));
             }));
-    public static final RegistryObject<MenuType<ContainerCrateTungsten>> CRATE_TUNGSTEN_HELD = MENUS.register(
+    public static final RegistryObject<MenuType<ContainerCrateTungsten>> CRATE_TUNGSTEN_HELD = REG.menu(
             "crate_tungsten_held", () -> Menus.typeWithHand((id, inventory, hand) ->
                     new ContainerCrateTungsten(id, inventory, new SimpleContainer(27), Compat.selectedSlot(inventory.player))));
-    public static final RegistryObject<MenuType<ContainerSafe>> SAFE_HELD = MENUS.register(
+    public static final RegistryObject<MenuType<ContainerSafe>> SAFE_HELD = REG.menu(
             "safe_held", () -> Menus.typeWithHand((id, inventory, hand) ->
                     new ContainerSafe(id, inventory, new SimpleContainer(15), Compat.selectedSlot(inventory.player))));
 

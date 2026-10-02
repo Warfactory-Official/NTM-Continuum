@@ -6,9 +6,6 @@ import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Drops;
-import dev.golem.core.dejson.Models;
-import dev.golem.core.dejson.Variants;
 
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
@@ -16,11 +13,11 @@ import static dev.golem.core.dejson.Crafting.shapeless;
 import static dev.golem.core.dejson.Crafting.stack;
 
 /**
- * Dejson declarations for the radar and utility machines. Touches no Minecraft class: it runs in a plain JVM
- * from {@code dejson.gradle.kts}. The family's own item ids are spelled out, since {@code ItemIds} is generated
- * from the registry after this wave.
+ * The radar and utility machines' typed OBJ item data and recipes; the blocks' models, blockstates and loot and
+ * the plain items' sprites are stated on their registrations ({@code ModRadarUtilityBlocks},
+ * {@code ModRadarUtilityItems}). Touches no Minecraft class: it runs in a plain JVM from {@code dejson.gradle.kts}.
  *
- * <p>The renderer-drawn blocks carry the empty placeholder model. Their items are 1.7's {@code ItemRenderBase}
+ * <p>The renderer-drawn blocks' items are 1.7's {@code ItemRenderBase}
  * entries, each with its {@code renderInventory} translate/scale as the GUI frame and its {@code renderCommon}
  * as the model transform. The large radar's inventory dish turned with the wall clock; the item model has no
  * Y-axis part spin, so the dish stands still there.
@@ -36,49 +33,11 @@ public final class RadarUtilityDeclarations {
         if (declared) return;
         declared = true;
 
-        blocks();
         items();
-        drops();
         recipes();
     }
 
-    private static void blocks() {
-        String placeholder = "hbm:block/machine_dummy_empty";
-        for (String single : new String[]{"machine_radar", "machine_forcefield"}) {
-            Dejson.block(NS, single).rendered(placeholder).states(Variants.simple()).register();
-        }
-        Dejson.block(NS, "soyuz_capsule").rendered(placeholder)
-                .states(Variants.uniform("rusted", "false", "true")).register();
-        for (String folded : new String[]{"machine_radar_large", "radar_screen", "machine_orbus"}) {
-            Dejson.block(NS, folded).rendered(placeholder)
-                    .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
-                            Variants.uniform("cell", "false", "true"))).register();
-        }
-
-        // 1.7 icons: teleporter_top/_bottom/_side; the anchor's bottom is its side
-        Dejson.block(NS, "machine_teleporter")
-                .models(Models.cubeBottomTop("hbm:blocks/teleporter_bottom", "hbm:blocks/teleporter_side",
-                        "hbm:blocks/teleporter_top"))
-                .states(Variants.simple()).blockItemDirect().register();
-        Dejson.block(NS, "teleanchor")
-                .models(Models.cubeBottomTop("hbm:blocks/tele_anchor_side", "hbm:blocks/tele_anchor_side",
-                        "hbm:blocks/tele_anchor_top"))
-                .states(Variants.simple()).blockItemDirect().register();
-
-        // 1.7 BlockSeal.getIcon: seal_frame everywhere but the one face that looks at the placer
-        Dejson.block(NS, "seal_controller")
-                .models(Models.orientable("hbm:blocks/seal_controller", "hbm:blocks/seal_frame", "hbm:blocks/seal_frame"))
-                .states(Variants.product(Variants.facing(), Variants.uniform("powered", "false", "true")))
-                .blockItemDirect().register();
-        Dejson.block(NS, "seal_hatch").models(Models.cubeAll("hbm:blocks/seal_hatch_3"))
-                .states(Variants.simple()).blockItemDirect().register();
-    }
-
     private static void items() {
-        for (String sprite : new String[]{"radar_linker", "linker", "anchor_remote", "upgrade_radius", "upgrade_health"}) {
-            Dejson.item(NS, sprite).models(Models.generated("hbm:items/" + sprite)).register();
-        }
-
         // ItemRenderLibrary machine_radar: inventory T(0,-4,0) S(5); Base, then T(-0.125,0,0) the dish in its own skin
         {
             JsonObject model = machine("hbm:models/machines/radar.obj", "hbm:textures/models/machines/radar_base.png");
@@ -96,11 +55,12 @@ public final class RadarUtilityDeclarations {
             model.addProperty("animation", "radar_large"); // G-C: the dish turns, 1.7 currentTimeMillis % 3600 * 0.1
             item("machine_radar_large", model);
         }
-        // RenderRadarScreen item: inventory T(0,-3,0) S(5.5); T(0,0,-0.5) renderAll. The item frame centres the
-        // panel on its own bounds, which absorbs the half-block shift, so it is not restated.
+        // RenderRadarScreen item: inventory T(0,-3,0) S(5.5); T(0,0,-0.5) renderAll. rawLegacyTransform does not
+        // re-centre on the OBJ bounds, so the half-block shift is restated (icon-P1 2026-10-01).
         {
             JsonObject model = machine("hbm:models/machines/radar_screen.obj", "hbm:textures/models/machines/radar_screen.png");
             common(model, 1.0, 0.0, -3, 5.5);
+            model.add("itemTranslate", numbers(0, 0, -0.5));
             item("radar_screen", model);
         }
         // ItemRenderLibrary machine_forcefield: inventory T(0,-4,0) S(6); the radar body in the forcefield skin,
@@ -127,27 +87,6 @@ public final class RadarUtilityDeclarations {
             model.add("exclude", strings("Chute"));
             item("soyuz_capsule", model);
         }
-    }
-
-    private static void drops() {
-        for (String block : new String[]{"machine_radar", "machine_radar_large", "radar_screen", "machine_forcefield",
-                "machine_teleporter", "teleanchor", "seal_controller", "soyuz_capsule"}) {
-            Drops.self(NS, block);
-        }
-        // 1.7 IPersistentNBT: a filled orbus keeps its tank in the item, as the barrels do
-        JsonObject orbus = Drops.container(NS, "machine_orbus", "minecraft:custom_data", "minecraft:custom_name");
-        // only the core rolls this table; a broken cell drops the core's (MachineOrbus.onPlayerWillDestroy), 1.7's
-        // IPersistentNBT.getDrops through CompatExternal.getCoreFromPos from any part of the tank
-        JsonObject cellProperty = new JsonObject();
-        cellProperty.addProperty("cell", "false");
-        JsonObject coreOnly = new JsonObject();
-        coreOnly.addProperty("condition", "minecraft:block_state_property");
-        coreOnly.addProperty("block", "hbm:machine_orbus");
-        coreOnly.add("properties", cellProperty);
-        JsonArray orbusConditions = new JsonArray();
-        orbusConditions.add(coreOnly);
-        orbus.getAsJsonArray("pools").get(0).getAsJsonObject().add("conditions", orbusConditions);
-        Drops.nothing(NS, "seal_hatch");
     }
 
     private static void recipes() {

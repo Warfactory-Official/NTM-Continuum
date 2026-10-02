@@ -148,10 +148,11 @@ public final class RecipeContentGameTests {
                 "1.7: rope, slime ball, rope make four leads, got " + lead);
         ItemStack iron = dev.golem.core.world.Recipes.smeltingResult(level, new ItemStack(item("ore_meteor_iron")))
                 .orElse(ItemStack.EMPTY);
-        // 1.7 yields 16. The count is not asserted: a 1.20.1 furnace recipe result is a bare id (legacy-recipes
-        // drops the count there), which already cuts every declared multi-output smelt (crystals x2) to one.
-        helper.assertTrue(iron.getItem() == net.minecraft.world.item.Items.IRON_INGOT,
-                "1.7: meteoric iron ore smelts into iron ingots, got " + iron);
+        // 1.7 yields 16. On 1.20.1 a cooking result is a bare id, and 1.21.1 vanilla/Fabric drop its count, so
+        // legacy-recipes.gradle.kts routes count/tag results through hbm:component_smelting there;
+        // LegacyCompatGameTests also smelts them in a real furnace.
+        helper.assertTrue(iron.getItem() == net.minecraft.world.item.Items.IRON_INGOT && iron.getCount() == 16,
+                "1.7: meteoric iron ore smelts into 16 iron ingots, got " + iron);
         helper.succeed();
     }
 

@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -24,28 +26,33 @@ public final class ModToolItems {
     private ModToolItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemBlowtorch> blowtorch =
-            ITEMS.registerItem("blowtorch", ItemBlowtorch::new, p -> p.stacksTo(1));
+            REG.item("blowtorch", ItemBlowtorch::new, p -> p.stacksTo(1)).transform(Presets.handheld());
     public static final RegistryObject<ItemBoltgun> boltgun =
-            ITEMS.registerItem("boltgun", ItemBoltgun::new, p -> p.stacksTo(1));
+            REG.item("boltgun", ItemBoltgun::new, p -> p.stacksTo(1))
+                    // 1.7 ItemRenderBoltgun handled every slot (inventory included), an IItemRenderer of its own: the
+                    // weapon frame. Replaces the authored machine_obj definition, whose scale/yaw were invented framing.
+                    .andThen(h -> ItemRendererDeclarations.model(h.path(), "boltgun", "weapon"));
     public static final RegistryObject<ItemTooling> screwdriver =
-            ITEMS.registerItem("screwdriver", p -> new ItemTooling(p, ToolType.SCREWDRIVER),
-                    p -> p.stacksTo(1).durability(100));
+            REG.item("screwdriver", p -> new ItemTooling(p, ToolType.SCREWDRIVER),
+                    p -> p.stacksTo(1).durability(100)).transform(Presets.handheld());
     public static final RegistryObject<ItemTooling> hand_drill =
-            ITEMS.registerItem("hand_drill", p -> new ItemTooling(p, ToolType.HAND_DRILL),
-                    p -> p.stacksTo(1).durability(100));
+            REG.item("hand_drill", p -> new ItemTooling(p, ToolType.HAND_DRILL),
+                    p -> p.stacksTo(1).durability(100)).transform(Presets.handheld());
     /** Mk.V crate opening device; the old steel ModSword had 750 durability. */
     public static final RegistryObject<dev.golem.core.world.CompatSwordItem> crowbar =
-            ITEMS.registerItem("crowbar", p -> new dev.golem.core.world.CompatSwordItem(p, 750, 3.0F, -2.4F,
+            REG.item("crowbar", p -> new dev.golem.core.world.CompatSwordItem(p, 750, 3.0F, -2.4F,
                     net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM,
-                            dev.golem.core.Ids.of(Constants.MOD_ID, "repairs/steel"))));
+                            dev.golem.core.Ids.of(Constants.MOD_ID, "repairs/steel"))), p -> p)
+                    .transform(Presets.handheld());
     public static final RegistryObject<ItemDefuser> defuser =
-            ITEMS.registerItem("defuser", ItemDefuser::new,
-                    p -> p.stacksTo(1).durability(100));
+            REG.item("defuser", ItemDefuser::new,
+                    p -> p.stacksTo(1).durability(100)).transform(Presets.handheld());
     public static final RegistryObject<ItemTurretMobFilter> turret_mob_filter =
-            ITEMS.registerItem("turret_mob_filter", ItemTurretMobFilter::new,
-                    p -> p.stacksTo(1));
+            REG.item("turret_mob_filter", ItemTurretMobFilter::new,
+                    p -> p.stacksTo(1)).transform(Presets.sprite());
 
     public static final RegistryObject<ItemDrillbit> drillbit_steel = drillbit("drillbit_steel", DrillBitType.STEEL);
     public static final RegistryObject<ItemDrillbit> drillbit_steel_diamond = drillbit("drillbit_steel_diamond", DrillBitType.STEEL_DIAMOND);
@@ -83,8 +90,10 @@ public final class ModToolItems {
         ToolType.DEFUSER.register(defuser);
     }
 
+    /** 1.7 {@code ItemDrillbit}: the sprite {@code drillbit.<type>}, held like a tool. */
     private static RegistryObject<ItemDrillbit> drillbit(String id, DrillBitType type) {
-        return ITEMS.registerItem(id, p -> new ItemDrillbit(p, type), p -> p.stacksTo(1));
+        return REG.item(id, p -> new ItemDrillbit(p, type), p -> p.stacksTo(1))
+                .transform(Presets.sprite("hbm:items/drillbit." + id.substring("drillbit_".length()))); // 1.7 ItemDrillbit: not full-3D
     }
 
     public static void init() {}

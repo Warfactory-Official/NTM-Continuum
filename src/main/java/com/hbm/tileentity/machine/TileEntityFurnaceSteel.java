@@ -4,6 +4,9 @@ import dev.golem.core.data.Tags;
 
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.inventory.container.ContainerFurnaceSteel;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.util.TickPhase;
 import com.hbm.items.ItemEnums.EnumAshType;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -62,6 +65,8 @@ public class TileEntityFurnaceSteel extends TileEntityMachineBase implements Men
                 furnace.progress[i] += burn;
                 furnace.heat -= burn;
                 furnace.wasOn = true;
+                // Per smelting slot, as in 1.7: three busy slots are three times the soot.
+                if (TickPhase.every(level, pos, 20L)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 2);
             }
 
             furnace.lastItems[i] = input.copy();

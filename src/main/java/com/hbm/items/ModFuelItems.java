@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -33,34 +35,52 @@ public final class ModFuelItems {
     private ModFuelItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** item -> furnace burn time in ticks. Iteration order = registration order (stable JSON output). */
     public static final Map<java.util.function.Supplier<? extends Item>, Integer> BURN_TIMES = new LinkedHashMap<>();
 
-    private static RegistryObject<Item> fuel(String name, int burnTicks) {
-        RegistryObject<Item> ro = ITEMS.registerSimpleItem(name);
+    private static Reg.Handle<Item> fuel(String name, int burnTicks) {
+        Reg.Handle<Item> ro = REG.item(name);
         ModTabs.addTo(HbmTab.MATERIALS, ro);
         BURN_TIMES.put(ro, burnTicks);
         return ro;
     }
 
-    public static final RegistryObject<Item> ingot_graphite = plain("ingot_graphite");
-    public static final RegistryObject<Item> powder_lignite = fuel("powder_lignite", 1200);
-    public static final RegistryObject<Item> powder_coal = fuel("powder_coal", 1600);
-    public static final RegistryObject<Item> powder_coal_tiny = plain("powder_coal_tiny");
-    public static final RegistryObject<Item> powder_fire = fuel("powder_fire", 6400);
-    public static final RegistryObject<Item> ingot_c4 = plain("ingot_c4");
-    public static final RegistryObject<Item> pellet_coal = plain("pellet_coal");
-    public static final RegistryObject<Item> biomass = fuel("biomass", 200 * 2);
-    public static final RegistryObject<Item> biomass_compressed = fuel("biomass_compressed", 800);
-    public static final RegistryObject<Item> ball_resin = plain("ball_resin");
-    public static final RegistryObject<Item> coal_infernal = fuel("coal_infernal", 4800);
-    public static final RegistryObject<Item> solid_fuel = fuel("solid_fuel", 3200);
-    public static final RegistryObject<Item> solid_fuel_presto = fuel("solid_fuel_presto", 200 * 40);
-    public static final RegistryObject<Item> solid_fuel_presto_triplet = fuel("solid_fuel_presto_triplet", 200 * 200);
-    public static final RegistryObject<Item> rocket_fuel = fuel("rocket_fuel", 6400);
-    public static final RegistryObject<Item> lignite = fuel("lignite", 1200);
-    public static final RegistryObject<Item> crystal_coal = fuel("crystal_coal", 6400);
+    public static final RegistryObject<Item> ingot_graphite = plain("ingot_graphite")
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> powder_lignite = fuel("powder_lignite", 1200)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> powder_coal = fuel("powder_coal", 1600)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> powder_coal_tiny = plain("powder_coal_tiny")
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> powder_fire = fuel("powder_fire", 6400)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> ingot_c4 = plain("ingot_c4")
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> pellet_coal = plain("pellet_coal")
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> biomass = fuel("biomass", 200 * 2)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> biomass_compressed = fuel("biomass_compressed", 800)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> ball_resin = plain("ball_resin")
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> coal_infernal = fuel("coal_infernal", 4800)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> solid_fuel = fuel("solid_fuel", 3200)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> solid_fuel_presto = fuel("solid_fuel_presto", 200 * 40)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> solid_fuel_presto_triplet = fuel("solid_fuel_presto_triplet", 200 * 200)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> rocket_fuel = fuel("rocket_fuel", 6400)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> lignite = fuel("lignite", 1200)
+            .transform(Presets.sprite());
+    public static final RegistryObject<Item> crystal_coal = fuel("crystal_coal", 6400)
+            .transform(Presets.sprite());
 
     // --- non-fuel stragglers from the same 1.12.2 neighbourhood, needed by the shredder table ---
 
@@ -68,14 +88,16 @@ public final class ModFuelItems {
      * 1.12.2 {@code ItemSchraranium}: its "nikonium" rename + easter-egg tooltip are gated on
      * {@code enableLBSM && enableLBSMFullSchrab} (both default OFF), so at defaults it is a plain item.
      */
-    public static final RegistryObject<Item> ingot_schraranium = plain("ingot_schraranium");
+    public static final RegistryObject<Item> ingot_schraranium = plain("ingot_schraranium")
+            .transform(Presets.sprite());
 
     /** 1.12.2 {@code ItemLemon(2, 0.5F, false, …)} — edible, 2 hunger / 0.5 saturation. */
-    public static final RegistryObject<Item> powder_cement = ITEMS.registerSimpleItem("powder_cement",
-            p -> p.food(dev.golem.core.world.ItemStacks.food(2, 0.5F)));
+    public static final RegistryObject<Item> powder_cement = REG.simpleItem("powder_cement",
+            p -> p.food(dev.golem.core.world.ItemStacks.food(2, 0.5F)))
+            .transform(Presets.sprite());
 
-    private static RegistryObject<Item> plain(String name) {
-        RegistryObject<Item> ro = ITEMS.registerSimpleItem(name);
+    private static Reg.Handle<Item> plain(String name) {
+        Reg.Handle<Item> ro = REG.item(name);
         ModTabs.addTo(HbmTab.MATERIALS, ro);
         return ro;
     }

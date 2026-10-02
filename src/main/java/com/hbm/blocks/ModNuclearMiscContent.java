@@ -26,7 +26,6 @@ public final class ModNuclearMiscContent {
         java.util.Objects.requireNonNull(com.hbm.items.machine.ItemReactorSensor.TARGET);
         java.util.Objects.requireNonNull(com.hbm.items.special.ItemUnstable.TIMER);
         java.util.Objects.requireNonNull(TileEntityMachineRadiolysis.CONTAGION);
-        NuclearMiscDeclarations.declare();
         // 1.7 ItemDemonCore.onEntityItemUpdate is driven by the loaders' per-item tick hooks
         // (com.hbm.platform.*Init) next to ItemSingularity/ItemCell/ItemAntimatterPellet.
     }

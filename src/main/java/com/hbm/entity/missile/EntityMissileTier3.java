@@ -15,10 +15,8 @@ import net.minecraft.world.phys.HitResult;
  * The "huge" family: the last tier before the warhead goes nuclear, and the first that needs the big
  * launch pad and kerosene/LOX.
  *
- * <p>Not ported yet: {@code EntityMissileRain} (cluster → {@code EntityRocket}),
- * {@code EntityMissileDrill} (needs {@code ExplosionNT}'s ERRODE mode and {@code ExplosionLarge.jolt}),
- * {@code EntityMissileEndo}/{@code Exo} (need {@code ExplosionThermo}) and {@code EntityMissileShuttle}
- * (the Soyuz/satellite system) — IMPLEMENTATION.md §20.
+ * <p>{@code EntityMissileShuttle} lives in its own file. There is no endo/exo/carrier missile: upstream
+ * retired those items (they have no entity class in 1.7.10 either).
  */
 public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 
@@ -126,16 +124,9 @@ public abstract class EntityMissileTier3 extends EntityMissileBaseNT {
 
         @Override
         public void onMissileImpact(HitResult mop) {
-            // 1.7 stacked 30 ExplosionNT(10F) with ExAttrib.ERRODE. ExplosionNT was never ported (see
-            // ExplosionNukeSmall); the VNT equivalent of ERRODE is a standard blast that drops nothing.
+            // 1.7: 30 stacked ExplosionNT(10F), each with ExAttrib.ERRODE (concrete -> gravel, at 60%).
             for (int i = 0; i < 30; i++) {
-                com.hbm.explosion.vanillant.ExplosionVNT vnt = new com.hbm.explosion.vanillant.ExplosionVNT(
-                        level(), getX(), getY() - i, getZ(), 10F, this);
-                vnt.setBlockAllocator(new com.hbm.explosion.vanillant.standard.BlockAllocatorStandard(24));
-                vnt.setBlockProcessor(new com.hbm.explosion.vanillant.standard.BlockProcessorStandard().setNoDrop());
-                vnt.setEntityProcessor(new com.hbm.explosion.vanillant.standard.EntityProcessorStandard());
-                vnt.setPlayerProcessor(new com.hbm.explosion.vanillant.standard.PlayerProcessorStandard());
-                vnt.explode();
+                com.hbm.explosion.ExplosionNT.explodeErode(level(), this, getX(), getY() - i, getZ(), 10F);
             }
             com.hbm.explosion.ExplosionLarge.spawnParticles(level(), getX(), getY(), getZ(), 25);
             com.hbm.explosion.ExplosionLarge.spawnShrapnels(level(), getX(), getY(), getZ(), 12);

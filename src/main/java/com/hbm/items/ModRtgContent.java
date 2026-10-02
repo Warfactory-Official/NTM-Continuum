@@ -2,7 +2,6 @@ package com.hbm.items;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.hazard.HazardData;
 import com.hbm.hazard.HazardEntry;
 import com.hbm.hazard.HazardRegistry;
@@ -11,6 +10,8 @@ import com.hbm.hazard.modifier.HazardModifierRTGRadiation;
 import com.hbm.items.machine.DepletedRTGMaterial;
 import com.hbm.items.machine.ItemRTGPellet;
 import com.hbm.items.machine.ItemRTGPelletDepleted;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -26,6 +27,7 @@ public final class ModRtgContent {
     public static final GolemComponent<Long> PELLET_DEPLETION =
             GolemComponent.longValue(Constants.MOD_ID, "pellet_depletion");
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final Map<DepletedRTGMaterial, RegistryObject<ItemRTGPelletDepleted>> DEPLETED =
             new EnumMap<>(DepletedRTGMaterial.class);
@@ -64,21 +66,24 @@ public final class ModRtgContent {
     private static boolean hazardsRegistered;
 
     private static RegistryObject<ItemRTGPelletDepleted> depleted(DepletedRTGMaterial material) {
-        RegistryObject<ItemRTGPelletDepleted> result = ITEMS.registerItem(material.id,
-                p -> new ItemRTGPelletDepleted(p, material),
-                p -> p.craftRemainder(ModItems.plate_iron.get()));
+        // 1.7 ItemRTGPelletDepleted icons: pellet_rtg_depleted.<material>
+        RegistryObject<ItemRTGPelletDepleted> result = REG.item(material.id,
+                        p -> new ItemRTGPelletDepleted(p, material),
+                        p -> p.craftRemainder(ModItems.plate_iron.get()))
+                .transform(Presets.sprite("hbm:items/" + material.id.replace("pellet_rtg_depleted_", "pellet_rtg_depleted.")))
+                .tab(HbmTab.CONTROL);
         DEPLETED.put(material, result);
-        ModTabs.addTo(HbmTab.CONTROL, result);
         return result;
     }
 
     private static RegistryObject<ItemRTGPellet> pellet(String id, int heat, long halfLife, int halfLives,
                                                          DepletedRTGMaterial decay, String displayName) {
-        RegistryObject<ItemRTGPellet> result = ITEMS.registerItem(id,
-                p -> new ItemRTGPellet(p, heat, halfLife, halfLives, () -> DEPLETED.get(decay).get(), displayName),
-                p -> p.stacksTo(1));
+        RegistryObject<ItemRTGPellet> result = REG.item(id,
+                        p -> new ItemRTGPellet(p, heat, halfLife, halfLives, () -> DEPLETED.get(decay).get(), displayName),
+                        p -> p.stacksTo(1))
+                .transform(Presets.sprite())
+                .tab(HbmTab.CONTROL);
         PELLETS.put(id, result);
-        ModTabs.addTo(HbmTab.CONTROL, result);
         return result;
     }
 

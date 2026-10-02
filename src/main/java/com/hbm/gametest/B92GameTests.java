@@ -6,6 +6,7 @@ import com.hbm.items.ModGunItems;
 import com.hbm.items.weapon.GunB92;
 import com.hbm.items.weapon.GunB92Cell;
 import dev.golem.core.gametest.GameTestHelpers;
+import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -26,6 +27,9 @@ public final class B92GameTests {
 
     public static void firesBeams(GameTestHelper helper) {
         Player player = GameTestHelpers.mockPlayer(helper, GameType.SURVIVAL);
+        // The mock player starts at the world origin, which a filtered run never loads: the beams would spawn
+        // into an unloaded chunk and be dropped. Stand the player inside the test structure, which is loaded.
+        player.setPos(helper.absolutePos(new BlockPos(1, 2, 1)).getCenter());
         ItemStack gun = new ItemStack(ModGunItems.gun_b92.get());
         GunB92.setPower(gun, 2);
         player.setItemSlot(EquipmentSlot.MAINHAND, gun);

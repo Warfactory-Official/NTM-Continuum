@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerCrateTungsten;
 import com.hbm.inventory.container.ContainerFileCabinet;
@@ -16,13 +17,14 @@ public final class ModDecoCrateMenus {
     private ModDecoCrateMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerCrateTungsten>> CRATE_TUNGSTEN =
-            MENUS.register("crate_tungsten", () -> Menus.typeWithPos(ContainerCrateTungsten::new));
+            REG.menu("crate_tungsten", () -> Menus.typeWithPos(ContainerCrateTungsten::new));
     public static final RegistryObject<MenuType<ContainerSafe>> SAFE =
-            MENUS.register("safe", () -> Menus.typeWithPos(ContainerSafe::new));
+            REG.menu("safe", () -> Menus.typeWithPos(ContainerSafe::new));
     public static final RegistryObject<MenuType<ContainerFileCabinet>> FILE_CABINET =
-            MENUS.register("filing_cabinet", () -> Menus.typeWithPos(ContainerFileCabinet::new));
+            REG.menu("filing_cabinet", () -> Menus.typeWithPos(ContainerFileCabinet::new));
 
     public static void init() {}
 }

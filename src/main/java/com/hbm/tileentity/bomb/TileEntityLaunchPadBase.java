@@ -8,6 +8,7 @@ import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.api.item.IDesignatorItem;
 import com.hbm.entity.missile.EntityMissileAntiBallistic;
 import com.hbm.entity.missile.EntityMissileBaseNT;
+import com.hbm.entity.missile.EntityMissileShuttle;
 import com.hbm.entity.missile.EntityMissileStealth;
 import com.hbm.entity.missile.EntityMissileTier0;
 import com.hbm.entity.missile.EntityMissileTier1;
@@ -71,9 +72,10 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
      * Which entity each missile item becomes. Upstream keys this by {@code ComparableStack}; a plain
      * {@link Item} key is the modern equivalent now that damage values are gone.
      *
-     * <p>Only the missiles whose warheads are ported appear here. An item that is missing is not
-     * launchable, and {@link #instantiateMissile} returns null for it — which the pad reports as
-     * {@code ERROR_MISSING_COMPONENT}, the same answer it gives for an empty slot.
+     * <p>Every 1.7.10 launchable missile is here (the original's {@code registerLaunchables} table, plus the
+     * N2 missile). An item that is missing is not launchable, and {@link #instantiateMissile} returns null
+     * for it — which the pad reports as {@code ERROR_MISSING_COMPONENT}, the same answer it gives for an
+     * empty slot. The endo/exo/carrier items do not exist: upstream retired them.
      */
     public static final Map<Item, MissileFactory> missiles = new HashMap<>();
 
@@ -89,22 +91,31 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
         missiles.put(ModMissileItems.missile_micro.get(), EntityMissileTier0.EntityMissileMicro::new);
         missiles.put(ModMissileItems.missile_taint.get(), EntityMissileTier0.EntityMissileTaint::new);
         missiles.put(ModMissileItems.missile_test.get(), EntityMissileTier0.EntityMissileTest::new);
+        missiles.put(ModMissileItems.missile_schrabidium.get(), EntityMissileTier0.EntityMissileSchrabidium::new);
+        missiles.put(ModMissileItems.missile_bhole.get(), EntityMissileTier0.EntityMissileBHole::new);
+        missiles.put(ModMissileItems.missile_emp.get(), EntityMissileTier0.EntityMissileEMP::new);
         // Tier 1
         missiles.put(ModMissileItems.missile_generic.get(), EntityMissileTier1.EntityMissileGeneric::new);
         missiles.put(ModMissileItems.missile_decoy.get(), EntityMissileTier1.EntityMissileDecoy::new);
         missiles.put(ModMissileItems.missile_incendiary.get(), EntityMissileTier1.EntityMissileIncendiary::new);
+        missiles.put(ModMissileItems.missile_cluster.get(), EntityMissileTier1.EntityMissileCluster::new);
         missiles.put(ModMissileItems.missile_buster.get(), EntityMissileTier1.EntityMissileBunkerBuster::new);
         // Tier 2
         missiles.put(ModMissileItems.missile_strong.get(), EntityMissileTier2.EntityMissileStrong::new);
         missiles.put(ModMissileItems.missile_incendiary_strong.get(), EntityMissileTier2.EntityMissileIncendiaryStrong::new);
+        missiles.put(ModMissileItems.missile_cluster_strong.get(), EntityMissileTier2.EntityMissileClusterStrong::new);
         missiles.put(ModMissileItems.missile_buster_strong.get(), EntityMissileTier2.EntityMissileBusterStrong::new);
         missiles.put(ModMissileItems.missile_emp_strong.get(), EntityMissileTier2.EntityMissileEMPStrong::new);
         // Tier 3
         missiles.put(ModMissileItems.missile_burst.get(), EntityMissileTier3.EntityMissileBurst::new);
         missiles.put(ModMissileItems.missile_inferno.get(), EntityMissileTier3.EntityMissileInferno::new);
+        missiles.put(ModMissileItems.missile_rain.get(), EntityMissileTier3.EntityMissileRain::new);
+        missiles.put(ModMissileItems.missile_drill.get(), EntityMissileTier3.EntityMissileDrill::new);
+        missiles.put(ModMissileItems.missile_shuttle.get(), EntityMissileShuttle::new);
         // Tier 4
         missiles.put(ModMissileItems.missile_nuclear.get(), EntityMissileTier4.EntityMissileNuclear::new);
         missiles.put(ModMissileItems.missile_nuclear_cluster.get(), EntityMissileTier4.EntityMissileMirv::new);
+        missiles.put(ModMissileItems.missile_volcano.get(), EntityMissileTier4.EntityMissileVolcano::new);
         missiles.put(ModMissileItems.missile_doomsday.get(), EntityMissileTier4.EntityMissileDoomsday::new);
         missiles.put(ModMissileItems.missile_n2.get(), EntityMissileTier4.EntityMissileN2::new);
         // Specials
@@ -264,12 +275,10 @@ public abstract class TileEntityLaunchPadBase extends TileEntityMachineBase
      * Whether this pad will accept and fire {@code stack}.
      *
      * <p>Upstream asks only for {@link ItemMissileStandard#launchable}. The port adds a second half:
-     * the missile must also have an <em>entity</em> in {@link #missiles}. Roughly half the missile items
-     * exist without one (their warheads need subsystems that are not ported — see IMPLEMENTATION.md
-     * §20), and without this check such a missile loads happily, reports {@code STATE_READY}, and then
-     * does nothing at all when fired, with no message anywhere. Refusing it at the slot is the same
-     * mechanism upstream uses for the rusted doomsday missile, and it is the difference between "this
-     * build cannot fly that yet" and "the launch pad is broken".
+     * the missile must also have an <em>entity</em> in {@link #missiles} (the ABM is built directly). Every
+     * upstream missile has one, so this is a guard against a missile item that loads happily, reports
+     * {@code STATE_READY} and then does nothing when fired — the rusted doomsday missile is refused by
+     * {@code launchable}, as upstream.
      */
     public boolean isMissileValid(ItemStack stack) {
         return stack.getItem() instanceof ItemMissileStandard missile && missile.launchable

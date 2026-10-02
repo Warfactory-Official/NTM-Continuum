@@ -1,6 +1,7 @@
 package com.hbm.tileentity;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -16,15 +17,16 @@ public final class ModPwrBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityPWRController>> PWR_CONTROLLER =
-            BLOCK_ENTITIES.register("tileentity_pwr_controller", () -> BlockEntities.ticking(
+            REG.blockEntity("tileentity_pwr_controller", () -> BlockEntities.ticking(
                     TileEntityPWRController::new,
                     TileEntityPWRController::clientTick,
                     TileEntityPWRController::serverTick,
                     ModPwrBlocks.PWR_CONTROLLER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBlockPWR>> PWR_BLOCK =
-            BLOCK_ENTITIES.register("tileentity_block_pwr", () -> BlockEntities.serverTicking(
+            REG.blockEntity("tileentity_block_pwr", () -> BlockEntities.serverTicking(
                     TileEntityBlockPWR::new,
                     TileEntityBlockPWR::serverTick,
                     ModPwrBlocks.PWR_BLOCK.get()));

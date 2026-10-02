@@ -1,0 +1,117 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:cutout",
+  "textures": {
+    "particle": "minecraft:block/bedrock",
+    "bedrock": "minecraft:block/bedrock",
+    "overlay": "hbm:blocks/molten_overlay"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#bedrock",
+          "cullface": "down"
+        },
+        "up": {
+          "texture": "#bedrock",
+          "cullface": "up"
+        },
+        "north": {
+          "texture": "#bedrock",
+          "cullface": "north"
+        },
+        "south": {
+          "texture": "#bedrock",
+          "cullface": "south"
+        },
+        "west": {
+          "texture": "#bedrock",
+          "cullface": "west"
+        },
+        "east": {
+          "texture": "#bedrock",
+          "cullface": "east"
+        }
+      }
+    },
+    {
+      "from": [
+        -0.001,
+        -0.001,
+        -0.001
+      ],
+      "to": [
+        16.001,
+        16.001,
+        16.001
+      ],
+      "faces": {
+        "down": {
+          "texture": "#overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "up": {
+          "texture": "#overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "north": {
+          "texture": "#overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "south": {
+          "texture": "#overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "west": {
+          "texture": "#overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        },
+        "east": {
+          "texture": "#overlay",
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ]
+        }
+      }
+    }
+  ]
+}

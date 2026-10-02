@@ -10,7 +10,6 @@ import com.hbm.capability.MachineCaps;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.uninos.graph.LevelNodeGraph;
 import dev.golem.core.data.CompatBlockEntity;
 import dev.golem.core.data.DataIn;
@@ -41,10 +40,6 @@ public class TileEntityFluidDuctNT extends CompatBlockEntity implements IFluidPi
         com.hbm.tileentity.IFluidCopiable {
 
     protected FluidType type = Fluids.NONE;
-
-    public TileEntityFluidDuctNT(BlockPos pos, BlockState state) {
-        this(ModBlockEntities.FLUID_DUCT.get(), pos, state);
-    }
 
     protected TileEntityFluidDuctNT(net.minecraft.world.level.block.entity.BlockEntityType<?> type,
             BlockPos pos, BlockState state) {

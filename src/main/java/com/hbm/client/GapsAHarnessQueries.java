@@ -141,7 +141,7 @@ public final class GapsAHarnessQueries {
         ItemStack held = player.getMainHandItem();
         json.addProperty("held", held.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(held.getItem()).toString());
         json.addProperty("held_variant", ModDataComponents.ITEM_VARIANT.getOr(held, -1));
-        json.addProperty("crucible_spent", held.getItem() instanceof ItemCrucible ? ItemCrucible.spent(held) : -1);
+        json.addProperty("crucible_charges", held.getItem() instanceof ItemCrucible ? ItemCrucible.getCharges(held) : -1);
         json.addProperty("modifiers_suppressed", ItemStacks.attributeModifiersSuppressed(held));
         json.addProperty("attack_damage", player.getAttributeValue(Attributes.ATTACK_DAMAGE));
         json.addProperty("tool_alt", com.hbm.handler.ToolKeybinds.getKeyPressed(player,

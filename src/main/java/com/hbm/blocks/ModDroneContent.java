@@ -1,8 +1,9 @@
 package com.hbm.blocks;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.tileentity.network.RequestNetwork;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.net.GolemNetwork;
@@ -23,18 +24,17 @@ public final class ModDroneContent {
     private ModDroneContent() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** 1.7 {@code ModItems.drone_linker}: stack size 1, consumables tab. */
     public static final RegistryObject<ItemDroneLinker> DRONE_LINKER =
-            ITEMS.registerItem("drone_linker", ItemDroneLinker::new, p -> p.stacksTo(1));
+            REG.item("drone_linker", ItemDroneLinker::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite())
+                    .tab(HbmTab.CONSUMABLES);
 
     /** The linker's remembered stop; 1.7 kept it as x/y/z on the stack's NBT. */
     public static final GolemComponent<BlockPos> LINKER_POSITION =
             GolemComponent.of(Constants.MOD_ID, "drone_linker_position", BlockPos.CODEC);
-
-    static {
-        ModTabs.addTo(HbmTab.CONSUMABLES, DRONE_LINKER);
-    }
 
     private static boolean ticking;
 
@@ -42,7 +42,6 @@ public final class ModDroneContent {
         ModDroneBlocks.init();
         ModDroneBlockEntities.init();
         ModDroneMenus.init();
-        DroneDeclarations.declare();
         GolemNetwork.declarePlayToClient(DroneLinePayload.CODEC);
         if (!ticking) {
             ticking = true;

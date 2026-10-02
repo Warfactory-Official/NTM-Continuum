@@ -163,10 +163,17 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         guiScale = 3.5,
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
+    // icon-P2 (2026-10-01) moved this to 1.7's raw ItemRenderLibrary chain: rotate(90, Y) translate(0, -2, 0) scale(2.5)
     "machine_fensu" to MachineObjTransformExpectation(
-        0.21, 90.0,
+        1.0, 0.0,
         obj = "hbm:models/machines/fensu.obj",
         texture = "hbm:textures/models/machines/fensus/fensu_light_blue.png",
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -2.0, 0.0),
+        guiScale = 2.5,
+        guiYaw = 90.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
     "machine_bigasstank" to MachineObjTransformExpectation(
         0.5, 0.0,
@@ -178,10 +185,15 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         guiScale = 2.5,
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
+    // icon-P2 (2026-10-01): 1.7 ItemRenderLibrary inv translate(0, -3, 0) scale(2), raw
     "machine_bat9000" to MachineObjTransformExpectation(
-        0.2, 0.0,
+        1.0, 0.0,
         obj = "hbm:models/machines/bat9000.obj",
         texture = "hbm:textures/models/machines/bat9000.png",
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -3.0, 0.0),
+        guiScale = 2.0,
     ),
     "machine_battery_redd" to MachineObjTransformExpectation(
         0.5, -90.0,
@@ -236,7 +248,19 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         guiYaw = 90.0,
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "machine_radgen" to MachineObjTransformExpectation(0.171428571, 0.0, exclude = listOf("Glass")),
+    // icon-P2 (2026-10-01) raw 1.7 ItemRenderLibrary chain, see ObjItemDeclarations
+    "machine_radgen" to MachineObjTransformExpectation(
+        0.5, 0.0,
+        obj = "hbm:models/machines/radgen.obj",
+        texture = "hbm:textures/models/machines/rad_gen_body.png",
+        noCull = true,
+        exclude = listOf("Glass"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -1.0, 0.0),
+        guiScale = 4.5,
+        itemTranslate = listOf(0.25, 0.0, 0.0),
+    ),
     "machine_industrial_boiler" to MachineObjTransformExpectation(
         1.0, 90.0,
         directModel = true,
@@ -303,7 +327,19 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         animation = "autosaw",
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "machine_solar_boiler" to MachineObjTransformExpectation(0.2625, 0.0),
+    // icon-P2 (2026-10-01) raw 1.7 ItemRenderLibrary chain, see ObjItemDeclarations
+    "machine_solar_boiler" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        obj = "hbm:models/machines/solar_boiler.obj",
+        texture = "hbm:textures/models/machines/solar_boiler.png",
+        noCull = true,
+        exclude = listOf("Overglow_1", "Overglow_2", "Overglow_3"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -2.5, 0.0),
+        guiScale = 3.25,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_intake" to MachineObjTransformExpectation(
         1.0, 0.0,
         directModel = true,
@@ -360,12 +396,27 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         guiScale = 3.5,
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
+    // icon-P2 (2026-10-01): 1.7 RenderDiFurnaceExtension.renderInventoryBlock translate(0, -0.5, 0) on the block frame
     "machine_difurnace_ext" to MachineObjTransformExpectation(
         1.0, 0.0,
         obj = "hbm:models/block/difurnace_extension.obj",
         texture = "hbm:textures/blocks/difurnace_extension.png",
+        directModel = true,
+        rawLegacyTransform = true,
+        itemTranslate = listOf(0.0, -0.5, 0.0),
     ),
-    "furnace_iron" to MachineObjTransformExpectation(0.525, 90.0, exclude = listOf("On")),
+    // icon-P2 (2026-10-01) raw 1.7 ItemRenderLibrary chain, see ObjItemDeclarations
+    "furnace_iron" to MachineObjTransformExpectation(
+        1.0, 90.0,
+        obj = "hbm:models/machines/furnace_iron.obj",
+        texture = "hbm:textures/models/machines/furnace_iron.png",
+        exclude = listOf("On"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -2.0, 0.0),
+        guiScale = 5.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "furnace_steel" to MachineObjTransformExpectation(
         1.0, 0.0,
         directModel = true,
@@ -382,7 +433,18 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         guiScale = 3.5,
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "machine_gascent" to MachineObjTransformExpectation(0.2625, 0.0),
+    // icon-P2 (2026-10-01) raw 1.7 ItemRenderLibrary chain, see ObjItemDeclarations
+    "machine_gascent" to MachineObjTransformExpectation(
+        1.0, 0.0,
+        obj = "hbm:models/machines/centrifuge_gas.obj",
+        texture = "hbm:textures/models/machines/centrifuge_gas.png",
+        exclude = listOf("Flag"),
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -4.0, 0.0),
+        guiScale = 3.5,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_electrolyser" to MachineObjTransformExpectation(
         0.5, 0.0,
         directModel = true,
@@ -391,9 +453,40 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         guiScale = 2.5,
         itemTranslate = listOf(0.0, 0.0, 0.0),
     ),
-    "machine_deuterium_tower" to MachineObjTransformExpectation(0.099275384, 180.0),
-    "machine_uf6_tank" to MachineObjTransformExpectation(0.525, 270.0),
-    "machine_puf6_tank" to MachineObjTransformExpectation(0.525, 270.0),
+    // icon-P2 (2026-10-01) raw 1.7 ItemRenderLibrary chain, see ObjItemDeclarations
+    "machine_deuterium_tower" to MachineObjTransformExpectation(
+        0.5, 180.0,
+        obj = "hbm:models/machines/machine_deuterium_tower.obj",
+        texture = "hbm:textures/models/machines/machine_deuterium_tower.png",
+        noCull = true,
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -5.0, 0.0),
+        guiScale = 3.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    // icon-P2 (2026-10-01) raw 1.7 ItemRenderLibrary chain, see ObjItemDeclarations
+    "machine_uf6_tank" to MachineObjTransformExpectation(
+        1.0, -90.0,
+        obj = "hbm:models/tank.obj",
+        texture = "hbm:textures/models/machines/uf6tank.png",
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -4.0, 0.0),
+        guiScale = 6.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
+    // icon-P2 (2026-10-01) raw 1.7 ItemRenderLibrary chain, see ObjItemDeclarations
+    "machine_puf6_tank" to MachineObjTransformExpectation(
+        1.0, -90.0,
+        obj = "hbm:models/tank.obj",
+        texture = "hbm:textures/models/machines/puf6tank.png",
+        directModel = true,
+        rawLegacyTransform = true,
+        guiTranslate = listOf(0.0, -4.0, 0.0),
+        guiScale = 6.0,
+        itemTranslate = listOf(0.0, 0.0, 0.0),
+    ),
     "machine_mixer" to MachineObjTransformExpectation(
         1.0, 180.0,
         exclude = listOf("Fluid"),
@@ -465,12 +558,16 @@ val MACHINE_OBJ_TRANSFORM_EXPECTATIONS = mapOf(
         noCull = true,
         exclude = emptyList(),
     ),
+    // icon-P2 (2026-10-01): 1.7 RenderRTGBlock.renderInventoryBlock translate(0, -0.5, 0) on the block frame
     "machine_rtg_grey" to MachineObjTransformExpectation(
         1.0, 0.0,
         obj = "hbm:models/machines/rtg.obj",
         texture = "hbm:textures/models/machines/rtg.png",
         noCull = true,
         exclude = emptyList(),
+        directModel = true,
+        rawLegacyTransform = true,
+        itemTranslate = listOf(0.0, -0.5, 0.0),
     ),
 )
 
@@ -551,7 +648,14 @@ fun Project.applyLegacyItemAssets() {
                             || isGunDefinition(definition)
                     if (target.exists() && !selfRendered) return@forEach
                     itemModels.mkdirs()
-                    target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(mapOf("parent" to parent))))
+                    // A sprite the renderer draws on wears the sprite's own frame (26.1 poses it in the flat model's
+                    // display): keep the sprite model's display{} over the shared marker's (the meteorite swords'
+                    // 1.7 ItemRendererMeteorSword hand poses).
+                    @Suppress("UNCHECKED_CAST")
+                    val ownDisplay = if (parent.endsWith("_sprite_legacy") && target.isFile)
+                        (JsonSlurper().parse(target) as? Map<String, Any?>)?.get("display") else null
+                    val marker = if (ownDisplay != null) mapOf("parent" to parent, "display" to ownDisplay) else mapOf("parent" to parent)
+                    target.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(marker)))
                     generated++
                 }
             }
@@ -671,16 +775,6 @@ fun Project.hbmAsset(relative: String): File {
  * Resource-level regression test for the nested machine OBJ definitions. This is deliberately
  * independent of a client launch: it catches a wrapper/type regression and exact-value drift in every node.
  */
-/**
- * Worn-armour icons declared (ArmorSetDeclarations / ArmorSetBDeclarations) without a `scale`. Until the
- * 2026-09-28 migration the scale check below read only `src/main/resources`, so it never saw declared
- * definitions; now it reads what the jar ships and found these 36. Whether they take the 0.28 default by
- * design has not been reviewed, so they are listed rather than silently passed or blindly "fixed".
- */
-val MACHINE_OBJ_SCALE_UNREVIEWED = listOf("ajr", "ajro", "bismuth", "dieselsuit", "envsuit", "fau", "hev",
-    "steamsuit", "trenchmaster").flatMap { set -> listOf("boots", "helmet", "legs", "plate").map { "${set}_$it.json" } }
-    .toSet()
-
 fun Project.registerMachineObjTransformChecks() {
     val validation = tasks.register("validateMachineObjTransforms") {
         group = "verification"
@@ -785,8 +879,10 @@ fun Project.registerMachineObjTransformChecks() {
                     }
                     vector(model["itemTranslate"], expected.itemTranslate, "$name.itemTranslate")
                     vector(model["itemPreTranslate"], expected.itemPreTranslate, "$name.itemPreTranslate")
-                    vector(model["guiTranslate"], expected.guiTranslate, "$name.guiTranslate")
-                    close(model["guiScale"], expected.guiScale, "$name.guiScale")
+                    // Absent = the codec defaults (MachineItemModelRenderer: empty guiTranslate, guiScale 1), which
+                    // the block-framed 1.7 ISBRH icons (difurnace extension, RTG) rely on.
+                    vector(model["guiTranslate"] ?: listOf(0.0, 0.0, 0.0), expected.guiTranslate, "$name.guiTranslate")
+                    close(model["guiScale"] ?: 1.0, expected.guiScale, "$name.guiScale")
                     close(model["guiYaw"] ?: 0.0, expected.guiYaw, "$name.guiYaw")
                 }
                 check(model.containsKey("ty")) { "$name must explicitly declare ty" }
@@ -809,12 +905,24 @@ fun Project.registerMachineObjTransformChecks() {
                 rootProject.file("src/main/resources/assets/hbm/items")).forEach { directory ->
                 directory.listFiles()?.filter { it.name.endsWith(".json") }?.forEach { definitions[it.name] = it }
             }
-            definitions.values.forEach { pending.add(it.name to JsonSlurper().parse(it)) }
+            // A worn-armour icon is an item whose own `model` is an hbm:machine_obj with an `armor_*` animation.
+            // MachineItemModel.applyTransform sends exactly those to applyArmorItemTransform, which reproduces
+            // ArmorFSB.setupRenderInv/NonInv and renderStandard with their hard-coded numbers, so `scale` is never
+            // read and the codec's 0.28 default is irrelevant. (Wrapped models such as the BJ/DNS armour, nested
+            // inside minecraft:special, are block-framed and do read `scale`, so they stay checked.)
+            val armourRendered = java.util.Collections.newSetFromMap(java.util.IdentityHashMap<Any?, Boolean>())
+            definitions.values.forEach { file ->
+                val root = JsonSlurper().parse(file)
+                val model = (root as? Map<*, *>)?.get("model") as? Map<*, *>
+                if (model != null && model["type"] == "hbm:machine_obj"
+                    && (model["animation"] as? String)?.startsWith("armor_") == true) armourRendered.add(model)
+                pending.add(file.name to root)
+            }
             while (pending.isNotEmpty()) {
                 val (name, node) = pending.removeFirst()
                 when (node) {
                     is Map<*, *> -> {
-                        if (node["type"] == "hbm:machine_obj" && name !in MACHINE_OBJ_SCALE_UNREVIEWED) {
+                        if (node["type"] == "hbm:machine_obj" && node !in armourRendered) {
                             check(node.containsKey("scale")) {
                                 "$name declares an hbm:machine_obj model with no scale"
                             }
@@ -826,7 +934,7 @@ fun Project.registerMachineObjTransformChecks() {
                 }
             }
 
-            // These three are declared in ModBlockModels.RENDERED_2 rather than written, so the
+            // These three are declared on their registration chains (Reg) rather than written, so the
             // generated copy is the one to check and the authored path is only a fallback for a
             // blockstate somebody has taken back into a file.
             val authoredBlockstates = rootProject.file("src/main/resources/assets/hbm/blockstates")
@@ -1070,8 +1178,13 @@ fun isGunDefinition(definition: File): Boolean {
  * Which shared frame a `hbm:machine_obj` model wears below 1.21.4. The `frame` field names the 1.7 item
  * render class; absent, it is `ItemRenderBase` like every machine.
  */
+// Every frame ModItemModels.machineFrames() declares has its <frame>_obj_context_legacy marker (machine, missile, block).
 fun contextLegacyModelOf(model: Map<String, Any?>): String =
-    if (model["frame"] == "missile") MISSILE_OBJ_CONTEXT_LEGACY_MODEL else MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+    when (val frame = model["frame"] as? String) {
+        null, "machine" -> MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+        "missile" -> MISSILE_OBJ_CONTEXT_LEGACY_MODEL
+        else -> "hbm:item/${frame}_obj_context_legacy"
+    }
 
 fun parentModelOf(definition: File): String? {
     @Suppress("UNCHECKED_CAST")
@@ -1106,7 +1219,10 @@ fun parentModelOf(definition: File): String? {
             if (isMachineObjDirect(fallback) || cases.any { isMachineObjDirect(it["model"]) }) {
                 // A variant select whose branches are context-aware machine_obj models: same frame the
                 // unwrapped form gets, or the item resolves no model at all below 1.21.4.
-                MACHINE_OBJ_CONTEXT_LEGACY_MODEL
+                @Suppress("UNCHECKED_CAST")
+                val direct = (if (isMachineObjDirect(fallback)) fallback
+                        else cases.first { isMachineObjDirect(it["model"]) }["model"]) as Map<String, Any?>
+                contextLegacyModelOf(direct)
             } else if (isMachineObjSpecial(fallback) || cases.any { isMachineObjSpecial(it["model"]) }) {
                 MACHINE_OBJ_LEGACY_MODEL
             } else if ((fallback as? Map<String, Any?>)?.get("type") == "hbm:gun") {

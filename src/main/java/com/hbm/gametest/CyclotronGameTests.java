@@ -23,8 +23,8 @@ public final class CyclotronGameTests {
 
     public static void recipes(GameTestHelper helper) {
         CyclotronRecipes.register();
-        helper.assertTrue(CyclotronRecipes.recipes.size() == 38,
-                "cyclotron must retain the 38 recipes whose items and tags are available");
+        helper.assertTrue(CyclotronRecipes.recipes.size() == 40,
+                "cyclotron must retain the 40 recipes whose items and tags are available (1.7 has 42; two dustPhosphorus inputs lack a tag)");
 
         Object[] lithium = CyclotronRecipes.getOutput(new ItemStack(ModItems.powder_lithium.get()),
                 new ItemStack(ModItems.part_lithium.get()));

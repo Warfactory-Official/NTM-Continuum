@@ -61,7 +61,7 @@ public class HEVBattery extends CompatBlock implements TickingBlock {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         if (ArmorFSB.hasFSBArmorIgnoreCharge(player)
-                && player.getItemBySlot(EquipmentSlot.CHEST).getItem() instanceof ArmorFSBPowered) {
+                && player.getItemBySlot(EquipmentSlot.HEAD).getItem() instanceof ArmorFSBPowered) { // 1.7 armorInventory[3] is the helmet
             for (EquipmentSlot slot : ARMOR) {
                 ItemStack st = player.getItemBySlot(slot);
                 if (st.isEmpty() || !(st.getItem() instanceof IBatteryItem battery)) continue;

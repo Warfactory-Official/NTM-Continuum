@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -202,6 +204,9 @@ public class TileEntityMachineTurbineGas extends TileEntityMachineBase
         int heatTarget = throttle * 5 * (maxTemp - tempIdle) / 500;
         if (heatTarget > temp - tempIdle && TickPhase.every(level, worldPosition, 2)) temp++;
         else if (heatTarget < temp - tempIdle && TickPhase.every(level, worldPosition, 2)) temp--;
+        if (TickPhase.every(level, worldPosition, 20) && tanks[0].getTankType() != Fluids.OXYHYDROGEN) {
+            PollutionHandler.incrementPollution(level, worldPosition, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
+        }
         makePower(level, FUEL_MAX_CONSUMPTION.getOrDefault(tanks[0].getTankType(), 5D), throttle);
     }
 

@@ -44,6 +44,8 @@ public final class MachineItemModel {
 
     /** Phases sampled over one turn when framing a model that moves. See {@link #sampleExtents}. */
     private static final int ANIMATION_SAMPLES = 16;
+    /** The untextured lamp of the lantern item, tinted per frame. */
+    private static final Surface LANTERN_LIGHT = Surface.solid("hbm:textures/models/misc/white.png");
 
     private final WavefrontObj model;
     private final Surface surface;
@@ -124,7 +126,15 @@ public final class MachineItemModel {
 
     /** One ordered OBJ pass, optionally restricted to named parts and locally translated. */
     public record ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation,
-                           List<PassStep> steps) {
+                           List<PassStep> steps, int tint, float scale) {
+
+        /** No tint: the pass is drawn in its texture's own colours. */
+        public static final int UNTINTED = -1;
+
+        public ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation,
+                         List<PassStep> steps) {
+            this(model, surface, parts, translation, steps, UNTINTED, 1F);
+        }
 
         public ModelPass(WavefrontObj model, Surface surface, List<String> parts, Vector3f translation) {
             this(model, surface, parts, translation, List.of());
@@ -139,6 +149,26 @@ public final class MachineItemModel {
      * the first sometimes has to state a whole chain rather than one offset.
      */
     public record PassStep(boolean rotate, Vector3f value) {}
+
+    /**
+     * One step of the GUI-only tail of a 1.7 {@code renderInventory}, applied in order after {@code guiTranslate},
+     * {@code guiScale} and {@code guiYaw}. {@code kind} is {@code rotate} (Euler degrees, X then Y then Z),
+     * {@code translate}, {@code scale} (per axis, so 1.7's {@code glScaled(s, s, -s)} survives) or {@code spin}:
+     * the GUI spin angle about {@code value} as an axis. A model with a spin step does not also take the default
+     * trailing Y spin. Exists for renderers whose {@code renderInventory} turned the model after scaling it
+     * (the gear/sawblade wheel: {@code Ry(-45) Rx(30)} then a Z spin about the hub).
+     */
+    public record GuiStep(String kind, Vector3f value) {}
+
+    /** The GUI-only tail; see {@link GuiStep}. Set once, right after construction, by the item-definition readers. */
+    private List<GuiStep> guiSteps = List.of();
+
+    /** Sets the GUI-only renderInventory tail. Called by the item-definition readers before the model is drawn. */
+    public MachineItemModel withGuiSteps(List<GuiStep> steps) {
+        this.guiSteps = List.copyOf(steps);
+        extentsByContext.clear();
+        return this;
+    }
 
     public MachineItemModel(WavefrontObj model, Surface surface, float scale, boolean rawLegacyTransform,
                             boolean blockFramed,
@@ -298,6 +328,7 @@ public final class MachineItemModel {
     /** Whether the declared body itself moves — the branches of {@link #declare()} that read the clock. */
     private boolean animatedBody() {
         return "pump".equals(animation) || "autosaw".equals(animation) || "radar_large".equals(animation)
+                || "lantern".equals(animation) || "thresher".equals(animation)
                 || (spin && !spinParts.isEmpty());
     }
 
@@ -309,6 +340,10 @@ public final class MachineItemModel {
             autosaw(builder);
         } else if ("radar_large".equals(animation)) {
             radarLarge(builder);
+        } else if ("lantern".equals(animation)) {
+            lantern(builder);
+        } else if ("thresher".equals(animation)) {
+            thresher(builder);
         } else if ("rbmk_gauge".equals(animation)) {
             RBMKGaugeIcon.declare(builder, model, surface, partSurfaces);
         } else if (RBMKPanelIcon.handles(animation)) {
@@ -346,6 +381,23 @@ public final class MachineItemModel {
     private void radarLarge(ItemGem.Builder builder) {
         named(builder, "Radar", surface);
         named(builder, "Dish", surface).angle(Gem.Axes.Y, state -> -state.animation);
+    }
+
+    /**
+     * 1.7 {@code RenderLantern}'s item: the {@code Lantern} body in its skin, then the {@code Light} untextured in
+     * {@code (1, 1, 0.7)} times the wall-clock pulse {@code sin(millis / 200) / 2 + 0.5} scaled into 0.9..1.0. The
+     * item renderer (unlike the placed one) leaves lighting on, so the lamp is shaded like the body.
+     */
+    private void lantern(ItemGem.Builder builder) {
+        named(builder, "Lantern", surface);
+        Set<String> light = Set.of("Light");
+        builder.part(model.parts(light, false), LANTERN_LIGHT, model.boundsIncluding(light))
+                .tint(state -> {
+                    float mult = (float) (Math.sin(System.currentTimeMillis() / 200D) / 2D + 0.5D) * 0.1F + 0.9F;
+                    int r = (int) (255F * mult);
+                    int b = (int) (255F * 0.7F * mult);
+                    return 0xFF000000 | (r << 16) | (r << 8) | b;
+                });
     }
 
     private static float pumpArmAngle(ItemPose state) {
@@ -389,6 +441,46 @@ public final class MachineItemModel {
                 .angle(Gem.Axes.Y, state -> -state.animation)
                 .translate(0F, -1.75F, 10F);
         segment(builder, blade, "Sawblade");
+    }
+
+    /**
+     * 1.7 {@code RenderThresher}'s item: {@code renderCommon(80, millis % 3600 * 0.25, 0)}, the placed machine's arm
+     * chain parked at 80 degrees with the wheel turning and the engine at rest. Drawing the OBJ flat instead lays
+     * the arm out straight, which is a pose the machine never holds and spills the icon into the next slot.
+     */
+    private void thresher(ItemGem.Builder builder) {
+        float angle = 80F;
+        Gem.Part<ItemPose> ground = builder.joint();
+        segment(builder, ground, "Base");
+        segment(builder, ground, "Engine");
+
+        Gem.Part<ItemPose> upper = ground.joint()
+                .translate(0F, 0.5F, -1F)
+                .rotate(Gem.Axes.X, angle)
+                .translate(0F, -0.5F, 1F);
+        segment(builder, upper, "ArmUpper");
+
+        Gem.Part<ItemPose> lower = upper.joint()
+                .translate(0F, 0.5F, -5F)
+                .rotate(Gem.Axes.X, -angle * 2F)
+                .translate(0F, -0.5F, 5F)
+                .translate(-0.01F, 0F, 0F);
+        segment(builder, lower, "ArmLower");
+
+        Gem.Part<ItemPose> front = lower.joint()
+                .translate(0.01F, 0F, 0F)
+                .translate(0F, 0.5F, -9F)
+                .rotate(Gem.Axes.X, angle)
+                .translate(0F, -0.5F, 9F)
+                .translate(0.01F, 0F, 0F);
+        segment(builder, front, "Front");
+
+        // the item clock is millis % 3600 * 0.1; the thresher's wheel turned at * 0.25
+        Gem.Part<ItemPose> wheel = front.joint()
+                .translate(0F, 0.5F, -11F)
+                .angle(Gem.Axes.X, state -> -state.animation * 2.5F)
+                .translate(0F, -0.5F, 11F);
+        segment(builder, wheel, "Wheel");
     }
 
     private void segment(ItemGem.Builder builder, Gem.Part<ItemPose> parent, String part) {
@@ -455,13 +547,22 @@ public final class MachineItemModel {
 
     private void body(ItemGem.Builder builder) {
         if (passes.isEmpty()) {
-            pass(builder, model, surface, List.of(), exclude, new Vector3f());
+            // The declared "parts"/"translate" hold without extra passes too (charger, red pylons, spotlights...):
+            // this branch used to pass List.of() and a zero vector, so such an icon drew every OBJ group, unmoved.
+            pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
             return;
         }
         pass(builder, model, surface, primaryParts, exclude, primaryTranslation);
         for (ModelPass extra : passes) {
-            pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude, extra.translation(),
-                    extra.steps());
+            Gem.Part<ItemPose> declared = pass(builder, extra.model(), extra.surface(), extra.parts(), userExclude,
+                    extra.translation(), extra.steps());
+            if (declared == null) continue;
+            if (extra.scale() != 1F) declared.scale(extra.scale());
+            // 1.7 ObjUtil.setColor: the RGB multiplies the pass, opaque.
+            if (extra.tint() != ModelPass.UNTINTED) {
+                int argb = 0xFF000000 | (extra.tint() & 0xFFFFFF);
+                declared.tint(state -> argb);
+            }
         }
     }
 
@@ -470,8 +571,9 @@ public final class MachineItemModel {
         pass(builder, source, skin, parts, excluded, translation, List.of());
     }
 
-    private void pass(ItemGem.Builder builder, WavefrontObj source, Surface skin, List<String> parts,
-                      Set<String> excluded, Vector3f translation, List<PassStep> steps) {
+    private Gem.@Nullable Part<ItemPose> pass(ItemGem.Builder builder, WavefrontObj source, Surface skin,
+                                              List<String> parts, Set<String> excluded, Vector3f translation,
+                                              List<PassStep> steps) {
         Geometry geometry;
         float[][] box;
         if (parts.isEmpty()) {
@@ -481,7 +583,7 @@ public final class MachineItemModel {
             Set<String> chosen = remaining(parts, excluded);
             // 1.7 renderPart drew nothing for a name the OBJ lacks; a pass may name none of its parts
             chosen.retainAll(source.partNames());
-            if (chosen.isEmpty()) return;
+            if (chosen.isEmpty()) return null;
             geometry = source.parts(chosen, false);
             box = source.boundsIncluding(chosen);
         }
@@ -499,6 +601,7 @@ public final class MachineItemModel {
             if (value.y != 0F) declared.rotate(Gem.Axes.Y, value.y);
             if (value.z != 0F) declared.rotate(Gem.Axes.Z, value.z);
         }
+        return declared;
     }
 
     private void black(ItemGem.Builder builder) {
@@ -582,7 +685,26 @@ public final class MachineItemModel {
             poseStack.scale(guiScale, guiScale, guiScale);
             poseStack.mulPose(Axis.YP.rotationDegrees(guiYaw));
         }
-        if (context == ItemDisplayContext.GUI && guiSpinSpeed != 0F) {
+        boolean steppedSpin = false;
+        if (context == ItemDisplayContext.GUI) {
+            for (GuiStep step : guiSteps) {
+                Vector3f v = step.value();
+                switch (step.kind()) {
+                    case "translate" -> poseStack.translate(v.x, v.y, v.z);
+                    case "scale" -> poseStack.scale(v.x, v.y, v.z);
+                    case "spin" -> {
+                        poseStack.mulPose(Axis.of(new Vector3f(v).normalize()).rotationDegrees(spinDegrees));
+                        steppedSpin = true;
+                    }
+                    default -> {
+                        if (v.x != 0F) poseStack.mulPose(Axis.XP.rotationDegrees(v.x));
+                        if (v.y != 0F) poseStack.mulPose(Axis.YP.rotationDegrees(v.y));
+                        if (v.z != 0F) poseStack.mulPose(Axis.ZP.rotationDegrees(v.z));
+                    }
+                }
+            }
+        }
+        if (context == ItemDisplayContext.GUI && guiSpinSpeed != 0F && !steppedSpin) {
             poseStack.mulPose(Axis.YP.rotationDegrees(spinDegrees));
         }
 
@@ -633,24 +755,29 @@ public final class MachineItemModel {
         return specific != null ? specific : contextTransforms.get("non_gui");
     }
 
-    /** Reproduces ArmorFSB.setupRender* followed by renderStandard for a BJ/DNS item icon. */
     /** The GUI spin's angle now, wrapped at a whole turn rather than at the millisecond count 1.7 wrote. */
     private float guiSpinAngle() {
         return guiSpinSpeed == 0F ? 0F : (float) (System.currentTimeMillis() * (double) guiSpinSpeed % 360D);
     }
 
+    /**
+     * Reproduces a 1.7 armor item renderer: the class's own renderInventory adjustment, ArmorFSB.setupRenderInv
+     * (or setupRenderNonInv), the class's own renderCommon adjustment, then renderStandard's per-slot frame.
+     */
     private void applyArmorItemTransform(PoseStack poseStack, @Nullable ItemDisplayContext context) {
         boolean inventory = context == ItemDisplayContext.GUI;
         if (inventory) {
             if (animation.endsWith("_head") && animation.startsWith("armor_dnt_"))
                 poseStack.translate(0F, -1F, 0F);
-            // ArmorDigamma / ArmorTrenchmaster renderInventory: their own adjustment before setupRenderInv.
+            // ArmorDigamma / ArmorTrenchmaster / ArmorTaurun renderInventory: their own adjustment before setupRenderInv.
             if (animation.equals("armor_fau_head")) {
                 poseStack.scale(0.875F, 0.875F, 0.875F);
                 poseStack.translate(0F, -2F, 0F);
             }
-            if (animation.equals("armor_trenchmaster_head")) poseStack.translate(0F, 1F, 0F);
-            if (animation.equals("armor_trenchmaster_chest")) poseStack.translate(0F, 1.5F, 0F);
+            if (animation.equals("armor_trenchmaster_head") || animation.equals("armor_taurun_head"))
+                poseStack.translate(0F, 1F, 0F);
+            if (animation.equals("armor_trenchmaster_chest") || animation.equals("armor_taurun_chest"))
+                poseStack.translate(0F, 1.5F, 0F);
             poseStack.translate(0F, -1.5F, 0F);
             poseStack.scale(3.25F, 3.25F, 3.25F);
             poseStack.mulPose(Axis.XP.rotationDegrees(180F));
@@ -672,6 +799,12 @@ public final class MachineItemModel {
             // ArmorDiesel renderCommon, before renderStandard
             poseStack.translate(0F, 0.5F, 0F);
             poseStack.scale(0.875F, 0.875F, 0.875F);
+        } else if (animation.equals("armor_rpa_chest")) {
+            // ArmorRPA renderCommon: if(armorType == 1) glTranslated(0, 0.25, 0)
+            poseStack.translate(0F, 0.25F, 0F);
+        } else if (animation.equals("armor_ncrpa_head")) {
+            // ArmorNCRPA renderCommon: if(armorType == 0) glTranslated(0, 0.5, 0)
+            poseStack.translate(0F, 0.5F, 0F);
         }
 
         if (animation.endsWith("_head")) {

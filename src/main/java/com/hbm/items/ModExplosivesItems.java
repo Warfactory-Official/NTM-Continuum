@@ -1,5 +1,9 @@
 package com.hbm.items;
 
+import java.util.Locale;
+import dev.golem.core.dejson.Tags;
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -20,32 +24,42 @@ public final class ModExplosivesItems {
     private ModExplosivesItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemMultiDetonator> detonator_multi =
-            ITEMS.registerItem("detonator_multi", ItemMultiDetonator::new);
+            REG.item("detonator_multi", ItemMultiDetonator::new).transform(Presets.handheld()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemLaserDetonator> detonator_laser =
-            ITEMS.registerItem("detonator_laser", ItemLaserDetonator::new);
+            REG.item("detonator_laser", ItemLaserDetonator::new).tab(HbmTab.BOMBS)
+                    // 1.7 ItemRenderDetonatorLaser handled every slot, the inventory included; the item is setFull3D(), so
+                    // its hands are the full-3D weapon frame (its own scale(-0.125) undoes that pose's mirror)
+                    .andThen(h -> ItemRendererDeclarations.model(h.path(), "detonator_laser", "weapon_full3d"));
     public static final RegistryObject<ItemDropDetonator> detonator_deadman =
-            ITEMS.registerItem("detonator_deadman", p -> new ItemDropDetonator(p, ItemDropDetonator.Kind.DEADMAN));
+            REG.item("detonator_deadman", p -> new ItemDropDetonator(p, ItemDropDetonator.Kind.DEADMAN), p -> p)
+                    .transform(Presets.handheld()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemDropDetonator> detonator_de =
-            ITEMS.registerItem("detonator_de", p -> new ItemDropDetonator(p, ItemDropDetonator.Kind.DE));
+            REG.item("detonator_de", p -> new ItemDropDetonator(p, ItemDropDetonator.Kind.DE), p -> p)
+                    .transform(Presets.handheld()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemModDefuser> defuser_gold =
-            ITEMS.registerItem("defuser_gold", ItemModDefuser::new, p -> p.stacksTo(1));
-    /** 1.7 {@code bomb_caller} metadata 0-7, one item each ({@code bomb_caller_<type>}). */
-    public static final ItemFamily<ItemBombCaller.Type, ItemBombCaller> bomb_caller = ItemFamily.of(ITEMS,
-            "bomb_caller", ItemBombCaller.Type.class, ItemBombCaller::new, p -> p);
+            REG.item("defuser_gold", ItemModDefuser::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
+    /** 1.7 {@code bomb_caller} metadata 0-7, one item each ({@code bomb_caller_<type>}), all drawing one icon. */
+    public static final ItemFamily<ItemBombCaller.Type, ItemBombCaller> bomb_caller = ItemFamily.of(
+            ItemBombCaller.Type.class, type -> REG.item("bomb_caller_" + type.name().toLowerCase(Locale.ROOT),
+                    p -> new ItemBombCaller(p, type), p -> p).transform(Presets.handheld("hbm:items/bomb_caller")));
 
     static {
-        ModTabs.addTo(HbmTab.BOMBS, detonator_multi);
-        ModTabs.addTo(HbmTab.BOMBS, detonator_laser);
-        ModTabs.addTo(HbmTab.BOMBS, detonator_deadman);
-        ModTabs.addTo(HbmTab.BOMBS, detonator_de);
-        ModTabs.addTo(HbmTab.CONSUMABLES, defuser_gold);
         // 1.7 getSubItems listed only metadata 0-4.
         for (ItemBombCaller.Type type : new ItemBombCaller.Type[] { ItemBombCaller.Type.CARPET, ItemBombCaller.Type.NAPALM,
                 ItemBombCaller.Type.CHLORINE, ItemBombCaller.Type.ORANGE, ItemBombCaller.Type.ABOMB }) {
             ModTabs.addTo(HbmTab.CONSUMABLES, bomb_caller.handle(type));
         }
+        // 1.7 "record" ore-dict entry for the golden wire cutter: the discs every target version ships.
+        Tags.item(Constants.MOD_ID, "music_discs", "minecraft:music_disc_13", "minecraft:music_disc_cat",
+                "minecraft:music_disc_blocks", "minecraft:music_disc_chirp", "minecraft:music_disc_far",
+                "minecraft:music_disc_mall", "minecraft:music_disc_mellohi", "minecraft:music_disc_stal",
+                "minecraft:music_disc_strad", "minecraft:music_disc_ward", "minecraft:music_disc_11",
+                "minecraft:music_disc_wait", "minecraft:music_disc_otherside", "minecraft:music_disc_5",
+                "minecraft:music_disc_pigstep", "minecraft:music_disc_relic");
     }
 
     public static void init() {

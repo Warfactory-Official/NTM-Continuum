@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import dev.golem.core.dejson.Models;
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -14,11 +17,28 @@ public final class ModSingularityItems {
     private ModSingularityItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** The metadata cell required by the old antimatter-to-singularity production chain. */
-    public static final RegistryObject<ItemCell> cell = ITEMS.registerItem("cell", ItemCell::new);
-    public static final RegistryObject<ItemAntimatterPellet> pellet_antimatter = ITEMS.registerItem(
-            "pellet_antimatter", p -> new ItemAntimatterPellet(ItemAntimatterPellet.properties(p)));
+    public static final RegistryObject<ItemCell> cell = REG.item("cell", ItemCell::new)
+            .icon(d -> d.models(cellModels()).selects(Constants.MOD_ID + ":item_variant"));
+
+    /**
+     * The fluid cell: case <i>n</i> is {@code CellVariants} <i>n</i>, the 1.7 cell item of that
+     * declaration order (empty, uf6, puf6, antimatter, deuterium, tritium, sas3, anti_schrabidium). The
+     * variant is the cell's own index, never the fluid id — see {@link com.hbm.items.special.CellVariants}.
+     */
+    private static Models.Group cellModels() {
+        Models.Group models = Models.group();
+        String[] names = com.hbm.items.special.CellVariants.NAMES;
+        for (int i = 0; i < names.length; i++) {
+            models = models.and(i == 0 ? "" : "_" + names[i], Models.generated(Constants.MOD_ID + ":items/cell_" + names[i]));
+        }
+        return models;
+    }
+    public static final RegistryObject<ItemAntimatterPellet> pellet_antimatter = REG.item(
+                    "pellet_antimatter", p -> new ItemAntimatterPellet(ItemAntimatterPellet.properties(p)))
+            .transform(Presets.sprite());
 
     public static final RegistryObject<ItemSingularity> singularity = register(
             "singularity", ItemSingularity.Kind.SINGULARITY);
@@ -37,8 +57,9 @@ public final class ModSingularityItems {
     }
 
     private static RegistryObject<ItemSingularity> register(String name, ItemSingularity.Kind kind) {
-        RegistryObject<ItemSingularity> item = ITEMS.registerItem(name,
-                p -> new ItemSingularity(ItemSingularity.properties(p), kind));
+        RegistryObject<ItemSingularity> item = REG.item(name,
+                        p -> new ItemSingularity(ItemSingularity.properties(p), kind))
+                .transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONTROL, item);
         return item;
     }

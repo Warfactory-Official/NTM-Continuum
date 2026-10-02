@@ -28,7 +28,7 @@ stonecutter parameters {
 
     // Same shape for Flywheel, and false on both 26.1 nodes because the engine publishes no 26.1
     // build. That is not the same as having no engine there: Golem Core vendors a port of it for
-    // 26.1 NeoForge, which FlywheelCompat reaches through an entry point that exists on every node.
+    // both 26.1 nodes, which FlywheelCompat reaches through an entry point that exists on every node.
     // This constant means "built against the published dev.engine_room artifact" and nothing more.
     constants["flywheel"] = !(node.project.findProperty("deps.flywheel") as String?).isNullOrBlank()
 

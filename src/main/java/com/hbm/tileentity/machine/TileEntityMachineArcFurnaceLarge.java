@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyReceiverMK2;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 import com.hbm.foundry.ArcFurnaceRecipes;
 import com.hbm.foundry.FoundryExpansion;
 import com.hbm.inventory.NTMItemHandler;
@@ -134,6 +136,7 @@ public class TileEntityMachineArcFurnaceLarge extends TileEntityMachineBase
                         furnace.progress = 0F;
                         furnace.delay = (int) (120F / (furnace.upgrade * 0.5F + 1F));
                         furnace.setChanged();
+                        PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, 10F);
                     }
                 }
             } else {

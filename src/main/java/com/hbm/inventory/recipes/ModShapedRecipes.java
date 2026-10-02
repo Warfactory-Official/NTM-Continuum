@@ -51,9 +51,9 @@ public final class ModShapedRecipes {
     private static void shaped0() {
         shaped(NS, "crowbar", "hbm:crowbar", rows("II", " I", " I"), "I", TagIds.ingots_steel);
         shaped(NS, "rangefinder", "hbm:rangefinder", rows("GRC", "  S"),
-                "G", VanillaIds.glass, "R", VanillaIds.redstone, "C", ItemIds.circuit_basic, "S", TagIds.ingots_steel);
+                "G", TagIds.glass_panes, "R", TagIds.dusts_redstone, "C", ItemIds.circuit_basic, "S", TagIds.plates_steel);
         shaped(NS, "designator_manual", "hbm:designator_manual", rows("  A", "#C#", "#B#"),
-                "A", ItemIds.crystal_redstone, "C", ItemIds.circuit_basic, "B", ItemIds.battery_redstone, "#", TagIds.ingots_steel);
+                "A", TagIds.plates_lead, "C", ItemIds.designator, "B", ItemIds.circuit_advanced, "#", TagIds.ingots_any_plastic);
         shaped(NS, "ammo_arty", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0), rows("CIC", "CSC", "CCC"),
                 "C", ItemIds.cordite, "I", TagIds.storage_blocks_iron, "S", TagIds.shells_copper);
         shaped(NS, "ammo_arty_4", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 8), rows(" I ", " S ", "CCC"),
@@ -135,7 +135,7 @@ public final class ModShapedRecipes {
         shaped(NS, "asphalt_slab", ItemIds.asphalt_slab, 6, rows("###"), "#", ItemIds.asphalt);
         shaped(NS, "asphalt_stairs", ItemIds.asphalt_stairs, 4, rows("C  ", "CC ", "CCC"), "C", ItemIds.asphalt);
         shaped(NS, "assembly_nuke", ItemIds.assembly_nuke, rows(" WP", "SEP", " WP"),
-                "W", TagIds.wires_gold, "P", TagIds.plates_steel, "S", TagIds.shells_steel, "E", ItemIds.ball_tatb);
+                "W", TagIds.wires_gold, "P", TagIds.plates_weaponsteel, "S", TagIds.shells_weaponsteel, "E", ItemIds.ball_tatb);
         shaped(NS, "ball_resin", ItemIds.ball_resin, rows("DD", "DD"), "D", VanillaIds.dandelion);
         shaped(NS, "barbed_wire", ItemIds.barbed_wire, 16, rows("AIA", "I I", "AIA"),
                 "A", TagIds.wires_steel, "I", TagIds.ingots_iron);
@@ -148,7 +148,7 @@ public final class ModShapedRecipes {
         shaped(NS, "barbed_wire_wither", ItemIds.barbed_wire_wither, 8, rows("BBB", "BIB", "BBB"),
                 "B", ItemIds.barbed_wire, "I", VanillaIds.wither_skeleton_skull);
         shaped(NS, "barrel_antimatter", ItemIds.barrel_antimatter, rows("IPI", "I I", "IPI"),
-                "I", TagIds.plates_bismuth, "P", TagIds.wires_dense_bscco);
+                "I", TagIds.plates_saturnite, "P", TagIds.wires_dense_bscco);
         shaped(NS, "barrel_plastic", ItemIds.barrel_plastic, rows("IPI", "I I", "IPI"),
                 "I", ItemIds.plate_polymer, "P", TagIds.plates_aluminium);
         shaped(NS, "barrel_steel", ItemIds.barrel_steel, rows("IPI", "I I", "IPI"),
@@ -281,7 +281,7 @@ public final class ModShapedRecipes {
         shaped(NS, "bj_boots", ItemIds.bj_boots, rows("N N", "BSB"),
                 "N", ItemIds.plate_armor_lunar, "S", ItemIds.starmetal_boots, "B", ItemIds.block_starmetal);
         shaped(NS, "bj_helmet", ItemIds.bj_helmet, rows("SBS", " C ", " I "),
-                "S", VanillaIds.string, "B", TagIds.minecraft_wool, "C", ItemIds.circuit_advanced,
+                "S", VanillaIds.string, "B", VanillaIds.black_wool, "C", ItemIds.circuit_advanced,
                 "I", TagIds.ingots_starmetal);
         shaped(NS, "bj_legs", ItemIds.bj_legs, rows("MBM", "NSN", "N N"),
                 "N", ItemIds.plate_armor_lunar, "M", ItemIds.motor_desh, "S", ItemIds.starmetal_legs,
@@ -793,7 +793,7 @@ public final class ModShapedRecipes {
         shaped(NS, "egg_balefire_shard_1", ItemIds.egg_balefire_shard, rows("##", "##"), "#", ItemIds.powder_balefire);
         shaped(NS, "emp_bomb", ItemIds.emp_bomb, rows("LML", "LCL", "LML"),
                 "L", TagIds.plates_lead, "M", ItemIds.magnetron, "C", ItemIds.circuit_advanced);
-        shaped(NS, "fallout", ItemIds.fallout, 2, rows("##"), "#", ItemIds.fallout);
+        shaped(NS, "fallout", ItemIds.fallout, 2, rows("##"), "#", ItemIds.falloutitem);
         shaped(NS, "fan", ItemIds.fan, rows("BPB", "PRP", "BPB"),
                 "B", TagIds.bolts_steel, "P", TagIds.plates_iron, "R", TagIds.dusts_redstone);
         shaped(NS, "fence_metal", ItemIds.fence_metal, 6, rows("BIB", "BIB"),
@@ -825,8 +825,6 @@ public final class ModShapedRecipes {
                 "G", TagIds.glass_panes);
         shaped(NS, "fluid_counter_valve", ItemIds.fluid_counter_valve, rows("S", "W"),
                 "S", ItemIds.circuit_chip, "W", ItemIds.fluid_switch);
-        shaped(NS, "fluid_duct_mk2", ItemIds.fluid_duct_mk2, 8, rows("SAS", "   ", "SAS"),
-                "S", TagIds.plates_steel, "A", TagIds.plates_aluminium);
         shaped(NS, "fluid_duct_neo_colored", ItemIds.fluid_duct_neo_colored, 8, rows("ASA", "   ", "ASA"),
                 "S", TagIds.plates_steel, "A", TagIds.plates_aluminium);
         shaped(NS, "fluid_duct_neo_silver", ItemIds.fluid_duct_neo_silver, 8, rows("IAI", "   ", "IAI"),
@@ -888,7 +886,7 @@ public final class ModShapedRecipes {
                 "#", ItemIds.part_generic_glass_polarized);
         shaped(NS, "gneiss_brick", ItemIds.gneiss_brick, 4, rows("CC", "CC"), "C", ItemIds.gneiss_tile);
         shaped(NS, "gneiss_tile", ItemIds.gneiss_tile, 4, rows("CC", "CC"), "C", ItemIds.stone_gneiss);
-        shaped(NS, "gun_am180", ItemIds.gun_am180, rows("BBR", "GMS"),
+        shaped(NS, "gun_am180", ItemIds.gun_am180, rows("BRS", "GMG"),
                 "B", TagIds.barrels_light_dura_steel, "R", TagIds.receivers_light_dura_steel,
                 "M", TagIds.mechanisms_gunmetal, "G", TagIds.grips_wood, "S", TagIds.stocks_wood);
         shaped(NS, "gun_b92", ItemIds.gun_b92, rows("DDD", "SSC", "  R"),
@@ -1261,7 +1259,7 @@ public final class ModShapedRecipes {
         shaped(NS, "pedestal_steel", ItemIds.pedestal_steel, rows("P P", "P P", "III"),
                 "P", TagIds.plates_steel, "I", TagIds.ingots_steel);
         shaped(NS, "photo_panel", ItemIds.photo_panel, rows(" G ", "IPI", " C "),
-                "G", TagIds.glass_panes, "I", ItemIds.plate_polymer, "P", TagIds.dusts_quartz, "C", ItemIds.circuit_pcb);
+                "G", TagIds.glass_panes, "I", ItemIds.plate_polymer, "P", TagIds.billets_silicon, "C", ItemIds.circuit_pcb);
         shaped(NS, "pile_device_control", stack(ItemIds.pile_device).with(ComponentIds.item_variant, 2),
                 rows(" B ", "SBS", "SBS"),
                 "B", TagIds.ingots_boron, "S", TagIds.plates_steel);

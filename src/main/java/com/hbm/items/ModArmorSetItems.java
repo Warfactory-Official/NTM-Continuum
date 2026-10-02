@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import java.util.function.Supplier;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -49,24 +52,25 @@ public final class ModArmorSetItems {
     private ModArmorSetItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     // ---- plain ArmorFSB sets (ModItemsArmor.java:70-81, 110-120) ----
-    public static final RegistryObject<ArmorFSB> alloy_helmet = plain("alloy_helmet", HbmArmorMaterials.ALLOY, ArmorSlot.HELMET);
-    public static final RegistryObject<ArmorFSB> alloy_plate = plain("alloy_plate", HbmArmorMaterials.ALLOY, ArmorSlot.CHESTPLATE);
-    public static final RegistryObject<ArmorFSB> alloy_legs = plain("alloy_legs", HbmArmorMaterials.ALLOY, ArmorSlot.LEGGINGS);
-    public static final RegistryObject<ArmorFSB> alloy_boots = plain("alloy_boots", HbmArmorMaterials.ALLOY, ArmorSlot.BOOTS);
+    public static final RegistryObject<ArmorFSB> alloy_helmet = plain("alloy_helmet", () -> HbmArmorMaterials.ALLOY, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> alloy_plate = plain("alloy_plate", () -> HbmArmorMaterials.ALLOY, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> alloy_legs = plain("alloy_legs", () -> HbmArmorMaterials.ALLOY, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> alloy_boots = plain("alloy_boots", () -> HbmArmorMaterials.ALLOY, ArmorSlot.BOOTS);
 
-    public static final RegistryObject<ArmorFSB> cmb_helmet = plain("cmb_helmet", HbmArmorMaterials.CMB, ArmorSlot.HELMET);
-    public static final RegistryObject<ArmorFSB> cmb_plate = plain("cmb_plate", HbmArmorMaterials.CMB, ArmorSlot.CHESTPLATE);
-    public static final RegistryObject<ArmorFSB> cmb_legs = plain("cmb_legs", HbmArmorMaterials.CMB, ArmorSlot.LEGGINGS);
-    public static final RegistryObject<ArmorFSB> cmb_boots = plain("cmb_boots", HbmArmorMaterials.CMB, ArmorSlot.BOOTS);
+    public static final RegistryObject<ArmorFSB> cmb_helmet = plain("cmb_helmet", () -> HbmArmorMaterials.CMB, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> cmb_plate = plain("cmb_plate", () -> HbmArmorMaterials.CMB, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> cmb_legs = plain("cmb_legs", () -> HbmArmorMaterials.CMB, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> cmb_boots = plain("cmb_boots", () -> HbmArmorMaterials.CMB, ArmorSlot.BOOTS);
 
-    public static final RegistryObject<ArmorFSB> zirconium_legs = plain("zirconium_legs", HbmArmorMaterials.ZIRCONIUM, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> zirconium_legs = plain("zirconium_legs", () -> HbmArmorMaterials.ZIRCONIUM, ArmorSlot.LEGGINGS);
 
-    public static final RegistryObject<ArmorFSB> dnt_helmet = plain("dnt_helmet", HbmArmorMaterials.DNT, ArmorSlot.HELMET);
-    public static final RegistryObject<ArmorFSB> dnt_plate = plain("dnt_plate", HbmArmorMaterials.DNT, ArmorSlot.CHESTPLATE);
-    public static final RegistryObject<ArmorFSB> dnt_legs = plain("dnt_legs", HbmArmorMaterials.DNT, ArmorSlot.LEGGINGS);
-    public static final RegistryObject<ArmorFSB> dnt_boots = plain("dnt_boots", HbmArmorMaterials.DNT, ArmorSlot.BOOTS);
+    public static final RegistryObject<ArmorFSB> dnt_helmet = plain("dnt_helmet", () -> HbmArmorMaterials.DNT, ArmorSlot.HELMET);
+    public static final RegistryObject<ArmorFSB> dnt_plate = plain("dnt_plate", () -> HbmArmorMaterials.DNT, ArmorSlot.CHESTPLATE);
+    public static final RegistryObject<ArmorFSB> dnt_legs = plain("dnt_legs", () -> HbmArmorMaterials.DNT, ArmorSlot.LEGGINGS);
+    public static final RegistryObject<ArmorFSB> dnt_boots = plain("dnt_boots", () -> HbmArmorMaterials.DNT, ArmorSlot.BOOTS);
 
     // ---- ArmorBismuth (ModItemsArmor.java:52-61) ----
     public static final RegistryObject<ArmorBismuth> bismuth_helmet = bismuth("bismuth_helmet", ArmorSlot.HELMET);
@@ -130,28 +134,30 @@ public final class ModArmorSetItems {
     public static final RegistryObject<ArmorTrenchmaster> trenchmaster_legs = trenchmaster("trenchmaster_legs", ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorTrenchmaster> trenchmaster_boots = trenchmaster("trenchmaster_boots", ArmorSlot.BOOTS);
 
-    private static RegistryObject<ArmorFSB> plain(String name, GolemArmorMaterial material, ArmorSlot slot) {
-        RegistryObject<ArmorFSB> ro = ITEMS.registerItem(name, p -> new ArmorFSB(material, slot, p), p -> p.stacksTo(1));
+    /** A plain piece with its 1.7 sprite; the material is read when the item is built (see {@link ModArmorItems}). */
+    private static RegistryObject<ArmorFSB> plain(String name, Supplier<GolemArmorMaterial> material, ArmorSlot slot) {
+        RegistryObject<ArmorFSB> ro = REG.item(name, p -> new ArmorFSB(material.get(), slot, p), p -> p.stacksTo(1))
+                .transform(Presets.sprite());
         // Same convention as ModArmorItems.plain: 1.7 ItemArmor's combat tab does not exist in the port.
         ModTabs.addTo(HbmTab.CONTROL, ro);
         return ro;
     }
 
     private static RegistryObject<ArmorBismuth> bismuth(String name, ArmorSlot slot) {
-        RegistryObject<ArmorBismuth> ro = ITEMS.registerItem(name,
+        RegistryObject<ArmorBismuth> ro = REG.item(name,
                 p -> new ArmorBismuth(HbmArmorMaterials.BISMUTH, slot, p), p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONTROL, ro);
         return ro;
     }
 
     private static RegistryObject<ArmorEuphemium> euphemium(String name, ArmorSlot slot) {
-        return ITEMS.registerItem(name,
+        return REG.item(name,
                 p -> new ArmorEuphemium(HbmArmorMaterials.EUPHEMIUM, slot, CompatArmorItem.unbreakable(p)),
-                p -> p.stacksTo(1).rarity(Rarity.EPIC));
+                p -> p.stacksTo(1).rarity(Rarity.EPIC)).transform(Presets.sprite());
     }
 
     private static RegistryObject<ArmorTrenchmaster> trenchmaster(String name, ArmorSlot slot) {
-        RegistryObject<ArmorTrenchmaster> ro = ITEMS.registerItem(name,
+        RegistryObject<ArmorTrenchmaster> ro = REG.item(name,
                 p -> new ArmorTrenchmaster(HbmArmorMaterials.TRENCHMASTER, slot, CompatArmorItem.unbreakable(p)),
                 p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONTROL, ro);
@@ -159,7 +165,7 @@ public final class ModArmorSetItems {
     }
 
     private static <T extends ArmorFSBPowered> RegistryObject<T> powered(String name, Function<Item.Properties, T> factory) {
-        RegistryObject<T> ro = ITEMS.registerItem(name, factory, p -> p.stacksTo(1));
+        RegistryObject<T> ro = REG.item(name, factory, p -> p.stacksTo(1));
         // Same convention as ModArmorItems.powered.
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;

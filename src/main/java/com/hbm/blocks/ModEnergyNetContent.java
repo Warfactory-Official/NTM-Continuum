@@ -29,6 +29,5 @@ public final class ModEnergyNetContent {
         ModEnergyNetBlocks.init();
         ModEnergyNetBlockEntities.init();
         EnergyNetSounds.init();
-        EnergyNetDeclarations.declare();
     }
 }

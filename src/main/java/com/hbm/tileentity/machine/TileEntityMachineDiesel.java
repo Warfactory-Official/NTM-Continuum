@@ -2,7 +2,9 @@ package com.hbm.tileentity.machine;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.util.TickPhase;
 import com.hbm.inventory.container.ContainerMachineDiesel;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
@@ -13,7 +15,7 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -40,10 +42,11 @@ import net.minecraft.sounds.SoundSource;
  * maxPower (50k) or ×10 (500k) when the fuel is NITAN. Redstone signal switches it off. 5 slots
  * (0→1 fuel container drain, 2 battery-to-charge, 3→4 fluid identifier + output).
  *
- * <p>Deferred (§20): pollution/smoke tanks, the engine loop sound.
+ * <p>Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 100 mB smoke tanks,
+ * which it offers to all six neighbours with its power.
  */
-public class TileEntityMachineDiesel extends TileEntityMachineBase
-        implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2 {
+public class TileEntityMachineDiesel extends TileEntityMachinePolluting
+        implements MenuProvider, IEnergyProviderMK2, IFluidStandardTransceiverMK2 {
 
     public long power;
     public static final long maxPower = 50000;
@@ -63,7 +66,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
     }
 
     public TileEntityMachineDiesel(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_DIESEL.get(), pos, state, 5);
+        super(ModBlockEntities.MACHINE_DIESEL.get(), pos, state, 5, 100);
         tank = new FluidTankNTM(Fluids.DIESEL, 4_000);
     }
 
@@ -85,6 +88,7 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
         te.wasOn = false;
         for (ForgeDirection dir : ForgeDirection.VALID_DIRECTIONS) {
             te.tryProvide(level, pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
+            te.sendSmoke(pos.getX() + dir.offsetX, pos.getY() + dir.offsetY, pos.getZ() + dir.offsetZ, dir);
         }
 
         te.setTypeFromFluidId();
@@ -118,6 +122,10 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
         if (hasAcceptableFuel() && tank.getFill() > 0) {
             this.wasOn = true;
             tank.setFill(Math.max(tank.getFill() - 1, 0));
+
+            if (TickPhase.every(level, worldPosition, 5L)) {
+                super.pollute(tank.getTankType(), FluidReleaseType.BURN, 5F);
+            }
 
             long he = getHEFromFuel();
             power = Math.min(power + he, powerCap);
@@ -183,9 +191,10 @@ public class TileEntityMachineDiesel extends TileEntityMachineBase
     @Override public void setPower(long i) { power = i; }
     @Override public long getMaxPower() { return maxPower; }
 
-    // --- IFluidStandardReceiverMK2 ---
+    // --- IFluidStandardTransceiverMK2 ---
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return this.getSmokeTanks(); }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
 
     // --- MenuProvider ---

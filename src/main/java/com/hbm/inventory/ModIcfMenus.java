@@ -1,6 +1,7 @@
 package com.hbm.inventory;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import com.hbm.inventory.container.ContainerICF;
 import com.hbm.inventory.container.ContainerICFPress;
 import dev.golem.core.gui.Menus;
@@ -15,11 +16,12 @@ public final class ModIcfMenus {
     private ModIcfMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerICF>> ICF =
-            MENUS.register("icf", () -> Menus.typeWithPos(ContainerICF::new));
+            REG.menu("icf", () -> Menus.typeWithPos(ContainerICF::new));
     public static final RegistryObject<MenuType<ContainerICFPress>> ICF_PRESS =
-            MENUS.register("machine_icf_press", () -> Menus.typeWithPos(ContainerICFPress::new));
+            REG.menu("machine_icf_press", () -> Menus.typeWithPos(ContainerICFPress::new));
 
     public static void init() {}
 }

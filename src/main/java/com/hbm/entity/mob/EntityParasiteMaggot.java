@@ -1,6 +1,7 @@
 package com.hbm.entity.mob;
 
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.LivingAttributes;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.registry.Entities;
@@ -26,8 +27,10 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class EntityParasiteMaggot extends CompatMonster {
 
+    private static final Reg REG = Reg.of(ModNtmEntities.ENTITY_TYPES);
+
     public static final RegistryObject<EntityType<EntityParasiteMaggot>> TYPE =
-            ModNtmEntities.ENTITY_TYPES.register("entity_parasite_maggot", key -> Entities.build(
+            REG.entity("entity_parasite_maggot", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityParasiteMaggot>of(EntityParasiteMaggot::new, MobCategory.MONSTER)).sized(0.3F, 0.7F).clientTrackingRange(5).updateInterval(3), key));
 
     static {

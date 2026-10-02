@@ -53,6 +53,9 @@ public final class ModDamageTypes {
                 type("blackhole").tags(BYPASSES_ARMOR),
                 type("blacklung").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("blender").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                // old-hbm ModDamageSource crucible/slicer: setDamageIsAbsolute().setDamageBypassesArmor()
+                type("crucible").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
+                type("slicer").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("broadcast").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("boil").tags(IS_FIRE),
                 type("digamma").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS, BYPASSES_INVULNERABILITY),
@@ -82,6 +85,7 @@ public final class ModDamageTypes {
                 type("exhaust").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("explosive").exhaustion(0.1).tags(IS_EXPLOSION),
                 type("fire").exhaustion(0.1).tags(IS_FIRE),
+                type("flamethrower").exhaustion(0.1),
                 type("laser").exhaustion(0.1),
                 type("meteorite").tags(BYPASSES_ARMOR, BYPASSES_EFFECTS),
                 type("mud_poisoning").message("mudPoisoning").tags(BYPASSES_ARMOR),

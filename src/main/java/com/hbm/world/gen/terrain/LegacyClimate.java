@@ -37,6 +37,23 @@ public final class LegacyClimate {
         return biome.value().hasPrecipitation() && biome.value().getBaseTemperature() >= 0.15F;
     }
 
+    private static final java.util.Map<Biome, Float> DOWNFALL = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /**
+     * 1.7 {@code biome.rainfall}: the modern downfall. The field is private in every supported version, but the biome's
+     * public network codec (the one that syncs climate to clients) writes it, so it is read from that encoding, once
+     * per biome. 1.7's {@code BiomeGenBase} default, 0.5, if the encoding has none.
+     */
+    public static float downfall(Holder<Biome> biome) {
+        return DOWNFALL.computeIfAbsent(biome.value(), value -> Biome.NETWORK_CODEC.encodeStart(com.mojang.serialization.JsonOps.INSTANCE, value)
+                .resultOrPartial(error -> {})
+                .filter(com.google.gson.JsonElement::isJsonObject)
+                .map(json -> json.getAsJsonObject().get("downfall"))
+                .filter(com.google.gson.JsonElement::isJsonPrimitive)
+                .map(com.google.gson.JsonElement::getAsFloat)
+                .orElse(0.5F));
+    }
+
     /** 1.7 {@code MapGenBubble}'s rate divisor test: {@code temperature >= 2 && rainfall < 0.1}. */
     public static boolean hotAndDry(Holder<Biome> biome) {
         return temperature(biome) >= 2.0F && dry(biome);

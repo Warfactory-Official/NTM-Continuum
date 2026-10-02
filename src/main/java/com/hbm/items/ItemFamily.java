@@ -1,6 +1,5 @@
 package com.hbm.items;
 
-import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -11,11 +10,8 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 /**
  * One item per enum constant - 1.7's "one item behind the metadata", the shape ntm-next's
@@ -33,26 +29,15 @@ public final class ItemFamily<E extends Enum<E>, I extends Item> {
         this.members = members;
     }
 
-    /** Registers {@code base + "_" + constant} for every constant of {@code type}. */
-    public static <E extends Enum<E>, I extends Item> ItemFamily<E, I> of(DeferredRegister.Items items, String base,
-            Class<E> type, BiFunction<Item.Properties, E, ? extends I> factory, UnaryOperator<Item.Properties> props) {
-        return of(items, type, constant -> base + "_" + constant.name().toLowerCase(Locale.ROOT), factory, props);
-    }
-
-    /** Registers every constant of {@code type} under the id {@code name} gives it. */
-    public static <E extends Enum<E>, I extends Item> ItemFamily<E, I> of(DeferredRegister.Items items,
-            Class<E> type, Function<E, String> name, BiFunction<Item.Properties, E, ? extends I> factory,
-            UnaryOperator<Item.Properties> props) {
-        return of(items, type.getEnumConstants(), type, name, factory, props);
-    }
-
-    /** As {@link #of(DeferredRegister.Items, Class, Function, BiFunction, UnaryOperator)} over a subset of constants. */
-    public static <E extends Enum<E>, I extends Item> ItemFamily<E, I> of(DeferredRegister.Items items, E[] constants,
-            Class<E> type, Function<E, String> name, BiFunction<Item.Properties, E, ? extends I> factory,
-            UnaryOperator<Item.Properties> props) {
+    /**
+     * Every constant of {@code type}, each registered by {@code member} — the Reg form, where the member's
+     * chain also states its declarations: {@code ItemFamily.of(T.class, t -> REG.item(...).transform(...))}.
+     */
+    public static <E extends Enum<E>, I extends Item> ItemFamily<E, I> of(Class<E> type,
+            Function<E, ? extends RegistryObject<I>> member) {
         EnumMap<E, RegistryObject<I>> members = new EnumMap<>(type);
-        for (E constant : constants) {
-            members.put(constant, items.registerItem(name.apply(constant), p -> factory.apply(p, constant), props));
+        for (E constant : type.getEnumConstants()) {
+            members.put(constant, member.apply(constant));
         }
         return new ItemFamily<>(type, members);
     }

@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
@@ -17,10 +18,11 @@ public final class ModDoorBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     /** One type over every generic door block, as the original had one tile class for all of them. */
     public static final RegistryObject<BlockEntityType<TileEntityDoorGeneric>> DOOR_GENERIC =
-            BLOCK_ENTITIES.register("door_generic", () -> BlockEntities.serverTicking(
+            REG.blockEntity("door_generic", () -> BlockEntities.serverTicking(
                     TileEntityDoorGeneric::new,
                     (level, pos, state, be) -> be.serverTick(),
                     new Block[] {
@@ -33,12 +35,12 @@ public final class ModDoorBlockEntities {
                             ModDoorBlocks.WATER_DOOR.get(), ModDoorBlocks.CARGO_DOOR.get() }));
 
     public static final RegistryObject<BlockEntityType<TileEntityBlastDoor>> BLAST_DOOR =
-            BLOCK_ENTITIES.register("blast_door", () -> BlockEntities.serverTicking(
+            REG.blockEntity("blast_door", () -> BlockEntities.serverTicking(
                     TileEntityBlastDoor::new,
                     (level, pos, state, be) -> be.serverTick(), ModDoorBlocks.BLAST_DOOR.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityBlastDoorDummy>> BLAST_DOOR_DUMMY =
-            BLOCK_ENTITIES.register("blast_door_dummy", () -> BlockEntities.serverTicking(
+            REG.blockEntity("blast_door_dummy", () -> BlockEntities.serverTicking(
                     TileEntityBlastDoorDummy::new,
                     (level, pos, state, be) -> be.serverTick(), ModDoorBlocks.DUMMY_BLOCK_BLAST.get()));
 

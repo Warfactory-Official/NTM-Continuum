@@ -1,5 +1,7 @@
 package com.hbm.tileentity.machine;
 
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.api.fluidmk2.FluidGraph;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
@@ -113,7 +115,7 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
             if (tank.hasExploded) {
                 int leaking;
                 if (isAntimatter(type)) leaking = tank.tank.getFill();
-                else if (com.hbm.inventory.fluid.FluidCombustion.isGaseous(type)) leaking = Math.min(tank.tank.getFill(), tank.tank.getMaxFill() / 100);
+                else if (com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type)) leaking = Math.min(tank.tank.getFill(), tank.tank.getMaxFill() / 100);
                 else leaking = Math.min(tank.tank.getFill(), tank.tank.getMaxFill() / 10000);
                 tank.updateLeak(leaking);
             }
@@ -125,9 +127,9 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
         tank.networkPackNT();
     }
 
-    /** 1.7 {@code FT_Amat}: the two antimatter fluids. */
+    /** 1.7 {@code isAntimatter}: the {@code FT_Amat} carriers (AMAT, ASCHRAB, STELLAR_FLUX). */
     private static boolean isAntimatter(FluidType type) {
-        return type == Fluids.AMAT || type == Fluids.ASCHRAB;
+        return type.isAntimatter();
     }
 
     /** 1.7 {@code new ExplosionVNT(world, x + 0.5, y + 1.5, z + 0.5, 5F).makeAmat().setBlockAllocator(null).setBlockProcessor(null).explode()}. */
@@ -146,8 +148,9 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     /**
      * 1.7 {@code updateLeak}: every tick after the explosion {@code amount} mB escape - antimatter all at once (each
      * tick another antimatter blast), a burning flammable tank sets everything in the 4x5x4 box around it alight
-     * and throws gas flames, a gas rises as a coloured plume every 5 ticks. The pollution 1.7 also released waits
-     * for the pollution fluid traits (FT_Polluting), as everywhere else in the port.
+     * and throws gas flames, a gas rises as a coloured plume every 5 ticks. Every 5 ticks the burning fuel's
+     * {@code FT_Polluting} burn table, or the escaping gas's spill table, is applied to {@code amount * 5} mB.
+     * (1.7 also calls {@code FluidType.onFluidRelease}, an empty method.)
      */
     public void updateLeak(int amount) {
         if (!hasExploded || amount <= 0 || !(level instanceof ServerLevel server)) return;
@@ -170,7 +173,11 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
             flame.putDouble("moZ", rand.nextGaussian() * 0.2);
             com.hbm.particle.helper.HbmEffectNT.GasFlame.send(server, x + rand.nextDouble(), y + 0.5 + rand.nextDouble(),
                     z + rand.nextDouble(), flame, 150);
-        } else if (com.hbm.inventory.fluid.FluidCombustion.isGaseous(type)) {
+
+            if (server.getGameTime() % 5 == 0) {
+                FT_Polluting.pollute(server, worldPosition, type, FluidReleaseType.BURN, amount * 5);
+            }
+        } else if (com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type)) {
             if (server.getGameTime() % 5 == 0) {
                 net.minecraft.nbt.CompoundTag data = new net.minecraft.nbt.CompoundTag();
                 data.putString("type", "tower");
@@ -181,6 +188,10 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
                 data.putInt("color", type.getColor());
                 com.hbm.particle.helper.HbmEffectNT.Tower.send(server, x + 0.5, y + 1, z + 0.5, data, 150);
             }
+
+            if (server.getGameTime() % 5 == 0) {
+                FT_Polluting.pollute(server, worldPosition, type, FluidReleaseType.SPILL, amount * 5);
+            }
         }
     }
 
@@ -189,8 +200,8 @@ public class TileEntityMachineFluidTank extends TileEntityMachineBase implements
     public void tryExtinguish(Level world, BlockPos pos, EnumExtinguishType type) {
         if (!this.hasExploded || !this.onFire) return;
         if (type == EnumExtinguishType.WATER) {
-            // extinguishing oil with water is a terrible idea! (1.7 FT_Liquid; a burning fluid is a liquid or a gas)
-            if (!com.hbm.inventory.fluid.FluidCombustion.isGaseous(tank.getTankType())) {
+            // extinguishing oil with water is a terrible idea!
+            if (tank.getTankType().hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Liquid.class)) {
                 world.explode(null, worldPosition.getX() + 0.5, worldPosition.getY() + 1.5, worldPosition.getZ() + 0.5,
                         5F, true, Level.ExplosionInteraction.BLOCK);
             } else {

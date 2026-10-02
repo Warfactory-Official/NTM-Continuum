@@ -3,6 +3,7 @@ package com.hbm.entity.logic;
 import dev.golem.core.data.Tags;
 
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.registry.Entities;
 import com.hbm.config.MobConfig;
@@ -27,8 +28,10 @@ import java.util.List;
 
 public class EntityWaypoint extends CompatEntity {
 
+    private static final Reg REG = Reg.of(ModNtmEntities.ENTITY_TYPES);
+
     public static final RegistryObject<EntityType<EntityWaypoint>> TYPE =
-            ModNtmEntities.ENTITY_TYPES.register("entity_waypoint", key -> Entities.build(
+            REG.entity("entity_waypoint", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityWaypoint>of(EntityWaypoint::new, MobCategory.MISC)).fireImmune().sized(0.1F, 0.1F).clientTrackingRange(16).updateInterval(1), key));
 
     private static final EntityDataAccessor<Integer> WAYPOINT_TYPE =

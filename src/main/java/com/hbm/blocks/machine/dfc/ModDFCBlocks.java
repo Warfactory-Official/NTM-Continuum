@@ -2,7 +2,11 @@ package com.hbm.blocks.machine.dfc;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Variants;
 import com.hbm.items.machine.ItemLens;
 import com.hbm.items.special.ItemAMSCore;
 import com.hbm.tileentity.ModBlockEntities;
@@ -27,57 +31,67 @@ public final class ModDFCBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
-    public static final RegistryObject<CoreCore> dfc_core = BLOCKS.registerBlock(
-            "dfc_core", CoreCore::new, ModDFCBlocks::machine);
+    /** The aimed components: a cube of their own icon turned to any of the six facings; items are OBJ (ObjItemDeclarations). */
+    private static final Preset AIMED = Presets.cubeAll().states(Variants.facingAll()).noItem()
+            .and(handle -> handle.loot(Loot.self()));
 
-    public static final RegistryObject<CoreComponent> dfc_emitter = BLOCKS.registerBlock(
+    /** 1.7 renders the core invisible; its item is the flat {@code dfc_core} sprite (see {@link #dfc_core_item}). */
+    public static final RegistryObject<CoreCore> dfc_core = REG.block(
+            "dfc_core", CoreCore::new, ModDFCBlocks::machine)
+            .transform(Presets.cubeAll().noItem())
+            .loot(Loot.self());
+
+    public static final RegistryObject<CoreComponent> dfc_emitter = REG.block(
             "dfc_emitter", p -> new CoreComponent(TileEntityCoreEmitter::new,
                     () -> ModBlockEntities.DFC_EMITTER.get(), TileEntityCoreEmitter::serverTick, p),
-            ModDFCBlocks::machine);
-    public static final RegistryObject<CoreComponent> dfc_receiver = BLOCKS.registerBlock(
+            ModDFCBlocks::machine)
+            .transform(AIMED);
+    public static final RegistryObject<CoreComponent> dfc_receiver = REG.block(
             "dfc_receiver", p -> new CoreComponent(TileEntityCoreReceiver::new,
                     () -> ModBlockEntities.DFC_RECEIVER.get(), TileEntityCoreReceiver::serverTick, p),
-            ModDFCBlocks::machine);
-    public static final RegistryObject<CoreComponent> dfc_injector = BLOCKS.registerBlock(
+            ModDFCBlocks::machine)
+            .transform(AIMED);
+    public static final RegistryObject<CoreComponent> dfc_injector = REG.block(
             "dfc_injector", p -> new CoreComponent(TileEntityCoreInjector::new,
                     () -> ModBlockEntities.DFC_INJECTOR.get(), TileEntityCoreInjector::serverTick, p),
-            ModDFCBlocks::machine);
-    public static final RegistryObject<CoreComponent> dfc_stabilizer = BLOCKS.registerBlock(
+            ModDFCBlocks::machine)
+            .transform(AIMED);
+    public static final RegistryObject<CoreComponent> dfc_stabilizer = REG.block(
             "dfc_stabilizer", p -> new CoreComponent(TileEntityCoreStabilizer::new,
                     () -> ModBlockEntities.DFC_STABILIZER.get(), TileEntityCoreStabilizer::serverTick, p),
-            ModDFCBlocks::machine);
+            ModDFCBlocks::machine)
+            .transform(AIMED);
 
-    public static final RegistryObject<BlockItem> dfc_core_item = ITEMS.registerBlockItem("dfc_core", dfc_core);
-    public static final RegistryObject<BlockItem> dfc_emitter_item = ITEMS.registerBlockItem("dfc_emitter", dfc_emitter);
-    public static final RegistryObject<BlockItem> dfc_receiver_item = ITEMS.registerBlockItem("dfc_receiver", dfc_receiver);
-    public static final RegistryObject<BlockItem> dfc_injector_item = ITEMS.registerBlockItem("dfc_injector", dfc_injector);
-    public static final RegistryObject<BlockItem> dfc_stabilizer_item = ITEMS.registerBlockItem("dfc_stabilizer", dfc_stabilizer);
+    // The core is the one dark fusion block with no model of its own: it is RenderShape.INVISIBLE, as
+    // 1.7's getRenderType() == -1, and 1.7 has no item renderer for it either, so the icon is the flat
+    // sprite that render type falls back to. Its art is a drawn orb, not a tileable face — the four
+    // aimed components next to it do have OBJ icons, declared as machine models.
+    public static final RegistryObject<BlockItem> dfc_core_item = REG.blockItem(dfc_core)
+            .transform(Presets.sprite("hbm:blocks/dfc_core"))
+            .tab(HbmTab.MACHINES);
+    public static final RegistryObject<BlockItem> dfc_emitter_item = REG.blockItem(dfc_emitter).tab(HbmTab.MACHINES);
+    public static final RegistryObject<BlockItem> dfc_receiver_item = REG.blockItem(dfc_receiver).tab(HbmTab.MACHINES);
+    public static final RegistryObject<BlockItem> dfc_injector_item = REG.blockItem(dfc_injector).tab(HbmTab.MACHINES);
+    public static final RegistryObject<BlockItem> dfc_stabilizer_item = REG.blockItem(dfc_stabilizer).tab(HbmTab.MACHINES);
 
     public static final RegistryObject<ItemLens> ams_lens =
-            ITEMS.registerItem("ams_lens", p -> new ItemLens(LENS_LIFETIME, p), p -> p.stacksTo(1));
+            REG.item("ams_lens", p -> new ItemLens(LENS_LIFETIME, p), p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.CONTROL);
 
-    public static final RegistryObject<ItemAMSCore> ams_core_sing = ITEMS.registerItem("ams_core_sing",
-            p -> new ItemAMSCore(500, 0.8F, 1.5F, p), p -> p.stacksTo(1).rarity(Rarity.UNCOMMON));
-    public static final RegistryObject<ItemAMSCore> ams_core_wormhole = ITEMS.registerItem("ams_core_wormhole",
-            p -> new ItemAMSCore(650, 1.5F, 0.8F, p), p -> p.stacksTo(1).rarity(Rarity.UNCOMMON));
-    public static final RegistryObject<ItemAMSCore> ams_core_eyeofharmony = ITEMS.registerItem("ams_core_eyeofharmony",
-            p -> new ItemAMSCore(800, 1.5F, 2.0F, p), p -> p.stacksTo(1).rarity(Rarity.UNCOMMON));
-    public static final RegistryObject<ItemAMSCore> ams_core_thingy = ITEMS.registerItem("ams_core_thingy",
-            p -> new ItemAMSCore(2500, 0.7F, 0.7F, true, p), p -> p.stacksTo(1).rarity(Rarity.EPIC));
-
-    static {
-        ModTabs.addTo(HbmTab.MACHINES, dfc_core_item);
-        ModTabs.addTo(HbmTab.MACHINES, dfc_emitter_item);
-        ModTabs.addTo(HbmTab.MACHINES, dfc_receiver_item);
-        ModTabs.addTo(HbmTab.MACHINES, dfc_injector_item);
-        ModTabs.addTo(HbmTab.MACHINES, dfc_stabilizer_item);
-        ModTabs.addTo(HbmTab.CONTROL, ams_lens);
-        ModTabs.addTo(HbmTab.CONTROL, ams_core_sing);
-        ModTabs.addTo(HbmTab.CONTROL, ams_core_wormhole);
-        ModTabs.addTo(HbmTab.CONTROL, ams_core_eyeofharmony);
-        ModTabs.addTo(HbmTab.CONSUMABLES, ams_core_thingy);
-    }
+    public static final RegistryObject<ItemAMSCore> ams_core_sing = REG.item("ams_core_sing",
+            p -> new ItemAMSCore(500, 0.8F, 1.5F, p), p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
+            .transform(Presets.sprite()).tab(HbmTab.CONTROL);
+    public static final RegistryObject<ItemAMSCore> ams_core_wormhole = REG.item("ams_core_wormhole",
+            p -> new ItemAMSCore(650, 1.5F, 0.8F, p), p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
+            .transform(Presets.sprite()).tab(HbmTab.CONTROL);
+    public static final RegistryObject<ItemAMSCore> ams_core_eyeofharmony = REG.item("ams_core_eyeofharmony",
+            p -> new ItemAMSCore(800, 1.5F, 2.0F, p), p -> p.stacksTo(1).rarity(Rarity.UNCOMMON))
+            .transform(Presets.sprite()).tab(HbmTab.CONTROL);
+    public static final RegistryObject<ItemAMSCore> ams_core_thingy = REG.item("ams_core_thingy",
+            p -> new ItemAMSCore(2500, 0.7F, 0.7F, true, p), p -> p.stacksTo(1).rarity(Rarity.EPIC))
+            .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
 
     private static net.minecraft.world.level.block.state.BlockBehaviour.Properties machine(
             net.minecraft.world.level.block.state.BlockBehaviour.Properties p) {

@@ -1280,6 +1280,15 @@ public class NBTStructure {
             int surface = context.chunkGenerator().getFirstOccupiedHeight(cx, cz, Heightmap.Types.WORLD_SURFACE_WG, context.heightAccessor(), context.randomState());
             BlockPos center = new BlockPos(cx, surface, cz);
 
+            // 1.7 ran the spawn's biome predicate on this biome. The structure's tag only narrows the candidates (a
+            // modded biome is in it through the convention tags of the types the predicate needs); a table biome answers
+            // through its row, any other through LegacyBiomes.guess. Skipped where the context's own biome rule is off
+            // (the /place command generates in any biome): there a biome no tag can hold passes it.
+            if (checksBiome(context)) {
+                var biome = com.hbm.world.gen.LegacyBiomes.biomeAt(context.biomeSource(), context.randomState(), cx, surface, cz);
+                if (!com.hbm.world.gen.LegacyBiomes.accepts(spawnName, biome, context)) return java.util.Optional.empty();
+            }
+
             return java.util.Optional.of(new GenerationStub(center, builder -> {
                 if (spawn.start != null) {
                     spawn.start.build(builder, context);
@@ -1291,7 +1300,14 @@ public class NBTStructure {
             }));
         }
 
-
+        /**
+         * Whether the context tests biomes at all: world generation and {@code /locate} pass the structure's biome set,
+         * which cannot hold an unregistered (direct) holder; {@code /place structure} passes "any biome".
+         */
+        public static boolean checksBiome(GenerationContext context) {
+            var any = context.biomeSource().possibleBiomes().stream().findFirst();
+            return any.isEmpty() || !context.validBiome().test(net.minecraft.core.Holder.direct(any.get().value()));
+        }
 
         /**
          * Whether vanilla's {@code generate} of this structure in the region is valid, without building it: the checks

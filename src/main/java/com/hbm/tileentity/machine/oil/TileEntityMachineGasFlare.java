@@ -10,6 +10,8 @@ import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.items.machine.IItemFluidId;
 import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
@@ -51,7 +53,8 @@ import java.util.List;
  * {@code power += flammableEnergy·eject/1000/penalty · (1 + yield/3)}, penalty 5 gaseous / 10 liquid.
  * Effects use vanilla particle stand-ins (the old custom gas-tower / flamethrower particles are unported,
  * §20): a smoke column while venting, FLAME + LARGE_SMOKE at the tip while burning; burning also sets
- * fire to entities in the flame AABB.
+ * fire to entities in the flame AABB. Every fifth tick the vented or burned fluid's {@code FT_Polluting}
+ * table is applied to {@code eject * 5} mB, as in 1.7.
  */
 public class TileEntityMachineGasFlare extends TileEntityMachineBase
         implements MenuProvider, IEnergyProviderMK2, IFluidStandardReceiverMK2, IUpgradeInfoProvider {
@@ -101,12 +104,16 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
 
             if (!te.doesBurn || !flammable) {
                 // vent path (gaseous only)
-                if (FluidCombustion.isGaseous(type)) {
+                if (com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type)) {
                     int eject = Math.min(maxVent, te.tank.getFill());
                     te.tank.setFill(te.tank.getFill() - eject);
 
                     if (TickPhase.every(level, pos, 7)) {
                         level.playSound(null, pos.getX(), pos.getY() + 11, pos.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, te.getVolume(1.5F), 0.5F);
+                    }
+
+                    if (TickPhase.every(level, pos, 5) && eject > 0) {
+                        FT_Polluting.pollute(level, pos, type, FluidReleaseType.SPILL, eject * 5);
                     }
                 }
             } else {
@@ -114,7 +121,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 int eject = Math.min(maxBurn, te.tank.getFill());
                 te.tank.setFill(te.tank.getFill() - eject);
 
-                int penalty = FluidCombustion.isGaseous(type) ? 5 : 10;
+                int penalty = com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type) ? 5 : 10;
 
                 long powerProd = FluidCombustion.getFlammableEnergy(type) * eject / 1_000;
                 powerProd /= penalty;
@@ -127,6 +134,10 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
                 for (Entity e : list) {
                     dev.golem.core.world.Effects.ignite(e, 5);
                     e.hurt(level.damageSources().onFire(), 5F);
+                }
+
+                if (TickPhase.every(level, pos, 5) && eject > 0) {
+                    FT_Polluting.pollute(level, pos, type, FluidReleaseType.BURN, eject * 5);
                 }
             }
         }
@@ -141,7 +152,7 @@ public class TileEntityMachineGasFlare extends TileEntityMachineBase
         FluidType type = te.tank.getTankType();
         boolean flammable = FluidCombustion.isFlammable(type);
 
-        if ((!te.doesBurn || !flammable) && FluidCombustion.isGaseous(type)) {
+        if ((!te.doesBurn || !flammable) && com.hbm.inventory.fluid.trait.FluidTraitSimple.isGaseousAny(type)) {
             level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, pos.getX() + 0.5, pos.getY() + 11, pos.getZ() + 0.5,
                     level.getRandom().nextGaussian() * 0.02, 0.05, level.getRandom().nextGaussian() * 0.02);
         } else if (te.doesBurn && flammable) {

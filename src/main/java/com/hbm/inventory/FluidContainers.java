@@ -4,7 +4,6 @@ import com.hbm.inventory.fluid.FluidType;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * The 1.7 per-fluid container data that the port's {@link FluidType} does not carry:
@@ -22,15 +21,6 @@ public final class FluidContainers {
     public static final Map<String, Integer> GAS_BOTTLE = new LinkedHashMap<>();
     /** {@code CD_Gastank} label colours. */
     public static final Map<String, Integer> GAS_LABEL = new LinkedHashMap<>();
-
-    /** Fluids with {@code FT_LeadContainer}: only the lead tank may hold them. */
-    public static final Set<String> LEAD_ONLY = Set.of("DEATH", "REDMUD");
-
-    /** Fluids with {@code FT_NoContainer}: no portable container at all. */
-    public static final Set<String> NO_CONTAINER = Set.of(
-            "WASTEFLUID", "WASTEGAS", "SPENTSTEAM", "PLASMA_DT", "PLASMA_HD", "PLASMA_HT", "PLASMA_XM",
-            "PLASMA_BF", "PLASMA_DH3", "CHLOROCALCITE_SOLUTION", "CHLOROCALCITE_MIX", "CHLOROCALCITE_CLEANED",
-            "POTASSIUM_CHLORIDE", "CALCIUM_CHLORIDE", "CALCIUM_SOLUTION", "SMOKE", "SMOKE_LEADED", "SMOKE_POISON");
 
     private static void canister(String fluid, int color) { CANISTER.put(fluid, color); }
 
@@ -105,8 +95,10 @@ public final class FluidContainers {
 
     public static boolean hasCanister(FluidType type) { return CANISTER.containsKey(type.getName()); }
     public static boolean hasGasTank(FluidType type) { return GAS_BOTTLE.containsKey(type.getName()); }
-    public static boolean needsLeadContainer(FluidType type) { return LEAD_ONLY.contains(type.getName()); }
-    public static boolean hasNoContainer(FluidType type) { return NO_CONTAINER.contains(type.getName()); }
+    /** 1.7 {@code FT_LeadContainer}: only the lead tank may hold it (the trait is assigned in {@code Fluids}). */
+    public static boolean needsLeadContainer(FluidType type) { return type.needsLeadContainer(); }
+    /** 1.7 {@code FT_NoContainer}: no portable container at all. */
+    public static boolean hasNoContainer(FluidType type) { return type.hasNoContainer(); }
 
     public static int canisterColor(FluidType type) { return CANISTER.getOrDefault(type.getName(), 0xFFFFFF); }
     public static int gasBottleColor(FluidType type) { return GAS_BOTTLE.getOrDefault(type.getName(), 0xFFFFFF); }

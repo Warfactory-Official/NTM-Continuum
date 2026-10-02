@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.tileentity.deco.TileEntityBobble;
@@ -29,49 +30,50 @@ public final class ModDecoCrateBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityCanCrate>> CRATE_CAN =
-            BLOCK_ENTITIES.register("crate_can", () -> BlockEntities.type(TileEntityCanCrate::new,
+            REG.blockEntity("crate_can", () -> BlockEntities.type(TileEntityCanCrate::new,
                     ModDecoCrateBlocks.crate_can.get()));
     public static final RegistryObject<BlockEntityType<TileEntityCrateTungsten>> CRATE_TUNGSTEN =
-            BLOCK_ENTITIES.register("crate_tungsten", () -> BlockEntities.ticking(TileEntityCrateTungsten::new,
+            REG.blockEntity("crate_tungsten", () -> BlockEntities.ticking(TileEntityCrateTungsten::new,
                     TileEntityCrateTungsten::clientTick, TileEntityCrateTungsten::serverTick,
                     ModDecoCrateBlocks.crate_tungsten.get()));
     public static final RegistryObject<BlockEntityType<TileEntitySafe>> SAFE =
-            BLOCK_ENTITIES.register("safe", () -> BlockEntities.type(TileEntitySafe::new, ModDecoCrateBlocks.safe.get()));
+            REG.blockEntity("safe", () -> BlockEntities.type(TileEntitySafe::new, ModDecoCrateBlocks.safe.get()));
     public static final RegistryObject<BlockEntityType<TileEntityFileCabinet>> FILE_CABINET =
-            BLOCK_ENTITIES.register("filing_cabinet", () -> BlockEntities.ticking(TileEntityFileCabinet::new,
+            REG.blockEntity("filing_cabinet", () -> BlockEntities.ticking(TileEntityFileCabinet::new,
                     TileEntityFileCabinet::tick, TileEntityFileCabinet::tick, ModDecoCrateBlocks.filing_cabinet.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBobble>> BOBBLE =
-            BLOCK_ENTITIES.register("bobblehead", () -> BlockEntities.type(TileEntityBobble::new,
+            REG.blockEntity("bobblehead", () -> BlockEntities.type(TileEntityBobble::new,
                     ModDecoCrateBlocks.bobblehead.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPlushie>> PLUSHIE =
-            BLOCK_ENTITIES.register("plushie", () -> BlockEntities.clientTicking(TileEntityPlushie::new,
+            REG.blockEntity("plushie", () -> BlockEntities.clientTicking(TileEntityPlushie::new,
                     TileEntityPlushie::clientTick, ModDecoCrateBlocks.plushie.get()));
     public static final RegistryObject<BlockEntityType<TileEntitySnowglobe>> SNOWGLOBE =
-            BLOCK_ENTITIES.register("snowglobe", () -> BlockEntities.type(TileEntitySnowglobe::new,
+            REG.blockEntity("snowglobe", () -> BlockEntities.type(TileEntitySnowglobe::new,
                     ModDecoCrateBlocks.snowglobe.get()));
     public static final RegistryObject<BlockEntityType<TileEntityVendingMachine>> VENDING_MACHINE =
-            BLOCK_ENTITIES.register("vending_machine", () -> BlockEntities.type(TileEntityVendingMachine::new,
+            REG.blockEntity("vending_machine", () -> BlockEntities.type(TileEntityVendingMachine::new,
                     ModDecoCrateBlocks.vending_machine.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBroadcaster>> BROADCASTER =
-            BLOCK_ENTITIES.register("broadcaster_pc", () -> BlockEntities.ticking(TileEntityBroadcaster::new,
+            REG.blockEntity("broadcaster_pc", () -> BlockEntities.ticking(TileEntityBroadcaster::new,
                     TileEntityBroadcaster::clientTick, TileEntityBroadcaster::serverTick,
                     ModDecoCrateBlocks.broadcaster_pc.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadiobox>> RADIOBOX =
-            BLOCK_ENTITIES.register("radiobox", () -> BlockEntities.serverTicking(TileEntityRadiobox::new,
+            REG.blockEntity("radiobox", () -> BlockEntities.serverTicking(TileEntityRadiobox::new,
                     TileEntityRadiobox::serverTick, ModDecoCrateBlocks.radiobox.get()));
     public static final RegistryObject<BlockEntityType<TileEntityRadioRec>> RADIOREC =
-            BLOCK_ENTITIES.register("radiorec", () -> BlockEntities.serverTicking(TileEntityRadioRec::new,
+            REG.blockEntity("radiorec", () -> BlockEntities.serverTicking(TileEntityRadioRec::new,
                     TileEntityRadioRec::serverTick, ModDecoCrateBlocks.radiorec.get()));
     public static final RegistryObject<BlockEntityType<TileEntityEmitter>> EMITTER =
-            BLOCK_ENTITIES.register("deco_emitter", () -> BlockEntities.serverTicking(TileEntityEmitter::new,
+            REG.blockEntity("deco_emitter", () -> BlockEntities.serverTicking(TileEntityEmitter::new,
                     TileEntityEmitter::serverTick, ModDecoCrateBlocks.deco_emitter.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPartEmitter>> PART_EMITTER =
-            BLOCK_ENTITIES.register("part_emitter", () -> BlockEntities.serverTicking(TileEntityPartEmitter::new,
+            REG.blockEntity("part_emitter", () -> BlockEntities.serverTicking(TileEntityPartEmitter::new,
                     TileEntityPartEmitter::serverTick, ModDecoCrateBlocks.part_emitter.get()));
     public static final RegistryObject<BlockEntityType<TileEntityGlyphidSpawner>> GLYPHID_SPAWNER =
-            BLOCK_ENTITIES.register("glyphid_spawner", () -> BlockEntities.serverTicking(TileEntityGlyphidSpawner::new,
+            REG.blockEntity("glyphid_spawner", () -> BlockEntities.serverTicking(TileEntityGlyphidSpawner::new,
                     TileEntityGlyphidSpawner::serverTick, ModDecoCrateBlocks.glyphid_spawner.get()));
 
     public static void init() {}

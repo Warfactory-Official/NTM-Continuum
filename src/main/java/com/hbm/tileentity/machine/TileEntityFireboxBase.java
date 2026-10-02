@@ -6,7 +6,11 @@ import com.hbm.api.tile.IHeatSource;
 import com.hbm.lib.ForgeDirection;
 import com.hbm.modules.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.inventory.fluid.FluidType;
+import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -28,10 +32,11 @@ import dev.golem.core.data.DataOut;
  * Base for solid-fuel heaters (1.12.2 {@code TileEntityFireboxBase}): two fuel slots burn furnace fuels
  * (times/heat scaled by {@link ModuleBurnTime}) into a {@code heatEnergy} reservoir that an
  * {@link IHeatSource} consumer above drains. Burn time only ticks down while the reservoir isn't full;
- * with no fire the reservoir passively decays by {@code max(heat/1000, 1)}. Deferred from the original:
- * pollution/soot, the ashpit and the muffler.
+ * with no fire the reservoir passively decays by {@code max(heat/1000, 1)}. While burning below full heat it
+ * puts 1.7's {@code SOOT_PER_SECOND * 3} into its smoke tanks each second and offers them to the ring of
+ * cells around its footprint. Deferred from the original: the ashpit and the muffler.
  */
-public abstract class TileEntityFireboxBase extends TileEntityMachineBase implements MenuProvider, IHeatSource {
+public abstract class TileEntityFireboxBase extends TileEntityMachinePolluting implements MenuProvider, IHeatSource {
 
     public int maxBurnTime;
     public int burnTime;
@@ -48,10 +53,20 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
     public float prevDoorAngle;
 
     public TileEntityFireboxBase(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state, 2);
+        super(type, pos, state, 2, 50);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityFireboxBase te) {
+        for (int i = 2; i < 6; i++) {
+            ForgeDirection dir = ForgeDirection.getOrientation(i);
+            ForgeDirection rot = dir.getRotation(ForgeDirection.UP);
+
+            for (int j = -1; j <= 1; j++) {
+                te.sendSmoke(pos.getX() + dir.offsetX * 2 + rot.offsetX * j, pos.getY(),
+                        pos.getZ() + dir.offsetZ * 2 + rot.offsetZ * j, dir);
+            }
+        }
+
         te.wasOn = false;
 
         if (te.burnTime <= 0) {
@@ -80,6 +95,7 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
         } else {
             if (te.heatEnergy < te.getMaxHeat()) {
                 te.burnTime--;
+                if (TickPhase.every(level, pos, 20L)) te.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * 3);
             }
             te.wasOn = true;
 
@@ -148,6 +164,21 @@ public abstract class TileEntityFireboxBase extends TileEntityMachineBase implem
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return level != null && getModule().getBurnTime(level, stack) > 0;
+    }
+
+    @Override
+    public FluidTankNTM[] getAllTanks() {
+        return new FluidTankNTM[0];
+    }
+
+    @Override
+    public FluidTankNTM[] getSendingTanks() {
+        return this.getSmokeTanks();
+    }
+
+    @Override
+    public boolean canConnect(FluidType type, ForgeDirection dir) {
+        return dir != ForgeDirection.UNKNOWN && dir != ForgeDirection.DOWN;
     }
 
     @Override

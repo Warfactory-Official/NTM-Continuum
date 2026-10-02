@@ -23,7 +23,7 @@ public class RenderBlockSpider extends CompatEntityRenderer<EntityBlockSpider, R
     private static final String[] ODD = {"Leg1", "Leg3", "Leg5", "Leg7"};
     private static final String[] EVEN = {"Leg2", "Leg4", "Leg6", "Leg8"};
 
-    private final RenderType type = CompatRenderTypes.entityCutout(ResourceManager.blockspider_tex);
+    private final RenderType type = CompatRenderTypes.entityCutoutNoCull(ResourceManager.blockspider_tex);
 
     public RenderBlockSpider(EntityRendererProvider.Context context) {
         super(context);

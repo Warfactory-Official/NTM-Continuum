@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.items.weapon.sedna.Crosshair;
 import com.hbm.items.weapon.sedna.GunConfig;
@@ -65,6 +67,7 @@ public final class ModGunItems {
     private ModGunItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     static {
         // GunCatalogue touches this class before registry flush; sound declarations remain deferred.
@@ -72,7 +75,7 @@ public final class ModGunItems {
     }
 
     /** The source debug gun: two receivers, two trigger routes, and no frills. */
-    public static final RegistryObject<ItemGunBaseNT> gun_debug = ITEMS.registerItem("gun_debug", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_debug = REG.item("gun_debug", props ->
             new ItemGunBaseNT(props, WeaponQuality.DEBUG, new GunConfig()
                     .dura(600F).draw(15).inspect(23).crosshair(Crosshair.L_CLASSIC)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -93,15 +96,15 @@ public final class ModGunItems {
                     .pr(Lego.LAMBDA_STANDARD_RELOAD)
                     .pt(Lego.LAMBDA_TOGGLE_AIM)
                      .decider(GunFactory.LAMBDA_DEBUG_DECIDER)
-                       .orchestra(Orchestras.DEBUG_ORCHESTRA)));
+                       .orchestra(Orchestras.DEBUG_ORCHESTRA)), p -> p);
 
     /** Original-hbm's separately implemented charged B92 energy pistol. */
-    public static final RegistryObject<GunB92> gun_b92 = ITEMS.registerItem("gun_b92", GunB92::new);
-    public static final RegistryObject<GunB92Cell> gun_b92_ammo = ITEMS.registerItem("gun_b92_ammo",
-            props -> new GunB92Cell(props));
+    public static final RegistryObject<GunB92> gun_b92 = REG.item("gun_b92", GunB92::new, p -> p);
+    public static final RegistryObject<GunB92Cell> gun_b92_ammo = REG.item("gun_b92_ammo",
+            props -> new GunB92Cell(props), p -> p).transform(Presets.sprite("hbm:items/gun_b92_ammo_alt"));
 
     /** The break-action .357 — upstream's reference weapon for the standard configuration. */
-    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver = ITEMS.registerItem("gun_light_revolver", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver = REG.item("gun_light_revolver", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(300).draw(4).inspect(23).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -112,10 +115,10 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.3125D)
                              .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_ATLAS))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_ATLAS))
-                .setDefaultAmmo(ModAmmoItems.m357_sp, 12));
+                .setDefaultAmmo(ModAmmoItems.m357_sp, 12), p -> p);
 
     /** Atlas: the higher-damage, otherwise mechanically identical break-action revolver. */
-    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver_atlas = ITEMS.registerItem("gun_light_revolver_atlas", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver_atlas = REG.item("gun_light_revolver_atlas", props ->
             new ItemGunBaseNT(props, WeaponQuality.B_SIDE, new GunConfig()
                     .dura(300).draw(4).inspect(23).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -126,10 +129,10 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.3125D)
                              .setupStandardFire().recoil(XFactory357.LAMBDA_RECOIL_ATLAS))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_ATLAS))
-                .setDefaultAmmo(ModAmmoItems.m357_jhp, 12));
+                .setDefaultAmmo(ModAmmoItems.m357_jhp, 12), p -> p);
 
     /** Day And Night: two independently triggered and persisted legendary revolvers. */
-    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver_dani = ITEMS.registerItem("gun_light_revolver_dani", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_light_revolver_dani = REG.item("gun_light_revolver_dani", props ->
             new ItemGunBaseNT(props, WeaponQuality.LEGENDARY,
                     new GunConfig().dura(30_000).draw(20).inspect(23).crosshair(Crosshair.CIRCLE)
                             .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -153,10 +156,10 @@ public final class ModGunItems {
                             .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                              .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)
                               .orchestra(Orchestras.ORCHESTRA_DANI))
-                .setDefaultAmmo(ModAmmoItems.m357_express, 24));
+                .setDefaultAmmo(ModAmmoItems.m357_express, 24), p -> p);
 
     /** Six-shot Pepperbox accepting the four upstream stone/iron black-powder loads. */
-    public static final RegistryObject<ItemGunBaseNT> gun_pepperbox = ITEMS.registerItem("gun_pepperbox", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_pepperbox = REG.item("gun_pepperbox", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(300).draw(4).inspect(23).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -167,10 +170,10 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.1875D)
                              .setupStandardFire().recoil(XFactoryBlackPowder.LAMBDA_RECOIL_PEPPERBOX))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_PEPPERBOX))
-                .setDefaultAmmo(ModAmmoItems.stone, 12));
+                .setDefaultAmmo(ModAmmoItems.stone, 12), p -> p);
 
     /** Unmodified H&K G3 path: automatic/semi-auto selector and thirty-round 5.56 mm magazine. */
-    public static final RegistryObject<ItemGunBaseNT> gun_g3 = ITEMS.registerItem("gun_g3", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_g3 = REG.item("gun_g3", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(3_000).draw(10).inspect(33).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -182,7 +185,7 @@ public final class ModGunItems {
                             .setupStandardFire().recoil(XFactory556mm.LAMBDA_RECOIL_G3))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_G3)
                        .ps(Lego.LAMBDA_STANDARD_CLICK_SECONDARY))
-                .setDefaultAmmo(ModAmmoItems.r556_sp, 30));
+                .setDefaultAmmo(ModAmmoItems.r556_sp, 30), p -> p);
 
     // The remaining ordinary factory declarations are owned by the real ballistic catalogue.
     public static final RegistryObject<ItemGunBaseNT> gun_g3_zebra = BallisticGunCatalog.gun_g3_zebra;
@@ -242,12 +245,12 @@ public final class ModGunItems {
     /** Real factory-backed utility guns; fire extinguisher, drill, and PA remain dependency-bound. */
      public static final RegistryObject<ItemGunBaseNT> gun_charge_thrower =
              com.hbm.items.weapon.sedna.factory.NtmToolGunCatalog.gun_charge_thrower;
-    public static final RegistryObject<ItemGunBaseNT> gun_chemthrower = ITEMS.registerItem("gun_chemthrower", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_chemthrower = REG.item("gun_chemthrower", props ->
             new ItemGunChemthrower(props, WeaponQuality.A_SIDE,
-                    XFactoryFlamer.chemthrowerConfig().orchestra(Orchestras.ORCHESTRA_CHEMTHROWER)));
+                    XFactoryFlamer.chemthrowerConfig().orchestra(Orchestras.ORCHESTRA_CHEMTHROWER)), p -> p);
 
     /** The automatic .22 submachine gun, stat-for-stat from upstream's Gen-3 declaration. */
-    public static final RegistryObject<ItemGunBaseNT> gun_am180 = ITEMS.registerItem("gun_am180", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_am180 = REG.item("gun_am180", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(177 * 25).draw(15).inspect(38).crosshair(Crosshair.L_CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -258,10 +261,10 @@ public final class ModGunItems {
                             .offset(1, -0.0625 * 1.5, -0.1875D)
                             .setupStandardFire().recoil(XFactory22lr.LAMBDA_RECOIL_AM180))
                        .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_AM180))
-                .setDefaultAmmo(ModAmmoItems.p22_sp, 35));
+                .setDefaultAmmo(ModAmmoItems.p22_sp, 35), p -> p);
 
     /** The M3 Grease Gun, ported from upstream's Gen-3 9 mm declaration. */
-    public static final RegistryObject<ItemGunBaseNT> gun_greasegun = ITEMS.registerItem("gun_greasegun", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_greasegun = REG.item("gun_greasegun", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(3_000).draw(20).inspect(31).crosshair(Crosshair.L_CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -272,10 +275,10 @@ public final class ModGunItems {
                             .offset(1, -0.0625 * 2.5, -0.25D)
                             .setupStandardFire().recoil(XFactory9mm.LAMBDA_RECOIL_GREASEGUN))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_GREASEGUN))
-                .setDefaultAmmo(ModAmmoItems.p9_sp, 30));
+                .setDefaultAmmo(ModAmmoItems.p9_sp, 30), p -> p);
 
     /** The Comically Long Pistol, ported from upstream's Gen-3 9 mm declaration. */
-    public static final RegistryObject<ItemGunBaseNT> gun_lag = ITEMS.registerItem("gun_lag", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_lag = REG.item("gun_lag", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(1_700).draw(7).inspect(31).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -287,10 +290,10 @@ public final class ModGunItems {
                             .setupStandardFire().fire(XFactory9mm.LAMBDA_FIRE_LAG)
                             .recoil(XFactory9mm.LAMBDA_RECOIL_LAG))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_LAG))
-                .setDefaultAmmo(ModAmmoItems.p9_jhp, 17));
+                .setDefaultAmmo(ModAmmoItems.p9_jhp, 17), p -> p);
 
     /** The Uzi, ported from upstream's Gen-3 9 mm declaration. */
-    public static final RegistryObject<ItemGunBaseNT> gun_uzi = ITEMS.registerItem("gun_uzi", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_uzi = REG.item("gun_uzi", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(3_000).draw(15).inspect(31).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -301,10 +304,10 @@ public final class ModGunItems {
                             .offset(1, -0.0625 * 2.5, -0.25D)
                             .setupStandardFire().recoil(XFactory9mm.LAMBDA_RECOIL_UZI))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_UZI))
-                .setDefaultAmmo(ModAmmoItems.p9_sp, 30));
+                .setDefaultAmmo(ModAmmoItems.p9_sp, 30), p -> p);
 
     /** Two independently animated Uzis, each with its own thirty-round magazine. */
-    public static final RegistryObject<ItemGunBaseNT> gun_uzi_akimbo = ITEMS.registerItem("gun_uzi_akimbo", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_uzi_akimbo = REG.item("gun_uzi_akimbo", props ->
             new ItemGunBaseNT(props, WeaponQuality.B_SIDE,
                     new GunConfig().dura(3_000).draw(15).inspect(31).crosshair(Crosshair.CIRCLE)
                             .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -328,19 +331,19 @@ public final class ModGunItems {
                             .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                              .decider(XFactory9mm.LAMBDA_SECOND_UZI)
                               .orchestra(Orchestras.ORCHESTRA_UZI_AKIMBO))
-                .setDefaultAmmo(ModAmmoItems.p9_sp, 60));
+                .setDefaultAmmo(ModAmmoItems.p9_sp, 60), p -> p);
 
     /** The semi-automatic .22 target pistol. */
-    public static final RegistryObject<ItemGunBaseNT> gun_star_f = ITEMS.registerItem("gun_star_f", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_star_f = REG.item("gun_star_f", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(15 * 25).draw(15).inspect(38).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
                     .rec(starReceiver(0, -0.1875D))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_STAR_F))
-                .setDefaultAmmo(ModAmmoItems.p22_sp, 15));
+                .setDefaultAmmo(ModAmmoItems.p22_sp, 15), p -> p);
 
     /** Two target pistols in one stack, with independent magazines and triggers. */
-    public static final RegistryObject<ItemGunBaseNT> gun_star_f_akimbo = ITEMS.registerItem("gun_star_f_akimbo", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_star_f_akimbo = REG.item("gun_star_f_akimbo", props ->
             new ItemGunBaseNT(props, WeaponQuality.B_SIDE,
                     new GunConfig()
                             .dura(15 * 25).draw(15).inspect(38).crosshair(Crosshair.CIRCLE)
@@ -356,10 +359,10 @@ public final class ModGunItems {
                             .ps(Lego.LAMBDA_STANDARD_CLICK_PRIMARY).pr(Lego.LAMBDA_STANDARD_RELOAD)
                              .decider(com.hbm.items.weapon.sedna.factory.GunStateDecider.LAMBDA_STANDARD_DECIDER)
                                .orchestra(Orchestras.ORCHESTRA_STAR_F_AKIMBO))
-                .setDefaultAmmo(ModAmmoItems.p22_sp, 30));
+                .setDefaultAmmo(ModAmmoItems.p22_sp, 30), p -> p);
 
     /** The tube-fed .44 lever-action rifle. */
-    public static final RegistryObject<ItemGunBaseNT> gun_henry = ITEMS.registerItem("gun_henry", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_henry = REG.item("gun_henry", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(300).draw(15).inspect(23).reloadSequential(true).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -370,10 +373,10 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.1875D)
                              .setupStandardFire().recoil(XFactory44.LAMBDA_RECOIL_HENRY))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_HENRY))
-                .setDefaultAmmo(ModAmmoItems.m44_sp, 14));
+                .setDefaultAmmo(ModAmmoItems.m44_sp, 14), p -> p);
 
     /** Lincoln's higher-damage Henry variant. */
-    public static final RegistryObject<ItemGunBaseNT> gun_henry_lincoln = ITEMS.registerItem("gun_henry_lincoln", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_henry_lincoln = REG.item("gun_henry_lincoln", props ->
             new ItemGunBaseNT(props, WeaponQuality.B_SIDE, new GunConfig()
                     .dura(300).draw(15).inspect(23).reloadSequential(true).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -384,10 +387,10 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.1875D)
                              .setupStandardFire().recoil(XFactory44.LAMBDA_RECOIL_HENRY))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_HENRY))
-                .setDefaultAmmo(ModAmmoItems.m44_jhp, 14));
+                .setDefaultAmmo(ModAmmoItems.m44_jhp, 14), p -> p);
 
     /** The ordinary six-shot .44 heavy revolver. */
-    public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver = ITEMS.registerItem("gun_heavy_revolver", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver = REG.item("gun_heavy_revolver", props ->
             new ItemGunBaseNT(props, WeaponQuality.A_SIDE, new GunConfig()
                     .dura(600).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -398,10 +401,10 @@ public final class ModGunItems {
                             .offset(0.75, -0.0625, -0.3125D)
                              .setupStandardFire().recoil(XFactory44.LAMBDA_RECOIL_NOPIP))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_NOPIP))
-                .setDefaultAmmo(ModAmmoItems.m44_sp, 12));
+                .setDefaultAmmo(ModAmmoItems.m44_sp, 12), p -> p);
 
     /** Little Macintosh, the scoped legendary heavy revolver. */
-    public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver_lilmac = ITEMS.registerItem("gun_heavy_revolver_lilmac", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver_lilmac = REG.item("gun_heavy_revolver_lilmac", props ->
             new ItemGunBaseNT(props, WeaponQuality.LEGENDARY, new GunConfig()
                     .dura(31_000).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC)
                     .scopeTexture(dev.golem.core.Ids.of(Constants.MOD_ID, "textures/misc/scope_44.png"))
@@ -415,10 +418,10 @@ public final class ModGunItems {
                              .offset(0.75, -0.0625, -0.3125D)
                               .setupStandardFire().recoil(XFactory44.LAMBDA_RECOIL_NOPIP))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_NOPIP))
-                .setDefaultAmmo(ModAmmoItems.m44_jhp, 12));
+                .setDefaultAmmo(ModAmmoItems.m44_jhp, 12), p -> p);
 
     /** Protege, the torpedo-impact legendary heavy revolver. */
-    public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver_protege = ITEMS.registerItem("gun_heavy_revolver_protege", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_heavy_revolver_protege = REG.item("gun_heavy_revolver_protege", props ->
             new ItemGunBaseNT(props, WeaponQuality.LEGENDARY, new GunConfig()
                     .dura(31_000).draw(10).inspect(23).crosshair(Crosshair.L_CLASSIC)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -431,10 +434,10 @@ public final class ModGunItems {
                              .offset(0.75, -0.0625, -0.3125D)
                               .setupStandardFire().recoil(XFactory44.LAMBDA_RECOIL_NOPIP))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_NOPIP))
-                .setDefaultAmmo(ModAmmoItems.m44_jhp, 12));
+                .setDefaultAmmo(ModAmmoItems.m44_jhp, 12), p -> p);
 
     /** Hangman, an eight-round inspection-heavy legendary rifle. */
-    public static final RegistryObject<ItemGunBaseNT> gun_hangman = ITEMS.registerItem("gun_hangman", props ->
+    public static final RegistryObject<ItemGunBaseNT> gun_hangman = REG.item("gun_hangman", props ->
             new ItemGunBaseNT(props, WeaponQuality.LEGENDARY, new GunConfig()
                     .dura(600).draw(10).inspect(31).inspectCancel(false).crosshair(Crosshair.CIRCLE)
                     .smoke(Lego.LAMBDA_STANDARD_SMOKE)
@@ -446,7 +449,7 @@ public final class ModGunItems {
                      .setupStandardFire().recoil(XFactory44.LAMBDA_RECOIL_HANGMAN))
                       .setupStandardConfiguration().orchestra(Orchestras.ORCHESTRA_HANGMAN)
                      .ps(XFactory44.SMACK_A_FUCKER))
-                .setDefaultAmmo(ModAmmoItems.m44_fmj, 16));
+                .setDefaultAmmo(ModAmmoItems.m44_fmj, 16), p -> p);
 
     private static Receiver starReceiver(int index, double side) {
         return new Receiver(index)

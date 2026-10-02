@@ -1,6 +1,7 @@
 package com.hbm.sound;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -13,9 +14,9 @@ public final class EnergyNetSounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
 
-    public static final RegistryObject<SoundEvent> ITEM_BATTERY = SOUNDS.register("item.battery",
-            () -> SoundEvent.createVariableRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "item.battery")));
+    public static final RegistryObject<SoundEvent> ITEM_BATTERY = REG.sound("item.battery");
 
     public static void init() {}
 }

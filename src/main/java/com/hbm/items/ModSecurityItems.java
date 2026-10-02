@@ -3,6 +3,8 @@ package com.hbm.items;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import com.hbm.items.tool.ItemCounterfeitKeys;
@@ -17,17 +19,19 @@ public final class ModSecurityItems {
     private ModSecurityItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemLock> padlock_rusty =
-            ITEMS.registerItem("padlock_rusty", p -> new ItemLock(p, 1), p -> p.stacksTo(1));
+            REG.item("padlock_rusty", p -> new ItemLock(p, 1), p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemLock> padlock =
-            ITEMS.registerItem("padlock", p -> new ItemLock(p, 0.1), p -> p.stacksTo(1));
+            REG.item("padlock", p -> new ItemLock(p, 0.1), p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemLock> padlock_reinforced =
-            ITEMS.registerItem("padlock_reinforced", p -> new ItemLock(p, 0.02), p -> p.stacksTo(1));
+            REG.item("padlock_reinforced", p -> new ItemLock(p, 0.02), p -> p.stacksTo(1)).transform(Presets.sprite());
     public static final RegistryObject<ItemLock> padlock_unbreakable =
-            ITEMS.registerItem("padlock_unbreakable", p -> new ItemLock(p, 0), p -> p.stacksTo(1));
+            REG.item("padlock_unbreakable", p -> new ItemLock(p, 0), p -> p.stacksTo(1)).transform(Presets.sprite());
+    /** setTextureName("key_pair"). */
     public static final RegistryObject<ItemCounterfeitKeys> key_kit =
-            ITEMS.registerItem("key_kit", ItemCounterfeitKeys::new, p -> p.stacksTo(1));
+            REG.item("key_kit", ItemCounterfeitKeys::new, p -> p.stacksTo(1)).transform(Presets.sprite("hbm:items/key_pair"));
 
     static {
         ModTabs.addTo(HbmTab.CONSUMABLES, key_kit);

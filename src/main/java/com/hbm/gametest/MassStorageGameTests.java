@@ -22,7 +22,8 @@ public final class MassStorageGameTests {
     private MassStorageGameTests() {}
 
     public static void capacities(GameTestHelper helper) {
-        helper.assertTrue(MassStorageType.WOOD.capacity == 1_000, "wood mass-storage capacity changed");
+        // 1.7 BlockMassStorage.getCapacity: wood (meta 3) 100, iron 10,000, desh 100,000, mass storage 1,000,000.
+        helper.assertTrue(MassStorageType.WOOD.capacity == 100, "wood mass-storage capacity must be 1.7's 100");
         helper.assertTrue(MassStorageType.IRON.capacity == 10_000, "iron mass-storage capacity changed");
         helper.assertTrue(MassStorageType.DESH.capacity == 100_000, "desh mass-storage capacity changed");
         helper.assertTrue(MassStorageType.MASS.capacity == 1_000_000, "mass-storage capacity changed");
@@ -160,6 +161,10 @@ public final class MassStorageGameTests {
                 "assets/hbm/items/mass_storage_desh.json",
                 "assets/hbm/items/mass_storage.json",
                 "assets/hbm/textures/gui/storage/gui_mass_storage.png",
+                "assets/hbm/textures/blocks/mass_storage_front_wood.png",
+                "assets/hbm/textures/blocks/mass_storage_front_iron.png",
+                "assets/hbm/textures/blocks/mass_storage_front_desh.png",
+                "assets/hbm/textures/blocks/mass_storage_front.png",
                 "data/hbm/loot_table/blocks/mass_storage_wood.json",
                 "data/hbm/loot_table/blocks/mass_storage_iron.json",
                 "data/hbm/loot_table/blocks/mass_storage_desh.json",
@@ -167,6 +172,24 @@ public final class MassStorageGameTests {
         };
         for (String asset : assets) {
             helper.assertTrue(resourceExists(asset), "mass-storage asset is missing: " + asset);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * 1.7 keeps the facing in metadata and draws the front on that side. The default is north (1.7's
+     * meta 0, and what a block saved before the property existed loads as); rotation turns the front.
+     */
+    public static void facing(GameTestHelper helper) {
+        for (MassStorageType type : MassStorageType.values()) {
+            TileEntityMassStorage storage = place(helper, type, new BlockPos(2 + type.ordinal() * 2, 1, 2));
+            BlockState state = storage.getBlockState();
+            helper.assertTrue(state.hasProperty(BlockMassStorage.FACING)
+                            && state.getValue(BlockMassStorage.FACING) == net.minecraft.core.Direction.NORTH,
+                    "mass storage must default to a north front: " + type.id);
+            helper.assertTrue(state.rotate(net.minecraft.world.level.block.Rotation.CLOCKWISE_90)
+                            .getValue(BlockMassStorage.FACING) == net.minecraft.core.Direction.EAST,
+                    "rotating mass storage must turn its front: " + type.id);
         }
         helper.succeed();
     }

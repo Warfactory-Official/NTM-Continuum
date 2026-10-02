@@ -1,6 +1,7 @@
 package com.hbm.sound;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -18,7 +19,8 @@ public final class ModSounds {
     private ModSounds() {}
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
-            DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+            DeferredRegister.createSounds(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
 
     public static final RegistryObject<SoundEvent> MOTOR = register("block.motor");
     /** Shared switch-on sound used by the legacy fluid valve and other toggles. */
@@ -67,7 +69,7 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> GUN_SMACK = register("weapon.fire.smack");
     public static final RegistryObject<SoundEvent> GUN_STAB = register("weapon.fire.stab");
     /** Looping hum of the current BigInteger FEnSU. */
-    public static final RegistryObject<SoundEvent> FENSU_HUM = SOUNDS.register("block.fensu_hum",
+    public static final RegistryObject<SoundEvent> FENSU_HUM = REG.register(Registries.SOUND_EVENT, "block.fensu_hum",
             () -> SoundEvent.createFixedRangeEvent(
                     dev.golem.core.Ids.of(Constants.MOD_ID, "block.fensu_hum"), 25F));
 
@@ -109,9 +111,9 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> INDUSTRIAL_TURBINE = register("block.industrial_turbine");
     public static final RegistryObject<SoundEvent> CHUNGUS_LEVER = register("block.chungus_lever");
     public static final RegistryObject<SoundEvent> CHUNGUS_TURBINE = register("block.chungus_turbine");
-    public static final RegistryObject<SoundEvent> PYRO_OPERATE = SOUNDS.register("block.pyro_operate",
+    public static final RegistryObject<SoundEvent> PYRO_OPERATE = REG.register(Registries.SOUND_EVENT, "block.pyro_operate",
             () -> SoundEvent.createFixedRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.pyro_operate"), 15F));
-    public static final RegistryObject<SoundEvent> IGENERATOR_OPERATE = SOUNDS.register("block.igenerator_operate",
+    public static final RegistryObject<SoundEvent> IGENERATOR_OPERATE = REG.register(Registries.SOUND_EVENT, "block.igenerator_operate",
             () -> SoundEvent.createFixedRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, "block.igenerator_operate"), 10F));
 
     /** Weapons. Old ids {@code weapon.fire.pistol}, {@code weapon.reload.dryFireClick} and
@@ -136,7 +138,7 @@ public final class ModSounds {
     /** The four-variant step sound used by the old steel grate's custom SoundType. */
     public static final SoundEvent METAL_BLOCK_EVENT = SoundEvent.createVariableRangeEvent(
             dev.golem.core.Ids.of(Constants.MOD_ID, "step.metal_block"));
-    public static final RegistryObject<SoundEvent> METAL_BLOCK = SOUNDS.register("step.metal_block",
+    public static final RegistryObject<SoundEvent> METAL_BLOCK = REG.register(Registries.SOUND_EVENT, "step.metal_block",
             () -> METAL_BLOCK_EVENT);
     public static final RegistryObject<SoundEvent> IRON_JUMP = register("step.iron_jump");
     public static final RegistryObject<SoundEvent> IRON_LAND = register("step.iron_land");
@@ -269,9 +271,9 @@ public final class ModSounds {
     public static final RegistryObject<SoundEvent> HKS_SHOOT = register("weapon.hks_shoot");
     public static final RegistryObject<SoundEvent> WEAPON_ROCKET_FLAME = register("weapon.rocket_flame");
 
+    /** A variable-range {@code hbm:<name>} event ({@code Reg#sound}); gen_entity_sounds.py splices its lines above. */
     private static RegistryObject<SoundEvent> register(String name) {
-        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
-                dev.golem.core.Ids.of(Constants.MOD_ID, name)));
+        return REG.sound(name);
     }
 
     public static void init() {}

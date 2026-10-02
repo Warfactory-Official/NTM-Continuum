@@ -40,7 +40,11 @@ import static dev.golem.core.dejson.Features.rarity;
  * <p><b>Biomes.</b> 1.7 tested {@code biome.temperature}, {@code biome.rainfall} and {@code canSpawnLightningBolt()}
  * (rain that does not fall as snow). {@link #CLIMATE} gives every vanilla overworld biome its 1.7 counterpart's values
  * (1.7 {@code BiomeGenBase}; modern vanilla kept them except the savannas, which 1.18 moved from 1.2/1.0/1.1 to 2.0),
- * and biomes 1.7 did not have their modern values; the predicates run over that table at build time.
+ * and biomes 1.7 did not have their modern values; the predicates run over that table at build time. 1.7 asked a
+ * modded biome the same three questions, so each climate tag also lists {@code #hbm:biome_dictionary/overworld} (see
+ * {@code NTMStructureDeclarations}) and {@link LegacyDungeonStructure} runs the rule on the biome at the site: a table
+ * biome through its row, any other through its own temperature, rain and downfall ({@code LegacyClimate}). The jungle
+ * dungeon stays 1.7's identity test (three vanilla jungles); the unrestricted ones take every overworld biome.
  *
  * <p><b>Scattered blocks</b> ({@link com.hbm.world.feature.DungeonBlockFeature}): one configured and placed feature
  * each ({@code rarity_filter} = the 1.7 chance, {@code in_square}, {@code heightmap MOTION_BLOCKING} = 1.7's
@@ -57,7 +61,7 @@ public final class LegacyDungeonDeclarations {
     private LegacyDungeonDeclarations() {}
 
     /** A 1.7 biome's climate: {@code temperature}, {@code rainfall}, {@code canSpawnLightningBolt()}. */
-    record Climate(float temperature, float rainfall, boolean lightning) {}
+    public record Climate(float temperature, float rainfall, boolean lightning) {}
 
     static final Map<String, Climate> CLIMATE = new LinkedHashMap<>();
     static final Set<String> OPTIONAL = Set.of("minecraft:pale_garden");
@@ -159,6 +163,22 @@ public final class LegacyDungeonDeclarations {
         return Math.min(1.0D, (double) (s * s) / (double) chance);
     }
 
+    /** The table row of a vanilla biome; null for one the table has no row for (modded ones). */
+    public static Climate climate(String biomeId) {
+        return CLIMATE.get(biomeId);
+    }
+
+    /** The 1.7 climate rule of a dungeon; null when it has none to run (every overworld biome; the jungles by identity). */
+    public static Predicate<Climate> rule(LegacyDungeonStructure.Kind kind) {
+        for (Dungeon dungeon : DUNGEONS) {
+            if (dungeon.kind() == kind) return dungeon.biome();
+        }
+        return null;
+    }
+
+    private static final String OVERWORLD = "#" + NTMStructureDeclarations.NS + ":" + NTMStructureDeclarations.DICTIONARY
+            + NTMStructureDeclarations.OVERWORLD;
+
     static List<String> biomes(Dungeon dungeon) {
         List<String> out = new ArrayList<>();
         if (dungeon.kind() == LegacyDungeonStructure.Kind.JUNGLE_DUNGEON) {
@@ -168,12 +188,13 @@ public final class LegacyDungeonDeclarations {
             return out;
         }
         if (dungeon.biome() == null) {
-            out.add("#minecraft:is_overworld");
+            out.add(OVERWORLD); // 1.7: every biome of dimension 0, modded ones included
             return out;
         }
         CLIMATE.forEach((id, climate) -> {
             if (dungeon.biome().test(climate)) out.add(id);
         });
+        out.add(OVERWORLD); // the rest; LegacyDungeonStructure runs the rule on the biome it finds
         return out;
     }
 
@@ -195,16 +216,7 @@ public final class LegacyDungeonDeclarations {
                 biomeRef = biomes.get(0);
             } else {
                 JsonArray values = new JsonArray();
-                for (String biome : biomes) {
-                    if (OPTIONAL.contains(biome)) {
-                        JsonObject optional = new JsonObject();
-                        optional.addProperty("id", biome);
-                        optional.addProperty("required", false);
-                        values.add(optional);
-                    } else {
-                        values.add(biome);
-                    }
-                }
+                for (String biome : biomes) values.add(NTMStructureDeclarations.tagEntry(biome, OPTIONAL.contains(biome)));
                 JsonObject tag = new JsonObject();
                 tag.addProperty("replace", false);
                 tag.add("values", values);

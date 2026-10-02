@@ -1,0 +1,23 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "frame": "block",
+    "obj": "hbm:models/blocks/rail_standard_bend.obj",
+    "texture": "hbm:textures/blocks/rail_standard_straight.png",
+    "scale": 0.3,
+    "yaw": 45.0,
+    "pitch": 60.0,
+    "rawLegacyTransform": true,
+    "itemTranslate": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "itemPreTranslate": [
+      0.6,
+      -0.519615242,
+      0.3
+    ]
+  },
+  "oversized_in_gui": true
+}

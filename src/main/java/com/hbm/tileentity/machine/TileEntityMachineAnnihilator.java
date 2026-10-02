@@ -3,6 +3,8 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
@@ -85,7 +87,7 @@ public final class TileEntityMachineAnnihilator extends TileEntityMachineBase
                 didSomething = true;
             }
             if (te.tank.getFill() > 0) {
-                // 1.7: FT_Polluting.pollute(..., FluidReleaseType.BURN, fill * 2) - the pollution system is not ported.
+                FT_Polluting.pollute(level, pos, te.tank.getTankType(), FluidReleaseType.BURN, te.tank.getFill() * 2);
                 te.tryAddPayout(data.pushToPool(te.pool, te.tank.getTankType(), te.tank.getFill(), false));
                 te.tank.setFill(0);
                 te.markChanged();

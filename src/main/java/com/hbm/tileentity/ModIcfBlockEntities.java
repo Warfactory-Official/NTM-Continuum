@@ -1,6 +1,7 @@
 package com.hbm.tileentity;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import com.hbm.blocks.ModIcfBlocks;
 import com.hbm.tileentity.machine.TileEntityBlockICF;
 import com.hbm.tileentity.machine.TileEntityICF;
@@ -20,22 +21,23 @@ public final class ModIcfBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityICF>> ICF =
-            BLOCK_ENTITIES.register("tileentity_icf", () -> BlockEntities.serverTicking(
+            REG.blockEntity("tileentity_icf", () -> BlockEntities.serverTicking(
                     TileEntityICF::new, TileEntityICF::serverTick, ModIcfBlocks.icf.get()));
     public static final RegistryObject<BlockEntityType<TileEntityICFController>> ICF_CONTROLLER =
-            BLOCK_ENTITIES.register("tileentity_icf_controller", () -> BlockEntities.ticking(
+            REG.blockEntity("tileentity_icf_controller", () -> BlockEntities.ticking(
                     TileEntityICFController::new, TileEntityICFController::clientTick,
                     TileEntityICFController::serverTick, ModIcfBlocks.icf_controller.get()));
     public static final RegistryObject<BlockEntityType<TileEntityICFPress>> ICF_PRESS =
-            BLOCK_ENTITIES.register("tileentity_icf_press", () -> BlockEntities.serverTicking(
+            REG.blockEntity("tileentity_icf_press", () -> BlockEntities.serverTicking(
                     TileEntityICFPress::new, TileEntityICFPress::serverTick, ModIcfBlocks.machine_icf_press.get()));
     public static final RegistryObject<BlockEntityType<TileEntityICFStruct>> ICF_STRUCT =
-            BLOCK_ENTITIES.register("tileentity_icf_struct", () -> BlockEntities.serverTicking(
+            REG.blockEntity("tileentity_icf_struct", () -> BlockEntities.serverTicking(
                     TileEntityICFStruct::new, TileEntityICFStruct::serverTick, ModIcfBlocks.struct_icf_core.get()));
     public static final RegistryObject<BlockEntityType<TileEntityBlockICF>> ICF_BLOCK =
-            BLOCK_ENTITIES.register("tileentity_block_icf", () -> BlockEntities.serverTicking(
+            REG.blockEntity("tileentity_block_icf", () -> BlockEntities.serverTicking(
                     TileEntityBlockICF::new, TileEntityBlockICF::serverTick, ModIcfBlocks.icf_block.get()));
 
     public static void init() {}

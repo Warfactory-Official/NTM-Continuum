@@ -43,7 +43,7 @@ public class RenderTeslaCrab<T extends Mob> extends CompatEntityRenderer<T, Rend
                               String left, String right, float baseYaw, double arcHeight) {
         super(context);
         this.model = model;
-        this.type = CompatRenderTypes.entityCutout(texture);
+        this.type = CompatRenderTypes.entityCutoutNoCull(texture);
         this.body = "Body";
         this.legsLeft = left;
         this.legsRight = right;

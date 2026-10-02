@@ -48,8 +48,8 @@ import com.hbm.tileentity.ModProductionBlockEntities;
  * steam in / spent steam out, and a molten-metal output poured out of the side spout.
  *
  * <p>Ported 1:1 from the original {@code TileEntityMachineRotaryFurnace}. The old
- * {@code TileEntityMachinePolluting} base is inlined as the three smoke tanks; a smoke overflow only sets
- * {@code isVenting} because the port has no pollution store yet ({@link PollutionHandler}). The JSON
+ * {@code TileEntityMachinePolluting} base is inlined as the three smoke tanks; a smoke overflow goes into
+ * the region through {@link PollutionHandler} and sets {@code isVenting}, as 1.7's override does. The JSON
  * machine-config hooks ({@code IConfigurableMachine}) and the fluid copy tool are not carried.
  */
 public class TileEntityMachineRotaryFurnace extends TileEntityMachineBase

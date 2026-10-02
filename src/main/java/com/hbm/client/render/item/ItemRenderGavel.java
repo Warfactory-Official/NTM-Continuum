@@ -64,7 +64,7 @@ final class ItemRenderGavel implements CustomItemRenderer {
             }
             default -> { }
         }
-        all(pose, sink, gavel, culled(skin), light, overlay);
+        all(pose, sink, gavel, heldFaces(type, skin), light, overlay);
         pose.popPose();
     }
 }

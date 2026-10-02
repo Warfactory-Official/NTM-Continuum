@@ -10,6 +10,7 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import com.hbm.registration.Reg;
 
 /**
  * One bootstrap hook for the custom machine system: the controller and its item per configured machine, the
@@ -24,15 +25,16 @@ public final class ModCustomMachineContent {
 
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SERIALIZERS);
     public static final RegistryObject<RecipeSerializer<CustomMachineCraftingRecipe>> CUSTOM_MACHINE_RECIPE =
-            SERIALIZERS.register("custom_machine", () -> CustomMachineCraftingRecipe.SERIALIZER);
+            REG.register(Registries.RECIPE_SERIALIZER, "custom_machine", () -> CustomMachineCraftingRecipe.SERIALIZER);
 
     public static void init() {
         ModCustomMachineBlocks.init();
         ModCustomMachineItems.init();
         ModCustomMachineBlockEntities.init();
         ModCustomMachineMenus.init();
-        CustomMachineDeclarations.declare();
+        ModCustomMachineBlocks.declare();
         CustomMachineConfigJSON.initialize();
     }
 }

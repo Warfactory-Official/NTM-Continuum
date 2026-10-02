@@ -58,11 +58,11 @@ final class ItemRenderShim implements CustomItemRenderer {
             pose.mulPose(Axis.YP.rotationDegrees(90F));
         }
         switch (id) {
-            case "shimmer_sledge" -> all(pose, sink, sledge, culled(SLEDGE_TEX), light, overlay);
-            case "shimmer_axe" -> all(pose, sink, axe, culled(AXE_TEX), light, overlay);
-            case "stopsign" -> all(pose, sink, stopsign, culled(STOPSIGN_TEX), light, overlay);
-            case "sopsign" -> all(pose, sink, stopsign, culled(SOPSIGN_TEX), light, overlay);
-            case "chernobylsign" -> all(pose, sink, stopsign, culled(CHERNOBYLSIGN_TEX), light, overlay);
+            case "shimmer_sledge" -> all(pose, sink, sledge, heldFaces(type, SLEDGE_TEX), light, overlay);
+            case "shimmer_axe" -> all(pose, sink, axe, heldFaces(type, AXE_TEX), light, overlay);
+            case "stopsign" -> all(pose, sink, stopsign, heldFaces(type, STOPSIGN_TEX), light, overlay);
+            case "sopsign" -> all(pose, sink, stopsign, heldFaces(type, SOPSIGN_TEX), light, overlay);
+            case "chernobylsign" -> all(pose, sink, stopsign, heldFaces(type, CHERNOBYLSIGN_TEX), light, overlay);
             default -> { }
         }
         pose.popPose();

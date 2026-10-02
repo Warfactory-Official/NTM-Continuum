@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.items.ModDataComponents;
 import com.hbm.items.tool.ItemAmmoBag;
@@ -18,12 +19,13 @@ public final class ModGunSupportMenus {
 
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
-    public static final RegistryObject<MenuType<MenuItemBox>> AMMO_BAG = MENUS.register("ammo_bag", () ->
+    public static final RegistryObject<MenuType<MenuItemBox>> AMMO_BAG = REG.menu("ammo_bag", () ->
             Menus.typeWithHand((id, inventory, hand) -> new MenuItemBox(ammoBagType(), id, inventory,
                     ItemAmmoBag.LAYOUT, ModDataComponents.AMMO_BAG, hand)));
 
-    public static final RegistryObject<MenuType<MenuItemBox>> CASING_BAG = MENUS.register("casing_bag", () ->
+    public static final RegistryObject<MenuType<MenuItemBox>> CASING_BAG = REG.menu("casing_bag", () ->
             Menus.typeWithHand((id, inventory, hand) -> new MenuItemBox(casingBagType(), id, inventory,
                     ItemCasingBag.LAYOUT, ModDataComponents.CASING_BAG, hand)));
 

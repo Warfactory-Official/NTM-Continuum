@@ -23,12 +23,29 @@ public final class ItemRendererDeclarations {
      * A sprite in the inventory, the renderer everywhere else. The sprite is the item's own {@code item/handheld}
      * model (26.1 falls back to it for a declined slot) and is also named as {@code sprite}, which is what the
      * pre-26.1 path draws, since there the item's model is the renderer's {@code builtin/entity} marker.
+     *
+     * <p>{@code frame} is the engine's hand pose: {@code weapon_full3d} for an item 1.7 drew full-3D (every
+     * {@code ItemSword}/{@code ItemTool}; RenderPlayer picked the pose from {@code isFull3D()} before the renderer
+     * ran), {@code weapon} for any other item.
      */
-    public static void heldModel(String id, String sprite, String renderer) {
+    public static void heldModel(String id, String sprite, String renderer, String frame) {
         Dejson.item(NS, id).models(Models.handheld("hbm:items/" + sprite)).register();
-        JsonObject model = custom(renderer, "weapon");
+        JsonObject model = custom(renderer, frame);
         model.addProperty("flat", NS + ":item/" + id);
         model.addProperty("sprite", NS + ":items/" + sprite);
+        Dejson.itemDefinition(NS + ":item/" + id).add("model", model);
+    }
+
+    /**
+     * {@link #heldModel} for a block item whose declined inventory slot is the block's own flat icon (a 1.7 block with
+     * render type -1 and an IItemRenderer that declined {@code INVENTORY}): {@code item/generated} over {@code texture},
+     * a full sprite id such as {@code hbm:blocks/steel_roof}.
+     */
+    public static void heldBlockIcon(String id, String texture, String renderer) {
+        Dejson.item(NS, id).models(Models.generated(texture)).register();
+        JsonObject model = custom(renderer, "weapon");
+        model.addProperty("flat", NS + ":item/" + id);
+        model.addProperty("sprite", texture);
         Dejson.itemDefinition(NS + ":item/" + id).add("model", model);
     }
 

@@ -129,9 +129,8 @@ public final class FinalVisualGaps implements Scenario {
             n++;
         }
         c.setOption("camera", "first_person");
-        // crucible without charge: guards folded, no blade
-        Fixtures.giveOnly(c, c.node().startsWith("1.20") ? "hbm:crucible{\"hbm:crucible_spent\":3}"
-                : "hbm:crucible[hbm:crucible_spent=3]", 1);
+        // crucible without charge (old-hbm: crafted empty): lowered, the blade clipped away
+        Fixtures.giveOnly(c, "hbm:crucible", 1);
         c.waitTicks(20);
         c.screenshot(n + "-fp-crucible-spent", new int[]{320, 120, 320, 240});
     }

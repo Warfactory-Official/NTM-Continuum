@@ -22,8 +22,9 @@ import net.minecraft.world.level.block.state.BlockState;
  * build with, not to keep — and the launcher forms in its place.
  *
  * <p>This one does not go through {@code StructPattern} as the Watz segment does: the shape is around five
- * thousand cells, the preview that pattern drives would draw a ghost for every one of them, and upstream
- * has no preview here either. The scan is upstream's, box for box.
+ * thousand cells, and the preview that pattern drives tests every cell per frame. Upstream's own preview
+ * ({@code RenderSoyuzMultiblock}, ported as {@code SoyuzStructPreviewRenderer}) draws every cell
+ * unconditionally instead. The scan is upstream's, box for box.
  */
 public class TileEntitySoyuzStruct extends TileEntityLoadedBase {
 

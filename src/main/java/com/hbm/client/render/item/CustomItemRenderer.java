@@ -48,6 +48,16 @@ public interface CustomItemRenderer {
     void render(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
                 @Nullable LivingEntity owner);
 
+    /**
+     * {@link #render}, from a caller that knows the vanilla display slot. 1.7 had one first-person type for both
+     * hands; a renderer that must tell the left hand from the right (the crucible draws only the main hand) overrides
+     * this. Everything else draws the same in both.
+     */
+    default void render(ItemStack stack, ItemDisplayContext context, PoseStack pose, SubmitSink sink, int light,
+                        int overlay, @Nullable LivingEntity owner) {
+        render(stack, Type.of(context), pose, sink, light, overlay, owner);
+    }
+
     /** Whether the drawing changes with time, so 26.1 must not serve a cached icon. */
     default boolean animated(ItemStack stack, Type type) {
         return false;

@@ -21,7 +21,9 @@ import com.hbm.lib.ModDamageSources;
 import com.hbm.tileentity.IUpgradeInfoProvider;
 import com.hbm.tileentity.MachineCore;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.tileentity.TileEntityMachinePolluting;
+import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
 import dev.golem.core.world.Compat;
@@ -45,8 +47,14 @@ import net.minecraft.world.phys.Vec3;
 import java.util.HashMap;
 import java.util.List;
 
-/** The legacy afterburning turbofan, including its thrust and blade damage volumes. */
-public class TileEntityMachineTurbofan extends TileEntityMachineBase
+/**
+ * The legacy afterburning turbofan, including its thrust and blade damage volumes.
+ *
+ * <p>Smoke: once a second while burning, the fuel's {@code FT_Polluting} burn table goes into the 150 mB
+ * smoke tanks. 1.7 calls {@code sendSmoke} at every port but lists only the blood tank as sending, so no
+ * smoke is ever available to a duct; the tanks fill and then vent their overflow into the region. Kept.
+ */
+public class TileEntityMachineTurbofan extends TileEntityMachinePolluting
         implements IEnergyProviderMK2, IFluidStandardTransceiverMK2, IUpgradeInfoProvider, MenuProvider {
 
     public static final long MAX_POWER = 1_000_000L;
@@ -65,7 +73,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
     private final UpgradeManagerNT upgradeManager = new UpgradeManagerNT(this);
 
     public TileEntityMachineTurbofan(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.MACHINE_TURBOFAN.get(), pos, state, 5);
+        super(ModBlockEntities.MACHINE_TURBOFAN.get(), pos, state, 5, 150);
     }
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TileEntityMachineTurbofan fan) {
@@ -98,6 +106,9 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
             fan.output = (int) (burnValue * amountToBurn * (1D + Math.min(fan.afterburner / 3D, 4D)));
             fan.power += fan.output;
             fan.consumption = amountToBurn;
+
+            if (TickPhase.every(level, pos, 20L)) fan.pollute(fan.tank.getTankType(), FluidReleaseType.BURN, amountToBurn * 5);
+
             fan.applyExhaust(level, amountToBurn);
         }
 
@@ -105,6 +116,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
         for (DirPos connection : fan.getConPos()) {
             fan.tryProvide(level, connection.getPos(), connection.getDir());
             if (fan.blood.getFill() > 0) fan.tryProvide(fan.blood, level, connection);
+            fan.sendSmoke(connection);
         }
         fan.power = Math.min(fan.power, MAX_POWER);
         fan.networkPackNT();
@@ -210,7 +222,7 @@ public class TileEntityMachineTurbofan extends TileEntityMachineBase
     @Override public boolean canConnect(FluidType type, ForgeDirection dir) { return dir != ForgeDirection.DOWN; }
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getSendingTanks() { return new FluidTankNTM[]{blood}; }
-    @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank, blood}; }
+    @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank, blood, smoke, smoke_leaded, smoke_poison}; }
     @Override public long getPower() { return power; }
     @Override public void setPower(long value) { power = value; }
     @Override public long getMaxPower() { return MAX_POWER; }

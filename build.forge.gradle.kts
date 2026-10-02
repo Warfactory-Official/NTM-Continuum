@@ -119,9 +119,13 @@ dependencies {
         modRuntimeOnly("mezz.jei:jei-$jei-forge:$jeiVer")
     }
 
+    // Published Flywheel is optional at runtime.
+    // `-Pflywheel.run=false` leaves the engine jar out of the dev run (compile stays), so the dev client
+    // can be launched as a player without Flywheel would see it: every machine through its vanilla
+    // BER. The instanced visuals are optional; this is how that claim is tested on these nodes.
     propOrNull("deps.flywheel")?.let { fw ->
         modCompileOnly("dev.engine-room.flywheel:flywheel-forge-api-$mcVersion:$fw")
-        modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-$mcVersion:$fw")
+        if (propOrNull("flywheel.run") != "false") modRuntimeOnly("dev.engine-room.flywheel:flywheel-forge-$mcVersion:$fw")
     }
 
     // Embeddium is the Forge port of Sodium — Sodium itself ships no Forge build, so this is the

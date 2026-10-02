@@ -1,5 +1,6 @@
 package com.hbm.world.feature;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.blocks.ModDecoCrateBlocks;
 import com.hbm.blocks.ModDungeonBlocks;
@@ -78,6 +79,7 @@ public class DungeonBlockFeature extends Feature<NoneFeatureConfiguration> {
     }
 
     public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(FEATURES);
 
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> LOCKED_SAFE = register(Kind.LOCKED_SAFE);
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> LANDMINE_AP = register(Kind.LANDMINE_AP);
@@ -88,7 +90,7 @@ public class DungeonBlockFeature extends Feature<NoneFeatureConfiguration> {
     public static final RegistryObject<Feature<NoneFeatureConfiguration>> BLUEPRINT_CHEST = register(Kind.BLUEPRINT_CHEST);
 
     private static RegistryObject<Feature<NoneFeatureConfiguration>> register(Kind kind) {
-        return FEATURES.register(kind.id, () -> new DungeonBlockFeature(NoneFeatureConfiguration.CODEC, kind));
+        return REG.register(Registries.FEATURE, kind.id, () -> new DungeonBlockFeature(NoneFeatureConfiguration.CODEC, kind));
     }
 
     public static void init() {}

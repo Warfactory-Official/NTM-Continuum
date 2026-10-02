@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import java.util.function.Supplier;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -43,101 +46,103 @@ public final class ModArmorItems {
     private ModArmorItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     // ---- regular steel and titanium armour ----
     // 1.12.2 ModItems.java:484-491. ArmorFSB has no custom set flags for either set.
     public static final RegistryObject<ArmorFSB> steel_helmet =
-            plain("steel_helmet", HbmArmorMaterials.STEEL, ArmorSlot.HELMET);
+            plain("steel_helmet", () -> HbmArmorMaterials.STEEL, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> steel_plate =
-            plain("steel_plate", HbmArmorMaterials.STEEL, ArmorSlot.CHESTPLATE);
+            plain("steel_plate", () -> HbmArmorMaterials.STEEL, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> steel_legs =
-            plain("steel_legs", HbmArmorMaterials.STEEL, ArmorSlot.LEGGINGS);
+            plain("steel_legs", () -> HbmArmorMaterials.STEEL, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> steel_boots =
-            plain("steel_boots", HbmArmorMaterials.STEEL, ArmorSlot.BOOTS);
+            plain("steel_boots", () -> HbmArmorMaterials.STEEL, ArmorSlot.BOOTS);
 
     public static final RegistryObject<ArmorFSB> titanium_helmet =
-            plain("titanium_helmet", HbmArmorMaterials.TITANIUM, ArmorSlot.HELMET);
+            plain("titanium_helmet", () -> HbmArmorMaterials.TITANIUM, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> titanium_plate =
-            plain("titanium_plate", HbmArmorMaterials.TITANIUM, ArmorSlot.CHESTPLATE);
+            plain("titanium_plate", () -> HbmArmorMaterials.TITANIUM, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> titanium_legs =
-            plain("titanium_legs", HbmArmorMaterials.TITANIUM, ArmorSlot.LEGGINGS);
+            plain("titanium_legs", () -> HbmArmorMaterials.TITANIUM, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> titanium_boots =
-            plain("titanium_boots", HbmArmorMaterials.TITANIUM, ArmorSlot.BOOTS);
+            plain("titanium_boots", () -> HbmArmorMaterials.TITANIUM, ArmorSlot.BOOTS);
 
     // ---- ordinary ArmorFSB families ----
     public static final RegistryObject<ArmorFSB> cobalt_helmet =
-            plain("cobalt_helmet", HbmArmorMaterials.COBALT, ArmorSlot.HELMET);
+            plain("cobalt_helmet", () -> HbmArmorMaterials.COBALT, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> cobalt_plate =
-            plain("cobalt_plate", HbmArmorMaterials.COBALT, ArmorSlot.CHESTPLATE);
+            plain("cobalt_plate", () -> HbmArmorMaterials.COBALT, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> cobalt_legs =
-            plain("cobalt_legs", HbmArmorMaterials.COBALT, ArmorSlot.LEGGINGS);
+            plain("cobalt_legs", () -> HbmArmorMaterials.COBALT, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> cobalt_boots =
-            plain("cobalt_boots", HbmArmorMaterials.COBALT, ArmorSlot.BOOTS);
+            plain("cobalt_boots", () -> HbmArmorMaterials.COBALT, ArmorSlot.BOOTS);
 
     public static final RegistryObject<ArmorFSB> starmetal_helmet =
-            plain("starmetal_helmet", HbmArmorMaterials.STARMETAL, ArmorSlot.HELMET);
+            plain("starmetal_helmet", () -> HbmArmorMaterials.STARMETAL, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> starmetal_plate =
-            plain("starmetal_plate", HbmArmorMaterials.STARMETAL, ArmorSlot.CHESTPLATE);
+            plain("starmetal_plate", () -> HbmArmorMaterials.STARMETAL, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> starmetal_legs =
-            plain("starmetal_legs", HbmArmorMaterials.STARMETAL, ArmorSlot.LEGGINGS);
+            plain("starmetal_legs", () -> HbmArmorMaterials.STARMETAL, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> starmetal_boots =
-            plain("starmetal_boots", HbmArmorMaterials.STARMETAL, ArmorSlot.BOOTS);
+            plain("starmetal_boots", () -> HbmArmorMaterials.STARMETAL, ArmorSlot.BOOTS);
 
     public static final RegistryObject<ArmorFSB> schrabidium_helmet =
-            plain("schrabidium_helmet", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.HELMET);
+            plain("schrabidium_helmet", () -> HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> schrabidium_plate =
-            plain("schrabidium_plate", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.CHESTPLATE);
+            plain("schrabidium_plate", () -> HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> schrabidium_legs =
-            plain("schrabidium_legs", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.LEGGINGS);
+            plain("schrabidium_legs", () -> HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> schrabidium_boots =
-            plain("schrabidium_boots", HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.BOOTS);
+            plain("schrabidium_boots", () -> HbmArmorMaterials.SCHRABIDIUM, ArmorSlot.BOOTS);
 
-    // ---- Taurun (1.12.2 ModItemsArmor.java:308-318): the undead soldier's loadout. Sprites only; the
-    // 1.12.2 ArmorTaurun OBJ body model is a renderer follow-up recorded in the entity port manifest. ----
+    // ---- Taurun (1.12.2 ModItemsArmor.java:308-318): the undead soldier's loadout. The icons are 1.7
+    // ArmorTaurun's renderStandard OBJ icons (ArmorSetDeclarations); the worn OBJ body model is a renderer
+    // follow-up recorded in the entity port manifest. ----
     public static final RegistryObject<ArmorFSB> taurun_helmet =
-            plain("taurun_helmet", HbmArmorMaterials.TAURUN, ArmorSlot.HELMET);
+            modelled("taurun_helmet", () -> HbmArmorMaterials.TAURUN, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> taurun_plate =
-            plain("taurun_plate", HbmArmorMaterials.TAURUN, ArmorSlot.CHESTPLATE);
+            modelled("taurun_plate", () -> HbmArmorMaterials.TAURUN, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> taurun_legs =
-            plain("taurun_legs", HbmArmorMaterials.TAURUN, ArmorSlot.LEGGINGS);
+            modelled("taurun_legs", () -> HbmArmorMaterials.TAURUN, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> taurun_boots =
-            plain("taurun_boots", HbmArmorMaterials.TAURUN, ArmorSlot.BOOTS);
+            modelled("taurun_boots", () -> HbmArmorMaterials.TAURUN, ArmorSlot.BOOTS);
 
     public static final RegistryObject<ArmorFSB> security_helmet =
-            plain("security_helmet", HbmArmorMaterials.SECURITY, ArmorSlot.HELMET);
+            plain("security_helmet", () -> HbmArmorMaterials.SECURITY, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> security_plate =
-            plain("security_plate", HbmArmorMaterials.SECURITY, ArmorSlot.CHESTPLATE);
+            plain("security_plate", () -> HbmArmorMaterials.SECURITY, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> security_legs =
-            plain("security_legs", HbmArmorMaterials.SECURITY, ArmorSlot.LEGGINGS);
+            plain("security_legs", () -> HbmArmorMaterials.SECURITY, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> security_boots =
-            plain("security_boots", HbmArmorMaterials.SECURITY, ArmorSlot.BOOTS);
+            plain("security_boots", () -> HbmArmorMaterials.SECURITY, ArmorSlot.BOOTS);
 
     /** The old casual robes use steel's numbers and have no full-set bonus. */
     public static final RegistryObject<ArmorFSB> robes_helmet =
-            plain("robes_helmet", HbmArmorMaterials.ROBES, ArmorSlot.HELMET);
+            plain("robes_helmet", () -> HbmArmorMaterials.ROBES, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> robes_plate =
-            plain("robes_plate", HbmArmorMaterials.ROBES, ArmorSlot.CHESTPLATE);
+            plain("robes_plate", () -> HbmArmorMaterials.ROBES, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> robes_legs =
-            plain("robes_legs", HbmArmorMaterials.ROBES, ArmorSlot.LEGGINGS);
+            plain("robes_legs", () -> HbmArmorMaterials.ROBES, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> robes_boots =
-            plain("robes_boots", HbmArmorMaterials.ROBES, ArmorSlot.BOOTS);
+            plain("robes_boots", () -> HbmArmorMaterials.ROBES, ArmorSlot.BOOTS);
 
     public static final RegistryObject<ArmorFSB> asbestos_helmet =
-            plain("asbestos_helmet", HbmArmorMaterials.ASBESTOS, ArmorSlot.HELMET);
+            plain("asbestos_helmet", () -> HbmArmorMaterials.ASBESTOS, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSB> asbestos_plate =
-            plain("asbestos_plate", HbmArmorMaterials.ASBESTOS, ArmorSlot.CHESTPLATE);
+            plain("asbestos_plate", () -> HbmArmorMaterials.ASBESTOS, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> asbestos_legs =
-            plain("asbestos_legs", HbmArmorMaterials.ASBESTOS, ArmorSlot.LEGGINGS);
+            plain("asbestos_legs", () -> HbmArmorMaterials.ASBESTOS, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> asbestos_boots =
-            plain("asbestos_boots", HbmArmorMaterials.ASBESTOS, ArmorSlot.BOOTS);
+            plain("asbestos_boots", () -> HbmArmorMaterials.ASBESTOS, ArmorSlot.BOOTS);
 
     /** Power-assisted armor without a helmet, as in the legacy PAA partial set. */
     public static final RegistryObject<ArmorFSB> paa_plate =
-            plain("paa_plate", HbmArmorMaterials.PAA, ArmorSlot.CHESTPLATE);
+            plain("paa_plate", () -> HbmArmorMaterials.PAA, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSB> paa_legs =
-            plain("paa_legs", HbmArmorMaterials.PAA, ArmorSlot.LEGGINGS);
+            plain("paa_legs", () -> HbmArmorMaterials.PAA, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSB> paa_boots =
-            plain("paa_boots", HbmArmorMaterials.PAA, ArmorSlot.BOOTS);
+            plain("paa_boots", () -> HbmArmorMaterials.PAA, ArmorSlot.BOOTS);
 
     // ---- T-51b power armour ----
     // 1.12.2 ModItems.java:532-544. maxPower 1,000,000 / chargeRate 10,000 / consumption 1,000 / drain 5.
@@ -147,13 +152,13 @@ public final class ModArmorItems {
     private static final long T51_DRAIN = 5L;
 
     public static final RegistryObject<ArmorFSBPowered> t51_helmet =
-            powered("t51_helmet", HbmArmorMaterials.T51, ArmorSlot.HELMET);
+            powered("t51_helmet", () -> HbmArmorMaterials.T51, ArmorSlot.HELMET);
     public static final RegistryObject<ArmorFSBPowered> t51_plate =
-            powered("t51_plate", HbmArmorMaterials.T51, ArmorSlot.CHESTPLATE);
+            powered("t51_plate", () -> HbmArmorMaterials.T51, ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorFSBPowered> t51_legs =
-            powered("t51_legs", HbmArmorMaterials.T51, ArmorSlot.LEGGINGS);
+            powered("t51_legs", () -> HbmArmorMaterials.T51, ArmorSlot.LEGGINGS);
     public static final RegistryObject<ArmorFSBPowered> t51_boots =
-            powered("t51_boots", HbmArmorMaterials.T51, ArmorSlot.BOOTS);
+            powered("t51_boots", () -> HbmArmorMaterials.T51, ArmorSlot.BOOTS);
 
     // ---- Blackjack electric armor and its jetpack chest variant ----
     private static final long BJ_POWER = 10_000_000L;
@@ -164,7 +169,7 @@ public final class ModArmorItems {
     public static final RegistryObject<ArmorBJ> bj_helmet = bj("bj_helmet", ArmorSlot.HELMET);
     public static final RegistryObject<ArmorBJ> bj_plate = bj("bj_plate", ArmorSlot.CHESTPLATE);
     public static final RegistryObject<ArmorBJJetpack> bj_plate_jetpack =
-            ITEMS.registerItem("bj_plate_jetpack",
+            REG.item("bj_plate_jetpack",
                     p -> new ArmorBJJetpack(HbmArmorMaterials.BJ, ArmorSlot.CHESTPLATE, p,
                             BJ_POWER, BJ_CHARGE_RATE, BJ_CONSUMPTION, BJ_DRAIN), p -> p.stacksTo(1));
     public static final RegistryObject<ArmorBJ> bj_legs = bj("bj_legs", ArmorSlot.LEGGINGS);
@@ -211,18 +216,19 @@ public final class ModArmorItems {
         ModTabs.addTo(HbmTab.CONSUMABLES, bj_plate_jetpack);
     }
 
-    private static RegistryObject<ArmorFSBPowered> powered(String name, GolemArmorMaterial material,
+    private static RegistryObject<ArmorFSBPowered> powered(String name, Supplier<GolemArmorMaterial> material,
             ArmorSlot slot) {
-        RegistryObject<ArmorFSBPowered> ro = ITEMS.registerItem(name,
-                p -> new ArmorFSBPowered(material, slot, p, T51_POWER, T51_CHARGE_RATE, T51_CONSUMPTION,
+        RegistryObject<ArmorFSBPowered> ro = REG.item(name,
+                p -> new ArmorFSBPowered(material.get(), slot, p, T51_POWER, T51_CHARGE_RATE, T51_CONSUMPTION,
                         T51_DRAIN),
                 p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
 
+    /** RPA and NCRPA draw 1.7's renderStandard OBJ icons (ArmorRPA/ArmorNCRPA renderers; ArmorSetDeclarations). */
     private static RegistryObject<ArmorFSBPowered> paPowered(String name, ArmorSlot slot) {
-        RegistryObject<ArmorFSBPowered> ro = ITEMS.registerItem(name,
+        RegistryObject<ArmorFSBPowered> ro = REG.item(name,
                 p -> new ArmorFSBPowered(HbmArmorMaterials.AJR, slot, p, AJR_POWER, 10_000L, 1_000L, 25L),
                 p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
@@ -230,7 +236,7 @@ public final class ModArmorItems {
     }
 
     private static RegistryObject<ArmorBJ> bj(String name, ArmorSlot slot) {
-        RegistryObject<ArmorBJ> ro = ITEMS.registerItem(name,
+        RegistryObject<ArmorBJ> ro = REG.item(name,
                 p -> new ArmorBJ(HbmArmorMaterials.BJ, slot, p, BJ_POWER, BJ_CHARGE_RATE, BJ_CONSUMPTION, BJ_DRAIN),
                 p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
@@ -238,7 +244,7 @@ public final class ModArmorItems {
     }
 
     private static RegistryObject<ArmorDNT> dns(String name, ArmorSlot slot) {
-        RegistryObject<ArmorDNT> ro = ITEMS.registerItem(name,
+        RegistryObject<ArmorDNT> ro = REG.item(name,
                 p -> new ArmorDNT(HbmArmorMaterials.DNS, slot, p, DNS_POWER, DNS_CHARGE_RATE, DNS_CONSUMPTION, DNS_DRAIN),
                 p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
@@ -247,23 +253,35 @@ public final class ModArmorItems {
 
     private static <T extends JetpackBase> RegistryObject<T> jetpack(String name,
                                                                        java.util.function.Function<Item.Properties, T> factory) {
-        RegistryObject<T> ro = ITEMS.registerItem(name, factory, p -> p.stacksTo(1));
+        RegistryObject<T> ro = REG.item(name, factory, p -> p.stacksTo(1)).transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
 
     private static RegistryObject<JetpackGlider> glider(String name,
                                                          java.util.function.Function<Item.Properties, JetpackGlider> factory) {
-        RegistryObject<JetpackGlider> ro = ITEMS.registerItem(name, factory, p -> p.stacksTo(1));
+        RegistryObject<JetpackGlider> ro = REG.item(name, factory, p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
 
-    private static RegistryObject<ArmorFSB> plain(String name, GolemArmorMaterial material, ArmorSlot slot) {
-        RegistryObject<ArmorFSB> ro = ITEMS.registerItem(name,
-                p -> new ArmorFSB(material, slot, p), p -> p.stacksTo(1));
+    /**
+     * A regular armour piece with its 1.7 sprite. The material is read when the item is built, not here: the
+     * materials are registry-backed, and this class also runs at build time (Dejson) without a game.
+     */
+    private static RegistryObject<ArmorFSB> plain(String name, Supplier<GolemArmorMaterial> material, ArmorSlot slot) {
+        RegistryObject<ArmorFSB> ro = REG.item(name,
+                p -> new ArmorFSB(material.get(), slot, p), p -> p.stacksTo(1)).transform(Presets.sprite());
         // ArmorFSB itself did not assign a tab in 1.12.2. The port has no combat tab, so regular armour
         // uses CONTROL rather than disappearing from the creative inventory.
+        ModTabs.addTo(HbmTab.CONTROL, ro);
+        return ro;
+    }
+
+    /** A regular armour piece whose icon is a 1.7 renderStandard OBJ, declared in ArmorSetDeclarations. */
+    private static RegistryObject<ArmorFSB> modelled(String name, Supplier<GolemArmorMaterial> material,
+                                                     ArmorSlot slot) {
+        RegistryObject<ArmorFSB> ro = REG.item(name, p -> new ArmorFSB(material.get(), slot, p), p -> p.stacksTo(1));
         ModTabs.addTo(HbmTab.CONTROL, ro);
         return ro;
     }

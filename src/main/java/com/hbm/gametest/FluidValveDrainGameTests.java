@@ -62,7 +62,7 @@ public final class FluidValveDrainGameTests {
 
     public static void identifierSpreadsPipeType(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        BlockFluidDuct block = ModMachineBlocks.fluid_duct_mk2.get();
+        BlockFluidDuct block = com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get();
         BlockPos first = helper.absolutePos(new BlockPos(2, 1, 3));
         BlockPos second = first.east();
         BlockPos third = second.east();

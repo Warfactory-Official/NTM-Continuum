@@ -7,7 +7,7 @@ import dev.golem.core.dejson.Tags;
  * vocabulary instead of written as JSON. Touches no Minecraft class.
  *
  * <p>Material ({@code c:}) tags are {@link com.hbm.inventory.material.ModMaterialTags}; tool-mining tags are
- * {@link com.hbm.blocks.ModMiningTags}, which the content generators update in place.
+ * stated on each block's registration ({@code .tag(BlockTag.X)}, {@link com.hbm.registration.Reg}).
  *
  * <p>Block lists that name other machines or another mod's blocks use {@link Tags.Tag#optional} members, so a
  * block that is not ported yet leaves the tag loadable instead of failing it. The armour repair tags of sets

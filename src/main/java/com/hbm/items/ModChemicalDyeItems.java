@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import dev.golem.core.dejson.Tints;
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -23,6 +26,7 @@ public final class ModChemicalDyeItems {
     private ModChemicalDyeItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
     private static final Map<EnumChemDye, RegistryObject<ItemChemicalDye>> CHEMICAL =
             new EnumMap<>(EnumChemDye.class);
     private static final Map<EnumChemDye, RegistryObject<ItemCrayon>> CRAYON =
@@ -31,16 +35,23 @@ public final class ModChemicalDyeItems {
     static {
         for (EnumChemDye dye : EnumChemDye.VALUES) {
             String suffix = dye.name().toLowerCase(Locale.ROOT);
-            RegistryObject<ItemChemicalDye> chemical = ITEMS.registerItem(
-                    "chemical_dye_" + suffix, p -> new ItemChemicalDye(p, dye));
-            RegistryObject<ItemCrayon> crayon = ITEMS.registerItem(
-                    "crayon_" + suffix, p -> new ItemCrayon(p, dye),
-                    p -> CompatConsumables.foodAlwaysEdible(p, 3, 0.6F, List.of()));
+            // Both families paint the same overlay in the dye's colour; the base layer is pinned white.
+            RegistryObject<ItemChemicalDye> chemical = REG.item(
+                            "chemical_dye_" + suffix, p -> new ItemChemicalDye(p, dye))
+                    .transform(dyed("hbm:items/chemical_dye", dye.color));
+            RegistryObject<ItemCrayon> crayon = REG.item(
+                            "crayon_" + suffix, p -> new ItemCrayon(p, dye),
+                            p -> CompatConsumables.foodAlwaysEdible(p, 3, 0.6F, List.of()))
+                    .transform(dyed("hbm:items/crayon", dye.color));
             CHEMICAL.put(dye, chemical);
             CRAYON.put(dye, crayon);
             ModTabs.addTo(HbmTab.MATERIALS, chemical);
             ModTabs.addTo(HbmTab.MATERIALS, crayon);
         }
+    }
+
+    private static Presets.ItemModel dyed(String base, int colour) {
+        return Presets.sprite(base, base + "_overlay").tints(Tints.constant(-1), Tints.customModelData(0, colour));
     }
 
     public static ItemChemicalDye chemicalDye(EnumChemDye dye) {

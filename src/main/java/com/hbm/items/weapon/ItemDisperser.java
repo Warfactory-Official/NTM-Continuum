@@ -60,13 +60,37 @@ public class ItemDisperser extends ItemFluidTank {
     }
 
     /**
-     * 1.7 getSubItems: the canister offers every dispersable fluid, the gland pheromone and sulfuric acid; NARROWER than canStore - 1.7's registry lets a machine fill either with any dispersable fluid.
+     * 1.7 {@code FluidContainerRegistry} registers a full canister and a full gland only for
+     * {@link FluidType#isDispersable() dispersable} fluids (not antimatter, not container-less, not viscous), so
+     * nothing else can be filled into either.
+     */
+    @Override
+    public boolean acceptsFluid(FluidType type, ItemStack stack) {
+        return type != null && type.isDispersable() && super.acceptsFluid(type, stack);
+    }
+
+    /**
+     * 1.7 getSubItems: the canister offers every dispersable fluid, the gland pheromone and sulfuric acid; NARROWER
+     * than {@link #acceptsFluid} for the gland - 1.7's registry lets a machine fill either with any dispersable fluid.
      */
     public boolean isCreativeVariant(FluidType fluid) {
+        if (fluid == null || fluid == Fluids.NONE) return false;
         return switch (kind) {
-            case CANISTER -> acceptsFluid(fluid, ItemStack.EMPTY);
+            case CANISTER -> fluid.isDispersable();
             case GLAND -> fluid == Fluids.PHEROMONE || fluid == Fluids.SULFURIC_ACID;
         };
+    }
+
+    /**
+     * The creative-tab stacks, one full item per {@link #isCreativeVariant} fluid. 1.7 walked
+     * {@code Fluids.getInNiceOrder()}; the port has no nice order, so this is registration order.
+     */
+    public java.util.List<ItemStack> creativeVariants() {
+        java.util.List<ItemStack> list = new java.util.ArrayList<>();
+        for (FluidType fluid : Fluids.getAll()) {
+            if (isCreativeVariant(fluid)) list.add(make(fluid, capacity));
+        }
+        return list;
     }
 
     /**

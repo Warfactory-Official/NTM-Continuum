@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
@@ -21,33 +22,34 @@ public final class ModPneumaticBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityPneumoTube>> PNEUMATIC_TUBE =
-            BLOCK_ENTITIES.register("pneumatic_tube", () -> BlockEntities.serverTicking(
+            REG.blockEntity("pneumatic_tube", () -> BlockEntities.serverTicking(
                     TileEntityPneumoTube::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_TUBE.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPneumoTubePaintable>> PNEUMATIC_TUBE_PAINTABLE =
-            BLOCK_ENTITIES.register("pneumatic_tube_paintable", () -> BlockEntities.serverTicking(
+            REG.blockEntity("pneumatic_tube_paintable", () -> BlockEntities.serverTicking(
                     TileEntityPneumoTubePaintable::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_TUBE_PAINTABLE.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPneumoStorageAccess>> PNEUMATIC_STORAGE_ACCESS =
-            BLOCK_ENTITIES.register("pneumatic_storage_access", () -> BlockEntities.serverTicking(
+            REG.blockEntity("pneumatic_storage_access", () -> BlockEntities.serverTicking(
                     TileEntityPneumoStorageAccess::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_STORAGE_ACCESS.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPneumoStorageClutter>> PNEUMATIC_STORAGE_CLUTTER =
-            BLOCK_ENTITIES.register("pneumatic_storage_clutter", () -> BlockEntities.serverTicking(
+            REG.blockEntity("pneumatic_storage_clutter", () -> BlockEntities.serverTicking(
                     TileEntityPneumoStorageClutter::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_STORAGE_CLUTTER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPneumoStorageMono>> PNEUMATIC_STORAGE_MONO =
-            BLOCK_ENTITIES.register("pneumatic_storage_mono", () -> BlockEntities.serverTicking(
+            REG.blockEntity("pneumatic_storage_mono", () -> BlockEntities.serverTicking(
                     TileEntityPneumoStorageMono::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_STORAGE_MONO.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPneumoStorageImporter>> PNEUMATIC_STORAGE_IMPORTER =
-            BLOCK_ENTITIES.register("pneumatic_storage_importer", () -> BlockEntities.serverTicking(
+            REG.blockEntity("pneumatic_storage_importer", () -> BlockEntities.serverTicking(
                     TileEntityPneumoStorageImporter::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_STORAGE_IMPORTER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityPneumoStorageExporter>> PNEUMATIC_STORAGE_EXPORTER =
-            BLOCK_ENTITIES.register("pneumatic_storage_exporter", () -> BlockEntities.serverTicking(
+            REG.blockEntity("pneumatic_storage_exporter", () -> BlockEntities.serverTicking(
                     TileEntityPneumoStorageExporter::new,
                     (level, pos, state, be) -> be.serverTick(), ModPneumaticBlocks.PNEUMATIC_STORAGE_EXPORTER.get()));
 

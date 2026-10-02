@@ -31,7 +31,7 @@ public class RenderBOTPrime<T extends EntityWormBaseNT> extends CompatEntityRend
     private RenderBOTPrime(EntityRendererProvider.Context context, WavefrontObj mesh, Identifier texture) {
         super(context);
         this.mesh = mesh;
-        this.type = CompatRenderTypes.entityCutout(texture);
+        this.type = CompatRenderTypes.entityCutoutNoCull(texture);
         this.shadowStrength = 0F;
     }
 

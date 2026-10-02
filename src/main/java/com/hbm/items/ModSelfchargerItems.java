@@ -2,10 +2,12 @@ package com.hbm.items;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemSelfcharger;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import net.minecraft.world.item.Item;
 
 /** The seven deprecated fixed-output batteries used by powered armour's auxiliary drain. */
 @SuppressWarnings("deprecation")
@@ -13,6 +15,7 @@ public final class ModSelfchargerItems {
     private ModSelfchargerItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemSelfcharger> battery_sc_uranium = register("battery_sc_uranium", 5);
     public static final RegistryObject<ItemSelfcharger> battery_sc_technetium = register("battery_sc_technetium", 25);
@@ -23,10 +26,9 @@ public final class ModSelfchargerItems {
     public static final RegistryObject<ItemSelfcharger> battery_sc_americium = register("battery_sc_americium", 10_000);
 
     private static RegistryObject<ItemSelfcharger> register(String name, long charge) {
-        RegistryObject<ItemSelfcharger> item = ITEMS.registerItem(name,
-                p -> new ItemSelfcharger(p.stacksTo(1), charge));
-        ModTabs.addTo(HbmTab.CONTROL, item);
-        return item;
+        return REG.<ItemSelfcharger>item(name, (Item.Properties p) -> new ItemSelfcharger(p.stacksTo(1), charge))
+                .transform(Presets.sprite())
+                .tab(HbmTab.CONTROL);
     }
 
     public static void init() {}

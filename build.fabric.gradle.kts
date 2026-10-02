@@ -204,11 +204,16 @@ dependencies {
         devRuntime("mezz.jei:jei-$jei-fabric:$jeiVer")
     }
 
-    // Published Flywheel supplies the older nodes; 26.1 Fabric keeps the vanilla BER fallback.
+    // Published Flywheel supplies the older nodes. 26.1 Fabric has no published build and starts Golem
+    // Core's vendored engine instead (switched off with config/golemcore-flywheel.json or
+    // `/flywheel backend off`); every machine keeps its vanilla BER on every node either way.
+    // `-Pflywheel.run=false` leaves the engine jar out of the dev run (compile stays), so the dev client
+    // can be launched as a player without Flywheel would see it: every machine through its vanilla
+    // BER. The instanced visuals are optional; this is how that claim is tested on these nodes.
     propOrNull("deps.flywheel")?.let { fw ->
         val cfg = if (obfuscated) "modCompileOnly" else "compileOnly"
         cfg("dev.engine-room.flywheel:flywheel-fabric-api-$mcVersion:$fw")
-        devRuntime("dev.engine-room.flywheel:flywheel-fabric-$mcVersion:$fw")
+        if (propOrNull("flywheel.run") != "false") devRuntime("dev.engine-room.flywheel:flywheel-fabric-$mcVersion:$fw")
     }
 
     // Sodium declares `environment: client`, so Fabric loads it only during the client run.

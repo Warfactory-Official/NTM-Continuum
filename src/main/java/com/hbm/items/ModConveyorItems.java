@@ -1,9 +1,10 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.items.tool.ItemConveyorWand.ConveyorType;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import dev.golem.core.registry.DeferredRegister;
@@ -21,6 +22,7 @@ public final class ModConveyorItems {
     private ModConveyorItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemConveyorWand> CONVEYOR_WAND_REGULAR = wand(ConveyorType.REGULAR);
     public static final RegistryObject<ItemConveyorWand> CONVEYOR_WAND_EXPRESS = wand(ConveyorType.EXPRESS);
@@ -35,16 +37,18 @@ public final class ModConveyorItems {
     public static final RegistryObject<ItemMachineUpgrade> UPGRADE_STACK_3 = upgrade("upgrade_stack_3", 3);
 
     private static RegistryObject<ItemConveyorWand> wand(ConveyorType type) {
-        RegistryObject<ItemConveyorWand> ro = ITEMS.registerItem("conveyor_wand_" + type.id, p -> new ItemConveyorWand(p, type));
-        ModTabs.addTo(HbmTab.MACHINES, ro);
-        return ro;
+        // the wand shows its belt (1.7 ItemRenderBlock)
+        String belt = type == ConveyorType.REGULAR ? "conveyor" : "conveyor_" + type.id;
+        return REG.item("conveyor_wand_" + type.id, (net.minecraft.world.item.Item.Properties p) -> new ItemConveyorWand(p, type))
+                .transform(Presets.shares("hbm:block/" + belt))
+                .tab(HbmTab.MACHINES);
     }
 
     /** 1.7 {@code ItemMetaUpgrade}: an {@code ItemMachineUpgrade()} with no type, i.e. SPECIAL; the tier is the old metadata + 1. */
     private static RegistryObject<ItemMachineUpgrade> upgrade(String name, int tier) {
-        RegistryObject<ItemMachineUpgrade> ro = ITEMS.registerItem(name, p -> new ItemMachineUpgrade(UpgradeType.SPECIAL, tier, p), p -> p.stacksTo(1));
-        ModTabs.addTo(HbmTab.CONTROL, ro);
-        return ro;
+        return REG.item(name, p -> new ItemMachineUpgrade(UpgradeType.SPECIAL, tier, p), p -> p.stacksTo(1))
+                .transform(Presets.sprite())
+                .tab(HbmTab.CONTROL);
     }
 
     public static ItemStack wand(ConveyorType type, int count) {

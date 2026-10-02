@@ -2,11 +2,11 @@ package com.hbm.items.machine;
 
 import com.hbm.items.ModDataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
+import dev.golem.core.world.CompatItem;
 import net.minecraft.world.item.ItemStack;
 
 /** The two old metadata variants of the large gear, represented by ITEM_VARIANT. */
-public class ItemGear extends Item {
+public class ItemGear extends CompatItem {
 
     public ItemGear(Properties properties) {
         super(properties);

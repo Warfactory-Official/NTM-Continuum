@@ -7,6 +7,21 @@ import com.hbm.inventory.fluid.trait.FT_Coolable.CoolingType;
 import com.hbm.inventory.fluid.trait.FT_Heatable;
 import com.hbm.inventory.fluid.trait.FT_Heatable.HeatingType;
 import com.hbm.inventory.fluid.trait.FT_PWRModerator;
+import com.hbm.inventory.fluid.trait.FT_Pheromone;
+import com.hbm.inventory.fluid.trait.FT_Poison;
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FT_VentRadiation;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple.*;
+import com.hbm.inventory.fluid.trait.FT_Toxin;
+import com.hbm.inventory.fluid.trait.FT_Toxin.ToxinDirectDamage;
+import com.hbm.inventory.fluid.trait.FT_Toxin.ToxinEffects;
+import com.hbm.lib.ModDamageSources;
+import com.hbm.potion.ModEffects;
+import com.hbm.util.ArmorRegistry.HazardClass;
+import dev.golem.core.world.Effects;
+import net.minecraft.world.effect.MobEffects;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -358,6 +373,10 @@ public class Fluids {
 
         registerHeatableTraits();
         registerCoolableTraits();
+        registerPollutingTraits();
+        registerToxinTraits();
+        registerExposureTraits();
+        registerSimpleTraits();
 
         Constants.LOG.info("[HBM] Registered {} fluids", idMapping.size());
     }
@@ -416,6 +435,148 @@ public class Fluids {
         SODIUM.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 2.5D).setEff(HeatingType.ICF, 3.0D).addStep(400, 1, SODIUM_HOT, 1));
         LEAD.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 0.75D).setEff(HeatingType.ICF, 4.0D).addStep(800, 1, LEAD_HOT, 1), new FT_PWRModerator(0.75D));
         THORIUM_SALT.addTraits(new FT_Heatable().setEff(HeatingType.PWR, 1.0D).addStep(400, 1, THORIUM_SALT_HOT, 1), new FT_PWRModerator(2.5D));
+    }
+
+    public static final float SOOT_UNREFINED_OIL = PollutionHandler.SOOT_PER_SECOND * 0.1F;
+    public static final float SOOT_REFINED_OIL = PollutionHandler.SOOT_PER_SECOND * 0.025F;
+    public static final float SOOT_GAS = PollutionHandler.SOOT_PER_SECOND * 0.005F;
+    public static final float LEAD_FUEL = PollutionHandler.HEAVY_METAL_PER_SECOND * 0.025F;
+    public static final float POISON_OIL = PollutionHandler.POISON_PER_SECOND * 0.0025F;
+    public static final float POISON_EXTREME = PollutionHandler.POISON_PER_SECOND * 0.025F;
+    public static final float POISON_MINOR = PollutionHandler.POISON_PER_SECOND * 0.001F;
+
+    // 1.7 shares one instance per preset across every fluid that names it.
+    public static final FT_Polluting P_OIL = new FT_Polluting().burn(PollutionType.SOOT, SOOT_UNREFINED_OIL).release(PollutionType.POISON, POISON_OIL);
+    public static final FT_Polluting P_FUEL = new FT_Polluting().burn(PollutionType.SOOT, SOOT_REFINED_OIL).release(PollutionType.POISON, POISON_OIL);
+    public static final FT_Polluting P_FUEL_LEADED = new FT_Polluting().burn(PollutionType.SOOT, SOOT_REFINED_OIL).burn(PollutionType.HEAVYMETAL, LEAD_FUEL).release(PollutionType.POISON, POISON_OIL).release(PollutionType.HEAVYMETAL, LEAD_FUEL * 0.1F);
+    public static final FT_Polluting P_GAS = new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.POISON, POISON_OIL);
+    public static final FT_Polluting P_LIQUID_GAS = new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS * 2F);
+
+    /** Every 1.7 {@code FT_Toxin} assignment, at 1.7's values (Fluids.java, straight after the meta order). */
+    private static void registerToxinTraits() {
+        CHLORINE.addTraits(new FT_Toxin().addEntry(new ToxinDirectDamage(ModDamageSources.CLOUD, 2F, 20, HazardClass.GAS_LUNG, false)));
+        PHOSGENE.addTraits(new FT_Toxin().addEntry(new ToxinDirectDamage(ModDamageSources.CLOUD, 4F, 20, HazardClass.GAS_LUNG, false)));
+        MUSTARDGAS.addTraits(new FT_Toxin().addEntry(new ToxinDirectDamage(ModDamageSources.CLOUD, 4F, 10, HazardClass.GAS_BLISTERING, false))
+                .addEntry(new ToxinEffects(HazardClass.GAS_BLISTERING, true).add(
+                        () -> Effects.instance(MobEffects.WITHER, 100, 1),
+                        () -> Effects.instance(MobEffects.NAUSEA, 100, 0))));
+        ESTRADIOL.addTraits(new FT_Toxin().addEntry(new ToxinEffects(HazardClass.PARTICLE_FINE, false).add(
+                () -> Effects.instanceRegistered(ModEffects.DEATH.get(), 60 * 60 * 20, 0))));
+        REDMUD.addTraits(new FT_Toxin().addEntry(new ToxinEffects(HazardClass.GAS_BLISTERING, false).add(
+                () -> Effects.instance(MobEffects.WITHER, 30 * 20, 2))));
+    }
+
+    /** Every 1.7 {@code FT_VentRadiation}, {@code FT_Poison} and {@code FT_Pheromone} assignment, at 1.7's values. */
+    private static void registerExposureTraits() {
+        TRITIUM.addTraits(new FT_VentRadiation(0.001F));
+        UF6.addTraits(new FT_VentRadiation(0.2F));
+        PUF6.addTraits(new FT_VentRadiation(0.1F));
+        SAS3.addTraits(new FT_VentRadiation(1F));
+        SCHRABIDIC.addTraits(new FT_VentRadiation(1F), new FT_Poison(true, 2));
+        WATZ.addTraits(new FT_VentRadiation(0.1F));
+        MERCURY.addTraits(new FT_Poison(false, 2));
+        PAIN.addTraits(new FT_Poison(true, 2));
+        WASTEFLUID.addTraits(new FT_VentRadiation(0.5F));
+        WASTEGAS.addTraits(new FT_VentRadiation(0.5F));
+        FRACKSOL.addTraits(new FT_Poison(false, 0));
+        DEATH.addTraits(new FT_Poison(true, 4));
+        SOURGAS.addTraits(new FT_Poison(false, 1));
+        PHEROMONE.addTraits(new FT_Pheromone(1));
+        PHEROMONE_M.addTraits(new FT_Pheromone(2));
+    }
+
+    // 1.7's shared simple-trait instances (Fluids.java: LIQUID, VISCOUS, EVAP, GASEOUS, PLASMA, ANTI, ...).
+    public static final FT_Liquid LIQUID = new FT_Liquid();
+    public static final FT_Viscous VISCOUS = new FT_Viscous();
+    public static final FT_Gaseous_ART EVAP = new FT_Gaseous_ART();
+    public static final FT_Gaseous GASEOUS = new FT_Gaseous();
+    public static final FT_Plasma PLASMA = new FT_Plasma();
+    public static final FT_Amat ANTI = new FT_Amat();
+    public static final FT_LeadContainer LEADCON = new FT_LeadContainer();
+    public static final FT_NoContainer NOCON = new FT_NoContainer();
+    public static final FT_NoID NOID = new FT_NoID();
+    public static final FT_Delicious DELICIOUS = new FT_Delicious();
+    public static final FT_Unsiphonable UNSIPHONABLE = new FT_Unsiphonable();
+
+    /** Every 1.7 simple-trait assignment, fluid for fluid as 1.7's declarations list them. */
+    private static void registerSimpleTraits() {
+        for (FluidType type : new FluidType[]{WATER, COOLANT, LAVA, OIL, HOTOIL, HEAVYOIL, BITUMEN, SMEAR, HEATINGOIL,
+                RECLAIMED, PETROIL, LUBRICANT, NAPHTHA, DIESEL, LIGHTOIL, KEROSENE, LPG, BIOFUEL, NITAN, SAS3, SCHRABIDIC,
+                PEROXIDE, WATZ, CRYOGEL, HYDROGEN, OXYGEN, BALEFIRE, MERCURY, PAIN, WASTEFLUID, GASOLINE, COALGAS, FRACKSOL,
+                DEATH, ETHANOL, HEAVYWATER, CRACKOIL, COALOIL, HOTCRACKOIL, NAPHTHA_CRACK, LIGHTOIL_CRACK, DIESEL_CRACK,
+                AROMATICS, SALIENT, XPJUICE, ENDERJUICE, PETROIL_LEADED, GASOLINE_LEADED, COALGAS_LEADED, SULFURIC_ACID,
+                COOLANT_HOT, MUG, MUG_HOT, WOODOIL, COALCREOSOTE, SEEDSLURRY, NITRIC_ACID, SOLVENT, BLOOD, BLOOD_HOT,
+                RADIOSOLVENT, HEAVYOIL_VACUUM, REFORMATE, LIGHTOIL_VACUUM, XYLENE, HEATINGOIL_VACUUM, DIESEL_REFORM,
+                DIESEL_CRACK_REFORM, KEROSENE_REFORM, COLLOID, IONGEL, OIL_COKER, NAPHTHA_COKER, EGG, CHOLESTEROL,
+                ESTRADIOL, FISHOIL, SUNFLOWEROIL, NITROGLYCERIN, REDMUD, CHLOROCALCITE_SOLUTION, CHLOROCALCITE_MIX,
+                CHLOROCALCITE_CLEANED, POTASSIUM_CHLORIDE, CALCIUM_CHLORIDE, CALCIUM_SOLUTION, HEAVYWATER_HOT, SODIUM,
+                SODIUM_HOT, THORIUM_SALT, THORIUM_SALT_HOT, THORIUM_SALT_DEPLETED, FULLERENE, PHEROMONE, PHEROMONE_M,
+                OIL_DS, HOTOIL_DS, CRACKOIL_DS, HOTCRACKOIL_DS, NAPHTHA_DS, LIGHTOIL_DS, VITRIOL, SLOP, LEAD, LEAD_HOT,
+                PERFLUOROMETHYL, PERFLUOROMETHYL_COLD, PERFLUOROMETHYL_HOT, LYE, SODIUM_ALUMINATE, BAUXITE_SOLUTION,
+                ALUMINA, CONCRETE}) {
+            type.addTraits(LIQUID);
+        }
+        for (FluidType type : new FluidType[]{LAVA, OIL, HOTOIL, HEAVYOIL, BITUMEN, SMEAR, HEATINGOIL, RECLAIMED, NAPHTHA,
+                WATZ, CRYOGEL, BALEFIRE, PAIN, WASTEFLUID, FRACKSOL, DEATH, CRACKOIL, COALOIL, HOTCRACKOIL, NAPHTHA_CRACK,
+                AROMATICS, SALIENT, XPJUICE, WOODOIL, COALCREOSOTE, SEEDSLURRY, BLOOD, BLOOD_HOT, HEAVYOIL_VACUUM, REFORMATE,
+                XYLENE, HEATINGOIL_VACUUM, COLLOID, IONGEL, OIL_COKER, NAPHTHA_COKER, REDMUD, HEAVYWATER_HOT, SODIUM,
+                SODIUM_HOT, THORIUM_SALT, THORIUM_SALT_HOT, THORIUM_SALT_DEPLETED, OIL_DS, HOTOIL_DS, CRACKOIL_DS,
+                HOTCRACKOIL_DS, NAPHTHA_DS, VITRIOL, SLOP, LEAD, LEAD_HOT, BAUXITE_SOLUTION}) {
+            type.addTraits(VISCOUS);
+        }
+        for (FluidType type : new FluidType[]{STEAM, HOTSTEAM, SUPERHOTSTEAM, ULTRAHOTSTEAM, DEUTERIUM, TRITIUM, GAS,
+                PETROLEUM, BIOGAS, UF6, PUF6, AMAT, ASCHRAB, XENON, WASTEGAS, SPENTSTEAM, CARBONDIOXIDE, HELIUM3,
+                UNSATURATEDS, SYNGAS, OXYHYDROGEN, CHLORINE, SOURGAS, REFORMGAS, PHOSGENE, MUSTARDGAS, GAS_COKER, SMOKE,
+                SMOKE_LEADED, SMOKE_POISON, HELIUM4, STELLAR_FLUX, AIR, DHC, AIRBLAST, FLUE}) {
+            type.addTraits(GASEOUS);
+        }
+        for (FluidType type : new FluidType[]{HYDROGEN, OXYGEN}) type.addTraits(EVAP);
+        for (FluidType type : new FluidType[]{PLASMA_DT, PLASMA_HD, PLASMA_HT, PLASMA_XM, PLASMA_BF, PLASMA_DH3}) {
+            type.addTraits(PLASMA, NOCON, NOID);
+        }
+        for (FluidType type : new FluidType[]{AMAT, ASCHRAB, STELLAR_FLUX}) type.addTraits(ANTI);
+        for (FluidType type : new FluidType[]{DEATH, REDMUD}) type.addTraits(LEADCON);
+        for (FluidType type : new FluidType[]{WASTEFLUID, WASTEGAS, SPENTSTEAM, CHLOROCALCITE_SOLUTION, CHLOROCALCITE_MIX,
+                CHLOROCALCITE_CLEANED, POTASSIUM_CHLORIDE, CALCIUM_CHLORIDE, CALCIUM_SOLUTION}) {
+            type.addTraits(NOCON);
+        }
+        for (FluidType type : new FluidType[]{SMOKE, SMOKE_LEADED, SMOKE_POISON}) type.addTraits(NOCON, NOID);
+        for (FluidType type : new FluidType[]{SALIENT, MUG, MUG_HOT, BLOOD}) type.addTraits(DELICIOUS);
+        for (FluidType type : new FluidType[]{WATER, STEAM, HOTSTEAM, SUPERHOTSTEAM, ULTRAHOTSTEAM}) {
+            type.addTraits(UNSIPHONABLE);
+        }
+    }
+
+    /** Every 1.7 {@code FT_Polluting} assignment, with 1.7's presets and one-off tables. */
+    private static void registerPollutingTraits() {
+        for (FluidType type : new FluidType[]{OIL, HOTOIL, HEAVYOIL, BITUMEN, SMEAR, HEATINGOIL, LUBRICANT, CRACKOIL,
+                COALOIL, HOTCRACKOIL, WOODOIL, COALCREOSOTE, HEAVYOIL_VACUUM, HEATINGOIL_VACUUM, OIL_COKER, NAPHTHA_COKER,
+                OIL_DS, HOTOIL_DS, CRACKOIL_DS, HOTCRACKOIL_DS}) {
+            type.addTraits(P_OIL);
+        }
+        for (FluidType type : new FluidType[]{RECLAIMED, PETROIL, NAPHTHA, DIESEL, LIGHTOIL, KEROSENE, BIOFUEL, NITAN,
+                BALEFIRE, GASOLINE, COALGAS, ETHANOL, NAPHTHA_CRACK, LIGHTOIL_CRACK, DIESEL_CRACK, REFORMATE,
+                LIGHTOIL_VACUUM, XYLENE, DIESEL_REFORM, DIESEL_CRACK_REFORM, KEROSENE_REFORM, FISHOIL, SUNFLOWEROIL,
+                NAPHTHA_DS, LIGHTOIL_DS}) {
+            type.addTraits(P_FUEL);
+        }
+        for (FluidType type : new FluidType[]{PETROIL_LEADED, GASOLINE_LEADED, COALGAS_LEADED}) {
+            type.addTraits(P_FUEL_LEADED);
+        }
+        for (FluidType type : new FluidType[]{GAS, PETROLEUM, BIOGAS, AROMATICS, UNSATURATEDS, REFORMGAS, GAS_COKER}) {
+            type.addTraits(P_GAS);
+        }
+        LPG.addTraits(P_LIQUID_GAS);
+
+        WATZ.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
+        CARBONDIOXIDE.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_MINOR));
+        NITRIC_ACID.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
+        SOURGAS.addTraits(new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.POISON, POISON_EXTREME));
+        PHOSGENE.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
+        MUSTARDGAS.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
+        REDMUD.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_EXTREME));
+        FULLERENE.addTraits(new FT_Polluting().release(PollutionType.POISON, POISON_MINOR));
+        FLUE.addTraits(new FT_Polluting().burn(PollutionType.SOOT, SOOT_GAS).release(PollutionType.SOOT, SOOT_GAS * 25));
     }
 
     /** Complete upstream FT_Coolable data, including the heat-exchanger-only coolant families. */

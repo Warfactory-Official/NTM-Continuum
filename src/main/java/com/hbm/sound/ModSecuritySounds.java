@@ -1,5 +1,6 @@
 package com.hbm.sound;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -17,14 +18,14 @@ public final class ModSecuritySounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
 
     /** {@code NTMSounds.PADLOCK}: the padlock snapping shut on a block. */
     public static final RegistryObject<SoundEvent> LOCK_HANG = register("block.lock_hang");
     public static final RegistryObject<SoundEvent> SLICER = register("entity.slicer");
 
     private static RegistryObject<SoundEvent> register(String name) {
-        return SOUNDS.register(name, () -> SoundEvent.createVariableRangeEvent(
-                dev.golem.core.Ids.of(Constants.MOD_ID, name)));
+        return REG.sound(name);
     }
 
     public static void init() {}

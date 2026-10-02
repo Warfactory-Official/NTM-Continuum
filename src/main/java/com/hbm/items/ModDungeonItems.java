@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -20,6 +22,7 @@ public final class ModDungeonItems {
     private ModDungeonItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** 1.7 {@code ItemStackUtil.addStacksToNBT(stack, 1)}: the concrete the placed rebar will set into. */
     public static final GolemComponent<ItemStack> REBAR_CONCRETE = GolemComponent.itemStack(Constants.MOD_ID, "rebar_concrete");
@@ -27,7 +30,7 @@ public final class ModDungeonItems {
     public static final GolemComponent<BlockPos> REBAR_POS = GolemComponent.of(Constants.MOD_ID, "rebar_pos", BlockPos.CODEC);
 
     public static final RegistryObject<ItemRebarPlacer> rebar_placer =
-            ITEMS.registerItem("rebar_placer", ItemRebarPlacer::new, p -> p.stacksTo(1));
+            REG.item("rebar_placer", ItemRebarPlacer::new, p -> p.stacksTo(1)).transform(Presets.sprite());
 
     static {
         ModTabs.addTo(HbmTab.CONSUMABLES, rebar_placer);

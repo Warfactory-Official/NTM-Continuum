@@ -20,9 +20,9 @@ import java.util.Map;
  * {@code SolidificationRecipes.registerDefaults}, including the {@code registerSFAuto} "solid fuel"
  * auto-computation (mB = {@code SF_energy·1000·1.25 / FT_Flammable_energy}, magnitude-rounded, min 1).
  *
- * <p>Skipped (output item unported), counted here: {@code MERCURY}→ingot_mercury, {@code SALIENT}→
- * bio_wafer. {@code SLOP}→ore_oil_sand and {@code WATZ}→ingot_mud and
- * {@code REDMUD}→iron_ingot are kept (both outputs exist). All input fluids exist.
+ * <p>Every 1.7 entry is registered. 1.7's {@code ModItems.ingot_mercury} is registered under the name
+ * {@code nugget_mercury} (the field {@code nugget_mercury} is {@code nugget_mercury_tiny}), so MERCURY
+ * solidifies into {@code hbm:nugget_mercury}.
  */
 public final class SolidificationRecipes {
 
@@ -67,9 +67,10 @@ public final class SolidificationRecipes {
 
         reg(Fluids.WATER, 1000, Items.ICE.asItem());
         reg(Fluids.LAVA, 1000, Items.OBSIDIAN.asItem());
-        // MERCURY -> ingot_mercury : output unported (skipped)
-        reg(Fluids.BIOGAS, 250, ModFuelItems.biomass_compressed.get());
-        // SALIENT -> 8x bio_wafer : output unported (skipped)
+        reg(Fluids.MERCURY, 125, ModItems.nugget_mercury.get()); // 1.7 ingot_mercury
+        reg(Fluids.BIOGAS, 250, new ItemStack(ModFuelItems.biomass_compressed.get(), 4));
+        // 4 (food val) * 2 (sat mod) * 2 (constant) * 10 (quanta) * 8 (batch size)
+        reg(Fluids.SALIENT, 1280, new ItemStack(com.hbm.items.ModFoodItems.bio_wafer.get(), 8));
         reg(Fluids.ENDERJUICE, 100, Items.ENDER_PEARL);
         reg(Fluids.WATZ, 1000, ModItems.ingot_mud.get());
         reg(Fluids.REDMUD, 450, Items.IRON_INGOT);

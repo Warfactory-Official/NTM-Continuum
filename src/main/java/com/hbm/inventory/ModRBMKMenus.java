@@ -1,6 +1,7 @@
 package com.hbm.inventory;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import com.hbm.inventory.container.*;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
@@ -12,6 +13,7 @@ public final class ModRBMKMenus {
     private ModRBMKMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
     public static final RegistryObject<MenuType<MenuRBMKRod>> RBMK_ROD = register("rbmk_fuel_rod", MenuRBMKRod::new);
     public static final RegistryObject<MenuType<MenuRBMKControl>> RBMK_CONTROL = register("rbmk_control", MenuRBMKControl::new);
     public static final RegistryObject<MenuType<MenuRBMKControlAuto>> RBMK_CONTROL_AUTO = register("rbmk_control_auto", MenuRBMKControlAuto::new);
@@ -24,7 +26,7 @@ public final class ModRBMKMenus {
 
     private static <T extends net.minecraft.world.inventory.AbstractContainerMenu> RegistryObject<MenuType<T>> register(
             String id, dev.golem.core.gui.Menus.PosFactory<T> factory) {
-        return MENUS.register(id, () -> dev.golem.core.gui.Menus.typeWithPos(factory));
+        return REG.menu(id, () -> dev.golem.core.gui.Menus.typeWithPos(factory));
     }
 
     public static void init() {}

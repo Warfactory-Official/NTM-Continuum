@@ -7,7 +7,6 @@ import com.hbm.items.ModFluidItems;
 import com.hbm.items.ModMeleeKitItems;
 import com.hbm.items.special.ItemKitCustom;
 import com.hbm.items.special.ItemKitNBT;
-import com.hbm.items.weapon.ItemCrucible;
 import dev.golem.core.Ids;
 import dev.golem.core.world.Advancements;
 import dev.golem.core.world.ItemStacks;
@@ -176,9 +175,10 @@ public final class BobmazonOfferFactory {
         add(spc, hbm("loot_misc", 1), Requirement.STEEL, 2);
         add(spc, hbm("crate_can", 1), Requirement.STEEL, 1);
         add(spc, hbm("crate_ammo", 1), Requirement.STEEL, 2);
-        // 1.7 crucible metadata 3: the spent (empty) crucible
+        // old-hbm BobmazonOfferFactory: new ItemStack(crucible, 1, 3), item damage 3 and no charges (an empty crucible)
         ItemStack crucible = hbm("crucible", 1);
-        add(spc, crucible.isEmpty() ? crucible : ItemCrucible.withSpent(crucible, 3), Requirement.STEEL, 10);
+        if (!crucible.isEmpty()) crucible.setDamageValue(3);
+        add(spc, crucible, Requirement.STEEL, 10);
         add(spc, hbm("chopper", 1), Requirement.STEEL, 10); // 1.7 ModItems.spawn_chopper registers as hbm:chopper
         add(spc, hbm("spawn_worm", 1), Requirement.STEEL, 10);
         add(spc, hbm("spawn_ufo", 1), Requirement.STEEL, 10);

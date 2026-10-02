@@ -1,6 +1,8 @@
 package com.hbm.tileentity.machine;
 
 import com.hbm.tileentity.MachineCore;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
 import dev.golem.core.data.Tags;
 import com.hbm.api.block.ICrucibleAcceptor;
 import com.hbm.api.tile.IHeatSource;
@@ -45,8 +47,8 @@ import java.util.List;
  * stack</b>, and pours both out via a downward raytrace ({@link CrucibleUtil}): waste out the back,
  * recipe output out the front. Slots 1–9 are the 3×3 input grid (limit 1/slot; slot 0 is unused, as in
  * the original); thrown items landing in the basin are vacuumed in. Constants verbatim; the
- * {@code IConfigurableMachine} JSON config and pollution are deferred, and the modern (non-legacy)
- * crucible rules are hardcoded.
+ * {@code IConfigurableMachine} JSON config is deferred, and the modern (non-legacy) crucible rules are
+ * hardcoded. Each non-empty pour stack adds 1.7's {@code SOOT_PER_SECOND / 20} soot every tick.
  */
 public class TileEntityCrucible extends TileEntityMachineBase implements MenuProvider, ICrucibleAcceptor, IControlReceiver {
 
@@ -161,6 +163,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
                 te.wastePourLen = Math.max(1F, pos.getY() - (float) (Math.ceil(impact[0].y) - 0.875));
                 te.wastePourTimer = STREAM_LIFETIME;
             }
+
+            PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND / 20F);
         }
 
         /* pour recipe stack (out the front) */
@@ -194,6 +198,8 @@ public class TileEntityCrucible extends TileEntityMachineBase implements MenuPro
                 te.recipePourLen = Math.max(1F, pos.getY() - (float) (Math.ceil(impact[0].y) - 0.875));
                 te.recipePourTimer = STREAM_LIFETIME;
             }
+
+            PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND / 20F);
         }
 
         /* clean up stacks */

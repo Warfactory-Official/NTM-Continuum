@@ -9,6 +9,7 @@ import com.hbm.entity.projectile.EntityBulletBeamBase;
 import com.hbm.explosion.ExplosionNukeGeneric;
 import com.hbm.explosion.vanillant.ExplosionVNT;
 import com.hbm.explosion.vanillant.standard.*;
+import com.hbm.items.weapon.grenade.ItemGrenadeShell.EnumGrenadeShell;
 import com.hbm.items.weapon.sedna.BulletConfig;
 import com.hbm.items.weapon.sedna.factory.Lego;
 import com.hbm.items.weapon.sedna.factory.XFactoryCatapult;
@@ -295,18 +296,24 @@ public class ItemGrenadeFilling extends Item {
     }
 
     public enum EnumGrenadeFilling {
-        POWDER(0x424242, 0x939176), HE(0x595533, 0xA49D62), DEMO(0x595533, 0xDD4029),
-        INC(0x5A5A5A, 0xFF5F21), WP(0xDCDCDC, 0xFF5F21), CLUSTER(0x5A5A5A, 0xFFC711),
-        EMP(0x93A1AC, 0x00FFFF), PLASMA(0x655B2C, 0x4CFF00), LASER(0x493A3A, 0xFF0000),
-        CLUSTER_HEAVY(0x5A5A5A, 0xFF5F21), NUCLEAR(0xDFD7A8, 0xA49D62),
-        NUCLEAR_DEMO(0xDFD7A8, 0xDD4029), SCHRAB(0x00BDBD, 0x000000);
+        // 1.7 EnumGrenadeFilling: colours and the shells each filling fits (getSubItems lists only those).
+        POWDER(0x424242, 0x939176, EnumGrenadeShell.FRAG, EnumGrenadeShell.STICK), HE(0x595533, 0xA49D62, EnumGrenadeShell.FRAG, EnumGrenadeShell.STICK),
+        DEMO(0x595533, 0xDD4029, EnumGrenadeShell.FRAG, EnumGrenadeShell.STICK), INC(0x5A5A5A, 0xFF5F21, EnumGrenadeShell.FRAG, EnumGrenadeShell.STICK),
+        WP(0xDCDCDC, 0xFF5F21, EnumGrenadeShell.FRAG, EnumGrenadeShell.STICK), CLUSTER(0x5A5A5A, 0xFFC711, EnumGrenadeShell.FRAG, EnumGrenadeShell.STICK),
+        EMP(0x93A1AC, 0x00FFFF, EnumGrenadeShell.TECH), PLASMA(0x655B2C, 0x4CFF00, EnumGrenadeShell.TECH),
+        LASER(0x493A3A, 0xFF0000, EnumGrenadeShell.TECH), CLUSTER_HEAVY(0x5A5A5A, 0xFF5F21, EnumGrenadeShell.NUKE),
+        NUCLEAR(0xDFD7A8, 0xA49D62, EnumGrenadeShell.NUKE), NUCLEAR_DEMO(0xDFD7A8, 0xDD4029, EnumGrenadeShell.NUKE),
+        SCHRAB(0x00BDBD, 0x000000, EnumGrenadeShell.NUKE);
 
         private final int bodyColor;
         private final int labelColor;
+        public final java.util.Set<EnumGrenadeShell> compatibleShells;
 
-        EnumGrenadeFilling(int bodyColor, int labelColor) {
+        EnumGrenadeFilling(int bodyColor, int labelColor, EnumGrenadeShell... compatibleShells) {
             this.bodyColor = bodyColor;
             this.labelColor = labelColor;
+            this.compatibleShells = java.util.Collections.unmodifiableSet(
+                    java.util.EnumSet.copyOf(java.util.Arrays.asList(compatibleShells)));
         }
 
         public int bodyColor() {

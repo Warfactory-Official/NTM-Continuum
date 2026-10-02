@@ -1,6 +1,7 @@
 package com.hbm.tileentity;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import com.hbm.blocks.machine.rbmk.ModRBMKBlocks;
 import dev.golem.core.registry.BlockEntities;
 import com.hbm.tileentity.machine.rbmk.*;
@@ -13,6 +14,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 public final class ModRBMKBlockEntities {
     private ModRBMKBlockEntities() {}
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES=DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
     /**
      * Every RBMK column ticks on both sides through {@link IRBMKTicking}, so the ticker is bound
      * here once rather than restated by each of the twenty blocks that used to ask
@@ -21,7 +23,7 @@ public final class ModRBMKBlockEntities {
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity & IRBMKTicking> RegistryObject<BlockEntityType<T>> type(
             String id, BlockEntities.Factory<T> factory,
             RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks) {
-        return BLOCK_ENTITIES.register(id, () -> BlockEntities.ticking(factory,
+        return REG.blockEntity(id, () -> BlockEntities.ticking(factory,
                 (level, pos, state, be) -> be.tickClient(),
                 (level, pos, state, be) -> be.tickServer(),
                 java.util.Arrays.stream(blocks).map(RegistryObject::get)
@@ -35,7 +37,7 @@ public final class ModRBMKBlockEntities {
     private static <T extends net.minecraft.world.level.block.entity.BlockEntity> RegistryObject<BlockEntityType<T>> inert(
             String id, BlockEntities.Factory<T> factory,
             RegistryObject<? extends net.minecraft.world.level.block.Block>... blocks) {
-        return BLOCK_ENTITIES.register(id, () -> BlockEntities.type(factory,
+        return REG.blockEntity(id, () -> BlockEntities.type(factory,
                 java.util.Arrays.stream(blocks).map(RegistryObject::get)
                         .toArray(net.minecraft.world.level.block.Block[]::new)));
     }
@@ -66,7 +68,7 @@ public final class ModRBMKBlockEntities {
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKIndicator>> RBMK_INDICATOR=type("rbmk_indicator",BlockEntityRBMKIndicator::new,ModRBMKBlocks.rbmk_indicator);
     public static final RegistryObject<BlockEntityType<BlockEntityRBMKAutoloader>> RBMK_AUTOLOADER=type("rbmk_autoloader",BlockEntityRBMKAutoloader::new,ModRBMKBlocks.rbmk_autoloader);
     public static final RegistryObject<BlockEntityType<com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal>> RBMK_TERMINAL=
-            BLOCK_ENTITIES.register("rbmk_terminal", () -> BlockEntities.serverTicking(
+            REG.blockEntity("rbmk_terminal", () -> BlockEntities.serverTicking(
                     com.hbm.tileentity.machine.rbmk.BlockEntityRBMKTerminal::new,
                     (level, pos, state, be) -> be.serverTick(),
                     ModRBMKBlocks.rbmk_terminal.get()));

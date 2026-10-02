@@ -63,6 +63,8 @@ public final class CraftingRecipesGenerated {
                 "C", TagIds.dusts_cobalt, "E", TagIds.dusts_redstone, "I", ItemIds.plate_polymer, "W", TagIds.wires_gold);
         shaped(NS, "hev_battery_1", ItemIds.hev_battery, 4, rows(" W ", "ICI", "IEI"),
                 "C", TagIds.dusts_cobalt, "E", TagIds.dusts_redstone, "I", ItemIds.plate_polymer, "W", TagIds.wires_gold);
+        shapeless(NS, "hev_battery_2", ItemIds.hev_battery, ItemIds.hev_battery_block);
+        shapeless(NS, "hev_battery_block", ItemIds.hev_battery_block, ItemIds.hev_battery);
         shaped(NS, "key_red", ItemIds.key_red, rows("RCA", "CIC", "KCR"),
                 "A", ItemIds.gem_alexandrite, "C", TagIds.wires_dense_starmetal, "I", ItemIds.ingot_chainsteel, "K", ItemIds.key, "R", VanillaIds.red_dye);
         shaped(NS, "crystal_virus", ItemIds.crystal_virus, rows("STS", "THT", "STS"),
@@ -133,12 +135,12 @@ public final class CraftingRecipesGenerated {
                 "P", TagIds.minecraft_planks, "S", TagIds.plates_steel);
         shaped(NS, "saddle", VanillaIds.saddle, rows("LLL", "LRL", " S "),
                 "L", VanillaIds.leather, "R", ItemIds.plant_item_rope, "S", TagIds.ingots_steel);
-        shaped(NS, "pipe_lead", ItemIds.pipe_lead, rows("II", " I", " I"),
-                "I", TagIds.pipes_lead);
-        shapeless(NS, "designator_range", ItemIds.designator_range, ItemIds.rangefinder, ItemIds.designator, TagIds.ingots_any_plastic);
     }
 
     private static void declare1() {
+        shaped(NS, "pipe_lead", ItemIds.pipe_lead, rows("II", " I", " I"),
+                "I", TagIds.pipes_lead);
+        shapeless(NS, "designator_range", ItemIds.designator_range, ItemIds.rangefinder, ItemIds.designator, TagIds.ingots_any_plastic);
         shapeless(NS, "designator_arty_range", ItemIds.designator_arty_range, ItemIds.rangefinder, ItemIds.circuit_advanced, TagIds.ingots_any_plastic);
         shaped(NS, "oil_detector", ItemIds.oil_detector, rows("W I", "WCI", "PPP"),
                 "C", ItemIds.circuit_analog, "I", TagIds.ingots_copper, "P", TagIds.plates_steel, "W", TagIds.wires_gold);
@@ -247,12 +249,12 @@ public final class CraftingRecipesGenerated {
                 "C", TagIds.plates_steel, "I", TagIds.plates_iron, "T", ItemIds.mp_fuselage_10_long_kerosene);
         shaped(NS, "mp_fuselage_15_kerosene_metal", ItemIds.mp_fuselage_15_kerosene_metal, rows("ICI", "CTC", "ICI"),
                 "C", TagIds.plates_steel, "I", TagIds.plates_iron, "T", ItemIds.mp_fuselage_15_kerosene);
-        shaped(NS, "gun_fireext", ItemIds.gun_fireext, rows("HB", " T"),
-                "B", TagIds.bolts_steel, "H", TagIds.pipes_steel, "T", ItemIds.tank_steel);
-        componentShaped(NS, "ammo_arty_3_g1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 5), rows("D", "S", "D"), key("D", item(ItemIds.ingot_phosphorus)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
     }
 
     private static void declare2() {
+        shaped(NS, "gun_fireext", ItemIds.gun_fireext, rows("HB", " T"),
+                "B", TagIds.bolts_steel, "H", TagIds.pipes_steel, "T", ItemIds.tank_steel);
+        componentShaped(NS, "ammo_arty_3_g1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 5), rows("D", "S", "D"), key("D", item(ItemIds.ingot_phosphorus)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 0)));
         componentShaped(NS, "ammo_arty_4_g1", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 7), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.ingot_phosphorus)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 5)));
         componentShaped(NS, "ammo_arty_6", stack(ItemIds.ammo_arty).with(ComponentIds.item_variant, 6), rows("DSD", "SCS", "DSD"), key("C", item(ItemIds.det_cord)), key("D", item(ItemIds.neutron_reflector)), key("S", item(ItemIds.ammo_arty).with(ComponentIds.item_variant, 3)));
         componentShaped(NS, "ammo_fireext", stack(ItemIds.ammo_fireext), rows(" P ", "BDB", " P "), key("B", item(ItemIds.bolt_steel)), key("D", item(ItemIds.fluid_tank).with(ComponentIds.fluid_amount, 1000).with(ComponentIds.fluid_id, 1).remainder(ItemIds.fluid_tank)), key("P", item(ItemIds.plate_steel)));

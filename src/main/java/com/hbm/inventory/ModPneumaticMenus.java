@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
@@ -19,19 +20,20 @@ public final class ModPneumaticMenus {
 
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerPneumoTube>> PNEUMATIC_TUBE =
-            MENUS.register("pneumatic_tube", () -> Menus.typeWithPos(ContainerPneumoTube::new));
+            REG.menu("pneumatic_tube", () -> Menus.typeWithPos(ContainerPneumoTube::new));
     public static final RegistryObject<MenuType<ContainerPneumoStorageAccess>> PNEUMATIC_STORAGE_ACCESS =
-            MENUS.register("pneumatic_storage_access", () -> Menus.typeWithPos(ContainerPneumoStorageAccess::new));
+            REG.menu("pneumatic_storage_access", () -> Menus.typeWithPos(ContainerPneumoStorageAccess::new));
     public static final RegistryObject<MenuType<ContainerPneumoStorageClutter>> PNEUMATIC_STORAGE_CLUTTER =
-            MENUS.register("pneumatic_storage_clutter", () -> Menus.typeWithPos(ContainerPneumoStorageClutter::new));
+            REG.menu("pneumatic_storage_clutter", () -> Menus.typeWithPos(ContainerPneumoStorageClutter::new));
     public static final RegistryObject<MenuType<ContainerPneumoStorageMono>> PNEUMATIC_STORAGE_MONO =
-            MENUS.register("pneumatic_storage_mono", () -> Menus.typeWithPos(ContainerPneumoStorageMono::new));
+            REG.menu("pneumatic_storage_mono", () -> Menus.typeWithPos(ContainerPneumoStorageMono::new));
     public static final RegistryObject<MenuType<ContainerPneumoStorageImporter>> PNEUMATIC_STORAGE_IMPORTER =
-            MENUS.register("pneumatic_storage_importer", () -> Menus.typeWithPos(ContainerPneumoStorageImporter::new));
+            REG.menu("pneumatic_storage_importer", () -> Menus.typeWithPos(ContainerPneumoStorageImporter::new));
     public static final RegistryObject<MenuType<ContainerPneumoStorageExporter>> PNEUMATIC_STORAGE_EXPORTER =
-            MENUS.register("pneumatic_storage_exporter", () -> Menus.typeWithPos(ContainerPneumoStorageExporter::new));
+            REG.menu("pneumatic_storage_exporter", () -> Menus.typeWithPos(ContainerPneumoStorageExporter::new));
 
     public static void init() {}
 }

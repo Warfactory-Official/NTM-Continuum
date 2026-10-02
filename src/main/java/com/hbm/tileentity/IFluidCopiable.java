@@ -68,11 +68,7 @@ public interface IFluidCopiable extends ICopiable {
         private ItemFluidIds() {}
 
         public static boolean hasNoID(com.hbm.inventory.fluid.FluidType type) {
-            return switch (type.getName()) {
-                case "PLASMA_DT", "PLASMA_HD", "PLASMA_HT", "PLASMA_XM", "PLASMA_BF", "PLASMA_DH3",
-                     "SMOKE", "SMOKE_LEADED", "SMOKE_POISON" -> true;
-                default -> false;
-            };
+            return type.hasNoID();
         }
     }
 }

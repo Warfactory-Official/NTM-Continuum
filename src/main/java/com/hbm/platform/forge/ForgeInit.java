@@ -104,6 +104,7 @@ public final class ForgeInit {
         com.hbm.gametest.WeaponTableGameTests.init();
         com.hbm.gametest.GunSupportGameTests.init();
         com.hbm.gametest.PollutionGameTests.init();
+        com.hbm.gametest.ToxinGameTests.init();
 
         modBus.addListener(this::onRegister);
         modBus.addListener(this::onBuildTabContents);
@@ -212,6 +213,8 @@ public final class ForgeInit {
                 com.hbm.gametest.FlywheelGameTests.TESTS));
         modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
                 com.hbm.gametest.PollutionGameTests.TESTS));
+        modBus.addListener((RegisterGameTestsEvent event) -> dev.golem.core.gametest.GameTests.register(event,
+                com.hbm.gametest.ToxinGameTests.TESTS));
 
         // Forge 1.20.1 has no furnace-fuel data map: the burn times answer FurnaceFuelBurnTimeEvent (lazily
         // resolved, so registering before the registries flush is fine).

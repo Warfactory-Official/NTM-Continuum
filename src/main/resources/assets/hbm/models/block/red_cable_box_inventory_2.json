@@ -1,0 +1,44 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "hbm:blocks/boxduct_cable_straight",
+    "straight": "hbm:blocks/boxduct_cable_straight",
+    "end": "hbm:blocks/boxduct_cable_end_2"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        4,
+        0
+      ],
+      "to": [
+        12,
+        12,
+        16
+      ],
+      "faces": {
+        "down": {
+          "texture": "#straight"
+        },
+        "up": {
+          "texture": "#straight"
+        },
+        "west": {
+          "texture": "#straight"
+        },
+        "east": {
+          "texture": "#straight"
+        },
+        "north": {
+          "texture": "#end",
+          "rotation": 90
+        },
+        "south": {
+          "texture": "#end",
+          "rotation": 270
+        }
+      }
+    }
+  ]
+}

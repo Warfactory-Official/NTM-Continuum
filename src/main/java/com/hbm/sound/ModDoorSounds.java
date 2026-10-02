@@ -1,5 +1,6 @@
 package com.hbm.sound;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
@@ -17,6 +18,7 @@ public final class ModDoorSounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
 
     public static final RegistryObject<SoundEvent> REACTOR_STOP = register("block.reactor_stop");
     public static final RegistryObject<SoundEvent> VAULT_SCRAPE_NEW = register("block.vault_scrape_new");
@@ -28,7 +30,7 @@ public final class ModDoorSounds {
      * the sound registry has necessarily flushed; the registration hands out this same instance.
      */
     public static final SoundEvent OPEN_DOOR_EVENT = SoundEvent.createVariableRangeEvent(Ids.of(Constants.MOD_ID, "block.open_door"));
-    public static final RegistryObject<SoundEvent> OPEN_DOOR = SOUNDS.register("block.open_door", () -> OPEN_DOOR_EVENT);
+    public static final RegistryObject<SoundEvent> OPEN_DOOR = REG.register(Registries.SOUND_EVENT, "block.open_door", () -> OPEN_DOOR_EVENT);
     public static final RegistryObject<SoundEvent> PIN_UNLOCK = register("item.pin_unlock");
     public static final RegistryObject<SoundEvent> PIN_BREAK = register("item.pin_break");
 
@@ -51,7 +53,7 @@ public final class ModDoorSounds {
     public static final RegistryObject<SoundEvent> SLIDING_SEAL_STOP = register("door.sliding_seal_stop");
 
     private static RegistryObject<SoundEvent> register(String path) {
-        return SOUNDS.register(path, () -> SoundEvent.createVariableRangeEvent(Ids.of(Constants.MOD_ID, path)));
+        return REG.sound(path);
     }
 
     public static void init() {}

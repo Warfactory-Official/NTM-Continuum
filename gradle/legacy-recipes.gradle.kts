@@ -23,7 +23,8 @@ import groovy.json.JsonSlurper
  * An unrecognised shape (already an object, or a list of alternatives) is passed through untouched,
  * so hand-written recipes that already use the old form still work.
  */
-fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespace: String) {
+fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespace: String,
+                                            loaderKeepsCookingResultStack: Boolean) {
     tasks.named<ProcessResources>("processResources").configure {
         doLast {
             val root = destinationDir
@@ -35,6 +36,9 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
             val tags = if (conventionNamespace != "c") duplicateConventionTags(root, conventionNamespace) else 0
             val repointed = if (conventionNamespace != "c") repointConventionTagReferences(root, conventionNamespace) else 0
             var converted = 0
+            var cookingStacksKept = 0
+            // Whether this node's cooking serializer keeps a result's count/components (see the routing below).
+            val cookingResultKeepsStack = vanillaCookingResultKeepsStack(mcVersion) || loaderKeepsCookingResultStack
             root.walkTopDown()
                 .filter { it.isFile && it.extension == "json" && it.parentFile.name in setOf("recipe", "recipes") }
                 .forEach { file ->
@@ -68,15 +72,55 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
                             if (components != null) {
                                 @Suppress("UNCHECKED_CAST")
                                 val tag = (result["tag"] as? MutableMap<String, Any?>) ?: mutableMapOf()
-                                components.forEach { (key, value) -> tag[key] = value }
+                                // the vanilla damage component was the root "Damage" tag before 1.20.5
+                                components.forEach { (key, value) -> tag[if (key == "minecraft:damage") "Damage" else key] = value }
                                 result["tag"] = tag
                                 changed = true
                             }
                         }
                         val id = result["id"] as? String
+                        val count = (result["count"] as? Number)?.toInt() ?: 1
+                        val carriesStack = count > 1 || result["tag"] != null
                         if (needsLegacyRecipeResults(mcVersion) && json["type"] in legacyCookingRecipeTypes && id != null) {
-                            // Cooking recipes use a bare result id on 1.20.x.
-                            json["result"] = id
+                            if (!carriesStack) {
+                                // Cooking recipes use a bare result id on 1.20.x.
+                                json["result"] = id
+                            } else if (json["type"] == "minecraft:smelting") {
+                                // A bare id has no room for a count or NBT, so a x16 meteoric smelt would yield one
+                                // item. Golem Core's smelting serializer reads the full {item,count,tag} result
+                                // (CustomRecipes.componentSmeltingLegacy -> legacyResult) and is still a
+                                // SmeltingRecipe, so furnaces, JEI and the recipe book treat it as vanilla smelting.
+                                result.remove("id")
+                                result["item"] = id
+                                json["type"] = "hbm:component_smelting"
+                                cookingStacksKept++
+                            } else {
+                                throw GradleException("${file.name}: ${json["type"]} cannot carry a count or tag " +
+                                        "on ${mcVersion} (bare result id only); only minecraft:smelting is routed " +
+                                        "through hbm:component_smelting")
+                            }
+                            changed = true
+                        } else if (carriesStack && !cookingResultKeepsStack && json["type"] in legacyCookingRecipeTypes
+                                && id != null) {
+                            // 1.21.0-1.21.1 vanilla reads a cooking result with ItemStack.STRICT_SINGLE_ITEM_CODEC,
+                            // which ignores `count`: a x16 meteoric smelt yields one ingot. NeoForge 21.1 patches the
+                            // serializer to ItemStack.CODEC (the node declares `loader_cooking_result_count`); Fabric
+                            // does not. Route through Golem Core's component smelting (ItemStack.CODEC, still a
+                            // SmeltingRecipe), whose ingredient is the {"items": [...]} ComponentIngredient shape.
+                            if (json["type"] != "minecraft:smelting") {
+                                throw GradleException("${file.name}: ${json["type"]} cannot carry a count or " +
+                                        "components on ${mcVersion} without a loader patch; only minecraft:smelting " +
+                                        "is routed through hbm:component_smelting")
+                            }
+                            @Suppress("UNCHECKED_CAST")
+                            val ingredient = json["ingredient"] as? Map<String, Any?>
+                            val entry = ingredient?.get("item") as? String
+                                ?: (ingredient?.get("tag") as? String)?.let { "#$it" }
+                                ?: throw GradleException("${file.name}: unsupported smelting ingredient $ingredient " +
+                                        "for hbm:component_smelting")
+                            json["ingredient"] = mapOf("items" to listOf(entry))
+                            json["type"] = "hbm:component_smelting"
+                            cookingStacksKept++
                             changed = true
                         } else if (needsLegacyRecipeResults(mcVersion) && id != null && "item" !in result) {
                             // Crafting recipe results use `item` on 1.20.x.
@@ -92,7 +136,7 @@ fun Project.applyLegacyRecipeCompatibility(mcVersion: String, conventionNamespac
                     }
                 }
             logger.lifecycle("legacyRecipeCompatibility: renamed $renamed data directory(s); converted " +
-                    "$converted recipe(s), $lootTables loot table(s), and $advancements advancement(s) to the legacy shape; " +
+                    "$converted recipe(s) ($cookingStacksKept smelting recipe(s) kept a count/tag via hbm:component_smelting), $lootTables loot table(s), and $advancements advancement(s) to the legacy shape; " +
                     "copied $tags convention tag(s) to '$conventionNamespace' and repointed $repointed recipe(s) at them; " +
                     "rewrote $advancementDisplays advancement display/predicate(s) to the pre-26.1 shape.")
         }
@@ -366,6 +410,20 @@ fun needsLegacyDataDirectories(mcVersion: String): Boolean {
     return parts.getOrElse(0) { 0 } == 1 && parts.getOrElse(1) { 0 } < 21
 }
 
+/**
+ * Whether vanilla's cooking-recipe serializer reads a full item stack (count and components) as its result.
+ * 1.20.x reads a bare id (handled by [needsLegacyRecipeResults]); 1.21.0-1.21.1 read
+ * `ItemStack.STRICT_SINGLE_ITEM_CODEC`, which drops `count` (verified in the 1.21.1 bytecode of
+ * `SimpleCookingSerializer`); 1.21.2+ and 26.x keep the whole stack.
+ */
+fun vanillaCookingResultKeepsStack(mcVersion: String): Boolean {
+    val parts = mcVersion.split('.').map { it.toIntOrNull() ?: 0 }
+    val major = parts.getOrElse(0) { 0 }
+    val minor = parts.getOrElse(1) { 0 }
+    val patch = parts.getOrElse(2) { 0 }
+    return major >= 26 || minor > 21 || minor == 21 && patch >= 2
+}
+
 /** Item stacks switched from NBT to data components in 1.20.5. */
 fun needsLegacyItemStacks(mcVersion: String): Boolean {
     val parts = mcVersion.split('.').map { it.toIntOrNull() ?: 0 }
@@ -464,5 +522,8 @@ if (needsLegacyIngredients(extra.properties["mc_version"] as String)) {
     applyLegacyRecipeCompatibility(
         extra.properties["mc_version"] as String,
         extra.properties["convention_namespace"] as String? ?: "c",
+        // A loader fact the buildscript declares: NeoForge patches the cooking serializer to read a full stack.
+        // Absent (Fabric) means vanilla's serializer, so count-carrying smelts are routed (safe default).
+        extra.properties["loader_cooking_result_count"] as Boolean? ?: false,
     )
 }

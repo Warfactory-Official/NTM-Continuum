@@ -886,6 +886,12 @@
       "hbm:weapon/cswing"
     ]
   },
+  "weapon.crucible_swing": {
+    "category": "player",
+    "sounds": [
+      "hbm:weapon/crucible_swing"
+    ]
+  },
   "weapon.dartshoot": {
     "category": "player",
     "sounds": [

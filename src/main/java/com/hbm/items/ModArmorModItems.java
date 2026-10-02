@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -58,18 +60,26 @@ public final class ModArmorModItems {
     private ModArmorModItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     // ---- materials (1.7 order {helmet, chest, legs, boots}; 1.7 armor had no toughness) ----
+    /**
+     * Held apart so only the item factories reach them: the materials are registry-backed, and this class also
+     * runs at build time (Dejson) without a game.
+     */
+    public static final class Materials {
+        private Materials() {}
 
-    /** 1.7 {@code aMatPaa} ("HBM_PAA", 75, {3, 8, 6, 3}, 25). Its own asset: the hazmat_paa texture pair. */
-    public static final GolemArmorMaterial HAZMAT_PAA = new GolemArmorMaterial(
-            Constants.MOD_ID, "hazmat_paa", 75, 3, 8, 6, 3, 25, 0.0F, 0.0F, "repairs/paa");
-    /** 1.7 {@code aMatLiquidator} ("HBM_LIQUIDATOR", 750, {3, 8, 6, 3}, 10), repaired with lead plates. */
-    public static final GolemArmorMaterial LIQUIDATOR = new GolemArmorMaterial(
-            Constants.MOD_ID, "liquidator", 750, 3, 8, 6, 3, 10, 0.0F, 0.0F, "repairs/liquidator");
-    /** Vanilla 1.7 {@code ArmorMaterial.IRON} (15, {2, 6, 5, 2}, 9) with the mask's own texture. */
-    public static final GolemArmorMaterial INFAMY = new GolemArmorMaterial(
-            Constants.MOD_ID, "infamy", 15, 2, 6, 5, 2, 9, 0.0F, 0.0F, "repairs/infamy");
+        /** 1.7 {@code aMatPaa} ("HBM_PAA", 75, {3, 8, 6, 3}, 25). Its own asset: the hazmat_paa texture pair. */
+        public static final GolemArmorMaterial HAZMAT_PAA = new GolemArmorMaterial(
+                Constants.MOD_ID, "hazmat_paa", 75, 3, 8, 6, 3, 25, 0.0F, 0.0F, "repairs/paa");
+        /** 1.7 {@code aMatLiquidator} ("HBM_LIQUIDATOR", 750, {3, 8, 6, 3}, 10), repaired with lead plates. */
+        public static final GolemArmorMaterial LIQUIDATOR = new GolemArmorMaterial(
+                Constants.MOD_ID, "liquidator", 750, 3, 8, 6, 3, 10, 0.0F, 0.0F, "repairs/liquidator");
+        /** Vanilla 1.7 {@code ArmorMaterial.IRON} (15, {2, 6, 5, 2}, 9) with the mask's own texture. */
+        public static final GolemArmorMaterial INFAMY = new GolemArmorMaterial(
+                Constants.MOD_ID, "infamy", 15, 2, 6, 5, 2, 9, 0.0F, 0.0F, "repairs/infamy");
+    }
 
     // ---- armor modules, 1.7 ModItems order ----
     public static final RegistryObject<ItemModGasmask> attachment_mask = mod("attachment_mask", p -> new ItemModGasmask(false, p));
@@ -111,46 +121,49 @@ public final class ModArmorModItems {
     public static final RegistryObject<ItemModTwoKick> ballistic_gauntlet = mod("ballistic_gauntlet", ItemModTwoKick::new);
     public static final RegistryObject<ItemModNightVision> night_vision = mod("night_vision", ItemModNightVision::new);
     /** Upstream's ItemModCard cleared its creative tab: the cards are loot-only. */
-    public static final RegistryObject<ItemModCard> card_aos = ITEMS.registerItem("card_aos", p -> new ItemModCard(false, p), p -> p.stacksTo(1));
-    public static final RegistryObject<ItemModCard> card_qos = ITEMS.registerItem("card_qos", p -> new ItemModCard(true, p), p -> p.stacksTo(1));
+    public static final RegistryObject<ItemModCard> card_aos = REG.item("card_aos", p -> new ItemModCard(false, p), p -> p.stacksTo(1))
+            .transform(Presets.sprite());
+    public static final RegistryObject<ItemModCard> card_qos = REG.item("card_qos", p -> new ItemModCard(true, p), p -> p.stacksTo(1))
+            .transform(Presets.sprite());
     public static final RegistryObject<ItemModShield> australium_iii = mod("australium_iii", p -> new ItemModShield(25F, p));
 
     // ---- armor ----
     public static final RegistryObject<MaskOfInfamy> mask_of_infamy = armor("mask_of_infamy",
-            p -> new MaskOfInfamy(INFAMY, p));
+            p -> new MaskOfInfamy(Materials.INFAMY, p));
 
     public static final RegistryObject<ArmorHazmatMask> hazmat_paa_helmet = armor("hazmat_paa_helmet",
-            p -> new ArmorHazmatMask(HAZMAT_PAA, ArmorSlot.HELMET, p));
+            p -> new ArmorHazmatMask(Materials.HAZMAT_PAA, ArmorSlot.HELMET, p));
     public static final RegistryObject<ArmorHazmat> hazmat_paa_plate = armor("hazmat_paa_plate",
-            p -> new ArmorHazmat(HAZMAT_PAA, ArmorSlot.CHESTPLATE, p));
+            p -> new ArmorHazmat(Materials.HAZMAT_PAA, ArmorSlot.CHESTPLATE, p));
     public static final RegistryObject<ArmorHazmat> hazmat_paa_legs = armor("hazmat_paa_legs",
-            p -> new ArmorHazmat(HAZMAT_PAA, ArmorSlot.LEGGINGS, p));
+            p -> new ArmorHazmat(Materials.HAZMAT_PAA, ArmorSlot.LEGGINGS, p));
     public static final RegistryObject<ArmorHazmat> hazmat_paa_boots = armor("hazmat_paa_boots",
-            p -> new ArmorHazmat(HAZMAT_PAA, ArmorSlot.BOOTS, p));
+            p -> new ArmorHazmat(Materials.HAZMAT_PAA, ArmorSlot.BOOTS, p));
 
     public static final RegistryObject<ArmorLiquidatorMask> liquidator_helmet = armor("liquidator_helmet",
-            p -> new ArmorLiquidatorMask(LIQUIDATOR, ArmorSlot.HELMET, p));
+            p -> new ArmorLiquidatorMask(Materials.LIQUIDATOR, ArmorSlot.HELMET, p));
     public static final RegistryObject<ArmorLiquidator> liquidator_plate = armor("liquidator_plate",
-            p -> new ArmorLiquidator(LIQUIDATOR, ArmorSlot.CHESTPLATE, p));
+            p -> new ArmorLiquidator(Materials.LIQUIDATOR, ArmorSlot.CHESTPLATE, p));
     public static final RegistryObject<ArmorLiquidator> liquidator_legs = armor("liquidator_legs",
-            p -> new ArmorLiquidator(LIQUIDATOR, ArmorSlot.LEGGINGS, p));
+            p -> new ArmorLiquidator(Materials.LIQUIDATOR, ArmorSlot.LEGGINGS, p));
     public static final RegistryObject<ArmorLiquidator> liquidator_boots = armor("liquidator_boots",
-            p -> new ArmorLiquidator(LIQUIDATOR, ArmorSlot.BOOTS, p));
+            p -> new ArmorLiquidator(Materials.LIQUIDATOR, ArmorSlot.BOOTS, p));
 
     private static <T extends Item> RegistryObject<T> mod(String name, Function<Item.Properties, T> factory) {
-        RegistryObject<T> ro = ITEMS.registerItem(name, factory, p -> p.stacksTo(1));
+        RegistryObject<T> ro = REG.item(name, factory, p -> p.stacksTo(1)).transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
 
     private static RegistryObject<ItemModRevive> revive(String name, int durability, boolean whiskey) {
-        RegistryObject<ItemModRevive> ro = ITEMS.registerItem(name, p -> new ItemModRevive(durability, whiskey, p));
+        RegistryObject<ItemModRevive> ro = REG.item(name, p -> new ItemModRevive(durability, whiskey, p), p -> p)
+                .transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, ro);
         return ro;
     }
 
     private static <T extends Item> RegistryObject<T> armor(String name, Function<Item.Properties, T> factory) {
-        RegistryObject<T> ro = ITEMS.registerItem(name, factory, p -> p.stacksTo(1));
+        RegistryObject<T> ro = REG.item(name, factory, p -> p.stacksTo(1)).transform(Presets.sprite());
         // 1.7 ItemArmor sat in the combat tab, which the port does not have; ModArmorItems uses CONTROL.
         ModTabs.addTo(HbmTab.CONTROL, ro);
         return ro;

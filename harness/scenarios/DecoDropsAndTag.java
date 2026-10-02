@@ -30,7 +30,7 @@ public final class DecoDropsAndTag implements Scenario {
         loot(c, X, Y + 1, Z);
         Expect.that(count(c, "hbm:meteor_spawner") == 0, "the assembler drops nothing");
 
-        // Firework battery: on the SELF list of ModBlockDrops.
+        // Firework battery: Loot.selfAlways() on its Reg chain (ModBombBlocks.fireworks).
         c.cmd("clear");
         Fixtures.setBlock(c, X, Y + 1, Z, "hbm:fireworks");
         loot(c, X, Y + 1, Z);

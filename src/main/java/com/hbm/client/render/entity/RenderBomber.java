@@ -64,7 +64,7 @@ public final class RenderBomber extends CompatEntityRenderer<EntityBomber, Rende
         pose.mulPose(Axis.ZP.rotationDegrees(90F));
         pose.mulPose(Axis.ZP.rotationDegrees(state.pitch));
         pose.mulPose(Axis.XP.rotationDegrees(state.wobble));
-        RenderType type = CompatRenderTypes.entityCutout(texture(state.style));
+        RenderType type = CompatRenderTypes.entityCutoutNoCull(texture(state.style));
         int light = state.light;
         if (state.style >= 0 && state.style <= 4) {
             pose.scale(5F, 5F, 5F);

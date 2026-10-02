@@ -3,6 +3,9 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.energymk2.IEnergyProviderMK2;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.util.TickPhase;
 import com.hbm.api.fluidmk2.IFillableItem;
 import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
 import com.hbm.inventory.container.ContainerMachineWoodBurner;
@@ -99,6 +102,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
             } else if (te.power < maxPower && te.isOn) {
                 te.burnTime--;
                 te.powerGen += 100;
+                if (TickPhase.every(level, pos, 20L)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND);
             }
         } else if (te.power < maxPower && te.tank.getFill() > 0 && te.isOn) {
             long heatEnergy = com.hbm.inventory.fluid.FluidCombustion.getFlammableEnergy(te.tank.getTankType());
@@ -106,6 +110,7 @@ public class TileEntityMachineWoodBurner extends TileEntityMachineBase
                 int toBurn = Math.min(te.tank.getFill(), 2);
                 te.powerGen += (int) (heatEnergy * toBurn / 2_000L);
                 te.tank.setFill(te.tank.getFill() - toBurn);
+                if (TickPhase.every(level, pos, 20L)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * toBurn / 2F);
             }
         }
 

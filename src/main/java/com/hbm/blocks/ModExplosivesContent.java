@@ -14,6 +14,5 @@ public final class ModExplosivesContent {
         ModExplosivesItems.init();
         ModExplosivesBlockEntities.init();
         ModExplosivesMenus.init();
-        ExplosivesDeclarations.declare();
     }
 }

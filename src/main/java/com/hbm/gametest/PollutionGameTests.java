@@ -36,8 +36,34 @@ public final class PollutionGameTests {
             TESTS.function("pollution_diffusion", 20, () -> PollutionGameTests::diffusion);
     public static final GameTests.Function BLIGHT =
             TESTS.function("pollution_blight", 20, () -> PollutionGameTests::blight);
+    public static final GameTests.Function FLARE_BURN =
+            TESTS.function("pollution_flare_burn", 40, () -> PollutionGameTests::flareBurn);
+    public static final GameTests.Function DRAIN_SPILL =
+            TESTS.function("pollution_drain_spill", 20, () -> PollutionGameTests::drainSpill);
+    public static final GameTests.Function SMOKE_OVERFLOW =
+            TESTS.function("pollution_smoke_overflow", 20, () -> PollutionGameTests::smokeOverflow);
+    public static final GameTests.Function TRAIT_TOOLTIP =
+            TESTS.function("pollution_trait_tooltip", 20, () -> PollutionGameTests::traitTooltip);
 
     public static void init() {}
+
+    /**
+     * Pollution lives per region (chunk), not per plot, so a test that zeroes it also zeroes a neighbouring plot's
+     * region. Each test therefore takes every type's value first and puts them all back in a {@code finally}, so
+     * the region ends exactly as it was, even when an assertion fails.
+     */
+    private static float[] snapshot(net.minecraft.world.level.Level level, BlockPos pos) {
+        PollutionType[] types = PollutionType.values();
+        float[] values = new float[types.length];
+        for (PollutionType type : types) values[type.ordinal()] = PollutionHandler.getPollution(level, pos, type);
+        return values;
+    }
+
+    private static void restore(net.minecraft.world.level.Level level, BlockPos pos, float[] values) {
+        for (PollutionType type : PollutionType.values()) {
+            PollutionHandler.setPollution(level, pos, type, values[type.ordinal()]);
+        }
+    }
 
     /** 1.7 keys on {@code x >> 6}: four chunks a side, not one. */
     public static void regions(GameTestHelper helper) {
@@ -58,28 +84,30 @@ public final class PollutionGameTests {
      */
     public static void store(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(1, 1, 1));
+        float[] before = snapshot(helper.getLevel(), pos);
+        try {
+            PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 100F);
+            helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT) == 100F,
+                    "setPollution must write the value it was given, unscaled");
 
-        PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 100F);
-        helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT) == 100F,
-                "setPollution must write the value it was given, unscaled");
+            PollutionHandler.incrementPollution(helper.getLevel(), pos, PollutionType.SOOT, 10F);
+            float expected = (float) (100F + 10F * MobConfig.pollutionMult);
+            helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT) == expected,
+                    "incrementPollution must scale by MobConfig.pollutionMult");
 
-        PollutionHandler.incrementPollution(helper.getLevel(), pos, PollutionType.SOOT, 10F);
-        float expected = (float) (100F + 10F * MobConfig.pollutionMult);
-        helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT) == expected,
-                "incrementPollution must scale by MobConfig.pollutionMult");
+            PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 0F);
+            PollutionHandler.decrementPollution(helper.getLevel(), pos, PollutionType.SOOT, 1F);
+            helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT) == 0F,
+                    "pollution must clamp at zero rather than going negative");
 
-        PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 0F);
-        PollutionHandler.decrementPollution(helper.getLevel(), pos, PollutionType.SOOT, 1F);
-        helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT) == 0F,
-                "pollution must clamp at zero rather than going negative");
-
-        PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 999_999F);
-        PollutionHandler.incrementPollution(helper.getLevel(), pos, PollutionType.SOOT, 1F);
-        helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT)
-                        == PollutionHandler.MAX_POLLUTION,
-                "pollution must clamp at MAX_POLLUTION");
-
-        PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 0F);
+            PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 999_999F);
+            PollutionHandler.incrementPollution(helper.getLevel(), pos, PollutionType.SOOT, 1F);
+            helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT)
+                            == PollutionHandler.MAX_POLLUTION,
+                    "pollution must clamp at MAX_POLLUTION");
+        } finally {
+            restore(helper.getLevel(), pos, before);
+        }
         helper.succeed();
     }
 
@@ -146,5 +174,202 @@ public final class PollutionGameTests {
         PollutionWorldHandler.destroyBlock(helper.getLevel(), helper.absolutePos(stone));
         helper.assertBlockPresent(Blocks.STONE, stone);
         helper.succeed();
+    }
+
+    // ------------------------------------------------------------------ FT_Polluting
+
+    /**
+     * A flare burning natural gas: every fifth tick 1.7 applies GAS's burn table ({@code P_GAS}: soot
+     * {@code SOOT_PER_SECOND * 0.005 = 1/25 * 0.005 = 0.0002} per mB) to {@code eject * 5} mB, and an
+     * unupgraded flare ejects 10 mB a tick: {@code 0.0002 * 50 = 0.01} soot, times the config multiplier.
+     *
+     * <p>The flare's own ticker also runs, so the region is zeroed and read back around one direct call.
+     */
+    public static void flareBurn(GameTestHelper helper) {
+        com.hbm.inventory.fluid.Fluids.init();
+        BlockPos relative = new BlockPos(3, 1, 3);
+        helper.setBlock(relative, com.hbm.blocks.machine.ModMachineBlocks.machine_flare.get().defaultBlockState());
+        com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare flare = dev.golem.core.gametest.GameTestHelpers
+                .blockEntity(helper, relative, com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare.class);
+        helper.assertTrue(flare != null, "gas flare core BlockEntity was not created");
+        BlockPos pos = helper.absolutePos(relative);
+        boolean[] done = {false};
+
+        // The burn is gated on a five-tick phase; one of any five consecutive ticks is the one.
+        for (int delay = 1; delay <= 6; delay++) {
+            helper.runAfterDelay(delay, () -> {
+                if (done[0] || !com.hbm.util.TickPhase.every(helper.getLevel(), pos, 5L)) return;
+                done[0] = true;
+
+                flare.tank.setTankType(com.hbm.inventory.fluid.Fluids.GAS);
+                flare.tank.setFill(1_000);
+                flare.isOn = true;
+                flare.doesBurn = true;
+                float[] before = snapshot(helper.getLevel(), pos);
+                try {
+                    PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 0F);
+                    PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.POISON, 0F);
+
+                    com.hbm.tileentity.machine.oil.TileEntityMachineGasFlare.serverTick(helper.getLevel(), pos,
+                            flare.getBlockState(), flare);
+
+                    float soot = PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT);
+                    double expected = 0.01D * MobConfig.pollutionMult;
+                    helper.assertTrue(flare.tank.getFill() == 990, "the flare must burn 10 mB, left " + flare.tank.getFill());
+                    helper.assertTrue(Math.abs(soot - expected) < 1.0E-6D,
+                            "burning 10 mB of gas must add 0.01 soot (x" + MobConfig.pollutionMult + "), got " + soot);
+                    helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.POISON) == 0F,
+                            "burning must apply the burn table, not the spill table");
+                } finally {
+                    restore(helper.getLevel(), pos, before);
+                    flare.isOn = false;
+                    flare.tank.setFill(0);
+                }
+                helper.succeed();
+            });
+        }
+        helper.runAfterDelay(8, () -> {
+            if (!done[0]) helper.fail("no tick in the flare's five-tick phase was reached");
+        });
+    }
+
+    /**
+     * A drain spilling crude oil: half of 1,000 mB leaves in one tick, and 1.7 applies OIL's spill table
+     * ({@code P_OIL}: poison {@code POISON_PER_SECOND * 0.0025 = 1/50 * 0.0025 = 0.00005} per mB) to it:
+     * {@code 0.00005 * 500 = 0.025} poison, times the config multiplier, and no soot.
+     */
+    public static void drainSpill(GameTestHelper helper) {
+        com.hbm.inventory.fluid.Fluids.init();
+        BlockPos core = helper.absolutePos(new BlockPos(3, 1, 3));
+        com.hbm.blocks.machine.MachineDrain block = com.hbm.blocks.machine.ModMachineBlocks.machine_drain.get();
+        helper.getLevel().setBlock(core, block.defaultBlockState(), 3);
+        block.fillSpace(helper.getLevel(), core, net.minecraft.core.Direction.NORTH);
+        helper.assertTrue(helper.getLevel().getBlockEntity(core) instanceof com.hbm.tileentity.machine.TileEntityMachineDrain,
+                "drain core BlockEntity was not created");
+        com.hbm.tileentity.machine.TileEntityMachineDrain drain =
+                (com.hbm.tileentity.machine.TileEntityMachineDrain) helper.getLevel().getBlockEntity(core);
+
+        drain.setTankType(com.hbm.inventory.fluid.Fluids.OIL);
+        drain.tank.setFill(1_000);
+        float[] before = snapshot(helper.getLevel(), core);
+        try {
+            PollutionHandler.setPollution(helper.getLevel(), core, PollutionType.POISON, 0F);
+            PollutionHandler.setPollution(helper.getLevel(), core, PollutionType.SOOT, 0F);
+
+            com.hbm.tileentity.machine.TileEntityMachineDrain.serverTick(helper.getLevel(), core, drain.getBlockState(), drain);
+
+            float poison = PollutionHandler.getPollution(helper.getLevel(), core, PollutionType.POISON);
+            double expected = 0.025D * MobConfig.pollutionMult;
+            helper.assertTrue(drain.tank.getFill() == 500, "the drain must spill 500 of 1,000 mB");
+            helper.assertTrue(Math.abs(poison - expected) < 1.0E-6D,
+                    "spilling 500 mB of oil must add 0.025 poison (x" + MobConfig.pollutionMult + "), got " + poison);
+            helper.assertTrue(PollutionHandler.getPollution(helper.getLevel(), core, PollutionType.SOOT) == 0F,
+                    "a spill must apply the spill table, not the burn table");
+        } finally {
+            drain.tank.setFill(0);
+            restore(helper.getLevel(), core, before);
+        }
+        helper.succeed();
+    }
+
+    /**
+     * The {@code TileEntityMachinePolluting} buffer: 100 mB of smoke per pollution unit, and what does not
+     * fit vents into the region. One soot into the DiFurnace's 50 mB tank: 50 mB kept, 50 mB = 0.5 soot out.
+     * Burning a fluid through the base ignores its amount (1.7 passes each table entry as-is), so one
+     * burn of leaded fuel adds {@code ceil(0.0005 * 100) = 1} mB whatever the caller asked for.
+     */
+    public static void smokeOverflow(GameTestHelper helper) {
+        com.hbm.inventory.fluid.Fluids.init();
+        BlockPos relative = new BlockPos(1, 1, 1);
+        helper.setBlock(relative, com.hbm.blocks.machine.DiFurnaceContent.MACHINE_DIFURNACE.get().defaultBlockState());
+        com.hbm.tileentity.machine.TileEntityDiFurnace furnace = dev.golem.core.gametest.GameTestHelpers
+                .blockEntity(helper, relative, com.hbm.tileentity.machine.TileEntityDiFurnace.class);
+        helper.assertTrue(furnace != null, "DiFurnace BlockEntity was not created");
+        BlockPos pos = helper.absolutePos(relative);
+
+        helper.assertTrue(furnace.smoke.getMaxFill() == 50 && furnace.smoke.getTankType() == com.hbm.inventory.fluid.Fluids.SMOKE,
+                "the DiFurnace smoke buffer must be 1.7's 50 mB of SMOKE");
+        furnace.smoke.setFill(0);
+        float[] before = snapshot(helper.getLevel(), pos);
+        try {
+            PollutionHandler.setPollution(helper.getLevel(), pos, PollutionType.SOOT, 0F);
+            furnace.pollute(PollutionType.SOOT, 1F);
+            float soot = PollutionHandler.getPollution(helper.getLevel(), pos, PollutionType.SOOT);
+            helper.assertTrue(furnace.smoke.getFill() == 50, "the smoke tank must fill to its capacity");
+            helper.assertTrue(Math.abs(soot - 0.5D * MobConfig.pollutionMult) < 1.0E-6D,
+                    "the 50 mB overflow must vent as 0.5 soot, got " + soot);
+
+            furnace.smoke_leaded.setFill(0);
+            furnace.pollute(com.hbm.inventory.fluid.Fluids.PETROIL_LEADED,
+                    com.hbm.inventory.fluid.trait.FluidReleaseType.BURN, 5F);
+            // P_FUEL_LEADED burns HEAVY_METAL_PER_SECOND * 0.025 = 0.0005 heavy metal per entry: ceil(0.05) = 1 mB.
+            helper.assertTrue(furnace.smoke_leaded.getFill() == 1,
+                    "leaded fuel must put ceil(0.0005 * 100) = 1 mB into the leaded smoke tank, got " + furnace.smoke_leaded.getFill());
+            furnace.pollute(com.hbm.inventory.fluid.Fluids.WATER,
+                    com.hbm.inventory.fluid.trait.FluidReleaseType.BURN, 5F);
+            helper.assertTrue(furnace.smoke_leaded.getFill() == 1 && furnace.smoke.getFill() == 50,
+                    "a fluid without FT_Polluting must not pollute");
+
+        } finally {
+            furnace.smoke.setFill(0);
+            furnace.smoke_leaded.setFill(0);
+            restore(helper.getLevel(), pos, before);
+        }
+        helper.succeed();
+    }
+
+    /** The trait tables 1.7 declares, and the tooltip lines they produce. */
+    public static void traitTooltip(GameTestHelper helper) {
+        com.hbm.inventory.fluid.Fluids.init();
+        com.hbm.inventory.fluid.trait.FT_Polluting oil =
+                com.hbm.inventory.fluid.Fluids.OIL.getTrait(com.hbm.inventory.fluid.trait.FT_Polluting.class);
+        helper.assertTrue(oil != null, "crude oil must carry FT_Polluting");
+        helper.assertTrue(oil.burnMap.get(PollutionType.SOOT) == (1F / 25F) * 0.1F,
+                "oil must burn to SOOT_PER_SECOND * 0.1 soot per mB");
+        helper.assertTrue(oil.releaseMap.get(PollutionType.POISON) == (1F / 50F) * 0.0025F,
+                "oil must spill POISON_PER_SECOND * 0.0025 poison per mB");
+        helper.assertTrue(com.hbm.inventory.fluid.Fluids.FLUE.getTrait(com.hbm.inventory.fluid.trait.FT_Polluting.class)
+                        .releaseMap.get(PollutionType.SOOT) == (1F / 25F) * 0.005F * 25,
+                "flue gas must spill SOOT_GAS * 25 soot per mB");
+        helper.assertTrue(com.hbm.inventory.fluid.Fluids.WATER.getTrait(com.hbm.inventory.fluid.trait.FT_Polluting.class) == null,
+                "water must not pollute");
+
+        int polluting = 0;
+        for (com.hbm.inventory.fluid.FluidType type : com.hbm.inventory.fluid.Fluids.getAll()) {
+            if (type.hasTrait(com.hbm.inventory.fluid.trait.FT_Polluting.class)) polluting++;
+        }
+        // 20 P_OIL + 25 P_FUEL + 3 P_FUEL_LEADED + 7 P_GAS + 1 P_LIQUID_GAS + 9 one-off tables.
+        helper.assertTrue(polluting == 65, "1.7 gives 65 fluids FT_Polluting, found " + polluting);
+
+        java.util.List<net.minecraft.network.chat.Component> hidden = new java.util.ArrayList<>();
+        com.hbm.inventory.fluid.Fluids.OIL.addInfo(hidden, false);
+        helper.assertTrue(hidden.stream().anyMatch(c -> hasKey(c, "hbmfluid.trait.polluting")),
+                "the always-visible [Polluting] tag is missing");
+        helper.assertTrue(hidden.stream().noneMatch(c -> hasKey(c, "hbmfluid.trait.burned")),
+                "the burn table must stay hidden until Shift is held");
+        helper.assertTrue(hidden.get(hidden.size() - 1).getString().startsWith("Hold <"),
+                "the Shift hint must close the tooltip while trait lines are hidden");
+
+        java.util.List<net.minecraft.network.chat.Component> shown = new java.util.ArrayList<>();
+        com.hbm.inventory.fluid.Fluids.OIL.addInfo(shown, true);
+        helper.assertTrue(shown.stream().anyMatch(c -> hasKey(c, "hbmfluid.trait.spilled")),
+                "the spill heading is missing with Shift held");
+        helper.assertTrue(shown.stream().anyMatch(c -> hasKey(c, "hbmfluid.trait.burned")),
+                "the burn heading is missing with Shift held");
+        helper.assertTrue(shown.stream().anyMatch(c -> hasKey(c, "pollution.trait.soot")
+                        && c.getString().startsWith(" - " + ((1F / 25F) * 0.1F) + " ")),
+                "the soot line must print 1.7's raw float per mB");
+        helper.assertTrue(shown.stream().noneMatch(c -> c.getString().startsWith("Hold <")),
+                "the Shift hint must not show while Shift is held");
+        helper.succeed();
+    }
+
+    private static boolean hasKey(net.minecraft.network.chat.Component component, String key) {
+        if (component.getContents() instanceof net.minecraft.network.chat.contents.TranslatableContents t
+                && t.getKey().equals(key)) return true;
+        for (net.minecraft.network.chat.Component sibling : component.getSiblings()) {
+            if (hasKey(sibling, key)) return true;
+        }
+        return false;
     }
 }

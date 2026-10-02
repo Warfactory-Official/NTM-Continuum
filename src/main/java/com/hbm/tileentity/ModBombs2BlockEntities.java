@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
@@ -20,21 +21,22 @@ public final class ModBombs2BlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityNukeCustom>> NUKE_CUSTOM =
-            BLOCK_ENTITIES.register("nuke_custom", () -> BlockEntities.serverTicking(
+            REG.blockEntity("nuke_custom", () -> BlockEntities.serverTicking(
                     TileEntityNukeCustom::new, TileEntityNukeCustom::serverTick, ModBombs2Blocks.nuke_custom.get()));
     public static final RegistryObject<BlockEntityType<TileEntityNukeFleija>> NUKE_FLEIJA =
-            BLOCK_ENTITIES.register("nuke_fleija",
+            REG.blockEntity("nuke_fleija",
                     () -> BlockEntities.type(TileEntityNukeFleija::new, ModBombs2Blocks.nuke_fleija.get()));
     public static final RegistryObject<BlockEntityType<TileEntityNukeSolinium>> NUKE_SOLINIUM =
-            BLOCK_ENTITIES.register("nuke_solinium",
+            REG.blockEntity("nuke_solinium",
                     () -> BlockEntities.type(TileEntityNukeSolinium::new, ModBombs2Blocks.nuke_solinium.get()));
     public static final RegistryObject<BlockEntityType<TileEntityNukePrototype>> NUKE_PROTOTYPE =
-            BLOCK_ENTITIES.register("nuke_prototype",
+            REG.blockEntity("nuke_prototype",
                     () -> BlockEntities.type(TileEntityNukePrototype::new, ModBombs2Blocks.nuke_prototype.get()));
     public static final RegistryObject<BlockEntityType<TileEntityNukeBalefire>> NUKE_FSTBMB =
-            BLOCK_ENTITIES.register("nuke_fstbmb", () -> BlockEntities.serverTicking(
+            REG.blockEntity("nuke_fstbmb", () -> BlockEntities.serverTicking(
                     TileEntityNukeBalefire::new, TileEntityNukeBalefire::serverTick, ModBombs2Blocks.nuke_fstbmb.get()));
 
     public static void init() {}

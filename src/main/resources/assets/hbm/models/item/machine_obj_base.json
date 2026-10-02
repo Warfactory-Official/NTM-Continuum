@@ -1,0 +1,4 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": { "particle": "hbm:blocks/block_steel" }
+}

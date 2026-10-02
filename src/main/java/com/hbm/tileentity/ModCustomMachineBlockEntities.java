@@ -10,6 +10,7 @@ import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import com.hbm.registration.Reg;
 
 /** Block-entity types of the custom machine system: the controller (1.7 {@code tileentity_custom_machine}) and the port proxy. */
 public final class ModCustomMachineBlockEntities {
@@ -18,12 +19,13 @@ public final class ModCustomMachineBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityCustomMachine>> CUSTOM_MACHINE =
-            BLOCK_ENTITIES.register("custom_machine", () -> BlockEntities.serverTicking(TileEntityCustomMachine::new,
+            REG.blockEntity("custom_machine", () -> BlockEntities.serverTicking(TileEntityCustomMachine::new,
                     TileEntityCustomMachine::serverTick, ModCustomMachineBlocks.custom_machine.get()));
     public static final RegistryObject<BlockEntityType<TileEntityCMPort>> CM_PORT =
-            BLOCK_ENTITIES.register("cm_port", () -> BlockEntities.type(TileEntityCMPort::new,
+            REG.blockEntity("cm_port", () -> BlockEntities.type(TileEntityCMPort::new,
                     ModCustomMachineBlocks.cm_port.stream().map(RegistryObject::get).toArray(Block[]::new)));
 
     public static void init() {}

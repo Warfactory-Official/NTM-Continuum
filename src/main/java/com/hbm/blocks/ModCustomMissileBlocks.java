@@ -1,5 +1,11 @@
 package com.hbm.blocks;
 
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Variants;
 import com.hbm.Constants;
 import com.hbm.blocks.bomb.CompactLauncher;
 import com.hbm.blocks.bomb.LaunchPadLarge;
@@ -8,13 +14,11 @@ import com.hbm.blocks.bomb.LaunchTable;
 import com.hbm.blocks.machine.MachineMissileAssembly;
 import com.hbm.blocks.machine.struct.BlockStruct;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.tileentity.ModCustomMissileBlockEntities;
 import com.hbm.tileentity.machine.TileEntityMultiblock;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 
@@ -35,6 +39,7 @@ public final class ModCustomMissileBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     private static final UnaryOperator<BlockBehaviour.Properties> IRON =
             p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops();
@@ -42,38 +47,65 @@ public final class ModCustomMissileBlocks {
     private static final UnaryOperator<BlockBehaviour.Properties> RENDERED =
             p -> IRON.apply(p).noOcclusion().isSuffocating((s, w, pos) -> false).isViewBlocking((s, w, pos) -> false);
 
-    public static final RegistryObject<BlockStruct> struct_launcher_core = BLOCKS.registerBlock("struct_launcher_core",
-            p -> new BlockStruct(p, TileEntityMultiblock::new, () -> ModCustomMissileBlockEntities.STRUCT_LAUNCHER_CORE.get()),
-            p -> IRON.apply(p).noOcclusion());
-    public static final RegistryObject<BlockStruct> struct_launcher_core_large = BLOCKS.registerBlock("struct_launcher_core_large",
-            p -> new BlockStruct(p, TileEntityMultiblock::new, () -> ModCustomMissileBlockEntities.STRUCT_LAUNCHER_CORE_LARGE.get()),
-            p -> IRON.apply(p).noOcclusion());
+    /** The launchers and pads: folded multiblocks drawn by their renderers, an empty placeholder blockstate. */
+    private static final Preset FOLDED = Presets.rendered(Variants.product(
+            Variants.uniform("facing", "north", "east", "south", "west"), Variants.uniform("cell", "false", "true")));
+
+    public static final RegistryObject<BlockStruct> struct_launcher_core = REG.block("struct_launcher_core",
+                    p -> new BlockStruct(p, TileEntityMultiblock::new, () -> ModCustomMissileBlockEntities.STRUCT_LAUNCHER_CORE.get()),
+                    p -> IRON.apply(p).noOcclusion())
+            .transform(Presets.cubeAll().noItem())
+            .transform(Presets.shares("hbm:block/struct_launcher_core"))
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockStruct> struct_launcher_core_large = REG.block("struct_launcher_core_large",
+                    p -> new BlockStruct(p, TileEntityMultiblock::new, () -> ModCustomMissileBlockEntities.STRUCT_LAUNCHER_CORE_LARGE.get()),
+                    p -> IRON.apply(p).noOcclusion())
+            .transform(Presets.cubeAll().noItem())
+            .transform(Presets.shares("hbm:block/struct_launcher_core_large"))
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
     public static final RegistryObject<MachineMissileAssembly> machine_missile_assembly =
-            BLOCKS.registerBlock("machine_missile_assembly", MachineMissileAssembly::new, RENDERED);
+            REG.block("machine_missile_assembly", MachineMissileAssembly::new, RENDERED)
+                    .transform(Presets.rendered(Variants.uniform("facing", "north", "east", "south", "west")))
+                    .loot(Loot.self())
+                    .tag(BlockTag.PICKAXE);
+    // 1.7 getItemDropped: the launchers give back their core component; the rusted pad gives nothing.
     public static final RegistryObject<CompactLauncher> compact_launcher =
-            BLOCKS.registerBlock("compact_launcher", CompactLauncher::new, RENDERED);
+            REG.block("compact_launcher", CompactLauncher::new, RENDERED)
+                    .transform(FOLDED)
+                    .loot(Loot.only("hbm:struct_launcher_core"))
+                    .tag(BlockTag.PICKAXE);
     public static final RegistryObject<LaunchTable> launch_table =
-            BLOCKS.registerBlock("launch_table", LaunchTable::new, RENDERED);
+            REG.block("launch_table", LaunchTable::new, RENDERED)
+                    .transform(FOLDED)
+                    .loot(Loot.only("hbm:struct_launcher_core_large"))
+                    .tag(BlockTag.PICKAXE);
+    /** The item is the typed silo OBJ definition in {@code CustomMissileDeclarations}. */
     public static final RegistryObject<LaunchPadRusted> launch_pad_rusted =
-            BLOCKS.registerBlock("launch_pad_rusted", LaunchPadRusted::new, RENDERED);
+            REG.block("launch_pad_rusted", LaunchPadRusted::new, RENDERED)
+                    .transform(FOLDED)
+                    .loot(Loot.nothing())
+                    .tag(BlockTag.PICKAXE);
+    /** The item is the typed pad + erector OBJ definition in {@code CustomMissileDeclarations}. */
     public static final RegistryObject<LaunchPadLarge> launch_pad_large =
-            BLOCKS.registerBlock("launch_pad_large", LaunchPadLarge::new, RENDERED);
+            REG.block("launch_pad_large", LaunchPadLarge::new, RENDERED)
+                    .transform(FOLDED)
+                    .loot(Loot.self())
+                    .tag(BlockTag.PICKAXE);
 
     static {
-        // 1.7 ModBlocks registration order on the missile tab
-        item("struct_launcher_core", struct_launcher_core);
-        item("struct_launcher_core_large", struct_launcher_core_large);
-        item("machine_missile_assembly", machine_missile_assembly);
-        item("launch_pad_rusted", launch_pad_rusted);
-        item("launch_pad_large", launch_pad_large);
-        item("compact_launcher", compact_launcher);
-        item("launch_table", launch_table);
-    }
-
-    private static void item(String name, RegistryObject<? extends net.minecraft.world.level.block.Block> block) {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(name, block, Compat::blockDescription);
-        ModTabs.addTo(HbmTab.MISSILES, item);
+        // 1.7 ModBlocks registration order on the missile tab. The two launchers and the assembly station had render
+        // type -1, but ItemRenderLibrary registered an OBJ item renderer for each, so their items are the typed OBJ
+        // definitions in CustomMissileDeclarations (icon audit 2026-10-01), not the block's flat icon.
+        REG.blockItem(struct_launcher_core, Compat::blockDescription).tab(HbmTab.MISSILES);
+        REG.blockItem(struct_launcher_core_large, Compat::blockDescription).tab(HbmTab.MISSILES);
+        REG.blockItem(machine_missile_assembly, Compat::blockDescription).tab(HbmTab.MISSILES);
+        REG.blockItem(launch_pad_rusted, Compat::blockDescription).tab(HbmTab.MISSILES);
+        REG.blockItem(launch_pad_large, Compat::blockDescription).tab(HbmTab.MISSILES);
+        REG.blockItem(compact_launcher, Compat::blockDescription).tab(HbmTab.MISSILES);
+        REG.blockItem(launch_table, Compat::blockDescription).tab(HbmTab.MISSILES);
     }
 
     public static void init() {}

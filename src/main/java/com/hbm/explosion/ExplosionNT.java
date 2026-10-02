@@ -1,0 +1,72 @@
+package com.hbm.explosion;
+
+import com.hbm.blocks.ModBlocks;
+import com.hbm.blocks.ModHazardBlocks;
+import com.hbm.explosion.vanillant.ExplosionVNT;
+import com.hbm.explosion.vanillant.standard.BlockAllocatorStandard;
+import com.hbm.explosion.vanillant.standard.BlockProcessorStandard;
+import com.hbm.explosion.vanillant.standard.EntityProcessorStandard;
+import com.hbm.explosion.vanillant.standard.PlayerProcessorStandard;
+import java.util.HashMap;
+import java.util.Map;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * The part of 1.7's (deprecated) {@code ExplosionNT} that is not already a {@link ExplosionVNT} part.
+ *
+ * <p>This port models {@code ExplosionNT} and its {@code ExAttrib} set as VNT parts: LAVA_V/LAVA_R is
+ * {@code BlockMutatorLava}, NODROP is {@code setNoDrop}, NOSOUND/NOPARTICLE is "no SFX". {@code ERRODE} is
+ * modelled the same way — {@link BlockAllocatorStandard#withErosion} (concrete the ray could not break is still
+ * affected) and {@link BlockProcessorStandard#withErosion} (60% per block, nothing drops, the block becomes
+ * {@link #errosion()}'s target) — and this class owns the table and the one caller's recipe, the drill missile.
+ */
+public final class ExplosionNT {
+
+    private ExplosionNT() {}
+
+    /** 1.7 {@code ExplosionNT.errosion}: what an eroding blast leaves of a block. Built on first use (registries). */
+    public static Map<Block, Block> errosion() {
+        return Holder.EROSION;
+    }
+
+    private static final class Holder {
+        static final Map<Block, Block> EROSION = new HashMap<>();
+
+        static {
+            EROSION.put(ModBlocks.concrete.get(), Blocks.GRAVEL);
+            EROSION.put(ModBlocks.concrete_smooth.get(), Blocks.GRAVEL);
+            EROSION.put(ModHazardBlocks.brick_concrete.get(), ModBlocks.brick_concrete_broken.get());
+            EROSION.put(ModBlocks.brick_concrete_broken.get(), Blocks.GRAVEL);
+        }
+    }
+
+    /**
+     * {@code new ExplosionNT(world, exploder, x, y, z, size)} with {@code addAllAttrib(ExAttrib.ERRODE)} and
+     * nothing else, then {@code explode()}: 16-ray vanilla fan, drops at {@code 1/size}, entities hurt, and the
+     * vanilla explosion sound only. {@code doExplosionB} also called {@code worldObj.spawnParticle} (the huge
+     * explosion, and explode/smoke per block), but the drill runs it on the server, where a 1.7
+     * {@code WorldServer}'s {@code spawnParticle} reaches only {@code WorldManager}'s empty method; only
+     * {@code playSoundEffect} was broadcast. So the drill's 30 stacked blasts were heard and never seen.
+     */
+    public static void explodeErode(Level level, @Nullable Entity exploder, double x, double y, double z, float size) {
+        new ExplosionVNT(level, x, y, z, size, exploder)
+                .setBlockAllocator(new BlockAllocatorStandard().withErosion(errosion()))
+                .setBlockProcessor(new BlockProcessorStandard().withErosion(errosion()))
+                .setEntityProcessor(new EntityProcessorStandard())
+                .setPlayerProcessor(new PlayerProcessorStandard())
+                .setSFX(ExplosionNT::soundOnly)
+                .explode();
+    }
+
+    /** {@code doExplosionB}'s {@code playSoundEffect("random.explode", 4, (1 + (r - r) * 0.2) * 0.7)}, nothing else. */
+    private static void soundOnly(ExplosionVNT explosion, Level level, double x, double y, double z, float size) {
+        if (level.isClientSide()) return;
+        net.minecraft.util.RandomSource rand = level.getRandom();
+        level.playSound(null, x, y, z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(),
+                net.minecraft.sounds.SoundSource.BLOCKS, 4.0F, (1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.2F) * 0.7F);
+    }
+}

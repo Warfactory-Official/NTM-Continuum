@@ -32,6 +32,7 @@ public final class StructureHarnessQueries {
 
     public static void register() {
         dev.golem.core.harness.HarnessQueryRegistry.register("hbm_structure", StructureHarnessQueries::query);
+        LegacyBiomeHarnessQueries.register(); // hbm_legacy_biome, hbm_modded_biome: the 1.7 biome model on modern/modded biomes
     }
 
     private static JsonObject query(Minecraft mc, JsonObject params) {

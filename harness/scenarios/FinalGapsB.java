@@ -497,7 +497,7 @@ public final class FinalGapsB implements Scenario {
         Expect.that(radio.get("pots").getAsInt() > 0, "radio house: the 1.7 flower pots hold their plants: " + radio);
         JsonObject rig = placeAndScan(c, "hbm:oil_rig", X + 400, "61-oil-rig", 40);
         Expect.that(rig.get("explodedTanks").getAsInt() > 0, "oil rig: the 1.7 torn fluid tank stays torn: " + rig);
-        JsonObject light = placeAndScan(c, "hbm:lighthouse", X + 600, "62-lighthouse", 160);
+        JsonObject light = placeAndScan(c, "hbm:lighthouse", X + 600, "62-lighthouse", 80);
         Expect.that(light.get("books").getAsInt() > 0, "lighthouse: the skeleton holds the logbook: " + light);
         List<String> unmigrated = c.logSinceMark("tile entity data for .* is not migrated");
         for (String line : unmigrated) {
@@ -511,7 +511,13 @@ public final class FinalGapsB implements Scenario {
     }
 
     /** /place structure in the flat world (it lands on the flat surface), then a scan of its column and a screenshot. */
-    /** {@code r}: the lighthouse's start lands further from the /place position on 1.21.1 than on 26.1. */
+    /**
+     * {@code r}: how far the scan reads block entities. The lighthouse's box starts at the corner of the target's chunk
+     * and spans 66 x 65 blocks, and its rotation follows the world seed, which the superflat worlds do not share (each
+     * node's was created with its own random seed), so the skeleton sits at a different spot on every node. Same seed,
+     * same box on all nodes: seeded world, /place 1000 64 1000 gives chunk 62,62, rotation 3, 992,29,992..1057,100,1056 on
+     * 26.1 NeoForge, 1.21.1 NeoForge and 1.20.1 Forge (WorldgenModdedBiomes, History §19eg-worldgen).
+     */
     private static JsonObject placeAndScan(Client c, String id, int sx, String shot, int r) {
         c.cmd("gamemode spectator");
         c.teleport(sx, -40, 0);

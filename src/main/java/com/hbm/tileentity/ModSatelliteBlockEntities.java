@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.blocks.ModSatelliteBlocks;
 import com.hbm.tileentity.machine.TileEntityMachineSatDock;
@@ -17,13 +18,14 @@ public final class ModSatelliteBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineSatLinker>> MACHINE_SATLINKER =
-            BLOCK_ENTITIES.register("machine_satlinker", () -> BlockEntities.serverTicking(
+            REG.blockEntity("machine_satlinker", () -> BlockEntities.serverTicking(
                     TileEntityMachineSatLinker::new, TileEntityMachineSatLinker::serverTick,
                     ModSatelliteBlocks.machine_satlinker.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineSatDock>> SAT_DOCK =
-            BLOCK_ENTITIES.register("sat_dock", () -> BlockEntities.serverTicking(
+            REG.blockEntity("sat_dock", () -> BlockEntities.serverTicking(
                     TileEntityMachineSatDock::new, TileEntityMachineSatDock::serverTick,
                     ModSatelliteBlocks.sat_dock.get()));
 

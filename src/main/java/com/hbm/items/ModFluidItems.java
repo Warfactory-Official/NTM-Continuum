@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Tints;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -25,23 +28,31 @@ public final class ModFluidItems {
     private ModFluidItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemFluidBucket> fluid_bucket =
-            ITEMS.registerItem("fluid_bucket", ItemFluidBucket::new, p -> p.stacksTo(1));
+            REG.item("fluid_bucket", ItemFluidBucket::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite("minecraft:item/bucket", "hbm:items/fluid_bucket_fill")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
     /** The fluid "droplet" icon — a per-fluid visual representation used by recipes (not a real item; no
      * creative tab, like the 1.12.2 {@code setCreativeTab(null)}). */
     public static final RegistryObject<ItemFluidIcon> fluid_icon =
-            ITEMS.registerItem("fluid_icon", ItemFluidIcon::new, p -> p.stacksTo(1));
+            REG.item("fluid_icon", ItemFluidIcon::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite().tints(Tints.customModelData(0, 0xFFFFFF)));
 
     /** Universal fluid tank — a portable 1000&nbsp;mB container for any fluid (1.12.2 {@code fluid_tank_v2}).
      * Stacks to 64 (containers holding the same fluid+amount merge; different contents don't). */
     public static final RegistryObject<ItemFluidTank> fluid_tank =
-            ITEMS.registerItem("fluid_tank", p -> new ItemFluidTank(p, 1000, "fluid_tank"), p -> p.stacksTo(64));
+            REG.item("fluid_tank", p -> new ItemFluidTank(p, 1000, "fluid_tank"), p -> p.stacksTo(64))
+            .transform(Presets.sprite("hbm:items/fluid_tank", "hbm:items/fluid_tank_overlay")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
     /** Fluid barrel — a portable 16000&nbsp;mB container for any fluid (1.12.2 {@code fluid_barrel_v2}). */
     public static final RegistryObject<ItemFluidTank> fluid_barrel =
-            ITEMS.registerItem("fluid_barrel", p -> new ItemFluidTank(p, 16000, "fluid_barrel"), p -> p.stacksTo(64));
+            REG.item("fluid_barrel", p -> new ItemFluidTank(p, 16000, "fluid_barrel"), p -> p.stacksTo(64))
+            .transform(Presets.sprite("hbm:items/fluid_barrel", "hbm:items/fluid_barrel_overlay")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
 
     static {
         // One full bucket per fluid in the creative menu, so any fluid can be grabbed and poured into a

@@ -30,7 +30,18 @@ import java.util.function.Predicate;
  * overworld biome the values of its 1.7 counterpart (read from the 1.7.10 sources: {@code BiomeGenBase} heights,
  * mutations' {@code createMutation}, Forge's {@code registerVanillaBiomes}), and the 1.7 predicates run over that table
  * at build time. Biomes 1.7 did not have take their nearest 1.7 analog (noted per row); the three cave biomes have none
- * and never host a surface structure. Modded biomes are not covered (1.7's {@code makeBestGuess} has no data to run on).
+ * and never host a surface structure.
+ *
+ * <p><b>Modded biomes.</b> 1.7 asked a modded biome the same questions, through the types its mod registered in the
+ * {@code BiomeDictionary} and the heights it declared. The modern {@code BiomeDictionary} is the loaders' convention
+ * tags, so each 1.7 type a predicate reads is an HBM tag {@code hbm:biome_dictionary/<type>} over the convention tags
+ * that mean it ({@link #DICTIONARY_TAGS}; the build's legacy pass adds the 1.20.1 spellings, {@code forge:is_*} and
+ * Fabric's first convention names). Each {@code has_structure} tag lists the table's vanilla biomes plus a superset
+ * for the rest: the dictionary tag of a type the predicate requires, or {@code hbm:biome_dictionary/overworld} when
+ * none is required ("not water and flat"). {@code NBTStructure.GenStructure} then runs the 1.7 predicate on the biome
+ * at the stub: a table biome through its row (so the superset changes nothing for vanilla), any other overworld biome
+ * through {@link com.hbm.world.gen.LegacyBiomes#guess}: its types from the dictionary tags, its rain from the biome, its
+ * heights read off the generated terrain.
  *
  * <p>Folder names are the 26.1 ones; the build's legacy pass renames what differs per era (none of these do).
  */
@@ -50,17 +61,17 @@ public final class NTMStructureDeclarations {
     // ------------------------------------------------------------------------------------------------ 1.7 biome model
 
     /** The 1.7 {@code BiomeDictionary.Type}s the generator reads. */
-    enum Type { OCEAN, RIVER, PLAINS, SANDY, BEACH, SWAMP, SPARSE, MUSHROOM, SNOWY, FOREST, MOUNTAIN, HILLS, MESA, COLD, HOT, JUNGLE }
+    public enum Type { OCEAN, RIVER, PLAINS, SANDY, BEACH, SWAMP, SPARSE, MUSHROOM, SNOWY, FOREST, MOUNTAIN, HILLS, MESA, COLD, HOT, JUNGLE }
 
     /** A 1.7 biome as the generator saw it: {@code rootHeight}, {@code heightVariation}, types, lightning (rain, no snow). */
-    record LegacyBiome(float rootHeight, float heightVariation, Set<Type> types, boolean lightning) {
-        boolean is(Type type) { return types.contains(type); }
+    public record LegacyBiome(float rootHeight, float heightVariation, Set<Type> types, boolean lightning) {
+        public boolean is(Type type) { return types.contains(type); }
 
         /** 1.7 {@code isWaterBiome}: {@code Type.WATER} is OCEAN or RIVER. */
-        boolean water() { return is(Type.OCEAN) || is(Type.RIVER); }
+        public boolean water() { return is(Type.OCEAN) || is(Type.RIVER); }
 
         /** 1.7 {@code isFlatBiome}: little height variation, sparse vegetation, not water. */
-        boolean flat() { return heightVariation <= 0.2F && !water() && is(Type.SPARSE); }
+        public boolean flat() { return heightVariation <= 0.2F && !water() && is(Type.SPARSE); }
     }
 
     private static LegacyBiome b(float root, float variation, boolean lightning, Type... types) {
@@ -142,41 +153,48 @@ public final class NTMStructureDeclarations {
 
     // ------------------------------------------------------------------------------------------------ the structures
 
-    /** One entry of the structure set: resource id, 1.7 spawn name, weight, 1.7 biome predicate. */
-    public record Entry(String id, String spawn, int weight, Predicate<LegacyBiome> biome, boolean real) {}
+    /**
+     * One entry of the structure set: resource id, 1.7 spawn name, weight, 1.7 biome predicate, and the types of which
+     * the predicate requires at least one (empty: none, the whole overworld is the candidate set).
+     */
+    public record Entry(String id, String spawn, int weight, Predicate<LegacyBiome> biome, boolean real, Set<Type> requires) {}
 
     static final List<Entry> ENTRIES = new ArrayList<>();
 
-    private static void add(String id, String spawn, int weight, Predicate<LegacyBiome> biome) {
+    private static void add(String id, String spawn, int weight, Predicate<LegacyBiome> biome, Type... requires) {
         if (weight <= 0) return; // 1.7: weight 0 (a disabled toggle) never wins a pick
-        ENTRIES.add(new Entry(id, spawn, weight, biome, true));
+        ENTRIES.add(new Entry(id, spawn, weight, biome, true, types(requires)));
+    }
+
+    private static Set<Type> types(Type... types) {
+        return types.length == 0 ? EnumSet.noneOf(Type.class) : EnumSet.of(types[0], types);
     }
 
     static {
         add("spire", "spire", StructureConfig.spireSpawnWeight, b -> b.heightVariation() <= 0.05F && !b.water());
         add("features", "features", StructureConfig.featuresSpawnWeight, b -> !b.water()); // WG-C: MapGenNTMFeatures.start
         add("bunker", "bunker", StructureConfig.bunkerSpawnWeight, b -> !b.water()); // WG-C: BunkerComponents.BunkerStart
-        add("vertibird", "vertibird", StructureConfig.vertibirdSpawnWeight, b -> !b.water() && b.is(Type.SANDY));
-        add("crashed_vertibird", "crashed_vertibird", StructureConfig.vertibirdCrashedSpawnWeight, b -> !b.water() && b.is(Type.SANDY));
-        add("beached_patrol", "beached_patrol", StructureConfig.beachedPatrolSpawnWeight, b -> b.is(Type.BEACH));
-        add("aircraft_carrier", "aircraft_carrier", StructureConfig.enableOceanStructures ? StructureConfig.aircraftCarrierSpawnWeight : 0, b -> b.is(Type.OCEAN));
-        add("oil_rig", "oil_rig", StructureConfig.enableOceanStructures ? StructureConfig.oilRigSpawnWeight : 0, b -> b.is(Type.OCEAN) && b.rootHeight() >= -1.5F);
-        add("lighthouse", "lighthouse", StructureConfig.enableOceanStructures ? StructureConfig.lighthouseSpawnWeight : 0, b -> b.is(Type.OCEAN) || b.is(Type.BEACH));
-        add("dish", "dish", StructureConfig.dishSpawnWeight, b -> b.is(Type.PLAINS));
-        add("water_pump", "water_pump", StructureConfig.waterPumpSpawnWeight, b -> b.is(Type.PLAINS) || b.is(Type.SWAMP));
+        add("vertibird", "vertibird", StructureConfig.vertibirdSpawnWeight, b -> !b.water() && b.is(Type.SANDY), Type.SANDY);
+        add("crashed_vertibird", "crashed_vertibird", StructureConfig.vertibirdCrashedSpawnWeight, b -> !b.water() && b.is(Type.SANDY), Type.SANDY);
+        add("beached_patrol", "beached_patrol", StructureConfig.beachedPatrolSpawnWeight, b -> b.is(Type.BEACH), Type.BEACH);
+        add("aircraft_carrier", "aircraft_carrier", StructureConfig.enableOceanStructures ? StructureConfig.aircraftCarrierSpawnWeight : 0, b -> b.is(Type.OCEAN), Type.OCEAN);
+        add("oil_rig", "oil_rig", StructureConfig.enableOceanStructures ? StructureConfig.oilRigSpawnWeight : 0, b -> b.is(Type.OCEAN) && b.rootHeight() >= -1.5F, Type.OCEAN);
+        add("lighthouse", "lighthouse", StructureConfig.enableOceanStructures ? StructureConfig.lighthouseSpawnWeight : 0, b -> b.is(Type.OCEAN) || b.is(Type.BEACH), Type.OCEAN, Type.BEACH);
+        add("dish", "dish", StructureConfig.dishSpawnWeight, b -> b.is(Type.PLAINS), Type.PLAINS);
+        add("water_pump", "water_pump", StructureConfig.waterPumpSpawnWeight, b -> b.is(Type.PLAINS) || b.is(Type.SWAMP), Type.PLAINS, Type.SWAMP);
         add("forestchem", "forestchem", StructureConfig.forestChemSpawnWeight, b -> b.heightVariation() <= 0.3F && !b.water());
-        add("labolatory", "labolatory", StructureConfig.laboratorySpawnWeight, LegacyBiome::flat);
+        add("labolatory", "labolatory", StructureConfig.laboratorySpawnWeight, LegacyBiome::flat, Type.SPARSE);
         add("forest_post", "forest_post", StructureConfig.forestPostSpawnWeight, b -> b.heightVariation() <= 0.3F && !b.water());
-        add("radio", "radio", StructureConfig.radioSpawnWeight, LegacyBiome::flat);
+        add("radio", "radio", StructureConfig.radioSpawnWeight, LegacyBiome::flat, Type.SPARSE);
         add("factory", "factory", StructureConfig.factorySpawnWeight, b -> b.heightVariation() <= 0.2F && !b.water());
         add("crane", "crane", StructureConfig.craneSpawnWeight, b -> b.heightVariation() <= 0.2F && !b.water());
-        add("broadcaster_tower", "broadcaster_tower", StructureConfig.broadcastingTowerSpawnWeight, LegacyBiome::flat);
+        add("broadcaster_tower", "broadcaster_tower", StructureConfig.broadcastingTowerSpawnWeight, LegacyBiome::flat, Type.SPARSE);
         add("plane1", "plane1", StructureConfig.plane1SpawnWeight, b -> b.heightVariation() <= 0.3F && !b.water());
         add("plane2", "plane2", StructureConfig.plane2SpawnWeight, b -> b.heightVariation() <= 0.3F && !b.water());
-        add("desert_shack_1", "desert_shack_1", StructureConfig.desertShack1SpawnWeight, b -> b.is(Type.SANDY));
-        add("desert_shack_2", "desert_shack_2", StructureConfig.desertShack2SpawnWeight, b -> b.is(Type.SANDY));
-        add("desert_shack_3", "desert_shack_3", StructureConfig.desertShack3SpawnWeight, b -> b.is(Type.SANDY));
-        add("dead_dish_small", "dead_dish_small", StructureConfig.deadDishSmallSpawnWeight, b -> b.is(Type.SANDY));
+        add("desert_shack_1", "desert_shack_1", StructureConfig.desertShack1SpawnWeight, b -> b.is(Type.SANDY), Type.SANDY);
+        add("desert_shack_2", "desert_shack_2", StructureConfig.desertShack2SpawnWeight, b -> b.is(Type.SANDY), Type.SANDY);
+        add("desert_shack_3", "desert_shack_3", StructureConfig.desertShack3SpawnWeight, b -> b.is(Type.SANDY), Type.SANDY);
+        add("dead_dish_small", "dead_dish_small", StructureConfig.deadDishSmallSpawnWeight, b -> b.is(Type.SANDY), Type.SANDY);
         Predicate<LegacyBiome> ruins = b -> !b.water() && b.lightning();
         int[] ruinWeights = {StructureConfig.ruinsASpawnWeight, StructureConfig.ruinsBSpawnWeight, StructureConfig.ruinsCSpawnWeight,
                 StructureConfig.ruinsDSpawnWeight, StructureConfig.ruinsESpawnWeight, StructureConfig.ruinsFSpawnWeight,
@@ -191,12 +209,12 @@ public final class NTMStructureDeclarations {
 
         // 1.7 registerNullWeight: plains only by identity (biome == BiomeGenBase.plains), oceans by type
         if (StructureConfig.plainsNullWeight > 0)
-            ENTRIES.add(new Entry(NULL_PLAINS, NULL_PLAINS, StructureConfig.plainsNullWeight, null, false));
+            ENTRIES.add(new Entry(NULL_PLAINS, NULL_PLAINS, StructureConfig.plainsNullWeight, null, false, types()));
         if (StructureConfig.oceanNullWeight > 0)
-            ENTRIES.add(new Entry(NULL_OCEAN, NULL_OCEAN, StructureConfig.oceanNullWeight, b -> b.is(Type.OCEAN), false));
+            ENTRIES.add(new Entry(NULL_OCEAN, NULL_OCEAN, StructureConfig.oceanNullWeight, b -> b.is(Type.OCEAN), false, types(Type.OCEAN)));
     }
 
-    /** The modern biomes a 1.7 predicate accepts, in table order. */
+    /** The vanilla biomes a 1.7 predicate accepts, in table order. */
     static List<String> biomes(Entry entry) {
         List<String> out = new ArrayList<>();
         if (entry.id().equals(NULL_PLAINS)) {
@@ -209,11 +227,96 @@ public final class NTMStructureDeclarations {
         return out;
     }
 
+    // ------------------------------------------------------------------------------------------------ biome dictionary
+
+    /** Tag folder of the modern {@code BiomeDictionary}: {@code hbm:biome_dictionary/<type>}. */
+    public static final String DICTIONARY = "biome_dictionary/";
+    /** The dictionary entry every non-table biome must be in: 1.7 registered these spawns for dimension 0 only. */
+    public static final String OVERWORLD = "overworld";
+
+    /**
+     * The convention tags that mean each 1.7 type the predicates read (1.7 Forge {@code registerVanillaBiomes}: SANDY is
+     * the desert and mesa families, BEACH includes the stone beach, PLAINS includes the savannas, SPARSE is sparse
+     * vegetation, WATER is OCEAN + RIVER). 26.1 spellings, plus vanilla's own tag where one exists; the convention ones
+     * are optional, so a loader without one loses nothing.
+     */
+    static final Map<String, List<String>> DICTIONARY_TAGS = new LinkedHashMap<>();
+
+    static {
+        DICTIONARY_TAGS.put("ocean", List.of("#minecraft:is_ocean", "#c:is_ocean"));
+        DICTIONARY_TAGS.put("river", List.of("#minecraft:is_river", "#c:is_river"));
+        DICTIONARY_TAGS.put("beach", List.of("#minecraft:is_beach", "#c:is_beach", "#c:is_stony_shores"));
+        DICTIONARY_TAGS.put("plains", List.of("#c:is_plains", "#minecraft:is_savanna", "#c:is_savanna"));
+        DICTIONARY_TAGS.put("sandy", List.of("#c:is_sandy", "#c:is_desert", "#minecraft:is_badlands", "#c:is_badlands"));
+        DICTIONARY_TAGS.put("swamp", List.of("#c:is_swamp"));
+        DICTIONARY_TAGS.put("sparse", List.of("#c:is_sparse_vegetation"));
+        DICTIONARY_TAGS.put(OVERWORLD, List.of("#minecraft:is_overworld", "#c:is_overworld"));
+    }
+
+    /** The dictionary tag path of a type ({@code biome_dictionary/sandy}). */
+    public static String dictionary(Type type) {
+        return DICTIONARY + type.name().toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /** The dictionary types the predicates read (the ones {@link #DICTIONARY_TAGS} defines). */
+    public static final Set<Type> DICTIONARY_TYPES = types(Type.OCEAN, Type.RIVER, Type.BEACH, Type.PLAINS, Type.SANDY, Type.SWAMP, Type.SPARSE);
+
+    /** The table row of a vanilla biome; null for a biome the table has no row for (modded ones). */
+    public static LegacyBiome legacy(String biomeId) {
+        return LEGACY.get(biomeId);
+    }
+
+    /**
+     * The 1.7 biome predicate of a spawn; null when the spawn has none to run at generation (the plains null weight,
+     * which 1.7 matched by identity and whose tag is exactly {@code minecraft:plains}) or is not in the set.
+     */
+    public static Predicate<LegacyBiome> predicate(String spawn) {
+        for (Entry entry : ENTRIES) {
+            if (entry.spawn().equals(spawn)) return entry.biome();
+        }
+        return null;
+    }
+
+    /** The has_structure superset for biomes the table does not know: the required types' dictionary tags, or the overworld. */
+    static List<String> moddedCandidates(Entry entry) {
+        List<String> out = new ArrayList<>();
+        if (entry.biome() == null) return out; // by identity: vanilla plains only
+        if (entry.requires().isEmpty()) {
+            out.add("#" + NS + ":" + DICTIONARY + OVERWORLD);
+        } else {
+            for (Type type : entry.requires()) out.add("#" + NS + ":" + dictionary(type));
+        }
+        return out;
+    }
+
+    /** One tag entry; {@code optional} ones may name something absent. */
+    static com.google.gson.JsonElement tagEntry(String id, boolean optional) {
+        if (!optional) return new com.google.gson.JsonPrimitive(id);
+        JsonObject entry = new JsonObject();
+        entry.addProperty("id", id);
+        entry.addProperty("required", false);
+        return entry;
+    }
+
+    /** {@code hbm:biome_dictionary/<type>}: the tags of {@link #DICTIONARY_TAGS}. */
+    static void declareDictionary() {
+        DICTIONARY_TAGS.forEach((type, tags) -> {
+            JsonArray values = new JsonArray();
+            for (String tag : tags) values.add(tagEntry(tag, !tag.startsWith("#minecraft:")));
+            JsonObject json = new JsonObject();
+            json.addProperty("replace", false);
+            json.add("values", values);
+            Data.declare("data/" + NS + "/tags/worldgen/biome/" + DICTIONARY + type + ".json", json);
+        });
+    }
+
     // ------------------------------------------------------------------------------------------------ declaration
 
     public static void declare() {
         if (declared) return;
         declared = true;
+
+        declareDictionary();
 
         JsonArray setEntries = new JsonArray();
         JsonArray real = new JsonArray();
@@ -223,16 +326,9 @@ public final class NTMStructureDeclarations {
             if (biomes.isEmpty()) throw new IllegalStateException("structure " + entry.id() + " accepts no biome");
 
             JsonArray values = new JsonArray();
-            for (String biome : biomes) {
-                if (OPTIONAL.contains(biome)) {
-                    JsonObject optional = new JsonObject();
-                    optional.addProperty("id", biome);
-                    optional.addProperty("required", false);
-                    values.add(optional);
-                } else {
-                    values.add(biome);
-                }
-            }
+            for (String biome : biomes) values.add(tagEntry(biome, OPTIONAL.contains(biome)));
+            // every other biome of the kind; GenStructure runs the predicate on the biome it finds (table biomes by row)
+            for (String candidate : moddedCandidates(entry)) values.add(candidate);
             JsonObject tag = new JsonObject();
             tag.addProperty("replace", false);
             tag.add("values", values);

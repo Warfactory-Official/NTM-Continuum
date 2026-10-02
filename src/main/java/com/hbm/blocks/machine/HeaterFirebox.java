@@ -1,5 +1,6 @@
 package com.hbm.blocks.machine;
 
+import com.hbm.api.fluidmk2.IFluidConnectorBlockMK2;
 import com.hbm.blocks.multiblock.BlockMultiblockMachine;
 import com.hbm.blocks.multiblock.MultiblockMaskTable;
 import com.hbm.blocks.multiblock.MultiblockSurface;
@@ -22,9 +23,10 @@ import java.util.List;
 /**
  * Firebox (1.12.2 {@code heater_firebox}): a 1×1×3 dummyable solid-fuel heater; the crucible (or another
  * heat consumer) sits directly on top of the core and drains its heat. Right-click opens the 2-fuel-slot
- * GUI; the look-overlay shows the stored TU + the current burn rate.
+ * GUI; the look-overlay shows the stored TU + the current burn rate. The ring cells are its smoke vents:
+ * a duct against any of their outward faces draws the firebox's smoke tanks (1.7 {@code sendSmoke}).
  */
-public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverlay {
+public class HeaterFirebox extends BlockMultiblockMachine implements ILookOverlay, IFluidConnectorBlockMK2 {
 
     public HeaterFirebox(Properties properties) {
         super(properties);

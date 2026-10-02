@@ -1,5 +1,6 @@
 package com.hbm.items.weapon.sedna.factory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -29,6 +30,7 @@ import net.minecraft.world.item.ItemStack;
 public final class NtmEnergyGunCatalog {
 
     public static final DeferredRegister.Items GUNS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(GUNS);
 
     private static final net.minecraft.resources.Identifier SCOPE_LUNA =
             Ids.of(Constants.MOD_ID, "textures/misc/scope_luna.png");
@@ -110,27 +112,27 @@ public final class NtmEnergyGunCatalog {
                             .setupStandardFire().recoil(XFactoryAccelerator.LAMBDA_RECOIL_COILGUN))
                       .setupStandardConfiguration(), ModAmmoItems.coil_tungsten, 5);
 
-    public static final RegistryObject<ItemGunBaseNT> gun_n_i_4_n_i = GUNS.registerItem("gun_n_i_4_n_i",
+    public static final RegistryObject<ItemGunBaseNT> gun_n_i_4_n_i = REG.item("gun_n_i_4_n_i",
             props -> new ItemGunNI4NI(props, WeaponQuality.SPECIAL,
-                    XFactoryAccelerator.ni4niGunConfig().orchestra(Orchestras.ORCHESTRA_COILGUN)));
+                    XFactoryAccelerator.ni4niGunConfig().orchestra(Orchestras.ORCHESTRA_COILGUN)), p -> p);
 
-    public static final RegistryObject<ItemGunBaseNT> gun_folly = GUNS.registerItem("gun_folly",
+    public static final RegistryObject<ItemGunBaseNT> gun_folly = REG.item("gun_folly",
             props -> new ItemGunBaseNT(props, WeaponQuality.SECRET,
-                    XFactoryFolly.gunConfig().orchestra(Orchestras.ORCHESTRA_FOLLY)));
+                    XFactoryFolly.gunConfig().orchestra(Orchestras.ORCHESTRA_FOLLY)), p -> p);
 
     private static boolean initialized;
 
     private NtmEnergyGunCatalog() {}
 
     private static RegistryObject<ItemGunBaseNT> gun(String id, WeaponQuality quality, Supplier<GunConfig> config) {
-        return GUNS.registerItem(id, props -> new ItemGunBaseNT(props, quality,
-                config.get().orchestra(orchestraFor(id))));
+        return REG.item(id, props -> new ItemGunBaseNT(props, quality,
+                config.get().orchestra(orchestraFor(id))), p -> p);
     }
 
     private static RegistryObject<ItemGunBaseNT> gun(String id, WeaponQuality quality,
             Supplier<GunConfig> config, Supplier<? extends Item> defaultAmmo, int amount) {
-        return GUNS.registerItem(id, props -> new ItemGunBaseNT(props, quality,
-                config.get().orchestra(orchestraFor(id))).setDefaultAmmo(defaultAmmo, amount));
+        return REG.item(id, props -> new ItemGunBaseNT(props, quality,
+                config.get().orchestra(orchestraFor(id))).setDefaultAmmo(defaultAmmo, amount), p -> p);
     }
 
     private static java.util.function.BiConsumer<ItemStack, ItemGunBaseNT.LambdaContext> orchestraFor(String id) {

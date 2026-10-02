@@ -24,6 +24,7 @@ public final class ModPowerGenContent {
         ModPowerGenSounds.init();
         // 1.7 TESirenPacket: the siren tells every client within 1500 blocks what to play.
         GolemNetwork.declarePlayToClient(SirenPayload.CODEC);
-        PowerGenDeclarations.declare();
+        // Models, blockstates, loot and mining tags are chained onto the registrations (Reg) and were
+        // recorded when ModPowerGenBlocks/ModPowerGenItems initialised; there is no declare() step.
     }
 }

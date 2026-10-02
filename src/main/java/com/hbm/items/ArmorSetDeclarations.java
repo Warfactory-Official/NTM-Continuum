@@ -6,7 +6,6 @@ import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Tags;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,10 +16,10 @@ import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 
 /**
- * Dejson declarations for {@link ModArmorSetItems}: item models, repair tags and 1.7 {@code ArmorRecipes}.
- * Touches no Minecraft class.
+ * Dejson declarations for {@link ModArmorSetItems}: the modelled sets' typed item data, repair tags and 1.7
+ * {@code ArmorRecipes}. Touches no Minecraft class.
  *
- * <p>The plain sets draw their 1.7 sprite. The six modelled sets drew their inventory icon through
+ * <p>The plain sets draw their 1.7 sprite, stated on their registrations (Reg). The six modelled sets drew their inventory icon through
  * {@code ArmorFSB.renderStandard} over the worn OBJ (an {@code IItemRendererProvider}); those are
  * {@code hbm:machine_obj} models on the {@code armor_<set>_<slot>} path of {@code MachineItemModel}, which
  * replays {@code setupRenderInv}/{@code setupRenderNonInv} and the per-slot scale, with each class's own
@@ -34,19 +33,9 @@ public final class ArmorSetDeclarations {
 
     private ArmorSetDeclarations() {}
 
-    static final String[] SPRITES = {
-            "alloy_helmet", "alloy_plate", "alloy_legs", "alloy_boots",
-            "cmb_helmet", "cmb_plate", "cmb_legs", "cmb_boots",
-            "dnt_helmet", "dnt_plate", "dnt_legs", "dnt_boots",
-            "euphemium_helmet", "euphemium_plate", "euphemium_legs", "euphemium_boots",
-            "zirconium_legs",
-    };
-
     public static void declare() {
         if (declared) return;
         declared = true;
-
-        for (String id : SPRITES) Dejson.item(NS, id).models(Models.generated("hbm:items/" + id)).register();
 
         // renderStandard(model, armorType, helmetTex, chestTex, armTex, legTex, helmet, chest, lArm, rArm, lLeg, rLeg, lBoot, rBoot)
         modelled("ajr", "models/armor/ajr.obj", "ajr_helmet", "ajr_chest", "ajr_arm", "ajr_leg",
@@ -63,6 +52,32 @@ public final class ArmorSetDeclarations {
         modelled("trenchmaster", "models/armor/trenchmaster.obj", "trenchmaster_helmet", "trenchmaster_chest",
                 "trenchmaster_arm", "trenchmaster_leg", List.of("Helmet", "Light"), List.of("Chest"),
                 "LeftBoot", "RightBoot", false);
+
+        // The ModArmorItems suits with an ArmorFSB.renderStandard icon (ArmorBJ, ArmorDNT, ArmorT51, ArmorRPA,
+        // ArmorNCRPA, ArmorTaurun). The DNT nanosuit's items are dns_*; its renderer keys stay armor_dnt_*.
+        modelled("bj", "bj", "models/armor/bj.obj", "bj_eyepatch", "bj_chest", "bj_arm", "bj_leg",
+                List.of("Head"), List.of("Body"), "LeftFoot", "RightFoot", false);
+        // ArmorBJ renderCommon for bj_plate_jetpack: glScaled(0.6875) in place of 0.875, then renderStandard, then
+        // glTranslated(0, 0, -0.1) and the Jetpack part in bj_jetpack.
+        Map<String, String> jetpack = new LinkedHashMap<>();
+        jetpack.put("Body", "bj_chest");
+        jetpack.put("LeftArm", "bj_arm");
+        jetpack.put("RightArm", "bj_arm");
+        jetpack.put("Jetpack", "bj_jetpack");
+        piece("bj_plate_jetpack", "bj_jetpack", "chest", NS + ":models/armor/bj.obj", "bj_chest", jetpack,
+                parts("bj"), false);
+        modelled("dns", "dnt", "models/armor/dnt.obj", "dnt_helmet", "dnt_chest", "dnt_arm", "dnt_leg",
+                List.of("Head"), List.of("Body"), "LeftBoot", "RightBoot", false);
+        // The port keeps T-51's textures under textures/models/armor (shared with T51ArmorRenderer).
+        String t51 = NS + ":textures/models/armor/t51_";
+        modelled("t51", "t51", "models/armor/t51.obj", t51 + "helmet.png", t51 + "chest.png", t51 + "arm.png",
+                t51 + "leg.png", List.of("Helmet"), List.of("Chest"), "LeftBoot", "RightBoot", false);
+        modelled("rpa", "rpa", "models/armor/remnant.obj", "rpa_helmet", "rpa_chest", "rpa_arm", "rpa_leg",
+                List.of("Head"), List.of("Body", "Fan", "Glow"), "LeftBoot", "RightBoot", false);
+        modelled("ncrpa", "ncrpa", "models/armor/ncrpa.obj", "ncrpa_helmet", "ncrpa_chest", "ncrpa_arm",
+                "ncrpa_leg", List.of("Helmet", "Eyes"), List.of("Chest"), "LeftBoot", "RightBoot", false);
+        modelled("taurun", "taurun", "models/armor/taurun.obj", "taurun_helmet", "taurun_chest", "taurun_arm",
+                "taurun_leg", List.of("Helmet"), List.of("Chest"), "LeftBoot", "RightBoot", false);
 
         // 1.7 customCraftingMaterial of each material.
         // aMatAlloy never set a customCraftingMaterial: nothing repairs it, so repairs/alloy stays undeclared
@@ -83,17 +98,15 @@ public final class ArmorSetDeclarations {
     private static void modelled(String set, String obj, String helmetTex, String chestTex, String armTex,
                                  String legTex, List<String> helmet, List<String> chest, String leftBoot,
                                  String rightBoot, boolean noCullAll) {
+        modelled(set, set, obj, helmetTex, chestTex, armTex, legTex, helmet, chest, leftBoot, rightBoot, noCullAll);
+    }
+
+    /** As above, for a set whose item prefix differs from its renderer key (dns_* items, armor_dnt_*). */
+    private static void modelled(String items, String set, String obj, String helmetTex, String chestTex,
+                                 String armTex, String legTex, List<String> helmet, List<String> chest,
+                                 String leftBoot, String rightBoot, boolean noCullAll) {
         String objId = NS + ":" + obj;
-        List<String> all = switch (set) {
-            case "ajr", "ajro" -> List.of("Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
-                    "LeftBoot", "RightBoot", "RocketBox");
-            case "fau" -> List.of("Head", "Body", "Cassette", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
-                    "LeftBoot", "RightBoot");
-            case "trenchmaster" -> List.of("Helmet", "Light", "Chest", "LeftArm", "RightArm", "LeftLeg",
-                    "RightLeg", "LeftBoot", "RightBoot");
-            default -> List.of("Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftFoot",
-                    "RightFoot");
-        };
+        List<String> all = parts(set);
 
         Map<String, String> head = new LinkedHashMap<>();
         for (String part : helmet) head.put(part, helmetTex);
@@ -108,10 +121,34 @@ public final class ArmorSetDeclarations {
         boots.put(leftBoot, legTex);
         boots.put(rightBoot, legTex);
 
-        piece(set + "_helmet", set, "head", objId, helmetTex, head, all, noCullAll);
-        piece(set + "_plate", set, "chest", objId, chestTex, body, all, noCullAll);
-        piece(set + "_legs", set, "legs", objId, legTex, legs, all, true);
-        piece(set + "_boots", set, "feet", objId, legTex, boots, all, true);
+        piece(items + "_helmet", set, "head", objId, helmetTex, head, all, noCullAll);
+        piece(items + "_plate", set, "chest", objId, chestTex, body, all, noCullAll);
+        piece(items + "_legs", set, "legs", objId, legTex, legs, all, true);
+        piece(items + "_boots", set, "feet", objId, legTex, boots, all, true);
+    }
+
+    /** Every part of a set's OBJ, so a piece excludes all it does not draw. */
+    private static List<String> parts(String set) {
+        return switch (set) {
+            case "ajr", "ajro" -> List.of("Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
+                    "LeftBoot", "RightBoot", "RocketBox");
+            case "fau" -> List.of("Head", "Body", "Cassette", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
+                    "LeftBoot", "RightBoot");
+            case "trenchmaster" -> List.of("Helmet", "Light", "Chest", "LeftArm", "RightArm", "LeftLeg",
+                    "RightLeg", "LeftBoot", "RightBoot");
+            case "bj" -> List.of("Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftFoot",
+                    "RightFoot", "Jetpack");
+            case "dnt" -> List.of("Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftBoot",
+                    "RightBoot");
+            case "t51", "taurun" -> List.of("Helmet", "Chest", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
+                    "LeftBoot", "RightBoot");
+            case "rpa" -> List.of("Head", "Body", "Fan", "Glow", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
+                    "LeftBoot", "RightBoot");
+            case "ncrpa" -> List.of("Helmet", "Eyes", "Chest", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
+                    "LeftBoot", "RightBoot");
+            default -> List.of("Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg", "LeftFoot",
+                    "RightFoot");
+        };
     }
 
     private static void piece(String item, String set, String slot, String obj, String texture,
@@ -132,10 +169,16 @@ public final class ArmorSetDeclarations {
         // The model is the definition's own model (not wrapped in minecraft:special): that is the
         // context-aware path, where the armor_ animation replays setupRenderInv / setupRenderNonInv.
         Dejson.item(NS, item).shares("hbm:item/machine_obj_base").register();
-        Dejson.itemDefinition("hbm:item/" + item).add("model", model);
+        JsonObject definition = Dejson.itemDefinition("hbm:item/" + item);
+        definition.add("model", model);
+        // 1.7 drew armor icons unclipped (fau/trenchmaster/taurun plates reach past the slot); without this flag
+        // 26.1 bounds the draw to the slot and the pre-26.1 renderer scissors it there.
+        definition.addProperty("oversized_in_gui", true);
     }
 
+    /** A texture name under textures/armor, or a full texture id as given. */
     private static String tex(String name) {
+        if (name.contains(":")) return name;
         return NS + ":textures/armor/" + name + ".png";
     }
 

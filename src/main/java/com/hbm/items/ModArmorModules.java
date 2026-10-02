@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -17,6 +19,7 @@ public final class ModArmorModules {
     private ModArmorModules() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemModCladding> cladding_paint = cladding("cladding_paint", 0.025D);
     public static final RegistryObject<ItemModCladding> cladding_rubber = cladding("cladding_rubber", 0.05D);
@@ -39,31 +42,32 @@ public final class ModArmorModules {
     public static final RegistryObject<ItemModBattery> armor_battery = battery("armor_battery", 1.25D);
     public static final RegistryObject<ItemModBattery> armor_battery_mk2 = battery("armor_battery_mk2", 1.5D);
     public static final RegistryObject<ItemModBattery> armor_battery_mk3 = battery("armor_battery_mk3", 2D);
-    public static final RegistryObject<ItemModPolish> armor_polish = ITEMS.registerItem(
-            "armor_polish", ItemModPolish::new, p -> p.stacksTo(1));
+    public static final RegistryObject<ItemModPolish> armor_polish = REG.item(
+            "armor_polish", ItemModPolish::new, p -> p.stacksTo(1)).transform(Presets.sprite());
 
     static {
         ModTabs.addTo(HbmTab.CONSUMABLES, armor_polish);
     }
 
     private static RegistryObject<ItemModCladding> cladding(String id, double resistance) {
-        RegistryObject<ItemModCladding> item = ITEMS.registerItem(id,
-                p -> new ItemModCladding(resistance, p), p -> p.stacksTo(1));
+        RegistryObject<ItemModCladding> item = REG.item(id,
+                p -> new ItemModCladding(resistance, p), p -> p.stacksTo(1)).transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, item);
         return item;
     }
 
     private static RegistryObject<ItemModInsert> insert(String id, int durability, float damage,
                                                          float projectile, float explosion, float speed) {
-        RegistryObject<ItemModInsert> item = ITEMS.registerItem(id,
-                p -> new ItemModInsert(durability, damage, projectile, explosion, speed, p));
+        RegistryObject<ItemModInsert> item = REG.item(id,
+                p -> new ItemModInsert(durability, damage, projectile, explosion, speed, p), p -> p)
+                .transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, item);
         return item;
     }
 
     private static RegistryObject<ItemModBattery> battery(String id, double multiplier) {
-        RegistryObject<ItemModBattery> item = ITEMS.registerItem(id,
-                p -> new ItemModBattery(multiplier, p), p -> p.stacksTo(1));
+        RegistryObject<ItemModBattery> item = REG.item(id,
+                p -> new ItemModBattery(multiplier, p), p -> p.stacksTo(1)).transform(Presets.sprite());
         ModTabs.addTo(HbmTab.CONSUMABLES, item);
         return item;
     }

@@ -34,7 +34,7 @@ public class RenderTrainCargoTram<T extends EntityRailCarBase> extends CompatEnt
     protected RenderTrainCargoTram(EntityRendererProvider.Context context, WavefrontObj mesh, Identifier texture) {
         super(context);
         this.mesh = mesh;
-        this.type = CompatRenderTypes.entityCutout(texture);
+        this.type = CompatRenderTypes.entityCutoutNoCull(texture);
         this.shadowRadius = 0F;
     }
 

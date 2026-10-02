@@ -6,6 +6,7 @@ import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple;
 import com.hbm.items.ModAmmoItems;
 import com.hbm.items.machine.ItemFluidIcon;
 import com.hbm.items.weapon.sedna.BulletConfig;
@@ -46,7 +47,18 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         return null;
     }
 
-    /** The canister first, then every flammable liquid the tank will take. */
+    /** 1.7 ammo display: {@code FT_Combustible && FT_Liquid} (so crude oil, flammable but not combustible, is not listed). */
+    public static boolean isListedAmmo(FluidType type) {
+        return type != null && FluidCombustion.getCombustible(type) != null
+                && type.hasTrait(FluidTraitSimple.FT_Liquid.class);
+    }
+
+    /** 1.7 firing gate: {@code FT_Flammable && FT_Liquid} (wider than the display list; oil fires but is not listed). */
+    public static boolean canFire(FluidType type) {
+        return type != null && FluidCombustion.isFlammable(type) && type.hasTrait(FluidTraitSimple.FT_Liquid.class);
+    }
+
+    /** The canister first, then every combustible liquid (1.7's list, in registration order). */
     @Override
     public List<ItemStack> getAmmoTypesForDisplay() {
         if (ammoStacks != null) return ammoStacks;
@@ -55,7 +67,7 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         stacks.add(new ItemStack(ModAmmoItems.flame_diesel.get()));
         for (FluidType type : Fluids.getAll()) {
             if (type == null || type == Fluids.NONE) continue;
-            if (FluidCombustion.isFlammable(type) && !FluidCombustion.isGaseous(type)) {
+            if (isListedAmmo(type)) {
                 stacks.add(ItemFluidIcon.make(type));
             }
         }
@@ -79,9 +91,10 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
         return tank;
     }
 
+    /** 1.7's 48 blocks (1.12.2 cut it to 32). */
     @Override
     public double getDetectorRange() {
-        return 32D;
+        return 48D;
     }
 
     @Override
@@ -112,8 +125,7 @@ public class TileEntityTurretFritz extends TileEntityTurretBaseNT implements IFl
     @Override
     public void updateFiringTick() {
         FluidType type = tank.getTankType();
-        if (type == null || !FluidCombustion.isFlammable(type) || FluidCombustion.isGaseous(type)
-                || tank.getFill() < 2) {
+        if (!canFire(type) || tank.getFill() < 2) {
             return;
         }
 

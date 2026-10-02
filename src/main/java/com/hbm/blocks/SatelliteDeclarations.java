@@ -6,17 +6,15 @@ import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Drops;
-import dev.golem.core.dejson.Models;
-import dev.golem.core.dejson.Variants;
 
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 
 /**
- * Dejson declarations for the satellite family: the ID manager cube, the cargo landing pad (renderer-drawn, its
- * item the 1.7 {@code ItemRenderLibrary} entry), the chip sprites, drops and the 1.7 crafting-table recipes
+ * The satellite family's typed OBJ item data (the cargo landing pad's item, the 1.7 {@code ItemRenderLibrary}
+ * entry) and the 1.7 crafting-table recipes; the blocks' models, blockstates and loot and the chip sprites are
+ * stated on their registrations ({@code ModSatelliteBlocks}, {@code ModSatelliteItems}). Recipes
  * ({@code CraftingManager} sat_dock / machine_satlinker / sat_coord, {@code ToolRecipes} sat_designator /
  * sat_relay). Touches no Minecraft class: it runs in a plain JVM from {@code dejson.gradle.kts}.
  */
@@ -31,32 +29,11 @@ public final class SatelliteDeclarations {
         if (declared) return;
         declared = true;
 
-        blocks();
         items();
-        drops();
         recipes();
     }
 
-    private static void blocks() {
-        // 1.7 MachineSatLinker.getIcon: machine_satlinker_top on top AND bottom, _side around
-        Dejson.block(NS, "machine_satlinker")
-                .models(Models.cubeBottomTop("hbm:blocks/machine_satlinker_top", "hbm:blocks/machine_satlinker_side",
-                        "hbm:blocks/machine_satlinker_top"))
-                .states(Variants.simple()).blockItemDirect().register();
-
-        Dejson.block(NS, "sat_dock").rendered("hbm:block/machine_dummy_empty")
-                .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
-                        Variants.uniform("cell", "false", "true"))).register();
-    }
-
     private static void items() {
-        for (String sprite : new String[]{"sat_mapper", "sat_scanner", "sat_radar", "sat_laser", "sat_foeq",
-                "sat_resonator", "sat_miner", "sat_lunar_miner", "sat_gerald", "sat_chip", "sat_coord", "sat_relay"}) {
-            Dejson.item(NS, sprite).models(Models.generated("hbm:items/" + sprite)).register();
-        }
-        // 1.7 setFull3D
-        Dejson.item(NS, "sat_designator").models(Models.handheld("hbm:items/sat_designator")).register();
-
         // ItemRenderLibrary sat_dock: inventory S(3); common Ry(90 about -Y), renderAll
         {
             JsonObject model = new JsonObject();
@@ -72,11 +49,6 @@ public final class SatelliteDeclarations {
             Dejson.itemDefinition("hbm:item/sat_dock").add("model", model);
             Dejson.itemDefinition("hbm:item/sat_dock").addProperty("oversized_in_gui", true);
         }
-    }
-
-    private static void drops() {
-        Drops.self(NS, "machine_satlinker");
-        Drops.self(NS, "sat_dock");
     }
 
     private static void recipes() {

@@ -1,11 +1,11 @@
 package com.hbm.blocks;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import com.hbm.hazard.HazardData;
 import com.hbm.hazard.HazardRegistry;
 import com.hbm.hazard.HazardSystem;
 import com.hbm.items.machine.ItemPWRFuel.EnumPWRFuel;
-import dev.golem.core.Ids;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -20,17 +20,16 @@ public final class ModPwrContent {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
 
     /** 1.7 {@code NTMSounds.REACTOR_GEIGER_LOOP} ({@code hbm:block.reactorLoop}), the loaded-core loop. */
-    public static final RegistryObject<SoundEvent> REACTOR_LOOP = SOUNDS.register("block.reactor_loop",
-            () -> SoundEvent.createVariableRangeEvent(Ids.of(Constants.MOD_ID, "block.reactor_loop")));
+    public static final RegistryObject<SoundEvent> REACTOR_LOOP = REG.sound("block.reactor_loop");
 
     public static void init() {
         ModPwrBlocks.init();
         ModPwrItems.init();
         ModPwrBlockEntities.init();
         ModPwrMenus.init();
-        PwrDeclarations.declare();
     }
 
     /**

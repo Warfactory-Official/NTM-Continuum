@@ -1,6 +1,7 @@
 package com.hbm.entity.mob.glyphid;
 
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.LivingAttributes;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.registry.Entities;
@@ -31,8 +32,10 @@ import java.util.List;
 
 public class EntityGlyphidDigger extends EntityGlyphid {
 
+    private static final Reg REG = Reg.of(ModNtmEntities.ENTITY_TYPES);
+
     public static final RegistryObject<EntityType<EntityGlyphidDigger>> TYPE =
-            ModNtmEntities.ENTITY_TYPES.register("entity_glyphid_digger", key -> Entities.build(
+            REG.entity("entity_glyphid_digger", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityGlyphidDigger>of(EntityGlyphidDigger::new, MobCategory.MONSTER)).sized(1.75F, 1F).clientTrackingRange(5).updateInterval(3), key));
 
     static {

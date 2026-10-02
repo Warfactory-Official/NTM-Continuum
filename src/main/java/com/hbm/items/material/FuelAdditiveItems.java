@@ -1,5 +1,7 @@
 package com.hbm.items.material;
 
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -16,11 +18,14 @@ public final class FuelAdditiveItems {
     private FuelAdditiveItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
     private static final Map<Variant, RegistryObject<FuelAdditiveItem>> BY_VARIANT = new EnumMap<>(Variant.class);
 
     static {
         for (Variant variant : Variant.values()) {
-            RegistryObject<FuelAdditiveItem> item = ITEMS.registerItem(variant.id, FuelAdditiveItem::new);
+            // 1.7 metadata sprite: fuel_additive.<variant>
+            RegistryObject<FuelAdditiveItem> item = REG.item(variant.id, FuelAdditiveItem::new)
+                    .transform(Presets.sprite("hbm:items/" + variant.id.replace("fuel_additive_", "fuel_additive.")));
             BY_VARIANT.put(variant, item);
             ModTabs.addTo(HbmTab.CONTROL, item);
         }

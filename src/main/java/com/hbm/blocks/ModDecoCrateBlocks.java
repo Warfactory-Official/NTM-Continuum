@@ -1,5 +1,8 @@
 package com.hbm.blocks;
 
+import dev.golem.core.dejson.When;
+import dev.golem.core.dejson.Variant;
+import dev.golem.core.dejson.States;
 import com.hbm.Constants;
 import com.hbm.blocks.generic.BlockAbsorber;
 import com.hbm.blocks.generic.BlockBobble;
@@ -23,9 +26,17 @@ import com.hbm.blocks.machine.RadioRec;
 import com.hbm.blocks.machine.Radiobox;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.items.block.ItemBlockDecoVariant;
 import com.hbm.items.block.ItemBlockLockableCrate;
 import dev.golem.core.Ids;
+import dev.golem.core.dejson.Dispatch;
+import dev.golem.core.dejson.Models;
+import dev.golem.core.dejson.Variants;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
@@ -59,6 +70,10 @@ import java.util.stream.IntStream;
  * {@code rad_absorber[_red|_green|_pink]}, {@code wood_structure_<type>}); subtypes of one object keep one id and
  * carry the subtype in {@code hbm:item_variant} (bobblehead, plushie, snowglobe, vending machine, filing cabinet,
  * glyphid hive blocks).
+ *
+ * <p>Each block's model, blockstate, item model, loot and tags are stated on its registration (Reg; emitted by
+ * Dejson at build time). The OBJ item definitions of the renderer-drawn props and the family's recipes stay in
+ * {@link DecoCrateDeclarations}; the wooden structures' element models and multipart blockstates are authored.
  */
 public final class ModDecoCrateBlocks {
 
@@ -66,13 +81,33 @@ public final class ModDecoCrateBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
-    /** 1.7 {@code ModSoundTypes.flesh}: every sound is {@code hbm:block.flesh}, volume 0.5. */
-    public static final SoundType FLESH_SOUND;
+    /**
+     * The family's custom sound type. A holder, not a field of this class: a {@code SoundType} only exists in a
+     * running game, and this class also initialises in DejsonMain's plain JVM to record its declarations.
+     */
+    public static final class Sounds {
+        private Sounds() {}
 
-    static {
-        SoundEvent flesh = SoundEvent.createVariableRangeEvent(Ids.of(Constants.MOD_ID, "block.flesh"));
-        FLESH_SOUND = new SoundType(0.5F, 1.0F, flesh, flesh, flesh, flesh, flesh);
+        /** 1.7 {@code ModSoundTypes.flesh}: every sound is {@code hbm:block.flesh}, volume 0.5. */
+        public static final SoundType FLESH_SOUND;
+
+        static {
+            SoundEvent flesh = SoundEvent.createVariableRangeEvent(Ids.of(Constants.MOD_ID, "block.flesh"));
+            FLESH_SOUND = new SoundType(0.5F, 1.0F, flesh, flesh, flesh, flesh, flesh);
+        }
+    }
+
+    private static final Dispatch HORIZONTAL = Variants.uniform("facing", "north", "east", "south", "west");
+    /** Renderer-drawn props that drop themselves through their own getDrops (subtype from the BE or state). */
+    private static final Preset ROTATING_PROP = Presets.rendered(Variants.uniformRange("rotation", 0, 15))
+            .and(handle -> handle.loot(Loot.nothing()));
+
+    /** No item renderer in 1.7: the block texture, flat; renderer-drawn, drops itself, pickaxe. */
+    private static Preset flatIconBox(Dispatch states) {
+        return Presets.rendered(states).and(handle -> handle.loot(Loot.self()).tag(BlockTag.PICKAXE)
+                .transform(Presets.sprite("hbm:blocks/" + handle.path())));
     }
 
     private static UnaryOperator<BlockBehaviour.Properties> iron(float hardness, float resistance) {
@@ -86,39 +121,81 @@ public final class ModDecoCrateBlocks {
 
     // ---- crates ----
     /** 1.7 {@code crate}: the supply crate, wood 5/10, consumable tab; a crowbar spills random supplies. */
-    public static final RegistryObject<BlockCrate> crate = BLOCKS.registerBlock("crate",
-            p -> new BlockCrate(p, BlockCrate.Kind.SUPPLY), p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOD));
-    public static final RegistryObject<BlockCanCrate> crate_can = BLOCKS.registerBlock("crate_can", BlockCanCrate::new,
-            rendered(p -> p.strength(1.0F, 2.5F).sound(SoundType.WOOD)));
-    public static final RegistryObject<BlockStorageCrate> crate_tungsten = BLOCKS.registerBlock("crate_tungsten",
-            p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.TUNGSTEN), iron(7.5F, 300.0F));
-    public static final RegistryObject<BlockStorageCrate> safe = BLOCKS.registerBlock("safe",
-            p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.SAFE), iron(7.5F, 10000.0F));
-    public static final RegistryObject<BlockDecoContainer> filing_cabinet = BLOCKS.registerBlock("filing_cabinet",
-            BlockDecoContainer::new, rendered(iron(10.0F, 15.0F)));
+    public static final RegistryObject<BlockCrate> crate = REG.block("crate",
+                    p -> new BlockCrate(p, BlockCrate.Kind.SUPPLY), p -> p.strength(5.0F, 10.0F).sound(SoundType.WOOD))
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.AXE);
+    /** The conserve crate: renderer-drawn; its OBJ item is typed data in {@link DecoCrateDeclarations}. */
+    public static final RegistryObject<BlockCanCrate> crate_can = REG.block("crate_can", BlockCanCrate::new,
+                    rendered(p -> p.strength(1.0F, 2.5F).sound(SoundType.WOOD)))
+            .transform(Presets.rendered(Variants.simple()))
+            .loot(Loot.self())
+            .tag(BlockTag.AXE);
+    /** 1.7 BlockStorageCrate.getIcon: the top icon on top and bottom, the side icon all round. */
+    public static final RegistryObject<BlockStorageCrate> crate_tungsten = REG.block("crate_tungsten",
+                    p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.TUNGSTEN), iron(7.5F, 300.0F))
+            .transform(Presets.cubeBottomTop("hbm:blocks/crate_tungsten_top", "hbm:blocks/crate_tungsten_side",
+                            "hbm:blocks/crate_tungsten_top")
+                    .states(Variants.product(HORIZONTAL, Variants.uniform("hot", "false", "true")))
+                    .viaItemModel())
+            .loot(Loot.container("minecraft:container", "minecraft:custom_data", "minecraft:custom_name"))
+            .tag(BlockTag.PICKAXE);
+    /** The safe door is on the face it was placed towards. */
+    public static final RegistryObject<BlockStorageCrate> safe = REG.block("safe",
+                    p -> new BlockStorageCrate(p, BlockStorageCrate.Kind.SAFE), iron(7.5F, 10000.0F))
+            .transform(Presets.orientable("hbm:blocks/safe_front", "hbm:blocks/safe_side", "hbm:blocks/safe_side")
+                    .states(Variants.product(Variants.facing(), Variants.uniform("hot", "false", "true")))
+                    .viaItemModel())
+            .loot(Loot.container("minecraft:container", "minecraft:custom_data", "minecraft:custom_name"))
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<BlockDecoContainer> filing_cabinet = REG.block("filing_cabinet",
+                    BlockDecoContainer::new, rendered(iron(10.0F, 15.0F)))
+            .transform(Presets.rendered(Variants.product(HORIZONTAL, Variants.uniform("type", "green", "steel"))))
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
 
     // ---- deco props ----
     /** 1.7: iron, hardness and resistance 0; drops itself to any tool (onBlockHarvested). */
-    public static final RegistryObject<BlockBobble> bobblehead = BLOCKS.registerBlock("bobblehead", BlockBobble::new,
-            rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.METAL)));
+    public static final RegistryObject<BlockBobble> bobblehead = REG.block("bobblehead", BlockBobble::new,
+                    rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.METAL)))
+            .transform(ROTATING_PROP);
     /** 1.7: cloth sound, hardness 0 (the 500,000 resistance was overwritten by the later 0). */
-    public static final RegistryObject<BlockPlushie> plushie = BLOCKS.registerBlock("plushie", BlockPlushie::new,
-            rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.WOOL)));
-    public static final RegistryObject<BlockSnowglobe> snowglobe = BLOCKS.registerBlock("snowglobe", BlockSnowglobe::new,
-            rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.GLASS)));
-    public static final RegistryObject<BlockVendingMachine> vending_machine = BLOCKS.registerBlock("vending_machine",
-            BlockVendingMachine::new, rendered(iron(5.0F, 10.0F)));
-    public static final RegistryObject<PinkCloudBroadcaster> broadcaster_pc = BLOCKS.registerBlock("broadcaster_pc",
-            PinkCloudBroadcaster::new, rendered(iron(5.0F, 15.0F)));
-    public static final RegistryObject<Radiobox> radiobox = BLOCKS.registerBlock("radiobox", Radiobox::new,
-            rendered(iron(5.0F, 10.0F)));
-    public static final RegistryObject<RadioRec> radiorec = BLOCKS.registerBlock("radiorec", RadioRec::new,
-            rendered(iron(5.0F, 10.0F)));
+    public static final RegistryObject<BlockPlushie> plushie = REG.block("plushie", BlockPlushie::new,
+                    rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.WOOL)))
+            .transform(ROTATING_PROP);
+    public static final RegistryObject<BlockSnowglobe> snowglobe = REG.block("snowglobe", BlockSnowglobe::new,
+                    rendered(p -> p.strength(0.0F, 0.0F).sound(SoundType.GLASS)))
+            .transform(ROTATING_PROP);
+    public static final RegistryObject<BlockVendingMachine> vending_machine = REG.block("vending_machine",
+                    BlockVendingMachine::new, rendered(iron(5.0F, 10.0F)))
+            .transform(Presets.rendered(Variants.product(HORIZONTAL, Variants.uniform("cell", "false", "true"),
+                    Variants.uniform("snacks", "false", "true"))))
+            .loot(Loot.nothing())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<PinkCloudBroadcaster> broadcaster_pc = REG.block("broadcaster_pc",
+                    PinkCloudBroadcaster::new, rendered(iron(5.0F, 15.0F)))
+            .transform(flatIconBox(HORIZONTAL));
+    public static final RegistryObject<Radiobox> radiobox = REG.block("radiobox", Radiobox::new,
+                    rendered(iron(5.0F, 10.0F)))
+            .transform(flatIconBox(Variants.product(HORIZONTAL, Variants.uniform("enabled", "false", "true"))));
+    public static final RegistryObject<RadioRec> radiorec = REG.block("radiorec", RadioRec::new,
+                    rendered(iron(5.0F, 10.0F)))
+            .transform(flatIconBox(HORIZONTAL));
     /** 1.7 isOpaqueCube false: a full cube that does not hide its neighbours. */
-    public static final RegistryObject<BlockEmitter> deco_emitter = BLOCKS.registerBlock("deco_emitter", BlockEmitter::new,
-            p -> iron(5.0F, 20.0F).apply(p).noOcclusion());
-    public static final RegistryObject<PartEmitter> part_emitter = BLOCKS.registerBlock("part_emitter", PartEmitter::new,
-            iron(5.0F, 20.0F));
+    public static final RegistryObject<BlockEmitter> deco_emitter = REG.block("deco_emitter", BlockEmitter::new,
+                    p -> iron(5.0F, 20.0F).apply(p).noOcclusion())
+            .transform(Presets.cubeAll("hbm:blocks/emitter")
+                    .states(Variants.uniform("facing", "down", "up", "north", "south", "west", "east")).noItem())
+            .transform(Presets.shares("hbm:block/deco_emitter"))
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<PartEmitter> part_emitter = REG.block("part_emitter", PartEmitter::new,
+                    iron(5.0F, 20.0F))
+            .transform(Presets.cubeAll("hbm:blocks/part_top").noItem())
+            .transform(Presets.shares("hbm:block/part_emitter"))
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
     // ---- simple blocks ----
     public static final RegistryObject<BlockHadronCoil> hadron_coil_alloy = coil("hadron_coil_alloy", 10);
@@ -135,40 +212,91 @@ public final class ModDecoCrateBlocks {
 
     static {
         for (BlockCap.EnumCapBlock type : BlockCap.EnumCapBlock.values()) {
-            CAP_BLOCKS.put(type, BLOCKS.registerBlock(capId(type), p -> new BlockCap(p, type), iron(5.0F, 10.0F)));
+            String cap = "hbm:blocks/" + capId(type);
+            // 1.7 BlockCap: 128 of its caps, no fortune; silk touch keeps the block
+            CAP_BLOCKS.put(type, REG.block(capId(type), p -> new BlockCap(p, type), iron(5.0F, 10.0F))
+                    .transform(Presets.cubeBottomTop(cap + "_top", cap, cap + "_top").viaItemModel())
+                    .loot(Loot.oreNoFortune("hbm:cap_" + type.name().toLowerCase(java.util.Locale.US), 128, 128))
+                    .tag(BlockTag.PICKAXE));
         }
     }
 
     /** 1.7 {@code BlockPinkLog}: an axis log, oak bark on the sides and the pink rings on the ends; no creative tab. */
-    public static final RegistryObject<RotatedPillarBlock> pink_log = BLOCKS.registerBlock("pink_log",
-            RotatedPillarBlock::new, p -> p.strength(0.5F).sound(SoundType.WOOD).ignitedByLava());
+    public static final RegistryObject<RotatedPillarBlock> pink_log = REG.block("pink_log",
+                    RotatedPillarBlock::new, p -> p.strength(0.5F).sound(SoundType.WOOD).ignitedByLava())
+            .transform(Presets.column("hbm:blocks/pink_log", "minecraft:block/oak_log").states(Variants.axis()).viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.AXE);
 
     public static final Map<BlockWoodStructure.EnumWoodStructure, RegistryObject<BlockWoodStructure>> WOOD_STRUCTURES =
             new EnumMap<>(BlockWoodStructure.EnumWoodStructure.class);
 
     static {
         for (BlockWoodStructure.EnumWoodStructure type : BlockWoodStructure.EnumWoodStructure.values()) {
-            WOOD_STRUCTURES.put(type, BLOCKS.registerBlock(woodId(type), p -> new BlockWoodStructure(p, type),
-                    p -> p.strength(5.0F, 15.0F).sound(SoundType.WOOD).noOcclusion().ignitedByLava()));
+            // the element models and multipart blockstate (their joins) are authored; the item shows the block model
+            Reg.Handle<BlockWoodStructure> wood = REG.block(woodId(type), p -> new BlockWoodStructure(p, type),
+                            p -> p.strength(5.0F, 15.0F).sound(SoundType.WOOD).noOcclusion().ignitedByLava())
+                    .transform(Presets.shares("hbm:block/" + woodId(type)))
+                    .loot(Loot.self())
+                    .tag(BlockTag.AXE);
+            if (type == BlockWoodStructure.EnumWoodStructure.SCAFFOLD) wood.tag(BlockTag.CLIMBABLE);
+            wood.andThen(handle -> woodStructureStates(type));
+            WOOD_STRUCTURES.put(type, wood);
         }
     }
+
+    /** The absorber sprites, in {@code EnumAbsorberTier} order. */
+    private static final String[] ABSORBER_TEXTURES = {"absorber", "absorber_red", "absorber_green", "absorber_pink"};
 
     public static final Map<BlockAbsorber.EnumAbsorberTier, RegistryObject<BlockAbsorber>> ABSORBERS =
             new EnumMap<>(BlockAbsorber.EnumAbsorberTier.class);
 
     static {
         for (BlockAbsorber.EnumAbsorberTier tier : BlockAbsorber.EnumAbsorberTier.values()) {
-            ABSORBERS.put(tier, BLOCKS.registerBlock(absorberId(tier), p -> new BlockAbsorber(p, tier),
-                    p -> iron(5.0F, 10.0F).apply(p).randomTicks()));
+            ABSORBERS.put(tier, REG.block(absorberId(tier), p -> new BlockAbsorber(p, tier),
+                            p -> iron(5.0F, 10.0F).apply(p).randomTicks())
+                    .transform(Presets.cubeAll("hbm:blocks/" + ABSORBER_TEXTURES[tier.ordinal()]).viaItemModel())
+                    .loot(Loot.self())
+                    .tag(BlockTag.PICKAXE));
         }
     }
 
-    public static final RegistryObject<BlockGlyphid> glyphid_base = BLOCKS.registerBlock("glyphid_base",
-            BlockGlyphid::new, p -> p.strength(0.5F).sound(FLESH_SOUND));
-    public static final RegistryObject<BlockGlyphidSpawner> glyphid_spawner = BLOCKS.registerBlock("glyphid_spawner",
-            BlockGlyphidSpawner::new, p -> p.strength(0.5F).sound(FLESH_SOUND));
-    public static final RegistryObject<MachineFieldDisturber> field_disturber = BLOCKS.registerBlock("field_disturber",
-            MachineFieldDisturber::new, iron(5.0F, 200.0F));
+    /** 1.7 BlockGlyphid: two textures per subtype, chosen per position; drops itself through getDrops. */
+    public static final RegistryObject<BlockGlyphid> glyphid_base = REG.block("glyphid_base",
+                    BlockGlyphid::new, p -> p.strength(0.5F).sound(Sounds.FLESH_SOUND))
+            .model(d -> d.models(Models.group()
+                            .and("_normal_0", Models.cubeAll("hbm:blocks/glyphid_base"))
+                            .and("_normal_1", Models.cubeAll("hbm:blocks/glyphid_base_alt"))
+                            .and("_infested_0", Models.cubeAll("hbm:blocks/glyphid_base_infested"))
+                            .and("_infested_1", Models.cubeAll("hbm:blocks/glyphid_base_infested_alt"))
+                            .and("_rad_0", Models.cubeAll("hbm:blocks/glyphid_base_rad"))
+                            .and("_rad_1", Models.cubeAll("hbm:blocks/glyphid_base_rad_alt")))
+                    .states(Variants.product(Variants.select("type", "normal", "_normal", "infested", "_infested",
+                            "rad", "_rad"), Variants.pool(2))))
+            .icon(d -> d.models(Models.group()
+                            .and("", Models.blockItem("hbm:block/glyphid_base_normal_0"))
+                            .and("_infested", Models.blockItem("hbm:block/glyphid_base_infested_0"))
+                            .and("_rad", Models.blockItem("hbm:block/glyphid_base_rad_0")))
+                    .selects(Constants.MOD_ID + ":item_variant"))
+            .loot(Loot.nothing());
+    public static final RegistryObject<BlockGlyphidSpawner> glyphid_spawner = REG.block("glyphid_spawner",
+                    BlockGlyphidSpawner::new, p -> p.strength(0.5F).sound(Sounds.FLESH_SOUND))
+            .model(d -> d.models(Models.group()
+                            .and("_normal", Models.cubeAll("hbm:blocks/glyphid_eggs_alt"))
+                            .and("_infested", Models.cubeAll("hbm:blocks/glyphid_eggs_infested"))
+                            .and("_rad", Models.cubeAll("hbm:blocks/glyphid_eggs_rad")))
+                    .states(Variants.select("type", "normal", "_normal", "infested", "_infested", "rad", "_rad")))
+            .icon(d -> d.models(Models.group()
+                            .and("", Models.blockItem("hbm:block/glyphid_spawner_normal"))
+                            .and("_infested", Models.blockItem("hbm:block/glyphid_spawner_infested"))
+                            .and("_rad", Models.blockItem("hbm:block/glyphid_spawner_rad")))
+                    .selects(Constants.MOD_ID + ":item_variant"))
+            .loot(Loot.nothing());
+    public static final RegistryObject<MachineFieldDisturber> field_disturber = REG.block("field_disturber",
+                    MachineFieldDisturber::new, iron(5.0F, 200.0F))
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
     // ---- items ----
     public static final RegistryObject<ItemBlockDecoVariant> bobblehead_item = variant("bobblehead", bobblehead,
@@ -227,8 +355,8 @@ public final class ModDecoCrateBlocks {
         for (RegistryObject<BlockHadronCoil> coil : new RegistryObject[]{hadron_coil_alloy, hadron_coil_gold,
                 hadron_coil_neodymium, hadron_coil_magtung, hadron_coil_schrabidium, hadron_coil_schrabidate,
                 hadron_coil_starmetal, hadron_coil_chlorophyte, hadron_coil_mese}) {
-            String id = coil.getId().getPath();
-            RegistryObject<ItemBlockDecoVariant> item = ITEMS.registerItem(id,
+            String id = ((Reg.Handle<?>) coil).path();
+            RegistryObject<ItemBlockDecoVariant> item = REG.item(id,
                     p -> new ItemBlockDecoVariant(coil.get(), p, 1, i -> Component.translatable("block.hbm." + id), i -> {
                         List<Component> list = new ArrayList<>();
                         BlockHadronCoil.addInformation(coil.get().factor, list);
@@ -236,12 +364,12 @@ public final class ModDecoCrateBlocks {
                     }), Compat::blockDescription);
             ModTabs.addTo(HbmTab.MACHINES, item);
         }
-        for (RegistryObject<BlockCap> cap : CAP_BLOCKS.values()) plain(cap.getId().getPath(), cap, HbmTab.BLOCKS);
+        for (RegistryObject<BlockCap> cap : CAP_BLOCKS.values()) plain(((Reg.Handle<?>) cap).path(), cap, HbmTab.BLOCKS);
         plain("pink_log", pink_log, null);
         for (RegistryObject<BlockWoodStructure> wood : WOOD_STRUCTURES.values())
-            plain(wood.getId().getPath(), wood, HbmTab.BLOCKS);
+            plain(((Reg.Handle<?>) wood).path(), wood, HbmTab.BLOCKS);
         for (RegistryObject<BlockAbsorber> absorber : ABSORBERS.values())
-            plain(absorber.getId().getPath(), absorber, HbmTab.MACHINES);
+            plain(((Reg.Handle<?>) absorber).path(), absorber, HbmTab.MACHINES);
         ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(glyphid_base_item, 0, 3));
         ModTabs.addStacksTo(HbmTab.BLOCKS, () -> stacks(glyphid_spawner_item, 0, 3));
         plain("field_disturber", field_disturber, null);
@@ -260,30 +388,63 @@ public final class ModDecoCrateBlocks {
                 : "rad_absorber_" + tier.name().toLowerCase(java.util.Locale.US);
     }
 
-    private static RegistryObject<BlockHadronCoil> coil(String id, int factor) {
-        return BLOCKS.registerBlock(id, p -> new BlockHadronCoil(p, factor), iron(5.0F, 10.0F));
+    /** A dense coil: one texture all round, its item showing the block model; drops itself, pickaxe. */
+    private static Reg.Handle<BlockHadronCoil> coil(String id, int factor) {
+        return REG.block(id, p -> new BlockHadronCoil(p, factor), iron(5.0F, 10.0F))
+                .transform(Presets.cubeAll().noItem())
+                .transform(Presets.shares("hbm:block/" + id))
+                .loot(Loot.self())
+                .tag(BlockTag.PICKAXE);
     }
 
     private static void plain(String id, RegistryObject<? extends Block> block, HbmTab tab) {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, Compat::blockDescription);
-        if (tab != null) ModTabs.addTo(tab, item);
+        Reg.Handle<BlockItem> item = REG.blockItem(block, Compat::blockDescription);
+        if (tab != null) item.tab(tab);
     }
 
     private static void lockable(String id, RegistryObject<? extends Block> block, int slots) {
-        RegistryObject<ItemBlockLockableCrate> item = ITEMS.registerItem(id,
-                p -> new ItemBlockLockableCrate(block.get(), p, slots), Compat::blockDescription);
-        ModTabs.addTo(HbmTab.MACHINES, item);
+        REG.item(id, p -> new ItemBlockLockableCrate(block.get(), p, slots), Compat::blockDescription)
+                .tab(HbmTab.MACHINES);
     }
 
     private static RegistryObject<ItemBlockDecoVariant> variant(String id, Supplier<? extends Block> block, int count,
                                                                 IntFunction<Component> name,
                                                                 IntFunction<List<Component>> tooltip) {
-        return ITEMS.registerItem(id, p -> new ItemBlockDecoVariant(block.get(), p, count, name, tooltip),
+        return REG.item(id, p -> new ItemBlockDecoVariant(block.get(), p, count, name, tooltip),
                 Compat::blockDescription);
     }
 
     private static List<ItemStack> stacks(RegistryObject<ItemBlockDecoVariant> item, int from, int to) {
         return IntStream.range(from, to).mapToObj(i -> item.get().of(i)).toList();
+    }
+
+    /** The wooden structures' multipart blockstates (their joins); the element models are authored. */
+    private static void woodStructureStates(BlockWoodStructure.EnumWoodStructure type) {
+        switch (type) {
+            case CEILING -> {
+                States.multipart(Constants.MOD_ID, "wood_structure_ceiling")
+                        .part(new Variant("hbm:block/wood_structure_ceiling"))
+                        .register();
+            }
+            case ROOF -> {
+                States.multipart(Constants.MOD_ID, "wood_structure_roof")
+                        .part(new Variant("hbm:block/wood_structure_roof_base"))
+                        .part(When.of("west", "true"), new Variant("hbm:block/wood_structure_roof_west"))
+                        .part(When.of("east", "true"), new Variant("hbm:block/wood_structure_roof_east"))
+                        .register();
+            }
+            case SCAFFOLD -> {
+                States.multipart(Constants.MOD_ID, "wood_structure_scaffold")
+                        .part(new Variant("hbm:block/wood_structure_scaffold_posts"))
+                        .part(When.of("up", "true"), new Variant("hbm:block/wood_structure_scaffold_post_tops"))
+                        .part(When.of("up", "false"), new Variant("hbm:block/wood_structure_scaffold_top"))
+                        .part(When.of("west", "false"), new Variant("hbm:block/wood_structure_scaffold_west"))
+                        .part(When.of("east", "false"), new Variant("hbm:block/wood_structure_scaffold_east"))
+                        .part(When.of("north", "false"), new Variant("hbm:block/wood_structure_scaffold_north"))
+                        .part(When.of("south", "false"), new Variant("hbm:block/wood_structure_scaffold_south"))
+                        .register();
+            }
+        }
     }
 
     public static void init() {}

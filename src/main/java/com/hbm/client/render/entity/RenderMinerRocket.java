@@ -36,11 +36,11 @@ public class RenderMinerRocket<T extends Entity> extends CompatEntityRenderer<T,
     }
 
     public static <T extends Entity> RenderMinerRocket<T> lander(EntityRendererProvider.Context context) {
-        return new RenderMinerRocket<>(context, CompatRenderTypes.entityCutout(ResourceManager.miner_rocket_tex), false);
+        return new RenderMinerRocket<>(context, CompatRenderTypes.entityCutoutNoCull(ResourceManager.miner_rocket_tex), false);
     }
 
     public static <T extends Entity> RenderMinerRocket<T> bobmazon(EntityRendererProvider.Context context) {
-        return new RenderMinerRocket<>(context, CompatRenderTypes.entityCutout(ResourceManager.bobmazon_tex), true);
+        return new RenderMinerRocket<>(context, CompatRenderTypes.entityCutoutNoCull(ResourceManager.bobmazon_tex), true);
     }
 
     @Override

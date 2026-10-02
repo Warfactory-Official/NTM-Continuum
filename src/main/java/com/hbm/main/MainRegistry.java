@@ -54,10 +54,7 @@ public final class MainRegistry {
         com.hbm.inventory.material.Mats.init(); // material registry (tag-based ore-dict replacement)
         // Order matters: blocks before items (block items reference blocks), tabs last.
         ModBlocks.init();
-        com.hbm.blocks.ModBlockModels.declare();
-        com.hbm.blocks.RailDeclarations.declare();
         com.hbm.items.ModItemModels.declare();
-        com.hbm.blocks.ModBlockDrops.declare();
         com.hbm.inventory.material.ModMaterialTags.declare();
         com.hbm.lib.ModDamageTypes.declare();
         com.hbm.world.gen.ModBiomeModifiers.declare();
@@ -90,7 +87,6 @@ public final class MainRegistry {
         com.hbm.smoke.SmokeChainRegistration.init();
         com.hbm.blocks.machine.pile.ModPileBlocks.init();
         com.hbm.blocks.machine.dfc.ModDFCBlocks.init();
-        com.hbm.blocks.NorwoodMachineDeclarations.declare();
         com.hbm.items.ModSatelliteItems.init();
         com.hbm.blocks.ModSatelliteContent.init(); // satellites: ID manager, cargo pad, orbital laser, /ntmsatellites
         com.hbm.blocks.machine.soyuz.ModSoyuzBlocks.init();

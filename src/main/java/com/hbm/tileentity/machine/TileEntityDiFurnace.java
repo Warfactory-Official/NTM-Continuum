@@ -5,13 +5,14 @@ import dev.golem.core.data.Tags;
 import com.hbm.blocks.machine.DiFurnaceContent;
 import com.hbm.blocks.machine.MachineDiFurnace;
 import com.hbm.inventory.container.ContainerDiFurnace;
-import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
 import com.hbm.inventory.recipes.DiFurnaceRecipes;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.ForgeDirection;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.tileentity.TileEntityMachinePolluting;
 import com.hbm.util.TickPhase;
 import dev.golem.core.data.DataIn;
 import dev.golem.core.data.DataOut;
@@ -31,7 +32,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Fuel-fired DiFurnace controller, ported from the old TileEntityDiFurnace. */
-public class TileEntityDiFurnace extends TileEntityMachineBase
+public class TileEntityDiFurnace extends TileEntityMachinePolluting
         implements MenuProvider, WorldlyContainer, com.hbm.api.fluidmk2.IFluidStandardSenderMK2 {
 
     public static final int MAX_FUEL = 12_800;
@@ -48,13 +49,8 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
     public byte sideUpper = 1;
     public byte sideLower = 1;
 
-    /** The current smoke system has typed fluid tanks and sender-network support, but no pollution store. */
-    public final FluidTankNTM smoke = new FluidTankNTM(Fluids.SMOKE, SMOKE_BUFFER);
-    public final FluidTankNTM smokeLeaded = new FluidTankNTM(Fluids.SMOKE_LEADED, SMOKE_BUFFER);
-    public final FluidTankNTM smokePoison = new FluidTankNTM(Fluids.SMOKE_POISON, SMOKE_BUFFER);
-
     public TileEntityDiFurnace(BlockPos pos, BlockState state) {
-        super(DiFurnaceContent.DI_FURNACE.get(), pos, state, 4);
+        super(DiFurnaceContent.DI_FURNACE.get(), pos, state, 4, SMOKE_BUFFER);
     }
 
     @Override
@@ -79,9 +75,7 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
                 dirty = true;
             }
 
-            // PollutionHandler.SOOT_PER_SECOND is 1/25; TileEntityMachinePolluting stores pollution
-            // fluids in hundredths, so the exact soot-fluid increments are 4 and 12 mB per second.
-            if (TickPhase.every(level, pos, 20L)) furnace.addSmoke(extension ? 12 : 4);
+            if (TickPhase.every(level, pos, 20L)) furnace.pollute(PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND * (extension ? 3 : 1));
         } else {
             furnace.progress = 0;
         }
@@ -120,10 +114,6 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
         return true;
     }
 
-    private void addSmoke(int amount) {
-        smoke.setFill(Math.min(smoke.getMaxFill(), smoke.getFill() + amount));
-    }
-
     private void sendSmoke(Level level, BlockPos pos, boolean extension) {
         for (ForgeDirection direction : ForgeDirection.VALID_DIRECTIONS) {
             sendSmoke(level, new DirPos(pos.getX() + direction.offsetX, pos.getY() + direction.offsetY,
@@ -133,9 +123,7 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
     }
 
     private void sendSmoke(Level level, DirPos connection) {
-        for (FluidTankNTM tank : getSendingTanks()) {
-            if (tank.getFill() > 0) tryProvide(tank, level, connection);
-        }
+        sendSmoke(connection);
     }
 
     public boolean hasItemPower(ItemStack stack) {
@@ -297,7 +285,7 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
 
     @Override
     public FluidTankNTM[] getSendingTanks() {
-        return new FluidTankNTM[]{smoke, smokeLeaded, smokePoison};
+        return getSmokeTanks();
     }
 
     @Override
@@ -324,8 +312,8 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
         buf.writeByte(sideUpper);
         buf.writeByte(sideLower);
         smoke.serialize(buf);
-        smokeLeaded.serialize(buf);
-        smokePoison.serialize(buf);
+        smoke_leaded.serialize(buf);
+        smoke_poison.serialize(buf);
     }
 
     @Override
@@ -337,8 +325,8 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
         sideUpper = buf.readByte();
         sideLower = buf.readByte();
         smoke.deserialize(buf);
-        smokeLeaded.deserialize(buf);
-        smokePoison.deserialize(buf);
+        smoke_leaded.deserialize(buf);
+        smoke_poison.deserialize(buf);
     }
 
     @Override
@@ -349,9 +337,6 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
         output.putByte("sideFuel", sideFuel);
         output.putByte("sideUpper", sideUpper);
         output.putByte("sideLower", sideLower);
-        smoke.writeToNBT(output, "smoke0");
-        smokeLeaded.writeToNBT(output, "smoke1");
-        smokePoison.writeToNBT(output, "smoke2");
     }
 
     @Override
@@ -362,9 +347,6 @@ public class TileEntityDiFurnace extends TileEntityMachineBase
         sideFuel = input.getByteOr("sideFuel", (byte) 1);
         sideUpper = input.getByteOr("sideUpper", (byte) 1);
         sideLower = input.getByteOr("sideLower", (byte) 1);
-        smoke.readFromNBT(input, "smoke0");
-        smokeLeaded.readFromNBT(input, "smoke1");
-        smokePoison.readFromNBT(input, "smoke2");
     }
 
     public static void updateBlockState(boolean lit, boolean extension, Level level, BlockPos pos) {

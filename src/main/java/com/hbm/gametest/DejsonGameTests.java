@@ -5,8 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hbm.Constants;
-import com.hbm.blocks.ModBlockDrops;
-import com.hbm.blocks.ModBlockModels;
 import com.hbm.inventory.material.ModMaterialTags;
 import com.hbm.inventory.recipes.ModComponentRecipes;
 import com.hbm.inventory.recipes.ModCraftingRecipes;
@@ -54,10 +52,7 @@ public final class DejsonGameTests {
     private DejsonGameTests() {}
 
     private static void declareAll() {
-        ModBlockModels.declare();
-        com.hbm.blocks.RailDeclarations.declare();
         ModItemModels.declare();
-        ModBlockDrops.declare();
         ModMaterialTags.declare();
         ModDamageTypes.declare();
         ModBiomeModifiers.declare();
@@ -66,6 +61,22 @@ public final class DejsonGameTests {
         ModShapelessRecipes.declare();
         ModComponentRecipes.declare();
         com.hbm.inventory.recipes.gen.CraftingRecipesGenerated.declare();
+    }
+
+    /**
+     * Every {@code .tag(ItemTag)} chained on a BLOCK handle names an item that exists. Vanilla rejects a whole item
+     * tag file over one unknown required entry and logs nothing a test would see, so this is the loud failure.
+     */
+    public static void blockItemTagsResolve(GameTestHelper helper) {
+        List<String> missing = new ArrayList<>();
+        java.util.Set<String> members = com.hbm.registration.Reg.blockItemTagMembers();
+        for (String member : members) {
+            String id = member.substring(0, member.indexOf(' '));
+            if (!BuiltInRegistries.ITEM.containsKey(dev.golem.core.Ids.parse(id))) missing.add(member);
+        }
+        Constants.LOG.info("reg_block_item_tags_resolve: {} block-declared item-tag members checked", members.size());
+        helper.assertTrue(missing.isEmpty(), missing.size() + " block-declared item-tag members have no item: " + missing);
+        helper.succeed();
     }
 
     public static void coversEveryBlockState(GameTestHelper helper) {
@@ -212,10 +223,18 @@ public final class DejsonGameTests {
         helper.succeed();
     }
 
-    private static boolean isLegacyFrameMarker(JsonObject model) {
-        return model.size() == 1 && model.has("parent") && model.get("parent").isJsonPrimitive()
-                && model.get("parent").getAsString().startsWith(Constants.MOD_ID + ":item/")
-                && model.get("parent").getAsString().endsWith("_legacy");
+    /**
+     * A legacy-assets marker: a bare parent at {@code hbm:item/<frame>_legacy}, or (since the 2026-10-01 melee
+     * wave) that parent plus the declared sprite model's own {@code display}, which legacy-assets keeps for a
+     * {@code _sprite_legacy} item so the hand poses survive (the meteorite swords).
+     */
+    private static boolean isLegacyFrameMarker(JsonObject model, JsonObject declared) {
+        if (!model.has("parent") || !model.get("parent").isJsonPrimitive()
+                || !model.get("parent").getAsString().startsWith(Constants.MOD_ID + ":item/")
+                || !model.get("parent").getAsString().endsWith("_legacy")) return false;
+        if (model.size() == 1) return true;
+        return model.size() == 2 && model.has("display") && declared.has("display")
+                && model.get("display").equals(declared.get("display"));
     }
 
     public static void matchesShippedItems(GameTestHelper helper) {
@@ -233,7 +252,7 @@ public final class DejsonGameTests {
             // own path into a bare pointer at its renderer frame's legacy parent (hbm:item/<frame>_legacy) for a
             // custom-renderer item that declared a sprite model there. That file is legacy-assets' product, which
             // the definition comparison below still covers; it is not this declaration saying something else.
-            if (shippedModel != null && generated != null && !isLegacyFrameMarker(shippedModel)) {
+            if (shippedModel != null && generated != null && !isLegacyFrameMarker(shippedModel, generated)) {
                 models++;
                 if (!contains(normalise(shippedModel), normalise(generated))) {
                     problems.add(declaration.itemId() + " is on the classpath saying something "
@@ -331,7 +350,7 @@ public final class DejsonGameTests {
             if (path.contains("/loot_table/")) continue;
             *///?}
             JsonElement expected = unwrapped(folded.getOrDefault(path, declared.getValue()));
-            if (copies.stream().noneMatch(copy -> unwrapped(copy).equals(expected))) {
+            if (copies.stream().noneMatch(copy -> unwrapped(withoutAddedOptionalBiomeTags(path, copy, expected)).equals(expected))) {
                 problems.add(path + " is on the classpath saying something other than "
                         + "what it was declared to say");
             }
@@ -400,6 +419,26 @@ public final class DejsonGameTests {
      * files. That is a real difference in the file and not one the declaration is the authority on,
      * so it is normalised away here rather than asserted either way.
      */
+    /**
+     * A packed biome tag less the optional entries its declaration does not have: legacy-biomes.gradle.kts adds the
+     * 1.20.1 spelling of each convention biome tag next to the declared one (none are added on 1.21+).
+     */
+    private static JsonObject withoutAddedOptionalBiomeTags(String path, JsonObject shipped, JsonElement declared) {
+        if (!path.contains("/tags/worldgen/biome/") || !shipped.has("values") || !declared.isJsonObject()
+                || !declared.getAsJsonObject().has("values")) return shipped;
+        JsonArray declaredValues = declared.getAsJsonObject().getAsJsonArray("values");
+        JsonArray kept = new JsonArray();
+        for (JsonElement value : shipped.getAsJsonArray("values")) {
+            boolean optional = value.isJsonObject() && value.getAsJsonObject().has("required")
+                    && !value.getAsJsonObject().get("required").getAsBoolean();
+            if (optional && !declaredValues.contains(value)) continue;
+            kept.add(value);
+        }
+        JsonObject copy = shipped.deepCopy();
+        copy.add("values", kept);
+        return copy;
+    }
+
     private static JsonElement unwrapped(JsonElement element) {
         if (element.isJsonArray()) {
             JsonArray unwrapped = new JsonArray();

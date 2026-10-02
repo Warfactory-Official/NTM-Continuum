@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -25,6 +28,8 @@ import com.hbm.items.tool.ItemSettingsTool;
 import com.hbm.items.tool.ItemSurveyScanner;
 import dev.golem.core.data.GolemComponent;
 import dev.golem.core.data.ItemContents;
+import dev.golem.core.dejson.Models;
+import dev.golem.core.dejson.Tints;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import java.util.ArrayList;
@@ -47,6 +52,7 @@ public final class ModUtilityToolItems {
     private ModUtilityToolItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** Every id this class registers, in order: the harness and GameTests walk it. */
     public static final List<String> IDS = new ArrayList<>();
@@ -56,7 +62,7 @@ public final class ModUtilityToolItems {
     public static final GolemComponent<CompoundTag> COLTASS = GolemComponent.compound(Constants.MOD_ID, "coltass");
     /** The containment box's 20 slots. */
     public static final GolemComponent<ItemContents> CONTAINMENT =
-            GolemComponent.of(Constants.MOD_ID, "containment_box", ItemContents.CODEC);
+            GolemComponent.of(Constants.MOD_ID, "containment_box", () -> ItemContents.CODEC);
     /** Pipette: {@code type}, {@code fill}, {@code capacity}. */
     public static final GolemComponent<CompoundTag> PIPETTE = GolemComponent.compound(Constants.MOD_ID, "pipette");
     /** Multi fluid identifier: {@code fluid1}, {@code fluid2}. */
@@ -70,10 +76,14 @@ public final class ModUtilityToolItems {
     /** Clay tablet {@code tabletSeed}. */
     public static final GolemComponent<Long> TABLET_SEED = GolemComponent.longValue(Constants.MOD_ID, "tablet_seed");
 
+    /**
+     * One registration with its item model, both as the old {@code UtilityToolDeclarations} stated them: 1.7 texture
+     * names; tinted layers and variant sprites as 1.7's {@code getIcon}/{@code getColorFromItemStack} chose them.
+     */
     private static <I extends Item> RegistryObject<I> reg(String id, HbmTab tab, Function<Item.Properties, I> factory,
-                                                          UnaryOperator<Item.Properties> props) {
-        RegistryObject<I> ro = ITEMS.registerItem(id, factory, props);
-        if (tab != null) ModTabs.addTo(tab, ro);
+                                                          UnaryOperator<Item.Properties> props, Preset model) {
+        Reg.Handle<I> ro = REG.item(id, factory, props).transform(model);
+        if (tab != null) ro.tab(tab);
         IDS.add(id);
         return ro;
     }
@@ -82,51 +92,92 @@ public final class ModUtilityToolItems {
         return p -> p.stacksTo(1);
     }
 
+    /** 1.7 ItemPipette.getIcon: pass 1 is pipette_empty at fill 0, else the (laboratory) overlay, tinted. */
+    private static Preset pipette(String overlay) {
+        return handle -> handle.icon(d -> d
+                .models(Models.group()
+                        .and("", Models.generated("hbm:items/" + handle.path(), "hbm:items/pipette_empty"))
+                        .and("_filled", Models.generated("hbm:items/" + handle.path(), "hbm:items/" + overlay)))
+                .selects(Constants.MOD_ID + ":item_variant")
+                .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
+    }
+
+    /** 1.7 TextureColtass: 32 compass frames, the frame chosen by the client's needle. */
+    private static Preset coltassFrames() {
+        return handle -> handle.icon(d -> {
+            Models.Group frames = Models.group();
+            for (int i = 0; i < 32; i++) {
+                // the first case is the item's own model
+                frames = frames.and(i == 0 ? "" : String.format("_%02d", i),
+                        Models.generated(String.format("hbm:items/coltass_%02d", i)));
+            }
+            return d.models(frames).selects(Constants.MOD_ID + ":coltass");
+        });
+    }
+
+    /** 1.7 setTextureName("polaroid_" + polaroidID): case n is polaroid id n + 1. */
+    private static Preset polaroids() {
+        return handle -> handle.icon(d -> {
+            Models.Group polaroids = Models.group();
+            for (int i = 1; i <= 18; i++) {
+                polaroids = polaroids.and(i == 1 ? "" : "_" + i, Models.generated("hbm:items/polaroid_" + i));
+            }
+            return d.models(polaroids).selects(Constants.MOD_ID + ":polaroid");
+        });
+    }
+
     public static final RegistryObject<ItemLeadBox> containment_box = reg("containment_box", HbmTab.CONSUMABLES,
-            ItemLeadBox::new, single());
+            ItemLeadBox::new, single(), Presets.sprite());
     public static final RegistryObject<ItemDyatlov> meltdown_tool = reg("meltdown_tool", HbmTab.CONTROL,
-            ItemDyatlov::new, single());
+            ItemDyatlov::new, single(), Presets.sprite());
     /** 1.7 {@code setMaxDamage(2)}: broken when damage passes 2, i.e. three uses; vanilla breaks at max, hence 3. */
     public static final RegistryObject<ItemMeteorRemote> meteor_remote = reg("meteor_remote", HbmTab.CONSUMABLES,
-            ItemMeteorRemote::new, p -> p.stacksTo(1).durability(3));
+            ItemMeteorRemote::new, p -> p.stacksTo(1).durability(3), Presets.handheld()); // setFull3D
     public static final RegistryObject<ItemDigammaDiagnostic> digamma_diagnostic = reg("digamma_diagnostic",
-            HbmTab.CONSUMABLES, ItemDigammaDiagnostic::new, single());
+            HbmTab.CONSUMABLES, ItemDigammaDiagnostic::new, single(), Presets.sprite());
     public static final RegistryObject<ItemPollutionDetector> pollution_detector = reg("pollution_detector",
-            HbmTab.CONSUMABLES, ItemPollutionDetector::new, single());
+            HbmTab.CONSUMABLES, ItemPollutionDetector::new, single(), Presets.sprite());
     public static final RegistryObject<ItemOreDensityScanner> ore_density_scanner = reg("ore_density_scanner",
-            HbmTab.CONSUMABLES, ItemOreDensityScanner::new, single());
+            HbmTab.CONSUMABLES, ItemOreDensityScanner::new, single(), Presets.sprite());
     public static final RegistryObject<ItemSurveyScanner> survey_scanner = reg("survey_scanner", HbmTab.CONSUMABLES,
-            ItemSurveyScanner::new, single());
+            ItemSurveyScanner::new, single(), Presets.sprite());
     public static final RegistryObject<ItemColtanCompass> coltan_tool = reg("coltan_tool", HbmTab.CONSUMABLES,
-            ItemColtanCompass::new, single());
+            ItemColtanCompass::new, single(), coltassFrames());
     public static final RegistryObject<ItemPowerNetTool> power_net_tool = reg("power_net_tool", HbmTab.CONSUMABLES,
-            ItemPowerNetTool::new, single());
+            ItemPowerNetTool::new, single(), Presets.sprite());
     public static final RegistryObject<ItemAnalysisTool> analysis_tool = reg("analysis_tool", HbmTab.CONSUMABLES,
-            ItemAnalysisTool::new, single());
+            ItemAnalysisTool::new, single(), Presets.sprite());
     public static final RegistryObject<ItemSettingsTool> settings_tool = reg("settings_tool", HbmTab.CONSUMABLES,
-            ItemSettingsTool::new, single());
+            ItemSettingsTool::new, single(), Presets.sprite());
     public static final RegistryObject<ItemRTTYPager> rtty_pager = reg("rtty_pager", HbmTab.CONSUMABLES,
-            ItemRTTYPager::new, single());
-    /** 1.7 templateTab, one identifier per fluid ({@link ItemFluidIDMulti#creativeStacks}). */
+            ItemRTTYPager::new, single(), Presets.sprite());
+    /** 1.7 templateTab, one identifier per fluid ({@link ItemFluidIDMulti#creativeStacks}); pass 1 tinted with the primary fluid. */
     public static final RegistryObject<ItemFluidIDMulti> fluid_identifier_multi = reg("fluid_identifier_multi", null,
-            ItemFluidIDMulti::new, single());
-    public static final RegistryObject<ItemPipette> pipette = reg("pipette", HbmTab.CONTROL, ItemPipette::new, single());
+            ItemFluidIDMulti::new, single(),
+            Presets.sprite("hbm:items/fluid_identifier_multi", "hbm:items/fluid_identifier_overlay")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF)));
+    public static final RegistryObject<ItemPipette> pipette = reg("pipette", HbmTab.CONTROL, ItemPipette::new, single(),
+            pipette("pipette_overlay"));
     public static final RegistryObject<ItemPipette> pipette_boron = reg("pipette_boron", HbmTab.CONTROL,
-            ItemPipette::new, single());
+            ItemPipette::new, single(), pipette("pipette_overlay"));
     public static final RegistryObject<ItemPipette> pipette_laboratory = reg("pipette_laboratory", HbmTab.CONTROL,
-            ItemPipette::new, single());
+            ItemPipette::new, single(), pipette("pipette_laboratory_overlay"));
 
     /** 1.7 consumableTab with the RBMK and starter books ({@link ItemGuideBook#creativeStacks}). */
-    public static final RegistryObject<ItemGuideBook> book_guide = reg("book_guide", null, ItemGuideBook::new, single());
-    public static final RegistryObject<ItemBookLore> book_lore = reg("book_lore", null, ItemBookLore::new, single());
+    public static final RegistryObject<ItemGuideBook> book_guide = reg("book_guide", null, ItemGuideBook::new, single(),
+            Presets.sprite());
+    /** 1.7 ItemBookLore: pages, the tinted cover, the tinted title. */
+    public static final RegistryObject<ItemBookLore> book_lore = reg("book_lore", null, ItemBookLore::new, single(),
+            Presets.sprite("hbm:items/book_pages", "hbm:items/book_cover", "hbm:items/book_title")
+                    .tints(Tints.constant(-1), Tints.customModelData(0, 0x303030), Tints.customModelData(1, 0xFFFFFF)));
     public static final RegistryObject<ItemHolotapeImage> holotape_image = reg("holotape_image", null,
-            ItemHolotapeImage::new, single());
+            ItemHolotapeImage::new, single(), Presets.sprite("hbm:items/holotape"));
     public static final RegistryObject<ItemClayTablet> clay_tablet = reg("clay_tablet", null, ItemClayTablet::new,
-            single());
+            single(), Presets.sprite());
     public static final RegistryObject<ItemPolaroid> polaroid = reg("polaroid", HbmTab.CONSUMABLES, ItemPolaroid::new,
-            single());
+            single(), polaroids());
     public static final RegistryObject<ItemBookLemegeton> book_lemegeton = reg("book_lemegeton", null,
-            ItemBookLemegeton::new, single());
+            ItemBookLemegeton::new, single(), Presets.sprite());
 
     static {
         ModTabs.addStacksTo(HbmTab.TEMPLATES, ItemFluidIDMulti::creativeStacks);

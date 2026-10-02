@@ -1,6 +1,7 @@
 package com.hbm.entity.projectile;
 
 import com.hbm.entity.ModNtmEntities;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.registry.Entities;
 import dev.golem.core.world.Compat;
@@ -24,8 +25,10 @@ import net.minecraft.world.phys.HitResult;
 
 public class EntityAcidBomb extends EntityThrowableInterp {
 
+    private static final Reg REG = Reg.of(ModNtmEntities.ENTITY_TYPES);
+
     public static final RegistryObject<EntityType<EntityAcidBomb>> TYPE =
-            ModNtmEntities.ENTITY_TYPES.register("entity_acid_bomb", key -> Entities.build(
+            REG.entity("entity_acid_bomb", key -> Entities.build(
                     Entities.noLoot(EntityType.Builder.<EntityAcidBomb>of(EntityAcidBomb::new, MobCategory.MISC)).sized(0.25F, 0.25F).clientTrackingRange(63).updateInterval(1), key));
 
     public float damage = 1.5F;

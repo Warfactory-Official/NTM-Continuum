@@ -3,7 +3,7 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.api.fluidmk2.IFillableItem;
-import com.hbm.api.fluidmk2.IFluidStandardReceiverMK2;
+import com.hbm.api.fluidmk2.IFluidStandardTransceiverMK2;
 import com.hbm.api.tile.IHeatSource;
 import com.hbm.api.redstoneoverradio.IRORInteractive;
 import com.hbm.api.redstoneoverradio.IRORValueProvider;
@@ -17,7 +17,9 @@ import com.hbm.items.machine.ItemFluidBucket;
 import com.hbm.lib.DirPos;
 import com.hbm.lib.Library;
 import com.hbm.tileentity.ModBlockEntities;
-import com.hbm.tileentity.TileEntityMachineBase;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
+import com.hbm.tileentity.TileEntityMachinePolluting;
+import com.hbm.util.TickPhase;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -39,9 +41,10 @@ import dev.golem.core.data.DataOut;
  * 3 slots: 0→1 fluid container drain pair, 2 fluid identifier (types the tank). Passively cools
  * ({@code max(heat/1000, 1)}) when not burning and below cap. isOn toggles via the GUI burn button;
  * the mB/t setting wraps 1→100 in both directions (old screwdriver IToolable → GUI clicks, documented
- * deviation). Pollution/smoke skipped (§20).
+ * deviation). Every fifth burning tick the fuel's {@code FT_Polluting} burn table goes into the 100 mB smoke
+ * tanks, which leave through the four fuel ports.
  */
-public class TileEntityHeaterOilburner extends TileEntityMachineBase implements MenuProvider, IHeatSource, IFluidStandardReceiverMK2, IRORValueProvider, IRORInteractive {
+public class TileEntityHeaterOilburner extends TileEntityMachinePolluting implements MenuProvider, IHeatSource, IFluidStandardTransceiverMK2, IRORValueProvider, IRORInteractive {
 
     public static final int maxHeatEnergy = 100_000;
     public boolean isOn = false;
@@ -50,7 +53,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
     public int heatEnergy;
 
     public TileEntityHeaterOilburner(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.HEATER_OILBURNER.get(), pos, state, 3);
+        super(ModBlockEntities.HEATER_OILBURNER.get(), pos, state, 3, 100);
         tank = new FluidTankNTM(Fluids.HEATINGOIL, 16_000);
     }
 
@@ -63,6 +66,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
         te.loadTank();
         te.setTypeFromFluidId();
 
+        for (DirPos connection : te.getConPos()) te.sendSmoke(connection);
 
         boolean shouldCool = true;
 
@@ -76,6 +80,10 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
 
                 int heat = (int) (energyPerBucket / 1000);
                 te.heatEnergy += heat * toBurn;
+
+                if (TickPhase.every(level, pos, 5L) && toBurn > 0) {
+                    te.pollute(te.tank.getTankType(), FluidReleaseType.BURN, toBurn * 5);
+                }
 
                 shouldCool = false;
             }
@@ -181,6 +189,7 @@ public class TileEntityHeaterOilburner extends TileEntityMachineBase implements 
 
     @Override public FluidTankNTM[] getReceivingTanks() { return new FluidTankNTM[]{tank}; }
     @Override public FluidTankNTM[] getAllTanks() { return new FluidTankNTM[]{tank}; }
+    @Override public FluidTankNTM[] getSendingTanks() { return this.getSmokeTanks(); }
 
     // --- MenuProvider ---
 

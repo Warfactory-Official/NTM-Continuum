@@ -12,9 +12,8 @@ import static dev.golem.core.dejson.Crafting.shapeless;
 import static dev.golem.core.dejson.Crafting.smelt;
 
 /**
- * Dejson declarations for {@link ModFinalConsumableItems}: item models on the 1.7 texture names (flattened
- * families keep 1.7's {@code <base>.<variant>} sprites; {@code setFull3D} items are handheld), the four jukebox
- * songs, and every crafting and smelting recipe of 1.7 {@code CraftingManager}, {@code ConsumableRecipes},
+ * Dejson declarations for {@link ModFinalConsumableItems} (whose item models are stated on its registrations,
+ * Reg): the four jukebox songs, and every crafting and smelting recipe of 1.7 {@code CraftingManager}, {@code ConsumableRecipes},
  * {@code ToolRecipes}, {@code PowderRecipes}, {@code ArmorRecipes}, {@code WeaponRecipes},
  * {@code MineralRecipes} and {@code SmeltingRecipes} that makes or uses these items and has all its parts in
  * the port. Touches no Minecraft class.
@@ -29,73 +28,13 @@ public final class FinalConsumableDeclarations {
     private static final String NS = "hbm";
     private static boolean declared;
 
-    // Kept as strings here (the registration class touches Minecraft); ModFinalConsumableItems holds the same lists.
-    private static final String[] CANNED = {"beef", "tuna", "mystery", "pashtet", "cheese", "slime", "milk", "ass",
-            "pizza", "tube", "tomato", "asbestos", "bhole", "hotdogs", "leftovers", "yogurt", "stew", "chinese", "oil",
-            "fist", "spam", "fried", "napalm", "diesel", "kerosene", "recursion", "bark"};
-    private static final String[] SECRETS = {"canister", "controller", "selenium_steel", "aberrator", "folly"};
-    private static final String[] SCRAPS = {"board_blank", "board_transistor", "board_converter", "bridge_north",
-            "bridge_south", "bridge_io", "bridge_bus", "bridge_chipset", "bridge_cmos", "bridge_bios", "cpu_register",
-            "cpu_clock", "cpu_logic", "cpu_cache", "cpu_ext", "cpu_socket", "mem_socket", "mem_16k_a", "mem_16k_b",
-            "mem_16k_c", "mem_16k_d", "card_board", "card_processor"};
-    private static final String[] STAR_COMPONENTS = {"chipset", "cpu", "ram", "card"};
-
     private FinalConsumableDeclarations() {}
 
     public static void declare() {
         if (declared) return;
         declared = true;
-        models();
         songs();
         recipes();
-    }
-
-    private static void flat(String id, String texture) {
-        Dejson.item(NS, id).models(Models.generated("hbm:items/" + texture)).register();
-    }
-
-    private static void handheld(String id, String texture) {
-        Dejson.item(NS, id).models(Models.handheld("hbm:items/" + texture)).register();
-    }
-
-    private static void models() {
-        for (String id : new String[]{"apple_euphemium", "glowing_stew", "balefire_scrambled", "balefire_and_ham",
-                "bomb_waffle", "schnitzel_vegan", "ingot_smore", "mucho_mango", "pancake", "canteen_vodka",
-                "chocolate_milk", "bdcl", "peas", "record_lc", "record_ss", "record_vc", "record_glass",
-                "battery_potato", "battery_potatos", "cube_power", "fusion_core", "rag", "powder_fertilizer",
-                "ingot_electronium", "laser_crystal_dnt", "chemistry_set", "chemistry_set_boron", "gun_kit_1",
-                "gun_kit_2", "upgrade_5g", "upgrade_muffler"}) {
-            flat(id, id);
-        }
-        for (String tier : new String[]{"", "_ingot", "_block"}) {
-            flat("apple_lead" + tier, "apple_lead");
-            flat("apple_schrabidium" + tier, "apple_schrabidium");
-        }
-        for (String tier : new String[]{"", "_normal", "_expensive"}) flat("tem_flakes" + tier, "tem_flakes");
-        // ItemFlask names its sprite <iconString>_<constant>, iconString "flask"
-        flat("flask_infusion_shield", "flask_shield");
-
-        // setFull3D
-        handheld("cotton_candy", "cotton_candy");
-        handheld("cigarette", "cigarette");
-        handheld("crackpipe", "crackpipe");
-        handheld("matchstick", "matchstick");
-        handheld("balefire_and_steel", "balefire_and_steel");
-
-        // ItemConserve names its sprites canned_<constant>
-        for (String name : CANNED) flat("canned_conserve_" + name, "canned_" + name);
-        for (String s : new String[]{"tier1", "tier2", "tier3"}) flat("parts_legendary_" + s, "parts_legendary." + s);
-        for (String s : new String[]{"coal", "lignite", "wood"}) flat("briquette_" + s, "briquette." + s);
-        for (String s : SECRETS) flat("item_secret_" + s, "item_secret." + s);
-        for (String s : SCRAPS) flat("circuit_star_piece_" + s, "circuit_star_piece." + s);
-        for (String s : STAR_COMPONENTS) {
-            flat("circuit_star_component_" + s, "circuit_star_component." + s);
-        }
-        // page_of_ is single-texture (multiTexture false); ItemStampBook draws every plate with stamp_book
-        for (int i = 1; i <= 8; i++) {
-            flat("page_of_page" + i, "page_of_");
-            flat("stamp_book_printing" + i, "stamp_book");
-        }
     }
 
     /** 1.7 ItemModRecord.getRecordResource; the descriptions are 1.7's item.record.X.desc lines. */

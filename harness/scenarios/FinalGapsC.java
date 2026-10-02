@@ -12,7 +12,7 @@ import java.util.List;
  * Gap batch C (§19ed-gaps-c), rendering and input, every item where it is seen and by value where it can be read
  * (query {@code hbm_gapsc}):
  * <ol>
- *   <li>swing/equip animations started by the server: chainsaw swing, crucible deploy + swing (blade, pinned equip,
+ *   <li>swing/equip animations started by the server: chainsaw swing, crucible deploy + swing (old-hbm's since 2026-10-02; pinned equip,
  *       suppressed vanilla swing), boltgun recoil on a bolted hit, the gavel's plain vanilla swing;</li>
  *   <li>crucible blade (flat, fullbright) in first person;</li>
  *   <li>RPA / NCRPA worn OBJ suits;</li>
@@ -152,26 +152,27 @@ public final class FinalGapsC implements Scenario {
         c.screenshot("12-tp-chainsaw", new int[]{200, 60, 240, 240});
         c.setOption("camera", "first_person");
 
-        // crucible: deploy on equip (guards folded 800 ms, GUARD_ROT x = 90), then swing
+        // crucible (old-hbm since 2026-10-02, see CrucibleOldHbm): the Collada deploy on equip, then the random swing
         Fixtures.giveOnly(c, "hbm:wood_gavel", 1);
         c.waitTicks(10);
         c.cmd("clear");
-        c.cmd("give @s hbm:crucible");
+        c.cmd("give @s " + (c.node().startsWith("1.20") ? "hbm:crucible{\"hbm:charges\":16}" : "hbm:crucible[hbm:charges=16]"));
         c.waitTicks(4);
-        JsonObject deploy = q(c);
+        JsonObject deploy = c.query("hbm_crucible", new JsonObject());
         c.screenshot("13-fp-crucible-deploy", new int[]{320, 120, 320, 240});
-        Expect.that(x(deploy, "guard_rot") == 90, "crucible deploying: GUARD_ROT " + deploy.get("guard_rot"));
+        Expect.that(deploy.get("blender").getAsBoolean() && deploy.get("deploy_ms").getAsLong() < 700,
+                "crucible deploying: " + deploy);
         c.waitTicks(30);
-        JsonObject settled = q(c);
+        JsonObject settled = c.query("hbm_crucible", new JsonObject());
         c.screenshot("14-fp-crucible-blade", new int[]{320, 120, 320, 240});
-        Expect.that(x(settled, "guard_rot") == 0, "crucible deployed: GUARD_ROT " + settled.get("guard_rot"));
+        Expect.that(settled.get("deploy_ms").getAsLong() >= 1050, "crucible deployed: " + settled);
         Expect.that(settled.get("equip").getAsDouble() == 1.0 && settled.get("equip_prev").getAsDouble() == 1.0,
                 "crucible equip pinned at 1: " + settled.get("equip") + "/" + settled.get("equip_prev"));
         c.attack();
         c.waitTicks(2);
-        JsonObject cswing = q(c);
+        JsonObject cswing = c.query("hbm_crucible", new JsonObject());
         c.screenshot("15-fp-crucible-swing", new int[]{320, 120, 320, 240});
-        Expect.that(abs(cswing, "swing_rot") > 0, "crucible swing bus running: " + cswing.get("swing_rot"));
+        Expect.that(cswing.get("swing_rot_x").getAsDouble() != 0, "crucible swing bus running: " + cswing);
         Expect.that(!cswing.get("swinging").getAsBoolean(), "vanilla swing cleared under the crucible");
         c.waitTicks(20);
         c.setOption("camera", "third_person_front");

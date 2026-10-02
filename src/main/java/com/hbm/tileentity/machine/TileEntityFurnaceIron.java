@@ -3,6 +3,9 @@ package com.hbm.tileentity.machine;
 import dev.golem.core.data.Tags;
 
 import com.hbm.inventory.container.ContainerFurnaceIron;
+import com.hbm.handler.pollution.PollutionHandler;
+import com.hbm.handler.pollution.PollutionType;
+import com.hbm.util.TickPhase;
 import com.hbm.items.ModUpgradeItems;
 import com.hbm.modules.ModuleBurnTime;
 import com.hbm.tileentity.MachineCore;
@@ -86,6 +89,7 @@ public class TileEntityFurnaceIron extends TileEntityMachineBase implements Menu
                 furnace.progress = 0;
                 furnace.setChanged();
             }
+            if (TickPhase.every(level, pos, 20L)) PollutionHandler.incrementPollution(level, pos, PollutionType.SOOT, PollutionHandler.SOOT_PER_SECOND);
         } else {
             furnace.progress = 0;
         }

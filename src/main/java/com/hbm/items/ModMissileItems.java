@@ -1,5 +1,7 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -38,24 +40,26 @@ public final class ModMissileItems {
     private ModMissileItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     // --- designators ---
 
     public static final RegistryObject<ItemDesignator> designator =
-            ITEMS.registerItem("designator", ItemDesignator::new);
+            REG.item("designator", ItemDesignator::new).transform(Presets.sprite());
     public static final RegistryObject<ItemDesignatorRange> designator_range =
-            ITEMS.registerItem("designator_range", ItemDesignatorRange::new);
+            REG.item("designator_range", ItemDesignatorRange::new)
+                    .transform(Presets.handheld("hbm:items/designator_range_alt"));
     public static final RegistryObject<ItemRangefinder> rangefinder =
-            ITEMS.registerItem("rangefinder", ItemRangefinder::new);
+            REG.item("rangefinder", ItemRangefinder::new).transform(Presets.sprite());
     public static final RegistryObject<ItemDesignatorManual> designator_manual =
-            ITEMS.registerItem("designator_manual", ItemDesignatorManual::new);
+            REG.item("designator_manual", ItemDesignatorManual::new).transform(Presets.sprite());
 
     /**
      * The detonator. Lives here rather than with the tools because it is the launch pad's manual trigger
      * — upstream files it under the CONTROL tab, which is kept.
      */
     public static final RegistryObject<com.hbm.items.tool.ItemDetonator> detonator =
-            ITEMS.registerItem("detonator", com.hbm.items.tool.ItemDetonator::new);
+            REG.item("detonator", com.hbm.items.tool.ItemDetonator::new).transform(Presets.handheld());
 
     // --- tier 0: the micro family, all solid-fuelled ---
 
@@ -107,8 +111,6 @@ public final class ModMissileItems {
             missile("missile_buster_strong", MissileFormFactor.STRONG, MissileTier.TIER2);
     public static final RegistryObject<ItemMissileStandard> missile_emp_strong =
             missile("missile_emp_strong", MissileFormFactor.STRONG, MissileTier.TIER2);
-    public static final RegistryObject<ItemMissileStandard> missile_carrier =
-            missile("missile_carrier", MissileFormFactor.STRONG, MissileTier.TIER2);
 
     // --- tier 3: the huge family ---
 
@@ -120,10 +122,6 @@ public final class ModMissileItems {
             missile("missile_rain", MissileFormFactor.HUGE, MissileTier.TIER3);
     public static final RegistryObject<ItemMissileStandard> missile_drill =
             missile("missile_drill", MissileFormFactor.HUGE, MissileTier.TIER3);
-    public static final RegistryObject<ItemMissileStandard> missile_endo =
-            missile("missile_endo", MissileFormFactor.HUGE, MissileTier.TIER3);
-    public static final RegistryObject<ItemMissileStandard> missile_exo =
-            missile("missile_exo", MissileFormFactor.HUGE, MissileTier.TIER3);
     public static final RegistryObject<ItemMissileStandard> missile_n2 =
             missile("missile_n2", MissileFormFactor.HUGE, MissileTier.TIER3);
     /** The shuttle rides an OTHER airframe but is explicitly given the STRONG family's fuel. */
@@ -142,16 +140,16 @@ public final class ModMissileItems {
             missile("missile_doomsday", MissileFormFactor.ATLAS, MissileTier.TIER4);
     /** Worldgen loot: a doomsday missile that must never fly. */
     public static final RegistryObject<ItemMissileStandard> missile_doomsday_rusted =
-            ITEMS.registerItem("missile_doomsday_rusted", props -> new ItemMissileStandard(props,
-                    MissileFormFactor.ATLAS, MissileTier.TIER4).notLaunchable());
+            REG.item("missile_doomsday_rusted", props -> new ItemMissileStandard(props,
+                    MissileFormFactor.ATLAS, MissileTier.TIER4).notLaunchable(), p -> p);
 
     private static RegistryObject<ItemMissileStandard> missile(String name, MissileFormFactor form, MissileTier tier) {
-        return ITEMS.registerItem(name, props -> new ItemMissileStandard(props, form, tier));
+        return REG.item(name, props -> new ItemMissileStandard(props, form, tier), p -> p);
     }
 
     private static RegistryObject<ItemMissileStandard> missile(String name, MissileFormFactor form, MissileTier tier,
                                                                MissileFuel fuel) {
-        return ITEMS.registerItem(name, props -> new ItemMissileStandard(props, form, tier, fuel));
+        return REG.item(name, props -> new ItemMissileStandard(props, form, tier, fuel), p -> p);
     }
 
     static {
@@ -165,8 +163,8 @@ public final class ModMissileItems {
                 missile_generic, missile_incendiary, missile_cluster, missile_buster, missile_decoy,
                 missile_anti_ballistic, missile_stealth,
                 missile_strong, missile_incendiary_strong, missile_cluster_strong, missile_buster_strong,
-                missile_emp_strong, missile_carrier,
-                missile_burst, missile_inferno, missile_rain, missile_drill, missile_endo, missile_exo,
+                missile_emp_strong,
+                missile_burst, missile_inferno, missile_rain, missile_drill,
                 missile_n2, missile_shuttle,
                 missile_nuclear, missile_nuclear_cluster, missile_volcano, missile_doomsday, missile_doomsday_rusted}) {
             ModTabs.addTo(HbmTab.MISSILES, missile);

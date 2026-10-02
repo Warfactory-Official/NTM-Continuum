@@ -7,6 +7,7 @@ import com.hbm.explosion.vanillant.interfaces.IDropChanceMutator;
 import com.hbm.explosion.vanillant.interfaces.IFortuneMutator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.Iterator;
+import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -31,6 +32,8 @@ public class BlockProcessorStandard implements IBlockProcessor {
     protected @Nullable IDropChanceMutator chance;
     protected @Nullable IFortuneMutator fortune;
     protected @Nullable IBlockMutator convert;
+    /** 1.7 {@code ExplosionNT} {@code ExAttrib.ERRODE}: block -> what it crumbles into, at 60% per block. */
+    protected @Nullable Map<Block, Block> erosion;
 
     public BlockProcessorStandard() {}
 
@@ -41,6 +44,11 @@ public class BlockProcessorStandard implements IBlockProcessor {
 
     public BlockProcessorStandard withFortune(IFortuneMutator fortune) {
         this.fortune = fortune;
+        return this;
+    }
+
+    public BlockProcessorStandard withErosion(Map<Block, Block> erosion) {
+        this.erosion = erosion;
         return this;
     }
 
@@ -74,16 +82,22 @@ public class BlockProcessorStandard implements IBlockProcessor {
                 iterator.remove();
                 continue;
             }
+            // 1.7 ExplosionNT.doExplosionB: errosion has a 60% chance to occour; an eroded block drops nothing
+            Block erodesInto = null;
+            if (erosion != null && world.getRandom().nextFloat() < 0.6F) {
+                erodesInto = erosion.get(block);
+            }
             float dropChance = chance == null ? baseDropChance
                     : chance.mutateDropChance(explosion, block, pos.getX(), pos.getY(), pos.getZ(), baseDropChance);
 
-            if (dropChance > 0F && world.getRandom().nextFloat() <= dropChance) {
+            if (erodesInto == null && dropChance > 0F && world.getRandom().nextFloat() <= dropChance) {
                 // dropResources is the modern spelling of dropBlockAsItemWithChance: the roll above is
                 // the "chance" half, and the tool argument is where fortune would live.
                 Block.dropResources(state, world, pos, world.getBlockEntity(pos), explosion.exploder, ItemStack.EMPTY);
             }
 
             world.removeBlock(pos, false);
+            if (erodesInto != null) world.setBlock(pos, erodesInto.defaultBlockState(), Block.UPDATE_ALL);
 
             if (convert != null) convert.mutatePre(explosion, state, pos);
         }

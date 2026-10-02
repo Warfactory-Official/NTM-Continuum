@@ -7,8 +7,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The 1.7 {@code FluidDuctStandard} ({@code fluid_duct_neo}): the same pipe as {@code fluid_duct_mk2}
- * (shape, connection rules, identifier typing, look overlay) drawn in one of three skins. 1.7 kept the
+ * The 1.7 {@code FluidDuctStandard} ({@code fluid_duct_neo}), the only universal fluid duct 1.7 registers
+ * (the 1.12.2 {@code fluid_duct_mk2} was merged into it): shape, connection rules, identifier typing and
+ * look overlay, drawn in one of three skins. 1.7 kept the
  * skin as metadata 0/1/2 ({@code pipe_neo}, {@code pipe_silver}, {@code pipe_colored}); the port
  * flattens them to three blocks, each carrying its {@link #skin} for the renderer.
  */

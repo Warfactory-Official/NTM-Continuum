@@ -49,7 +49,7 @@ public class RenderGlyphid<T extends EntityGlyphid> extends CompatEntityRenderer
     @Override
     public void submit(State state, PoseStack pose, SubmitSink sink, CameraInfo camera) {
         int light = state.lightCoords;
-        RenderType type = CompatRenderTypes.entityCutout(state.texture);
+        RenderType type = CompatRenderTypes.entityCutoutNoCull(state.texture);
 
         pose.pushPose();
         applyBaseTransform(pose, state);

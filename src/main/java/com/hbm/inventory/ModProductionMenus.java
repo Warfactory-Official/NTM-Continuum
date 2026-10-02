@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
@@ -17,15 +18,16 @@ public final class ModProductionMenus {
 
     public static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerMachineRotaryFurnace>> ROTARY_FURNACE =
-            MENUS.register("machine_rotary_furnace", () -> Menus.typeWithPos(ContainerMachineRotaryFurnace::new));
+            REG.menu("machine_rotary_furnace", () -> Menus.typeWithPos(ContainerMachineRotaryFurnace::new));
     public static final RegistryObject<MenuType<ContainerMicrowave>> MICROWAVE =
-            MENUS.register("machine_microwave", () -> Menus.typeWithPos(ContainerMicrowave::new));
+            REG.menu("machine_microwave", () -> Menus.typeWithPos(ContainerMicrowave::new));
     public static final RegistryObject<MenuType<ContainerAutocrafter>> AUTOCRAFTER =
-            MENUS.register("machine_autocrafter", () -> Menus.typeWithPos(ContainerAutocrafter::new));
+            REG.menu("machine_autocrafter", () -> Menus.typeWithPos(ContainerAutocrafter::new));
     public static final RegistryObject<MenuType<ContainerFunnel>> FUNNEL =
-            MENUS.register("machine_funnel", () -> Menus.typeWithPos(ContainerFunnel::new));
+            REG.menu("machine_funnel", () -> Menus.typeWithPos(ContainerFunnel::new));
 
     public static void init() {}
 }

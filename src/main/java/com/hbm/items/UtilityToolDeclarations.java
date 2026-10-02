@@ -1,21 +1,14 @@
 package com.hbm.items;
 
-import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Drops;
-import dev.golem.core.dejson.Models;
-import dev.golem.core.dejson.Slots;
-import dev.golem.core.dejson.Tints;
-import dev.golem.core.dejson.Variants;
-
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 import static dev.golem.core.dejson.Crafting.stack;
 
 /**
- * Dejson declarations for {@link ModUtilityToolItems} and the {@code book_guide_block}: item models on the 1.7
- * texture names, the legacy manual block's six-faced model, and the 1.7 {@code ToolRecipes} /
- * {@code CraftingManager} recipes of every item that has one. Touches no Minecraft class.
+ * Dejson declarations for {@link ModUtilityToolItems}: the 1.7 {@code ToolRecipes} / {@code CraftingManager} recipes
+ * of every item that has one. The item models are stated on the registrations in {@code ModUtilityToolItems}, the
+ * guide block's model and loot on its registration in {@code ModUtilityToolContent}. Touches no Minecraft class.
  *
  * <p>The holotape restoration and the restored-holotape-to-damaged recipes take one holotape variant only;
  * they are component shapeless recipes in {@link com.hbm.inventory.recipes.ModContainerRecipes}.
@@ -30,84 +23,7 @@ public final class UtilityToolDeclarations {
     public static void declare() {
         if (declared) return;
         declared = true;
-        models();
-        block();
         recipes();
-    }
-
-    private static void flat(String id, String texture) {
-        Dejson.item(NS, id).models(Models.generated("hbm:items/" + texture)).register();
-    }
-
-    private static void models() {
-        for (String id : new String[]{"analysis_tool", "containment_box", "digamma_diagnostic", "meltdown_tool",
-                "ore_density_scanner", "survey_scanner", "pollution_detector", "power_net_tool", "settings_tool",
-                "rtty_pager", "clay_tablet", "book_guide", "book_lemegeton"}) {
-            flat(id, id);
-        }
-        flat("holotape_image", "holotape");
-        // setFull3D
-        Dejson.item(NS, "meteor_remote").models(Models.handheld("hbm:items/meteor_remote")).register();
-
-        // pass 1 tinted with the primary fluid
-        Dejson.item(NS, "fluid_identifier_multi")
-                .models(Models.generated("hbm:items/fluid_identifier_multi", "hbm:items/fluid_identifier_overlay"))
-                .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF))
-                .register();
-
-        // 1.7 ItemPipette.getIcon: pass 1 is pipette_empty at fill 0, else the (laboratory) overlay, tinted
-        pipette("pipette", "pipette_overlay");
-        pipette("pipette_boron", "pipette_overlay");
-        pipette("pipette_laboratory", "pipette_laboratory_overlay");
-
-        // 1.7 ItemBookLore: pages, the tinted cover, the tinted title
-        Dejson.item(NS, "book_lore")
-                .models(Models.generated("hbm:items/book_pages", "hbm:items/book_cover", "hbm:items/book_title"))
-                .tints(Tints.constant(-1), Tints.customModelData(0, 0x303030), Tints.customModelData(1, 0xFFFFFF))
-                .register();
-
-        // 1.7 TextureColtass: 32 compass frames, the frame chosen by the client's needle
-        Models.Group frames = Models.group();
-        for (int i = 0; i < 32; i++) {
-            // the first case is the item's own model
-            frames = frames.and(i == 0 ? "" : String.format("_%02d", i),
-                    Models.generated(String.format("hbm:items/coltass_%02d", i)));
-        }
-        Dejson.item(NS, "coltan_tool").models(frames).selects(NS + ":coltass").register();
-
-        // 1.7 setTextureName("polaroid_" + polaroidID): case n is polaroid id n + 1
-        Models.Group polaroids = Models.group();
-        for (int i = 1; i <= 18; i++) {
-            polaroids = polaroids.and(i == 1 ? "" : "_" + i, Models.generated("hbm:items/polaroid_" + i));
-        }
-        Dejson.item(NS, "polaroid").models(polaroids).selects(NS + ":polaroid").register();
-    }
-
-    private static void pipette(String id, String overlay) {
-        Dejson.item(NS, id)
-                .models(Models.group()
-                        .and("", Models.generated("hbm:items/" + id, "hbm:items/pipette_empty"))
-                        .and("_filled", Models.generated("hbm:items/" + id, "hbm:items/" + overlay)))
-                .selects(NS + ":item_variant")
-                .tints(Tints.constant(-1), Tints.customModelData(0, 0xFFFFFF))
-                .register();
-    }
-
-    /**
-     * 1.7 {@code Guide}: bottom/top plus four sides. Modelled for a placer looking north (1.7 metadata 3:
-     * north right, south left, east front, west back) and turned with the facing.
-     */
-    private static void block() {
-        String b = "hbm:blocks/";
-        Dejson.block(NS, "book_guide_block")
-                .models(Models.parented("minecraft:block/cube",
-                        Slots.of("down", b + "guide_bottom", "up", b + "guide_top", "north", b + "guide_side_right")
-                                .and("south", b + "guide_side_left").and("east", b + "guide_front")
-                                .and("west", b + "guide_back").and("particle", b + "guide_front")))
-                .states(Variants.facing())
-                .blockItem()
-                .register();
-        Drops.self(NS, "book_guide_block");
     }
 
     private static void recipes() {

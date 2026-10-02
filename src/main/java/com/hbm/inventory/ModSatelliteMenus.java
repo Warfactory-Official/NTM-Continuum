@@ -1,5 +1,6 @@
 package com.hbm.inventory;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.inventory.container.ContainerMachineSatLinker;
 import com.hbm.inventory.container.ContainerSatDock;
@@ -15,11 +16,12 @@ public final class ModSatelliteMenus {
     private ModSatelliteMenus() {}
 
     public static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(MENUS);
 
     public static final RegistryObject<MenuType<ContainerMachineSatLinker>> SATLINKER =
-            MENUS.register("machine_satlinker", () -> Menus.typeWithPos(ContainerMachineSatLinker::new));
+            REG.menu("machine_satlinker", () -> Menus.typeWithPos(ContainerMachineSatLinker::new));
     public static final RegistryObject<MenuType<ContainerSatDock>> SAT_DOCK =
-            MENUS.register("sat_dock", () -> Menus.typeWithPos(ContainerSatDock::new));
+            REG.menu("sat_dock", () -> Menus.typeWithPos(ContainerSatDock::new));
 
     public static void init() {}
 }

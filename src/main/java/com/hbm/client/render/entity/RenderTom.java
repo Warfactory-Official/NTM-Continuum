@@ -22,7 +22,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 public class RenderTom extends CompatEntityRenderer<EntityTom, RenderTom.State> {
 
     // 1.7 TomPronter:20 disables GL_LIGHTING before the body as well
-    private static final RenderType TYPE = CompatRenderTypes.entityCutout(ResourceManager.tom_main_tex);
+    private static final RenderType TYPE = CompatRenderTypes.entityCutoutNoCull(ResourceManager.tom_main_tex);
     private static final RenderType FLAME = CompatRenderTypes.plasmaGlow(ResourceManager.tom_flame_tex);
 
     /** 1.7 TomPronter:38 seeds a fresh {@code Random(0)} every frame, so the twenty offsets are one fixed table. */

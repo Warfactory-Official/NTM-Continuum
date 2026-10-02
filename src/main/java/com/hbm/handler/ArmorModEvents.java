@@ -216,6 +216,8 @@ public final class ArmorModEvents {
 
     /** 1.7 {@code onEntityDeathFirst} (highest priority): scrumpy/whiskey and shackle revives. */
     private static boolean onAllowDeath(LivingEntity entity, DamageSource source) {
+        // old-hbm: "if a person with shackles is killed by crucible, he will be dead AND alive at the same time"
+        if (com.hbm.items.weapon.MobSlicer.killedByMobSlicer(entity)) return true;
         for (EquipmentSlot slot : SLOTS) {
             ItemStack stack = entity.getItemBySlot(slot);
             if (!(stack.getItem() instanceof CompatArmorItem) || !ArmorModHandler.hasMods(stack)) continue;

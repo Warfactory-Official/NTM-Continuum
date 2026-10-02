@@ -18,7 +18,7 @@ final class RBMKPanelIcon {
 
     static boolean handles(String animation) {
         return switch (animation) {
-            case "rbmk_panel", "rbmk_key_pad", "rbmk_lever", "rbmk_numitron", "rbmk_indicator" -> true;
+            case "rbmk_panel", "rbmk_key_pad", "rbmk_lever", "rbmk_numitron", "rbmk_indicator", "rbmk_terminal" -> true;
             default -> false;
         };
     }
@@ -48,6 +48,8 @@ final class RBMKPanelIcon {
                     builder.child(lever, model.part("Lever"), surface, null);
                 }
             }
+            // RBMKTerminal.renderInventoryBlock: the slab, then translate(0.25, 0, 0) terminal.renderAll on the face
+            case "rbmk_terminal" -> builder.child(facing.joint().translate(.25F, 0F, 0F), model.all(), surface, null);
             case "rbmk_numitron" -> {
                 for (int i = 0; i < 2; i++) {
                     builder.child(facing.joint().translate(.25F, i * -.5F + .25F, 0F), model.all(), surface, null);

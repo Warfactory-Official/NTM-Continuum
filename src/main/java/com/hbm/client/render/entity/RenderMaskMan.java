@@ -23,8 +23,8 @@ import net.minecraft.util.Mth;
  */
 public class RenderMaskMan extends CompatEntityRenderer<EntityMaskMan, RenderMaskMan.State> {
 
-    private static final RenderType BODY = CompatRenderTypes.entityCutout(ResourceManager.maskman_tex);
-    private static final RenderType IOU = CompatRenderTypes.entityCutout(ResourceManager.iou_tex);
+    private static final RenderType BODY = CompatRenderTypes.entityCutoutNoCull(ResourceManager.maskman_tex);
+    private static final RenderType IOU = CompatRenderTypes.entityCutoutNoCull(ResourceManager.iou_tex);
 
     public RenderMaskMan(EntityRendererProvider.Context context) {
         super(context);

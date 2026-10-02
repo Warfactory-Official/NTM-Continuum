@@ -4,8 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.golem.core.dejson.Advancements;
 import dev.golem.core.dejson.Advancements.Criterion;
-import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Models;
 
 import static dev.golem.core.dejson.Advancements.CHALLENGE;
 import static dev.golem.core.dejson.Advancements.TASK;
@@ -41,7 +39,7 @@ public final class HbmAdvancementDeclarations {
     public static void declare() {
         if (declared) return;
         declared = true;
-        icons();
+        // The icon items' models are on their registrations (ModAchievementItems).
 
         // The page itself. 1.7 had an always-open "Nuclear Tech" achievement page; a modern tab opens when its
         // root is done, so the root completes on the first tick and says nothing.
@@ -182,16 +180,6 @@ public final class HbmAdvancementDeclarations {
                 "hbm:mp_warhead_15_boxcar");
         entry("manhattan", "manhattan", "hbm:nuke_boy", "polymer", CHALLENGE)
                 .criterion("nuke", trigger("detonation").kinds("nuke")).register();
-    }
-
-    /** 1.7 {@code achievement_icon} variants and {@code nothing}, as flat sprite items. */
-    private static void icons() {
-        for (String variant : new String[] {"gofish", "acid", "balls", "digammasee", "digammafeel", "digammaknow",
-                "digammakauaimoho", "digammaupontop", "digammaforourright", "questionmark"}) {
-            Dejson.item(NS, "achievement_icon_" + variant)
-                    .models(Models.generated("hbm:items/achievement_icon." + variant)).register();
-        }
-        Dejson.item(NS, "nothing").models(Models.generated("hbm:items/nothing")).register();
     }
 
     private static String icon(String variant) {

@@ -44,10 +44,12 @@ import static com.hbm.inventory.OreDictManager.*;
  * one output stack. The old {@code HashMap<Pair<Object, FluidType>>} keying is replaced by a linear
  * {@link AStack#matchesRecipe} scan, which handles tag inputs uniformly (61 recipes, trivial cost).
  *
- * <p><b>What's ported:</b> every default recipe whose complete input/output path exists in this port,
- * including the old coal/uranium, cement, gravel, tar, wax, semtex, latex, and fullerene entries.
- * Deferred entries are listed in the completion-wave review report: mercury
- * and external-mod compatibility recipes.
+ * <p><b>What's ported:</b> every 1.7 default recipe, including mercury (1.7's {@code ingot_mercury} is
+ * registered as {@code nugget_mercury}), the mustard-willow cadmium leach and the three external-mod
+ * compatibility recipes, which — as in 1.7 — only register when another mod fills their tag. Not ported:
+ * the legacy {@code ore_centrifuged/separated/nitrocrystalline} bedrock chain (those creative-tab-less
+ * items are not in the port) and plastic scrap to circuit-star pieces (the port's {@code scrap_plastic}
+ * has no {@code ScrapType} subtypes to map piece by piece).
  *
  * <p>{@code productivity} is carried for parity but unused: in the 1.12.2 tile the free-item chance
  * came only from EFFECT machine upgrades (unported), never from the recipe field.
@@ -119,6 +121,11 @@ public final class CrystallizerRecipes {
         peroxide(new TagStack(ItemTags.SAND),                    stack(ModItems.ingot_fiberglass.get()),          utilityTime, 0.15F);
         add(SI.ingot(),                stack(Items.QUARTZ, 2),                   utilityTime, 0.10F, Fluids.OXYGEN, 250);
         add(CA.dust(),                 stack(ModFuelItems.powder_cement.get(), 8), utilityTime, 0.10F, Fluids.REDMUD, 75);
+        // 1.7 ModItems.ingot_mercury, registered as "nugget_mercury". crystalCinnabar is the cinnabar gem
+        // item in 1.7 (CINNABAR.crystal(cinnebar)); the port's c:crystals/cinnabar holds the acidizer crystal
+        // instead, so the gem tag carries the 1.7 meaning here.
+        peroxide(storageTag("redstone"), stack(ModItems.nugget_mercury.get()), baseTime, 0.25F);
+        peroxide(CINNABAR.gem(),       stack(ModItems.nugget_mercury.get(), 3), baseTime, 0.25F);
         add(BORAX.dust(),              stack(ModItems.powder_boron_tiny.get(), 3), baseTime,  0.25F, Fluids.SULFURIC_ACID, 500);
         peroxide(storageTag("coal"),     stack(ModRBMKBlocks.block_graphite.get().asItem()), baseTime, 0F);
         peroxide(item(Blocks.COBBLESTONE.asItem()),              stack(ModBlocks.reinforced_stone.get().asItem()), utilityTime, 0F);
@@ -129,6 +136,8 @@ public final class CrystallizerRecipes {
         add(item(Items.BONE_MEAL),     stack(Items.SLIME_BALL, 4),  mixingTime, 0F, Fluids.SULFURIC_ACID, 250);
         add(item(Items.BONE),          stack(Items.SLIME_BALL, 16), mixingTime, 0F, Fluids.SULFURIC_ACID, 1_000);
         add(item(com.hbm.blocks.ModDungeonBlocks.rebar.get().asItem()), stack(com.hbm.blocks.ModDecoContent.concrete_rebar.get().asItem()), 10, 0F, Fluids.CONCRETE, 1_000);
+        add(item(com.hbm.items.ModTerrainItems.plant_item_mustardwillow.get()).count(10),
+                stack(ModItems.powder_cadmium.get()), 100, 0F, Fluids.RADIOSOLVENT, 250);
         add(item(ModItems.scrap_oil.get()).count(16), stack(ModItems.nugget_arsenic.get()), utilityTime, 0.30F, Fluids.RADIOSOLVENT, 100);
         add(MALACHITE.ingot(),
                 ItemScraps.create(new Mats.MaterialStack(Mats.MAT_COPPER, MaterialShapes.INGOT.quantity)),
@@ -143,7 +152,7 @@ public final class CrystallizerRecipes {
         peroxide(item(ModItems.powder_meteorite.get()),  stack(ModItems.fragment_meteorite.get()), utilityTime, 0F);
         AbilityToolMachineRecipes.crystallizer(recipes, baseTime); // treated -> etched meteorite sword
         BedrockOreChainRecipes.crystallizer(recipes); // bedrock ore washing / acid grades
-        add(CD.dust(),                 stack(ModItems.ingot_rubber.get()), utilityTime, 0F,    Fluids.FISHOIL, 250);
+        add(CD.dust(),                 stack(ModItems.ingot_rubber.get(), 16), utilityTime, 0F, Fluids.FISHOIL, 4_000);
         add(item(ModItems.ingot_biorubber.get()), stack(ModItems.ingot_rubber.get()), mixingTime, 0.15F,
                 Fluids.SOURGAS, 25);
         add(dustTag("sawdust"),        stack(ModItems.cordite.get()),      mixingTime,  0.25F, Fluids.NITROGLYCERIN, 250);
@@ -167,6 +176,8 @@ public final class CrystallizerRecipes {
         add(item(ModFallingBlocks.moon_turf.get().asItem()).count(16),
                 stack(ModIntermediateItems.chunk(EnumChunkType.MOONSTONE)), 1_200, 0F, Fluids.PEROXIDE, 500);
 
+        compat(baseTime, utilityTime);
+
         // --- chemical dyes (the three old oil variants each unlock the same six colours) ---
         for (FluidType oil : List.of(Fluids.WOODOIL, Fluids.FISHOIL, Fluids.LIGHTOIL)) {
             add(dustTag("coal"), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.BLACK), 4),
@@ -182,6 +193,33 @@ public final class CrystallizerRecipes {
             add(CO.dust(), stack(ModChemicalDyeItems.chemicalDye(EnumChemDye.BLUE), 4),
                     mixingTime, 0.15F, oil, 100);
         }
+    }
+
+    /**
+     * 1.7's three {@code OreDictionary.getOres(...)} compat recipes, each registered only when the tag has
+     * an item (HBM supplies none of them). Registration is lazy (machine / JEI first use), after tags bind.
+     */
+    private static void compat(int baseTime, int utilityTime) {
+        Item certus = firstInTag(cTag("gems/certus_quartz"));
+        if (certus != null) peroxide(new TagStack(cTag("ores/certus_quartz")), stack(certus, 12), baseTime, 0F);
+        if (firstInTag(cTag("dusts/white_phosphorus")) != null) {
+            add(new TagStack(cTag("dusts/white_phosphorus")), stack(ModItems.ingot_phosphorus.get()),
+                    utilityTime, 0F, Fluids.AROMATICS, 50);
+        }
+        if (firstInTag(CINNABAR.tag(MaterialShapes.DUST)) != null) {
+            add(CINNABAR.dust(), stack(ModItems.cinnabar.get()), utilityTime, 0F, Fluids.PEROXIDE, 50);
+        }
+    }
+
+    private static TagKey<Item> cTag(String path) {
+        return TagKey.create(Registries.ITEM, dev.golem.core.Ids.of("c", path));
+    }
+
+    private static Item firstInTag(TagKey<Item> tag) {
+        for (net.minecraft.core.Holder<Item> holder : net.minecraft.core.registries.BuiltInRegistries.ITEM.getTagOrEmpty(tag)) {
+            return holder.value();
+        }
+        return null;
     }
 
     /** The recipe matching {@code stack} under the given tank fluid, or null. */

@@ -5,7 +5,7 @@ import com.hbm.items.ModFluidNetItems;
 import com.hbm.tileentity.ModFluidNetBlockEntities;
 
 
-/** One bootstrap hook for the fluid-network family: blocks, items, block entities, menus, declarations. */
+/** One bootstrap hook for the fluid-network family: blocks, items, block entities, menus. */
 public final class ModFluidNetContent {
 
     private ModFluidNetContent() {}
@@ -15,6 +15,5 @@ public final class ModFluidNetContent {
         ModFluidNetItems.init();
         ModFluidNetBlockEntities.init();
         ModFluidNetMenus.init();
-        FluidNetDeclarations.declare();
     }
 }

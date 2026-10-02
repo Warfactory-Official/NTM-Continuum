@@ -17,6 +17,5 @@ public final class ModProductionContent {
         ModProductionBlockEntities.init();
         ModProductionMenus.init();
         ModProductionSounds.init();
-        ProductionDeclarations.declare();
     }
 }

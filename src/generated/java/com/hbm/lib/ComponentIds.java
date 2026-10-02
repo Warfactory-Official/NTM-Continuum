@@ -36,10 +36,10 @@ public final class ComponentIds {
     public static final String cart_base = "hbm:cart_base";
     public static final String casing_bag = "hbm:casing_bag";
     public static final String casing_progress = "hbm:casing_progress";
+    public static final String charges = "hbm:charges";
     public static final String coltass = "hbm:coltass";
     public static final String containment_box = "hbm:containment_box";
     public static final String coordinate_position = "hbm:coordinate_position";
-    public static final String crucible_spent = "hbm:crucible_spent";
     public static final String designator_x = "hbm:designator_x";
     public static final String designator_z = "hbm:designator_z";
     public static final String detonator_positions = "hbm:detonator_positions";

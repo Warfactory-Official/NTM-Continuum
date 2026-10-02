@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "hbm:machine_obj",
+    "obj": "hbm:models/machines/condenser.obj",
+    "texture": "hbm:textures/models/machines/compressor_compact.png",
+    "scale": 0.75,
+    "ty": 0.0,
+    "yaw": 0.0,
+    "rawLegacyTransform": true,
+    "itemTranslate": [0.375, 0.0, 0.0],
+    "itemPreTranslate": [0.0, 0.0, 0.0],
+    "guiTranslate": [-1.0, -1.0, 0.0],
+    "guiScale": 2.75
+  },
+  "oversized_in_gui": true
+}

@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 /**
  * 1.7 ItemGrenadeUniversal.
  */
-public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem {
+public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem implements com.hbm.items.IAnimatedItem {
 
     // Equip-edge only; the draw counter lives on HbmPlayerProps.
     // TODO: 1.7 ItemGrenadeUniversal:104-107 keys the edge off the stack's own equipped flag
@@ -50,7 +50,9 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem {
     private static void onEquip(ServerPlayer player, ItemStack stack) {
         HbmPlayerProps.getData(player).grenadeDeployment = 0;
         EQUIPPED.put(player.getUUID(), stack.copy());
-        // 1.7 GrenadeAnimationPayload: the pin-pull hand animation is client presentation (renderer wave).
+        // 1.7 HbmAnimationPacket(EQUIP): the draw and pin-pull animation, table in ToolAnimations.grenade
+        if (stack.getItem() instanceof ItemGrenadeUniversal grenade)
+            grenade.playAnimation(player, com.hbm.items.ToolAnimation.EQUIP, stack);
     }
 
     private static void clearStaleEquipState(long tick) {
@@ -78,7 +80,28 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem {
                                  ItemGrenadeExtra.@Nullable EnumGrenadeExtra extra, int amount) {
         ItemStack stack = new ItemStack(ModEntityItems.grenade_universal.get(), amount);
         ModDataComponents.GRENADE.set(stack, new GrenadeData(shell, filling, fuze, extra));
+        // 1.7 getItemStackLimit(stack) = the shell's limit (FRAG/STICK 4, TECH 2, NUKE 1); the item default is 4
+        dev.golem.core.world.ItemStacks.setMaxStackSize(stack, shell.getStackLimit());
         return stack;
+    }
+
+    /**
+     * 1.7 {@code getSubItems}: for every shell, every filling that fits it, every fuze — the plain grenade,
+     * then one per extra. 19 shell/filling pairs x 5 fuzes x (1 + 4 extras) = 475 stacks, in that order.
+     */
+    public static java.util.List<ItemStack> subItems() {
+        java.util.List<ItemStack> list = new java.util.ArrayList<>();
+        for (ItemGrenadeShell.EnumGrenadeShell shell : ItemGrenadeShell.EnumGrenadeShell.values()) {
+            for (ItemGrenadeFilling.EnumGrenadeFilling filling : ItemGrenadeFilling.EnumGrenadeFilling.values()) {
+                if (!filling.compatibleShells.contains(shell)) continue;
+                for (ItemGrenadeFuze.EnumGrenadeFuze fuze : ItemGrenadeFuze.EnumGrenadeFuze.values()) {
+                    list.add(make(shell, filling, fuze));
+                    for (ItemGrenadeExtra.EnumGrenadeExtra extra : ItemGrenadeExtra.EnumGrenadeExtra.values())
+                        list.add(make(shell, filling, fuze, extra));
+                }
+            }
+        }
+        return list;
     }
 
     /**
@@ -110,7 +133,9 @@ public class ItemGrenadeUniversal extends dev.golem.core.world.CompatItem {
     @Override
     protected void compatInventoryTick(ItemStack stack, ServerLevel level, Entity owner, @Nullable EquipmentSlot slot,
                                        boolean held) {
-        if (!(owner instanceof ServerPlayer player) || slot != EquipmentSlot.MAINHAND) return;
+        // 1.7 isHeld: the selected hotbar slot, main hand only. Asked as held + main-hand identity because below 26.1
+        // the slot argument is always null (only the selected flag exists), which had left the grenade undrawable there.
+        if (!(owner instanceof ServerPlayer player) || !held || player.getMainHandItem() != stack) return;
         UUID id = player.getUUID();
         long tick = level.getGameTime();
         ItemStack previous = EQUIPPED.get(id);

@@ -110,7 +110,12 @@ public enum HbmEffectNT {
     /** 1.7 {@code debug} (G-C): {@code ParticleText}, floating text. Tag: {@code text}, {@code color}, {@code scale}. */
     DebugText,
     /** 1.7 {@code launchSmoke} (G-C): one {@code ParticleSmokePlume}, played client-side by a launcher. Tag: {@code moX/moY/moZ}. */
-    LaunchSmoke;
+    LaunchSmoke,
+    /**
+     * old-hbm {@code VanillaBurst_BlockDust}: {@code count} block-dust particles of block id {@code block}, each with
+     * motion {@code gaussian * motion} (+0.2 up) and a 50..99 tick life. The crucible's killing hit.
+     */
+    VanillaBurst_BlockDust;
 
     /** 1.7 {@code createSendToThreadedPacket}: this effect for one player only. */
     public void sendTo(ServerPlayer player, double x, double y, double z, @Nullable CompoundTag data) {
@@ -158,6 +163,8 @@ public enum HbmEffectNT {
                 data == null ? new CompoundTag() : data);
         double radiusSquared = range * range;
         for (ServerPlayer player : serverLevel.players()) {
+            // level.players() includes a GameTest's bare mock player without the channel; sendToPlayer skips it
+            // (NeoForge would otherwise throw - crashed the 2026-10-02 full run from a leaking fluid tank).
             if (player.distanceToSqr(x, y, z) <= radiusSquared)
                 GolemNetwork.sendToPlayer(player, ParticlePayload.CODEC, payload);
         }

@@ -1,5 +1,6 @@
 package com.hbm.foundry;
 
+import com.hbm.registration.BlockTag;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -11,7 +12,6 @@ import com.hbm.tileentity.machine.TileEntityMachineArcFurnaceLarge;
 import com.hbm.tileentity.machine.TileEntityMachineStrandCaster;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.SoundType;
@@ -19,6 +19,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.util.EnumMap;
 import java.util.Map;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Variants;
 
 /**
  * The registration leaf for the two foundry machines. The main registries deliberately do not know
@@ -30,27 +35,41 @@ public final class FoundryExpansion {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    // Typed registers: REG picks them without naming a registry key, which on 1.20.1 fails in DejsonMain's
+    // plain JVM (this class is initialised there: its blocks carry declarations).
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+            DeferredRegister.createBlockEntityTypes(Constants.MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+            DeferredRegister.createMenuTypes(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS, BLOCK_ENTITIES, MENUS);
+    /** Folded multiblocks drawn by their renderer: every core/cell state is the shared empty placeholder. */
+    private static final Preset FOLDED = Presets.rendered(Variants.product(
+            Variants.uniform("facing", "north", "east", "south", "west"),
+            Variants.uniform("cell", "false", "true")));
 
-    public static final RegistryObject<MachineStrandCaster> STRAND_CASTER = BLOCKS.registerBlock(
-            "machine_strand_caster", MachineStrandCaster::new, FoundryExpansion::machineProperties);
-    public static final RegistryObject<MachineArcFurnaceLarge> ARC_FURNACE = BLOCKS.registerBlock(
-            "machine_arc_furnace", MachineArcFurnaceLarge::new, FoundryExpansion::machineProperties);
+    public static final RegistryObject<MachineStrandCaster> STRAND_CASTER = REG.<MachineStrandCaster>block(
+            "machine_strand_caster", MachineStrandCaster::new, FoundryExpansion::machineProperties)
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
+    public static final RegistryObject<MachineArcFurnaceLarge> ARC_FURNACE = REG.<MachineArcFurnaceLarge>block(
+            "machine_arc_furnace", MachineArcFurnaceLarge::new, FoundryExpansion::machineProperties)
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
-    public static final RegistryObject<BlockItem> STRAND_CASTER_ITEM = ITEMS.registerBlockItem(
-            "machine_strand_caster", STRAND_CASTER);
-    public static final RegistryObject<BlockItem> ARC_FURNACE_ITEM = ITEMS.registerBlockItem(
-            "machine_arc_furnace", ARC_FURNACE);
+    public static final RegistryObject<BlockItem> STRAND_CASTER_ITEM = REG.blockItem(STRAND_CASTER);
+    public static final RegistryObject<BlockItem> ARC_FURNACE_ITEM = REG.blockItem(ARC_FURNACE);
 
     private static RegistryObject<ItemArcElectrode> fresh(String name, ItemArcElectrode.ElectrodeType type) {
-        return ITEMS.registerItem(name, p -> new ItemArcElectrode(p, type), p -> p.stacksTo(1).durability(type.durability));
+        return REG.<ItemArcElectrode>item(name, p -> new ItemArcElectrode(p, type),
+                        p -> p.stacksTo(1).durability(type.durability))
+                .transform(Presets.handheld("hbm:items/arc_electrode." + type.name().toLowerCase(java.util.Locale.ROOT)));
     }
 
     private static RegistryObject<ItemArcElectrodeBurnt> burnt(String name, ItemArcElectrode.ElectrodeType type) {
-        return ITEMS.registerItem(name, p -> new ItemArcElectrodeBurnt(p, type), p -> p.stacksTo(64));
+        return REG.<ItemArcElectrodeBurnt>item(name, p -> new ItemArcElectrodeBurnt(p, type), p -> p.stacksTo(64))
+                .transform(Presets.handheld("hbm:items/arc_electrode_burnt." + type.name().toLowerCase(java.util.Locale.ROOT)));
     }
 
     public static final RegistryObject<ItemArcElectrode> ARC_ELECTRODE =
@@ -97,15 +116,15 @@ public final class FoundryExpansion {
     }
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineStrandCaster>> STRAND_CASTER_BE =
-            BLOCK_ENTITIES.register("machine_strand_caster", () ->
+            REG.blockEntity("machine_strand_caster", () ->
                     dev.golem.core.registry.BlockEntities.serverTicking(TileEntityMachineStrandCaster::new, TileEntityMachineStrandCaster::serverTick, STRAND_CASTER.get()));
     public static final RegistryObject<BlockEntityType<TileEntityMachineArcFurnaceLarge>> ARC_FURNACE_BE =
-            BLOCK_ENTITIES.register("machine_arc_furnace", () ->
+            REG.blockEntity("machine_arc_furnace", () ->
                     dev.golem.core.registry.BlockEntities.ticking(TileEntityMachineArcFurnaceLarge::new, TileEntityMachineArcFurnaceLarge::clientTick, TileEntityMachineArcFurnaceLarge::serverTick, ARC_FURNACE.get()));
 
-    public static final RegistryObject<MenuType<ContainerMachineStrandCaster>> STRAND_CASTER_MENU = MENUS.register(
+    public static final RegistryObject<MenuType<ContainerMachineStrandCaster>> STRAND_CASTER_MENU = REG.menu(
             "machine_strand_caster", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineStrandCaster::new));
-    public static final RegistryObject<MenuType<ContainerMachineArcFurnaceLarge>> ARC_FURNACE_MENU = MENUS.register(
+    public static final RegistryObject<MenuType<ContainerMachineArcFurnaceLarge>> ARC_FURNACE_MENU = REG.menu(
             "machine_arc_furnace", () -> dev.golem.core.gui.Menus.typeWithPos(ContainerMachineArcFurnaceLarge::new));
 
     public static ItemArcElectrode fresh(ItemArcElectrode.ElectrodeType type) {

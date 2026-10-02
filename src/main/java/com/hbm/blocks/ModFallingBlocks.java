@@ -1,5 +1,9 @@
 package com.hbm.blocks;
 
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import dev.golem.core.world.Compat;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
@@ -27,55 +31,104 @@ public final class ModFallingBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
     /** Shredding obsidian / obsidian bricks yields this; blast-resistant like the obsidian it came from. */
     public static final RegistryObject<BlockFallingBase> gravel_obsidian =
-            falling("gravel_obsidian", 5.0F, 300.0F, SoundType.GRAVEL);
+            falling("gravel_obsidian", 5.0F, 300.0F, () -> SoundType.GRAVEL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
 
     /** The shredded-diamond-ore drop (and the mod's long-running non-joke — see the class javadoc). */
     public static final RegistryObject<BlockFallingBase> gravel_diamond =
-            falling("gravel_diamond", 0.6F, 0.6F, SoundType.GRAVEL);
+            falling("gravel_diamond", 0.6F, 0.6F, () -> SoundType.GRAVEL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
 
     // --- fracking / oil-spill debris (shredded back into oil scrap) ---
-    public static final RegistryObject<BlockFallingBase> dirt_dead = falling("dirt_dead", 0.5F, 0.5F, SoundType.GRAVEL);
-    public static final RegistryObject<BlockFallingBase> dirt_oily = falling("dirt_oily", 0.5F, 0.5F, SoundType.GRAVEL);
-    public static final RegistryObject<BlockFallingBase> sand_dirty = falling("sand_dirty", 0.5F, 0.5F, SoundType.SAND);
-    public static final RegistryObject<BlockFallingBase> sand_dirty_red = falling("sand_dirty_red", 0.5F, 0.5F, SoundType.SAND);
+    public static final RegistryObject<BlockFallingBase> dirt_dead = falling("dirt_dead", 0.5F, 0.5F, () -> SoundType.GRAVEL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
+    public static final RegistryObject<BlockFallingBase> dirt_oily = falling("dirt_oily", 0.5F, 0.5F, () -> SoundType.GRAVEL)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
+    public static final RegistryObject<BlockFallingBase> sand_dirty = falling("sand_dirty", 0.5F, 0.5F, () -> SoundType.SAND)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
+    public static final RegistryObject<BlockFallingBase> sand_dirty_red = falling("sand_dirty_red", 0.5F, 0.5F, () -> SoundType.SAND)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
 
     /** Tar sand — the oil-sand-bubble worldgen block; liquefies into BITUMEN (old {@code ModBlocks.ore_oil_sand}). */
-    public static final RegistryObject<BlockFallingBase> ore_oil_sand = falling("ore_oil_sand", 0.5F, 1.0F, SoundType.SAND);
+    public static final RegistryObject<BlockFallingBase> ore_oil_sand = falling("ore_oil_sand", 0.5F, 1.0F, () -> SoundType.SAND)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
 
     /** Lead-mixed sand — the PUREX vitrification medium (old {@code ModBlocks.sand_lead}, hardness 0.5). */
-    public static final RegistryObject<BlockFallingBase> sand_lead = falling("sand_lead", 0.5F, 0.5F, SoundType.SAND);
+    public static final RegistryObject<BlockFallingBase> sand_lead = falling("sand_lead", 0.5F, 0.5F, () -> SoundType.SAND)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
 
     // --- remaining plain BlockFallingBase registrations ---
     public static final RegistryObject<BlockFallingBase> block_scrap =
-            falling("block_scrap", 2.5F, 5.0F, SoundType.GRAVEL, HbmTab.BLOCKS);
+            falling("block_scrap", 2.5F, 5.0F, () -> SoundType.GRAVEL, HbmTab.BLOCKS)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> block_electrical_scrap =
-            falling("block_electrical_scrap", 2.5F, 5.0F, SoundType.METAL, HbmTab.BLOCKS);
+            falling("block_electrical_scrap", 2.5F, 5.0F, () -> SoundType.METAL, HbmTab.BLOCKS)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> moon_turf =
-            falling("moon_turf", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+            falling("moon_turf", 0.5F, 0.5F, () -> SoundType.SAND, HbmTab.RESOURCES)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> block_red_phosphorus =
-            falling("block_red_phosphorus", 5.0F, 10.0F, SoundType.SAND, HbmTab.BLOCKS);
+            falling("block_red_phosphorus", 5.0F, 10.0F, () -> SoundType.SAND, HbmTab.BLOCKS)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> sand_boron =
-            falling("sand_boron", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+            falling("sand_boron", 0.5F, 0.5F, () -> SoundType.SAND, HbmTab.RESOURCES)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> sand_gold =
-            falling("sand_gold", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+            falling("sand_gold", 0.5F, 0.5F, () -> SoundType.SAND, HbmTab.RESOURCES)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
     public static final RegistryObject<BlockFallingBase> sand_quartz =
-            falling("sand_quartz", 0.5F, 0.5F, SoundType.SAND, HbmTab.RESOURCES);
+            falling("sand_quartz", 0.5F, 0.5F, () -> SoundType.SAND, HbmTab.RESOURCES)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
 
     /** Digamma ash — laid under every cell a DRX laser burns through (old {@code BlockHazardFalling}). */
-    public static final RegistryObject<BlockFallingBase> ash_digamma = falling("ash_digamma", 0.5F, 150.0F, SoundType.SAND);
+    public static final RegistryObject<BlockFallingBase> ash_digamma = falling("ash_digamma", 0.5F, 150.0F, () -> SoundType.SAND)
+            .transform(Presets.cubeAll().viaItemModel())
+            .loot(Loot.self())
+            .tag(BlockTag.SHOVEL);
 
-    private static RegistryObject<BlockFallingBase> falling(String id, float hardness, float resistance, SoundType sound) {
+    private static Reg.Handle<BlockFallingBase> falling(String id, float hardness, float resistance, java.util.function.Supplier<SoundType> sound) {
         return falling(id, hardness, resistance, sound, HbmTab.RESOURCES);
     }
 
-    private static RegistryObject<BlockFallingBase> falling(String id, float hardness, float resistance,
-                                                             SoundType sound, HbmTab tab) {
-        RegistryObject<BlockFallingBase> block = BLOCKS.registerBlock(id, BlockFallingBase::new,
-                p -> p.strength(hardness, resistance).sound(sound));
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(id, block, p -> Compat.blockDescription(p));
+    private static Reg.Handle<BlockFallingBase> falling(String id, float hardness, float resistance,
+                                                             java.util.function.Supplier<SoundType> sound, HbmTab tab) {
+        Reg.Handle<BlockFallingBase> block = REG.block(id, BlockFallingBase::new,
+                p -> p.strength(hardness, resistance).sound(sound.get()));
+        Reg.Handle<BlockItem> item = REG.blockItem(block, p -> Compat.blockDescription(p));
         ModTabs.addTo(tab, item);
         return block;
     }

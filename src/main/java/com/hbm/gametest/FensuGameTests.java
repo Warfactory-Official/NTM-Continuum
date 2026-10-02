@@ -160,16 +160,18 @@ public final class FensuGameTests {
                 .getResourceAsStream("assets/hbm/items/machine_fensu.json")) {
             JsonObject root = stream == null ? null
                     : JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject();
-            JsonObject special = root == null ? null : root.getAsJsonObject("model");
-            JsonObject model = special == null ? null : special.getAsJsonObject("model");
-            helper.assertTrue(special != null && "minecraft:special".equals(special.get("type").getAsString())
-                            && "hbm:item/machine_obj_base".equals(special.get("base").getAsString())
-                            && model != null && "hbm:machine_obj".equals(model.get("type").getAsString())
-                            && !model.has("rawLegacyTransform") && !model.has("itemPreTranslate")
-                            && Math.abs(model.get("scale").getAsDouble() - 0.21D) < 0.000001D
-                            && Math.abs(model.get("yaw").getAsDouble() - 90D) < 0.000001D
-                            && model.get("ty").getAsDouble() == 0D,
-                    "FEnSU item model is not the centered OBJ contract");
+            // 1.7 ItemRenderLibrary machine_fensu: inv rotate(90, Y) translate(0, -2, 0) scale(2.5), raw (icon-P2)
+            JsonObject model = root == null ? null : root.getAsJsonObject("model");
+            helper.assertTrue(model != null && "hbm:machine_obj".equals(model.get("type").getAsString())
+                            && model.has("rawLegacyTransform") && model.get("rawLegacyTransform").getAsBoolean()
+                            && Math.abs(model.get("scale").getAsDouble() - 1D) < 0.000001D
+                            && Math.abs(model.get("yaw").getAsDouble()) < 0.000001D
+                            && Math.abs(model.get("guiScale").getAsDouble() - 2.5D) < 0.000001D
+                            && Math.abs(model.get("guiYaw").getAsDouble() - 90D) < 0.000001D
+                            && Math.abs(model.getAsJsonArray("guiTranslate").get(1).getAsDouble() + 2D) < 0.000001D
+                            && model.get("ty").getAsDouble() == 0D
+                            && root.get("oversized_in_gui").getAsBoolean(),
+                    "FEnSU item model is not the 1.7 raw ItemRenderLibrary contract");
         } catch (IOException | RuntimeException exception) {
             helper.fail("FEnSU item model could not be read: " + exception);
         }

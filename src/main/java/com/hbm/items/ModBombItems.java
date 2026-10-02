@@ -2,8 +2,9 @@ package com.hbm.items;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.special.ItemCustomLore;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 
@@ -17,81 +18,80 @@ public final class ModBombItems {
     private ModBombItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** Fat Man / Gadget explosive lens. Keeps the original id {@code gadget_explosive8}. */
     public static final RegistryObject<ItemCustomLore> early_explosive_lenses =
-            ITEMS.registerItem("gadget_explosive8", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("gadget_explosive8", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Fat Man / Mike / Tsar fissile core. */
     public static final RegistryObject<ItemCustomLore> man_core =
-            ITEMS.registerItem("man_core", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("man_core", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Fat Man igniter assembly. */
     public static final RegistryObject<ItemCustomLore> man_igniter =
-            ITEMS.registerItem("man_igniter", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("man_igniter", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** The Gadget's four lens wiring assembly. */
     public static final RegistryObject<ItemCustomLore> gadget_wireing =
-            ITEMS.registerItem("gadget_wireing", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("gadget_wireing", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** The Gadget's large plutonium core. */
     public static final RegistryObject<ItemCustomLore> gadget_core =
-            ITEMS.registerItem("gadget_core", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("gadget_core", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Little Boy's ordered five-part firing assembly. */
     public static final RegistryObject<ItemCustomLore> boy_shielding =
-            ITEMS.registerItem("boy_shielding", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("boy_shielding", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemCustomLore> boy_target =
-            ITEMS.registerItem("boy_target", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("boy_target", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemCustomLore> boy_bullet =
-            ITEMS.registerItem("boy_bullet", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("boy_bullet", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemCustomLore> boy_propellant =
-            ITEMS.registerItem("boy_propellant", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("boy_propellant", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
     public static final RegistryObject<ItemCustomLore> boy_igniter =
-            ITEMS.registerItem("boy_igniter", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("boy_igniter", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** The conventional explosive lenses used by Ivy Mike/Tsar. */
     public static final RegistryObject<ItemCustomLore> explosive_lenses =
-            ITEMS.registerItem("man_explosive8", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("man_explosive8", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Ivy Mike's uranium-coated primary vessel. */
     public static final RegistryObject<ItemCustomLore> mike_core =
-            ITEMS.registerItem("mike_core", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("mike_core", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Ivy Mike's deuterium secondary vessel. */
     public static final RegistryObject<ItemCustomLore> mike_deut =
-            ITEMS.registerItem("mike_deut", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("mike_deut", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Ivy Mike's deuterium cooling assembly. */
     public static final RegistryObject<ItemCustomLore> mike_cooling_unit =
-            ITEMS.registerItem("mike_cooling_unit", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("mike_cooling_unit", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** Optional sixth-stage Tsar core. */
     public static final RegistryObject<ItemCustomLore> tsar_core =
-            ITEMS.registerItem("tsar_core", ItemCustomLore::new, p -> p.stacksTo(1));
+            REG.item("tsar_core", ItemCustomLore::new, p -> p.stacksTo(1))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
     /** One charge occupies one of N²'s twelve slots. */
     public static final RegistryObject<ItemCustomLore> n2_charge =
-            ITEMS.registerItem("n2_charge", ItemCustomLore::new, p -> p.stacksTo(12));
+            REG.item("n2_charge", ItemCustomLore::new, p -> p.stacksTo(12))
+                    .transform(Presets.sprite()).tab(HbmTab.BOMBS);
 
-    static {
-        ModTabs.addTo(HbmTab.BOMBS, early_explosive_lenses);
-        ModTabs.addTo(HbmTab.BOMBS, man_core);
-        ModTabs.addTo(HbmTab.BOMBS, man_igniter);
-        ModTabs.addTo(HbmTab.BOMBS, gadget_wireing);
-        ModTabs.addTo(HbmTab.BOMBS, gadget_core);
-        ModTabs.addTo(HbmTab.BOMBS, boy_shielding);
-        ModTabs.addTo(HbmTab.BOMBS, boy_target);
-        ModTabs.addTo(HbmTab.BOMBS, boy_bullet);
-        ModTabs.addTo(HbmTab.BOMBS, boy_propellant);
-        ModTabs.addTo(HbmTab.BOMBS, boy_igniter);
-        ModTabs.addTo(HbmTab.BOMBS, explosive_lenses);
-        ModTabs.addTo(HbmTab.BOMBS, mike_core);
-        ModTabs.addTo(HbmTab.BOMBS, mike_deut);
-        ModTabs.addTo(HbmTab.BOMBS, mike_cooling_unit);
-        ModTabs.addTo(HbmTab.BOMBS, tsar_core);
-        ModTabs.addTo(HbmTab.BOMBS, n2_charge);
-    }
 
     public static void init() {}
 }

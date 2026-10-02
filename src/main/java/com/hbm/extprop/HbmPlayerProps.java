@@ -26,6 +26,7 @@ public final class HbmPlayerProps {
     public static void init() {
         if (registered) return;
         registered = true;
+        HbmLivingProps.init(); // declares the per-entity data before the loaders flush registrations
         Lifecycle.onPlayerCopy((oldPlayer, newPlayer, alive) ->
                 getData(newPlayer).copyPlayerPropsFrom(getData(oldPlayer)));
         com.hbm.blocks.generic.BlockLanternBehemoth.initReputationHook();

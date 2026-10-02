@@ -1,5 +1,6 @@
 package com.hbm.chemicalfactory;
 
+import com.hbm.registration.BlockTag;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.MachineChemicalFactory;
 import com.hbm.creativetabs.HbmTab;
@@ -10,13 +11,17 @@ import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.gui.Menus;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Variants;
 
 /** Factory-local registry entries. The common bootstrap loads this class through {@link #init()}. */
 public final class ChemicalFactoryRegistrations {
@@ -25,23 +30,32 @@ public final class ChemicalFactoryRegistrations {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    // Typed registers: REG picks them without naming a registry key, which on 1.20.1 fails in DejsonMain's
+    // plain JVM (this class is initialised there: its blocks carry declarations).
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
-            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+            DeferredRegister.createBlockEntityTypes(Constants.MOD_ID);
     public static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(Registries.MENU, Constants.MOD_ID);
+            DeferredRegister.createMenuTypes(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS, BLOCK_ENTITIES, MENUS);
+    /** Folded multiblocks drawn by their renderer: every core/cell state is the shared empty placeholder. */
+    private static final Preset FOLDED = Presets.rendered(Variants.product(
+            Variants.uniform("facing", "north", "east", "south", "west"),
+            Variants.uniform("cell", "false", "true")));
 
-    public static final RegistryObject<MachineChemicalFactory> MACHINE_CHEMICAL_FACTORY = BLOCKS.registerBlock(
+    public static final RegistryObject<MachineChemicalFactory> MACHINE_CHEMICAL_FACTORY = REG.<MachineChemicalFactory>block(
             "machine_chemical_factory", MachineChemicalFactory::new,
-            ChemicalFactoryRegistrations::machineProperties);
+            ChemicalFactoryRegistrations::machineProperties)
+            .transform(FOLDED)
+            .loot(Loot.self())
+            .tag(BlockTag.PICKAXE);
 
-    public static final RegistryObject<BlockItem> MACHINE_CHEMICAL_FACTORY_ITEM = ITEMS.registerBlockItem(
-            "machine_chemical_factory", MACHINE_CHEMICAL_FACTORY);
+    public static final RegistryObject<BlockItem> MACHINE_CHEMICAL_FACTORY_ITEM = REG.blockItem(MACHINE_CHEMICAL_FACTORY);
 
     public static final RegistryObject<BlockEntityType<TileEntityMachineChemicalFactory>> MACHINE_CHEMICAL_FACTORY_BE =
-            BLOCK_ENTITIES.register("machine_chemical_factory", () -> BlockEntities.ticking(TileEntityMachineChemicalFactory::new, TileEntityMachineChemicalFactory::clientTick, TileEntityMachineChemicalFactory::serverTick, MACHINE_CHEMICAL_FACTORY.get()));
+            REG.blockEntity("machine_chemical_factory", () -> BlockEntities.ticking(TileEntityMachineChemicalFactory::new, TileEntityMachineChemicalFactory::clientTick, TileEntityMachineChemicalFactory::serverTick, MACHINE_CHEMICAL_FACTORY.get()));
 
     public static final RegistryObject<MenuType<ContainerMachineChemicalFactory>> MACHINE_CHEMICAL_FACTORY_MENU =
-            MENUS.register("machine_chemical_factory", () -> Menus.typeWithPos(ContainerMachineChemicalFactory::new));
+            REG.menu("machine_chemical_factory", () -> Menus.typeWithPos(ContainerMachineChemicalFactory::new));
 
     static {
         ModTabs.addTo(HbmTab.MACHINES, MACHINE_CHEMICAL_FACTORY_ITEM);

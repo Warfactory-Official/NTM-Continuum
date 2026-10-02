@@ -18,6 +18,5 @@ public final class ModBombs2Content {
         ModBombs2Items.init();
         ModBombs2BlockEntities.init();
         ModBombs2Menus.init();
-        Bombs2Declarations.declare();
     }
 }

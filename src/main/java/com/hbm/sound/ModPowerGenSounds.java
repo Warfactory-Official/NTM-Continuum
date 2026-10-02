@@ -1,6 +1,7 @@
 package com.hbm.sound;
 
 import com.hbm.Constants;
+import com.hbm.registration.Reg;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
@@ -18,6 +19,7 @@ public final class ModPowerGenSounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(Registries.SOUND_EVENT, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SOUNDS);
     /** Declared before the first {@code register} call: static initialisers run in textual order. */
     private static final java.util.Map<String, RegistryObject<SoundEvent>> BY_KEY = new java.util.HashMap<>();
 
@@ -48,8 +50,7 @@ public final class ModPowerGenSounds {
 
 
     private static RegistryObject<SoundEvent> register(String name) {
-        RegistryObject<SoundEvent> event = SOUNDS.register(name,
-                () -> SoundEvent.createVariableRangeEvent(dev.golem.core.Ids.of(Constants.MOD_ID, name)));
+        RegistryObject<SoundEvent> event = REG.sound(name);
         BY_KEY.put(name, event);
         return event;
     }

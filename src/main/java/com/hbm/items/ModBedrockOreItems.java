@@ -1,6 +1,8 @@
 package com.hbm.items;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
+import com.hbm.blocks.EnergyBedrockDeclarations;
 import com.hbm.blocks.ModProduction2Blocks;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -30,6 +32,7 @@ public final class ModBedrockOreItems {
     private ModBedrockOreItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     private static final Map<Grade, Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>>> GRADED = new EnumMap<>(Grade.class);
 
@@ -38,7 +41,9 @@ public final class ModBedrockOreItems {
             if (grade == Grade.BASE) continue;
             Map<BedrockOreType, RegistryObject<ItemBedrockOreGraded>> byType = new EnumMap<>(BedrockOreType.class);
             for (BedrockOreType type : BedrockOreType.VALUES) {
-                byType.put(type, ITEMS.registerItem(id(grade, type), p -> new ItemBedrockOreGraded(p, grade, type)));
+                byType.put(type, REG.item(id(grade, type), p -> new ItemBedrockOreGraded(p, grade, type))
+                        .icon(d -> EnergyBedrockDeclarations.gradeModel(d, grade.name().toLowerCase(Locale.ROOT),
+                                type.suffix)));
             }
             GRADED.put(grade, byType);
         }

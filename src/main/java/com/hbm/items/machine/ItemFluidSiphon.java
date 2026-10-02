@@ -22,8 +22,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
  * {@link IFillableItem} that accepts the tank's fluid and is filled to the brim by it.
  *
  * <p>A tank's remainder under 1,000 mB tops up the first pipette in the inventory that would not fizzle on
- * it (laboratory pipettes are skipped, as in 1.7); pipettes are never filled as whole containers. Not ported:
- * the {@code FT_Unsiphonable} trait (no fluid carries it in the port).
+ * it (laboratory pipettes are skipped, as in 1.7); pipettes are never filled as whole containers. Tanks of
+ * an {@code FT_Unsiphonable} fluid (water and the four steams) are skipped, as in 1.7.
  */
 public class ItemFluidSiphon extends CompatItem {
 
@@ -50,6 +50,7 @@ public class ItemFluidSiphon extends CompatItem {
             if (tank.getFill() <= 0) continue;
             FluidType tankType = tank.getTankType();
             if (tankType == Fluids.NONE) continue;
+            if (tankType.hasTrait(com.hbm.inventory.fluid.trait.FluidTraitSimple.FT_Unsiphonable.class)) continue;
             boolean hasDrainedTank = false;
             ItemStack availablePipette = null;
 

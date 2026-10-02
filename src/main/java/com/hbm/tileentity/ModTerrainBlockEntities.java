@@ -1,5 +1,6 @@
 package com.hbm.tileentity;
 
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import dev.golem.core.registry.BlockEntities;
 import dev.golem.core.registry.DeferredRegister;
@@ -24,14 +25,15 @@ public final class ModTerrainBlockEntities {
 
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCK_ENTITIES);
 
     public static final RegistryObject<BlockEntityType<BlockFissure.TileEntityFissure>> FISSURE =
-            BLOCK_ENTITIES.register("fissure", () -> BlockEntities.serverTicking(
+            REG.blockEntity("fissure", () -> BlockEntities.serverTicking(
                     BlockFissure.TileEntityFissure::new, BlockFissure.TileEntityFissure::serverTick,
                     ModTerrainBlocks.ore_volcano.get()));
 
     public static final RegistryObject<BlockEntityType<TileEntityVolcanoCore>> VOLCANO_CORE =
-            BLOCK_ENTITIES.register("volcano_core", () -> {
+            REG.blockEntity("volcano_core", () -> {
                 List<Block> cores = new ArrayList<>();
                 for (RegistryObject<BlockVolcano> core : ModTerrainBlocks.volcanoCores()) cores.add(core.get());
                 return BlockEntities.serverTicking(TileEntityVolcanoCore::new, TileEntityVolcanoCore::serverTick,
@@ -39,17 +41,17 @@ public final class ModTerrainBlockEntities {
             });
 
     public static final RegistryObject<BlockEntityType<BlockGeysir.TileEntityGeysir>> GEYSIR =
-            BLOCK_ENTITIES.register("geysir", () -> BlockEntities.serverTicking(
+            REG.blockEntity("geysir", () -> BlockEntities.serverTicking(
                     BlockGeysir.TileEntityGeysir::new, BlockGeysir.TileEntityGeysir::serverTick,
                     ModTerrainBlocks.geysir_chlorine.get(), ModTerrainBlocks.geysir_nether.get()));
 
     public static final RegistryObject<BlockEntityType<BlockVent.TileEntityVent>> VENT =
-            BLOCK_ENTITIES.register("vent", () -> BlockEntities.serverTicking(
+            REG.blockEntity("vent", () -> BlockEntities.serverTicking(
                     BlockVent.TileEntityVent::new, BlockVent.TileEntityVent::serverTick,
                     ModTerrainBlocks.vent_chlorine.get(), ModTerrainBlocks.vent_cloud.get(), ModTerrainBlocks.vent_pink_cloud.get()));
 
     public static final RegistryObject<BlockEntityType<BlockChlorineSeal.TileEntityChlorineSeal>> CHLORINE_SEAL =
-            BLOCK_ENTITIES.register("chlorine_seal", () -> BlockEntities.serverTicking(
+            REG.blockEntity("chlorine_seal", () -> BlockEntities.serverTicking(
                     BlockChlorineSeal.TileEntityChlorineSeal::new, BlockChlorineSeal.TileEntityChlorineSeal::serverTick,
                     ModTerrainBlocks.vent_chlorine_seal.get()));
 

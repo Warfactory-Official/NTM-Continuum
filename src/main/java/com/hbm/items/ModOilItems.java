@@ -1,8 +1,9 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.EnumCokeType;
 import com.hbm.items.ItemEnums.EnumTarType;
 import com.hbm.items.machine.ItemPistons;
@@ -28,6 +29,7 @@ public final class ModOilItems {
     private ModOilItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     private static final Map<EnumTarType, RegistryObject<Item>> TARS = new EnumMap<>(EnumTarType.class);
     private static final Map<EnumCokeType, RegistryObject<Item>> COKES = new EnumMap<>(EnumCokeType.class);
@@ -35,20 +37,23 @@ public final class ModOilItems {
 
     static {
         for (EnumTarType v : EnumTarType.VALUES) {
-            RegistryObject<Item> item = ITEMS.registerSimpleItem("oil_tar_" + v.name().toLowerCase(Locale.US));
-            ModTabs.addTo(HbmTab.MATERIALS, item);
+            RegistryObject<Item> item = REG.item("oil_tar_" + v.name().toLowerCase(Locale.US))
+                    .transform(Presets.sprite())
+                    .tab(HbmTab.MATERIALS);
             TARS.put(v, item);
         }
         for (EnumCokeType v : EnumCokeType.VALUES) {
-            RegistryObject<Item> item = ITEMS.registerSimpleItem("coke_" + v.name().toLowerCase(Locale.US));
-            ModTabs.addTo(HbmTab.MATERIALS, item);
+            RegistryObject<Item> item = REG.item("coke_" + v.name().toLowerCase(Locale.US))
+                    .transform(Presets.sprite())
+                    .tab(HbmTab.MATERIALS);
             COKES.put(v, item);
         }
         for (Variant v : Variant.VALUES) {
-            RegistryObject<ItemPistons> item = ITEMS.registerItem(
+            RegistryObject<ItemPistons> item = REG.item(
                     "piston_set_" + v.name().toLowerCase(Locale.US),
-                    p -> new ItemPistons(p, v), p -> p.stacksTo(1));
-            ModTabs.addTo(HbmTab.CONTROL, item);
+                    p -> new ItemPistons(p, v), p -> p.stacksTo(1))
+                    .transform(Presets.sprite())
+                    .tab(HbmTab.CONTROL);
             PISTONS.put(v, item);
         }
     }
@@ -67,9 +72,9 @@ public final class ModOilItems {
     public static ItemStack piston(Variant v, int count)   { return new ItemStack(piston(v), count); }
 
     private static RegistryObject<ItemOilDetector> reg(String name, HbmTab tab) {
-        RegistryObject<ItemOilDetector> ro = ITEMS.registerItem(name, ItemOilDetector::new, p -> p.stacksTo(1));
-        ModTabs.addTo(tab, ro);
-        return ro;
+        return REG.item(name, ItemOilDetector::new, p -> p.stacksTo(1))
+                .transform(Presets.sprite())
+                .tab(tab);
     }
 
     public static void init() {}

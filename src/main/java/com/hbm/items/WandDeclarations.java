@@ -3,13 +3,10 @@ package com.hbm.items;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Models;
 
 /**
- * Dejson declarations for {@link ModWandItems} and {@code missile_test}. Touches no Minecraft class.
- *
- * <p>The wands are {@code setFull3D} sprites (1.7 textures {@code wand}, {@code wand_s}, {@code wand_d}). None has a
- * recipe upstream: they are creative-only.
+ * The typed OBJ item definition of {@code missile_test}; the wands' models are stated on their registrations
+ * ({@link ModWandItems}). Touches no Minecraft class.
  *
  * <p>{@code missile_test} is drawn by 1.7 {@code ItemRenderMissileGeneric} as the micro body wearing
  * {@code missile_test.png} ({@code generateStandard}, tier-0 GUI table), i.e. exactly the {@code missile_micro} item
@@ -25,10 +22,6 @@ public final class WandDeclarations {
     public static void declare() {
         if (declared) return;
         declared = true;
-
-        Dejson.item(NS, "wand_k").models(Models.handheld("hbm:items/wand")).register();
-        Dejson.item(NS, "wand_s").models(Models.handheld("hbm:items/wand_s")).register();
-        Dejson.item(NS, "wand_d").models(Models.handheld("hbm:items/wand_d")).register();
 
         missileTest();
     }

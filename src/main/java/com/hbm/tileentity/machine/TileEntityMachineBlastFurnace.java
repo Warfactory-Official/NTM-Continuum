@@ -9,6 +9,8 @@ import com.hbm.inventory.container.ContainerBlastFurnace;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
 import com.hbm.inventory.fluid.tank.FluidTankNTM;
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FluidReleaseType;
 import com.hbm.inventory.recipes.BlastFurnaceRecipesNT;
 import com.hbm.inventory.recipes.loader.GenericRecipe;
 import com.hbm.lib.DirPos;
@@ -97,8 +99,13 @@ public class TileEntityMachineBlastFurnace extends TileEntityMachineBase
                 furnace.process(recipe);
                 furnace.progress = 0F;
                 furnace.fuel -= FUEL_RATE;
-                furnace.tanks[1].setFill(Math.min(furnace.tanks[1].getFill() + FLUE_GAS,
-                        furnace.tanks[1].getMaxFill()));
+                furnace.tanks[1].setFill(furnace.tanks[1].getFill() + FLUE_GAS);
+                if (furnace.tanks[1].getFill() > furnace.tanks[1].getMaxFill()) {
+                    // 1.7 also calls FluidType.onFluidRelease here, which is an empty method.
+                    int spill = furnace.tanks[1].getFill() - furnace.tanks[1].getMaxFill();
+                    FT_Polluting.pollute(level, pos, furnace.tanks[1].getTankType(), FluidReleaseType.SPILL, spill);
+                    furnace.tanks[1].setFill(furnace.tanks[1].getMaxFill());
+                }
             }
 
             if (level.getRandom().nextInt(10) == 0 && !furnace.muffled) {

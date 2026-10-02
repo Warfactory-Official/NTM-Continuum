@@ -19,6 +19,5 @@ public final class ModIcfContent {
         ModIcfItems.init();
         ModIcfBlockEntities.init();
         ModIcfMenus.init();
-        IcfDeclarations.declare();
     }
 }

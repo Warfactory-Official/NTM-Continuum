@@ -28,8 +28,6 @@ import java.util.function.Supplier;
  */
 public class ItemTrain extends CompatItem {
 
-    private static final Component STANDARD_GAUGE = Component.translatable("desc.item.train.standardGauge");
-    private static final Component YES = Component.translatable("desc.item.train.yes");
 
     public final EnumTrainType type;
 
@@ -107,16 +105,21 @@ public class ItemTrain extends CompatItem {
         return InteractionResult.SUCCESS;
     }
 
+    /**
+     * The tooltip lines are built here rather than read from statics of the enclosing item class: this enum names
+     * the train items' registry ids, so it must initialise without the item class (and Minecraft) behind it.
+     */
     public enum EnumTrainType {
 
         //   Engine       Gauge              Max Speed  Accel.     Eng. Brake  Parking Brake
         CARGO_TRAM(() -> ModNtmEntities.CARGO_TRAM.get(),
-                Component.translatable("desc.item.train.electric"), STANDARD_GAUGE,
+                Component.translatable("desc.item.train.electric"), Component.translatable("desc.item.train.standardGauge"),
                 Component.translatable("desc.item.train.metresPerSecond", 10),
                 Component.translatable("desc.item.train.metresPerSecondSquared", 0.2D),
-                Component.translatable("desc.item.train.belowMetresPerSecond", 1), YES),
+                Component.translatable("desc.item.train.belowMetresPerSecond", 1), Component.translatable("desc.item.train.yes")),
         CARGO_TRAM_TRAILER(() -> ModNtmEntities.CARGO_TRAM_TRAILER.get(),
-                null, STANDARD_GAUGE, YES, null, null, Component.translatable("desc.item.train.no"));
+                null, Component.translatable("desc.item.train.standardGauge"), Component.translatable("desc.item.train.yes"),
+                null, null, Component.translatable("desc.item.train.no"));
 
         public static final EnumTrainType[] VALUES = values();
 

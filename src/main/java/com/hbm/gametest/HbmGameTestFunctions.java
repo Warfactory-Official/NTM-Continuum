@@ -112,6 +112,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("mass_storage_menu", 40, () -> MassStorageGameTests::menuAndControls);
     public static final GameTests.Function MASS_STORAGE_ASSETS =
             TESTS.function("mass_storage_assets", 20, () -> MassStorageGameTests::assets);
+    public static final GameTests.Function MASS_STORAGE_FACING =
+            TESTS.function("mass_storage_facing", 20, () -> MassStorageGameTests::facing);
     public static final GameTests.Function TEMPLATE_CRATE_LAYOUT =
             TESTS.function("template_crate_layout", 20, () -> TemplateCrateGameTests::layoutAndInventory);
     public static final GameTests.Function TEMPLATE_CRATE_ASSETS =
@@ -537,6 +539,18 @@ public final class HbmGameTestFunctions {
     public static final GameTests.Function CENTRIFUGE_MENU =
             TESTS.function("centrifuge_menu", 40, () -> CentrifugeGameTests::menu);
 
+    // --- 2026-09-30 machine-recipe gaps (PUREX / SILEX / crystallizer / crafting back to 1.7) ---
+    public static final GameTests.Function RECIPE_GAP_PUREX_TABLE =
+            TESTS.function("recipe_gap_purex_table", 20, () -> RecipeGapGameTests::purexTable);
+    public static final GameTests.Function RECIPE_GAP_PUREX_PLATE =
+            TESTS.function("recipe_gap_purex_plate", 200, () -> RecipeGapGameTests::purexPlateCycle);
+    public static final GameTests.Function RECIPE_GAP_SILEX_TABLE =
+            TESTS.function("recipe_gap_silex_table", 20, () -> RecipeGapGameTests::silexTable);
+    public static final GameTests.Function RECIPE_GAP_MERCURY =
+            TESTS.function("recipe_gap_mercury_cadmium", 20, () -> RecipeGapGameTests::mercuryAndCadmium);
+    public static final GameTests.Function RECIPE_GAP_CRAFTING =
+            TESTS.function("recipe_gap_crafting", 20, () -> RecipeGapGameTests::craftingCorrections);
+
     // --- standard cyclotron ---
     public static final GameTests.Function CYCLOTRON_RECIPES =
             TESTS.function("cyclotron_recipes", 20, () -> CyclotronGameTests::recipes);
@@ -871,6 +885,15 @@ public final class HbmGameTestFunctions {
             TESTS.function("b92_fires_beams", 40, () -> B92GameTests::firesBeams);
     public static final GameTests.Function B92_CELL_DRAWS_CHARGE =
             TESTS.function("b92_cell_draws_charge", 40, () -> B92GameTests::cellDrawsCharge);
+    // Per-entity HBM state through the loaders' attachment/capability storage, plus the v1 child-tag migration.
+    public static final GameTests.Function ENTITY_DATA_MOB_ROUND_TRIP =
+            TESTS.function("entity_data_mob_round_trip", 20, () -> EntityDataGameTests::mobRoundTrip);
+    public static final GameTests.Function ENTITY_DATA_PLAYER_ROUND_TRIP =
+            TESTS.function("entity_data_player_round_trip", 20, () -> EntityDataGameTests::playerRoundTrip);
+    public static final GameTests.Function ENTITY_DATA_LEGACY_MIGRATION =
+            TESTS.function("entity_data_legacy_migration", 20, () -> EntityDataGameTests::legacyMigration);
+    public static final GameTests.Function ENTITY_DATA_LEGACY_NO_OVERRIDE =
+            TESTS.function("entity_data_legacy_no_override", 20, () -> EntityDataGameTests::legacyDoesNotOverride);
     public static final GameTests.Function GUN_CREATIVE_QUALITY_VISIBILITY =
             TESTS.function("gun_creative_quality_visibility", 20, () -> GunGameTests::gunCreativeQualityVisibility);
     public static final GameTests.Function GUN_OBTAINMENT_AMMO_PRESS_CATALOGUE =
@@ -994,6 +1017,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("dejson_data_parity", 40, () -> DejsonGameTests::matchesShippedData);
     public static final GameTests.Function DEJSON_AUTOGEN_SPRITES =
             TESTS.function("dejson_autogen_sprites", 40, () -> DejsonGameTests::everyAutogenSpriteIsDrawn);
+    public static final GameTests.Function REG_BLOCK_ITEM_TAGS_RESOLVE =
+            TESTS.function("reg_block_item_tags_resolve", 20, () -> DejsonGameTests::blockItemTagsResolve);
 
     // --- code-declared material tags (implementations live in MaterialTagGameTests) ---
     public static final GameTests.Function MATERIAL_TAG_COMPLETENESS =
@@ -1051,6 +1076,8 @@ public final class HbmGameTestFunctions {
             TESTS.function("radar_utility_seal_hatch", 20, () -> RadarUtilityGameTests::sealTogglesHatch);
     public static final GameTests.Function RADAR_UTILITY_TELEPORTER =
             TESTS.function("radar_utility_teleporter", 20, () -> RadarUtilityGameTests::teleporterMovesEntity);
+    public static final GameTests.Function RADAR_MAP_NEVER_SAVED =
+            TESTS.function("radar_map_never_saved", 60, () -> RadarUtilityGameTests::radarMapNeverSavedChunks);
     public static final GameTests.Function CUSTOM_MISSILE_ASSEMBLE_LAUNCH =
             TESTS.function("custom_missile_assemble_launch", 40, () -> CustomMissileGameTests::assembleAndLaunch);
     public static final GameTests.Function ICF_PRESS_FILLS =
@@ -1089,8 +1116,18 @@ public final class HbmGameTestFunctions {
             TESTS.function("missile_player_path", 60, 8, () -> MissileGameTests::padPlayerPath);
     public static final GameTests.Function MISSILE_DETONATOR_LAUNCH =
             TESTS.function("missile_detonator_launch", 60, 8, () -> MissileGameTests::detonatorLaunch);
-    public static final GameTests.Function MISSILE_UNPORTED_REFUSED =
-            TESTS.function("missile_unported_refused", 20, () -> MissileGameTests::unportedMissileRefused);
+    public static final GameTests.Function MISSILE_FORMERLY_BLOCKED_ACCEPTED =
+            TESTS.function("missile_formerly_blocked_accepted", 20, () -> MissileGameTests::formerlyBlockedMissilesAccepted);
+    public static final GameTests.Function MISSILE_FORMERLY_BLOCKED_LAUNCH =
+            TESTS.function("missile_formerly_blocked_launch", 60, () -> MissileGameTests::formerlyBlockedMissilesLaunch);
+    public static final GameTests.Function MISSILE_RARE_DROPS =
+            TESTS.function("missile_rare_drops", 20, () -> MissileGameTests::missileRareDrops);
+    public static final GameTests.Function MISSILE_VOLCANO_CORE =
+            TESTS.function("missile_volcano_core", 60, MissileGameTests.BLAST_PADDING,
+                    () -> MissileGameTests::volcanoMissilePlacesCore);
+    public static final GameTests.Function MISSILE_ERODING_BLAST =
+            TESTS.function("missile_eroding_blast", 60, MissileGameTests.BLAST_PADDING,
+                    () -> MissileGameTests::erodingBlastTurnsConcreteToGravel);
     public static final GameTests.Function MISSILE_PAD_SYNC =
             TESTS.function("missile_pad_sync", 20, () -> MissileGameTests::padSyncsLoadedMissile);
     public static final GameTests.Function MISSILE_LAUNCHABLE_SET =
@@ -1186,6 +1223,10 @@ public final class HbmGameTestFunctions {
                     () -> LookOverlayGameTests::blockClassesAreDedicatedServerSafe);
     public static final GameTests.Function FOUNDRY_REMOVAL_SCRAPS =
             TESTS.function("foundry_removal_scraps", 20, () -> CompatibilityBoundaryGameTests::foundryRemovalScraps);
+    public static final GameTests.Function LEGACY_CUSTOM_RENDERER_ITEMS =
+            TESTS.function("legacy_custom_renderer_items", 40, () -> LegacyCompatGameTests::customRendererItemsUseCompatBases);
+    public static final GameTests.Function LEGACY_SMELTING_COUNT =
+            TESTS.function("legacy_smelting_count", 300, () -> LegacyCompatGameTests::smeltingKeepsResultCount);
     public static final GameTests.Function CRUCIBLE_REMOVAL_SCRAPS =
             TESTS.function("crucible_removal_scraps", 20, () -> CompatibilityBoundaryGameTests::crucibleRemovalScraps);
     public static final GameTests.Function COMPATIBILITY_FACADE_CONTRACTS =
@@ -1221,6 +1262,11 @@ public final class HbmGameTestFunctions {
     // --- the generated id constants (implementations live in IdGameTests) ---
     public static final GameTests.Function IDS_MATCH_REGISTRY =
             TESTS.function("ids_match_registry", 40, () -> IdGameTests::constantsMatchTheRegistry);
+    // A tool, not a test: writes hbm-registry-dump.json (registration-refactor evidence) and never fails, so it is
+    // declared only when the GameTest filter names it (-Pgametest.filter=.*registry_dump.*) and never counts
+    // towards a full run's pass total. See RegistryDumpGameTests.
+    public static final GameTests.Function REGISTRY_DUMP = RegistryDumpGameTests.requested()
+            ? TESTS.function("registry_dump", 100, () -> RegistryDumpGameTests::dump) : null;
 
     // --- the 1.7 NBT structure system (implementations live in StructureWandGameTests) ---
     public static final GameTests.Function STRUCTURE_LEGACY_PALETTE =
@@ -1266,6 +1312,53 @@ public final class HbmGameTestFunctions {
             TESTS.function("wg_glyphid_hive", 20, () -> WorldFeatureGameTests::glyphidHive);
     public static final GameTests.Function WG_METEOR_CHARMS =
             TESTS.function("wg_meteor_charms", 20, () -> WorldFeatureGameTests::meteorCharms);
+
+    // --- 1.7 fluid traits: vent radiation, poison, pheromone, simple tags, tooltip order (FluidTraitGameTests) ---
+    public static final GameTests.Function FLUID_TRAIT_VENT_RADIATION =
+            TESTS.function("fluid_trait_vent_radiation", 40, 8, () -> FluidTraitGameTests::ventRadiationMist);
+    public static final GameTests.Function FLUID_TRAIT_POISON =
+            TESTS.function("fluid_trait_poison", 40, 8, () -> FluidTraitGameTests::poisonMist);
+    public static final GameTests.Function FLUID_TRAIT_PHEROMONE =
+            TESTS.function("fluid_trait_pheromone", 40, 8, () -> FluidTraitGameTests::pheromone);
+    public static final GameTests.Function FLUID_TRAIT_SIMPLE =
+            TESTS.function("fluid_trait_simple_counts", 20, () -> FluidTraitGameTests::simpleTraitCounts);
+    public static final GameTests.Function FLUID_TRAIT_TOOLTIP_ORDER =
+            TESTS.function("fluid_trait_tooltip_order", 20, () -> FluidTraitGameTests::tooltipOrder);
+
+    // --- 1.7 chemical spray / mist: temperature, flamethrower, XP and ender juice, isDispersable (ChemicalSprayGameTests) ---
+    public static final GameTests.Function CHEMICAL_SPRAY_TEMPERATURE =
+            TESTS.function("chemical_spray_temperature", 40, 8, () -> ChemicalSprayGameTests::temperature);
+    public static final GameTests.Function CHEMICAL_SPRAY_FLAMETHROWER =
+            TESTS.function("chemical_spray_flamethrower", 40, 8, () -> ChemicalSprayGameTests::flamethrower);
+    public static final GameTests.Function CHEMICAL_SPRAY_XP_JUICE =
+            TESTS.function("chemical_spray_xp_juice", 40, 8, () -> ChemicalSprayGameTests::experienceJuice);
+    public static final GameTests.Function CHEMICAL_ENDER_TELEPORT_TO =
+            TESTS.function("chemical_ender_teleport_to", 40, 8, () -> ChemicalSprayGameTests::enderTeleportTo);
+    public static final GameTests.Function CHEMICAL_ENDER_JUICE =
+            TESTS.function("chemical_ender_juice", 100, ChemicalSprayGameTests.ENDER_JUICE_PADDING,
+                    () -> ChemicalSprayGameTests::enderJuice);
+    public static final GameTests.Function FLUID_DISPERSABLE =
+            TESTS.function("fluid_dispersable_containers", 20, () -> ChemicalSprayGameTests::dispersable);
+
+    // --- 1.7 chemical drag / block impact / creative rule, mist final tick + armour, Fritz fuel (ChemicalImpactGameTests) ---
+    public static final GameTests.Function CHEMICAL_DRAG =
+            TESTS.function("chemical_drag", 20, 8, () -> ChemicalImpactGameTests::drag);
+    public static final GameTests.Function CHEMICAL_CREATIVE =
+            TESTS.function("chemical_creative", 40, 8, () -> ChemicalImpactGameTests::creative);
+    public static final GameTests.Function CHEMICAL_MIST_TICK =
+            TESTS.function("chemical_mist_final_tick", 40, 8, () -> ChemicalImpactGameTests::mist);
+    public static final GameTests.Function CHEMICAL_IMPACT_FIRE =
+            TESTS.function("chemical_impact_fire", 20, 8, () -> ChemicalImpactGameTests::fire);
+    public static final GameTests.Function CHEMICAL_IMPACT_EXTINGUISH =
+            TESTS.function("chemical_impact_extinguish", 40, 20, () -> ChemicalImpactGameTests::extinguish);
+    public static final GameTests.Function CHEMICAL_IMPACT_SEED_SLURRY =
+            TESTS.function("chemical_impact_seed_slurry", 40, 8, () -> ChemicalImpactGameTests::seedSlurry);
+    public static final GameTests.Function TURRET_FRITZ_FUEL =
+            TESTS.function("chemical_fritz_fuel", 20, () -> ChemicalImpactGameTests::fritzFuel);
+    public static final GameTests.Function CHEMICAL_MIST_ON_MIST =
+            TESTS.function("chemical_mist_on_mist", 40, 8, () -> ChemicalImpactGameTests::mistOnMist);
+    public static final GameTests.Function CHEMICAL_ARMOUR_UNBREAKING =
+            TESTS.function("chemical_armour_unbreaking", 40, 8, () -> ChemicalImpactGameTests::unbreaking);
 
     public static void init() {}
 
@@ -2630,8 +2723,8 @@ public final class HbmGameTestFunctions {
 
         var reactorDuctPos = core.offset(3, 1, 0);
         var tankDuctPos = core.offset(4, 1, 0);
-        helper.setBlock(reactorDuctPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState());
-        helper.setBlock(tankDuctPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState());
+        helper.setBlock(reactorDuctPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
+        helper.setBlock(tankDuctPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState());
         var reactorDuct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, reactorDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
         var tankDuct = dev.golem.core.gametest.GameTestHelpers.blockEntity(helper, tankDuctPos, com.hbm.tileentity.network.TileEntityFluidDuctNT.class);
         reactorDuct.setFluidType(Fluids.SUPERHOTSTEAM);

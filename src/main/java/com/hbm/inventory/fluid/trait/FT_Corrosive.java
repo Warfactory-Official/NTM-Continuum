@@ -26,9 +26,10 @@ public final class FT_Corrosive {
         return rating > 50;
     }
 
+    /** 1.7 {@code addInfo}: gold {@code [Strongly Corrosive]} above fifty, yellow {@code [Corrosive]} otherwise. */
     public void addInfo(List<Component> info) {
         info.add(Component.literal("[")
-                .append(Component.translatable(isHighlyCorrosive() ? "trait.corrosiveIron" : "trait.corrosivePlastic"))
+                .append(Component.translatable(isHighlyCorrosive() ? "hbmfluid.trait.corrosiveStrong" : "hbmfluid.trait.corrosive"))
                 .append("]")
                 .withStyle(isHighlyCorrosive() ? ChatFormatting.GOLD : ChatFormatting.YELLOW));
     }

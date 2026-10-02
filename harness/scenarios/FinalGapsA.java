@@ -19,7 +19,7 @@ import java.util.List;
  *   <li>the singularity crafted from anti-schrabidium cells on a crafting table, refused with antimatter cells;</li>
  *   <li>the ten radiovoltaic batteries, a Po-210 one crafted in the 2x2 grid, drawn in a battery socket;</li>
  *   <li>an orbus cell broken in survival drops the tank's contents, which come back when it is placed again;</li>
- *   <li>the spent crucible hits like a bare hand ("Not enough energy."), a charged one at full damage;</li>
+ *   <li>the crucible (old-hbm since 2026-10-02): an empty one hits for 5 (+1), a charged one for 500 (+1);</li>
  *   <li>the mese gavel from the Book of Boxcars;</li>
  *   <li>the survey scanner's bedrock ore line;</li>
  *   <li>the trenchmaster's one-in-three dodge and immunity to the wearer's own explosions;</li>
@@ -137,7 +137,7 @@ public final class FinalGapsA implements Scenario {
         step(c, results, "02 singularity from ASCHRAB cells (crafting table)", () -> singularity(c));
         step(c, results, "03 radiovoltaic batteries + socket", () -> batteries(c));
         step(c, results, "03b orbus cell drop keeps the tank", () -> orbus(c));
-        step(c, results, "04 crucible empty charge = no attack modifiers", () -> crucible(c));
+        step(c, results, "04 crucible empty charge = 5 damage, charged = 500", () -> crucible(c));
         step(c, results, "06 mese gavel (Book of Boxcars)", () -> meseGavel(c));
         step(c, results, "08 survey scanner bedrock ore line", () -> survey(c));
         step(c, results, "09 trenchmaster dodge + own explosion", () -> trenchmaster(c));
@@ -496,32 +496,30 @@ public final class FinalGapsA implements Scenario {
         c.cmd("kill @e[type=!player]");
         c.cmd("gamemode survival");
         c.cmd("clear");
-        c.cmd("give @s " + crucible(c, 3) + " 1");
+        // old-hbm ItemCrucible: a crafted crucible holds no charge; its modifiers are 5 damage, +80% speed
+        c.cmd("give @s hbm:crucible 1");
         c.waitTicks(3);
         c.hotbar(1);
         c.cmd("summon minecraft:pig " + (px + 0.5) + " " + (Y + 1) + " " + (pz + 0.5) + " {NoAI:1b}");
         c.teleport(px + 0.5, Y + 1, pz - 1.5);
         c.waitTicks(25);
         JsonObject q = gapsa(c);
-        Expect.that(q.get("crucible_spent").getAsInt() == 3 && q.get("modifiers_suppressed").getAsBoolean(),
-                "the held crucible is spent and carries no modifiers: " + q);
-        Expect.that(q.get("attack_damage").getAsDouble() <= 1.0001, "a spent crucible hits like a bare hand: " + q);
+        Expect.that(q.get("crucible_charges").getAsInt() == 0 && Math.abs(q.get("attack_damage").getAsDouble() - 6.0) < 1.0E-3,
+                "the held crucible is empty and hits for 1 + 5: " + q);
         float before = pigHealth(c);
-        c.markLog();
         c.lookAt(px + 0.5, Y + 1.5, pz + 0.5);
         c.waitTicks(2);
         c.attack(1);
         c.waitTicks(10);
         float after = pigHealth(c);
-        c.screenshot("40-crucible-spent-hit");
-        Expect.that(before - after > 0.5F && before - after < 1.5F, "the spent crucible took 1 health: " + before + " -> " + after);
-        Expect.that(!c.logSinceMark("Not enough energy").isEmpty(), "1.7 'Not enough energy.' in chat");
+        c.screenshot("40-crucible-empty-hit");
+        Expect.that(before - after > 5.5F && before - after < 6.5F, "the empty crucible took 6 health: " + before + " -> " + after);
         c.cmd("clear");
-        c.cmd("give @s hbm:crucible 1");
+        c.cmd("give @s " + crucible(c, 16) + " 1");
         c.waitTicks(25);
         q = gapsa(c);
-        Expect.that(!q.get("modifiers_suppressed").getAsBoolean() && q.get("attack_damage").getAsDouble() > 5,
-                "a charged crucible keeps its attack damage: " + q);
+        Expect.that(q.get("crucible_charges").getAsInt() == 16 && Math.abs(q.get("attack_damage").getAsDouble() - 501.0) < 1.0E-3,
+                "a charged crucible hits for 1 + 500: " + q);
         c.cmd("kill @e[type=!player]");
         c.cmd("clear");
         c.cmd("gamemode creative");
@@ -1168,8 +1166,8 @@ public final class FinalGapsA implements Scenario {
                 : "hbm:cell[hbm:fluid_id=" + fluid + ",hbm:fluid_amount=1000,hbm:item_variant=" + variant + "]";
     }
 
-    private static String crucible(Client c, int spent) {
-        return legacy(c) ? "hbm:crucible{\"hbm:crucible_spent\":" + spent + "}" : "hbm:crucible[hbm:crucible_spent=" + spent + "]";
+    private static String crucible(Client c, int charges) {
+        return legacy(c) ? "hbm:crucible{\"hbm:charges\":" + charges + "}" : "hbm:crucible[hbm:charges=" + charges + "]";
     }
 
     private static String controller(Client c, int variant) {

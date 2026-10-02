@@ -5,6 +5,7 @@ import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import com.hbm.registration.Reg;
 
 /** Vanilla custom-recipe serializers. Call {@link #init()} during common bootstrap before registry flush. */
 public final class ModRecipes {
@@ -13,22 +14,23 @@ public final class ModRecipes {
 
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS =
             DeferredRegister.create(Registries.RECIPE_SERIALIZER, Constants.MOD_ID);
+    private static final Reg REG = Reg.of(SERIALIZERS);
 
     public static final RegistryObject<RecipeSerializer<RBMKFuelDisassemblyRecipe>> RBMK_FUEL_DISASSEMBLY =
-            SERIALIZERS.register("rbmk_fuel_disassembly", () -> RBMKFuelDisassemblyRecipe.SERIALIZER);
+            REG.register(Registries.RECIPE_SERIALIZER, "rbmk_fuel_disassembly", () -> RBMKFuelDisassemblyRecipe.SERIALIZER);
 
     public static final RegistryObject<RecipeSerializer<ComponentCopyShapelessRecipe>> COMPONENT_COPY_SHAPELESS =
-            SERIALIZERS.register("component_copy_shapeless", () -> ComponentCopyShapelessRecipe.SERIALIZER);
+            REG.register(Registries.RECIPE_SERIALIZER, "component_copy_shapeless", () -> ComponentCopyShapelessRecipe.SERIALIZER);
 
     public static final RegistryObject<RecipeSerializer<dev.golem.core.world.ComponentShapedRecipe>> COMPONENT_SHAPED =
-            SERIALIZERS.register("component_shaped", () -> dev.golem.core.world.ComponentShapedRecipe.SERIALIZER);
+            REG.register(Registries.RECIPE_SERIALIZER, "component_shaped", () -> dev.golem.core.world.ComponentShapedRecipe.SERIALIZER);
 
     public static final RegistryObject<RecipeSerializer<dev.golem.core.world.ComponentSmeltingRecipe>> COMPONENT_SMELTING =
-            SERIALIZERS.register("component_smelting", () -> dev.golem.core.world.ComponentSmeltingRecipe.SERIALIZER);
+            REG.register(Registries.RECIPE_SERIALIZER, "component_smelting", () -> dev.golem.core.world.ComponentSmeltingRecipe.SERIALIZER);
 
     /** 1.7 ShapelessOreRecipe with metadata/NBT, tag and getDict fluid-container ingredients. */
     public static final RegistryObject<RecipeSerializer<ComponentShapelessRecipe>> COMPONENT_SHAPELESS =
-            SERIALIZERS.register("component_shapeless", () -> ComponentShapelessRecipe.SERIALIZER);
+            REG.register(Registries.RECIPE_SERIALIZER, "component_shapeless", () -> ComponentShapelessRecipe.SERIALIZER);
 
     public static void init() {
         // the container<amount><fluid> dictionary behind every fluid ingredient

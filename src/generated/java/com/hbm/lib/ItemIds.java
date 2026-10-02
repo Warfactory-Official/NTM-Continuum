@@ -1511,7 +1511,6 @@ public final class ItemIds {
     public static final String fluid_duct_exhaust_3 = "hbm:fluid_duct_exhaust_3";
     public static final String fluid_duct_exhaust_4 = "hbm:fluid_duct_exhaust_4";
     public static final String fluid_duct_gauge = "hbm:fluid_duct_gauge";
-    public static final String fluid_duct_mk2 = "hbm:fluid_duct_mk2";
     public static final String fluid_duct_neo = "hbm:fluid_duct_neo";
     public static final String fluid_duct_neo_colored = "hbm:fluid_duct_neo_colored";
     public static final String fluid_duct_neo_silver = "hbm:fluid_duct_neo_silver";
@@ -1775,6 +1774,7 @@ public final class ItemIds {
     public static final String heater_oilburner = "hbm:heater_oilburner";
     public static final String heater_oven = "hbm:heater_oven";
     public static final String hev_battery = "hbm:hev_battery";
+    public static final String hev_battery_block = "hbm:hev_battery_block";
     public static final String hev_boots = "hbm:hev_boots";
     public static final String hev_helmet = "hbm:hev_helmet";
     public static final String hev_legs = "hbm:hev_legs";
@@ -2235,7 +2235,6 @@ public final class ItemIds {
     public static final String missile_burst = "hbm:missile_burst";
     public static final String missile_buster = "hbm:missile_buster";
     public static final String missile_buster_strong = "hbm:missile_buster_strong";
-    public static final String missile_carrier = "hbm:missile_carrier";
     public static final String missile_cluster = "hbm:missile_cluster";
     public static final String missile_cluster_strong = "hbm:missile_cluster_strong";
     public static final String missile_custom = "hbm:missile_custom";
@@ -2245,8 +2244,6 @@ public final class ItemIds {
     public static final String missile_drill = "hbm:missile_drill";
     public static final String missile_emp = "hbm:missile_emp";
     public static final String missile_emp_strong = "hbm:missile_emp_strong";
-    public static final String missile_endo = "hbm:missile_endo";
-    public static final String missile_exo = "hbm:missile_exo";
     public static final String missile_generic = "hbm:missile_generic";
     public static final String missile_incendiary = "hbm:missile_incendiary";
     public static final String missile_incendiary_strong = "hbm:missile_incendiary_strong";

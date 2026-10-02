@@ -14,9 +14,6 @@ import net.minecraft.world.phys.HitResult;
 
 /**
  * The "strong" family: double the yield of tier 1, on the larger airframe.
- *
-     * <p>Not ported yet: {@code EntityMissileClusterStrong} (needs {@code EntityRocket}) —
-     * IMPLEMENTATION.md §20.
  */
 public abstract class EntityMissileTier2 extends EntityMissileBaseNT {
 

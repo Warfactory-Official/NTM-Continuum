@@ -72,10 +72,16 @@ public final class ModDamageSources {
     public static final ResourceKey<DamageType> ICE = key("ice");
     /** Eaten by a corrosive fluid. Absolute, and it damages the whole suit on the way through. */
     public static final ResourceKey<DamageType> ACID = key("acid");
+    /** 1.7 {@code ModDamageSource.s_flamethrower}: the chemical thrower's burning-liquid and burning-gas sprays. */
+    public static final ResourceKey<DamageType> FLAMETHROWER = key("flamethrower");
     /** The corrupted broadcaster (old {@code ModDamageSource.broadcast}): absolute + bypasses armor. */
     public static final ResourceKey<DamageType> BROADCAST = key("broadcast");
     /** The pest control box (old {@code ModDamageSource.enervation}): absolute + bypasses armor. */
     public static final ResourceKey<DamageType> ENERVATION = key("enervation");
+    /** old-hbm {@code ModDamageSource.crucible}: the crucible's cut. Absolute, ignores armour. */
+    public static final ResourceKey<DamageType> CRUCIBLE = key("crucible");
+    /** old-hbm {@code ModDamageSource.slicer}: a plain cutter's cut. Absolute, ignores armour. */
+    public static final ResourceKey<DamageType> SLICER = key("slicer");
 
     // --- ntm-next entity port (gen_entity_damage_types.py) ---
     /** ntm-next cloud: bypasses_armor, bypasses_effects. */

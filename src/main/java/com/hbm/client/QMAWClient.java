@@ -68,6 +68,8 @@ public final class QMAWClient {
         // retains one mapping when two actions share a key. The edge is the old key-down debounce.
         if (qmawWasDown) return;
         qmawWasDown = true;
+        // 1.7 opened the manual only without Left Shift; with it the key opens a presentation (CanneryClient).
+        if (CanneryClient.shiftHeld()) return;
         if (mc.screen == null || mc.screen != lastManualScreen || mc.player == null || lastManual == null) return;
         mc.player.closeContainer();
         mc.setScreen(new GuiQMAW(lastManual));

@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import java.util.function.Function;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -42,81 +45,117 @@ public final class ModEntityItems {
     private ModEntityItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
-
-    private static <I extends Item> RegistryObject<I> tabbed(RegistryObject<I> item, HbmTab tab) {
-        ModTabs.addTo(tab, item);
-        return item;
-    }
+    private static final Reg REG = Reg.of(ITEMS);
 
     // --- spawn items (1.7 ItemChopper family) ---
-    public static final RegistryObject<ItemChopper> spawn_chopper = tabbed(ITEMS.registerItem("chopper",
-            p -> new ItemChopper(p, () -> ModNtmEntities.HUNTER_CHOPPER.get()), p -> p.stacksTo(1)), HbmTab.WEAPONS);
-    public static final RegistryObject<ItemChopper> spawn_worm = tabbed(ITEMS.registerItem("spawn_worm",
-            p -> new ItemChopper(p, () -> ModNtmEntities.BALLS_O_TRON.get(), 0, mob -> { },
-                    "Without a player in survival mode",
-                    "to target, he struggles around a lot.",
-                    "",
-                    "He's doing his best so please show him",
-                    "some consideration."), p -> p.stacksTo(1)), HbmTab.WEAPONS);
-    public static final RegistryObject<ItemChopper> spawn_ufo = tabbed(ITEMS.registerItem("spawn_ufo",
-            p -> new ItemChopper(p, () -> ModNtmEntities.UFO.get(), 35, mob -> ((EntityUFO) mob).scanCooldown = 100),
-            p -> p.stacksTo(1)), HbmTab.WEAPONS);
-    public static final RegistryObject<ItemChopper> spawn_duck = tabbed(ITEMS.registerItem("spawn_duck",
-            p -> new ItemChopper(p, () -> ModNtmEntities.DUCK.get()), p -> p.stacksTo(16)), HbmTab.WEAPONS);
+    public static final RegistryObject<ItemChopper> spawn_chopper = REG.item("chopper",
+                    p -> new ItemChopper(p, () -> ModNtmEntities.HUNTER_CHOPPER.get()), p -> p.stacksTo(1))
+            .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
+    public static final RegistryObject<ItemChopper> spawn_worm = REG.item("spawn_worm",
+                    p -> new ItemChopper(p, () -> ModNtmEntities.BALLS_O_TRON.get(), 0, mob -> { },
+                            "Without a player in survival mode",
+                            "to target, he struggles around a lot.",
+                            "",
+                            "He's doing his best so please show him",
+                            "some consideration."), p -> p.stacksTo(1))
+            .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
+    public static final RegistryObject<ItemChopper> spawn_ufo = REG.item("spawn_ufo",
+                    p -> new ItemChopper(p, () -> ModNtmEntities.UFO.get(), 35, mob -> ((EntityUFO) mob).scanCooldown = 100),
+                    p -> p.stacksTo(1))
+            .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
+    public static final RegistryObject<ItemChopper> spawn_duck = REG.item("spawn_duck",
+                    p -> new ItemChopper(p, () -> ModNtmEntities.DUCK.get()), p -> p.stacksTo(16))
+            .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
 
     // --- vehicles ---
-    public static final RegistryObject<ItemBoatRubber> boat_rubber = tabbed(ITEMS.registerItem("boat_rubber",
-            ItemBoatRubber::new, p -> p.stacksTo(1)), HbmTab.MACHINES);
-    public static final RegistryObject<ItemCouplingTool> coupling_tool = tabbed(ITEMS.registerItem("coupling_tool",
-            ItemCouplingTool::new, p -> p.stacksTo(1)), HbmTab.MACHINES);
-    /** 1.7 ModItems.cart: one item per cart type, the chassis carried on the stack. */
-    public static final ItemFamily<ItemModMinecart.EnumMinecart, ItemModMinecart> cart = ItemFamily.of(ITEMS,
-            ItemModMinecart.EnumMinecart.class, c -> "cart_" + c.id, ItemModMinecart::new, p -> p.stacksTo(4));
+    public static final RegistryObject<ItemBoatRubber> boat_rubber = REG.item("boat_rubber",
+                    ItemBoatRubber::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite()).tab(HbmTab.MACHINES);
+    public static final RegistryObject<ItemCouplingTool> coupling_tool = REG.item("coupling_tool",
+                    ItemCouplingTool::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite()).tab(HbmTab.MACHINES);
+    /**
+     * 1.7 ModItems.cart: one item per cart type, the chassis carried on the stack. The icon is 1.7's two passes,
+     * chassis under overlay, with the chassis pass fixed to the vanilla sprite: the {@code CART_BASE} component
+     * has no select vocabulary, so a wood/steel/painted chassis draws as vanilla in hand (the entity is unaffected).
+     * The other families keep 1.7's {@code <base>.<constant>} sprite names.
+     */
+    public static final ItemFamily<ItemModMinecart.EnumMinecart, ItemModMinecart> cart = ItemFamily.of(
+            ItemModMinecart.EnumMinecart.class, c -> REG.item("cart_" + c.id, p -> new ItemModMinecart(p, c),
+                            p -> p.stacksTo(4))
+                    .transform(Presets.sprite("hbm:items/cart.vanilla", "hbm:items/cart_overlay." + c.id)));
     /** 1.7 ModItems.train - setCreativeTab(null) */
-    public static final ItemFamily<ItemTrain.EnumTrainType, ItemTrain> train = ItemFamily.of(ITEMS,
-            ItemTrain.EnumTrainType.class, t -> "train_" + t.name().toLowerCase(Locale.ROOT), ItemTrain::new,
-            p -> p.stacksTo(1));
-    public static final ItemFamily<ItemDrone.EnumDroneType, ItemDrone> drone = ItemFamily.of(ITEMS,
-            ItemDrone.EnumDroneType.class, d -> "drone_" + d.name().toLowerCase(Locale.ROOT), ItemDrone::new,
-            p -> p);
+    public static final ItemFamily<ItemTrain.EnumTrainType, ItemTrain> train = ItemFamily.of(
+            ItemTrain.EnumTrainType.class, t -> REG.item("train_" + t.name().toLowerCase(Locale.ROOT),
+                            p -> new ItemTrain(p, t), p -> p.stacksTo(1))
+                    .transform(Presets.sprite("hbm:items/train." + t.name().toLowerCase(Locale.ROOT))));
+    public static final ItemFamily<ItemDrone.EnumDroneType, ItemDrone> drone = ItemFamily.of(
+            ItemDrone.EnumDroneType.class, d -> REG.item("drone_" + d.name().toLowerCase(Locale.ROOT),
+                            p -> new ItemDrone(p, d), p -> p)
+                    .transform(Presets.sprite("hbm:items/drone." + d.name().toLowerCase(Locale.ROOT))));
 
     // --- grenades (1.7 ModItems:3590 and the universal grenade parts) ---
-    public static final RegistryObject<ItemGrenadeDynamite> stick_dynamite = tabbed(ITEMS.registerItem("stick_dynamite",
-            p -> new ItemGrenadeDynamite(p, 3), p -> p.stacksTo(16)), HbmTab.WEAPONS);
+    public static final RegistryObject<ItemGrenadeDynamite> stick_dynamite = REG.item("stick_dynamite",
+                    p -> new ItemGrenadeDynamite(p, 3), p -> p.stacksTo(16))
+            .transform(Presets.sprite()).tab(HbmTab.WEAPONS);
     public static final ItemFamily<ItemGrenadeShell.EnumGrenadeShell, ItemGrenadeShell> grenade_shell = ItemFamily.of(
-            ITEMS, "grenade_shell", ItemGrenadeShell.EnumGrenadeShell.class, ItemGrenadeShell::new, p -> p);
+            ItemGrenadeShell.EnumGrenadeShell.class, e -> grenadePart("grenade_shell", e,
+                    p -> new ItemGrenadeShell(p, e)));
     public static final ItemFamily<ItemGrenadeFilling.EnumGrenadeFilling, ItemGrenadeFilling> grenade_filling =
-            ItemFamily.of(ITEMS, "grenade_filling", ItemGrenadeFilling.EnumGrenadeFilling.class,
-                    ItemGrenadeFilling::new, p -> p);
+            ItemFamily.of(ItemGrenadeFilling.EnumGrenadeFilling.class, e -> grenadePart("grenade_filling", e,
+                    p -> new ItemGrenadeFilling(p, e)));
     public static final ItemFamily<ItemGrenadeFuze.EnumGrenadeFuze, ItemGrenadeFuze> grenade_fuze = ItemFamily.of(
-            ITEMS, "grenade_fuze", ItemGrenadeFuze.EnumGrenadeFuze.class, ItemGrenadeFuze::new, p -> p);
+            ItemGrenadeFuze.EnumGrenadeFuze.class, e -> grenadePart("grenade_fuze", e,
+                    p -> new ItemGrenadeFuze(p, e)));
     public static final ItemFamily<ItemGrenadeExtra.EnumGrenadeExtra, ItemGrenadeExtra> grenade_extra = ItemFamily.of(
-            ITEMS, "grenade_extra", ItemGrenadeExtra.EnumGrenadeExtra.class, ItemGrenadeExtra::new, p -> p);
-    public static final RegistryObject<ItemGrenadeUniversal> grenade_universal = tabbed(ITEMS.registerItem(
-            "grenade_universal", ItemGrenadeUniversal::new, p -> p.stacksTo(4)), HbmTab.WEAPONS);
+            ItemGrenadeExtra.EnumGrenadeExtra.class, e -> grenadePart("grenade_extra", e,
+                    p -> new ItemGrenadeExtra(p, e)));
+    public static final RegistryObject<ItemGrenadeUniversal> grenade_universal = REG.item(
+                    "grenade_universal", ItemGrenadeUniversal::new, p -> p.stacksTo(4))
+            // 1.7 getSubItems: every shell/filling/fuze(/extra) combination, not the bare item
+            .andThen(h -> ModTabs.addStacksTo(HbmTab.WEAPONS, ItemGrenadeUniversal::subItems))
+            // 1.7 ItemRenderGrenade drew every slot, the inventory included, from the stack's shell/filling/fuze
+            .andThen(h -> ItemRendererDeclarations.model(h.path(), "grenade", "weapon"));
+
+    /** A universal-grenade part: {@code <base>_<constant>}, drawn with the 1.7 {@code <base>.<constant>} sprite. */
+    private static <I extends Item> RegistryObject<I> grenadePart(String base, Enum<?> constant,
+                                                                  Function<Item.Properties, I> factory) {
+        String name = constant.name().toLowerCase(Locale.ROOT);
+        return REG.item(base + "_" + name, factory, p -> p).transform(Presets.sprite("hbm:items/" + base + "." + name));
+    }
 
     // --- dispersers (1.7 ModItems:3881; the empty canister/gland items already exist in ModItems) ---
-    public static final RegistryObject<ItemDisperser> disperser_canister = ITEMS.registerItem("disperser_canister",
-            p -> new ItemDisperser(p, 2000, "disperser_canister", ItemDisperser.Kind.CANISTER,
-                    Library.id("disperser_canister_empty"), Library.id("disperser_canister_overlay")),
-            p -> p);
-    public static final RegistryObject<ItemDisperser> glyphid_gland = ITEMS.registerItem("glyphid_gland",
-            p -> new ItemDisperser(p, 4000, "glyphid_gland", ItemDisperser.Kind.GLAND,
-                    Library.id("glyphid_gland_empty"), Library.id("fluid_identifier_overlay")),
-            p -> p);
+    public static final RegistryObject<ItemDisperser> disperser_canister = REG.item("disperser_canister",
+                    p -> new ItemDisperser(p, 2000, "disperser_canister", ItemDisperser.Kind.CANISTER,
+                            Library.id("disperser_canister_empty"), Library.id("disperser_canister_overlay")),
+                    p -> p)
+            .transform(Presets.sprite());
+    public static final RegistryObject<ItemDisperser> glyphid_gland = REG.item("glyphid_gland",
+                    p -> new ItemDisperser(p, 4000, "glyphid_gland", ItemDisperser.Kind.GLAND,
+                            Library.id("glyphid_gland_empty"), Library.id("fluid_identifier_overlay")),
+                    p -> p)
+            .transform(Presets.sprite());
+
+    static {
+        // 1.7 put both in the weapon tab, one full stack per ItemDisperser.getSubItems fluid.
+        ModTabs.addStacksTo(HbmTab.WEAPONS, () -> disperser_canister.get().creativeVariants());
+        ModTabs.addStacksTo(HbmTab.WEAPONS, () -> glyphid_gland.get().creativeVariants());
+    }
 
     // --- drops ---
-    public static final RegistryObject<ItemPlasticBag> plastic_bag = tabbed(ITEMS.registerItem("plastic_bag",
-            ItemPlasticBag::new, p -> p), HbmTab.CONSUMABLES);
+    public static final RegistryObject<ItemPlasticBag> plastic_bag = REG.item("plastic_bag",
+                    ItemPlasticBag::new, p -> p)
+            .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
     /**
      * 1.7 ModItems.bottled_cloud, the mask man's drop. In 1.7/ntm-next it is an armour module
      * ({@code ItemModCloud}); this port's armour-module wave owns that behaviour, so the drop is a plain
      * item until it is wired there.
      */
-    public static final RegistryObject<Item> bottled_cloud = tabbed(ITEMS.registerSimpleItem("bottled_cloud"),
-            HbmTab.CONSUMABLES);
-    public static final RegistryObject<ItemBatteryCreative> battery_creative = tabbed(ITEMS.registerItem(
-            "battery_creative", ItemBatteryCreative::new, p -> p.stacksTo(1)), HbmTab.CONTROL);
+    public static final RegistryObject<Item> bottled_cloud = REG.item("bottled_cloud")
+            .transform(Presets.sprite()).tab(HbmTab.CONSUMABLES);
+    public static final RegistryObject<ItemBatteryCreative> battery_creative = REG.item(
+                    "battery_creative", ItemBatteryCreative::new, p -> p.stacksTo(1))
+            .transform(Presets.sprite("hbm:items/battery_creative_new")).tab(HbmTab.CONTROL);
 
     public static void init() {}
 }

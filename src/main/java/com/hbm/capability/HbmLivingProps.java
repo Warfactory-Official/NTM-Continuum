@@ -1,5 +1,6 @@
 package com.hbm.capability;
 
+import dev.golem.core.data.EntityData;
 import dev.golem.core.world.Compat;
 import java.util.List;
 
@@ -8,7 +9,6 @@ import com.hbm.config.RadiationConfig;
 import com.hbm.entity.EntityHbmProps;
 import com.hbm.entity.EntityHbmProps.ContaminationEffect;
 import com.hbm.lib.ModDamageSources;
-import com.hbm.entity.IHbmLivingDuck;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
@@ -31,8 +31,22 @@ public class HbmLivingProps {
     public static final int maxAsbestos = 60 * 60 * 20;
     public static final int maxBlacklung = 2 * 60 * 60 * 20;
 
+    /**
+     * Every living entity's HBM state, in the loader's own per-entity storage (NeoForge/Fabric data attachment,
+     * Forge capability) through Golem Core — saved as {@code hbm:living_props}. It replaced the
+     * {@code MixinLivingEntity} duck field and its hand-written {@code HbmLivingProps} child tag; an entity saved
+     * in that v1 format is read once on load. Not copied on respawn: {@code HbmPlayerProps.init} copies the
+     * player half, as 1.7's {@code onPlayerClone} did.
+     */
+    public static final EntityData<EntityHbmProps> DATA = EntityData.of(Constants.MOD_ID, "living_props",
+            LivingEntity.class, EntityHbmProps::new, EntityHbmProps::save, EntityHbmProps::load)
+            .migrateFrom("HbmLivingProps");
+
+    /** Declares {@link #DATA}; must run before the loader flushes registrations (NeoForge registers it). */
+    public static void init() {}
+
     public static EntityHbmProps getData(LivingEntity entity) {
-        return ((IHbmLivingDuck) entity).hbm$getProps();
+        return DATA.get(entity);
     }
 
     /// RADIATION ///

@@ -33,10 +33,32 @@ public final class ArcWelderGameTests {
 
     public static void feasibleCatalogueAndMatching(GameTestHelper helper) {
         ArcWelderRecipes.register();
-        // 41: the two 1.12.2 satellite welds (sat_base + sat_head) went with §19ec-satellites; 1.7 assembles
-        // every satellite in the assembly machine and its arc welder makes none.
-        helper.assertTrue(ArcWelderRecipes.recipes.size() == 41,
-                "Arc Welder must retain 41 feasible legacy recipes, found " + ArcWelderRecipes.recipes.size());
+        // 42 = the 1.7 ArcWelderRecipes catalogue (original-hbm registerDefaults: 2 LDE, reflector, 3 dense wires,
+        // 11 welded plates, 3 thrusters, 3 tanks, 18 missiles incl. missile_emp_strong, plus the motor). The 1.12.2
+        // satellite welds went with 1.7 (satellites assemble in the assembly machine); the port previously carried a
+        // bogus HDE weld (really the Plasma Forge recipe plsm.hde) and lacked the reflector weld.
+        helper.assertTrue(ArcWelderRecipes.recipes.size() == 42,
+                "Arc Welder must retain the 42 1.7 recipes, found " + ArcWelderRecipes.recipes.size());
+        helper.assertTrue(ArcWelderRecipes.recipes.stream().noneMatch(r -> r.output.is(com.hbm.items.ModIngredientItems.part(com.hbm.items.ItemEnums.EnumPartType.HDE))),
+                "HDE is a Plasma Forge recipe, not an Arc Welder one");
+        helper.assertTrue(ArcWelderRecipes.recipes.stream().anyMatch(r -> r.output.is(ModItems.neutron_reflector.get())
+                        && r.output.getCount() == 2),
+                "1.7 Arc Welder welds two neutron reflectors");
+
+        // 1.7 values the port once got wrong: the osmiridium weld costs 50M HE (not 20M) and thruster_large's third
+        // input is 12 tungsten carbide ingots (not 12 neutron reflectors).
+        Item osmiridiumPlate = ModAutogenItems.get(MaterialShapes.WELDEDPLATE, com.hbm.inventory.material.Mats.MAT_OSMIRIDIUM);
+        var osmiridium = ArcWelderRecipes.recipes.stream().filter(r -> r.output.is(osmiridiumPlate)).findFirst().orElse(null);
+        helper.assertTrue(osmiridium != null && osmiridium.consumption == 50_000_000L && osmiridium.duration == 6_000
+                        && osmiridium.fluid != null && osmiridium.fluid.fill == 16_000,
+                "1.7 osmiridium weld is 6000 ticks at 50,000,000 HE with 16000 reformate gas");
+        var thrusterLarge = ArcWelderRecipes.recipes.stream()
+                .filter(r -> r.output.is(ModItems.thruster_large.get())).findFirst().orElse(null);
+        helper.assertTrue(thrusterLarge != null && thrusterLarge.ingredients.length == 3
+                        && thrusterLarge.ingredients[2].stacksize == 12
+                        && thrusterLarge.ingredients[2].matchesRecipe(new ItemStack(ModItems.ingot_tungsten_carbide.get(), 12), true)
+                        && !thrusterLarge.ingredients[2].matchesRecipe(new ItemStack(ModItems.neutron_reflector.get(), 12), true),
+                "1.7 thruster_large welds 12 tungsten carbide ingots, not neutron reflectors");
 
         var scanner = ArcWelderRecipes.getRecipe(new ItemStack(ModItems.sat_base.get()),
                 new ItemStack(ModItems.sat_head_scanner.get()), ItemStack.EMPTY);

@@ -57,8 +57,9 @@ import java.util.function.Function;
  * <p>Deliberate differences, each forced: the dimension of an entry is its level; the sweep runs at the end of
  * the server tick rather than the start, which is the same moment for the next tick's radars; the map only
  * reads loaded chunks, and for the rest the height map saved in the region file (1.7 {@code provideChunk}: off disk,
- * never generated) through Core's asynchronous {@code Chunks.readSavedHeights} - so an unloaded cell appears one sweep
- * (20 s) later than in 1.7; {@link #generateChunks} still generates as 1.7's did. There is no legacy {@code IRadarDetectable} converter
+ * never generated) through Core's asynchronous {@code Chunks.readSavedHeights}, started {@link #PREFETCH_TICKS} ticks
+ * before the slot is visited so a saved cell appears on the first sweep as in 1.7 ({@link #generateChunks} still
+ * generates as 1.7's did). There is no legacy {@code IRadarDetectable} converter
  * because no port entity implements the legacy interface.
  */
 public class TileEntityMachineRadarNT extends TileEntityMachineBase implements IEnergyReceiverMK2, MenuProvider,
@@ -153,32 +154,10 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         }
 
         if (this.showMap) {
-            int chunkLoads = 0;
-            for (int i = 0; i < 100; i++) {
-                int index = (int) (level.getGameTime() % 400) * 100 + i;
-                int iX = (index % 200) * getRange() * 2 / 200;
-                int iZ = index / 200 * getRange() * 2 / 200;
-
-                int x = x0 - getRange() + iX;
-                int z = z0 - getRange() + iZ;
-
-                if (level.hasChunk(x >> 4, z >> 4)) {
-                    this.map[index] = (byte) Mth.clamp(height(level, x, z), 50, 128);
-                } else if (this.map[index] == 0 && chunkLoads < chunkLoadCap) {
-                    if (generateChunks) {
-                        level.getChunk(x >> 4, z >> 4);
-                        this.map[index] = (byte) Mth.clamp(height(level, x, z), 50, 128);
-                        chunkLoads++;
-                    } else {
-                        // 1.7 WorldUtil.provideChunk: the chunk off disk if it was ever saved, never generated
-                        int[] heights = savedHeights(level, x >> 4, z >> 4);
-                        if (heights != null) {
-                            this.map[index] = (byte) Mth.clamp(heights[(x & 15) + (z & 15) * 16], 50, 128);
-                            chunkLoads++;
-                        }
-                    }
-                }
-            }
+            int slot = (int) (level.getGameTime() % 400);
+            sampleSlot(level, slot);
+            // the saved chunks of a slot a few ticks ahead are read off disk now, so they are ready when it is visited
+            prefetchSlot(level, (slot + PREFETCH_TICKS) % 400);
         }
 
         ItemStack screenLink = inventory.getStackInSlot(8);
@@ -203,29 +182,114 @@ public class TileEntityMachineRadarNT extends TileEntityMachineBase implements I
         }
     }
 
-    /** 1.7 {@code getHeightValue}: the first light-blocking block from the top, water and leaves included. */
+    /**
+     * One tick's hundred cells of the map (1.7's body of the {@code showMap} loop). A cell whose chunk is loaded is
+     * read live; otherwise, while it is still blank and the tick's {@link #chunkLoadCap} is not spent, it is filled
+     * from the region file: a saved chunk shows its height map and costs one load of the cap (once per chunk, as 1.7's
+     * loaded chunk answered the rest of its cells through the loaded branch), a chunk that was never saved reads as
+     * 1.7's {@code getHeightValue} did on an absent chunk - 0, clamped to 50, which the screen draws black - and costs
+     * nothing. A read still in flight leaves the cell blank for the next sweep.
+     */
+    public void sampleSlot(ServerLevel level, int slot) {
+        int x0 = worldPosition.getX(), z0 = worldPosition.getZ();
+        int chunkLoads = 0;
+        java.util.Set<Long> loaded = null;
+        for (int i = 0; i < 100; i++) {
+            int index = slot * 100 + i;
+            int iX = (index % 200) * getRange() * 2 / 200;
+            int iZ = index / 200 * getRange() * 2 / 200;
+
+            int x = x0 - getRange() + iX;
+            int z = z0 - getRange() + iZ;
+
+            if (level.hasChunk(x >> 4, z >> 4)) {
+                this.map[index] = (byte) Mth.clamp(height(level, x, z), 50, 128);
+            } else if (this.map[index] == 0) {
+                if (generateChunks) {
+                    if (chunkLoads >= chunkLoadCap) continue;
+                    level.getChunk(x >> 4, z >> 4);
+                    this.map[index] = (byte) Mth.clamp(height(level, x, z), 50, 128);
+                    chunkLoads++;
+                    continue;
+                }
+                long key = dev.golem.core.world.Chunks.key(x >> 4, z >> 4);
+                if (chunkLoads >= chunkLoadCap && (loaded == null || !loaded.contains(key))) continue;
+                // 1.7 WorldUtil.provideChunk: the chunk off disk if it was ever saved, never generated
+                int[] heights = savedHeights(level, x >> 4, z >> 4);
+                if (heights == null) continue;
+                if (heights == NEVER_SAVED) {
+                    this.map[index] = 50;
+                } else {
+                    this.map[index] = (byte) Mth.clamp(heights[(x & 15) + (z & 15) * 16], 50, 128);
+                    if (loaded == null) loaded = new java.util.HashSet<>();
+                    if (loaded.add(key)) chunkLoads++;
+                }
+            }
+        }
+    }
+
+    /**
+     * Starts the region-file reads of a slot's blank, unloaded cells before the slot is visited. One slot is a hundred
+     * cells in one row - at most about sixty-four chunks - so a tick starts at most that many, and no more than
+     * {@link #MAX_READS_IN_FLIGHT} are ever pending. The IO worker does the work; this only queues it, never blocks, and
+     * leaves applying the results (and {@link #chunkLoadCap}) to {@link #sampleSlot}.
+     */
+    public void prefetchSlot(ServerLevel level, int slot) {
+        if (generateChunks) return;
+        long previous = Long.MIN_VALUE;
+        for (int i = 0; i < 100; i++) {
+            int index = slot * 100 + i;
+            if (this.map[index] != 0) continue;
+            int x = worldPosition.getX() - getRange() + (index % 200) * getRange() * 2 / 200;
+            int z = worldPosition.getZ() - getRange() + index / 200 * getRange() * 2 / 200;
+            long key = dev.golem.core.world.Chunks.key(x >> 4, z >> 4);
+            if (key == previous) continue;
+            previous = key;
+            if (level.hasChunk(x >> 4, z >> 4) || savedChunks.containsKey(key)) continue;
+            if (readsInFlight.get() >= MAX_READS_IN_FLIGHT) return;
+            startRead(level, x >> 4, z >> 4, key);
+        }
+    }
+
     /**
      * Saved height maps of unloaded chunks, read off the region files through Core {@code Chunks.readSavedHeights}
-     * (no loading, no generation). The read is asynchronous: the first ask starts it and answers null; the height map
-     * is used from the next sweep on. A chunk that was never saved stays unread (EMPTY), as 1.7's did.
+     * (no loading, no generation). The read is asynchronous and started once per chunk, ahead of the visit by
+     * {@link #prefetchSlot} or at the visit when that was missed.
      */
     private final java.util.Map<Long, java.util.concurrent.CompletableFuture<int[]>> savedChunks = new java.util.HashMap<>();
-    private static final int[] EMPTY = new int[0];
+    private final java.util.concurrent.atomic.AtomicInteger readsInFlight = new java.util.concurrent.atomic.AtomicInteger();
+    /** The answer for a chunk that was never saved, or is no finished chunk: no height map, 1.7's absent chunk. */
+    protected static final int[] NEVER_SAVED = new int[0];
+    protected static final int PREFETCH_TICKS = 8;
+    protected static final int MAX_READS_IN_FLIGHT = 256;
 
+    /** Region-file reads started and not yet answered (GameTests wait on this instead of a fixed tick count). */
+    public int readsInFlight() {
+        return readsInFlight.get();
+    }
+
+    private void startRead(ServerLevel server, int cx, int cz, long key) {
+        if (savedChunks.size() > 16384) savedChunks.clear(); // a full 1000-block range is 15,625 chunks
+        readsInFlight.incrementAndGet();
+        savedChunks.put(key, dev.golem.core.world.Chunks.readSavedHeights(server, cx, cz, Heightmap.Types.MOTION_BLOCKING)
+                .thenApply(h -> h == null ? NEVER_SAVED : h)
+                .whenComplete((h, error) -> readsInFlight.decrementAndGet()));
+    }
+
+    /** The saved heights of an unloaded chunk; {@link #NEVER_SAVED} for none; null while the read is still in flight. */
     private int @org.jspecify.annotations.Nullable [] savedHeights(ServerLevel server, int cx, int cz) {
         long key = dev.golem.core.world.Chunks.key(cx, cz);
         java.util.concurrent.CompletableFuture<int[]> read = savedChunks.get(key);
         if (read == null) {
-            if (savedChunks.size() > 16384) savedChunks.clear(); // a full 1000-block range is 15,625 chunks
-            savedChunks.put(key, dev.golem.core.world.Chunks.readSavedHeights(server, cx, cz, Heightmap.Types.MOTION_BLOCKING)
-                    .thenApply(h -> h == null ? EMPTY : h));
+            startRead(server, cx, cz, key);
             return null;
         }
         if (!read.isDone()) return null;
-        int[] heights = read.getNow(EMPTY);
-        return heights.length == 256 ? heights : null;
+        int[] heights = read.getNow(NEVER_SAVED);
+        return heights.length == 256 ? heights : NEVER_SAVED;
     }
 
+    /** 1.7 {@code getHeightValue}: the first light-blocking block from the top, water and leaves included. */
     private static int height(Level level, int x, int z) {
         return level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }

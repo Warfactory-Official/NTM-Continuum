@@ -9,7 +9,6 @@ import com.hbm.world.gen.component.Component;
 import com.hbm.world.gen.component.OfficeFeatures.LargeOffice;
 import com.hbm.world.gen.component.OfficeFeatures.LargeOfficeCorner;
 import com.hbm.world.gen.component.SiloComponent;
-import dev.golem.core.Ids;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
 import net.minecraft.tags.BiomeTags;
@@ -27,8 +26,8 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilde
  *
  * <p>1.7's rules, in order: a kinda-flat biome ({@code heightVariation <= 0.25}) draws a 1 in 10 for the missile silo;
  * else a hot, rainless, non-mesa biome gets one of the two sandstone houses; else one of six (two labs, two offices,
- * the rural house twice). {@code heightVariation} is the 1.7 counterpart's ({@code NTMStructureDeclarations.LEGACY}, a
- * biome 1.7 had no counterpart for takes 1.7's default 0.2). Temperature and rainfall are read from the modern biome,
+ * the rural house twice). {@code heightVariation} is the 1.7 counterpart's ({@code NTMStructureDeclarations.LEGACY}; a
+ * modded biome's is read off the terrain, {@link LegacyBiomes#heightVariation}). Temperature and rainfall are read from the modern biome,
  * which gives the same set for every vanilla biome (desert, the savannas; badlands are the excluded mesa) and, as the
  * 1.7 comment wished, a sensible one for modded biomes: base temperature at least 1 and no precipitation.
  *
@@ -52,7 +51,7 @@ public final class MapGenNTMFeatures {
 
         Component component;
 
-        if (heightVariation(biome) <= 0.25F && rand.nextInt(10) == 0) { //for now our only restriction is kinda-flat biomes. that and chance might change idk
+        if (heightVariation(biome, context) <= 0.25F && rand.nextInt(10) == 0) { //for now our only restriction is kinda-flat biomes. that and chance might change idk
             component = new SiloComponent(rand, i, j);
         } else if (hotAndDry(biome)) { //Desert & Savannah
             if (rand.nextBoolean()) {
@@ -80,11 +79,9 @@ public final class MapGenNTMFeatures {
         return context.biomeSource().getNoiseBiome(QuartPos.fromBlock(x), QuartPos.fromBlock(y), QuartPos.fromBlock(z), context.randomState().sampler());
     }
 
-    /** The 1.7 counterpart's {@code heightVariation}; 1.7's default height (0.2) for a biome with none. */
-    static float heightVariation(Holder<Biome> biome) {
-        String id = biome.unwrapKey().map(key -> Ids.keyId(key).toString()).orElse("");
-        NTMStructureDeclarations.LegacyBiome legacy = NTMStructureDeclarations.LEGACY.get(id);
-        return legacy == null ? 0.2F : legacy.heightVariation();
+    /** The 1.7 counterpart's {@code heightVariation}; a modded biome's read off the start chunk's terrain. */
+    static float heightVariation(Holder<Biome> biome, Structure.GenerationContext context) {
+        return LegacyBiomes.heightVariation(biome, context);
     }
 
     /** 1.7 {@code biome.temperature >= 1.0 && biome.rainfall == 0 && !(biome instanceof BiomeGenMesa)}. */

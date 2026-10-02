@@ -1,57 +1,45 @@
 package com.hbm.client.render.item;
 
-import com.hbm.client.anim.HbmAnimations;
+import com.hbm.client.crucible.CrucibleClient;
+import com.hbm.client.crucible.CrucibleEquipModel;
 import com.hbm.client.model.WavefrontObj;
-import com.hbm.items.weapon.ItemCrucible;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import dev.golem.core.client.EquipProgress;
-import dev.golem.core.render.Bloom;
-import dev.golem.core.render.CompatRenderTypes;
-import dev.golem.core.render.ScreenDistortion;
 import dev.golem.core.render.SubmitSink;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.jspecify.annotations.Nullable;
 
 import static com.hbm.client.render.item.CustomItemRenderers.*;
 
 /**
- * 1.7 {@code ItemRenderCrucible}: hilt, two guards hinged at {@code y = 3} and the glowing blade. A charged
- * crucible has its guards open and its blade out, fullbright and unculled; an empty one folds the guards shut
- * and draws no blade. The inventory icon is the model, with the blade lit like the rest.
+ * old-hbm {@code ItemRenderCrucible} (a 1.12 {@code TEISRBase}), replacing the 1.7 renderer by the user's choice.
  *
- * <p>First person reads the {@code SWING_*} and {@code GUARD_ROT} buses exactly as 1.7 did; the server starts them
- * ({@code ItemCrucible.onEquip}/{@code compatOnEntitySwing} -> {@code ToolAnimations}). As in 1.7 the renderer clears
- * the vanilla arm swing every frame and pins the hand's equip progress (Core {@code EquipProgress}, 1.7 reflected
- * into {@code ItemRenderer}): a hand being lowered snaps to 0, one being raised to 1, and the blade only shows once
- * both ends read 1. The one modern addition: since 1.9 vanilla also keeps the hand low while the attack cooldown
- * recovers - after every hit and after every item switch - with the crucible already the item shown. 1.7 had no
- * cooldown, so while the crucible is the item shown the progress is held at 1; the snap to 0 applies only while the
- * renderer is still showing another item (the put-away), as 1.7's did.
+ * <p>The body runs in the {@code teisr} frame: {@code BakedModelTransforms.defaultItemTransforms()} and then the
+ * builtin renderer's {@code translate(-0.5, -0.5, -0.5)}, which is where 1.12 handed a TEISR its pose.
  *
- * <p>The first-person blade carries 1.12's shader effects ({@code old-hbm} {@code ItemRenderCrucible}, blade
- * callbacks, with {@code GeneralConfig.bloom} and {@code heatDistortion} at their default {@code true}): translucent at
- * alpha 0.7 and culled, a bloom pass of {@code crucible_blade_bloom} and a heat-distortion shell. See
- * {@link #firstPersonBlade}. 1.12's other first-person pieces (the Collada equip animation with the arms, the
- * clip-plane blade extension, the spark and lightning particles) belong to its different first-person model; this
- * renderer keeps 1.7's.
+ * <ul>
+ *   <li><b>First person</b>: the Collada scene with the player's arms ({@link CrucibleEquipModel}), posed by the
+ *       deploy animation the server starts on equip and held on its last frame; the cutting swing ({@code SWING}),
+ *       the random swing ({@code SWING_ROT}/{@code SWING_TRANS}) and the cut-angle tilt on top; an empty crucible sits
+ *       400 ms into the deploy, lowered. Nothing is drawn until the deploy has arrived, as in 1.12. The blade is
+ *       translucent, fullbright, clipped by a plane that slides along it between 60% and 70% of the deploy, with its
+ *       bloom and heat-distortion passes, and the sparks and lightning of {@code firstPersonAuxParticles} in its space
+ *       (see {@link CrucibleClient#renderFirstPerson}).</li>
+ *   <li><b>Third person, head, ground, frame</b>: the OBJ crucible at 0.4, guards open and blade out (fullbright,
+ *       unculled) whatever the charge.</li>
+ *   <li><b>Inventory</b>: the OBJ crucible turned to lie along the slot's diagonal at 0.09.</li>
+ * </ul>
  */
 final class ItemRenderCrucible implements CustomItemRenderer {
 
-    private static final Identifier HILT = tex("textures/models/weapons/crucible_hilt.png");
-    private static final Identifier GUARD = tex("textures/models/weapons/crucible_guard.png");
-    private static final Identifier BLADE = tex("textures/models/weapons/crucible_blade.png");
-    private static final Identifier BLADE_BLOOM = tex("textures/models/weapons/crucible_blade_bloom.png");
-    private static final Identifier NOISE = tex("textures/misc/noise_2.png");
-
-    /** 1.12 {@code GlStateManager.color(1, 1, 1, 0.7F)} on the blade, as a vertex colour. */
-    private static final int BLADE_TINT = (Math.round(0.7F * 255F) << 24) | 0xFFFFFF;
-    /** 1.12 {@code HbmShaderManager2.distort(0.5F, ...)}: the amount rides the vertex colour's red channel. */
-    private static final int DISTORTION_AMOUNT = 0xFF000000 | (Math.round(0.5F * 255F) << 16);
-    /** Middle of the OBJ blade along its length ({@code y} 3.0625 .. 11.375). */
-    private static final double BLADE_CENTER_Y = (3.0625D + 11.375D) / 2D;
+    static final Identifier HILT = tex("textures/models/weapons/crucible_hilt.png");
+    static final Identifier GUARD = tex("textures/models/weapons/crucible_guard.png");
+    static final Identifier BLADE = tex("textures/models/weapons/crucible_blade.png");
 
     private final WavefrontObj crucible = obj("models/weapons/crucible.obj");
 
@@ -65,141 +53,69 @@ final class ItemRenderCrucible implements CustomItemRenderer {
         return type == Type.EQUIPPED_FIRST_PERSON;
     }
 
+    /**
+     * The display slot names the hand, which is the only reliable test: the hand renderer may hold a stale copy of
+     * the stack (see below), so comparing instances let a crucible in both hands draw the whole scene twice.
+     */
+    @Override
+    public void render(ItemStack stack, ItemDisplayContext context, PoseStack pose, SubmitSink sink, int light,
+                       int overlay, @Nullable LivingEntity owner) {
+        boolean firstPerson = context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                || context == ItemDisplayContext.FIRST_PERSON_LEFT_HAND;
+        if (firstPerson && owner != null) {
+            boolean mainHand = (context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) == (owner.getMainArm() == HumanoidArm.RIGHT);
+            draw(stack, Type.EQUIPPED_FIRST_PERSON, pose, sink, light, overlay, owner, !mainHand);
+        } else {
+            render(stack, Type.of(context), pose, sink, light, overlay, owner);
+        }
+    }
+
     @Override
     public void render(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
                        @Nullable LivingEntity owner) {
-        // 1.7: item damage below the maximum
-        boolean isOn = ItemCrucible.spent(stack) < ItemCrucible.MAX_SPENT;
-        boolean blocking = owner != null && owner.isBlocking();
+        // Without the slot (a caller that only knows 1.7's type), fall back to telling the hands apart by instance.
+        boolean offHand = owner != null && owner.getOffhandItem() == stack && owner.getMainHandItem() != stack;
+        draw(stack, type, pose, sink, light, overlay, owner, offHand);
+    }
 
+    private void draw(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
+                      @Nullable LivingEntity owner, boolean offHand) {
         pose.pushPose();
         switch (type) {
             case EQUIPPED_FIRST_PERSON -> {
-                pose.translate(1.5D, -0.3D, 0D);
-                if (blocking) pose.translate(-0.125D, -0.25D, 0D);
-
-                net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
-                if (player != null) player.swinging = false;
-
-                float prevEq = EquipProgress.previousMainHand();
-                float eq = EquipProgress.mainHand();
-                if (!EquipProgress.mainHandSwitching()) {
-                    // the crucible is the item shown: 1.7 had it fully up (see the class comment on the cooldown)
-                    EquipProgress.pinMainHand(1.0F, 1.0F);
-                } else if (eq < prevEq) {
-                    EquipProgress.pinMainHand(0.0F, 0.0F);
-                } else if (eq > prevEq) {
-                    EquipProgress.pinMainHand(1.0F, 1.0F);
+                // old-hbm RenderSpecificHandEvent drew the crucible the player holds now (not the hand renderer's possibly
+                // stale copy: with the hand pinned up vanilla never swaps in the stack whose charge changed) as the main
+                // hand at equip and swing 0; old-hbm drew no off-hand crucible (its lookups were the main hand's), nor does this
+                if (!offHand && owner == Minecraft.getInstance().player && owner.getMainHandItem().getItem() == stack.getItem()) {
+                    CrucibleClient.renderFirstPerson(owner.getMainHandItem(), pose, sink, light, overlay);
                 }
-
-                pose.scale(0.3F, 0.3F, 0.3F);
-                pose.mulPose(Axis.ZP.rotationDegrees(45F));
-                pose.mulPose(Axis.YP.rotationDegrees(90F));
-
-                boolean isSwing = false;
-                if (!blocking) {
-                    double[] sRot = HbmAnimations.getRelevantTransformation("SWING_ROT");
-                    double[] sTrans = HbmAnimations.getRelevantTransformation("SWING_TRANS");
-                    pose.translate(sTrans[0], sTrans[1], sTrans[2]);
-                    pose.mulPose(Axis.XP.rotationDegrees((float) sRot[0]));
-                    pose.mulPose(Axis.ZP.rotationDegrees((float) sRot[2]));
-                    pose.mulPose(Axis.YP.rotationDegrees((float) sRot[1]));
-                    if (sRot[0] != 0) isSwing = true;
-                }
-
-                double[] rot = HbmAnimations.getRelevantTransformation("GUARD_ROT");
-                part(pose, sink, crucible, culled(HILT), "Hilt", light, overlay);
-                double rotGuard = rot[0];
-                if (!isSwing && !isOn) rotGuard = 90;
-                guards(pose, sink, (float) rotGuard, light, overlay);
-
-                if (eq == 1.0F && prevEq == 1.0F && rot[2] == 0 && (isSwing || isOn)) firstPersonBlade(pose, sink, overlay);
             }
-            case ENTITY, EQUIPPED -> {
-                if (type == Type.ENTITY) {
-                    pose.translate(-0.75D, 0.6D, 0D);
-                    pose.mulPose(Axis.ZP.rotationDegrees(-45F));
-                }
-                pose.mulPose(Axis.ZP.rotationDegrees(45F));
-                pose.translate(0.75D, -0.4D, 0D);
-                pose.mulPose(Axis.YP.rotationDegrees(90F));
-                pose.scale(0.15F, 0.15F, 0.15F);
+            case EQUIPPED, ENTITY -> {
+                pose.translate(0.5D, -0.3D, 0.5D);
+                pose.scale(0.4F, 0.4F, 0.4F);
                 part(pose, sink, crucible, culled(HILT), "Hilt", light, overlay);
-                guards(pose, sink, isOn ? 0F : 90F, light, overlay);
-                if (isOn) blade(pose, sink, overlay);
+                part(pose, sink, crucible, culled(GUARD), "GuardLeft", light, overlay);
+                part(pose, sink, crucible, culled(GUARD), "GuardRight", light, overlay);
+                pose.pushPose();
+                // lighting and culling off, lightmap 240/240
+                pose.translate(0.005D, 0D, 0D);
+                sink.submitCustomGeometry(pose, dev.golem.core.render.CompatRenderTypes.flatCutout(BLADE),
+                        (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay));
+                pose.popPose();
             }
             case INVENTORY -> {
-                pose.translate(2D, 14D, 0D);
-                pose.mulPose(Axis.ZP.rotationDegrees(-135F));
+                pose.translate(0.15D, 0.15D, 0D);
+                pose.mulPose(Axis.ZP.rotationDegrees(-135F + 90F));
                 pose.mulPose(Axis.YP.rotationDegrees(90F));
-                float scale = 1.5F;
+                float scale = 0.09F;
                 pose.scale(scale, scale, scale);
                 part(pose, sink, crucible, culled(HILT), "Hilt", light, overlay);
-                guards(pose, sink, isOn ? 0F : 90F, light, overlay);
+                part(pose, sink, crucible, culled(GUARD), "GuardLeft", light, overlay);
+                part(pose, sink, crucible, culled(GUARD), "GuardRight", light, overlay);
                 pose.translate(0.005D, 0D, 0D);
-                if (isOn) part(pose, sink, crucible, culled(BLADE), "Blade", light, overlay);
+                part(pose, sink, crucible, culled(BLADE), "Blade", light, overlay);
             }
         }
-        pose.popPose();
-    }
-
-    /** Left guard about {@code -X}, right about {@code +X}, both hinged at {@code (0, 3, ±0.5)}. */
-    private void guards(PoseStack pose, SubmitSink sink, float angle, int light, int overlay) {
-        pose.pushPose();
-        pose.translate(0D, 3D, 0.5D);
-        pose.mulPose(Axis.XP.rotationDegrees(-angle));
-        pose.translate(0D, -3D, -0.5D);
-        part(pose, sink, crucible, culled(GUARD), "GuardLeft", light, overlay);
-        pose.popPose();
-
-        pose.pushPose();
-        pose.translate(0D, 3D, -0.5D);
-        pose.mulPose(Axis.XP.rotationDegrees(angle));
-        pose.translate(0D, -3D, 0.5D);
-        part(pose, sink, crucible, culled(GUARD), "GuardRight", light, overlay);
-        pose.popPose();
-    }
-
-    /**
-     * The first-person blade with 1.12's effects, nudged 0.005 out of the guards as in 1.7.
-     *
-     * <ol>
-     *   <li>The blade: {@code SRC_ALPHA / ONE_MINUS_SRC_ALPHA} at alpha 0.7, lighting off, lightmap 240/240, back
-     *       faces culled (1.12 restored culling before drawing it), depth written.</li>
-     *   <li>Bloom: the same geometry textured {@code crucible_blade_bloom}, white, {@code SRC_ALPHA / ONE} into the
-     *       bloom layer.</li>
-     *   <li>Heat distortion ({@code diffN > 0.6}, i.e. whenever the blade is out): the geometry scaled
-     *       {@code (1.15, 1.15, 1.05)} with depth writes off, amount 0.5, masked by the bloom texture still bound on
-     *       unit 0. 1.12 scaled its Collada blade node, whose mesh is centred on its origin with thickness on x,
-     *       width on y and length on z; the OBJ blade has thickness on x, length on y and width on z and starts at
-     *       the hilt, so the same shell is a scale of 1.15 across and 1.05 along, about the blade's middle.</li>
-     * </ol>
-     * The two layers are submitted at a later order so they draw after the blade, as 1.12's postRender did.
-     */
-    private void firstPersonBlade(PoseStack pose, SubmitSink sink, int overlay) {
-        pose.pushPose();
-        pose.translate(0.005D, 0D, 0D);
-        sink.submitCustomGeometry(pose, CompatRenderTypes.flatTranslucentCull(BLADE),
-                (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay, BLADE_TINT));
-        SubmitSink layers = sink.order(1);
-        layers.submitCustomGeometry(pose, Bloom.of(BLADE_BLOOM),
-                (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay, -1));
-        pose.pushPose();
-        pose.translate(0D, BLADE_CENTER_Y, 0D);
-        pose.scale(1.15F, 1.05F, 1.15F);
-        pose.translate(0D, -BLADE_CENTER_Y, 0D);
-        layers.submitCustomGeometry(pose, ScreenDistortion.of(BLADE_BLOOM, NOISE),
-                (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay, DISTORTION_AMOUNT));
-        pose.popPose();
-        pose.popPose();
-    }
-
-    /** The lit blade: lighting and culling off, lightmap at 240/240, nudged 0.005 out of the guards. */
-    private void blade(PoseStack pose, SubmitSink sink, int overlay) {
-        pose.pushPose();
-        pose.translate(0.005D, 0D, 0D);
-        sink.submitCustomGeometry(pose, dev.golem.core.render.CompatRenderTypes.flatCutout(BLADE),
-                (p, buffer) -> crucible.renderPart("Blade", p, buffer, FULLBRIGHT, overlay));
         pose.popPose();
     }
 }

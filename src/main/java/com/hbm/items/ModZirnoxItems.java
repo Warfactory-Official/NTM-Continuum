@@ -2,7 +2,8 @@ package com.hbm.items;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.items.machine.ItemZirnoxRod;
 import com.hbm.items.machine.ItemZirnoxWaste;
 import com.hbm.items.machine.ZirnoxFuel;
@@ -19,27 +20,32 @@ public final class ModZirnoxItems {
     private ModZirnoxItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
     private static final Map<ZirnoxFuel, RegistryObject<ItemZirnoxRod>> ACTIVE = new EnumMap<>(ZirnoxFuel.class);
     private static final Map<ZirnoxFuel, RegistryObject<Item>> DEPLETED = new EnumMap<>(ZirnoxFuel.class);
     private static final Map<ZirnoxFuel, RegistryObject<ItemZirnoxWaste>> WASTE = new EnumMap<>(ZirnoxFuel.class);
 
     static {
         for (ZirnoxFuel fuel : ZirnoxFuel.values()) {
-            RegistryObject<ItemZirnoxRod> active = ITEMS.registerItem("rod_zirnox_" + fuel.id,
-                    p -> new ItemZirnoxRod(p.stacksTo(1), fuel));
+            RegistryObject<ItemZirnoxRod> active = REG.item("rod_zirnox_" + fuel.id,
+                    (Item.Properties p) -> new ItemZirnoxRod(p.stacksTo(1), fuel))
+                    .transform(Presets.sprite())
+                    .tab(HbmTab.CONTROL);
             ACTIVE.put(fuel, active);
-            ModTabs.addTo(HbmTab.CONTROL, active);
 
             if (fuel.wasteId != null) {
-                RegistryObject<Item> depleted = ITEMS.registerSimpleItem("rod_zirnox_depleted_" + fuel.id,
-                        p -> p.craftRemainder(ModItems.rod_zirnox_empty.get()));
+                RegistryObject<Item> depleted = REG.simpleItem("rod_zirnox_depleted_" + fuel.id,
+                        (Item.Properties p) -> p.craftRemainder(ModItems.rod_zirnox_empty.get()))
+                        .transform(Presets.sprite())
+                        .tab(HbmTab.CONTROL);
                 DEPLETED.put(fuel, depleted);
-                ModTabs.addTo(HbmTab.CONTROL, depleted);
 
-                RegistryObject<ItemZirnoxWaste> waste = ITEMS.registerItem("waste_" + fuel.wasteId,
-                        ItemZirnoxWaste::new);
+                // every spent-fuel waste shows the one zirnox_waste model
+                RegistryObject<ItemZirnoxWaste> waste = REG.item("waste_" + fuel.wasteId,
+                        ItemZirnoxWaste::new)
+                        .transform(Presets.shares("hbm:item/zirnox_waste"))
+                        .tab(HbmTab.CONSUMABLES);
                 WASTE.put(fuel, waste);
-                ModTabs.addTo(HbmTab.CONSUMABLES, waste);
             }
         }
     }

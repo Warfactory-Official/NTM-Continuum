@@ -5,6 +5,10 @@ import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.ItemEnums.SoyuzSkinType;
 import com.hbm.items.special.ItemSoyuz;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Models;
 import com.hbm.tileentity.ModBlockEntities;
 import com.hbm.tileentity.machine.soyuz.TileEntitySoyuzStruct;
 import dev.golem.core.registry.DeferredRegister;
@@ -29,27 +33,40 @@ public final class ModSoyuzBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
 
-    public static final RegistryObject<SoyuzLauncher> soyuz_launcher = BLOCKS.registerBlock(
+    /** Drops nothing: placed by hand it forms the complex at once, and breaking it takes the complex apart. */
+    public static final RegistryObject<SoyuzLauncher> soyuz_launcher = REG.block(
             "soyuz_launcher", SoyuzLauncher::new,
-            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion());
+            p -> p.strength(5.0F, 100.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion())
+            .transform(Presets.cubeAll().noItem())
+            .loot(Loot.nothing());
 
-    public static final RegistryObject<SoyuzStruct> struct_soyuz_core = BLOCKS.registerBlock(
+    public static final RegistryObject<SoyuzStruct> struct_soyuz_core = REG.block(
             "struct_soyuz_core", SoyuzStruct::new,
-            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+            p -> p.strength(5.0F, 10.0F).sound(SoundType.METAL).requiresCorrectToolForDrops())
+            .transform(Presets.cubeAll().noItem())
+            .loot(Loot.self());
 
     public static final RegistryObject<BlockItem> struct_soyuz_core_item =
-            ITEMS.registerBlockItem("struct_soyuz_core", struct_soyuz_core);
+            REG.blockItem(struct_soyuz_core)
+                    .transform(Presets.shares("hbm:block/struct_soyuz_core"))
+                    .tab(HbmTab.MACHINES);
     /** 1.7 registers the launcher's block, and so its item, on the missile tab: placed by hand it forms at once. */
     public static final RegistryObject<BlockItem> soyuz_launcher_item =
-            ITEMS.registerBlockItem("soyuz_launcher", soyuz_launcher);
+            REG.blockItem(soyuz_launcher)
+                    .transform(Presets.shares("hbm:block/soyuz_launcher"))
+                    .tab(HbmTab.MISSILES);
 
     public static final RegistryObject<ItemSoyuz> missile_soyuz =
-            ITEMS.registerItem("missile_soyuz", ItemSoyuz::new, p -> p.stacksTo(1));
+            REG.item("missile_soyuz", ItemSoyuz::new, p -> p.stacksTo(1))
+                    .icon(d -> d.models(Models.group()
+                                    .and("", Models.generated("hbm:items/missile_soyuz_normal"))
+                                    .and("_lunar", Models.generated("hbm:items/missile_soyuz_lunar"))
+                                    .and("_post_war", Models.generated("hbm:items/missile_soyuz_post_war")))
+                            .selects(Constants.MOD_ID + ":item_variant"));
 
     static {
-        ModTabs.addTo(HbmTab.MACHINES, struct_soyuz_core_item);
-        ModTabs.addTo(HbmTab.MISSILES, soyuz_launcher_item);
         ModTabs.addStacksTo(HbmTab.MISSILES, () -> Arrays.stream(SoyuzSkinType.VALUES)
                 .map(type -> missile_soyuz.get().of(type)).toList());
     }

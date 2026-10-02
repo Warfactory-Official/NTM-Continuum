@@ -1,5 +1,14 @@
 package com.hbm.blocks;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.hbm.registration.BlockTag;
+import com.hbm.registration.Loot;
+import com.hbm.registration.Preset;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
+import dev.golem.core.dejson.Drops;
+import dev.golem.core.dejson.Variants;
 import com.hbm.Constants;
 import com.hbm.blocks.machine.BlockHatch;
 import com.hbm.blocks.machine.BlockSeal;
@@ -11,7 +20,6 @@ import com.hbm.blocks.machine.MachineRadarScreen;
 import com.hbm.blocks.machine.MachineTeleporter;
 import com.hbm.blocks.machine.SoyuzCapsule;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import dev.golem.core.world.Compat;
@@ -27,6 +35,10 @@ import java.util.function.UnaryOperator;
  * The radar and utility machines' blocks, as 1.7 {@code ModBlocks} declared them: all {@code Material.iron}.
  * The radars, the screen, the forcefield and the capsule sit on the missile tab; the teleporter, the anchor, the
  * orbus and the seal controller on the machine tab; the hatch on no tab at all (only a controller places it).
+ *
+ * <p>Models, blockstates, loot and mining tags are stated on each registration (Reg; emitted by Dejson at build
+ * time). The renderer-drawn blocks carry the empty placeholder model; their items are 1.7's
+ * {@code ItemRenderBase} entries, typed OBJ item data in {@code RadarUtilityDeclarations}.
  */
 public final class ModRadarUtilityBlocks {
 
@@ -34,6 +46,15 @@ public final class ModRadarUtilityBlocks {
 
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Constants.MOD_ID);
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(BLOCKS, ITEMS);
+
+    /** Drops itself, pickaxe-mined. */
+    private static final Preset SELF_PICKAXE = handle -> handle.loot(Loot.self()).tag(BlockTag.PICKAXE);
+    /** Renderer-drawn folded machine: every state on the shared empty placeholder. */
+    private static final Preset FOLDED = Presets.rendered(Variants.product(
+            Variants.uniform("facing", "north", "east", "south", "west"),
+            Variants.uniform("cell", "false", "true")));
+    private static final Loot ORBUS_DROP = ModRadarUtilityBlocks::orbusDrop;
 
     private static UnaryOperator<BlockBehaviour.Properties> iron(float hardness, float resistance) {
         return p -> p.strength(hardness, resistance).sound(SoundType.METAL).requiresCorrectToolForDrops();
@@ -46,27 +67,47 @@ public final class ModRadarUtilityBlocks {
     }
 
     public static final RegistryObject<MachineRadar> machine_radar =
-            BLOCKS.registerBlock("machine_radar", MachineRadar::new, rendered(5.0F, 10.0F));
+            REG.block("machine_radar", MachineRadar::new, rendered(5.0F, 10.0F))
+                    .transform(Presets.rendered(Variants.simple()).and(SELF_PICKAXE));
     public static final RegistryObject<MachineRadarLarge> machine_radar_large =
-            BLOCKS.registerBlock("machine_radar_large", MachineRadarLarge::new, rendered(5.0F, 10.0F));
+            REG.block("machine_radar_large", MachineRadarLarge::new, rendered(5.0F, 10.0F))
+                    .transform(FOLDED.and(SELF_PICKAXE));
     public static final RegistryObject<MachineRadarScreen> radar_screen =
-            BLOCKS.registerBlock("radar_screen", MachineRadarScreen::new, rendered(5.0F, 10.0F));
+            REG.block("radar_screen", MachineRadarScreen::new, rendered(5.0F, 10.0F))
+                    .transform(FOLDED.and(SELF_PICKAXE));
     public static final RegistryObject<MachineForceField> machine_forcefield =
-            BLOCKS.registerBlock("machine_forcefield", MachineForceField::new, rendered(5.0F, 100.0F));
+            REG.block("machine_forcefield", MachineForceField::new, rendered(5.0F, 100.0F))
+                    .transform(Presets.rendered(Variants.simple()).and(SELF_PICKAXE));
     public static final RegistryObject<MachineTeleporter> machine_teleporter =
-            BLOCKS.registerBlock("machine_teleporter", MachineTeleporter::new, iron(5.0F, 10.0F));
+            REG.block("machine_teleporter", MachineTeleporter::new, iron(5.0F, 10.0F))
+                    // 1.7 icons: teleporter_top/_bottom/_side
+                    .transform(Presets.cubeBottomTop("hbm:blocks/teleporter_bottom", "hbm:blocks/teleporter_side",
+                            "hbm:blocks/teleporter_top").and(SELF_PICKAXE));
     public static final RegistryObject<CompatBlock> teleanchor =
-            BLOCKS.registerBlock("teleanchor", CompatBlock::new, iron(5.0F, 10.0F));
+            REG.block("teleanchor", CompatBlock::new, iron(5.0F, 10.0F))
+                    // the anchor's bottom is its side
+                    .transform(Presets.cubeBottomTop("hbm:blocks/tele_anchor_side", "hbm:blocks/tele_anchor_side",
+                            "hbm:blocks/tele_anchor_top").and(SELF_PICKAXE));
     public static final RegistryObject<MachineOrbus> machine_orbus =
-            BLOCKS.registerBlock("machine_orbus", MachineOrbus::new, rendered(5.0F, 10.0F));
+            REG.block("machine_orbus", MachineOrbus::new, rendered(5.0F, 10.0F))
+                    .transform(FOLDED)
+                    .loot(ORBUS_DROP)
+                    .tag(BlockTag.PICKAXE);
     public static final RegistryObject<BlockSeal> seal_controller =
-            BLOCKS.registerBlock("seal_controller", BlockSeal::new, iron(10.0F, 100.0F));
+            REG.block("seal_controller", BlockSeal::new, iron(10.0F, 100.0F))
+                    // 1.7 BlockSeal.getIcon: seal_frame everywhere but the one face that looks at the placer
+                    .transform(Presets.orientable("hbm:blocks/seal_controller", "hbm:blocks/seal_frame", "hbm:blocks/seal_frame")
+                            .states(Variants.product(Variants.facing(), Variants.uniform("powered", "false", "true")))
+                            .and(SELF_PICKAXE));
     /** 1.7: hardness and resistance {@code Float.POSITIVE_INFINITY} - unbreakable and blast-proof. */
     public static final RegistryObject<BlockHatch> seal_hatch =
-            BLOCKS.registerBlock("seal_hatch", BlockHatch::new,
-                    p -> p.strength(-1.0F, 3600000.0F).sound(SoundType.METAL));
+            REG.block("seal_hatch", BlockHatch::new,
+                    p -> p.strength(-1.0F, 3600000.0F).sound(SoundType.METAL))
+                    .transform(Presets.cubeAll("hbm:blocks/seal_hatch_3"))
+                    .loot(Loot.nothing());
     public static final RegistryObject<SoyuzCapsule> soyuz_capsule =
-            BLOCKS.registerBlock("soyuz_capsule", SoyuzCapsule::new, rendered(5.0F, 10.0F));
+            REG.block("soyuz_capsule", SoyuzCapsule::new, rendered(5.0F, 10.0F))
+                    .transform(Presets.rendered(Variants.uniform("rusted", "false", "true")).and(SELF_PICKAXE));
 
     static {
         item("machine_radar", machine_radar, HbmTab.MISSILES);
@@ -82,8 +123,26 @@ public final class ModRadarUtilityBlocks {
     }
 
     private static void item(String name, RegistryObject<? extends Block> block, HbmTab tab) {
-        RegistryObject<BlockItem> item = ITEMS.registerBlockItem(name, block, Compat::blockDescription);
-        if (tab != null) ModTabs.addTo(tab, item);
+        Reg.Handle<BlockItem> item = REG.blockItem(block, Compat::blockDescription);
+        if (tab != null) item.tab(tab);
+    }
+
+    /**
+     * 1.7 IPersistentNBT: a filled orbus keeps its tank in the item, as the barrels do. Only the core rolls this
+     * table; a broken cell drops the core's (MachineOrbus.onPlayerWillDestroy), 1.7's IPersistentNBT.getDrops
+     * through CompatExternal.getCoreFromPos from any part of the tank.
+     */
+    private static void orbusDrop(String namespace, String block) {
+        JsonObject orbus = Drops.container(namespace, block, "minecraft:custom_data", "minecraft:custom_name");
+        JsonObject cellProperty = new JsonObject();
+        cellProperty.addProperty("cell", "false");
+        JsonObject coreOnly = new JsonObject();
+        coreOnly.addProperty("condition", "minecraft:block_state_property");
+        coreOnly.addProperty("block", "hbm:machine_orbus");
+        coreOnly.add("properties", cellProperty);
+        JsonArray orbusConditions = new JsonArray();
+        orbusConditions.add(coreOnly);
+        orbus.getAsJsonArray("pools").get(0).getAsJsonObject().add("conditions", orbusConditions);
     }
 
     public static void init() {}

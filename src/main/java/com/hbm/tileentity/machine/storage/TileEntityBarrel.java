@@ -207,9 +207,9 @@ public class TileEntityBarrel extends TileEntityMachineBase implements MenuProvi
         return new int[]{2, 3, 4, 5};
     }
 
-    /** The 1.7 {@code FT_Amat} carriers (Fluids.java: AMAT, ASCHRAB, STELLAR_FLUX). */
+    /** 1.7 {@code isAntimatter}: the {@code FT_Amat} carriers (AMAT, ASCHRAB, STELLAR_FLUX). */
     public static boolean isAntimatter(FluidType type) {
-        return type == Fluids.AMAT || type == Fluids.ASCHRAB || type == Fluids.STELLAR_FLUX;
+        return type.isAntimatter();
     }
 
     public void checkFluidInteraction() {

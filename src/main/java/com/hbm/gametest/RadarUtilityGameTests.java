@@ -143,4 +143,68 @@ public final class RadarUtilityGameTests {
         item.discard();
         helper.succeed();
     }
+
+    /**
+     * The radar map on chunks that were never saved: 1.7 {@code provideChunk} finds nothing and {@code getHeightValue} answers
+     * 0 for an absent chunk, which is stored clamped to 50 - a black cell - on the first visit. The region-file read is
+     * asynchronous here, so a slot visited cold leaves its cells blank until the read lands, while the prefetch that
+     * {@code updateServer} runs a few ticks ahead makes the very first visit complete once its reads have landed. The
+     * test waits for the IO worker to answer rather than a fixed tick count: under a full GameTest run the region
+     * reads of 800+ parallel plots took longer than 20 ticks (2026-10-01, twice), which says nothing about the radar.
+     */
+    public static void radarMapNeverSavedChunks(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(1, 1, 1);
+        helper.setBlock(pos, ModRadarUtilityBlocks.machine_radar.get().defaultBlockState());
+        TileEntityMachineRadarNT radar = GameTestHelpers.blockEntity(helper, pos, TileEntityMachineRadarNT.class);
+        helper.assertTrue(radar != null, "no radar block entity");
+        net.minecraft.server.level.ServerLevel level = helper.getLevel();
+        int warmSlot = 7, coldSlot = 300;
+        radar.map = new byte[40_000];
+
+        // Cells whose chunk another plot keeps loaded are read live, not off the region file, and which those are depends
+        // on the batch layout (1.20.1 Forge, 2026-10-01: 7 of the cold slot's cells). Only the others are the subject.
+        boolean[] warmUnloaded = unloadedCells(radar, level, warmSlot);
+        boolean[] coldUnloaded = unloadedCells(radar, level, coldSlot);
+        int coldExpected = 0;
+        for (boolean unloaded : coldUnloaded) if (unloaded) coldExpected++;
+        radar.prefetchSlot(level, warmSlot); // what updateServer does PREFETCH_TICKS before a slot is visited
+        radar.sampleSlot(level, coldSlot);   // a slot visited with no prefetch only starts its reads
+        helper.assertTrue(blank(radar, coldSlot) == coldExpected, "a cold visit filled "
+                + (coldExpected - blank(radar, coldSlot)) + " never-loaded cells before any read could have completed");
+
+        helper.succeedWhen(() -> {
+            helper.assertTrue(radar.readsInFlight() == 0, radar.readsInFlight() + " region reads still in flight");
+            radar.sampleSlot(level, warmSlot); // the first visit of the prefetched slot
+            helper.assertTrue(blank(radar, warmSlot) == 0, "the prefetched slot still had " + blank(radar, warmSlot)
+                    + " blank cells on its first visit");
+            for (int i = 0; i < 100; i++) {
+                if (!warmUnloaded[i]) continue;
+                helper.assertTrue(radar.map[warmSlot * 100 + i] == 50, "a never-saved cell was " + radar.map[warmSlot * 100 + i]
+                        + ", 1.7 stores 0 clamped to 50");
+            }
+            radar.sampleSlot(level, coldSlot); // the cold slot's second visit, one sweep later in a real world
+            helper.assertTrue(blank(radar, coldSlot) == 0, "the cold slot still had " + blank(radar, coldSlot)
+                    + " blank cells once its reads had landed");
+        });
+    }
+
+    /** Which of a slot's cells lie in a chunk that is not loaded now (the radar's own cell-to-block mapping). */
+    private static boolean[] unloadedCells(TileEntityMachineRadarNT radar, net.minecraft.server.level.ServerLevel level,
+            int slot) {
+        boolean[] unloaded = new boolean[100];
+        int range = radar.getRange();
+        for (int i = 0; i < 100; i++) {
+            int index = slot * 100 + i;
+            int x = radar.getBlockPos().getX() - range + (index % 200) * range * 2 / 200;
+            int z = radar.getBlockPos().getZ() - range + index / 200 * range * 2 / 200;
+            unloaded[i] = !level.hasChunk(x >> 4, z >> 4);
+        }
+        return unloaded;
+    }
+
+    private static int blank(TileEntityMachineRadarNT radar, int slot) {
+        int blank = 0;
+        for (int i = 0; i < 100; i++) if (radar.map[slot * 100 + i] == 0) blank++;
+        return blank;
+    }
 }

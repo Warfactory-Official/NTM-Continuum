@@ -6,10 +6,7 @@ import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Drops;
-import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Tags;
-import dev.golem.core.dejson.Variants;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +16,10 @@ import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 
 /**
- * Dejson declarations for {@link ModArmorSetBItems} and {@code statue_elb_f}: item models, the statue's block,
- * repair tags and the 1.7 recipes ({@code ArmorRecipes}, {@code CraftingManager}, {@code ConsumableRecipes}).
+ * Dejson declarations for {@link ModArmorSetBItems}: the fuelled/powered suits' typed item data, repair tags and
+ * the 1.7 recipes ({@code ArmorRecipes}, {@code CraftingManager}, {@code ConsumableRecipes}).
  * Touches no Minecraft class. This wave's own ids are spelled out, since {@code ItemIds} is regenerated after it.
+ * The plain sprites and {@code statue_elb_f} are stated on their registrations (Reg).
  *
  * <p>The three fuelled/powered suits drew their icon through {@code renderStandard} over the worn OBJ, like the
  * suits of {@link ArmorSetDeclarations}, and use the same {@code armor_<set>_<slot>} path of {@code MachineItemModel}.
@@ -31,25 +29,13 @@ import static dev.golem.core.dejson.Crafting.shapeless;
 public final class ArmorSetBDeclarations {
 
     private static final String NS = "hbm";
-    private static final String DUMMY = "hbm:block/machine_dummy_empty";
     private static boolean declared;
 
     private ArmorSetBDeclarations() {}
 
-    /** Plain 1.7 sprites: id -> texture name (the Fabulous Hat's texture is {@code hat}). */
-    static final String[][] SPRITES = {
-            {"goggles", "goggles"}, {"ashglasses", "ashglasses"}, {"mask_rag", "mask_rag"}, {"mask_piss", "mask_piss"},
-            {"nossy_hat", "hat"}, {"no9", "no9"}, {"beta", "beta"}, {"jackt", "jackt"}, {"jackt2", "jackt2"},
-            {"iv_blood", "iv_blood"}, {"iv_xp_empty", "iv_xp_empty"}, {"iv_xp", "iv_xp"},
-    };
-
     public static void declare() {
         if (declared) return;
         declared = true;
-
-        for (String[] sprite : SPRITES) {
-            Dejson.item(NS, sprite[0]).models(Models.generated("hbm:items/" + sprite[1])).register();
-        }
 
         modelled("steamsuit", "models/armor/steamsuit.obj", "steamsuit", List.of("Head"), List.of("Body"),
                 "LeftBoot", "RightBoot", List.of("Head", "Body", "LeftArm", "RightArm", "LeftLeg", "RightLeg",
@@ -61,13 +47,6 @@ public final class ArmorSetBDeclarations {
                 "LeftFoot", "RightFoot", List.of("Helmet", "Lamps", "Chest", "LeftArm", "RightArm", "LeftLeg",
                         "RightLeg", "LeftFoot", "RightFoot", "Tail"),
                 Map.of("Lamps", "hbm:textures/models/misc/envsuit_lamp.png"));
-
-        // statue_elb_f: renderer-drawn, facing states; 1.7's item was the flat blocks/code icon.
-        Dejson.block(NS, "statue_elb_f").rendered(DUMMY)
-                .states(Variants.uniform("facing", "north", "east", "south", "west")).register();
-        Dejson.item(NS, "statue_elb_f").models(Models.generated("hbm:blocks/code")).register();
-        // 1.7 func_147480_a(x, y, z, true): the red key pops it out as itself.
-        Drops.self(NS, "statue_elb_f");
 
         // customCraftingMaterial of each 1.7 material (repairs/steel, /infamy, /hev exist already;
         // repairs/alloy stays empty as aMatAlloy had none).
@@ -118,7 +97,11 @@ public final class ArmorSetBDeclarations {
         model.add("exclude", exclude);
 
         Dejson.item(NS, item).shares("hbm:item/machine_obj_base").register();
-        Dejson.itemDefinition("hbm:item/" + item).add("model", model);
+        JsonObject definition = Dejson.itemDefinition("hbm:item/" + item);
+        definition.add("model", model);
+        // 1.7 drew armor icons unclipped (fau/trenchmaster/taurun plates reach past the slot); without this flag
+        // 26.1 bounds the draw to the slot and the pre-26.1 renderer scissors it there.
+        definition.addProperty("oversized_in_gui", true);
     }
 
     private static String tex(String name) {

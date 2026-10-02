@@ -6,9 +6,6 @@ import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
 import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Drops;
-import dev.golem.core.dejson.Models;
-import dev.golem.core.dejson.Variants;
 
 import static dev.golem.core.dejson.Crafting.rows;
 import static dev.golem.core.dejson.Crafting.shaped;
@@ -16,9 +13,10 @@ import static dev.golem.core.dejson.Crafting.shapeless;
 import static dev.golem.core.dejson.Crafting.stack;
 
 /**
- * Dejson declarations for {@link ModDecoCrateBlocks}. Touches no Minecraft class: it runs in a plain JVM from
- * {@code dejson.gradle.kts}. The family's own ids are spelled out, since {@code ItemIds} is generated from the
- * registry after this wave.
+ * The typed OBJ item data and the recipes of {@link ModDecoCrateBlocks}; every block's model, blockstate, plain
+ * item model, loot and tags are stated on its registration there (Reg). Touches no Minecraft class: it runs in a
+ * plain JVM from {@code dejson.gradle.kts}. The family's own ids are spelled out, since {@code ItemIds} is
+ * generated from the registry after this wave.
  *
  * <p>The renderer-drawn blocks carry the empty placeholder model. Their items are 1.7's item renderers
  * ({@code ItemRenderLibrary} bobblehead, {@code RenderPlushie}/{@code RenderSnowglobe}/
@@ -37,142 +35,30 @@ import static dev.golem.core.dejson.Crafting.stack;
 public final class DecoCrateDeclarations {
 
     private static final String NS = "hbm";
-    private static final String DUMMY = "hbm:block/machine_dummy_empty";
     private static boolean declared;
-
-    private static final String[] CAPS = {"nuka", "quantum", "sparkle", "rad", "korl", "fritz"};
-    private static final String[] COILS = {"alloy", "gold", "neodymium", "magtung", "schrabidium", "schrabidate",
-            "starmetal", "chlorophyte", "mese"};
-    private static final String[] ABSORBERS = {"rad_absorber", "rad_absorber_red", "rad_absorber_green", "rad_absorber_pink"};
-    private static final String[] ABSORBER_TEX = {"absorber", "absorber_red", "absorber_green", "absorber_pink"};
 
     private DecoCrateDeclarations() {}
 
     public static void declare() {
         if (declared) return;
         declared = true;
-        blocks();
         items();
-        drops();
         recipes();
     }
 
-    private static void blocks() {
-        // --- crates ---
-        Dejson.block(NS, "crate").models(Models.cubeAll("hbm:blocks/crate")).states(Variants.simple())
-                .blockItem().register();
-        Dejson.block(NS, "crate_can").rendered(DUMMY).states(Variants.simple()).register();
-        // 1.7 BlockStorageCrate.getIcon: the top icon on top and bottom, the side icon all round
-        Dejson.block(NS, "crate_tungsten")
-                .models(Models.cubeBottomTop("hbm:blocks/crate_tungsten_top", "hbm:blocks/crate_tungsten_side",
-                        "hbm:blocks/crate_tungsten_top"))
-                .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
-                        Variants.uniform("hot", "false", "true")))
-                .blockItem().register();
-        // the safe's door is on the face it was placed towards
-        Dejson.block(NS, "safe")
-                .models(Models.orientable("hbm:blocks/safe_front", "hbm:blocks/safe_side", "hbm:blocks/safe_side"))
-                .states(Variants.product(Variants.facing(), Variants.uniform("hot", "false", "true")))
-                .blockItem().register();
-        Dejson.block(NS, "filing_cabinet").rendered(DUMMY)
-                .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
-                        Variants.uniform("type", "green", "steel"))).register();
-
-        // --- deco props ---
-        for (String prop : new String[]{"bobblehead", "plushie", "snowglobe"}) {
-            Dejson.block(NS, prop).rendered(DUMMY).states(Variants.uniformRange("rotation", 0, 15)).register();
-        }
-        Dejson.block(NS, "vending_machine").rendered(DUMMY)
-                .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
-                        Variants.uniform("cell", "false", "true"), Variants.uniform("snacks", "false", "true"))).register();
-        for (String box : new String[]{"broadcaster_pc", "radiorec"}) {
-            Dejson.block(NS, box).rendered(DUMMY)
-                    .states(Variants.uniform("facing", "north", "east", "south", "west")).register();
-        }
-        Dejson.block(NS, "radiobox").rendered(DUMMY)
-                .states(Variants.product(Variants.uniform("facing", "north", "east", "south", "west"),
-                        Variants.uniform("enabled", "false", "true"))).register();
-        Dejson.block(NS, "deco_emitter").models(Models.cubeAll("hbm:blocks/emitter"))
-                .states(Variants.uniform("facing", "down", "up", "north", "south", "west", "east"))
-                .register();
-        Dejson.block(NS, "part_emitter").models(Models.cubeAll("hbm:blocks/part_top")).states(Variants.simple())
-                .register();
-
-        // --- simple blocks ---
-        for (String coil : COILS) {
-            Dejson.block(NS, "hadron_coil_" + coil).models(Models.cubeAll("hbm:blocks/hadron_coil_" + coil))
-                    .states(Variants.simple()).register();
-        }
-        for (String cap : CAPS) {
-            Dejson.block(NS, "block_cap_" + cap)
-                    .models(Models.cubeBottomTop("hbm:blocks/block_cap_" + cap + "_top", "hbm:blocks/block_cap_" + cap,
-                            "hbm:blocks/block_cap_" + cap + "_top"))
-                    .states(Variants.simple()).blockItem().register();
-        }
-        Dejson.block(NS, "pink_log").models(Models.column("hbm:blocks/pink_log", "minecraft:block/oak_log"))
-                .states(Variants.axis()).blockItem().register();
-        for (int i = 0; i < ABSORBERS.length; i++) {
-            Dejson.block(NS, ABSORBERS[i]).models(Models.cubeAll("hbm:blocks/" + ABSORBER_TEX[i]))
-                    .states(Variants.simple()).blockItem().register();
-        }
-        // 1.7 BlockGlyphid: two textures per subtype, chosen per position
-        Dejson.block(NS, "glyphid_base")
-                .models(Models.group()
-                        .and("_normal_0", Models.cubeAll("hbm:blocks/glyphid_base"))
-                        .and("_normal_1", Models.cubeAll("hbm:blocks/glyphid_base_alt"))
-                        .and("_infested_0", Models.cubeAll("hbm:blocks/glyphid_base_infested"))
-                        .and("_infested_1", Models.cubeAll("hbm:blocks/glyphid_base_infested_alt"))
-                        .and("_rad_0", Models.cubeAll("hbm:blocks/glyphid_base_rad"))
-                        .and("_rad_1", Models.cubeAll("hbm:blocks/glyphid_base_rad_alt")))
-                .states(Variants.product(Variants.select("type", "normal", "_normal", "infested", "_infested",
-                        "rad", "_rad"), Variants.pool(2)))
-                .register();
-        Dejson.block(NS, "glyphid_spawner")
-                .models(Models.group()
-                        .and("_normal", Models.cubeAll("hbm:blocks/glyphid_eggs_alt"))
-                        .and("_infested", Models.cubeAll("hbm:blocks/glyphid_eggs_infested"))
-                        .and("_rad", Models.cubeAll("hbm:blocks/glyphid_eggs_rad")))
-                .states(Variants.select("type", "normal", "_normal", "infested", "_infested", "rad", "_rad"))
-                .register();
-        Dejson.block(NS, "field_disturber").models(Models.cubeAll("hbm:blocks/field_disturber"))
-                .states(Variants.simple()).blockItem().register();
-    }
-
     private static void items() {
-        for (String block : new String[]{"deco_emitter", "part_emitter"}) {
-            Dejson.item(NS, block).shares("hbm:block/" + block).register();
-        }
-        for (String coil : COILS) Dejson.item(NS, "hadron_coil_" + coil).shares("hbm:block/hadron_coil_" + coil).register();
-        // no item renderer in 1.7: the block texture, flat
-        Dejson.item(NS, "broadcaster_pc").models(Models.generated("hbm:blocks/broadcaster_pc")).register();
-        Dejson.item(NS, "radiobox").models(Models.generated("hbm:blocks/radiobox")).register();
-        Dejson.item(NS, "radiorec").models(Models.generated("hbm:blocks/radiorec")).register();
-        for (String wood : new String[]{"roof", "scaffold", "ceiling"}) {
-            Dejson.item(NS, "wood_structure_" + wood).shares("hbm:block/wood_structure_" + wood).register();
-        }
-        Dejson.item(NS, "glyphid_base").models(Models.group()
-                .and("", Models.blockItem("hbm:block/glyphid_base_normal_0"))
-                .and("_infested", Models.blockItem("hbm:block/glyphid_base_infested_0"))
-                .and("_rad", Models.blockItem("hbm:block/glyphid_base_rad_0")))
-                .selects(NS + ":item_variant").register();
-        Dejson.item(NS, "glyphid_spawner").models(Models.group()
-                .and("", Models.blockItem("hbm:block/glyphid_spawner_normal"))
-                .and("_infested", Models.blockItem("hbm:block/glyphid_spawner_infested"))
-                .and("_rad", Models.blockItem("hbm:block/glyphid_spawner_rad")))
-                .selects(NS + ":item_variant").register();
-
         // RenderConserve inventory: the crate OBJ in its block texture (as the supply crate that shares it)
         {
             JsonObject model = machine("hbm:models/blocks/conservecrate.obj", "hbm:textures/block/crate_can.png");
+            // RenderConserve.renderInventoryBlock: translate(0, -0.5, 0), renderWithIcon(conservecrate), in 1.7's
+            // 3D block-item frame (ModItemModels "block" frame) (icon-P2 2026-10-01)
+            model.addProperty("frame", "block");
             model.addProperty("scale", 1.0);
-            model.addProperty("yaw", 0);
+            model.addProperty("yaw", 0.0);
             model.addProperty("ty", 0.0);
-            // the block-framed form (as crate_supply): 1.7 drew an ISBRH item like a block in the slot
-            JsonObject special = new JsonObject();
-            special.addProperty("type", "minecraft:special");
-            special.addProperty("base", "hbm:item/machine_obj_base");
-            special.add("model", model);
-            item("crate_can", special);
+            model.addProperty("rawLegacyTransform", true);
+            model.add("itemTranslate", numbers(0, -0.5, 0));
+            item("crate_can", model);
         }
         // ItemRenderLibrary bobblehead / RenderPlushie item: ItemRenderBase around the block renderers' own
         // renderBobble / renderPlushie, so the item has every prop, glow skin and the engraved name
@@ -224,27 +110,6 @@ public final class DecoCrateDeclarations {
             cases.add(when(type, model));
         }
         variantItem("snowglobe", cases);
-    }
-
-    private static void drops() {
-        Drops.self(NS, "crate");
-        Drops.self(NS, "crate_can");
-        for (String crate : new String[]{"crate_tungsten", "safe"}) {
-            Drops.container(NS, crate, "minecraft:container", "minecraft:custom_data", "minecraft:custom_name");
-        }
-        // drop themselves through their own getDrops (subtype from the block entity or state, or nothing)
-        for (String block : new String[]{"filing_cabinet", "bobblehead", "plushie", "snowglobe", "vending_machine",
-                "glyphid_base", "glyphid_spawner"}) {
-            Drops.nothing(NS, block);
-        }
-        for (String block : new String[]{"broadcaster_pc", "radiobox", "radiorec", "deco_emitter", "part_emitter",
-                "pink_log", "field_disturber", "wood_structure_roof", "wood_structure_scaffold", "wood_structure_ceiling"}) {
-            Drops.self(NS, block);
-        }
-        for (String coil : COILS) Drops.self(NS, "hadron_coil_" + coil);
-        for (String absorber : ABSORBERS) Drops.self(NS, absorber);
-        // 1.7 BlockCap: 128 of its caps, no fortune; silk touch keeps the block
-        for (String cap : CAPS) Drops.oreNoFortune(NS, "block_cap_" + cap, "hbm:cap_" + cap, 128, 128);
     }
 
     private static void recipes() {

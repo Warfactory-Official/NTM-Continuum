@@ -36,6 +36,9 @@ public final class CustomItemRenderers {
             Map.entry("crucible", ItemRenderCrucible::new),
             Map.entry("boltgun", ItemRenderBoltgun::new), // G-C: 1.7 ItemRenderBoltgun (RECOIL bus)
             Map.entry("missile_custom", ItemRenderMissile::new),
+            Map.entry("detonator_laser", ItemRenderDetonatorLaser::new),
+            Map.entry("grenade", ItemRenderGrenade::new),
+            Map.entry("deco_block", ItemRenderDecoBlock::new),
             Map.entry("bobblehead", ItemRenderBobble::new),
             Map.entry("plushie", ItemRenderPlushie::new),
             Map.entry("hot", ItemRendererHot::new),
@@ -72,6 +75,12 @@ public final class CustomItemRenderers {
         public void render(ItemStack stack, Type type, PoseStack pose, SubmitSink sink, int light, int overlay,
                            @Nullable LivingEntity owner) {
             get().render(stack, type, pose, sink, light, overlay, owner);
+        }
+
+        @Override
+        public void render(ItemStack stack, net.minecraft.world.item.ItemDisplayContext context, PoseStack pose,
+                           SubmitSink sink, int light, int overlay, @Nullable LivingEntity owner) {
+            get().render(stack, context, pose, sink, light, overlay, owner);
         }
 
         @Override
@@ -119,5 +128,15 @@ public final class CustomItemRenderers {
 
     static RenderType open(Identifier texture) {
         return CompatRenderTypes.entityCutoutNoCull(texture);
+    }
+
+    /**
+     * The render type for a renderer that never touched {@code GL_CULL_FACE}: culled as the GL default, except in
+     * third person, where 1.7's {@code RendererLivingEntity.doRender} had disabled culling before it drew the held
+     * item. That matters for a full-3D item: its hand pose ({@code weapon_full3d}) is a mirror, which turns culling
+     * inside out, and 1.7 never culled it there.
+     */
+    static RenderType heldFaces(CustomItemRenderer.Type type, Identifier texture) {
+        return type == CustomItemRenderer.Type.EQUIPPED ? open(texture) : culled(texture);
     }
 }

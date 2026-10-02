@@ -45,7 +45,7 @@ public final class FinalConsumableGameTests {
         for (String id : ModFinalConsumableItems.IDS) {
             helper.assertTrue(BuiltInRegistries.ITEM.containsKey(Ids.of(Constants.MOD_ID, id)), "hbm:" + id + " is registered");
         }
-        helper.assertTrue(ModFinalConsumableItems.IDS.size() == 127, "127 ids, got " + ModFinalConsumableItems.IDS.size());
+        helper.assertTrue(ModFinalConsumableItems.IDS.size() == 128, "128 ids, got " + ModFinalConsumableItems.IDS.size());
         helper.succeed();
     }
 
@@ -59,6 +59,15 @@ public final class FinalConsumableGameTests {
         helper.assertTrue(potato.getCharge(potato.emptyStack()) == 0, "the empty battery is empty");
         ItemBattery cube = ModFinalConsumableItems.cube_power.get();
         helper.assertTrue(cube.getMaxCharge(new ItemStack(cube)) == 1000000000000000000L, "electronium cube capacity");
+        // 1.7 ModItems.hev_battery is an ItemFusionCore(150000) stacking to 4; the wall charger block's item is a separate
+        // id (hev_battery_block) so the two do not collide in the port's one item registry.
+        net.minecraft.world.item.Item hev = ModFinalConsumableItems.hev_battery.get();
+        helper.assertTrue(hev instanceof com.hbm.items.tool.ItemFusionCore && new ItemStack(hev).getMaxStackSize() == 4,
+                "hbm:hev_battery is the 1.7 suit-battery item, stack size 4");
+        net.minecraft.world.item.Item hevBlockItem = com.hbm.blocks.ModEnergyNetBlocks.hev_battery.get().asItem();
+        helper.assertTrue(hevBlockItem instanceof net.minecraft.world.item.BlockItem && hevBlockItem != hev
+                        && BuiltInRegistries.ITEM.containsKey(Ids.of(Constants.MOD_ID, "hev_battery_block")),
+                "hbm:hev_battery_block is the wall charger block's item");
         helper.succeed();
     }
 

@@ -35,10 +35,6 @@ public record SirenPayload(BlockPos pos, int track, boolean active) implements G
         double radiusSquared = RANGE * RANGE;
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) > radiusSquared) continue;
-            // A sweep this wide reaches every player in the level, including one whose connection never
-            // negotiated our channel (a bare in-level test mock, a client without the mod); the loader
-            // throws on such a send rather than dropping it, so ask first.
-            if (!GolemNetwork.canSendToPlayer(player, CODEC)) continue;
             GolemNetwork.sendToPlayer(player, CODEC, payload);
         }
     }

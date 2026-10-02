@@ -8,7 +8,16 @@ import com.hbm.handler.ArmorUtil;
 import com.hbm.inventory.fluid.FluidCombustion;
 import com.hbm.inventory.fluid.FluidType;
 import com.hbm.inventory.fluid.Fluids;
+import com.hbm.entity.mob.glyphid.EntityGlyphid;
+import com.hbm.entity.projectile.EntityChemical;
+import com.hbm.handler.radiation.ChunkRadiationManager;
 import com.hbm.inventory.fluid.trait.FT_Corrosive;
+import com.hbm.inventory.fluid.trait.FT_Pheromone;
+import com.hbm.inventory.fluid.trait.FT_Poison;
+import com.hbm.inventory.fluid.trait.FT_Toxin;
+import com.hbm.inventory.fluid.trait.FT_VentRadiation;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple;
+import com.hbm.util.ContaminationUtil;
 import com.hbm.lib.ModDamageSources;
 import com.hbm.particle.helper.HbmEffectNT;
 import com.hbm.util.EntityDamageUtil;
@@ -18,6 +27,7 @@ import dev.golem.core.data.DataOut;
 import dev.golem.core.data.SynchedData;
 import dev.golem.core.world.Effects;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -40,14 +50,11 @@ import net.minecraft.world.phys.AABB;
  * <p>Sibling of {@link EntityFireLingering} — same stationary-area shape, and likewise it does not
  * call {@code super.tick()}: a gas cloud must not drown, suffocate or be pushed by fluids.
  *
- * <p>What a cloud does is read off the fluid, and this port can express what the fluid model carries:
- * temperature (scalds above 100 °C, freezes below −20 °C), {@link FT_Corrosive}, and flammability
- * through {@link FluidCombustion}. 1.12.2 also dispatches on poison, toxin, vent-radiation and
- * pheromone traits, and on the liquid/gaseous/viscous tags; none of those exist here yet, and the
- * fluids that carry them would be inert rather than wrong. The one consequence worth naming is that
- * <b>phosgene and mustard gas are visual</b>: upstream routes their entire lethality through
- * {@code FT_Polluting} and the pollution system, which this port defers wholesale. Chlorine, which
- * upstream makes corrosive, works.
+ * <p>What a cloud does is read off the fluid, in 1.7's order: temperature (scalds above 100 °C, freezes
+ * below −20 °C), {@code FT_Delicious} healing, oil-soaking for a flammable {@code FT_Liquid},
+ * extinguishing, {@link FT_Corrosive}, {@link FT_VentRadiation} contamination, {@link FT_Poison},
+ * {@link FT_Toxin}, then {@link FT_Pheromone}. A radioactive cloud also adds {@code radPerMB * 2} to its
+ * chunk every tick. Ender juice teleports a living thing at random, as 1.7 (between toxin and pheromone).
  */
 public class EntityMist extends CompatEntity {
 
@@ -93,6 +100,11 @@ public class EntityMist extends CompatEntity {
         return maxAge;
     }
 
+    /** Re-seeds this cloud's own random (ender juice's teleport target), for GameTests. */
+    public void seedRandom(long seed) {
+        this.random.setSeed(seed);
+    }
+
     @Override
     protected void defineData(SynchedData data) {
         data.define(TYPE, 0);
@@ -105,23 +117,44 @@ public class EntityMist extends CompatEntity {
         return false;
     }
 
+    /**
+     * 1.7's cloud is not fire-immune: {@code isBurning()} is what makes a flammable cloud explode, and a hot cloud
+     * or a flame sets it. The entity type is registered {@code fireImmune()}, which would make {@link #isOnFire}
+     * always false and that branch dead, so the cloud overrides it here. The cloud never runs the vanilla base
+     * tick (no fire countdown, lava or fire-block contact), exactly as 1.7's overridden {@code onEntityUpdate}.
+     */
+    @Override
+    public boolean fireImmune() {
+        return false;
+    }
+
     @Override
     public void tick() {
         this.tickCount++;
-        if (this.tickCount >= getMaxAge()) {
-            this.discard();
-            return;
-        }
         float width = this.entityData.get(WIDTH);
         float height = this.entityData.get(HEIGHT);
 
-        if (this.level() instanceof ServerLevel server) spread(server, width, height);
-        else drift(width, height);
+        if (this.level() instanceof ServerLevel server) {
+            // 1.7 calls setDead() at maxAge and still runs that tick's effects (at intensity 0): boil and acid
+            // damage are not scaled by intensity, so the last tick still lands one full hit.
+            boolean expired = this.tickCount >= getMaxAge();
+            spread(server, width, height);
+            if (expired) this.discard();
+        } else {
+            drift(width, height);
+        }
     }
 
     private void spread(ServerLevel server, float width, float height) {
         FluidType type = getFluid();
         if (type == null) return;
+
+        // 1.7: a radioactive cloud irradiates the block it stands in every tick, before anything else.
+        FT_VentRadiation vent = type.getTrait(FT_VentRadiation.class);
+        if (vent != null) {
+            ChunkRadiationManager.proxy.incrementRad(server, BlockPos.containing(getX(), getY(), getZ()),
+                    vent.getRadPerMB() * 2);
+        }
 
         // A cloud thins as it ages, and everything it does scales with what is left of it.
         double intensity = 1D - (double) this.tickCount / (double) getMaxAge();
@@ -134,10 +167,19 @@ public class EntityMist extends CompatEntity {
         }
 
         List<Entity> affected = this.level().getEntities(this, box(width, height),
-                e -> !(e instanceof Player player && (player.isSpectator() || player.isCreative()))
-                        && !(e instanceof EntityMist));
+                EntityMist::isAffected);
 
         for (Entity e : affected) affect(server, e, type, intensity);
+    }
+
+    /**
+     * Whether a cloud acts on {@code e}. 1.7's scan excludes only the cloud itself: creative players get its
+     * effects, and so do other clouds. A 500 °C+ cloud sets an overlapping cloud on fire (a flammable one then
+     * explodes on its next tick) and a cool non-flammable cloud puts a burning one out. Only spectators, which
+     * 1.7 lacks, are skipped.
+     */
+    public static boolean isAffected(Entity e) {
+        return !e.isSpectator();
     }
 
     private AABB box(float width, float height) {
@@ -163,8 +205,12 @@ public class EntityMist extends CompatEntity {
             living.addEffect(new MobEffectInstance(MobEffects.MINING_FATIGUE, 100, 4));
         }
 
-        // A flammable liquid douses whatever it lands on; a flammable gas does not stick.
-        if (FluidCombustion.isFlammable(type) && !FluidCombustion.isGaseous(type) && living != null) {
+        if (type.hasTrait(FluidTraitSimple.FT_Delicious.class) && living != null && living.isAlive()) {
+            living.heal(2F * (float) intensity);
+        }
+
+        // 1.7 FT_Flammable && FT_Liquid: doused in oil for 10 seconds.
+        if (FluidCombustion.isFlammable(type) && type.hasTrait(FluidTraitSimple.FT_Liquid.class) && living != null) {
             HbmLivingProps.setOil(living, 200);
         }
 
@@ -174,7 +220,45 @@ public class EntityMist extends CompatEntity {
         if (corrosive != null && living != null) {
             EntityDamageUtil.attackEntityFromIgnoreIFrame(living,
                     ModDamageSources.source(server, ModDamageSources.ACID), corrosive.getRating() / 60F);
-            if (living instanceof Player) ArmorUtil.damageWholeSuit(living, corrosive.getRating() / 50);
+            ArmorUtil.damageWholeSuit(living, corrosive.getRating() / 50); // every living thing, as 1.7
+        }
+
+        FT_VentRadiation vent = type.getTrait(FT_VentRadiation.class);
+        if (vent != null && living != null) {
+            ContaminationUtil.contaminate(living, ContaminationUtil.HazardType.RADIATION,
+                    ContaminationUtil.ContaminationType.CREATIVE, vent.getRadPerMB() * 5);
+        }
+
+        FT_Poison poison = type.getTrait(FT_Poison.class);
+        if (poison != null && living != null) {
+            living.addEffect(new MobEffectInstance(poison.isWithering() ? MobEffects.WITHER : MobEffects.POISON,
+                    (int) (5 * 20 * intensity)));
+        }
+
+        FT_Toxin toxin = type.getTrait(FT_Toxin.class);
+        if (toxin != null && living != null) toxin.affect(living, intensity);
+
+        // 1.7: ender juice throws a living thing to a random spot, EntityChemical's teleport copied verbatim.
+        if (type == Fluids.ENDERJUICE && living != null) EntityChemical.teleportRandomly(this, this.random, living);
+
+        FT_Pheromone pheromone = type.getTrait(FT_Pheromone.class);
+        if (pheromone != null && living != null) applyPheromone(living, pheromone);
+    }
+
+    /**
+     * 1.7 {@code EntityMist}'s pheromone table: glyphid pheromone (type 1) buffs glyphids, the modified one
+     * (type 2) buffs players, both scaled by the type number. Not {@code EntityChemical}'s table, which differs.
+     */
+    public static void applyPheromone(LivingEntity living, FT_Pheromone pheromone) {
+        if ((living instanceof EntityGlyphid && pheromone.getType() == 1)
+                || (living instanceof Player && pheromone.getType() == 2)) {
+            int mult = pheromone.getType();
+            Effects.add(living, Effects.speed(), mult * 60 * 20, 1);
+            Effects.add(living, Effects.haste(), mult * 60 * 20, 1);
+            living.addEffect(new MobEffectInstance(MobEffects.REGENERATION, mult * 2 * 20, 0));
+            Effects.add(living, Effects.resistance(), mult * 60 * 20, 0);
+            Effects.add(living, Effects.strength(), mult * 60 * 20, 1);
+            living.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, mult * 60 * 20, 0));
         }
     }
 

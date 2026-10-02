@@ -12,9 +12,6 @@ import net.minecraft.world.phys.HitResult;
 
 /**
  * The V2 family: the first missiles a player can build, all on the small launch pad.
- *
- * <p>Not ported yet: {@code EntityMissileCluster}, whose payload is {@code ExplosionChaos.cluster} and
- * therefore {@code EntityRocket} (IMPLEMENTATION.md §20).
  */
 public abstract class EntityMissileTier1 extends EntityMissileBaseNT {
 

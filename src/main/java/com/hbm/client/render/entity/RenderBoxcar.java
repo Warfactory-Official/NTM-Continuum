@@ -31,7 +31,7 @@ public class RenderBoxcar<T extends Entity> extends CompatEntityRenderer<T, Rend
         this.body = switch (kind) {
             case BOXCAR -> CompatRenderTypes.entityCutoutCull(ResourceManager.boxcar_tex);
             case DUCHESS_GAMBIT -> CompatRenderTypes.entityCutoutCull(ResourceManager.duchessgambit_tex);
-            case BUILDING -> CompatRenderTypes.entityCutout(ResourceManager.building_tex);
+            case BUILDING -> CompatRenderTypes.entityCutoutNoCull(ResourceManager.building_tex);
             case TORPEDO -> CompatRenderTypes.entityCutoutCull(ResourceManager.torpedo_tex);
         };
         this.model = switch (kind) {

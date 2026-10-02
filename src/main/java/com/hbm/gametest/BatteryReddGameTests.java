@@ -173,12 +173,13 @@ public final class BatteryReddGameTests {
     }
 
     public static void itemModels(GameTestHelper helper) {
+        // FEnSU and BAT9000 follow 1.7's raw ItemRenderLibrary chain since icon-P2 (2026-10-01)
         assertItemModel(helper, "machine_fensu", "hbm:models/machines/fensu.obj",
-                "hbm:textures/models/machines/fensus/fensu_light_blue.png", 0.21D, 90D, false, null, false);
+                "hbm:textures/models/machines/fensus/fensu_light_blue.png", 1.0D, 0D, false, null, true);
         assertItemModel(helper, "machine_bigasstank", "hbm:models/machines/bigasstank.obj",
                 "hbm:textures/models/machines/bigasstank.png", 0.5D, 0D, false, null, true);
         assertItemModel(helper, "machine_bat9000", "hbm:models/machines/bat9000.obj",
-                "hbm:textures/models/machines/bat9000.png", 0.2D, 0D, false, null, false);
+                "hbm:textures/models/machines/bat9000.png", 1.0D, 0D, false, null, true);
         assertItemModel(helper, "machine_battery_redd", "hbm:models/machines/fensu2.obj",
                 "hbm:textures/models/machines/fensu2.png", 0.5D, -90D, true, "Plasma", true);
         helper.succeed();

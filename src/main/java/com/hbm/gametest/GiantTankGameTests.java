@@ -133,7 +133,7 @@ public final class GiantTankGameTests {
         tank.tilted = true;
 
         BlockPos ductPos = tank.getConPos()[0].getPos();
-        level.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+        level.setBlock(ductPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.WATER);
 

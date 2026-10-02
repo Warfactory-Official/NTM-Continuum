@@ -47,7 +47,7 @@ public final class DecoCrateGameTests {
         });
     }
 
-    /** 1.7 TileEntityCrateTungsten.addEnergy: smelt in place, over 10 MHE polonium to yharonite and crucibles recharged. */
+    /** TileEntityCrateTungsten.addEnergy: smelt in place, over 10 MHE polonium to yharonite and (old-hbm) crucibles under 3 charges recharged. */
     public static void tungsten(net.minecraft.gametest.framework.GameTestHelper helper) {
         BlockPos rel = new BlockPos(1, 1, 1);
         helper.setBlock(rel, ModDecoCrateBlocks.crate_tungsten.get().defaultBlockState());
@@ -55,16 +55,17 @@ public final class DecoCrateGameTests {
         helper.assertTrue(crate != null, "tungsten crate block entity");
         crate.setItem(0, new ItemStack(Items.RAW_IRON, 5));
         crate.setItem(1, new ItemStack(ModItems.billet_polonium.get(), 2));
-        crate.setItem(2, ItemCrucible.withSpent(new ItemStack(ModAbilityToolItems.crucible.get()), 3));
+        crate.setItem(2, new ItemStack(ModAbilityToolItems.crucible.get())); // old-hbm: crafted empty, 0 charges
         crate.setItem(3, new ItemStack(Items.RAW_IRON, 40)); // 40 ingots still fit one stack
         crate.addEnergy(helper.getLevel(), helper.absolutePos(rel), 1000, Direction.UP);
         helper.assertTrue(crate.getItem(0).is(Items.IRON_INGOT) && crate.getItem(0).getCount() == 5, "raw iron smelted in place");
         helper.assertTrue(crate.getItem(1).is(ModItems.billet_polonium.get()), "polonium needs over 10 MHE");
-        helper.assertTrue(ItemCrucible.spent(crate.getItem(2)) == 3, "the crucible needs over 10 MHE");
+        helper.assertTrue(ItemCrucible.getCharges(crate.getItem(2)) == 0, "the crucible needs over 10 MHE");
         crate.addEnergy(helper.getLevel(), helper.absolutePos(rel), 10_000_001, Direction.UP);
         helper.assertTrue(crate.getItem(1).is(ModItems.billet_yharonite.get()) && crate.getItem(1).getCount() == 2,
                 "polonium became yharonite: " + crate.getItem(1));
-        helper.assertTrue(ItemCrucible.spent(crate.getItem(2)) == 0, "the crucible was recharged");
+        helper.assertTrue(ItemCrucible.getCharges(crate.getItem(2)) == ItemCrucible.maxCharges(),
+                "the crucible was recharged to " + ItemCrucible.maxCharges() + ": " + ItemCrucible.getCharges(crate.getItem(2)));
         helper.runAfterDelay(2, () -> {
             helper.assertTrue(helper.getBlockState(rel).getValue(BlockStorageCrate.HOT), "the lasered crate is hot");
             helper.succeed();

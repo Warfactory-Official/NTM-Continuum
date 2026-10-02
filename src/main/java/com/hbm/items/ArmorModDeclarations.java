@@ -3,8 +3,6 @@ package com.hbm.items;
 import com.hbm.lib.ItemIds;
 import com.hbm.lib.TagIds;
 import com.hbm.lib.VanillaIds;
-import dev.golem.core.dejson.Dejson;
-import dev.golem.core.dejson.Models;
 import dev.golem.core.dejson.Tags;
 
 import static dev.golem.core.dejson.Crafting.rows;
@@ -12,9 +10,9 @@ import static dev.golem.core.dejson.Crafting.shaped;
 import static dev.golem.core.dejson.Crafting.shapeless;
 
 /**
- * Dejson declarations for {@link ModArmorModItems} and {@code insert_era}: sprite item models, the new
- * repair tags, and the recipes of 1.7 {@code ConsumableRecipes} and {@code ArmorRecipes}. Touches no
- * Minecraft class.
+ * Dejson declarations for {@link ModArmorModItems} and {@code insert_era}: the new repair tags and the recipes
+ * of 1.7 {@code ConsumableRecipes} and {@code ArmorRecipes}. Touches no Minecraft class. The sprite item models
+ * are stated on the registrations (Reg).
  */
 public final class ArmorModDeclarations {
 
@@ -23,23 +21,9 @@ public final class ArmorModDeclarations {
 
     private ArmorModDeclarations() {}
 
-    static final String[] SPRITES = {
-            "attachment_mask", "attachment_mask_mono", "australium_iii", "back_tesla", "ballistic_gauntlet", "bandaid",
-            "bathwater", "bathwater_mk2", "black_diamond", "heart_piece", "heart_container", "heart_booster",
-            "heart_fab", "card_aos", "card_qos", "cladding_iron", "cladding_obsidian", "gas_tester", "lodestone",
-            "horseshoe_magnet", "industrial_magnet", "injector_5htp", "injector_knife", "ink", "insert_era",
-            "medal_liquidator", "meteor_charm", "protection_charm", "morning_glory", "night_vision", "neutrino_lens",
-            "pads_rubber", "pads_slime", "pads_static", "servo_set", "servo_set_desh", "shackles", "wd40", "scrumpy",
-            "wild_p", "serum", "spider_milk", "hazmat_paa_helmet", "hazmat_paa_plate", "hazmat_paa_legs",
-            "hazmat_paa_boots", "liquidator_helmet", "liquidator_plate", "liquidator_legs", "liquidator_boots",
-            "mask_of_infamy",
-    };
-
     public static void declare() {
         if (declared) return;
         declared = true;
-
-        for (String id : SPRITES) Dejson.item(NS, id).models(Models.generated("hbm:items/" + id)).register();
 
         // aMatLiquidator.customCraftingMaterial = plate_lead; the mask's material is vanilla iron.
         Tags.item(NS, "repairs/liquidator", ItemIds.plate_lead);

@@ -1,0 +1,25 @@
+{
+  "__comment": "1.7 BlockSandbags.renderInventoryBlock: rotate(90, Y) translate(-0.5) and the box 0.125..0.875 x/z, full height (the placed block is still a simplified full cube). GUI is 1.7 RenderItem's 3D-block pose (rotateY -45, not block/block's 225); the other slots inherit block/block. icon-P2 2026-10-01.",
+  "parent": "minecraft:block/block",
+  "textures": {
+    "particle": "hbm:blocks/sandbags",
+    "all": "hbm:blocks/sandbags"
+  },
+  "elements": [
+    {
+      "from": [2, 0, 2],
+      "to": [14, 16, 14],
+      "faces": {
+        "down":  {"texture": "#all"},
+        "up":    {"texture": "#all"},
+        "north": {"texture": "#all"},
+        "south": {"texture": "#all"},
+        "west":  {"texture": "#all"},
+        "east":  {"texture": "#all"}
+      }
+    }
+  ],
+  "display": {
+    "gui": {"rotation": [30, -45, 0], "translation": [0, 0, 0], "scale": [0.625, 0.625, 0.625]}
+  }
+}

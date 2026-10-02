@@ -2,12 +2,13 @@ package com.hbm.items;
 
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
-import com.hbm.creativetabs.ModTabs;
 import com.hbm.items.machine.ItemMachineUpgrade;
 import com.hbm.items.machine.ItemMachineUpgrade.UpgradeType;
 import dev.golem.core.registry.DeferredRegister;
 import dev.golem.core.registry.RegistryObject;
 import net.minecraft.world.item.Item;
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 
 /**
  * The machine upgrade modules (1.12.2 {@code ItemMachineUpgrade} entries of {@code ModItems}): the
@@ -22,6 +23,7 @@ public final class ModUpgradeItems {
     private ModUpgradeItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     public static final RegistryObject<ItemMachineUpgrade> upgrade_speed_1 = upgrade("upgrade_speed_1", UpgradeType.SPEED, 1);
     public static final RegistryObject<ItemMachineUpgrade> upgrade_speed_2 = upgrade("upgrade_speed_2", UpgradeType.SPEED, 2);
@@ -62,15 +64,15 @@ public final class ModUpgradeItems {
     public static final RegistryObject<Item> crystal_xen = plainItem("crystal_xen");
 
     private static RegistryObject<ItemMachineUpgrade> upgrade(String name, UpgradeType type, int tier) {
-        RegistryObject<ItemMachineUpgrade> ro = ITEMS.registerItem(name, p -> new ItemMachineUpgrade(type, tier, p), p -> p.stacksTo(1));
-        ModTabs.addTo(HbmTab.CONTROL, ro);
-        return ro;
+        return REG.<ItemMachineUpgrade>item(name, p -> new ItemMachineUpgrade(type, tier, p), p -> p.stacksTo(1))
+                .transform(Presets.sprite())
+                .tab(HbmTab.CONTROL);
     }
 
     private static RegistryObject<Item> plainItem(String name) {
-        RegistryObject<Item> ro = ITEMS.registerItem(name, Item::new, p -> p.stacksTo(1));
-        ModTabs.addTo(HbmTab.CONTROL, ro);
-        return ro;
+        return REG.<Item>item(name, Item::new, p -> p.stacksTo(1))
+                .transform(Presets.sprite())
+                .tab(HbmTab.CONTROL);
     }
 
     public static void init() {}

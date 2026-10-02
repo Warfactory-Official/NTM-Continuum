@@ -144,7 +144,7 @@ public final class PumpGameTests {
         ServerLevel level = helper.getLevel();
         TileEntityMachinePumpSteam pump = placeSteam(helper, new BlockPos(3, 1, 3));
         BlockPos ductPos = pump.getBlockPos().east(2);
-        level.setBlock(ductPos, ModMachineBlocks.fluid_duct_mk2.get().defaultBlockState(), 3);
+        level.setBlock(ductPos, com.hbm.blocks.ModFluidNetBlocks.fluid_duct_neo.get().defaultBlockState(), 3);
         TileEntityFluidDuctNT duct = (TileEntityFluidDuctNT) level.getBlockEntity(ductPos);
         duct.setFluidType(Fluids.STEAM);
 

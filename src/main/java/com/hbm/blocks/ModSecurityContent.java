@@ -28,6 +28,5 @@ public final class ModSecurityContent {
         ModSecurityItems.init();
         ModSecurityBlockEntities.init();
         ModSecurityMenus.init();
-        SecurityDeclarations.declare();
     }
 }

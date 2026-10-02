@@ -1,5 +1,8 @@
 package com.hbm.items;
 
+import dev.golem.core.dejson.Dejson;
+import com.hbm.registration.Reg;
+import com.hbm.registration.Presets;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -30,6 +33,86 @@ public final class ModAutogenItems {
     private ModAutogenItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
+
+    /**
+     * The shape art each material-shape sprite is computed from, and the materials it is computed for.
+     *
+     * <p>These sprites are not files. Golem Core recolours one greyscale plate per shape onto every
+     * material's own light and dark colours while the atlas is stitched, which is what the 1.12.2
+     * {@code ItemAutogen} did with a mutable atlas icon and what this mod did with 187 pre-baked PNGs
+     * until they were deleted. {@link com.hbm.client.AutogenSprites} declares the remap; this says the
+     * same thing to the build, so the sprite check holds the model against the art it is derived from
+     * instead of reporting a file that is never going to be there.
+     *
+     * <p>{@code bedrock_ore_fragment_bismuth} is deliberately absent: bismuth declares one flat colour
+     * for both ends of its band, so a remap would hand it a silhouette. 1.7 answered that with an
+     * authored sprite ({@code ItemAutogen.aot}) and so does this — it stays a file.
+     */
+    private static final Map<String, String[]> REMAPPED_SHAPES = new LinkedHashMap<>();
+
+    static {
+        REMAPPED_SHAPES.put("shell", new String[] {
+                "titanium", "aluminium", "steel", "copper", "weaponsteel", "saturnite"});
+        REMAPPED_SHAPES.put("pipe", new String[] {
+                "iron", "aluminium", "steel", "lead", "copper", "dura_steel", "rubber"});
+        REMAPPED_SHAPES.put("ingot_raw", new String[] {
+                "neodymium", "sodium", "strontium", "borax", "slag", "redstone"});
+        REMAPPED_SHAPES.put("plate_cast", new String[] {
+                "iron", "gold", "titanium", "aluminium", "steel", "lead", "copper", "weaponsteel",
+                "combine_steel", "dura_steel", "saturnite", "schrabidium", "desh", "tungsten", "zirconium",
+                "schrabidate", "osmiridium", "starmetal", "ferrouranium", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("plate_welded", new String[] {
+                "iron", "titanium", "aluminium", "steel", "copper", "combine_steel", "tungsten",
+                "zirconium", "osmiridium", "tcalloy", "cdalloy"});
+        REMAPPED_SHAPES.put("wire_fine", new String[] {
+                "gold", "aluminium", "steel", "lead", "copper", "schrabidium", "red_copper",
+                "magnetized_tungsten", "tungsten", "zirconium", "carbon"});
+        REMAPPED_SHAPES.put("wire_dense", new String[] {
+                "gold", "titanium", "copper", "schrabidium", "red_copper", "magnetized_tungsten",
+                "tungsten", "niobium", "neodymium", "schrabidate", "starmetal", "bscco", "dineutronium"});
+        REMAPPED_SHAPES.put("bolt", new String[] {
+                "steel", "lead", "dura_steel", "tungsten"});
+        REMAPPED_SHAPES.put("part_barrel_light", new String[] {
+                "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("part_barrel_heavy", new String[] {
+                "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "ferrouranium",
+                "tcalloy", "cdalloy"});
+        REMAPPED_SHAPES.put("part_receiver_light", new String[] {
+                "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("part_receiver_heavy", new String[] {
+                "gunmetal", "weaponsteel", "dura_steel", "saturnite", "ferrouranium", "tcalloy", "cdalloy",
+                "bismuth_bronze", "arsenic_bronze"});
+        REMAPPED_SHAPES.put("part_mechanism", new String[] {
+                "gunmetal", "weaponsteel", "saturnite"});
+        REMAPPED_SHAPES.put("part_stock", new String[] {
+                "wood", "gunmetal", "weaponsteel", "saturnite", "desh", "polymer", "bakelite", "pc", "pvc"});
+        REMAPPED_SHAPES.put("part_grip", new String[] {
+                "wood", "steel", "gunmetal", "weaponsteel", "dura_steel", "saturnite", "desh", "polymer",
+                "bakelite", "rubber", "pc", "pvc", "bone"});
+        REMAPPED_SHAPES.put("bedrock_ore_fragment", new String[] {
+                "iron", "gold", "titanium", "aluminium", "lead", "copper", "tungsten", "beryllium",
+                "cobalt", "niobium", "zirconium", "boron", "neodymium", "lanthanium", "asbestos", "uranium",
+                "thorium", "polonium", "u238", "technetium", "ra226", "tantalium", "silicon", "sodium",
+                "strontium", "lithium", "sulfur", "fluorite", "red_phosphorus", "chlorocalcite", "molysite",
+                "cinnabar", "borax", "sodalite", "redstone", "coal", "lignite", "diamond", "bauxite",
+                "cryolite", "emerald", "niter", "rare"});
+    }
+
+    static {
+        // the computed sprites themselves: one greyscale plate per shape, recoloured per material at stitch time
+        REMAPPED_SHAPES.forEach((art, materials) ->
+                Dejson.generatedSprites(Constants.MOD_ID + ":items/" + art, "_", List.of(materials)));
+    }
+
+    /** Whether this material-shape item's sprite is a computed remap (its model is then the plain sprite). */
+    private static boolean remapped(String base, String material) {
+        String[] materials = REMAPPED_SHAPES.get(base);
+        return materials != null && java.util.Arrays.asList(materials).contains(material);
+    }
 
     /** The autogen shapes and their registry-name base, which also names the shape art each is drawn from. */
     private static final Map<MaterialShapes, String> SHAPES = new LinkedHashMap<>();
@@ -67,8 +150,10 @@ public final class ModAutogenItems {
             String base = e.getValue();
             for (NTMMaterial mat : Mats.orderedList) {
                 if (!mat.autogen.contains(shape)) continue;
-                RegistryObject<ItemAutogen> item = ITEMS.registerItem(base + "_" + mat.name,
+                Reg.Handle<ItemAutogen> item = REG.item(base + "_" + mat.name,
                         p -> new ItemAutogen(p, shape, mat), p -> p.stacksTo(64));
+                // The model is the plain one-sprite case like any other; only the texture behind it is generated.
+                if (remapped(base, mat.name)) item.transform(Presets.sprite());
                 BY_KEY.put(key(shape, mat.name), item);
                 ModTabs.addTo(HbmTab.MATERIALS, item);
             }

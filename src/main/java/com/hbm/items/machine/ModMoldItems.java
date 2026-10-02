@@ -1,5 +1,7 @@
 package com.hbm.items.machine;
 
+import com.hbm.registration.Presets;
+import com.hbm.registration.Reg;
 import com.hbm.Constants;
 import com.hbm.creativetabs.HbmTab;
 import com.hbm.creativetabs.ModTabs;
@@ -33,6 +35,7 @@ public final class ModMoldItems {
     private ModMoldItems() {}
 
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Constants.MOD_ID);
+    private static final Reg REG = Reg.of(ITEMS);
 
     /** All registered mold items, in display order (for recipes/creative). */
     public static final List<RegistryObject<ItemMold>> MOLDS = new ArrayList<>();
@@ -41,7 +44,8 @@ public final class ModMoldItems {
     public static final RegistryObject<Item> mold_base = ModItems.mold_base;
 
     private static RegistryObject<ItemMold> mold(Mold mold) {
-        RegistryObject<ItemMold> ro = ITEMS.registerItem("mold_" + mold.name, p -> new ItemMold(p, mold), p -> p.stacksTo(64));
+        RegistryObject<ItemMold> ro = REG.item("mold_" + mold.name, p -> new ItemMold(p, mold), p -> p.stacksTo(64))
+                .transform(Presets.sprite());
         MOLDS.add(ro);
         ModTabs.addTo(HbmTab.TEMPLATES, ro);
         return ro;

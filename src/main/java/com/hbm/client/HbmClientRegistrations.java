@@ -363,6 +363,8 @@ public final class HbmClientRegistrations {
                 "hbm:pipeline/heat_distortion", "hbm:heat_distortion");
         // 1.12 HbmShaderManager2 bloom/distortion layers, composited after the hand (first-person crucible blade)
         dev.golem.core.render.ScreenEffects.init();
+        // old-hbm crucible/sword cutters: first-person Collada scene, slicing input, cut mobs
+        com.hbm.client.crucible.CrucibleClient.register();
         com.hbm.client.jetpack.JetpackClientVisuals.init();
          com.hbm.client.jetpack.JetpackSmokeClient.register();
          com.hbm.client.render.entity.EntityRenderSmokeClient.register();
@@ -433,7 +435,11 @@ public final class HbmClientRegistrations {
         HbmKeybindsClient.register();
         ArmorSetClient.registerKeys(); // final armor sets A: bismuth dash key
         QMAWClient.register();
+        CanneryClient.register(); // 1.7 WIAJ presentations: Left Shift + QMAW key on a hovered item
         ArmorModTooltips.register();
+        // 1.7 FluidType.addInfo polls physical left Shift for the hidden trait lines (FT_Polluting et al.).
+        com.hbm.inventory.fluid.FluidType.setShiftHeldPoll(() -> dev.golem.core.client.KeyMappings.isHeld(
+                net.minecraft.client.Minecraft.getInstance().options.keyShift));
         com.hbm.client.anim.GunRecoil.register();
         CraneKeybindHandler.register();
         com.hbm.client.UtilityToolClientRegistrations.installKeybinds();

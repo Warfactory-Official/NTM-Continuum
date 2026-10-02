@@ -1,7 +1,17 @@
 package com.hbm.inventory.fluid;
 
 import com.hbm.Constants;
-import com.hbm.lib.Library;
+import com.hbm.inventory.fluid.trait.FT_Coolable;
+import com.hbm.inventory.fluid.trait.FT_Corrosive;
+import com.hbm.inventory.fluid.trait.FT_Heatable;
+import com.hbm.inventory.fluid.trait.FT_PWRModerator;
+import com.hbm.inventory.fluid.trait.FT_Pheromone;
+import com.hbm.inventory.fluid.trait.FT_Poison;
+import com.hbm.inventory.fluid.trait.FT_Polluting;
+import com.hbm.inventory.fluid.trait.FT_Toxin;
+import com.hbm.inventory.fluid.trait.FT_VentRadiation;
+import com.hbm.inventory.fluid.trait.FluidTraitSimple;
+import com.hbm.util.BobMathUtil;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -16,8 +26,8 @@ import java.util.Map;
  * segregated by type — water pipes never mix with oil pipes — which the fluid graph gets from
  * {@link com.hbm.api.fluidmk2.FluidGraphProvider#dataCompatible} rather than from a nodespace per type.
  *
- * <p>The original also carried Forge-fluid interop, pollution/potion hooks, and client-side rendering. Those
- * remain outside this type; tooltip facts use the ported thermal and combustion data below.
+ * <p>The original also carried Forge-fluid interop, potion hooks, and client-side rendering. Those remain
+ * outside this type; tooltip facts use the ported thermal, combustion and pollution data below.
  *
  * @author hbm, mlbv
  */
@@ -151,54 +161,154 @@ public class FluidType {
 
     public <T> T getTrait(Class<T> trait) { return trait.cast(traits.get(trait)); }
 
+    /**
+     * Whether the tooltip's hidden trait lines are shown: 1.7 polls physical left Shift. Common code cannot
+     * reach the keyboard, so the client installs the real poll at startup; a server-side call sees false.
+     */
+    private static volatile java.util.function.BooleanSupplier shiftHeld = () -> false;
+
+    /** Installs the client's physical-Shift poll; called once from client registration. */
+    public static void setShiftHeldPoll(java.util.function.BooleanSupplier poll) {
+        shiftHeld = java.util.Objects.requireNonNull(poll);
+    }
+
     /** Adds the fluid facts currently represented by the port's fluid model to a tooltip. */
     public void addInfo(List<Component> info) {
+        addInfo(info, shiftHeld.getAsBoolean());
+    }
+
+    /**
+     * 1.7 {@code addInfo}: the temperature, then every trait in 1.7's {@code FluidTrait.traitList} registration
+     * order: corrosive, flammable, combustible, polluting, heatable, coolable, pwrmoderator, poison, toxin,
+     * ventradiation, pheromone, gaseous, gaseous_art, liquid, viscous, plasma, amat, leadcontainer, delicious,
+     * (noid, nocontainer: no lines), unsiphonable. Each trait adds its always-visible lines, then its hidden
+     * lines when Shift is held; the "Hold &lt;LSHIFT&gt;" hint closes the tooltip when any trait has hidden lines
+     * and Shift is up. The order is the registry's, never the order a fluid's traits were added in.
+     */
+    public void addInfo(List<Component> info, boolean shiftHeld) {
+        List<Component> hidden = new java.util.ArrayList<>();
+
         if (temperature != ROOM_TEMPERATURE) {
             if (temperature < 0) info.add(Component.literal(temperature + "\u00b0C").withStyle(ChatFormatting.BLUE));
             if (temperature > 0) info.add(Component.literal(temperature + "\u00b0C").withStyle(ChatFormatting.RED));
         }
 
-        com.hbm.inventory.fluid.trait.FT_Corrosive corrosive = getTrait(
-                com.hbm.inventory.fluid.trait.FT_Corrosive.class);
+        FT_Corrosive corrosive = getTrait(FT_Corrosive.class);
         if (corrosive != null) corrosive.addInfo(info);
 
-        com.hbm.inventory.fluid.trait.FT_PWRModerator moderator = getTrait(
-                com.hbm.inventory.fluid.trait.FT_PWRModerator.class);
-        if (moderator != null) moderator.addInfo(info);
-
-        long flammable = FluidCombustion.getFlammableEnergy(this);
-        if (flammable > 0) {
-            info.add(bracketed("trait.flammable", ChatFormatting.YELLOW));
-            info.add(Component.translatable("trait.flammable.desc", Library.getShortNumber(flammable)));
+        // FT_Flammable / FT_Combustible live in FluidCombustion; their lines are 1.7's.
+        if (FluidCombustion.isFlammable(this)) {
+            long energy = FluidCombustion.getFlammableEnergy(this);
+            info.add(bracketed("hbmfluid.trait.flammable", ChatFormatting.YELLOW));
+            if (energy > 0) info.add(provides(ChatFormatting.YELLOW, energy, "TU "));
         }
 
         FluidCombustion.Combustible combustible = FluidCombustion.getCombustible(this);
         if (combustible != null) {
-            info.add(bracketed("trait.combustable", ChatFormatting.GOLD));
+            info.add(bracketed("hbmfluid.trait.combustible", ChatFormatting.GOLD));
             if (combustible.energyPerBucket() > 0) {
-                info.add(Component.translatable("trait.combustable.desc",
-                        Library.getShortNumber(combustible.energyPerBucket())));
-                info.add(Component.translatable("trait.combustable.desc2",
-                        Component.translatable(fuelGradeKey(combustible.grade()))));
+                info.add(provides(ChatFormatting.GOLD, combustible.energyPerBucket(), "HE "));
+                info.add(Component.translatable("hbmfluid.trait.fuelGrade").append(": ").withStyle(ChatFormatting.GOLD)
+                        .append(Component.translatable(fuelGradeKey(combustible.grade())).withStyle(ChatFormatting.RED)));
             }
         }
+
+        FT_Polluting polluting = getTrait(FT_Polluting.class);
+        if (polluting != null) {
+            polluting.addInfo(info);
+            hidden(info, hidden, shiftHeld, polluting::addInfoHidden);
+        }
+
+        FT_Heatable heatable = getTrait(FT_Heatable.class);
+        if (heatable != null) hidden(info, hidden, shiftHeld, heatable::addInfoHidden);
+
+        FT_Coolable coolable = getTrait(FT_Coolable.class);
+        if (coolable != null) hidden(info, hidden, shiftHeld, coolable::addInfoHidden);
+
+        FT_PWRModerator moderator = getTrait(FT_PWRModerator.class);
+        if (moderator != null) {
+            moderator.addInfo(info);
+            hidden(info, hidden, shiftHeld, moderator::addInfoHidden);
+        }
+
+        FT_Poison poison = getTrait(FT_Poison.class);
+        if (poison != null) hidden(info, hidden, shiftHeld, poison::addInfoHidden);
+
+        FT_Toxin toxin = getTrait(FT_Toxin.class);
+        if (toxin != null) hidden(info, hidden, shiftHeld, toxin::addInfoHidden);
+
+        FT_VentRadiation vent = getTrait(FT_VentRadiation.class);
+        if (vent != null) vent.addInfo(info);
+
+        FT_Pheromone pheromone = getTrait(FT_Pheromone.class);
+        if (pheromone != null) pheromone.addInfo(info);
+
+        FluidTraitSimple.FT_Gaseous gaseous = getTrait(FluidTraitSimple.FT_Gaseous.class);
+        if (gaseous != null) hidden(info, hidden, shiftHeld, gaseous::addInfoHidden);
+        FluidTraitSimple.FT_Gaseous_ART evap = getTrait(FluidTraitSimple.FT_Gaseous_ART.class);
+        if (evap != null) hidden(info, hidden, shiftHeld, evap::addInfoHidden);
+        FluidTraitSimple.FT_Liquid liquid = getTrait(FluidTraitSimple.FT_Liquid.class);
+        if (liquid != null) hidden(info, hidden, shiftHeld, liquid::addInfoHidden);
+        FluidTraitSimple.FT_Viscous viscous = getTrait(FluidTraitSimple.FT_Viscous.class);
+        if (viscous != null) hidden(info, hidden, shiftHeld, viscous::addInfoHidden);
+        FluidTraitSimple.FT_Plasma plasma = getTrait(FluidTraitSimple.FT_Plasma.class);
+        if (plasma != null) hidden(info, hidden, shiftHeld, plasma::addInfoHidden);
+        FluidTraitSimple.FT_Amat amat = getTrait(FluidTraitSimple.FT_Amat.class);
+        if (amat != null) amat.addInfo(info);
+        FluidTraitSimple.FT_LeadContainer leadContainer = getTrait(FluidTraitSimple.FT_LeadContainer.class);
+        if (leadContainer != null) leadContainer.addInfo(info);
+        FluidTraitSimple.FT_Delicious delicious = getTrait(FluidTraitSimple.FT_Delicious.class);
+        if (delicious != null) hidden(info, hidden, shiftHeld, delicious::addInfoHidden);
+        FluidTraitSimple.FT_Unsiphonable unsiphonable = getTrait(FluidTraitSimple.FT_Unsiphonable.class);
+        if (unsiphonable != null) hidden(info, hidden, shiftHeld, unsiphonable::addInfoHidden);
+
+        if (!hidden.isEmpty() && !shiftHeld) {
+            info.add(Component.literal("Hold <").withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)
+                    .append(Component.literal("LSHIFT").withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC))
+                    .append(Component.literal("> to display more info")
+                            .withStyle(ChatFormatting.DARK_GRAY, ChatFormatting.ITALIC)));
+        }
+    }
+
+    /** 1.7's per-trait {@code if(shiftHeld) trait.addInfoHidden(info); trait.addInfoHidden(hidden);}. */
+    private static void hidden(List<Component> info, List<Component> hidden, boolean shiftHeld,
+            java.util.function.Consumer<List<Component>> adder) {
+        if (shiftHeld) adder.accept(info);
+        adder.accept(hidden);
     }
 
     private static Component bracketed(String key, ChatFormatting style) {
         return Component.literal("[").append(Component.translatable(key)).append("]").withStyle(style);
     }
 
+    /** 1.7 {@code "Provides " + RED + getShortNumber(energy) + unit + "per bucket"} in the trait's colour. */
+    private static Component provides(ChatFormatting style, long energy, String unit) {
+        return Component.translatable("hbmfluid.trait.provides").append(" ").withStyle(style)
+                .append(Component.literal(BobMathUtil.getShortNumber(energy) + unit).withStyle(ChatFormatting.RED))
+                .append(Component.translatable("hbmfluid.trait.perBucket").withStyle(style));
+    }
+
+    /** 1.7 {@code FuelGrade.getLocalizedName}: {@code hbmfluid.trait.fuel.<grade>}. */
     private static String fuelGradeKey(FluidCombustion.FuelGrade grade) {
         return switch (grade) {
-            case LOW -> "trait.combustable.low";
-            case MEDIUM -> "trait.combustable.medium";
-            case HIGH -> "trait.combustable.high";
-            case AERO -> "trait.combustable.avi";
-            case GAS -> "trait.combustable.gas";
+            case LOW -> "hbmfluid.trait.fuel.low";
+            case MEDIUM -> "hbmfluid.trait.fuel.medium";
+            case HIGH -> "hbmfluid.trait.fuel.high";
+            case AERO -> "hbmfluid.trait.fuel.aviation";
+            case GAS -> "hbmfluid.trait.fuel.gaseous";
         };
     }
 
-
+    // 1.7 FluidType's trait shorthands.
+    public boolean isCorrosive() { return hasTrait(FT_Corrosive.class); }
+    public boolean isAntimatter() { return hasTrait(FluidTraitSimple.FT_Amat.class); }
+    public boolean hasNoContainer() { return hasTrait(FluidTraitSimple.FT_NoContainer.class); }
+    public boolean hasNoID() { return hasTrait(FluidTraitSimple.FT_NoID.class); }
+    public boolean needsLeadContainer() { return hasTrait(FluidTraitSimple.FT_LeadContainer.class); }
+    public boolean isDispersable() {
+        return !(hasTrait(FluidTraitSimple.FT_Amat.class) || hasTrait(FluidTraitSimple.FT_NoContainer.class)
+                || hasTrait(FluidTraitSimple.FT_Viscous.class));
+    }
 
     @Override
     public String toString() {

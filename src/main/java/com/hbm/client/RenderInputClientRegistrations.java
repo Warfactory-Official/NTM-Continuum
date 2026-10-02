@@ -32,6 +32,7 @@ public final class RenderInputClientRegistrations {
     public static void registerPacketHandlers() {
         GolemNetwork.registerPlayToClient(ToolAnimationPayload.CODEC,
                 (payload, context) -> com.hbm.client.anim.ToolAnimations.handle(payload));
+        com.hbm.client.crucible.CrucibleClient.registerPacketHandlers(); // old-hbm crucible anims and cut mobs
     }
 
     /** Called from {@code HbmClientRegistrations.installKeybinds}. */
@@ -124,6 +125,7 @@ public final class RenderInputClientRegistrations {
             dev.golem.core.render.Particles.add(new com.hbm.client.particle.ParticleHadron(client, x, y, z).makeSmall(small));
         });
         com.hbm.client.GapsCHarnessQueries.register(); // harness query hbm_gapsc (FinalGapsC)
+        com.hbm.client.IconAuditHarnessQueries.register(); // harness query hbm_icon_audit (ItemIconAudit)
         // 1.7 IBlockCT connected textures: hadron coils, coated wire, ICF and PWR shells
         com.hbm.client.ConnectedTextureRegistrations.register();
         // 1.7 RenderOverhead markers ("marker" aux effect) and ParticleText ("debug")
