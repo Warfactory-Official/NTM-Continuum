@@ -432,7 +432,8 @@ public final class FinalGapsAGameTests {
     /**
      * old-hbm {@code ItemCrucible.hitEntity}: a real attack spends one charge and wears the sword by two (1.12's
      * {@code ItemSwordAbility} and {@code ItemSword} each damaged it once); while a cut is being drawn
-     * ({@code doSpecialClick}) a hit spends nothing; a hit at zero charge stays at zero and still hurts.
+     * ({@code doSpecialClick}) the attack is refused, and a hit that reached the hook anyway spends nothing (once per
+     * cut); a hit at zero charge stays at zero and still hurts.
      */
     public static void crucibleHit(GameTestHelper helper) {
         // survival: creative players never wear their tools
@@ -451,15 +452,22 @@ public final class FinalGapsAGameTests {
 
         ItemCrucible.setSpecialClick(player, true);
         LivingEntity b = spawnSheep(helper, at.add(1.5, 0, 1));
-        player.attack(b);
+        // the left click that confirms a cut never attacks (the server's attack guard; the client sends no attack)
+        helper.assertTrue(com.hbm.items.weapon.ItemSwordCutter.onLeftClickEntity(player, b),
+                "confirming a cut: the server refuses the attack");
+        helper.assertTrue(b.isAlive() && b.getHealth() == b.getMaxHealth(), "confirming a cut: the sheep is untouched");
+        // F1's charge rule on the hit hook itself (only a hit that bypassed the guard can reach it now): one free hit
+        // per cut; a second hit before the cut arrives spends a charge as usual
+        ModAbilityToolItems.crucible.get().hurtEnemy(held, b, player);
         helper.assertTrue(ItemCrucible.getCharges(held) == 15, "drawing a cut: the hit spends nothing");
-        // server authority: one free hit per cut; a second hit before the cut arrives spends a charge as usual
         LivingEntity b2 = spawnSheep(helper, at.add(1.5, 0, 2));
-        player.attack(b2);
+        ModAbilityToolItems.crucible.get().hurtEnemy(held, b2, player);
         helper.assertTrue(ItemCrucible.getCharges(held) == 14,
                 "a second free hit without a cut is charged: " + ItemCrucible.getCharges(held));
         b2.discard();
         ItemCrucible.setSpecialClick(player, false);
+        helper.assertTrue(!com.hbm.items.weapon.ItemSwordCutter.onLeftClickEntity(player, b),
+                "no cut being drawn: attacks are allowed again");
 
         ItemCrucible.CHARGES.set(held, 0);
         ItemCrucible.syncModifiers(held);

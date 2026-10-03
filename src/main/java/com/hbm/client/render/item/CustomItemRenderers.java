@@ -113,15 +113,6 @@ public final class CustomItemRenderers {
         sink.submitCustomGeometry(pose, type, (p, buffer) -> model.renderPart(part, p, buffer, light, overlay));
     }
 
-    /**
-     * Holds the first-person hand fully raised while this item is the one shown: since 1.9 vanilla lowers it while the
-     * attack cooldown recovers (after every swing and every switch), which 1.7 never did. Without it a 1.7 swing
-     * animation plays below the screen edge. An item change in progress is left to vanilla.
-     */
-    static void holdRaised() {
-        if (!dev.golem.core.client.EquipProgress.mainHandSwitching()) dev.golem.core.client.EquipProgress.pinMainHand(1.0F, 1.0F);
-    }
-
     static RenderType culled(Identifier texture) {
         return CompatRenderTypes.entityCutoutCull(texture);
     }

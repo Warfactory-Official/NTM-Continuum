@@ -136,9 +136,17 @@ public final class FirstPersonParticles {
         }
     }
 
-    /** {@code ParticleCrucibleLightning}: a generated bolt one block long along -z (or +z), ten ticks. */
+    /**
+     * {@code ParticleCrucibleLightning}: a generated bolt one block long along -z (or +z), ten ticks.
+     */
     static final class Lightning extends Particle {
         final CrucibleLightning.Node node;
+        /**
+         * Third person (port addition): the same bolt (same seed, same main chain) with its forks inside the cone
+         * around the chain ({@code CrucibleLightning.generate(..., alongChain = true)}). First person draws {@link #node},
+         * old-hbm's own forks.
+         */
+        final CrucibleLightning.Node thirdPersonNode;
 
         Lightning(long worldTime, RandomSource worldRand, double x, double y, double z) {
             this(worldTime, worldRand.nextBoolean(), x, y, z);
@@ -161,6 +169,7 @@ public final class FirstPersonParticles {
                 end = tmp;
             }
             node = CrucibleLightning.generate(worldTime, start, end, info);
+            thirdPersonNode = CrucibleLightning.generate(worldTime, start, end, info, true);
         }
 
         Lightning lifetime(int lifetime) {

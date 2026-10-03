@@ -44,6 +44,9 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver,
 
         /** {@code HbmAnimations.getRelevantAnim(MAIN_HAND).animation != null}: a bus animation is playing. */
         boolean busAnimationPlaying(Player player);
+
+        /** A cut is being drawn ({@code clicked}): the left click that confirms it must not also attack. */
+        boolean cutting(Player player);
     }
 
     /**
@@ -96,10 +99,21 @@ public class ItemSwordCutter extends ItemSwordAbility implements IEquipReceiver,
         return true;
     }
 
-    /** {@code onLeftClickEntity}: while a main-hand bus animation plays, a click on an entity does not attack. */
-    static boolean onLeftClickEntity(Player player, Entity target) {
+    /**
+     * {@code onLeftClickEntity}: while a main-hand bus animation plays, a click on an entity does not attack.
+     *
+     * <p>Port addition (user decision, 2026-10-02): nor does the left click that confirms a cut. 1.12 let it attack the
+     * mob under the crosshair (the hit was free through {@code doSpecialClick}, and at 500 damage it killed before the
+     * cut arrived). The client never sends that attack ({@code CrucibleClient} hands the click to Core
+     * {@code AttackInput}, which only swings); this is the server's guard: a crucible whose holder reports a cut being
+     * drawn or its cutting swing ({@link ItemCrucible#doSpecialClick}) takes no attack.
+     */
+    public static boolean onLeftClickEntity(Player player, Entity target) {
         if (!(player.getMainHandItem().getItem() instanceof ItemSwordCutter)) return false;
-        if (player.level().isClientSide()) return client != null && client.busAnimationPlaying(player);
+        if (player.level().isClientSide()) {
+            return client != null && (client.cutting(player) || client.busAnimationPlaying(player));
+        }
+        if (ItemCrucible.doSpecialClick(player)) return true;
         Long until = BUS_UNTIL.get(player.getUUID());
         return until != null && System.currentTimeMillis() < until;
     }

@@ -14,13 +14,23 @@ import net.minecraft.world.item.ItemStack;
  * 1.7 {@code ItemChainsaw}: the fueled chainsaw. Every swing the server sees starts the first-person
  * {@code SWING_ROT}/{@code SWING_TRANS} animation on the holder's client ({@code onEntitySwing} ->
  * {@code IAnimatedItem.playAnimation}); the table is {@code ToolAnimations.chainsaw}, the renderer
- * {@code ItemRenderChainsaw}. The held idle sound of 1.7 is not ported.
+ * {@code ItemRenderChainsaw}. 1.7's {@code IHeldSoundProvider} was an empty marker interface: the chainsaw had no held
+ * or idle sound, only the chainsaw ability's sound on a kill ({@code IWeaponAbility.CHAINSAW}).
+ *
+ * <p>The hand: 1.7 raised it once on equip and never lowered it for an attack or for the fuel NBT changing.
+ * {@link #compatIsSameHeldItem} (from {@code ItemToolAbility}) keeps the fuel component from re-equipping it, and
+ * {@link #compatHoldsRaised} keeps the modern cooldowns from dipping it under the swing animation.
  */
 public class ItemChainsaw extends ItemToolAbilityFueled implements SwingReceiver, IAnimatedItem {
 
     public ItemChainsaw(Properties properties, float damage, double movement, ToolTier material, EnumToolType type,
                         int maxFuel, int consumption, int fillRate, FluidType... acceptedFuels) {
         super(properties, damage, movement, material, type, maxFuel, consumption, fillRate, acceptedFuels);
+    }
+
+    @Override
+    public boolean compatHoldsRaised(ItemStack held) {
+        return true;
     }
 
     /**

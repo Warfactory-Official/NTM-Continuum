@@ -42,6 +42,8 @@ public final class AbilityToolGameTests {
             TESTS.function("ability_tool_vein_smelter", 40, () -> AbilityToolGameTests::veinSmelter);
     public static final GameTests.Function WEAPON =
             TESTS.function("ability_tool_weapon", 20, () -> AbilityToolGameTests::weapon);
+    public static final GameTests.Function CHAINSAW_WEAR =
+            TESTS.function("ability_tool_chainsaw_wear", 20, () -> AbilityToolGameTests::chainsawWear);
 
     public static void init() {}
 
@@ -129,6 +131,33 @@ public final class AbilityToolGameTests {
         }
         helper.assertTrue(ingots == 5 && raw == 0, "5 ores must smelt to 5 iron ingots at the mined block, got "
                 + ingots + " ingots and " + raw + " raw iron");
+        helper.succeed();
+    }
+
+    /**
+     * 1.7 ItemToolAbilityFueled: {@code setMaxDamage(1)} and a {@code setDamage} that burns fuel, so a hit through the
+     * real attack path costs {@code consumption} mB and no durability, and the stack the hand renderer shows is still
+     * "the same held item" afterwards (no re-equip per hit, the 2026-10-02 stutter). The chainsaw asks for 1.7's
+     * undipped raise.
+     */
+    public static void chainsawWear(net.minecraft.gametest.framework.GameTestHelper helper) {
+        ServerPlayer player = GameTestHelpers.mockServerPlayerInLevel(helper);
+        player.setGameMode(GameType.SURVIVAL);
+        ItemStack stack = new ItemStack(ModAbilityToolItems.chainsaw.get());
+        com.hbm.items.tool.ItemChainsaw saw = ModAbilityToolItems.chainsaw.get();
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack);
+        ItemStack before = stack.copy();
+        LivingEntity golem = helper.spawnWithNoFreeWill(EntityType.IRON_GOLEM, new BlockPos(1, 2, 1));
+        player.attack(golem);
+        ItemStack after = player.getMainHandItem();
+        helper.assertTrue(saw.getFill(after) == 4999, "one hit must burn 1 mB of fuel, fill " + saw.getFill(after));
+        helper.assertTrue(!after.isDamageableItem() && after.getDamageValue() == 0,
+                "the fueled chainsaw must take no durability, damage " + after.getDamageValue()
+                        + " / " + after.getMaxDamage());
+        helper.assertTrue(saw.compatIsSameHeldItem(before, after), "a fuel change must not re-equip the chainsaw");
+        helper.assertTrue(!saw.compatIsSameHeldItem(before, new ItemStack(ModAbilityToolItems.steel_sword.get())),
+                "a different item still re-equips");
+        helper.assertTrue(saw.compatHoldsRaised(after), "the chainsaw keeps 1.7's undipped hand raise");
         helper.succeed();
     }
 

@@ -51,13 +51,14 @@ public final class JetpackColladaModel {
     }
 
     private JetpackColladaModel(WavefrontObj model, List<Node> roots, Map<String, Transform[]> animated,
-            int length, int frameCount) {
+            int length, int frameCount, boolean resident) {
         this.model = model;
         this.animated = animated;
         this.length = length;
         this.frameCount = frameCount;
         Gem.Model<GliderPose> declaration = Gem.model();
         for (Node node : roots) declare(node, null, declaration);
+        if (resident) declaration.resident();
         this.gem = declaration.seal();
     }
 
@@ -98,6 +99,15 @@ public final class JetpackColladaModel {
     }
 
     public static JetpackColladaModel load() {
+        return load(false);
+    }
+
+    /**
+     * {@code resident}: the meshes are kept on the GPU (Core {@code StaticMeshes}) and drawn with each frame's node
+     * matrices, instead of the 2,575 triangles being written on the CPU every frame. Only the worn glider asks for it;
+     * the item model keeps the immediate path.
+     */
+    public static JetpackColladaModel load(boolean resident) {
         try (BufferedReader reader = Minecraft.getInstance().getResourceManager()
                 .getResourceOrThrow(ANIMATION).openAsReader()) {
             JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
@@ -115,7 +125,7 @@ public final class JetpackColladaModel {
             }
             int length = root.get("length").getAsInt();
             int frameCount = root.get("frames").getAsInt();
-            return new JetpackColladaModel(WavefrontObj.load(OBJ), roots, animated, length, frameCount);
+            return new JetpackColladaModel(WavefrontObj.load(OBJ), roots, animated, length, frameCount, resident);
         } catch (IOException | RuntimeException e) {
             throw new IllegalStateException("Failed to load generated jetpack Collada conversion", e);
         }

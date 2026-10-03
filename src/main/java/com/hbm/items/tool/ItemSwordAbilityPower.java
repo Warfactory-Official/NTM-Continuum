@@ -14,7 +14,13 @@ import net.minecraft.world.item.TooltipFlag;
 import java.util.List;
 
 /** 1.7 {@code ItemSwordAbilityPower}: the HE-powered sword (Stunstick); each hit costs {@code consumption}. */
-public class ItemSwordAbilityPower extends ItemSwordAbility implements IBatteryItem {
+public class ItemSwordAbilityPower extends ItemSwordAbility implements IBatteryItem, dev.golem.core.world.HeldItemState {
+
+    /** 1.7 kept the raised item while item and damage matched; the charge lived in NBT and never re-equipped it. */
+    @Override
+    public boolean compatIsSameHeldItem(ItemStack shown, ItemStack held) {
+        return shown.is(held.getItem()) && shown.getDamageValue() == held.getDamageValue();
+    }
 
     public long maxPower = 1;
     public long chargeRate;

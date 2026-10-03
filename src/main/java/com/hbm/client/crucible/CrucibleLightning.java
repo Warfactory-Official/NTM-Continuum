@@ -51,18 +51,33 @@ public final class CrucibleLightning {
         public float subdivMult = 1.5F;
     }
 
-    /** {@code generateLightning(from, to, info)}: the shared random is reseeded with the world's total time. */
+    /**
+     * {@code LightningGenerator.generateLightning(from, to, info)}: the shared random is reseeded with the world's total
+     * time ({@code LightningGenerator.java:20-28}).
+     */
     static Node generate(long worldTime, V3 from, V3 to, Info info) {
+        return generate(worldTime, from, to, info, false);
+    }
+
+    /**
+     * {@code alongChain} (third person only, a port addition: old-hbm drew no third-person lightning): the same seed and
+     * the same random draws, so the main chain is identical, but each fork leaves inside the cone around the bolt's own
+     * direction ({@link #randVecInCone(V3, float, Random, boolean)} with {@code intended}). 1.12's forks leave along the
+     * drawing space's {@code -y}, which first person sees head-on but which in the held third-person pose points at the
+     * ground (the bolts hung down from the hilt; user reports 2026-10-02 and 2026-10-03).
+     */
+    static Node generate(long worldTime, V3 from, V3 to, Info info, boolean alongChain) {
         RAND.setSeed(worldTime);
         Node lfrom = new Node(from);
         Node lto = new Node(to);
         lfrom.children.add(lto);
         lto.parent = lfrom;
-        generate(lfrom, info);
+        generate(lfrom, info, alongChain);
         return lfrom;
     }
 
-    private static void generate(Node node, Info info) {
+    /** {@code LightningGenerator.generateLightning(node, info)} ({@code LightningGenerator.java:30-51}). */
+    private static void generate(Node node, Info info, boolean alongChain) {
         V3 from = node.pos;
         V3 to = node.children.get(0).pos;
         subdivide(node, info.subdivisions, info.subdivMult, info.subdivRecurse - 1, info.randAmount,
@@ -73,10 +88,10 @@ public final class CrucibleLightning {
             value += 0.02F;
             Node next = child.children.get(0);
             if (RAND.nextFloat() < info.forkChance - value) {
-                V3 randVec = randVecInCone(to.subtract(from).normalize(), info.forkConeDegrees, RAND);
+                V3 randVec = randVecInCone(normalize(to.subtract(from)), info.forkConeDegrees, RAND, alongChain);
                 Node fork1 = new Node(child.pos);
                 float len = 1 + RAND.nextFloat() * info.forkLengthRandom;
-                Node fork2 = new Node(child.pos.add(randVec.scale(len * from.subtract(to).length() * 0.25F)));
+                Node fork2 = new Node(child.pos.add(randVec.scale(len * length(from.subtract(to)) * 0.25F)));
                 fork1.children.add(fork2);
                 fork2.parent = fork1;
                 subdivide(fork1, (int) (len * 0.75 * info.forkSubdivisions), info.forkSubdivMult, info.forkSubdivRecurse,
@@ -116,15 +131,72 @@ public final class CrucibleLightning {
         return new V3(a.x() + (b.x() - a.x()) * amount, a.y() + (b.y() - a.y()) * amount, a.z() + (b.z() - a.z()) * amount);
     }
 
-    /** {@code BobMathUtil.randVecInCone}. */
+    /**
+     * {@code BobMathUtil.randVecInCone(coneDirection, angle, rand)} ({@code BobMathUtil.java:411-424}) as written, with
+     * {@code getEulerAngles} ({@code :275-280}) inlined: that already returns {@code pitch - 90} and the caller subtracts
+     * 90 again, so the result leaves along {@code -y} of the drawing space for any horizontal cone axis. Not corrected:
+     * this is what old-hbm draws.
+     */
     static V3 randVecInCone(V3 coneDirection, float angle, Random rand) {
+        return randVecInCone(coneDirection, angle, rand, false);
+    }
+
+    /**
+     * {@code intended}: the cone {@code randVecInCone} sets out to build, around {@code coneDirection} (the second
+     * {@code - 90} left out). Same random draws as the 1.12 form. Third person only.
+     */
+    static V3 randVecInCone(V3 coneDirection, float angle, Random rand, boolean intended) {
         V3 up = new V3(0, 1, 0);
-        up = up.rotatePitch((float) Math.toRadians(rand.nextFloat() * (angle + rand.nextFloat() * angle)));
-        up = up.rotateYaw((float) Math.toRadians(rand.nextFloat() * 360));
+        up = rotatePitch(up, (float) Math.toRadians(rand.nextFloat() * (angle + rand.nextFloat() * angle)));
+        up = rotateYaw(up, (float) Math.toRadians(rand.nextFloat() * 360));
         double yaw = Math.toDegrees(Math.atan2(coneDirection.x(), coneDirection.z()));
-        double sqrt = Math.sqrt(coneDirection.x() * coneDirection.x() + coneDirection.z() * coneDirection.z());
+        double sqrt = (float) Math.sqrt(coneDirection.x() * coneDirection.x() + coneDirection.z() * coneDirection.z());
         double pitch = Math.toDegrees(Math.atan2(coneDirection.y(), sqrt)) - 90;
-        return up.rotatePitch((float) Math.toRadians(pitch - 90)).rotateYaw((float) Math.toRadians(yaw));
+        V3 newDirection = rotatePitch(up, (float) Math.toRadians(intended ? pitch : pitch - 90));
+        return rotateYaw(newDirection, (float) Math.toRadians(yaw));
+    }
+
+    // ---- 1.12 Vec3d / MathHelper arithmetic: float square roots and the 65,536-entry sine table
+
+    private static final float[] SIN_TABLE = new float[65536];
+
+    static {
+        for (int i = 0; i < 65536; i++) SIN_TABLE[i] = (float) Math.sin((double) i * Math.PI * 2.0D / 65536.0D);
+    }
+
+    /** {@code MathHelper.sin}. */
+    private static float sin(float value) {
+        return SIN_TABLE[(int) (value * 10430.378F) & 65535];
+    }
+
+    /** {@code MathHelper.cos}. */
+    private static float cos(float value) {
+        return SIN_TABLE[(int) (value * 10430.378F + 16384.0F) & 65535];
+    }
+
+    /** {@code Vec3d.rotatePitch}. */
+    static V3 rotatePitch(V3 v, float pitch) {
+        float f = cos(pitch);
+        float f1 = sin(pitch);
+        return new V3(v.x(), v.y() * (double) f + v.z() * (double) f1, v.z() * (double) f - v.y() * (double) f1);
+    }
+
+    /** {@code Vec3d.rotateYaw}. */
+    static V3 rotateYaw(V3 v, float yaw) {
+        float f = cos(yaw);
+        float f1 = sin(yaw);
+        return new V3(v.x() * (double) f + v.z() * (double) f1, v.y(), v.z() * (double) f - v.x() * (double) f1);
+    }
+
+    /** {@code Vec3d.lengthVector}: {@code MathHelper.sqrt}, a float square root. */
+    static double length(V3 v) {
+        return (double) (float) Math.sqrt(v.x() * v.x() + v.y() * v.y() + v.z() * v.z());
+    }
+
+    /** {@code Vec3d.normalize}: float square root, shorter than 1e-4 becomes zero. */
+    static V3 normalize(V3 v) {
+        double d0 = length(v);
+        return d0 < 1.0E-4D ? V3.ZERO : new V3(v.x() / d0, v.y() / d0, v.z() / d0);
     }
 
     /**
@@ -149,7 +221,7 @@ public final class CrucibleLightning {
         if (points.size() < 2) return;
         List<float[]> verts = new ArrayList<>(points.size() * 3 + 2);
         V3 first = points.get(0);
-        V3 cross = points.get(1).subtract(first).crossProduct(playerPos.subtract(first)).normalize().scale(scale * 0.1F);
+        V3 cross = normalize(points.get(1).subtract(first).crossProduct(playerPos.subtract(first))).scale(scale * 0.1F);
         verts.add(vertex(first.add(cross), 0F));
         verts.add(vertex(first.add(cross.scale(-1)), 0F));
         for (int i = 1; i < points.size(); i++) {
@@ -161,7 +233,7 @@ public final class CrucibleLightning {
             float iN = (float) i / (float) (points.size() - 1);
             float bruh = 1 - Math.max(0, Math.min(1, (iN - 0.8F) * 5));
             bruh *= Math.max(0, Math.min(1, iN * 5));
-            cross = tangent.crossProduct(playerPos.subtract(last)).normalize().scale(scale * Math.max(bruh, 0.1));
+            cross = normalize(tangent.crossProduct(playerPos.subtract(last))).scale(scale * Math.max(bruh, 0.1));
             float uMiddle = (i - 0.5F) / (float) (points.size() - 1);
             verts.add(vertex(last.add(toNext.scale(0.5)), uMiddle));
             verts.add(vertex(current.add(cross), iN));
@@ -193,8 +265,9 @@ public final class CrucibleLightning {
 
     /**
      * The shader's arithmetic on the CPU, for the harness's pixel comparison only ({@code hbm_crucible
-     * lightning_mode=cpu}): {@code pos + (noise_a * noise_b.zxy - 0.5) * 0.1} from {@code noise_2} texels sampled
-     * nearest/repeat at level 0, exactly what the vertex stage computes. The displaced ribbon then goes through the same
+     * lightning_mode=cpu}): {@code pos + (noise_a * noise_b.zxy - 0.5) * 0.1} from {@code noise_2} sampled bilinear
+     * with repeat at level 0 (old-hbm's {@code ResourceManager.init} set its magnification filter to {@code GL_LINEAR},
+     * and an explicit level 0 magnifies), exactly what the vertex stage computes. The displaced ribbon then goes through the same
      * render type with a flat noise texture (every texel 180: {@code 180/255 squared - 0.5 = -0.0017}, an offset of
      * -0.00017, well under a pixel), so draw order, blend and depth are identical and only the displacement's origin
      * differs. Never used in normal play.
@@ -215,10 +288,10 @@ public final class CrucibleLightning {
                 }
             }
             float s = v[3];
-            int a = noise.sampleNearestRepeat(s + time * 0.001F, s + time * -0.02F);
-            int b = noise.sampleNearestRepeat(s + time * 0.01F, s + time * 0.015F);
-            float ar = ((a >> 16) & 0xFF) / 255F, ag = ((a >> 8) & 0xFF) / 255F, ab = (a & 0xFF) / 255F;
-            float br = ((b >> 16) & 0xFF) / 255F, bg = ((b >> 8) & 0xFF) / 255F, bb = (b & 0xFF) / 255F;
+            float[] a = noise.sampleLinearRepeat(s + time * 0.001F, s + time * -0.02F);
+            float[] b = noise.sampleLinearRepeat(s + time * 0.01F, s + time * 0.015F);
+            float ar = a[1], ag = a[2], ab = a[3];
+            float br = b[1], bg = b[2], bb = b[3];
             v[0] += (ar * bb - 0.5F) * 0.1F;
             v[1] += (ag * br - 0.5F) * 0.1F;
             v[2] += (ab * bg - 0.5F) * 0.1F;

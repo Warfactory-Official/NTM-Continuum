@@ -49,7 +49,6 @@ final class ItemRenderChainsaw implements CustomItemRenderer {
         pose.pushPose();
         switch (type) {
             case EQUIPPED_FIRST_PERSON -> {
-                holdRaised(); // the modern attack-cooldown dip; see CustomItemRenderers.holdRaised
                 net.minecraft.client.player.LocalPlayer player = net.minecraft.client.Minecraft.getInstance().player;
                 if (player != null) player.swinging = false;
 

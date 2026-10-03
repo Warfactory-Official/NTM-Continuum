@@ -7,6 +7,10 @@ import com.google.gson.JsonParser;
 import com.hbm.client.model.WavefrontObj;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.golem.core.Ids;
+import dev.golem.core.render.StaticMeshes;
+import dev.golem.core.render.SubmitSink;
+import dev.golem.core.render.gem.Geometry;
+import dev.golem.core.render.gem.Surface;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.Identifier;
 import org.joml.Matrix4f;
@@ -55,6 +59,25 @@ public final class CrucibleEquipModel {
 
     private static CrucibleEquipModel instance;
 
+    /** Harness only: the deploy clock pinned at this many ms ({@code -1}: live); set by the {@code hbm_static_models} query. */
+    public static long pinnedElapsed = -1L;
+
+    /** One {@link Geometry} per drawn node, kept so its resident mesh (Core {@code StaticMeshes}) is uploaded once. */
+    private final Map<String, Geometry> parts = new HashMap<>();
+    /** The cutout surfaces by texture; the arms' is the player's skin. */
+    private static final Map<Identifier, Surface> SURFACES = new HashMap<>();
+
+    /**
+     * Draws node {@code name}'s mesh at {@code pose}, alpha-tested and culled, as
+     * {@code renderPart(name, pose, buffer, light, overlay)} into {@code entityCutoutCull(texture)} did, but from a copy
+     * kept on the GPU when Core can draw it identically (it falls back to that immediate draw otherwise).
+     */
+    public void submitPart(SubmitSink sink, PoseStack pose, Identifier texture, String name, int light, int overlay) {
+        Geometry geometry = parts.computeIfAbsent(name, model::part);
+        Surface surface = SURFACES.computeIfAbsent(texture, id -> Surface.cutoutCull(id.toString()));
+        StaticMeshes.submit(sink, pose, surface, geometry, light, overlay, -1);
+    }
+
     public static CrucibleEquipModel get() {
         if (instance == null) instance = load();
         return instance;
@@ -80,6 +103,7 @@ public final class CrucibleEquipModel {
      * and fraction, plus {@code diffN = clamp(elapsed / length)}.
      */
     public Playhead playhead(long elapsed) {
+        if (pinnedElapsed >= 0L) elapsed = pinnedElapsed;
         int diff = (int) elapsed;
         float remapped = Math.max(0, Math.min(frameCount - 1, diff / (float) length * (frameCount - 1)));
         float diffN = Math.max(0F, Math.min(1F, diff / (float) length));
@@ -103,6 +127,42 @@ public final class CrucibleEquipModel {
         for (Node child : node.children) walk(child, playhead, pose, draw);
         pose.popPose();
     }
+
+    /**
+     * The scene matrix of node {@code name} at {@code playhead}: the product of every matrix from the root down to it,
+     * as {@link #walk} would have it on the pose; null if no such node.
+     */
+    public @org.jspecify.annotations.Nullable Matrix4f nodeMatrix(Playhead playhead, String name) {
+        for (Node root : roots) {
+            Matrix4f found = nodeMatrix(root, playhead, name, new Matrix4f());
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private @org.jspecify.annotations.Nullable Matrix4f nodeMatrix(Node node, Playhead playhead, String name, Matrix4f parent) {
+        Transform[] track = tracks.get(node.name);
+        Matrix4f matrix = new Matrix4f(parent).mul(track == null ? node.base
+                : track[playhead.first].interpolate(track[playhead.next], playhead.inter));
+        if (node.name.equals(name)) return matrix;
+        for (Node child : node.children) {
+            Matrix4f found = nodeMatrix(child, playhead, name, matrix);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    /**
+     * The 1.7 OBJ crucible ({@code models/weapons/crucible.obj}) inside the scene's {@code Hilt} node: the Collada hilt
+     * is that OBJ's hilt turned so the OBJ's {@code +y} (along the blade) is the node's {@code -z} and its {@code +z} the
+     * node's {@code +y}, scaled by 0.15601 ({@code (x, y, z) -> 0.15601 * (x, z, -y)}; fitted to every hilt vertex,
+     * largest residual 1e-5). Maps OBJ coordinates to Hilt-node coordinates.
+     */
+    public static final Matrix4f OBJ_IN_HILT = new Matrix4f(
+            0.15601F, 0F, 0F, 0F,
+            0F, 0F, -0.15601F, 0F,
+            0F, 0.15601F, 0F, 0F,
+            0F, 0F, 0F, 1F);
 
     private static CrucibleEquipModel load() {
         try (BufferedReader reader = Minecraft.getInstance().getResourceManager().getResourceOrThrow(ANIMATION)

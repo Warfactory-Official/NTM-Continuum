@@ -41,7 +41,6 @@ final class ItemRenderBoltgun implements CustomItemRenderer {
         pose.pushPose();
         switch (type) {
             case EQUIPPED_FIRST_PERSON -> {
-                holdRaised(); // the modern attack-cooldown dip; see CustomItemRenderers.holdRaised
                 float s0 = 0.15F;
                 pose.translate(0.5D, 0.35D, -0.25D);
                 pose.mulPose(Axis.ZP.rotationDegrees(15F));

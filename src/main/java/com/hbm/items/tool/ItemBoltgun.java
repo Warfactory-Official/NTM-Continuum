@@ -23,6 +23,12 @@ import net.minecraft.world.level.block.Block;
  */
 public class ItemBoltgun extends CompatItem implements com.hbm.items.IAnimatedItem {
 
+    /** 1.7 had no attack cooldown: the recoil animation plays with the hand fully raised. */
+    @Override
+    public boolean compatHoldsRaised(net.minecraft.world.item.ItemStack held) {
+        return true;
+    }
+
     public ItemBoltgun(Properties properties) {
         super(properties);
     }

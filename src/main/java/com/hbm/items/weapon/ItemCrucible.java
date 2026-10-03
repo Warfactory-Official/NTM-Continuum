@@ -43,13 +43,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *   <li>Every hit also wears the sword by two (1.12 {@code ItemSwordAbility.hitEntity} and {@code ItemSword.hitEntity}
  *       each damaged it by one); the durability bar shows the charge instead, as in old-hbm.</li>
  *   <li>Equip: the deploy animation and, when charged, {@code weapon.cDeploy} at volume 5. Swing: the random swing
- *       animation ({@code cSwing}) unless drawing a cut, and {@code weapon.crucible_swing} when charged; vanilla's arm
- *       swing is cancelled on both sides.</li>
+ *       animation unless drawing a cut (in first person the 1.7 crucible swing; in third person vanilla's arm swing,
+ *       which is no longer cancelled), and {@code weapon.crucible_swing} when charged.</li>
  *   <li>A charged hit that kills bursts the victim into redstone-block dust ({@code ceil(maxHealth / 3)} capped at 250,
  *       four particles each).</li>
  * </ul>
  */
-public class ItemCrucible extends ItemSwordCutter {
+public class ItemCrucible extends ItemSwordCutter implements dev.golem.core.world.HeldItemState {
 
     public static final int DEFAULT_MAX = 16;
     /** old-hbm NBT {@code charges}. */
@@ -201,15 +201,20 @@ public class ItemCrucible extends ItemSwordCutter {
     }
 
     /**
-     * {@code onEntitySwing}: the client half of the cutter (send a drawn cut) and a cancelled vanilla swing on both
-     * sides. On the server: unless a cut is being drawn the random swing ({@code cSwing}) is started on the holder's
-     * client, and a charged crucible plays {@code weapon.crucible_swing} at the swinger.
+     * {@code onEntitySwing}: the client half of the cutter (send a drawn cut). On the server: unless a cut is being
+     * drawn the attack animation ({@code cSwing} cue; the 1.7 swing bus, see {@code CrucibleClient.swing17}) is started
+     * on the holder's client, and a charged crucible plays {@code weapon.crucible_swing} at the swinger.
+     *
+     * <p>User decision (2026-10-02): vanilla's arm swing is <em>not</em> cancelled any more (old-hbm returned true on
+     * both sides; 1.7's crucible returned false). Third person (F5, and every other player through the server's swing
+     * broadcast) shows the normal sword swing; first person still shows only the crucible's own animation, because its
+     * first-person renderer clears the local swing as 1.7's did ({@code isSwingInProgress = false}).
      */
     @Override
     public boolean compatOnEntitySwing(ItemStack stack, LivingEntity entity, InteractionHand hand) {
         if (!(entity instanceof ServerPlayer player)) {
             super.compatOnEntitySwing(stack, entity, hand);
-            return true;
+            return false;
         }
         if (!doSpecialClick(player) && hand == InteractionHand.MAIN_HAND) {
             com.hbm.packet.CrucibleAnimPayload.send(player, com.hbm.packet.CrucibleAnimPayload.CSWING);
@@ -220,6 +225,22 @@ public class ItemCrucible extends ItemSwordCutter {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                     ModAbilityToolItems.CRUCIBLE_SWING.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         }
+        return false;
+    }
+
+    /**
+     * old-hbm drew the first-person crucible from {@code RenderSpecificHandEvent} at equip progress 0 whatever the hand
+     * renderer was doing, so a charge spent (a component change) never lowered it: the same item is the same raise.
+     * (The deploy still replays on a hit, through {@link #equipKey} on the server, as in 1.12.)
+     */
+    @Override
+    public boolean compatIsSameHeldItem(ItemStack shown, ItemStack held) {
+        return shown.getItem() == held.getItem();
+    }
+
+    /** ... and fully raised: no modern attack-cooldown dip (Core's tick-time raise, not a renderer pin). */
+    @Override
+    public boolean compatHoldsRaised(ItemStack held) {
         return true;
     }
 

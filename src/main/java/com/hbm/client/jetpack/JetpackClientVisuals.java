@@ -47,6 +47,10 @@ public final class JetpackClientVisuals {
     private static final Identifier NOISE = Ids.of("hbm", "textures/misc/noise_2.png");
 
     private static JetpackColladaModel gliderModel;
+    /** Harness only, see {@link #init}. */
+    private static long pinnedGliderMs = -1L;
+    private static boolean pinnedGliderReverse;
+    private static boolean harnessNoExhaust;
 
     private static final Map<UUID, Effects> EFFECTS = new HashMap<>();
     private static final Map<UUID, GliderAnimation> GLIDER_ANIMATIONS = new HashMap<>();
@@ -56,7 +60,40 @@ public final class JetpackClientVisuals {
 
     public static void init() {
         dev.golem.core.render.PlasmaGlowRenderType.init();
+        dev.golem.core.render.StaticMeshes.init();
         WorldEffects.init();
+        // Harness only: pin the worn glider's Collada playhead ({@code glider_ms}, {@code glider_reverse}; -1 lets it
+        // run) and the first-person crucible's deploy ({@code crucible_deploy_ms}), so frames of a moving animation can
+        // be compared exactly.
+        dev.golem.core.harness.HarnessQueryRegistry.register("hbm_static_models", (mc, params) -> {
+            if (params.has("glider_ms")) pinnedGliderMs = params.get("glider_ms").getAsLong();
+            if (params.has("glider_reverse")) pinnedGliderReverse = params.get("glider_reverse").getAsBoolean();
+            // no exhaust: the effects cleared and none spawned, so frames show the model alone
+            if (params.has("glider_no_exhaust")) {
+                harnessNoExhaust = params.get("glider_no_exhaust").getAsBoolean();
+                if (harnessNoExhaust) for (Effects effects : EFFECTS.values()) effects.clear();
+            }
+            if (params.has("crucible_deploy_ms"))
+                com.hbm.client.crucible.CrucibleEquipModel.pinnedElapsed = params.get("crucible_deploy_ms").getAsLong();
+            com.google.gson.JsonObject json = new com.google.gson.JsonObject();
+            json.addProperty("ok", true);
+            json.addProperty("glider_ms", pinnedGliderMs);
+            json.addProperty("glider_reverse", pinnedGliderReverse);
+            json.addProperty("crucible_deploy_ms", com.hbm.client.crucible.CrucibleEquipModel.pinnedElapsed);
+            // read-only: the live exhaust effects over every player (positive signal that the exhaust is drawn)
+            int plasma = 0, heat = 0, brightness = 0, trails = 0;
+            for (Effects effects : EFFECTS.values()) {
+                plasma += effects.plasma.size();
+                heat += effects.heat.size();
+                brightness += effects.brightness.size();
+                for (JetpackTrail trail : effects.trails) if (trail != null) trails++;
+            }
+            json.addProperty("exhaust_plasma", plasma);
+            json.addProperty("exhaust_heat", heat);
+            json.addProperty("exhaust_brightness", brightness);
+            json.addProperty("exhaust_trails", trails);
+            return json;
+        });
         // The client texture manager is not constructed during mod-container construction. The render
         // type installs its scene texture lazily on the first submitted heat particle.
     }
@@ -138,7 +175,7 @@ public final class JetpackClientVisuals {
                 continue;
             }
             if (GLIDER.equals(kind) && active(state) && !player.onGround() && state.thrust() > 0.05F) {
-                spawnExhaust(player, state, effects);
+                if (!harnessNoExhaust) spawnExhaust(player, state, effects);
             }
             if (effects.empty() && !trailEligible(player, state, fuel(player))) EFFECTS.remove(player.getUUID());
         }
@@ -293,12 +330,13 @@ public final class JetpackClientVisuals {
 
     public static void submitGlider(PoseStack pose, SubmitSink sink, int light, HumanoidPose parts,
             boolean inventory, boolean opening, long animTime) {
-        if (gliderModel == null) gliderModel = JetpackColladaModel.load();
+        if (gliderModel == null) gliderModel = JetpackColladaModel.load(true);
         if (!inventory) {
             pose.pushPose();
             applyGliderRoot(pose, parts.sneaking && !flying(parts.player()));
             GliderAnimation animation = gliderAnimation(parts.player(), opening, animTime);
-            gliderModel.submit(pose, sink, light, animation.elapsed(), !animation.opening());
+            if (pinnedGliderMs >= 0L) gliderModel.submit(pose, sink, light, pinnedGliderMs, pinnedGliderReverse);
+            else gliderModel.submit(pose, sink, light, animation.elapsed(), !animation.opening());
             pose.popPose();
         } else {
             pose.pushPose();

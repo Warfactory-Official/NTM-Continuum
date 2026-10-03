@@ -55,7 +55,7 @@ import java.util.List;
  * at the same point of the server's destroy sequence and likewise stops the vanilla break when it answers
  * false. Presets live in the stack under {@link #ABILITY_CONFIG}, in 1.7's NBT layout.
  */
-public class ItemToolAbility extends CompatToolItem implements IDepthRockTool {
+public class ItemToolAbility extends CompatToolItem implements IDepthRockTool, dev.golem.core.world.HeldItemState {
 
     /** 1.7 stored {@code ability} and {@code abilityPresets} in the stack tag; this compound holds both. */
     public static final GolemComponent<CompoundTag> ABILITY_CONFIG =
@@ -122,6 +122,15 @@ public class ItemToolAbility extends CompatToolItem implements IDepthRockTool {
 
     public AvailableAbilities getAvailableAbilities() {
         return availableAbilities;
+    }
+
+    /**
+     * 1.7's {@code ItemRenderer} kept the raised item while the item and its damage matched; fuel, charge and the
+     * ability presets lived in NBT and never re-equipped it. Here they are components, which vanilla compares.
+     */
+    @Override
+    public boolean compatIsSameHeldItem(ItemStack shown, ItemStack held) {
+        return shown.is(held.getItem()) && shown.getDamageValue() == held.getDamageValue();
     }
 
     // --- weapon abilities ---
